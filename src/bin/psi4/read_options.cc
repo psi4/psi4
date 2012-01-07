@@ -23,10 +23,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
-  /*- The molecular charge -*/
-  options.add_int("CHARGE", 0);
-  /*- Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-  options.add_int("MULTP", 1);
 
   /*- An array containing the number of doubly-occupied orbitals per irrep
   (in Cotton order) -*/
@@ -66,9 +62,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("BENCH", 0);
   /*- Default number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
-  /*- Wavefunction type -*/
+  /*- Wavefunction type !expert -*/
   options.add_str("WFN", "SCF");
-  /*- Derivative level -*/
+  /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat -*/
   options.add_int("PRINT_MAT_NCOLUMN", 5);
@@ -92,7 +88,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-6);
 
-    /*- Wavefunction type -*/
+    /*- Wavefunction type !expert -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
     /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LVL -*/
@@ -440,7 +436,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (the one-particle density matrices are written for all roots).
     Useful for a state-specific CASSCF or CI optimization on an
     excited state. -*/
-    options.add_int("ROOT", 1);
+    options.add_int("FOLLOW_ROOT", 1);
 
     /*- Compute the transition density?  Note: only transition densities
     between roots of the same symmetry will be evaluated.  DETCI
@@ -477,10 +473,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SIGMA_OVERLAP", false);
 
     /*- The value of the spin quantum number S is given by this option.
-    The default is determined by the value of MULTP.  This is used for two
-    things: (1) determining the phase of the redundant half of the CI vector
-    when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making sure
-    the guess vector has the desired value of $<S^2>$ (if CALC_SSQ is TRUE
+    The default is determined by the value of the multiplicity.  This is used 
+    for two things: (1) determining the phase of the redundant half of the CI 
+    vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making 
+    sure the guess vector has the desired value of $<S^2>$ (if CALC_SSQ is TRUE
     and ICORE=1). -*/
     options.add_double("S", 0.0);
 
@@ -696,10 +692,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Whether to force the occupation to be that of the SCF starting point -*/
       options.add_bool("LOCK_OCCUPATION", true);
-      /*- The molecular charge -*/
-      options.add_int("CHARGE", 0);
-      /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-      options.add_int("MULTP", 0);
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- primary basis set -*/
@@ -823,10 +815,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAX_DIIS_VECTORS", 10);
     /*- Whether DIIS extrapolation is used to accelerate convergence -*/
     options.add_bool("DIIS", true);
-    /*- The molecular charge -*/
-    options.add_int("CHARGE", 0);
-    /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-    options.add_int("MULTP", 0);
     /*- Whether to print the molecular orbitals -*/
     options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
@@ -846,8 +834,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The amount of SAD information to print to the output -*/
     options.add_int("SAD_PRINT", 0);
-    /*- SAD Occupation Matrix Method -*/
-    options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
     /*- SAD Guess Convergence in E.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
     /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/
@@ -862,13 +848,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
   if (name == "MP2"|| options.read_globals()) {
-    /*- The wavefunction type -*/
+    /*- The wavefunction type !expert -*/
     options.add_str("WFN", "MP2", "MP2");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
-    /*- The type of job being performed -*/
+    /*- The type of job being performed !expert -*/
     options.add_str("JOBTYPE", "SP");
-    /*- The order of energy derivatives required -*/
+    /*- The order of energy derivatives required !expert -*/
     options.add_str("DERTYPE", "NONE");
     /*- Whether to compute the one particle density matrix, for properties -*/
     options.add_bool("COMPUTE_OPDM", false);
@@ -888,7 +874,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE_SS", 1.0/3.0);
   }
   if(name == "TRANSQT2"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "");
     /*- -*/
     options.add_str("REFERENCE","RHF");
@@ -910,7 +896,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- -*/
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "CCSD");
     /*- -*/
     options.add_bool("PSIMRCC", false);
@@ -1036,7 +1022,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CUSP"|| options.read_globals()){
   }
   if(name == "CCSORT"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "");
     /*- -*/
     options.add_str("REFERENCE", "RHF");
@@ -1084,7 +1070,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("OMEGA_UNITS", "AU", "AU HZ EV NM");
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
-    /*- The wavefunction type -*/
+    /*- The wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- The number of threads to use on multi-core machines -*/
     options.add_int("NTHREADS",1);
@@ -1092,7 +1078,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
-    /*- The wavefunction type -*/
+    /*- The wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
@@ -1117,10 +1103,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The symmetry of states -*/
     options.add_int("PROP_SYM", 1);
     /*- -*/
-    options.add_int("PROP_ROOT", 0);
+    options.add_int("PROP_ROOT", 1);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN","SCF");
     /*- -*/
     options.add_int("CONVERGENCE",7);
@@ -1138,7 +1124,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("ABCD","NEW");
     /*- -*/
     options.add_int("NUM_AMPS",10);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("JOBTYPE","");
     /*- -*/
     options.add_bool("LOCAL",false);
@@ -1168,10 +1154,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CLAG"|| options.read_globals()) {
     /*- -*/
     options.add_bool("WRITE_CAS_FILES",0);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN","NONE");
     /*- -*/
-    options.add_int("ROOT",1);
+    options.add_int("FOLLOW_ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
     /*- -*/
@@ -1209,90 +1195,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Partial renormalization scheme for the ground state wavefunction -*/
     options.add_bool("PR", false);
   }
-  if(name == "OEPROP"|| options.read_globals()) {
-    /*- -*/
-    options.add_int("NUM_ROOTS",1);
-    /*- -*/
-    options.add_int("ROOT",1);
-    /*- -*/
-    options.add_int("GRID",0);
-    /*- -*/
-    options.add_str("MO_TO_PLOT","");
-    /*- -*/
-    options.add_int("GRID_ORIGIN",0);
-    /*- -*/
-    options.add_int("GRID_UNIT_X",0);
-    /*- -*/
-    options.add("GRID_XY0", new ArrayType());
-    /*- -*/
-    options.add("GRID_XY1", new ArrayType());
-    /*- -*/
-    options.add("GRID_XYZ0", new ArrayType());
-    /*- -*/
-    options.add("GRID_XYZ1", new ArrayType());
-    /*- -*/
-    options.add_int("NIX",0);
-    /*- -*/
-    options.add_int("NIY",0);
-    /*- -*/
-    options.add_int("NIZ",0);
-    /*- -*/
-    options.add_str("GRID_FORMAT","");
-    /*- -*/
-    options.add_double("GRID_ZMIN",0.0);
-    /*- -*/
-    options.add_double("GRID_ZMAX",3.0);
-    /*- -*/
-    options.add_int("EDGRAD_LOGSCALE",5);
-    /*- -*/
-    options.add_str("WFN","");
-    /*- -*/
-    options.add_bool("TRANSITION_DENSITY", false);
-    /*- -*/
-    options.add_str("REFERENCE", "RHF");
-    /*- -*/
-    options.add_bool("READ_OPDM", true);
-    /*- -*/
-    options.add_int("OPDM_FILE", 0);
-    /*- -*/
-    options.add_str("OPDM_BASIS", "MO", "AO MO");
-    /*- -*/
-    options.add_str("OPDM_FORMAT", "SQUARE");
-    /*- -*/
-    options.add_bool("WRTNOS", false);
-    /*- -*/
-    options.add_bool("ASYMM_OPDM", false);
-    /*- -*/
-    options.add_bool("SPIN_PROP", false);
-    /*- -*/
-    options.add_bool("PRINT_NOS", false);
-    /*- -*/
-    options.add_int("CORREL_CORR", 0);
-    /*- -*/
-    options.add_double("ZVEC_FILE", 0);
-    /*- -*/
-    options.add_int("DELETE_ZVEC", 0);
-    /*- -*/
-    options.add_int("MPMAX", 1);
-    /*- -*/
-    options.add("MP_REF_XYZ", new ArrayType());
-    /*- -*/
-    options.add_int("MP_REF", 0);
-    /*- -*/
-    options.add("LM_REF_XYZ", new ArrayType());
-    /*- -*/
-    options.add_bool("NUC_ESP", true);
-    /*- -*/
-    options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
-    /*- -*/
-    options.add_bool("QED_DARWIN", false);
-  }
   if(name == "CCHBAR"|| options.read_globals()) {
     /*- -*/
     options.add_bool("TAMPLITUDE",false);
     /*- -*/
     options.add_int("CACHELEV",2);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "SCF");
     /*- -*/
     options.add_bool("WABEI_LOWDISK", false);
@@ -1300,7 +1208,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_REFERENCE","RHF");
   }
   if(name == "CCEOM"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
@@ -1348,7 +1256,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CC3_FOLLOW_ROOT", false);
     /*- -*/
     options.add_bool("RHF_TRIPLETS", false);
-    /*- -*/
+    /*- The depth into the occupied and valence spaces from which one-electron 
+    excitations are seeded into the Davidson guess to the CIS (the default of 2 
+    includes all single excitations between HOMO-1, HOMO, LUMO, and LUMO+1). This 
+    CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic 
+    excited states in the EOM-CC calculation !expert -*/
     options.add_int("EXCITATION_RANGE", 2);
     /*- -*/
     options.add_bool("PRINT_SINGLES", false);
@@ -1382,7 +1294,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "SCF");
     /*- -*/
     options.add_int("CACHELEV",2);
@@ -1430,7 +1342,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MU_IRREPS",new ArrayType());
   }
   if(name == "MVO"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
    options.add_str("WFN","CCSD");
     /*- -*/
    options.add_int("FZC_FILE", PSIF_OEI);
@@ -1470,10 +1382,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY","POLARIZABILITY");
   }
   if(name == "MCSCF"|| options.read_globals()) {
-    /*- The molecular charge -*/
-    options.add_int("CHARGE", 0);
-    /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-    options.add_int("MULTP", 1);
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
@@ -1487,7 +1395,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of previous iterations to consider within the DIIS method -*/
     options.add_int("NDIIS",7);
     /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
-    options.add_int("ROOT",1);
+    options.add_int("FOLLOW_ROOT",1);
     /*- Iteration at which to begin using the averaged Fock matrix-*/
     options.add_int("START_FAVG",5);
     /*- -*/
@@ -1528,7 +1436,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCENERGY"|| options.read_globals()) {
     /*- -*/
     options.add_bool("NEWTRIPS", 1);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- -*/
     options.add_str("REFERENCE", "RHF");
@@ -1601,7 +1509,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("CC_SCALE_SS",1.13);
   }
   if(name == "CIS"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "CIS", "SCF CCSD CCSD_T EOM_CCSD CIS");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
@@ -1641,7 +1549,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     else
     /*- -*/
       options.add_bool("RI_LMP2", false);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "LMP2");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF");
@@ -1880,7 +1788,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The number of electrons -*/
     options.add_int("NEL",0);
     /*- Which root of the effective hamiltonian is the target state? -*/
-    options.add_int("ROOT",1);
+    options.add_int("FOLLOW_ROOT",1);
     /*- The number of digits after the decimal to converge the energy to -*/
     options.add_int("CONVERGENCE",9);
     /*- The maximum number of iterations allowed to determine the amplitudes -*/

@@ -155,9 +155,9 @@ void HF::common_init()
     nelectron_ -= charge_;
 
     // If the user told us the multiplicity, read it from the input
-    if(molecule_->multiplicity_specified()){
+    //if(molecule_->multiplicity_specified()){
         multiplicity_ = molecule_->multiplicity();
-    }else{
+    /*}else{
         if(nelectron_%2){
             multiplicity_ = 2;
             molecule_->set_multiplicity(2);
@@ -176,7 +176,7 @@ void HF::common_init()
                             "\tinput if this is incorrect\n\n");
             }
         }
-    }
+    }*/
 
     // Make sure that the multiplicity is reasonable
     if(multiplicity_ - 1 > nelectron_){
@@ -902,6 +902,7 @@ void HF::guess()
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
+        E_ = compute_initial_E();
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)

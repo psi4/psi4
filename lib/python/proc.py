@@ -178,16 +178,20 @@ def run_ccenergy(name, **kwargs):
 
 def run_cc_gradient(name, **kwargs):
 
-    run_ccenergy(name, **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
+   run_ccenergy(name, **kwargs)
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
 
-    PsiMod.cchbar()
-    PsiMod.cclambda()
-    PsiMod.ccdensity()
-    PsiMod.deriv()
+   PsiMod.cchbar()
+   PsiMod.cclambda()
+   PsiMod.ccdensity()
+   PsiMod.deriv()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
 
 def run_bccd(name, **kwargs):
 
@@ -220,6 +224,8 @@ def run_bccd_t(name, **kwargs):
 
 def run_cc_response(name, **kwargs):
 
+    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+
     if (name.lower() == 'ccsd'):
       PsiMod.set_global_option('WFN', 'CCSD')
       run_ccenergy("ccsd", **kwargs)
@@ -246,6 +252,10 @@ def run_eom_cc(name, **kwargs):
       PsiMod.set_global_option('WFN', 'EOM_CC2')
       run_ccenergy("cc2", **kwargs)
       PsiMod.set_global_option('WFN', 'EOM_CC2')
+    elif (name.lower() == "eom-cc3"):
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
+      run_ccenergy("cc3", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
 
     PsiMod.cchbar()
     returnvalue = PsiMod.cceom()

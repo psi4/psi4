@@ -113,16 +113,6 @@ AC_ARG_WITH(max-am-deriv2,[  --with-max-am-deriv2    maximum AM in ERI second de
 ])
 AC_SUBST(LIBDERIV_NEW_AM2)
 
-# Options for libr12
-LIBR12_NEW_AM=6
-LIBR12_OPT_AM=6
-AC_ARG_WITH(max-am-r12,[  --with-max-am-r12       maximum AM in R12 integrals],[
-  LIBR12_NEW_AM=$((2*($withval)))
-  LIBR12_OPT_AM=$((2*($withval)))
-])
-AC_SUBST(LIBR12_NEW_AM)
-AC_SUBST(LIBR12_OPT_AM)
-
 PSI_INTEGRALS_STANDARD=1
 AC_ARG_WITH(integrals-standard,[  --with-integrals-standard     specifies the standard for the basis normalization, etc.
                                 The allowed values are cca and psi (default).],[
@@ -911,9 +901,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libint/Makefile
           src/lib/libint/MakeVars
           src/lib/libint/libint_config.h
-          src/lib/libr12/Makefile
-          src/lib/libr12/MakeVars
-          src/lib/libr12/libr12_config.h
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
@@ -938,7 +925,6 @@ AC_CONFIG_FILES([include/Makefile
 
           src/bin/psi4/Makefile
           src/bin/response/Makefile
-          src/bin/cusp/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
@@ -947,10 +933,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
-          src/bin/cphf/Makefile
           src/bin/ccsort/Makefile
-          src/bin/mvo/Makefile
-          src/bin/geom/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
           src/bin/ccresponse/Makefile
@@ -1038,6 +1021,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc11/Makefile
           tests/cc12/Makefile
           tests/cc13/Makefile
+          tests/cc13a/Makefile
           tests/cc15/Makefile
           tests/cc16/Makefile
           tests/cc17/Makefile
@@ -1062,6 +1046,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc43/Makefile
           tests/cc44/Makefile
           tests/cc45/Makefile
+          tests/cc49/Makefile
+          tests/cc50/Makefile
+          tests/cc51/Makefile
           tests/cc52/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile
