@@ -178,6 +178,8 @@ def run_ccenergy(name, **kwargs):
 
 def run_cc_gradient(name, **kwargs):
 
+   PsiMod.set_global_option('DERTYPE', 'FIRST')
+
    run_ccenergy(name, **kwargs)
    if (name.lower() == 'ccsd'):
        PsiMod.set_global_option('WFN', 'CCSD')
@@ -192,6 +194,8 @@ def run_cc_gradient(name, **kwargs):
    if (name.lower() != 'ccenergy'):
        PsiMod.set_global_option('WFN', 'SCF')
        PsiMod.revoke_global_option_changed('WFN')
+       PsiMod.set_global_option('DERTYPE', 'NONE')
+       PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_bccd(name, **kwargs):
 
@@ -241,6 +245,8 @@ def run_cc_response(name, **kwargs):
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_eom_cc(name, **kwargs):
 

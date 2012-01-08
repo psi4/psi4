@@ -8,6 +8,7 @@ set globals {
     basis 6-31g
 }
 
+set mp2 scs on
 
 banner('gold standard')
 energy('sherrillgroup_gold_standard')
