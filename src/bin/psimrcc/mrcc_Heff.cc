@@ -35,7 +35,7 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
     old_energy=current_energy;
     current_energy=diagonalize_Heff(moinfo->get_root(),moinfo->get_nrefs(),Heff,right_eigenvector,left_eigenvector,false);
 
-    if(options_.get_bool("PRINT_HEFF"))
+    if(options_.get_bool("HEFF_PRINT"))
       print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);
     DEBUGGING(3,
       print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);

@@ -114,8 +114,8 @@ void get_params(Options &options)
   iconv = options.get_int("BRUECKNER_CONV");
   params.bconv = 1.0*pow(10.0,(double) -iconv);
 
-  params.print_mp2_amps = options.get_bool("PRINT_MP2_AMPS");
-  params.print_pair_energies = options.get_bool("PRINT_PAIR_ENERGIES");
+  params.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
+  params.print_pair_energies = options.get_bool("PAIR_ENERGIES_PRINT");
   params.spinadapt_energies = options.get_bool("SPINADAPT_ENERGIES");
   params.t3_Ws_incore = options.get_bool("T3_WS_INCORE");
 
