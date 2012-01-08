@@ -196,10 +196,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("H0_BLOCK_COUPLING_SIZE",0);
 
     /*- number of important determinants to print out -*/
-    options.add_int("NPRINT",20);
+    options.add_int("NUM_PRINT",20);
 
     /*- number of important CC amps per ex lvl to print -*/
-    options.add_int("CC_NPRINT",10);
+    options.add_int("CC_NUM_PRINT",10);
 
     /*- How to average H diag energies over spin coupling sets.
       HD_EXACT uses the exact diagonal energies which results in expansion
@@ -267,7 +267,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CALC_SSQ",false);
 
     /*- Do compute the MPn series out to
-    kth order where k is determined by MAXNVECT?  For open-shell systems
+    kth order where k is determined by MAX_NUM_VECS?  For open-shell systems
     (REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series.
     GUESS_VECTOR must be set to UNIT, HD_OTF must be set to TRUE, and
     HD_AVE must be set to orb_ener; these should happen by default for
@@ -286,8 +286,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use Wigner formulas in the Empn series? !expert -*/
     options.add_bool("WIGNER",true);
 
-    /*- z in H = H0 + z * H1 !expert -*/
-    options.add_double("PERTURBATION_PARAMETER",1.0);
+    /*- $z$ in $H = H@@0 + z H@@1$ !expert -*/
+    options.add_double("PERTURB_MAGNITUDE",1.0);
 
     /*- maximum number of alpha electrons in RAS III -*/
     options.add_int("A_RAS3_MAX",-1);
@@ -363,14 +363,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     be held on disk for the CI coefficient and sigma vectors.  (There
     is one H(diag) vector and the number of D vectors is equal to the
     number of roots).  When the number of vectors on disk reaches
-    the value of MAXNVECT, the Davidson subspace will be
+    the value of MAX_NUM_VECS, the Davidson subspace will be
     collapsed to COLLAPSE_SIZE vectors for each root.  This is very
     helpful for saving disk space.  Defaults to MAXITER * NUM_ROOTS
     + NUM_INIT_VECS. -*/
-    options.add_int("MAXNVECT", 0);
+    options.add_int("MAX_NUM_VECS", 0);
 
     /*- Gives the number of vectors to retain when the Davidson subspace is
-    collapsed (see MAXNVECT below).  If greater than one, the
+    collapsed (see MAX_NUM_VECS below).  If greater than one, the
     collapsed subspace retains the best estimate of the CI vector for
     the previous n iterations.   Defaults to 1. -*/
     options.add_int("COLLAPSE_SIZE", 1);
@@ -774,8 +774,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do perturb the Hamiltonian? -*/
     options.add_bool("PERTURB_H", false);
-    /*- How big is the perturbation? -*/
-    options.add_double("LAMBDA", 0.0);
+    /*- Size of the perturbation -*/
+    options.add_double("PERTURB_MAGNITUDE", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     /*- Do look for an ExternalPotential object in Python? -*/
@@ -1266,11 +1266,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("PRINT_SINGLES", false);
     /*- -*/
-    options.add_int("VECTORS_PER_ROOT_SS", 5);
+    options.add_int("VECS_PER_ROOT_SS", 5);
     /*- -*/
-    options.add_int("VECTORS_PER_ROOT", 12);
+    options.add_int("VECS_PER_ROOT", 12);
     /*- -*/
-    options.add_int("VECTORS_CC3", 10);
+    options.add_int("VECS_CC3", 10);
     /*- Do ? -*/
     options.add_bool("COLLAPSE_WITH_LAST", true);
     /*- -*/
@@ -1794,10 +1794,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do print the effective Hamiltonian? -*/
     options.add_bool("PRINT_HEFF",false);
     /*- Do compute the perturbative corrections for basis set incompleteness? !expert -*/
-    options.add_bool("PERT_CBS",false);
+    options.add_bool("PERTURB_CBS",false);
     /*- Do include the terms that couple different reference determinants in
         perturbative CBS correction computations? !expert -*/
-    options.add_bool("PERT_CBS_COUPLING",true);
+    options.add_bool("PERTURB_CBS_COUPLING",true);
     /*- Do use Tikhonow regularization in (T) computations? !expert -*/
     options.add_bool("TIKHONOW_TRIPLES",false);
     /*- The type of perturbation theory computation to perform -*/

@@ -76,10 +76,10 @@ void get_eom_params(Options &options)
 
   eom_params.excitation_range = options.get_int("EXCITATION_RANGE");
   eom_params.print_singles = options["PRINT_SINGLES"].to_integer();
-  eom_params.vectors_per_root_SS = options.get_int("VECTORS_PER_ROOT_SS");
-  eom_params.vectors_per_root = options.get_int("VECTORS_PER_ROOT");
+  eom_params.vectors_per_root_SS = options.get_int("VECS_PER_ROOT_SS");
+  eom_params.vectors_per_root = options.get_int("VECS_PER_ROOT");
   eom_params.vectors_cc3 = eom_params.prop_root + 9;
-  eom_params.vectors_cc3 = options.get_int("VECTORS_CC3");
+  eom_params.vectors_cc3 = options.get_int("VECS_CC3");
   if (eom_params.vectors_cc3 > eom_params.vectors_per_root)
     eom_params.vectors_cc3 = eom_params.vectors_per_root;
 

@@ -205,7 +205,7 @@ void HF::common_init()
     if (perturb_h_) {
         string perturb_with;
 
-        lambda_ = options_.get_double("LAMBDA");
+        lambda_ = options_.get_double("PERTURB_MAGNITUDE");
 
         if (options_["PERTURB_WITH"].has_changed()) {
             perturb_with = options_.get_str("PERTURB_WITH");
