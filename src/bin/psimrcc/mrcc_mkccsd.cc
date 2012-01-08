@@ -434,7 +434,7 @@
 //    }
 //
 //    if(fabs(right_eigenvector[unique_mu])>1.0e-6){
-//      if(!options_get_bool("DIIS_TRIPLES")){
+//      if(!options_get_bool("TRIPLES_DIIS")){
 //        // Update the equations
 //        double shift = current_energy - Heff[unique_mu][unique_mu];
 //        for(int h =0; h < moinfo->get_nirreps();h++){
@@ -645,7 +645,7 @@
 //    }
 //
 //    if(fabs(right_eigenvector[unique_mu])>1.0e-6){
-//      if(!options_get_bool("DIIS_TRIPLES")){
+//      if(!options_get_bool("TRIPLES_DIIS")){
 //        // Update the equations
 //        double shift = current_energy - Heff[unique_mu][unique_mu];
 //        for(int h =0; h < moinfo->get_nirreps();h++){
@@ -859,7 +859,7 @@
 //      }
 //    }
 //    if(fabs(right_eigenvector[unique_mu])>1.0e-6){
-//      if(!options_get_bool("DIIS_TRIPLES")){
+//      if(!options_get_bool("TRIPLES_DIIS")){
 //        // Update the equations
 //        double shift = current_energy - Heff[unique_mu][unique_mu];
 //        for(int h =0; h < moinfo->get_nirreps();h++){
@@ -1036,7 +1036,7 @@
 //      }
 //    }
 //    if(fabs(right_eigenvector[unique_mu])>1.0e-6){
-//      if(!options_get_bool("DIIS_TRIPLES")){
+//      if(!options_get_bool("TRIPLES_DIIS")){
 //        // Update the equations
 //        double shift = current_energy - Heff[unique_mu][unique_mu];
 //        for(int h =0; h < moinfo->get_nirreps();h++){

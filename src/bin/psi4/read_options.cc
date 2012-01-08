@@ -568,21 +568,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     do this).  Not doing this is experimental.  !expert -*/
     options.add_bool("CC_UPDATE_EPS", true);
 
-    /*- Do DIIS? -*/
+    /*- Do use DIIS extrapolation to accelerate CC convergence? -*/
     options.add_bool("DIIS", true);
 
     // CDS-TODO: Check difference between DIIS_START AND DIIS_MIN_VECS
-    /*- how many diis vectors built up before start -*/
+    /*- Iteration at which to start using DIIS -*/
     options.add_int("DIIS_START", 1);
 
-    /*- how often to do a DIIS exterpolation.  1 means do DIIS every
+    /*- How often to do a DIIS extrapolation. 1 means do DIIS every
     iteration, 2 is every other iteration, etc. -*/
     options.add_int("DIIS_FREQ", 1);
 
-    /*- how many vectors required before do diis? -*/
+    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MIN_VECS", 2);
 
-    /*- how many vectors maximum to hold? -*/
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MAX_VECS", 5);
 
     /*- CC_MACRO = [ [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
@@ -618,8 +618,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("AIO_DF_INTS",false);
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
-    /*- The number of DIIS vectors used to extrapolate -*/
-    options.add_int("DIISVECS",5);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS",5);
     /*- Do compute third-order corrections? -*/
     options.add_bool("DO_THIRD_ORDER",false);
     /*- Do compute natural orbitals? -*/
@@ -680,12 +680,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TAU_SQUARED", false);
       /*- An integral is considered to be zero if it's magnitude is less than $10^{-int_thresh}$ -*/
       options.add_int("INTS_TOL", 14);
-      /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{diis_start}$ -*/
+      /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{-diis_start}$ -*/
       options.add_int("DIIS_START", 3);
-      /*- The maximum number of vectors used in DIIS extrapolation -*/
-      options.add_int("MAX_DIIS", 6);
-      /*- The number of DIIS vectors needed for extrapolation to start -*/
-      options.add_int("DIIS_NUM_VECS", 3);
+      /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+      options.add_int("DIIS_MAX_VECS", 6);
+      /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+      options.add_int("DIIS_MIN_VECS", 3);
       /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
@@ -812,10 +812,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("START_DIIS_ITER", 1);
-    /*- The minimum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("MIN_DIIS_VECTORS", 2);
-    /*- The maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("MAX_DIIS_VECTORS", 10);
+    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MIN_VECS", 2);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS", 10);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
     /*- Do print the molecular orbitals? -*/
@@ -1117,7 +1117,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEV",2);
     /*- Do ? -*/
     options.add_bool("SEKINO",false);
-    /*- Do ? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
@@ -1307,7 +1307,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER",50);
     /*- -*/
     options.add_int("CONVERGENCE",7);
-    /*- Do ? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
     /*- -*/
     options.add_str("PROPERTY","POLARIZABILITY");
@@ -1361,8 +1361,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("D_CONVERGE", 1e-12);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",100);
-    /*- Number of previous iterations to consider within the DIIS method -*/
-    options.add_int("NDIIS",7);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS",7);
     /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
     options.add_int("FOLLOW_ROOT",1);
     /*- Iteration at which to begin using the averaged Fock matrix-*/
@@ -1377,10 +1377,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("ROTATE_MO_P",1);
     /*- For orbital rotations after convergence, number of the second orbital (1-based) to rotate. !expert -*/
     options.add_int("ROTATE_MO_Q",2);
-    /*- Do use the DIIS method to optimize the CI coefficients? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence of the CI coefficients? -*/
     options.add_bool("CI_DIIS",false);
-    /*- Do use the DIIS method to optimize the SCF energy (MO coefficients only)? -*/
-    options.add_bool("USE_DIIS",true);
+    /*- Do use DIIS extrapolation to accelerate convergence of the SCF energy (MO coefficients only)? -*/
+    options.add_bool("DIIS",true);
     /*- Do read in the MOs from a previous computation? -*/
     options.add_bool("READ_MOS",true);
     /*- Do use the average Fock matrix during the SCF optimization? -*/
@@ -1428,7 +1428,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
     /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
-    /*- Do ? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
     /*- Do ? -*/
     options.add_bool("T2_COUPLED", false);
@@ -1531,16 +1531,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("RMS_CONV", 5);
     /*- -*/
     options.add_int("FSKIP", 2);
-    /*- Do ? -*/
-    options.add_bool("USE_DIIS", 1);
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
+    options.add_bool("DIIS", 1);
     /*- Don't ? -*/
     options.add_bool("NEGLECT_DP", 1);
     /*- -*/
     options.add_double("DISTANT_PAIR", 8.0);
-    /*- -*/
+    /*- Iteration -*/
     options.add_int("DIISSTART", 3);
-    /*- -*/
-    options.add_int("NDIIS", 5);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS", 5);
     /*- -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
     /*- -*/
@@ -1613,12 +1613,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E_CONVERGE", 1e-8);
     /*- Convergence of cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("T_CONVERGE", 1e-8);
-    /*- Do turn on DIIS? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
-    /*- Minimum DIIS vectors -*/
-    options.add_int("MIN_DIIS_VECS", 2);
-    /*- Maximum DIIS vectors -*/
-    options.add_int("MAX_DIIS_VECS", 6);
+    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MIN_VECS", 2);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS", 6);
     /*- Maximum number iterations -*/
     options.add_int("MAXITER", 40);
     /*- Debugging information? -*/
@@ -1751,8 +1751,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         A value of 1000 retains the amplitudes from the previous iteration always being used.  A value in between these extremes
         can help in cases where oscillatory convergence is observed -*/
     options.add_int("DAMPING_FACTOR",0);
-    /*- The number of DIIS vectors to use in extrapolations -*/
-    options.add_int("MAXDIIS",7);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS",7);
     /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
     /*- Which root of the effective hamiltonian is the target state? -*/
@@ -1767,8 +1767,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
     /*- The cycle after which Tikhonow regularization is stopped.  Set to zero to allow regularization in all iterations -*/
     options.add_int("TIKHONOW_MAX",5);
-    /*- Do perform DIIS extrapolation for iterative triple excitation computations? -*/
-    options.add_bool("DIIS_TRIPLES",false);
+    /*- Do use DIIS extrapolation to accelerate convergence for iterative triples excitations? -*/
+    options.add_bool("TRIPLES_DIIS",false);
     /*- Do lock onto a singlet root? -*/
     options.add_bool("LOCK_SINGLET",false);
     /*- Do start from a MP2 guess? -*/
@@ -1783,8 +1783,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIAGONAL_CCSD_T",true);
     /*- Do diagonalize the effective Hamiltonian? -*/
     options.add_bool("DIAGONALIZE_HEFF",false);
-    /*- Do perform DIIS extrapolation? -*/
-    options.add_bool("USE_DIIS",true);
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
+    options.add_bool("DIIS",true);
     /*- Do use symmetry to map equivalent determinants onto each other, for efficiency? -*/
     options.add_bool("USE_SPIN_SYMMETRY",true);
     /*- Do zero the internal amplitudes, i.e., those that map reference determinants onto each other? -*/
