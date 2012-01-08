@@ -1022,8 +1022,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("RESTRICTED_UOCC", new ArrayType());
 
   }
-  if(name == "CUSP"|| options.read_globals()){
-  }
   if(name == "CCSORT"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "");
@@ -1344,38 +1342,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add("MU_IRREPS",new ArrayType());
   }
-  if(name == "MVO"|| options.read_globals()) {
-    /*- Wavefunction type !expert -*/
-   options.add_str("WFN","CCSD");
-    /*- -*/
-   options.add_int("FZC_FILE", PSIF_OEI);
-    /*- Do ? -*/
-   options.add_bool("PRINT_MOS",false);
-    /*- Don't ? -*/
-   options.add_bool("OEI_ERASE",false);
-    /*- Do ? -*/
-   options.add_bool("FZC",true);
-    /*- Don't ? -*/
-   options.add_bool("DELETE_RESTR_DOCC",true);
-    /*- Do ? -*/
-   options.add_bool("MP2NOS",false);
-    /*- Do ? -*/
-   options.add_bool("UNOS",false);
-    /*- -*/
-   options.add_double("FZC_FOCK_COEFF",1.0);
-    /*- -*/
-   options.add_double("FOCK_COEFF",0.0);
-    /*- Do ? -*/
-   options.add_bool("IVO",false);
-    /*- Do ? -*/
-   options.add_bool("CANONICAL",false);
-    /*- -*/
-   options.add("RESTRICTED_DOCC", new ArrayType());
-    /*- -*/
-   options.add("RESTRICTED_UOCC", new ArrayType());
-    /*- -*/
-   options.add("DOCC_VIRT", new ArrayType());
-  }
   if(name == "RESPONSE"|| options.read_globals()){
     /*- -*/
     options.add_str("REFERENCE", "RHF");
@@ -1602,11 +1568,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RI_BASIS_MP2","");
     /*- Basis, needed by Python -*/
     options.add_str("BASIS","NONE");
-    /*- OS Scale  !expert -*/
+    /*- OS Scale -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
     options.add_double("SCALE_SS", 1.0/3.0);
-    /*- % of memory for DF-MP2 three-index buffers  -*/
+    /*- \% of memory for DF-MP2 three-index buffers  -*/
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);

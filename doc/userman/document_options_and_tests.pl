@@ -168,9 +168,14 @@ sub determine_keyword_type_and_default
          # This is a boolean with a default
          $Type = "bool";
          $Keyword = $1;
-         $Default = $2;
+         $Default = lc ($2);
          if ($Default eq "1") { $Default = "true"; }
          if ($Default eq "0") { $Default = "false"; }
+     }elsif(/add_double\(\s*\"(.*)\"\s*,\s*(?:\")?([\/.-\w]+)(?:\")?/){
+         # This is a double with a default
+         $Type = "bool";
+         $Keyword = $1;
+         $Default = lc ($2);
      }elsif(/add_(\w+)\(\s*\"(\w+)\"\s*\,\s*(?:\")?([-\w]+)(?:\")?/){
          # This is a keyword with a default
          $Type = $1;
