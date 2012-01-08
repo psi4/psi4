@@ -192,19 +192,30 @@ For larger computations, additional keywords may be required, as
 described in the \PSIdetci\ section of the Appendix.
 
 \subsubsection{Arbitrary Order Perturbation Theory}
-The \PSIdetci\ module is capable of computing arbitrary order M{\o}ller-Plesset
- perturbation theory (MPn, closed-shell systems) and
-Z-averaged perturbation theory (ZAPTn, open-shell systems) energies,
-invoked with MPN = TRUE.  The maximum level of perturbation theory
-computed is controlled by MAXNVECT.  Higher order energies (2n -
-1 and 2n - 2) can be computed at no additional computational cost by
-using WIGNER = TRUE.  By default, the n{th} order energy is saved, but
-(2n - 1) or (2n - 2) order energies can be saved using SAVE\_MPN2 =
-1 or SAVE\_MPN2 = 2, respectively.
+The \PSIdetci\ module is capable of computing energies for arbitrary
+order M{\o}ller-Plesset perturbation theory (MPn, for closed-shell
+systems with an RHF reference) and for Z-averaged perturbation theory
+(ZAPTn, open-shell systems with an ROHF reference).  However, please
+note that these computations are essentially doing high-order CI (up to
+full CI) computations to obtain these results, and hence they will only
+be possible for very small systems (generally a dozen electrons or less).
 
-For open-shell systems, arbitary order ZAPTn energies can be computed
-using WFN = ZAPTN and REF = ROHF.  All other options are the same as
-closed-shell MPn.
+The simplest way to run high-order perturbation theory computations is to
+call, e.g., {\tt energy('mp10')} to invoke an MP10 computation, and
+{\tt energy('zapt25')} to invoke a ZAPT25 computation.  This will
+automatically set several additional user options to their appropriate
+values.  The program uses the Wigner $(2n+1)$ rule to obtain higher-order
+energies from lower-order wavefunctions.
+
+For the interested reader, the additional user options that are
+automatically set up by the calls above are as follows.  A call like
+{\tt energy('mp10')} sets MPN = TRUE.  The program uses the Wigner
+$(2n+1)$ rule by default (WIGNER = TRUE) and figures out what order
+of wavefunction is necssary to reach the desired order in the energy.
+The program then sets MAXNVECT to the required order in the wavefunction.
+By default, the requested n{th} order energy is saved as the current energy
+to the process environment.   ZAPTN works essentially the same way for an
+ROHF reference.
 
 \subsubsection{Arbitrary Order Coupled-Cluster Theory} The
 \PSIdetci\ module is also capable of computing arbitrary-order
