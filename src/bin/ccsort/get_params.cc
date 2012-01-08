@@ -60,6 +60,12 @@ void get_params(Options & options)
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
+  // Allow user to force semicanonical
+  if(options["SEMICANONICAL"].has_changed()) {
+   params.semicanonical = options.get_bool("SEMICANONICAL");
+   params.ref = 2;
+  }
+
   junk = options.get_str("DERTYPE");
   if(junk=="NONE") params.dertype = 0;
   else if(junk=="FIRST") params.dertype = 1;

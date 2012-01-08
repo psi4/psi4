@@ -46,6 +46,12 @@ void get_params(Options & options)
   else
     throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
 
+  // Allow user to force semicanonical
+  if(options["SEMICANONICAL"].has_changed()) {
+   params.semicanonical = options.get_bool("SEMICANONICAL");
+   params.ref = 2;
+  }
+
   params.dertype = 0;
   std::string dertype = options.get_str("DERTYPE");
   if(dertype == "NONE") params.dertype = 0;
