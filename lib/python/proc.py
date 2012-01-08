@@ -20,7 +20,7 @@ def run_scf_gradient(name, **kwargs):
     run_scf(name, **kwargs)
     PsiMod.deriv()
 
-def run_mcscf(name, **kwargs):
+def run_mcscf(**kwargs):
 
     return PsiMod.mcscf()
 

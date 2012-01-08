@@ -40,35 +40,6 @@ A restricted open-shell Kohn--Sham procedure is not recommended
 \vspace*{0.2in}
 \noindent
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
-doublet, 3 for a triplet, etc. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 1\\
-         & & \\
-\end{tabular*}
-
-The MULTP keyword gives the spin multiplicity of the system.  For
-closed-shell molecules, this will be 1 (singlet state).  Specification of
-the spin state is a universal requirement for quantum chemistry programs.
-Be careful and make sure the correct spin state is computed.  For example, 
-many beginners to computational chemistry forget to specify that the ground
-state of the O$_2$ molecule is a triplet (MULTP=3).
-
-\vspace*{0.2in}
-\noindent
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         CHARGE & The molecular charge \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 0\\
-         & & \\
-\end{tabular*}
-
-
-\vspace*{0.2in}
-\noindent
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
          DOCC & An array containing the number of doubly-occupied orbitals
 per irrep (in Cotton order) \\
 \end{tabular*}
