@@ -78,6 +78,7 @@ ADC::compute_energy()
                         dpd_file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
                         fprintf(outfile, "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep], omega[root], omega[root]*_hartree2ev);
                         fprintf(outfile, "\tNon-iterative: %10.7f (a.u.), %10.7f (eV)\n", poles_[irrep][root].ps_value, poles_[irrep][root].ps_value*_hartree2ev);
+                        fprintf(outfile, "\t         Occ Vir        Coefficient\n");
                         fprintf(outfile, "\t---------------------------------------------\n");
                         int nprint;
                         if(nxspi_[irrep] < num_amps_) nprint = nxspi_[irrep];
