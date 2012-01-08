@@ -326,8 +326,8 @@ void get_parameters(Options &options)
     fprintf(outfile, "Warning: HD_OTF FALSE has not been tested recently\n");
   }
 
-  if (options["NODFILE"].has_changed())
-    Parameters.nodfile = options["NODFILE"].to_integer();
+  if (options["NO_DFILE"].has_changed())
+    Parameters.nodfile = options["NO_DFILE"].to_integer();
   if (Parameters.num_roots > 1) Parameters.nodfile = FALSE;
 
   Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
@@ -469,8 +469,8 @@ void get_parameters(Options &options)
   Parameters.opdm_print = options["OPDM_PRINT"].to_integer();
   // Make this an internal parameter
   // errcod = ip_data("OPDM_FILE","%d",&(Parameters.opdm_file),0);
-  Parameters.opdm_wrtnos = options["WRTNOS"].to_integer();
-  // Make this an internal parameter, essentially same as WRTNOS
+  Parameters.opdm_wrtnos = options["NOS_WRITE"].to_integer();
+  // Make this an internal parameter, essentially same as NOS_WRITE
   // errcod = ip_boolean("OPDM_DIAG",&(Parameters.opdm_diag),0);
   Parameters.opdm_ave = options["OPDM_AVE"].to_integer();
   // Make an internal parameter
@@ -569,7 +569,7 @@ void get_parameters(Options &options)
     Parameters.h0blocksize = Parameters.h0guess_size = 1;
 
 
-  Parameters.nthreads = options.get_int("NTHREADS");
+  Parameters.nthreads = options.get_int("NUM_THREADS");
   if (Parameters.nthreads < 1) Parameters.nthreads = 1;
 
   Parameters.export_ci_vector = options["EXPORT_VECTOR"].to_integer();
@@ -999,7 +999,7 @@ void print_parameters(void)
            Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
    fprintf(outfile, "   PERT Z        =   %1.4f      FOLLOW ROOT  =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
-   fprintf(outfile, "   NTHREADS      =   %6d\n",
+   fprintf(outfile, "   NUM THREADS   =   %6d\n",
            Parameters.nthreads);
    fprintf(outfile, "   EXPORT VECTOR =   %6s      NUM EXPORT   =   %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);

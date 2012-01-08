@@ -60,8 +60,8 @@ ADC::compute_energy()
                 for(int iter = 1;iter <= pole_max_;iter++){
                     rhf_diagonalize(irrep, root+1, first, omega_o, omega);
                     first = false;
-                    //denom = 1 - rhf_differentiate_omega(irrep, root);
-                    denom = 1;
+                    denom = 1 - rhf_differentiate_omega(irrep, root);
+                    //denom = 1;
                     omega_diff = (omega_o-omega[root]) / denom;
                     if(DEBUG_)  printf("%e, %10.7f\n", omega_diff, 1/denom);
                     if(fabs(omega_diff) < pow(10.0,-conv_)){
@@ -78,6 +78,7 @@ ADC::compute_energy()
                         dpd_file2_init(&V, PSIF_ADC, irrep, ID('O'), ID('V'), lbl);
                         fprintf(outfile, "->\t%d%3s state   : %10.7f (a.u.), %10.7f (eV)\n", root+1, irrep_[irrep], omega[root], omega[root]*_hartree2ev);
                         fprintf(outfile, "\tNon-iterative: %10.7f (a.u.), %10.7f (eV)\n", poles_[irrep][root].ps_value, poles_[irrep][root].ps_value*_hartree2ev);
+                        fprintf(outfile, "\t         Occ Vir        Coefficient\n");
                         fprintf(outfile, "\t---------------------------------------------\n");
                         int nprint;
                         if(nxspi_[irrep] < num_amps_) nprint = nxspi_[irrep];
