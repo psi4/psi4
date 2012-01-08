@@ -60,7 +60,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("DEBUG", 0);
   /*- Some codes (DFT) can dump benchmarking data to separate output files -*/
   options.add_int("BENCH", 0);
-  /*- Default number of geometry optimization steps -*/
+  /*- Maximum number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
   /*- Wavefunction type !expert -*/
   options.add_str("WFN", "SCF");
@@ -225,7 +225,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use the last vector space in the BVEC file to write
       scratch DVEC rather than using a separate DVEC file? (Only
       possible if NUM_ROOTS = 1.) !expert -*/
-    options.add_bool("NODFILE",false);
+    options.add_bool("NO_DFILE",false);
 
     /*- Do freeze core orbitals? -*/
     // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
@@ -407,14 +407,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute two-particle density matrix if not otherwise required? -*/
     options.add_bool("TPDM", false);
 
-    /*- Maximum number of iterations to diagonalize the Hamiltonian. -*/
+    /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
     options.add_int("MAXITER", 12);
 
     /*- Do print the one-particle density matrix for each root? -*/
     options.add_bool("OPDM_PRINT", false);
 
     /*- Do write the natural orbitals? -*/
-    options.add_bool("WRTNOS", false);
+    options.add_bool("NOS_WRITE", false);
 
     /*- Do average the OPDM over several roots in
     order to obtain a state-average one-particle density matrix?  This
@@ -454,7 +454,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIPMOM", false);
 
     /*- Number of threads -*/
-    options.add_int("NTHREADS", 1);
+    options.add_int("NUM_THREADS", 1);
 
     /*- Do store converged vector(s) at the end of
     the run?  The vector(s) is(are) stored in a transparent format such that
@@ -615,8 +615,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use asynchronous I/O in the CPHF solver? -*/
     options.add_bool("AIO_CPHF",false);
     /*- Do use asynchronous I/O in the DF integral formation? -*/
-    options.add_bool("AIO_DFINTS",false);
-    /*- Max CPHF iterations -*/
+    options.add_bool("AIO_DF_INTS",false);
+    /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
     /*- The number of DIIS vectors used to extrapolate -*/
     options.add_int("DIISVECS",5);
@@ -657,11 +657,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CACHELEV", 2);
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
-      /*- The maximum number of lambda iterations per macro-iteration -*/
+      /*- Maximum number of lambda iterations per macro-iteration -*/
       options.add_int("LAMBDA_MAXITER", 50);
-      /*- The maximum number of SCF iterations per cycle -*/
+      /*- Maximum number of SCF iterations per cycle -*/
       options.add_int("SCF_MAXITER", 50);
-      /*- The maximum number iterations allowed -*/
+      /*- Maximum number of iterations -*/
       options.add_int("MAXITER", 40);
       /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
       options.add_bool("COMPUTE_TPDM", 0);
@@ -679,7 +679,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$? -*/
       options.add_bool("TAU_SQUARED", false);
       /*- An integral is considered to be zero if it's magnitude is less than $10^{-int_thresh}$ -*/
-      options.add_int("INT_THRESH", 14);
+      options.add_int("INTS_TOL", 14);
       /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{diis_start}$ -*/
       options.add_int("DIIS_START", 3);
       /*- The maximum number of vectors used in DIIS extrapolation -*/
@@ -758,7 +758,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
-    /*- The maximum number of iterations -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
 
     /*- The amount (percentage) of damping to apply to the early density updates.
@@ -793,7 +793,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("RI_MAX_COND",1E8);
     /*- SCF Fitting Type -*/
     options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
-    /*- Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
+    /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
     options.add_int("RI_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc -*/
     options.add_str("RI_INTS_IO", "NONE", "NONE SAVE LOAD");
@@ -841,7 +841,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_E_CONVERGE", 1E-5);
     /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_D_CONVERGE", 1E-5);
-    /*- SAD Guess Maxiter -*/
+    /*- Maximum number of SAD guess iterations -*/
     options.add_int("SAD_MAXITER", 50);
     /*- SAD Guess F-mix Iteration Start -*/
     options.add_int("SAD_F_MIX_START", 50);
@@ -855,10 +855,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "MP2", "MP2");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
-    /*- The type of job being performed !expert -*/
+    /*- Type of job being performed !expert -*/
     options.add_str("JOBTYPE", "SP");
-    /*- The order of energy derivatives required !expert -*/
-    options.add_str("DERTYPE", "NONE");
     /*- Do compute the one particle density matrix, for properties? -*/
     options.add_bool("COMPUTE_OPDM", false);
     /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
@@ -876,6 +874,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The scale factor used for same-spin pairs in SCS computations-*/
     options.add_double("SCALE_SS", 1.0/3.0);
   }
+  // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "");
@@ -892,6 +891,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Don't ? -*/
     options.add_bool("DELETE_TEI", true);
   }
+  // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT"|| options.read_globals()) {
     /*- -*/
     options.add_int("PRINT_LVL", 1);
@@ -945,8 +945,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("KEEP_PRESORT", false);
     /*- -*/
     options.add_int("J_FILE", 91);
-    /*- Do ? -*/
-    options.add_bool("KEEP_J", false); // keep half-transformed integrals
+    /*- Do keep half-transformed integrals? -*/
+    options.add_bool("KEEP_J", false);
     /*- -*/
     options.add_int("M_FILE", 0); // output integrals file; depends on direction
     /*- -*/
@@ -1073,8 +1073,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCTRIPLES"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
-    /*- The number of threads to use on multi-core machines -*/
-    options.add_int("NTHREADS",1);
+    /*- Number of threads -*/
+    options.add_int("NUM_THREADS",1);
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
   }
@@ -1125,7 +1125,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("ABCD","NEW");
     /*- -*/
     options.add_int("NUM_AMPS",10);
-    /*- !expert -*/
+    /*- Type of job being performed !expert -*/
     options.add_str("JOBTYPE","");
     /*- Do ? -*/
     options.add_bool("LOCAL",false);
@@ -1149,7 +1149,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_SYM",1);
     /*- -*/
     options.add_int("PROP_ROOT",1);
-    /*- -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER",50);
   }
   if(name == "CLAG"|| options.read_globals()) {
@@ -1197,13 +1197,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PR", false);
   }
   if(name == "CCHBAR"|| options.read_globals()) {
-    /*- Do ? -*/
-    options.add_bool("TAMPLITUDE",false);
+    /*- Do compute the Tamplitude equation matrix elements? -*/
+    options.add_bool("T_AMPS",false);
     /*- -*/
     options.add_int("CACHELEV",2);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
-    /*- Do ? -*/
+    /*- Do use the minimal-disk algorithm for Wabei? It's VERY slow! -*/
     options.add_bool("WABEI_LOWDISK", false);
     /*- -*/
     options.add_str("EOM_REFERENCE","RHF");
@@ -1221,8 +1221,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEV",2);
     /*- -*/
     options.add_str("CACHETYPE", "LRU", "LOW LRU");
-    /*- -*/
-    options.add_int("NTHREADS", 1);
+    /*- Number of threads -*/
+    options.add_int("NUM_THREADS", 1);
     /*- -*/
     options.add_str("ABCD", "NEW", "NEW OLD");
     /*- Do ? -*/
@@ -1247,7 +1247,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NEWTRIPS", true);
     /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
-    /*- -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 80);
     /*- -*/
     options.add_int("PROP_SYM", 1);
@@ -1303,7 +1303,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- -*/
     options.add_str("GAUGE","LENGTH");
-    /*- -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER",50);
     /*- -*/
     options.add_int("CONVERGENCE",7);
@@ -1359,7 +1359,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E_CONVERGE", 1e-12);
     /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-12);
-    /*- Maximum number of iterations before computation quits. -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER",100);
     /*- Number of previous iterations to consider within the DIIS method -*/
     options.add_int("NDIIS",7);
@@ -1411,13 +1411,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     /*- Do ? -*/
     options.add_bool("ANALYZE", 0);
-    /*- -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
     /*- -*/
     options.add_int("CONVERGENCE", 7);
-    /*- Do ? -*/
+    /*- Do restart the coupled-cluster iterations? -*/
     options.add_bool("RESTART",1);
-    /*- Do ? -*/
+    /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? -*/
     options.add_bool("FORCE_RESTART", 0);
 //#warning CCEnergy ao_basis keyword type was changed.
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
@@ -1426,8 +1426,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEV", 2);
     /*- -*/
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
-    /*- -*/
-    options.add_int("NTHREADS",1);
+    /*- Number of threads -*/
+    options.add_int("NUM_THREADS",1);
     /*- Do ? -*/
     options.add_bool("DIIS", true);
     /*- Do ? -*/
@@ -1477,6 +1477,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_double("CC_SCALE_SS",1.13);
   }
+  // Options of this module not standardized since it's bound for deletion
   if(name == "CIS"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
@@ -1484,7 +1485,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- -*/
     options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
-    /*- -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 500);
     /*- -*/
     options.add_int("CONVERGENCE", 7);
@@ -1522,7 +1523,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "LMP2");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF");
-    /*- -*/
+    /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
     /*- -*/
     options.add_int("ENERGY_CONV", 7);
@@ -1618,7 +1619,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MIN_DIIS_VECS", 2);
     /*- Maximum DIIS vectors -*/
     options.add_int("MAX_DIIS_VECS", 6);
-    /*- The maximum number iterations allowed -*/
+    /*- Maximum number iterations -*/
     options.add_int("MAXITER", 40);
     /*- Debugging information? -*/
     options.add_int("DEBUG",0);
@@ -1752,15 +1753,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DAMPING_FACTOR",0);
     /*- The number of DIIS vectors to use in extrapolations -*/
     options.add_int("MAXDIIS",7);
-    /*- The number of threads to use on multi-core machines -*/
+    /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
-    /*- The number of electrons -*/
-    options.add_int("NEL",0);
     /*- Which root of the effective hamiltonian is the target state? -*/
     options.add_int("FOLLOW_ROOT",1);
     /*- The number of digits after the decimal to converge the energy to -*/
     options.add_int("CONVERGENCE",9);
-    /*- The maximum number of iterations allowed to determine the amplitudes -*/
+    /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/
     options.add_int("START_DIIS",2);
