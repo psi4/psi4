@@ -68,7 +68,7 @@ void LMP2::params() {
     }
     diis_start_ = 3;
     }
-    max_diis_vectors_ = options_.get_int("NDIIS");
+    max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
 
     cutoff_ = options_.get_double("LOCAL_CUTOFF");
     neglect_dp_ = options_.get_bool("NEGLECT_DP");
