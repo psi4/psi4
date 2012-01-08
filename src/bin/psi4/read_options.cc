@@ -67,7 +67,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat -*/
-  options.add_int("PRINT_MAT_NCOLUMN", 5);
+  options.add_int("MAT_NUM_COLUMN_PRINT", 5);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -150,7 +150,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ISTOP",false);
 
     /*- Do print a summary of the CI blocks? -*/
-    options.add_bool("PRINT_CIBLKS",false);
+    options.add_bool("CIBLKS_PRINT",false);
 
     /*- Guess vector type.  Accepted values are UNIT for a unit vector
     guess (NUM_ROOTS and NUM_INIT_VECS must both be 1); H0_BLOCK to use
@@ -818,8 +818,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_MAX_VECS", 10);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
-    /*- Do print the molecular orbitals? -*/
-    options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
     /*- The energy convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
@@ -1264,7 +1262,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     excited states in the EOM-CC calculation !expert -*/
     options.add_int("EXCITATION_RANGE", 2);
     /*- Do ? -*/
-    options.add_bool("PRINT_SINGLES", false);
+    options.add_bool("SINGLES_PRINT", false);
     /*- -*/
     options.add_int("VECS_PER_ROOT_SS", 5);
     /*- -*/
@@ -1284,7 +1282,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_double("EVAL_TOL_SS", 1E-6);
     /*- -*/
-    options.add_int("AMPS_TO_PRINT", 5);
+    options.add_int("NUM_AMPS_PRINT", 5);
     /*- -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOL", 1E-3);
     /*- Do ? -*/
@@ -1455,9 +1453,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("BRUECKNER_CONV", 5);
     /*- Do ? -*/
-    options.add_bool("PRINT_MP2_AMPS", 0);
+    options.add_bool("MP2_AMPS_PRINT", 0);
     /*- Do ? -*/
-    options.add_bool("PRINT_PAIR_ENERGIES", 0);
+    options.add_bool("PAIR_ENERGIES_PRINT", 0);
     /*- Do ? -*/
     options.add_bool("SPINADAPT_ENERGIES", false);
     /*- Do ? -*/
@@ -1792,7 +1790,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do include the terms that couple the reference determinants? -*/
     options.add_bool("COUPLING_TERMS",true);
     /*- Do print the effective Hamiltonian? -*/
-    options.add_bool("PRINT_HEFF",false);
+    options.add_bool("HEFF_PRINT",false);
     /*- Do compute the perturbative corrections for basis set incompleteness? !expert -*/
     options.add_bool("PERTURB_CBS",false);
     /*- Do include the terms that couple different reference determinants in

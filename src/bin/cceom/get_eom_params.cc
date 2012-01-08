@@ -75,7 +75,7 @@ void get_eom_params(Options &options)
   if (eom_params.rhf_triplets) eom_params.mult = 3;
 
   eom_params.excitation_range = options.get_int("EXCITATION_RANGE");
-  eom_params.print_singles = options["PRINT_SINGLES"].to_integer();
+  eom_params.print_singles = options["SINGLES_PRINT"].to_integer();
   eom_params.vectors_per_root_SS = options.get_int("VECS_PER_ROOT_SS");
   eom_params.vectors_per_root = options.get_int("VECS_PER_ROOT");
   eom_params.vectors_cc3 = eom_params.prop_root + 9;
@@ -89,7 +89,7 @@ void get_eom_params(Options &options)
   eom_params.residual_tol_SS = options.get_double("RESIDUAL_TOL_SS");
   eom_params.eval_tol = options.get_double("EVAL_TOL");
   eom_params.eval_tol_SS = options.get_double("EVAL_TOL_SS");
-  eom_params.amps_to_print = options.get_int("AMPS_TO_PRINT");
+  eom_params.amps_to_print = options.get_int("NUM_AMPS_PRINT");
   eom_params.schmidt_add_residual_tol = options.get_double("SCHMIDT_ADD_RESIDUAL_TOL");
   eom_params.skip_diagSS = options["SKIP_DIAGSS"].to_integer();
   eom_params.restart_eom_cc3 = options["RESTART_EOM_CC3"].to_integer();

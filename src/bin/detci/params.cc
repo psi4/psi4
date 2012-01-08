@@ -62,7 +62,7 @@ void get_parameters(Options &options)
   Parameters.num_roots = options.get_int("NUM_ROOTS");
 
   Parameters.istop = options["ISTOP"].to_integer();
-  Parameters.print_ciblks = options["PRINT_CIBLKS"].to_integer();
+  Parameters.print_ciblks = options["CIBLKS_PRINT"].to_integer();
 
   // CDS-TODO: We might override the default for PRINT by command line
   // (or similar mechanism) in CASSCF, etc.
