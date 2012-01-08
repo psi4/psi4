@@ -44,7 +44,8 @@ void Prop::set_wavefunction(boost::shared_ptr<Wavefunction> wfn)
     wfn_ = wfn;
 
     basisset_ = wfn_->basisset();
-    restricted_ = wfn_->restricted();
+    same_orbs_ = wfn_->same_a_b_orbs();
+    same_dens_ = wfn_->same_a_b_dens();
 
     integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
 
@@ -56,59 +57,67 @@ void Prop::set_wavefunction(boost::shared_ptr<Wavefunction> wfn)
     Ca_so_ = wfn_->Ca();
     Da_so_ = wfn_->Da();
 
-    if (restricted_) {
+    if (same_dens_) {
+        Db_so_ = Da_so_;
+    } else {
+        Db_so_ = wfn_->Db();
+    }
+
+    if (same_orbs_) {
         epsilon_b_ = epsilon_a_;
         Cb_so_ = Ca_so_;
-        Db_so_ = Da_so_;
     } else {
         epsilon_b_ = wfn_->epsilon_b();
         Cb_so_ = wfn_->Cb();
-        Db_so_ = wfn_->Db();
     }
 }
 void Prop::set_restricted(bool restricted)
 {
-    if (restricted == restricted_) return;
+    if (restricted == same_orbs_) return;
 
-    restricted_ = restricted;
+    same_orbs_ = restricted;
 
     epsilon_a_ = wfn_->epsilon_a();
     Ca_so_ = wfn_->Ca();
     Da_so_ = wfn_->Da();
 
-    if (restricted_) {
+    if (same_dens_) {
+        Db_so_ = Da_so_;
+    } else {
+        Db_so_ = wfn_->Db();
+    }
+
+    if (same_orbs_) {
         epsilon_b_ = epsilon_a_;
         Cb_so_ = Ca_so_;
-        Db_so_ = Da_so_;
     } else {
         epsilon_b_ = wfn_->epsilon_b();
         Cb_so_ = wfn_->Cb();
-        Db_so_ = wfn_->Db();
     }
 }
 void Prop::set_epsilon_a(SharedVector epsilon_a)
 {
     epsilon_a_ = epsilon_a;
-    if (restricted_) {
+    if (same_orbs_) {
         epsilon_b_ = epsilon_a_;
     }
 }
 void Prop::set_epsilon_b(SharedVector epsilon_b)
 {
-    if (restricted_)
+    if (same_orbs_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting epsilon_b makes no sense");
     epsilon_b_ = epsilon_b;
 }
 void Prop::set_Ca(SharedMatrix C)
 {
     Ca_so_ = C;
-    if (restricted_) {
+    if (same_orbs_) {
         Ca_so_ = Ca_so_;
     }
 }
 void Prop::set_Cb(SharedMatrix C)
 {
-    if (restricted_)
+    if (same_orbs_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Cb makes no sense");
 
     Cb_so_ = C;
@@ -134,13 +143,13 @@ void Prop::set_Da_ao(SharedMatrix D, int symm)
     }
     delete[] temp;
 
-    if (restricted_) {
+    if (same_dens_) {
         Db_so_ = Da_so_;
     }
 }
 void Prop::set_Db_ao(SharedMatrix D, int symm)
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     Db_so_ = SharedMatrix(new Matrix("Db_so", Cb_so_->rowspi(),Cb_so_->rowspi(),symm));
@@ -165,13 +174,13 @@ void Prop::set_Db_ao(SharedMatrix D, int symm)
 void Prop::set_Da_so(SharedMatrix D)
 {
     Da_so_ = D;
-    if (restricted_) {
+    if (same_dens_) {
         Db_so_ = Da_so_;
     }
 }
 void Prop::set_Db_so(SharedMatrix D)
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     Db_so_ = D;
@@ -199,13 +208,13 @@ void Prop::set_Da_mo(SharedMatrix D)
     }
     delete[] temp;
 
-    if (restricted_) {
+    if (same_dens_) {
         Db_so_ = Da_so_;
     }
 }
 void Prop::set_Db_mo(SharedMatrix D)
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     Db_so_ = SharedMatrix(new Matrix("Db_so", Cb_so_->rowspi(), Cb_so_->rowspi(), D->symmetry()));
@@ -273,7 +282,7 @@ SharedMatrix Prop::Da_ao()
 }
 SharedMatrix Prop::Db_ao()
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
@@ -415,7 +424,7 @@ SharedMatrix Prop::Da_mo()
 }
 SharedMatrix Prop::Db_mo()
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
     SharedMatrix D(new Matrix("Db_mo", Cb_so_->colspi(), Cb_so_->colspi(), Db_so_->symmetry()));
@@ -452,7 +461,7 @@ SharedMatrix Prop::Db_mo()
 SharedMatrix Prop::Dt_ao(bool total)
 {
     SharedMatrix Da = Da_ao();
-    if (restricted_) {
+    if (same_dens_) {
         Da->set_name((total ? "Dt_ao" : "Ds_ao"));
         Da->scale((total ? 2.0 : 0.0));
     } else {
@@ -467,7 +476,7 @@ SharedMatrix Prop::Dt_so(bool total)
 {
     SharedMatrix Da = Da_so();
     SharedMatrix D(Da->clone());
-    if (restricted_) {
+    if (same_dens_) {
         D->set_name((total ? "Dt_so" : "Ds_so"));
         D->scale((total ? 2.0 : 0.0));
     } else {
@@ -481,7 +490,7 @@ SharedMatrix Prop::Dt_so(bool total)
 SharedMatrix Prop::Dt_mo(bool total)
 {
     SharedMatrix Da = Da_mo();
-    if (restricted_) {
+    if (same_dens_) {
         Da->set_name((total ? "Dt_mo" : "Ds_mo"));
         Da->scale((total ? 2.0 : 0.0));
     } else {
@@ -504,7 +513,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_mo()
 }
 std::pair<SharedMatrix, SharedVector> Prop::Nb_mo()
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
 
     SharedMatrix D = Db_mo();
@@ -540,7 +549,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_so()
 }
 std::pair<SharedMatrix, SharedVector> Prop::Nb_so()
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
 
     std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nb_mo();
@@ -615,7 +624,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_ao()
 }
 std::pair<SharedMatrix, SharedVector> Prop::Nb_ao()
 {
-    if (restricted_)
+    if (same_dens_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Nb makes no sense");
 
     std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nb_so();
@@ -810,7 +819,7 @@ void OEProp::compute_dipole(bool transition)
     SharedMatrix Da;
     SharedMatrix Db;
 
-    if (restricted_) {
+    if (same_dens_) {
         Da = Da_so_;
         Db = Da;
     } else {
@@ -870,7 +879,7 @@ void OEProp::compute_quadrupole(bool transition)
     SharedMatrix Da;
     SharedMatrix Db;
 
-    if (restricted_) {
+    if (same_dens_) {
         Da = Da_so_;
         Db = Da;
     } else {
@@ -958,7 +967,7 @@ void OEProp::compute_mo_extents()
     SharedMatrix Ca;
     SharedMatrix Cb;
 
-    if (restricted_) {
+    if (same_orbs_) {
         Ca = Ca_ao();
         Cb = Ca;
     } else {
@@ -1007,7 +1016,7 @@ void OEProp::compute_mo_extents()
     int nao = Ca->nrow();
     int nmo = Ca->ncol();
 
-    if (restricted_) {
+    if (same_orbs_) {
 
     // Dipoles
     C_DGEMM('T','N',nmo,nao,nao,1.0,Ca->pointer()[0],nmo,ao_Dpole[0]->pointer()[0],nao,0.0,temp->pointer()[0],nao);
@@ -1084,7 +1093,7 @@ void OEProp::compute_mulliken_charges()
 
 //    Get the Density Matrices for alpha and beta spins
 
-    if (restricted_) {
+    if (same_dens_) {
         Da = Da_ao();
         Db = Da;
     } else {
@@ -1169,7 +1178,7 @@ void OEProp::compute_lowdin_charges()
 
 //    Get the Density Matrices for alpha and beta spins
 
-    if (restricted_) {
+    if (same_dens_) {
         Da = Da_ao();
         Db = Da;
     } else {
@@ -1243,7 +1252,7 @@ void OEProp::compute_mayer_indices()
 
 //    Get the Density Matrices for alpha and beta spins
 
-    if (restricted_) {
+    if (same_dens_) {
         Da = Da_ao();
         Db = Da;
     } else {
@@ -1270,7 +1279,7 @@ void OEProp::compute_mayer_indices()
     SharedMatrix MBI_alpha;
     SharedMatrix MBI_beta;
 
-    if (!restricted_) {
+    if (!same_dens_) {
         MBI_alpha = SharedMatrix (new Matrix(natom,natom));
         MBI_beta = SharedMatrix (new Matrix(natom,natom));
     }
@@ -1288,7 +1297,7 @@ void OEProp::compute_mayer_indices()
             MBI_total->add(0, atom_mu, atom_nu, 2 * (alpha + beta));
             MBI_total->add(0, atom_nu, atom_mu, 2 * (alpha + beta));
 
-            if (!restricted_) {
+            if (!same_dens_) {
                 MBI_alpha->add(0, atom_mu, atom_nu, 2 * (alpha));
                 MBI_alpha->add(0, atom_nu, atom_mu, 2 * (alpha));
                 MBI_beta->add(0, atom_mu, atom_nu, 2 * (beta));
@@ -1319,7 +1328,7 @@ void OEProp::compute_mayer_indices()
 
 //    A nicer output is needed ...
 
-    if (restricted_) {
+    if (same_dens_) {
         MBI_total->print();
         fprintf(outfile, "  Atomic Valences: \n");
         MBI_valence->print();
@@ -1357,7 +1366,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 
 //    Get the Density Matrices for alpha and beta spins
 
-    if (restricted_) {
+    if (same_dens_) {
         Da = Da_ao();
         Db = Da;
     } else {
@@ -1393,7 +1402,7 @@ void OEProp::compute_wiberg_lowdin_indices()
     SharedMatrix WBI_alpha;
     SharedMatrix WBI_beta;
 
-    if (!restricted_) {
+    if (!same_dens_) {
         WBI_alpha = SharedMatrix (new Matrix(natom,natom));
         WBI_beta = SharedMatrix (new Matrix(natom,natom));
     }
@@ -1411,7 +1420,7 @@ void OEProp::compute_wiberg_lowdin_indices()
             WBI_total->add(0, atom_mu, atom_nu, 2 * (alpha + beta));
             WBI_total->add(0, atom_nu, atom_mu, 2 * (alpha + beta));
 
-            if (!restricted_) {
+            if (!same_dens_) {
                 WBI_alpha->add(0, atom_mu, atom_nu, 2 * (alpha));
                 WBI_alpha->add(0, atom_nu, atom_mu, 2 * (alpha));
                 WBI_beta->add(0, atom_mu, atom_nu, 2 * (beta));
@@ -1434,7 +1443,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 //    Print out the bond index matrix
 //    A nicer output is needed ...
 
-    if (restricted_) {
+    if (same_dens_) {
         WBI_total->print();
         fprintf(outfile, "  Atomic Valences: \n");
         WBI_valence->print();
@@ -1459,11 +1468,11 @@ void OEProp::compute_no_occupations(int max_num)
 
     fprintf(outfile, "  Natural Orbital Occupations:\n\n");
 
-    if (!restricted_) {
+    if (!same_dens_) {
 
         SharedVector Oa;
         SharedVector Ob;
-        if (restricted_) {
+        if (same_dens_) {
             std::pair<SharedMatrix,SharedVector> vals = Na_mo();
             Oa = vals.second;
             Ob = vals.second;
