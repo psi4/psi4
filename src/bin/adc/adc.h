@@ -10,7 +10,7 @@
 #define PSIF_ADC       260
 #define PSIF_ADC_SEM   261
 
-#define DEBUG_         false 
+#define DEBUG_         false
 #define ANGL_TOL_      50.0
 #define CUTOFF_DENS_   1e-6
 
