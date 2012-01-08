@@ -60,8 +60,8 @@ ADC::compute_energy()
                 for(int iter = 1;iter <= pole_max_;iter++){
                     rhf_diagonalize(irrep, root+1, first, omega_o, omega);
                     first = false;
-                    //denom = 1 - rhf_differentiate_omega(irrep, root);
-                    denom = 1;
+                    denom = 1 - rhf_differentiate_omega(irrep, root);
+                    //denom = 1;
                     omega_diff = (omega_o-omega[root]) / denom;
                     if(DEBUG_)  printf("%e, %10.7f\n", omega_diff, 1/denom);
                     if(fabs(omega_diff) < pow(10.0,-conv_)){
