@@ -64,7 +64,7 @@ ADC::compute_energy()
                     denom = 1;
                     omega_diff = (omega_o-omega[root]) / denom;
                     if(DEBUG_)  printf("%e, %10.7f\n", omega_diff, 1/denom);
-                    if(fabs(omega_diff) < pow(10.0,-conv_)){
+                    if(fabs(omega_diff) < conv_){
                         if(DEBUG_){
                             printf("\tpole(%d)[%d] in %d iteration: %10.7lf\n", root, irrep, iter, omega[root]);
                             printf("\tpseudo-perturbative value: %10.7lf\n", poles_[irrep][root].ps_value);

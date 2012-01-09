@@ -81,11 +81,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Reference wavefunction -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
 
-    /*- Convergence is achieved when the RMS of the error in the CI vector is
-    less than 10**(-n).  The default is 4 for energies and 7 for gradients. -*/
-    options.add_int("CONVERGENCE", 4);
+    /*- Convergence criterion for CI vector (RMS error). 
+    The default is 1e-4 for energies and 1e-7 for gradients. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE", 1e-4);
 
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-6);
 
     /*- Wavefunction type !expert -*/
@@ -606,9 +607,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE",1e-10);
-    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE",1e-8);
     /*- Don't solve the CPHF equations? -*/
     options.add_bool("NO_RESPONSE",false);
@@ -665,10 +666,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 40);
       /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
       options.add_bool("COMPUTE_TPDM", 0);
-      /*- The number of decimal digits required in the SCF density -*/
-      options.add_int("SCF_CONV", 8);
-      /*- The number of decimal digits required in the determination of lambda -*/
-      options.add_int("CONVERGENCE", 10);
+      /*- Convergence criterion for the SCF density. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("SCF_CONV", 1e-8);
+      /*- Convergence criterion for the lambda energy. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("CONVERGENCE", 1e-10);
       /*- Do relax the orbitals? -*/
       options.add_bool("RELAX_ORBITALS", true);
       /*- The damping factor used in the initial SCF procedure (0 - 1000) 0 means full standard SCF update
@@ -820,9 +821,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIIS", true);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- The energy convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
-    /*- The density convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-8);
     /*- Minimum absolute TEI value for seive -*/
     options.add_double("INTS_TOLERANCE", 0.0);
@@ -835,9 +836,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The amount of SAD information to print to the output -*/
     options.add_int("SAD_PRINT", 0);
-    /*- SAD Guess Convergence in E.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
-    /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_D_CONVERGE", 1E-5);
     /*- Maximum number of SAD guess iterations -*/
     options.add_int("SAD_MAXITER", 50);
@@ -1107,8 +1108,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCLAMBDA"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","SCF");
-    /*- -*/
-    options.add_int("CONVERGENCE",7);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE",1e-7);
     /*- Do ? -*/
     options.add_bool("RESTART",false);
     /*- -*/
@@ -1181,8 +1182,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MEMORY", 1000);
     /*- The Reference -*/
     options.add_str("REFERENCE", "");
-    /*- The convergence criterion for pole searching step -*/
-    options.add_int("NEWTON_CONV", 7);
+    /*- The convergence criterion for pole searching step. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("NEWTON_CONV", 1e-7);
     /*- The maximum numbers of the pole searching iteration  -*/
     options.add_int("POLE_MAX", 20);
     /*- Maximu iteration number in simultaneous expansion method -*/
@@ -1295,25 +1297,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
-    /*- -*/
+    /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEV",2);
     /*- -*/
     options.add_str("REFERENCE","RHF");
-    /*- -*/
+    /*- Gauge for optical rotation -*/
     options.add_str("GAUGE","LENGTH");
-    /*- Maximum number of iterations -*/
+    /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);
-    /*- -*/
-    options.add_int("CONVERGENCE",7);
+    /*- Convergence criterion for perturbed wavefunctions. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE",1e-7);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
     /*- -*/
     options.add_str("PROPERTY","POLARIZABILITY");
     /*- -*/
     options.add_str("ABCD","NEW");
-    /*- Do ? -*/
+    /*- Do restart from on-disk amplitudes? -*/
     options.add_bool("RESTART",1);
-    /*- Do ? -*/
+    /*- Do simulate local correlation? -*/
     options.add_bool("LOCAL",0);
     /*- -*/
     options.add_double("LOCAL_CUTOFF",0.01);
@@ -1331,11 +1333,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ANALYZE",0);
     /*- -*/
     options.add_int("NUM_AMPS",5);
-    /*- Do ? -*/
+    /*- Do Sekino-Bartlett size-extensive model-III? -*/
     options.add_bool("SEKINO",0);
-    /*- Do ? -*/
+    /*- Do Bartlett size-extensive linear model? -*/
     options.add_bool("LINEAR",0);
-    /*- -*/
+    /*- Energy of applied field for dynamic polarizabilities -*/
     options.add("OMEGA",new ArrayType());
     /*- -*/
     options.add("MU_IRREPS",new ArrayType());
@@ -1353,9 +1355,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-12);
-    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-12);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",100);
@@ -1411,8 +1413,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ANALYZE", 0);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
-    /*- -*/
-    options.add_int("CONVERGENCE", 7);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE", 1e-7);
     /*- Do restart the coupled-cluster iterations? -*/
     options.add_bool("RESTART",1);
     /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? -*/
@@ -1450,8 +1452,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- -*/
     options.add_int("NUM_AMPS", 10);
-    /*- -*/
-    options.add_int("BRUECKNER_CONV", 5);
+    /*- Convergence criterion for Breuckner orbitals. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("BRUECKNER_CONV", 1e-5);
     /*- Do ? -*/
     options.add_bool("MP2_AMPS_PRINT", 0);
     /*- Do ? -*/
@@ -1485,8 +1487,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 500);
-    /*- -*/
-    options.add_int("CONVERGENCE", 7);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE", 1e-7);
     /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- -*/
@@ -1523,10 +1525,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF");
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
-    /*- -*/
-    options.add_int("ENERGY_CONV", 7);
-    /*- -*/
-    options.add_int("RMS_CONV", 5);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("ENERGY_CONV", 1e-7);
+    /*- Convergence criterion for T2 amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("RMS_CONV", 1e-5);
     /*- -*/
     options.add_int("FSKIP", 2);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
@@ -1595,9 +1597,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- Do use parallel algorithm? -*/
     options.add_bool("PARALLEL_DFMP2",false);
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
-    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
@@ -1607,9 +1609,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("BASIS","NONE");
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_TOLERANCE", 0.0);
-    /*- Convergence of CC energy.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for CC energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
-    /*- Convergence of cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("T_CONVERGE", 1e-8);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
@@ -1755,8 +1757,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("NUM_THREADS",1);
     /*- Which root of the effective hamiltonian is the target state? -*/
     options.add_int("FOLLOW_ROOT",1);
-    /*- The number of digits after the decimal to converge the energy to -*/
-    options.add_int("CONVERGENCE",9);
+    /*- Convergence criterion for energy.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE",1e-9);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/
@@ -1892,7 +1895,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
-      /*- QCHEM optimization criteria: maximum force.g -*/
+      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_FORCE", 3.0e-4);
       /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DE", 1.0e-6);
