@@ -7,13 +7,58 @@ cc1:          RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 cc12:         Single point energies of multiple excited states with EOM-CCSD
 
 
-cc13:         cc-pVDZ UCCSD optimization of triplet methtylene, with Z-matrix input
+cc13:         UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+
+
+cc13a:        UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+
+
+cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+
+
+cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+
+
+cc17:         Single point energies of multiple excited states with EOM-CCSD
 
 
 cc2:          6-31G** H2O Test CCSD energy, with Z-Matrix input
 
 
+cc34:         RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
+
+
+cc36:         cc36: RHF-CC2/cc-pVDZ energy of H2O.
+
+
+cc37:         cc36: UHF-CC2/cc-pVDZ energy of H2O+.
+
+
+cc38:         RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
+
+
+cc39:         RHF-CC2-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
+
+
 cc4:          RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. After the computation, the checkpoint file is renamed, using the PSIO handler.
+
+
+cc40:         RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega = (589 355 nm)
+
+
+cc41:         RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = both, omega = (589 355 nm)
+
+
+cc42:         RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge = length, omega = (589 355 nm)
+
+
+cc43:         RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge = both, omega = (589 355 nm)
+
+
+cc44:         Test case for some of the PSI4 out-of-core codes.  The code is given only 2.0 MB of memory, which is insufficient to hold either the A1 or B2 blocks of an ovvv quantity in-core, but is sufficient to hold at least two copies of an oovv quantity in-core.
+
+
+cc45:         RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
 
 cc4a:         RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. This version tests the FROZEN_DOCC option explicitly
@@ -97,6 +142,15 @@ fci-tdm:      He2+ FCI/cc-pVDZ Transition Dipole Moment
 fci-tdm-2:    BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
 
+fd-freq-energy:  SCF STO-3G finite-difference tests
+
+
+fd-freq-energy-large:  SCF DZ finite difference frequencies by energies for C4NH4
+
+
+fd-gradient:  SCF STO-3G finite-difference tests
+
+
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.
 
 
@@ -152,6 +206,9 @@ props1:       RHF STO-3G dipole moment computation, performed by applying a fini
 
 
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
+
+
+pubchem:      RHF STO-3G Benzene optimization using PubChem to obtain geometry
 
 
 pywrap_all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.

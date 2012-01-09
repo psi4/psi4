@@ -17,7 +17,7 @@ set globals {
 
 S22mad = database('sapt0','S22',subset=[2,8],benchmark='S22A')
 #S22mad = database('sapt0','S22',subset=[2,8])
-#NBCmad = database('dfmp2','NBC10',cp='on',symm='off',subset='small')  # Revive after dfmp2 regains independece from madness
+#NBCmad = database('dfmp2','NBC10',cp='on',symm='off',subset='small')  # Revive after dfmp2 regains independence from madness
 NBCmad = database('scf','NBC10',cp='on',symm='off',subset='small')
 
 clean()

@@ -662,7 +662,7 @@ double **Matrix::to_block_matrix() const
 
 void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) const
 {
-    const int print_ncol = Process::environment.options.get_int("PRINT_MAT_NCOLUMN");
+    const int print_ncol = Process::environment.options.get_int("MAT_NUM_COLUMN_PRINT");
     int num_frames = int(n/print_ncol);
     int num_frames_rem = n%print_ncol; //adding one for changing 0->1 start
     int num_frame_counter = 0;
@@ -1507,6 +1507,57 @@ void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::
     delete[] work;
 }
 
+void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::svd: Matrix non-totally symmetric.");
+    }
+
+    // Working copy. This routine takes hella memory
+    Matrix A(*this);
+
+    for (int h = 0; h < nirrep_; h++) {
+        if (!rowspi_[h] && !colspi_[h])
+            continue;
+
+        int m = rowspi_[h];
+        int n = colspi_[h];
+
+        double** Ap = A.pointer(h);
+        double*  Sp = S->pointer(h);
+        double** Up = U->pointer(h);
+        double** Vp = V->pointer(h);
+                
+        int* iwork = new int[8L * (m < n ? m : n)];
+
+        // Workspace Query
+        double lwork;
+        int info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,&lwork,-1,iwork);
+
+        double* work = new double[(int)lwork];
+
+        // SVD
+        info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,work,(int)lwork,iwork);
+
+        delete[] work;
+        delete[] iwork;
+
+        if (info != 0) {
+            if (info < 0) {
+                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                fflush(outfile);
+                abort();
+            }
+            if (info > 0) {
+                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                fflush(outfile);
+                abort();
+            }
+        }
+    } 
+    V->transpose_this();
+}
+
 void Matrix::swap_rows(int h, int i, int j)
 {
     C_DSWAP(colspi_[h], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1);
@@ -1569,7 +1620,6 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
 
         // Diagonal (or later Schur complement diagonal)
         double* Dp = new double[n];
-        ::memset(static_cast<void*>(Dp), '\0', nirrep_*sizeof(double));
         for (int i = 0; i < n; i++)
             Dp[i] = Ap[i][i];
 
@@ -1635,8 +1685,12 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
 
     // Copy out to properly sized array
     SharedMatrix L(new Matrix("Partial Cholesky Factor", nirrep_, rowspi_, sigpi));
+
+    //K->print();
+    //L->print();
+
     for (int h = 0; h < nirrep_; h++) {
-        if (!rowspi_[h]) continue;
+        if (!rowspi_[h] || !sigpi[h]) continue;
         double** Kp = K->pointer(h);
         double** Lp = L->pointer(h);
 

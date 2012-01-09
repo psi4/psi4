@@ -1,6 +1,7 @@
 #include <psi4-dec.h>
 #include <libmints/mints.h>
 #include <liboptions/liboptions.h>
+#include <libtrans/integraltransform.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.hpp>
@@ -67,14 +68,14 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
     }
     fprintf(outfile,     "\t*****************************************************\n\n");
     fflush(outfile);
-        printf("madeok\n");
-    conv_     = options_.get_int("NEWTON_CONV");
-    norm_tol_ = options_.get_int("NORM_TOL");
+  
+    conv_     = options_.get_double("NEWTON_CONV");
+    norm_tol_ = options_.get_double("NORM_TOLERANCE");
     pole_max_ = options_.get_int("POLE_MAX");
     sem_max_  = options_.get_int("SEM_MAX");
     num_amps_ = options_.get_int("NUM_AMPS");
-        printf("madeok\n");
-    if(options_["STATES_PER_IRREP"].size() > 0){
+
+  if(options_["STATES_PER_IRREP"].size() > 0){
         int i = options_["STATES_PER_IRREP"].size();
         
         if(i != nirrep_){
@@ -89,8 +90,8 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
             rpi_[h] = 1;
         }
     }
-        printf("madeok\n");
-    // Setting up dimensions for each irrep block and totoal dimension of S manifold.
+
+  // Setting up dimensions for each irrep block and totoal dimension of S manifold.
     nxs_ = 0;
     nxspi_ = new int [nirrep_];
     poles_ = (struct pole**)malloc(nirrep_*sizeof(struct pole*));
@@ -102,9 +103,9 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
         }
         nxs_ += nxspi_[h];
     }
-        printf("madeok\n");
+
     fprintf(outfile, "\t==> Input Parameters <==\n");
-    fprintf(outfile, "\tNEWTON_CONV = %3d, NORM_TOL = %3d\n", conv_, norm_tol_);
+    fprintf(outfile, "\tNEWTON_CONV = %3g, NORM_TOL = %3g\n", conv_, norm_tol_);
     fprintf(outfile, "\tPOLE_MAX    = %3d, SEM_MAX  = %3d\n\n", pole_max_, sem_max_);
     
     fprintf(outfile, "\tNXS           = %d\n", nxs_);
@@ -117,7 +118,7 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
         fprintf(outfile, " %d ", nxspi_[i]);
     }
     fprintf(outfile, "]\n");
-        printf("madeok\n");
+
     if(DEBUG_){
         fprintf(outfile, "Debagging mode...\n");
         fprintf(outfile, "\tNMO   = %3d, NXS = %3d\n", nmo_, nxs_);

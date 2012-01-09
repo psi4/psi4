@@ -46,6 +46,12 @@ void get_params(Options & options)
   else
     throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
 
+  // Allow user to force semicanonical
+  if(options["SEMICANONICAL"].has_changed()) {
+   params.semicanonical = options.get_bool("SEMICANONICAL");
+   params.ref = 2;
+  }
+
   params.dertype = 0;
   std::string dertype = options.get_str("DERTYPE");
   if(dertype == "NONE") params.dertype = 0;
@@ -59,8 +65,7 @@ void get_params(Options & options)
   params.print_tei = options.get_bool("PRINT_TEI");
 
   params.tolerance = 1e-14;
-  tol = options.get_int("TOLERANCE");
-  params.tolerance = 1.0*pow(10.0,(double) -tol);
+  params.tolerance = options.get_double("INTS_TOLERANCE");
 
   params.memory = Process::environment.get_memory();
 

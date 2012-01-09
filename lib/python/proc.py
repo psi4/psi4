@@ -145,62 +145,57 @@ def run_mp2_gradient(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
 
-def run_ccsd(name, **kwargs):
+def run_ccenergy(name, **kwargs):
 
-    if (name.lower() == 'ccsd'):
-        PsiMod.set_global_option('WFN', 'CCSD')
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
+   elif (name.lower() == 'cc2'):
+       PsiMod.set_global_option('WFN', 'CC2')
+   elif (name.lower() == 'cc3'):
+       PsiMod.set_global_option('WFN', 'CC3')
+   elif (name.lower() == 'eom-ccsd'):
+       PsiMod.set_global_option('WFN', 'EOM_CCSD')
+   # Call a plain energy('ccenergy') and have full control over options,
+   # incl. wfn
+   elif(name.lower() == 'ccenergy'):
+       pass
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf("scf", **kwargs)
+   # Bypass routine scf if user did something special to get it to converge
+   if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+       run_scf("scf", **kwargs)
 
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    returnvalue = PsiMod.ccenergy()
+   PsiMod.transqt2()
+   PsiMod.ccsort()
+   returnvalue = PsiMod.ccenergy()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
 
-    return returnvalue
+   return returnvalue
 
-def run_cc3(name, **kwargs):
+def run_cc_gradient(name, **kwargs):
 
-    if (name.lower() == 'cc3'):
-        PsiMod.set_global_option('WFN', 'CC3')
+   PsiMod.set_global_option('DERTYPE', 'FIRST')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf("scf", **kwargs)
+   run_ccenergy(name, **kwargs)
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
 
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    returnvalue = PsiMod.ccenergy()
+   PsiMod.cchbar()
+   PsiMod.cclambda()
+   PsiMod.ccdensity()
+   PsiMod.deriv()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-
-    return returnvalue
-
-def run_ccsd_gradient(name, **kwargs):
-
-    run_ccsd(name, **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
-
-    PsiMod.cchbar()
-    PsiMod.cclambda()
-    PsiMod.ccdensity()
-    PsiMod.deriv()
-
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-
-def run_ccsd_t(name, **kwargs):
-
-    PsiMod.set_global_option('WFN', 'CCSD_T')
-
-    # The new CCEnergyWavefunction object that is used to wrap ccenergy
-    # automatically handles cctriples.
-    return run_ccsd(name, **kwargs)
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
+       PsiMod.set_global_option('DERTYPE', 'NONE')
+       PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_bccd(name, **kwargs):
 
@@ -231,26 +226,42 @@ def run_bccd_t(name, **kwargs):
 
     return PsiMod.cctriples()
 
-def run_ccsd_response(name, **kwargs):
+def run_cc_response(name, **kwargs):
 
-    PsiMod.set_global_option('WFN', 'CCSD')
-    run_ccsd("ccsd", **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
+    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+
+    if (name.lower() == 'ccsd'):
+      PsiMod.set_global_option('WFN', 'CCSD')
+      run_ccenergy("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'CCSD')
+    elif (name.lower() == 'cc2'):
+      PsiMod.set_global_option('WFN', 'CC2')
+      run_ccenergy("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'CC2')
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
 
-#    PsiMod.set_global_option('WFN', 'SCF')
-#    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
 
-    # ccsd_response has return value?
+def run_eom_cc(name, **kwargs):
 
-def run_eom_ccsd(name, **kwargs):
-
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
-
-    run_ccsd("ccsd", **kwargs)
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    if (name.lower() == "eom-ccsd"):
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+      run_ccenergy("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    elif (name.lower() == "eom-cc2"):
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
+      run_ccenergy("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
+    elif (name.lower() == "eom-cc3"):
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
+      run_ccenergy("cc3", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
 
     PsiMod.cchbar()
     returnvalue = PsiMod.cceom()
@@ -260,13 +271,25 @@ def run_eom_ccsd(name, **kwargs):
 
     return returnvalue
 
+def run_adc(name, **kwargs):
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+      molecule = kwargs.pop('molecule')
+  
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+  
+    PsiMod.scf()
+
+    return PsiMod.adc()
+
 def run_detci(name, **kwargs):
 
     if (name.lower() == 'zapt'):
         PsiMod.set_global_option('WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
            PsiMod.set_global_option('SAVE_MPN2', 2)
         else:
@@ -277,7 +300,7 @@ def run_detci(name, **kwargs):
 
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
            PsiMod.set_global_option('SAVE_MPN2', 2)
         else:
@@ -314,8 +337,8 @@ def run_detci(name, **kwargs):
         PsiMod.revoke_global_option_changed('WFN')
         PsiMod.set_global_option('MPN', 'FALSE')
         PsiMod.revoke_global_option_changed('MPN')
-        PsiMod.set_global_option('MAXNVECT', 12)
-        PsiMod.revoke_global_option_changed('MAXNVECT')
+        PsiMod.set_global_option('MAX_NUM_VECS', 12)
+        PsiMod.revoke_global_option_changed('MAX_NUM_VECS')
         PsiMod.set_global_option('SAVE_MPN2', 0)
         PsiMod.revoke_global_option_changed('SAVE_MPN2')
         PsiMod.set_global_option('FCI', 'FALSE')

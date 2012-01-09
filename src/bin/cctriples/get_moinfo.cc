@@ -50,7 +50,7 @@ namespace psi { namespace cctriples {
         throw PsiException("Invalid value of input keyword WFN",__FILE__,__LINE__);
       }
 
-  params.nthreads = options.get_int("NTHREADS");
+  params.nthreads = options.get_int("NUM_THREADS");
 
   params.semicanonical = 0;
   junk = options.get_str("REFERENCE");

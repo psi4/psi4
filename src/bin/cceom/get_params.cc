@@ -69,7 +69,7 @@ void get_params(Options &options)
   if(params.ref == 2) /* No LRU cacheing yet for UHF references */
     params.cachetype = 0;
 
-  params.nthreads = options.get_int("NTHREADS");
+  params.nthreads = options.get_int("NUM_THREADS");
   params.abcd = options.get_str("ABCD");
   params.t3_Ws_incore = options["T3_WS_INCORE"].to_integer();
   params.local = options["LOCAL"].to_integer();

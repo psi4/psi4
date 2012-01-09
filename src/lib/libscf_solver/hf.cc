@@ -155,9 +155,9 @@ void HF::common_init()
     nelectron_ -= charge_;
 
     // If the user told us the multiplicity, read it from the input
-    if(molecule_->multiplicity_specified()){
+    //if(molecule_->multiplicity_specified()){
         multiplicity_ = molecule_->multiplicity();
-    }else{
+    /*}else{
         if(nelectron_%2){
             multiplicity_ = 2;
             molecule_->set_multiplicity(2);
@@ -176,7 +176,7 @@ void HF::common_init()
                             "\tinput if this is incorrect\n\n");
             }
         }
-    }
+    }*/
 
     // Make sure that the multiplicity is reasonable
     if(multiplicity_ - 1 > nelectron_){
@@ -205,7 +205,7 @@ void HF::common_init()
     if (perturb_h_) {
         string perturb_with;
 
-        lambda_ = options_.get_double("LAMBDA");
+        lambda_ = options_.get_double("PERTURB_MAGNITUDE");
 
         if (options_["PERTURB_WITH"].has_changed()) {
             perturb_with = options_.get_str("PERTURB_WITH");
@@ -249,8 +249,8 @@ void HF::common_init()
 
     // Allocate memory for DIISmin_diis_vectors_
     //  First, did the user request a different number of diis vectors?
-    min_diis_vectors_ = options_.get_int("MIN_DIIS_VECTORS");
-    max_diis_vectors_ = options_.get_int("MAX_DIIS_VECTORS");
+    min_diis_vectors_ = options_.get_int("DIIS_MIN_VECS");
+    max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
     diis_start_ = options_.get_int("START_DIIS_ITER");
     diis_enabled_ = options_.get_bool("DIIS");
 
@@ -902,6 +902,7 @@ void HF::guess()
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
+        E_ = compute_initial_E();
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
@@ -1336,6 +1337,12 @@ double HF::compute_energy()
             if (print_ >= 2) {
                 oe->add("QUADRUPOLE");
                 oe->add("MULLIKEN_CHARGES");
+            }
+
+            if (print_ >= 3) {
+                oe->add("LOWDIN_CHARGES");
+                oe->add("MAYER_INDICES");
+                oe->add("WIBERG_LOWDIN_INDICES");
             }
 
             if (Communicator::world->me() == 0)

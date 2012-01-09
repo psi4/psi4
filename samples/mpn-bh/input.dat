@@ -26,6 +26,8 @@ molecule bh {
     H 1 1.25347
 }
 
+set basis aug-cc-pVDZ
+
 thisenergy = energy('mp19')
 
 
