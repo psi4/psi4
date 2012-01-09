@@ -53,7 +53,7 @@ for basisset in basissets:
     # We clean out the scratch files here because the dimensions of the basis set have
     # changed, so we want to generate new files
     clean()
-#compare_values(refnuc, h2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy") #TEST
+compare_values(refnuc, h2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy") #TEST
 
 print_out("\nSummary of results\n")
 print str(table)
