@@ -791,7 +791,7 @@ void MAD_MP2::Aia()
         ORDER_PRINT_END
     }
     // Schwarz Sieve object
-    boost::shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(basisset_, options_.get_double("SCHWARZ_CUTOFF")));
+    boost::shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(basisset_, options_.get_double("INTS_TOLERANCE")));
     long int* schwarz_shells = schwarz->get_schwarz_shells_reverse();
 
     timer_on("MP2 AO -> MO");

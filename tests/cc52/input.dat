@@ -6,18 +6,13 @@ molecule h2o2 {
     H        -0.662345455220     1.720870706405     1.479722385924
 units bohr
 noreorient
-#  o
-#  o 1 1.39
-#  h 1 0.94 2 102.3
-#  h 2 0.94 1 102.3 3 -50.0
-} # TEST
+}
 
 set {
   property roa
   freeze_core false
   omega [589]
   omega_units nm
-  #mu_irreps [1, 1, 0]
   gauge length
   basis cc-pVDZ
 }

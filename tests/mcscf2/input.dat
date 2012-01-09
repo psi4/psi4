@@ -16,7 +16,7 @@ set mcscf {
     e_converge  11
     ci_diis     on
     d_converge  11
-    ndiis       4
+    diis_max_vecs 4
     docc        [10, 1]
     socc        [ 0, 2]
     maxiter     120

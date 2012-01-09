@@ -24,7 +24,7 @@ void get_params(Options &options)
   /* compute the Tamplitude equation matrix elements (usually 0) */
 //  params.Tamplitude = 0;
 //  errcod = ip_boolean("TAMPLITUDE", &(params.Tamplitude),0);
-  params.Tamplitude = options.get_bool("TAMPLITUDE");
+  params.Tamplitude = options.get_bool("T_AMPS");
 
 //  params.cachelev = 2;
 //  errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);

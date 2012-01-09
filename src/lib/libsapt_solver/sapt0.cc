@@ -12,7 +12,7 @@ SAPT0::SAPT0(Options& options, boost::shared_ptr<PSIO> psio,
   d_conv_ = options_.get_double("D_CONVERGE");
   no_response_ = options_.get_bool("NO_RESPONSE");
   aio_cphf_ = options_.get_bool("AIO_CPHF");
-  aio_dfints_ = options_.get_bool("AIO_DFINTS");
+  aio_dfints_ = options_.get_bool("AIO_DF_INTS");
 
   wBAR_ = NULL;
   wABS_ = NULL;

@@ -18,7 +18,7 @@ set globals {
 set detci {
   guess_vector = UNIT
   convergence = 5
-  maxnvect = 4
+  max_num_vecs = 4
   collapse_size = 2
 }
 

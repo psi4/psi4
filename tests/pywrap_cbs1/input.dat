@@ -1,6 +1,7 @@
 #! Various basis set extrapolation tests
 
 molecule {
+0 2
 Li
 
 }
