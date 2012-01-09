@@ -34,7 +34,7 @@ double CCD::compute_energy()
 
   if (options_.get_bool("DIIS"))
     diis_ = shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,naocc_*naocc_*
-      navir_*navir_,options_.get_int("MAX_DIIS_VECS"),psio_));
+      navir_*navir_,options_.get_int("DIIS_MAX_VECS"),psio_));
 
   tIAJB_ = init_array(naocc_*naocc_*navir_*(ULI) navir_);
   t2IAJB_ = init_array(naocc_*naocc_*navir_*(ULI) navir_);
@@ -102,7 +102,7 @@ double CCD::compute_energy()
       e_old-e_new,rms,stop-start);
     fflush(outfile);
 
-    if (options_.get_int("MIN_DIIS_VECS") <= iter &&
+    if (options_.get_int("DIIS_MIN_VECS") <= iter &&
         options_.get_bool("DIIS")) {
       diis_->get_new_vector(tIAJB_,xIAJB_);
       fprintf(outfile,"  DIIS\n");

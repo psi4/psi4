@@ -65,8 +65,8 @@ Constrained-Unrestricted-Kohn-Sham (CUKS) are not implemented, as they always
 predict a ground state with positive definite spin density, which is not
 physical. Spin specialization is specified by the \texttt{REFERENCE} option,
 which defaults to \texttt{RHF}.  Electronic configuration is specified by the
-charge/multiplicity field in the molecular geometry input. These values may be
-amended by using the \texttt{CHARGE} and \texttt{MULTP} options. If spatial
+charge/multiplicity field in the molecular geometry input. 
+If spatial
 symmetry is used, the assignment of occupied orbitals to irreps may be specified
 by the \texttt{DOCC} and \texttt{SOCC} integer arrays. If these arrays are not
 specified by the user, the program will assign occupation to irreps according to
@@ -297,14 +297,6 @@ PSEUDOSPECTRAL, POISSON, L\_DF, CD, 1C\_CD \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} string &  {\bf Default:} RHF\\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
-doublet, 3 for a triplet, etc. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 1\\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
