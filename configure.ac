@@ -1059,6 +1059,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/mints4/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
+          tests/props1/Makefile
           tests/props2/Makefile
           tests/dft1/Makefile
           tests/mom/Makefile
