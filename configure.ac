@@ -961,6 +961,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/runtest.pl
           tests/tu1-h2o-energy/Makefile
           tests/tu2-ch2-energy/Makefile
+          tests/tu3-h2o-opt/Makefile
+          tests/tu4-h2o-freq/Makefile
+          tests/tu5-sapt/Makefile
           tests/dcft1/Makefile
           tests/dcft2/Makefile
           tests/dcft3/Makefile
@@ -1017,7 +1020,11 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc5a/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
+          tests/cc8b/Makefile
+          tests/cc8c/Makefile
           tests/cc9/Makefile
+          tests/cc9a/Makefile
+          tests/cc10/Makefile
           tests/cc11/Makefile
           tests/cc12/Makefile
           tests/cc13/Makefile

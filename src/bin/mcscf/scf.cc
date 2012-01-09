@@ -89,8 +89,8 @@ void SCF::startup()
   out_of_core  = false;
 
   // DIIS
-  use_diis = options_.get_bool("USE_DIIS");
-  ndiis    = options_.get_int("NDIIS");
+  use_diis = options_.get_bool("DIIS");
+  ndiis    = options_.get_int("DIIS_MAX_VECS");
   current_diis = 0;
 
   turn_on_actv = options_.get_int("TURN_ON_ACTV");

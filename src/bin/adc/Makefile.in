@@ -9,9 +9,9 @@ LDLIBS += $(LAPACK) $(BLAS)
 #PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
-adc_main.cc        adc.cc         amps_write.cc  compute_energy.cc \
-construct_sigma.cc denominator.cc diagonalize.cc \
-init_tensors.cc prepare_tensors.cc
+adc_main.cc        adc.cc             amps_write.cc  compute_energy.cc \
+construct_sigma.cc denominator.cc     diagonalize.cc \
+init_tensors.cc    prepare_tensors.cc differentiation.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
