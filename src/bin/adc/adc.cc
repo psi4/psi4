@@ -70,7 +70,7 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
     fflush(outfile);
   
     conv_     = options_.get_int("NEWTON_CONV");
-    norm_tol_ = options_.get_int("NORM_TOL");
+    norm_tol_ = options_.get_int("NORM_TOLERANCE");
     pole_max_ = options_.get_int("POLE_MAX");
     sem_max_  = options_.get_int("SEM_MAX");
     num_amps_ = options_.get_int("NUM_AMPS");

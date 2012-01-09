@@ -74,7 +74,7 @@ void LMP2::params() {
     neglect_dp_ = options_.get_bool("NEGLECT_DP");
     dp_cutoff_ = options_.get_double("DISTANT_PAIR");
 
-//    schwarz_tol = options_.get_int("SCHWARTZ_TOL");
+//    schwarz_tol = options_.get_int("INTS_TOLERANCE");
 //    tol = 1.0*pow(10.0,(double) -schwarz_tol);
 
 //    scs_scale_os = options_.get_double("SCALE_OS");

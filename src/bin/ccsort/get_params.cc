@@ -162,7 +162,7 @@ void get_params(Options & options)
   params.keep_TEIFile = options.get_bool("KEEP_TEIFILE");
   params.keep_OEIFile = options.get_bool("KEEP_OEIFILE");
 
-  tol = options.get_int("TOLERANCE");
+  tol = options.get_int("INTS_TOLERANCE");
   params.tolerance = 1.0*pow(10.0,(double) -tol);
   params.memory = Process::environment.get_memory();
   params.cachelev = options.get_int("CACHELEV");
