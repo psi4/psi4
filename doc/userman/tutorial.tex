@@ -1,19 +1,5 @@
 \section{A \PSIfour\ Tutorial} \label{tutorial}
 
-\subsection{Before Getting Started: A Warning about Scratch Files}
-Generally, electronic structure programs like \PSIfour\ make
-significant use of disk drives.  Therefore, it is very important
-to ensure that PSI4 is writing its temporary files to a disk drive
-phsyically attached to the computer running the computation.  If it
-is not, it will significantly slow down the program and the network.
-By default, PSI4 will write temporary files to \file{/tmp}, but you
-will want to set up a default scratch path (as described in sections
-\ref{scratchfiles} and \ref{psirc}) because the \file{/tmp} directory
-is usually not large enough except for small test cases.  In any 
-event, you want to be very careful that you are not writing scratch
-files to an NFS-mounted directory that is physically attached to a 
-fileserver elsewhere on the network.
-
 \subsection{Basic Input File Structure} 
 
 PSI4 reads input from a text file, which can be prepared in any standard
@@ -25,210 +11,329 @@ The syntax is:
 
 {\tt psi4 input-name output-name}
 
-\subsubsection{IPV1-Style Input}
-PSI4 is a modular single executable, with each module performing specific tasks
-and computations.  Which modules are run for a particular computation
-depends on the type of computation and the particular keywords specified
-in the input file.  All keywords in PSI4 use the structure {\tt keyword =
-value}, where values may be strings, booleans, integers, or real numbers.
-If the value is a string which contains a special character (such as a
-space or a dash) you must enclose the string in double quotation marks.
-You can give keywords in the input file for specific modules; however,
-in the first few examples, we will place all our keywords in one section
-of our input file called {\tt psi}.  Generally, every module you run
-during your computation will read the keywords in {\tt psi}, so you
-can place all your keywords in this section if you choose to do so.
-
-\subsection{Running a basic SCF calculation}
+\subsection{Running a basic Hartree-Fock calculation}
 In our first example, we will consider a Hartree-Fock SCF computation
 for the water molecule using a cc-pVDZ basis set.  We will specify the
 geometry of our water molecule using a standard z-matrix.
 
+\begin{Snippet}
+
+# Any line starting with the # character is a comment line
+# Here's a sample HF/cc-pVDZ H2O computation
+
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set basis cc-pVDZ
+energy('scf')
+\end{Snippet}
+
+For your convenience, this example can be found in {\tt
+psi4/samples/tu1-h2o-energy/input.dat}.  You can run it if you wish.
+Once \PSIfour\ is in your path (see the User Configuration section of the
+installation instructions), you can run this computation by typing
 \begin{verbatim}
-psi:(
- label = "cc-pVDZ SCF H2O"
- jobtype = sp
- wfn = scf
- reference = rhf
- basis = "cc-pVDZ"
- zmat = (
-   o
-   h 1 0.957
-   h 1 0.957 2 104.5
-  )
- )
-
+psi4 input.dat output.dat
 \end{verbatim}
+If everything goes well, the computation should complete and should report
+a final restricted Hartree-Fock energy in a section like this:
+\begin{verbatim}
+  Energy converged.
 
-In each computation, you can specify the type of wavefunction (keyword
-{\tt wfn}), the reference wavefunction for post-Hartree-Fock computations
-(keyword {\tt reference}), and the type of computation you want to
-perform (keyword {\tt jobtype}).  In the example above, we used a
-restricted Hartree-Fock (RHF) reference in an SCF computation of a
-single-point energy.  To change the level of electron correlation, one
-would specify a different wavefunction type using the keyword {\tt wfn}.
-In the example above, to perform an MP2 computation, simply set {\tt
-wfn = mp2}.
+  @RHF Final Energy:   -76.02665366589162
+\end{verbatim}
+By default, the energy should be converged to about 1.0E-8, so agreement
+is only expected for about the first 8 digits after the decimal.  If the
+computation does not complete, there is probably a problem with the
+compilation or installation of the program (see the installation
+instructions).
+
+This very simple input is sufficient to run the requested information.
+Notice that we didn't tell the program some otherwise useful information
+like the charge on the molecule (0, it's neutral), the spin multiplicity
+(0 for a closed-shell molecule with all electrons paired), or the reference
+wavefunction to use (restricted Hartree-Fock, or RHF, is usually
+appropriate for a closed-shell molecule).  The program correctly guessed
+all of these options for us.  We can change the default behavior through
+additional keywords.  
+
+Let's consider what we would do for an open-shell molecule, where
+not all electrons are paired.  For example, let's run a computation
+on methylene (CH$_2$), whose ground electronic state has two unpaired
+electrons (triplet electronic state, or a spin multiplicity $2S+1 = 3$).
+In this case, the default spin multiplicity (0) is not correct, so we
+need to tell the program the true value (3).  Like many programs, \PSIfour\
+can get the charge and multiplicity as the first two integers in the
+Z-matrix.  Note the line with ``0 3'' at the beginning of the molecule
+specification below.  In this example we will also specify the bond length
+and bond angle as variables ({\tt R} and {\tt A}), whose values are given
+after a blank line at the end of the Z-matrix specification.
+
+\begin{Snippet}
+# Here's a sample UHF/6-31G** CH2 computation
+
+molecule ch2 {
+  0 3
+  C
+  H 1 R
+  H 1 R 2 A
+
+  R = 1.075
+  A = 133.93
+}
+
+set basis 6-31G**
+set reference uhf
+
+energy ('scf')
+\end{Snippet}
+
+This sample input can be found in {\tt psi4/samples/tu2-ch2-energy}, and as
+before it can be run through the command {\tt psi4 input.dat output.dat}
+(actually, because {\tt psi4} by default looks for an input file named {\tt
+input.dat} and writes by default to a file called {\tt output.dat}, in this
+case one could also just type {\tt psi4}).  If it works, it should print
+the final energy as
+\begin{verbatim}
+  @UHF Final Energy:   -38.92534160932308
+\end{verbatim}
+Notice we added a new keyword, {\tt set reference uhf}, to the input.  For
+open-shell molecules, we have a choice of unrestricted orbitals
+(unrestricted Hartree-Fock, or UHF), or restricted orbitals (restricted
+open-shell Hartree-Fock, or ROHF).  Usually, UHF is a little easier to
+converge (although it may be more susceptible to spin contamination than
+ROHF).
 
 \subsection{Geometry Optimization and Vibrational Frequency Analysis}
-The above example was a simple single-point energy computation.
-To perform a different type of computation, change the keyword {\tt
-jobtype}.  In the example below, we will set up
-a CCSD geometry optimization.  To illustrate a more flexible z-matrix
-input, we will now define variables for the bond length and bond angle
-(in the {\tt zvars} section).
+The above examples were simple single-point energy computations
+(as specified by the {\tt energy()} function).  Of course there are other
+kinds of computations to perform, such as geometry optimizations and
+vibrational frequency computations.  These can be specified by replacing
+{\tt energy()} with {\tt optimize()} or {\tt frequencies()}, respectively.
 
-\begin{verbatim}
-% 6-31G** H2O Test optimization calculation
+Here's an example of optimizing the H$_2$O molecule using Hartree-Fock with
+a cc-pVDZ basis set (located in {\tt psi4/samples/tu3-h2o-opt}).
+\begin{Snippet}
+# Optimize H2O HF/cc-pVDZ
 
-psi: (
-  label = "6-31G** SCF H2O"
-  jobtype = opt
-  wfn = ccsd
-  reference = rhf
-  dertype = first
-  basis = "6-31G**"
-  zmat = (
-    o
-    h 1 roh
-    h 1 roh 2 ahoh
-  )
-  zvars = (
-    roh     0.96031231
-    ahoh  104.09437511
-  )
-)
-\end{verbatim}
+molecule h2o {
+  O
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
 
-Once you have optimized the geometry of a molecule, you might wish to
-perform a frequency analysis to determine the nature of the stationary
-point.  To do this, change the value of {\tt jobtype} to {\tt freq}.
-For an SCF frequeny calculation, you would also set {\tt dertype =
-second} to compute the second derivatives analytically.  Unfortunately,
-analytical second derivitives are not available in \PSIfour\ for
-wavefunctions beyond SCF, so instead use the highest order analytical
-derivitives that are available for the type of wavefunction you
-have chosen.  This information is given in Table \ref{table:methods}.
-For our CCSD example, the highest-order derivitives available are first,
-so {\tt dertype = first}.
+set basis cc-pVDZ
+optimize('scf')
+\end{Snippet}
 
-\begin{verbatim}
-% 6-31G** H2O Test computation of frequencies
+This should perform a series of gradient computations.  The gradient points
+which way is downhill in energy, and the optimizer then modifies the
+geometry to follow the gradient.  After about 4 cycles, the geometry should
+converge with a message like {\tt Optimization is complete!}.  As indicated
+in the following table (printed by the optimizer at the end of the
+computation), the energy decreases with each step,
+and the maximum force on each atom also decreases with each step (in
+principle these numbers could increase in some iterations, but here they do
+not).
 
-psi: (
-  label = "6-31G** SCF H2O"
-  jobtype = freq
-  wfn = ccsd
-  reference = rhf
-  dertype = first
-  basis = "6-31G**"
-  zmat = (
-    o
-    h 1 roh
-    h 1 roh 2 ahoh
-  )
-  zvars = (
-    roh     0.96031231
-    ahoh  104.09437511
-  )
-)
-\end{verbatim}
+\begin{Snippet}
+----------------------------------------------------------------------
+Step         Energy             Delta(E)      MAX force   MAX Delta(q)
+----------------------------------------------------------------------
+  1    -76.026653665892    -76.026653665892    1.52e-02   1.52e-02
+  2    -76.026907793199     -0.000254127307    9.55e-03   9.55e-03
+  3    -76.027052927171     -0.000145133972    4.47e-04   4.47e-04
+  4    -76.027053472137     -0.000000544965    1.16e-04   1.16e-04
+----------------------------------------------------------------------
+\end{Snippet}
 
-\subsection{More Advanced Input Options}
-If you wish to add comments to your input file, you can start any line
-with \% and the line will be a comment line.  This can make the input
-file easier to understand because you can provide explainations about
-each keyword.  Another way to make the input file more organized is
-to seperate it into sections that correspond to particular modules
-the calculation will use.  This can be particularly helpful for more
-complicated computations which can utilize many of keywords.  In the example
-below, a CCSD(T) computation for the BH molecule is performed using a
-cc-pVDZ basis set.  The keywords are divided into sections and several
-new keywords are introduced, including ones to specify symmetry and
-orbital occupations.  Orbitial occupations are specified by
-a list of integers enclosed in parentheses.  These integers give the
-number of orbitials which belong to each irreducible representation in
-the point group.  The ordering of the irreps are those given by Cotton
-in {\em Chemical Applications of Group Theory}.  In this example,
-comment lines will be included to explain the new keywords used.
+To get harmonic vibrational frequencies, {\em first we must set up an input
+using the OPTIMIZED GEOMETRY}.  We can easily get the optimized geometry
+from the previous computation.  Looking at the output from running the
+previous example, we see that the OH bond length is about 0.9463 Angstroms,
+and the bond angle is about 104.575 degrees.  It's good to give this many
+digits (or more) to make sure there's not significant roundoff error in the
+geometry when running a frequency computation.  So, our frequency
+computation input (which can be found as test case {\tt
+psi4/samples/tu4-h2o-freq}) is:
+\begin{Snippet}
+# Frequencies for H2O HF/cc-pVDZ at optimized geometry
 
-\begin{verbatim}
-psi: (
-  wfn = ccsd_t
-  reference = rhf
-)
+molecule h2o {
+  O
+  H 1 0.9463
+  H 1 0.9463 2 104.575
+}
 
-default: (
-  label = "BH cc-pVDZ CCSD(T)"
+set basis cc-pVDZ
+frequencies('scf')
+\end{Snippet}
+Alternatively, it's also possible for \PSIfour\ to use Cartesian coordinate
+input.  Here, the Cartesian coordinates of the optimized geometry can be
+extracted from the {\em bottom} of the optimization output.  The input 
+would then look like
+this:
+\begin{Snippet}
+molecule h2o {
+  O     0.0000000000  -0.0000000000  -0.1224239500
+  H     0.0000000000  -1.4147069876   0.9714784639
+  H    -0.0000000000   1.4147069876   0.9714784639
+}
 
-% Allocating memory for the calculation
-  memory = (600.0 MB)
+set basis cc-pVDZ
+frequencies('scf')
+\end{Snippet}
+If either of the inputs above are run, the program should do some
+computations and then finally report the following harmonic vibrational
+frequencies (roundoff errors of around 0.1 cm$^{-1}$ may exist):
+\begin{Snippet}
+          Irrep      Harmonic Frequency
+                          (cm-1)
+        -----------------------------------------------
+             A1         1776.1735
+             A1         4113.8031
+             B2         4211.7879
+        -----------------------------------------------
+\end{Snippet}
+Notice that the symmetry type of the normal modes is specified (A1, A1,
+B2).  The program also prints out the normal modes in terms of Cartesian
+coordinates of each atom.  For example, the normal mode at 1776 cm$^{-1}$
+is
+\begin{Snippet}
+   Frequency:       1776.17
+   Force constant:   0.1194
+             X       Y       Z
+  O        0.000   0.000  -0.067
+  H        0.000   0.416   0.536
+  H        0.000  -0.416   0.536
+\end{Snippet}
+where the table shows the displacements in the X, Y, and Z dimensions for
+each atom along the normal mode coordinate.  (This information could be used
+to animate the vibrational frequency using visualization software).
 
-% charge and multiplicity (2S+1) default to values of 0 and 1, respectively
-  charge = 0
-  multp = 1
 
-% The program will generally guess the symmetry of the molecule, but
-% it can be overridden.  Here we specify C2V because only D2H and its
-% subgroups can be used by the program.
-  symmetry = c2v
+\subsection{Analysis of Intermolecular Interactions}
+Now let's consider something a little more interesting.  \PSIfour\
+contains code to analyze the nature of intermolecular interactions
+between two molecules, via symmetry-adapted perturbation theory
+(SAPT) \cite{Jeziorski:1994:1887}.  This kind of analysis gives a lot
+of insight into the nature of intermolecular interactions, and \PSIfour\
+makes these computations easier than ever.
 
-% Number of doubly-occupied orbitals per irrep can be specified manually
-% if desired
-  docc = (3 0 0 0)
+For a SAPT computation, the input needs to provide information on two
+distinct molecules.  This is very easy, we just give a Z-matrix or set of
+Cartesian coordinates for each molecule, and separate the two with two
+dashes, like this:
+\begin{Snippet}
+# Example SAPT computation for ethene*ethine (i.e., ethylene*acetylene),
+# test case 16 from the S22 database
 
-% Freeze the 1A1 orbital (Boron 1s-like) in the CCSD(T) computation
-  frozen_docc = (1 0 0 0)
-)
+molecule dimer {
+0 1
+C   0.000000  -0.667578  -2.124659
+C   0.000000   0.667578  -2.124659
+H   0.923621  -1.232253  -2.126185
+H  -0.923621  -1.232253  -2.126185
+H  -0.923621   1.232253  -2.126185
+H   0.923621   1.232253  -2.126185
+--
+0 1
+C   0.000000   0.000000   2.900503
+C   0.000000   0.000000   1.693240
+H   0.000000   0.000000   0.627352
+H   0.000000   0.000000   3.963929
+units angstrom
 
-% The input section contains information about the molecule and the basis
-% set.  The geometry here is specified by cartesian coordinates.
-input: (
-  basis = "cc-pVDZ"
-  units = angstroms
-  geometry = (
-    ( b      0.0000        0.0000        0.0000)
-    ( h      0.0000        0.0000        0.8000)
-      )
-  origin = (0.0 0.0 0.0)
-)
-% The modular input structure lets you specify convergence criteria for
-% each part of the computation separately
-scf: (
-  maxiter = 100
-  convergence = 11
-)
-\end{verbatim}
+no_reorient
+symmetry c1
+}
+\end{Snippet}
 
-The final example of this tutorial demonstrates an example of a
-complete-active-space self-consistent-field (CASSCF)
-computation.  CAS computations require specification of several additional
-keywords because you must specify which orbitals you wish to be in the
-active space.  The notation and ordering for specifying CAS orbitals is the
-same as for occupied orbitals.
+Notice we have a couple of new keywords in the molecule specification.
+{\tt no\_reorient} tells the program not to reorient the molecule
+to a different coordinate system (this is important for SAPT to make
+sure the same coordinate frame is used in the computations of the two
+monomers and of the dimer).  The next keyword tells \PSIfour\ to run
+in C1 point-group symmetry (i.e., without using symmetry), even if a
+higher symmetry is detected.  SAPT computations need to be run with
+symmetry turned off in this way.
 
-\begin{verbatim}
+Here's the second half of the input:
+\begin{Snippet}
+set globals {
+    basis jun-cc-pVDZ
+    scf_type DF
+    freeze_core True
+}
 
-% 6-31G** H2O Test CASSCF Energy Point
+energy('sapt0')
+\end{Snippet}
 
-psi: (
-  label = "6-31G** CASSCF H2O"
-  jobtype = sp
-  wfn = casscf
-  reference = rhf
-% The restricted_docc orbitals are those which are optimized, but are not
-% in the active space.
-  restricted_docc = (1 0 0 0)
+Before, we have been setting options individually with commands like 
+{\tt set basis cc-pVDZ}.  Because we have a few more options now, it's
+convenient to place them together into the {\tt set globals} group.  This
+will set all of these options as ``global'' options (meaning that they are
+visible to any parts of the program).  Most common \PSIfour\ options can be
+set in a {\tt globals} section like this.  If an option needs to be visible
+only to one part of the program (e.g., we only want to increase the
+energy convergence in the SCF code, but not the rest of the
+code), it can be placed in a section of input visible to that part of the
+program (e.g., {\tt set scf e\_convergence 1.0E-8}.
 
-% The active space orbitals; here, the valence orbitals are chosen
-  active          = (3 0 1 2)
+Back to our SAPT example, we have found that for basic-level SAPT
+computations (i.e., SAPT0), a good error cancellation is found
+\cite{Hohenstein:2012:WIREs} with the jun-cc-pVDZ basis (this is the
+usual aug-cc-pVDZ basis, but without diffuse functions on hydrogen and
+without diffuse $d$ functions on heavy atoms).\cite{Papajak:2011:10} So,
+we'll use that as our standard basis set.  The SAPT code is designed to
+use density fitting techniques, because they introduce minimal errors
+but they provide much faster computations.\cite{Hohenstein:2010:184111,
+Hohenstein:2010:014101} Since we're using density fitting for the SAPT,
+we might as well also use it for the Hartree-Fock computations that are
+performed as part of the SAPT.  We can specify that with the keyword
+{\tt scf\_type DF}.
 
-  basis = "6-31G**"
-  zmat = (
-    o
-    h 1 1.00
-    h 1 1.00 2 103.1
-  )
-)
-\end{verbatim}
+Density fitting procedures require the use of auxiliary basis sets that
+pair with the primary basis set.  Fortunately, \PSIfour\ is usually smart
+enough to figure out what auxiliary basis sets are needed for a given
+computation.  In this case, jun-cc-pVDZ is a standard enough basis set
+(just a simple truncation of the very popular aug-cc-pVDZ basis set)
+that \PSIfour\ correctly guesses that we want the jun-cc-pVDZ-JKfit
+auxiliary basis for the Hartree-Fock, and the jun-cc-pVDZ-RI basis set
+for the SAPT procedure.
+
+To speed up the computation a little, we also tell the SAPT procedure to
+freeze the core electrons with the {\tt freeze\_core} keyword.  The SAPT
+procedure is invoked with the simple call, {\tt energy('sapt0')}.  This
+call knows to automatically run two monomer computations and a dimer
+computation, and then use these results to perform the SAPT analysis.  The
+various energy components are printed at the end of the output, in addition
+to the total SAPT0 interaction energy.  An explanation of the various
+energy components can be found in the review by Jeziorski, Moszynski, and
+Szalewicz,\cite{Jeziorski:1994:1887}  and this is discussed in more detail
+in the SAPT section later in this manual.  For now, we'll note that most of
+the SAPT energy components are negative; this means those are attractive
+contributions (the zero of energy in a SAPT computation is defined as
+non-interacting monomers).  The exchange contributions are positive
+(repulsive).   In this example, the most attractive contribution between
+ethylene and acetylene is an electrostatic term of -2.12 kcal mol$^{-1}$
+({\tt Elst10,r} where the 1 indicates the first-order
+perturbation theory result with respect to the intermolecular interaction,
+and the 0 indicates zeroth-order with respect to intramolecular electron
+correlation).  The next most attractive contribution is the {\tt Disp20}
+term (2nd order intermolecular dispersion, which looks like an MP2 in which
+one excitation is placed on each monomer), contributing an attraction of
+-1.21 kcal mol$^{-1}$.  It is not surprising that the electrostatic
+contribution is dominant, beause the geometry chosen for this example has the
+acetylene perpendicular to the ethylene, with the acetylene hydrogen
+pointing directly at the double bond in ethylene; this will be attractive
+because the H atoms in acetylene bear a partial positive charge, while the
+electron-rich double bond in ethylene bears a partial negative charge.  At
+the same time, the dispersion interaction should be smaller because the
+perpendicular geometry does not allow much overlap between the monomers.
+Hence, the SAPT analysis helps clarify (and quantify) our physical
+understanding about the interaction between the two monomers. 
 

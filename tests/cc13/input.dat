@@ -1,4 +1,4 @@
-#! cc-pVDZ UCCSD optimization of triplet methtylene, with Z-matrix input
+#! UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
 refnuc   =   6.07006654183091   #TEST
 refscf   = -38.92658702693478   #TEST
@@ -14,7 +14,6 @@ molecule ch2 {
 
 set globals {
   reference uhf
-  relax_opdm true
   basis cc-pvdz
   dertype first
   # The next 3 options control the geometry optimization tolerances

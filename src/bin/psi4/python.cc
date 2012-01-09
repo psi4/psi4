@@ -69,6 +69,7 @@ namespace psi {
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
+    namespace adc        { PsiReturnType adc(Options&);       }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -369,6 +370,13 @@ double py_psi_psimrcc()
     return 0.0;
 }
 
+double py_psi_adc()
+{
+  py_psi_prepare_options_for_module("ADC");
+  adc::adc(Process::environment.options);
+  return 0.0;
+}
+
 char const* py_psi_version()
 {
     return PSI_VERSION;
@@ -408,7 +416,7 @@ void py_psi_print_out(std::string s)
  * @return whether key describes a convergence threshold or not
  */
 bool specifies_convergence(std::string const & key){
-    return (key.find("CONV") != key.npos);
+    return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
 bool check_for_basis(std::string const & name, std::string const & type)
@@ -954,6 +962,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccresponse", py_psi_ccresponse);
     def("cceom", py_psi_cceom);
     def("omp2", py_psi_omp2);
+    def("adc", py_psi_adc);
     def("opt_clean", py_psi_opt_clean);
 
     // Define library classes

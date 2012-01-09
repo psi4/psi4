@@ -41,8 +41,7 @@ void get_params(Options & options)
   params.print = options.get_int("PRINT"); //default 0
   params.maxiter = options.get_int("MAXITER"); //default 500
 
-  iconv = options.get_int("CONVERGENCE"); //default 7 ==> 1e-7
-  params.convergence = 1.0*pow(10.0,(double) -iconv);
+  params.convergence = options.get_double("CONVERGENCE"); //default 7 ==> 1e-7
 
   if (options["STATES_PER_IRREP"].size() > 0) {
     i = options["STATES_PER_IRREP"].size();

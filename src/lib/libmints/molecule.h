@@ -67,10 +67,6 @@ protected:
     bool fix_orientation_;
     /// Move to center of mass or not?
     bool move_to_com_;
-    /// Whether the user specified the charge, or default was used
-    bool charge_specified_;
-    /// Whether the user spefified the multiplicity, or default was used
-    bool multiplicity_specified_;
 
     /// The molecular charge
     int molecular_charge_;
@@ -124,6 +120,8 @@ protected:
     std::string symmetry_from_input_;
     /// Old previous symmetry frame (so one can fix to it, if desired)
     Matrix *old_symmetry_frame_;
+    /// Old com displacement vector (so one can fix to it, if desired)
+    Vector3 *old_com_vector_;
 
 public:
     Molecule();
@@ -296,16 +294,16 @@ public:
     /// Compute inertia tensor.
     Matrix* inertia_tensor() const;
 
-    /// Returns true if the user specified the charge
-    bool charge_specified() const { return charge_specified_; }
-    /// Returns true if the user specified the multiplicity
-    bool multiplicity_specified() const { return multiplicity_specified_; }
-
     /// Print the molecule
     void print() const;
 
     /// Print the molecule in Bohr
     void print_in_bohr() const;
+
+    ///Print the geometrical parameters of the molecule
+    void print_distances() const;
+    void print_bond_angles() const;
+    void print_dihedrals() const;
 
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;
@@ -503,9 +501,10 @@ public:
 
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
-    /// Fix or unfix orientation.
+    /// Fix the orientation at its current frame
     void set_orientation_fixed(bool _fix = true);
-
+    /// Fix the center of mass at its current frame
+    void set_com_fixed(bool _fix = true);
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
 

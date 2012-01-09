@@ -743,6 +743,11 @@ public:
     void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
     /// @}
 
+    /// @{
+    /// General SVD, such that A = USV'. U, S, and V must be allocated by the caller.
+    void svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V);
+    /// @}
+
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
      *

@@ -32,7 +32,7 @@ void mrccsd(Options & options)
   // Initialize the mp2 module (integrals,fock matrix(ces),denominators)
   CCMRCC        mrcc(options);
 
-  if(options.get_bool("PERT_CBS") && options.get_bool("PERT_CBS_COUPLING")){
+  if(options.get_bool("PERTURB_CBS") && options.get_bool("PERTURB_CBS_COUPLING")){
     mrcc.compute_first_order_amps();
   }
 
@@ -49,7 +49,7 @@ void mrccsd(Options & options)
 	// Compute the energy
   mrcc.compute_energy(updater);
 
-  if(options.get_bool("PERT_CBS")){
+  if(options.get_bool("PERTURB_CBS")){
     mrcc.perturbative_cbs();
   }
 
