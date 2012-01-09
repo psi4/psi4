@@ -6,6 +6,7 @@
  *
  */
 
+#if HAVE_MADNESS
 
 #include "dist_mat.h"
 
@@ -51,3 +52,5 @@ bool Distributed_Matrix::operator !=(const Distributed_Matrix *rhs) const
 
 } // End of namespace psi
 
+
+#endif

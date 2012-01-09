@@ -6,6 +6,7 @@
  *
  */
 
+#if HAVE_MADNESS
 
 #include "dist_mat.h"
 
@@ -178,3 +179,5 @@ void Distributed_Matrix::print_matrix_info()
 
 
 } // End of namespace psi
+
+#endif
