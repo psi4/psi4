@@ -6,10 +6,11 @@
  *
  */
 
-#if HAVE_MADNESS
 
 #include "dist_mat.h"
 #include "libqt/qt.h"
+
+#ifdef HAVE_MADNESS
 
 using namespace psi;
 using namespace std;
