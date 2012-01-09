@@ -49,6 +49,12 @@ void get_params(Options &options)
   else  
    throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
 
+  // Allow user to force semicanonical
+  if(options["SEMICANONICAL"].has_changed()) {
+   params.semicanonical = options.get_bool("SEMICANONICAL");
+   params.ref = 2;
+  }
+
   params.analyze = options.get_bool("ANALYZE");
 
   params.dertype = 0;

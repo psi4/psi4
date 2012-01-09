@@ -1,0 +1,590 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! ROHF-CCSD cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the 
+#! CN radical, with Cartesian input.
+
+molecule CN {
+  units bohr
+  0 2
+  C  0.000000000000      0.000000000000      1.195736583480
+  N  0.000000000000      0.000000000000     -1.024692078304
+}
+
+set globals {
+  reference rohf
+  wfn ccsd
+  basis cc-pVDZ
+  docc [4, 0, 1, 1]
+  socc [1, 0, 0, 0]
+  freeze_core true
+  
+  convergence 10
+  e_converge 10
+  d_converge 10
+}
+
+energy('ccsd')
+
+refnuc   =  18.91526655319571   #TEST
+refscf   = -92.195556565277684  #TEST
+refccsd  =  -0.281346262229454  #TEST
+reftotal = -92.476902827507075  #TEST
+
+compare_values(refnuc,   CN.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        7, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 7, "CCSD contribution")        #TEST
+compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")             #TEST
+
+clean()
+--------------------------------------------------------------------------
+update_geometry() is called.
+Geometry bf reorientation.
+  Irrep: 1 Size: 2 x 3
+
+                 1            2            3
+
+    1    0.0000000    0.0000000    1.1957366
+    2    0.0000000    0.0000000   -1.0246921
+
+
+
+
+*** tstart() called on arrakis-2.local
+*** at Sun Jan  8 13:23:27 2012
+
+update_geometry() is called.
+Geometry bf reorientation.
+  Irrep: 1 Size: 2 x 3
+
+                 1            2            3
+
+    1    0.0000000    0.0000000    1.1957366
+    2    0.0000000    0.0000000   -1.0246921
+
+
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             ROHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     1.195736583589
+           N          0.000000000000     0.000000000000    -1.024692078195
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =   18.915266553195707
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 13
+  Nalpha       = 7
+  Nbeta        = 6
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 28
+    Number of Cartesian functions: 30
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 1.0795205265E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial ROHF energy:   -72.85577527442499
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        14      14       5       4       4       1
+     A2         2       2       0       0       0       0
+     B1         6       6       1       1       1       0
+     B2         6       6       1       1       1       0
+   -------------------------------------------------------
+    Total      28      28       7       6       6       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+update_geometry() is called.
+Geometry bf reorientation.
+  Irrep: 1 Size: 2 x 3
+
+                 1            2            3
+
+    1    0.0000000    0.0000000    1.1957366
+    2    0.0000000    0.0000000   -1.0246921
+
+
+
+update_geometry() is called.
+Geometry bf reorientation.
+  Irrep: 1 Size: 2 x 3
+
+                 1            2            3
+
+    1    0.0000000    0.0000000    1.1957366
+    2    0.0000000    0.0000000   -1.0246921
+
+
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             44
+      Number of atomic orbitals:        30
+      Number of basis functions:        28
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  14    2    6    6 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 19125 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @ROHF iter   1:   -83.19841405632548   -1.03426e+01   1.56699e-211 
+   @ROHF iter   2:   -84.13066581008697   -9.32252e-01   6.88627e-01 DIIS
+   @ROHF iter   3:   -91.43784724805009   -7.30718e+00   6.13977e-01 DIIS
+   @ROHF iter   4:   -91.96811641917188   -5.30269e-01   5.92065e-02 DIIS
+   @ROHF iter   5:   -92.16397421479446   -1.95858e-01   2.22209e-02 DIIS
+   @ROHF iter   6:   -92.19393967674435   -2.99655e-02   1.45283e-02 DIIS
+   @ROHF iter   7:   -92.19518724092309   -1.24756e-03   2.31421e-03 DIIS
+   @ROHF iter   8:   -92.19551331432962   -3.26073e-04   1.53652e-03 DIIS
+   @ROHF iter   9:   -92.19555261826729   -3.93039e-05   6.85209e-04 DIIS
+   @ROHF iter  10:   -92.19555649991887   -3.88165e-06   3.05452e-04 DIIS
+   @ROHF iter  11:   -92.19555656385972   -6.39409e-08   3.94672e-05 DIIS
+   @ROHF iter  12:   -92.19555656526983   -1.41010e-09   8.42824e-06 DIIS
+   @ROHF iter  13:   -92.19555656527986   -1.00329e-11   3.50111e-07 DIIS
+   @ROHF iter  14:   -92.19555656528011   -2.55795e-13   6.85467e-08 DIIS
+   @ROHF iter  15:   -92.19555656528014   -2.84217e-14   7.76916e-09 DIIS
+   @ROHF iter  16:   -92.19555656528004    9.94760e-14   7.29996e-10 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -15.636443     2A1   -11.359535     3A1    -1.246019  
+	   4A1    -0.626091     1B2    -0.507352     1B1    -0.507352  
+
+	Singly Occupied:                                                      
+
+	   5A1    -0.337390  
+
+	Virtual:                                                              
+
+	   2B1     0.177180     2B2     0.177180     6A1     0.384745  
+	   3B1     0.655939     3B2     0.655939     7A1     0.699522  
+	   8A1     0.869525     4B1     1.036480     4B2     1.036480  
+	   9A1     1.044978     1A2     1.314443    10A1     1.314443  
+	   5B2     1.503399     5B1     1.503399    11A1     1.564388  
+	   2A2     2.160944    12A1     2.160944    13A1     2.254479  
+	   6B2     2.677031     6B1     2.677031    14A1     3.095851  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    1,    1 ]
+	SOCC [     1,    0,    0,    0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:   -92.19555656528004
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0016
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8531
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8546     Total:     0.8546
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.1723     Total:     2.1723
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on arrakis-2.local at Sun Jan  8 13:23:28 2012
+Module time:
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Jan  8 13:23:28 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	ROHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 28
+	Number of MOs        = 28
+	Number of active MOs = 26
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   14	    2	    2	    1	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   6	    0	    1	    0	    5	    0
+	 B2	   6	    0	    1	    0	    5	    0
+
+	Nuclear Rep. energy (chkpt) =     18.91526655319571
+	SCF energy          (chkpt) =    -92.19555656528004
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -86.999801525492629
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on arrakis-2.local at Sun Jan  8 13:23:28 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Jan  8 13:23:28 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Reference wfn   =	ROHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	True
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 28
+	Number of active MOs = 26
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   14	    2	    2	    1	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   6	    0	    1	    0	    5	    0
+	 B2	   6	    0	    1	    0	    5	    0
+
+	Nuclear Rep. energy (chkpt) =     18.91526655319571
+	SCF energy          (chkpt) =    -92.19555656528004
+
+	Size of irrep 0 of <ab|cd> integrals:      0.024 (MW) /      0.190 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.008 (MW) /      0.065 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.061 (MW) /      0.485 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.012 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.003 (MW) /      0.026 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.026 (MB)
+	Total:                                     0.014 (MW) /      0.113 (MB)
+
+	Size of irrep 0 of tIjAb amplitudes:       0.002 (MW) /      0.014 (MB)
+	Size of irrep 1 of tIjAb amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tIjAb amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 3 of tIjAb amplitudes:       0.001 (MW) /      0.006 (MB)
+	Total:                                     0.003 (MW) /      0.027 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	One-electron energy          =    -41.78837853891368
+	Two-electron (AA) energy     =      8.70889153410695
+	Two-electron (BB) energy     =      5.63986955453282
+	Two-electron (AB) energy     =     10.50297640161059
+	Two-electron energy          =     17.67735694593047
+	Frozen-core energy (transqt) =    -86.99980152549263
+	Reference energy             =    -92.19555656528013
+
+*** tstop() called on arrakis-2.local at Sun Jan  8 13:23:28 2012
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+update_geometry() is called.
+Geometry bf reorientation.
+  Irrep: 1 Size: 2 x 3
+
+                 1            2            3
+
+    1    0.0000000    0.0000000    1.1957366
+    2    0.0000000    0.0000000   -1.0246921
+
+
+
+
+*** tstart() called on arrakis-2.local
+*** at Sun Jan  8 13:23:28 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =   18.915266553195707
+	SCF energy          (chkpt)   =  -92.195556565280043
+	Reference energy    (file100) =  -92.195556565280128
+
+	Input parameters:
+	-----------------
+	Wave function   =     CCSD
+	Reference wfn   =    ROHF
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-10
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.269179918399069    0.000e+00    0.000149    0.000285    0.000285
+     1        -0.260049774917461    1.126e-01    0.021322    0.036268    0.051291
+     2        -0.273471819737438    4.425e-02    0.022424    0.039312    0.055595
+     3        -0.278680982499176    3.740e-02    0.031307    0.059226    0.083759
+     4        -0.280246932547845    2.028e-02    0.039560    0.077598    0.109741
+     5        -0.281100457113991    1.327e-02    0.047113    0.094888    0.134192
+     6        -0.281191538210339    6.489e-03    0.051599    0.104860    0.148294
+     7        -0.281353674659677    2.263e-03    0.053025    0.107955    0.152672
+     8        -0.281350138879883    9.333e-04    0.053545    0.109088    0.154274
+     9        -0.281340583935894    3.892e-04    0.053573    0.109147    0.154358
+    10        -0.281347783144709    2.020e-04    0.053607    0.109226    0.154468
+    11        -0.281348430726785    1.081e-04    0.053656    0.109331    0.154618
+    12        -0.281347881602352    5.799e-05    0.053635    0.109285    0.154552
+    13        -0.281346980153807    1.696e-05    0.053640    0.109298    0.154571
+    14        -0.281345979247123    4.184e-06    0.053641    0.109298    0.154571
+    15        -0.281346188604068    1.689e-06    0.053642    0.109301    0.154574
+    16        -0.281346245182326    6.292e-07    0.053642    0.109301    0.154575
+    17        -0.281346265590972    1.348e-07    0.053642    0.109301    0.154575
+    18        -0.281346265146119    4.566e-08    0.053642    0.109301    0.154575
+    19        -0.281346264201586    1.737e-08    0.053642    0.109301    0.154575
+    20        -0.281346264021226    7.341e-09    0.053642    0.109301    0.154575
+    21        -0.281346263835137    3.049e-09    0.053642    0.109301    0.154575
+    22        -0.281346263757886    1.416e-09    0.053642    0.109301    0.154575
+    23        -0.281346263757252    6.196e-10    0.053642    0.109301    0.154575
+    24        -0.281346263739372    3.601e-10    0.053642    0.109301    0.154575
+    25        -0.281346263749736    1.525e-10    0.053642    0.109301    0.154575
+    26        -0.281346263751070    3.870e-11    0.053642    0.109301    0.154575
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          3  12         0.0347929250
+	          4  17         0.0347929250
+	          3  13         0.0251643448
+	          4  18         0.0251643448
+	          3  15         0.0246223265
+	          4  20         0.0246223265
+	          2   3         0.0133499137
+	          1   1         0.0124981100
+	          1   3        -0.0116022939
+	          2   1        -0.0112154761
+
+	Largest Tia Amplitudes:
+	          1   9         0.2183700890
+	          3  12        -0.0351079193
+	          4  17        -0.0351079193
+	          1   3         0.0266414597
+	          1   1        -0.0203028415
+	          3  14        -0.0182528972
+	          4  19        -0.0182528972
+	          1   0        -0.0121681852
+	          3  15         0.0115238336
+	          4  20         0.0115238336
+
+	Largest TIJAB Amplitudes:
+	  4   3  17  12        -0.0342900541
+	  3   2  12   3         0.0185542888
+	  4   2  17   3         0.0185542888
+	  4   3  18  13        -0.0175746686
+	  3   2  13   1        -0.0173835410
+	  4   2  18   1        -0.0173835410
+	  4   3  10   4        -0.0165174319
+	  3   1  12   3        -0.0139506511
+	  4   1  17   3        -0.0139506511
+	  4   3  17  14        -0.0117309843
+
+	Largest Tijab Amplitudes:
+	  3   1  12   9        -0.0387366360
+	  4   1  17   9        -0.0387366360
+	  4   3  17  12        -0.0370606100
+	  3   1  12   3        -0.0147519733
+	  4   1  17   3        -0.0147519733
+	  4   3  10   4        -0.0146978768
+	  4   3  18  13        -0.0146429192
+	  3   1  14   9        -0.0132843095
+	  4   1  19   9        -0.0132843095
+	  4   3  19  14        -0.0129372551
+
+	Largest TIjAb Amplitudes:
+	  3   3  12  12        -0.1035151704
+	  4   4  17  17        -0.1035151704
+	  3   1  12   9        -0.0807438246
+	  4   1  17   9        -0.0807438246
+	  3   4  12  17        -0.0612217527
+	  4   3  17  12        -0.0612217527
+	  2   3  12   9        -0.0526891728
+	  2   4  17   9        -0.0526891728
+	  1   1  12  12        -0.0410871766
+	  1   1  17  17        -0.0410871766
+
+	SCF energy       (chkpt)              =  -92.195556565280043
+	Reference energy (file100)            =  -92.195556565280128
+
+	Opposite-spin CCSD correlation energy =    0.000000000000000
+	Same-spin CCSD correlation energy     =    0.000000000000000
+	CCSD correlation energy               =   -0.281346263751070
+      * CCSD total energy                     =  -92.476902829031204
+
+
+*** tstop() called on arrakis-2.local at Sun Jan  8 13:23:30 2012
+Module time:
+	user time   =       0.96 seconds =       0.02 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       1.32 seconds =       0.02 minutes
+	system time =       0.60 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

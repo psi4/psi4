@@ -896,8 +896,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEV", 2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Don't ? -*/
+    /*- Boolean to delete the SO-basis two-electron integral file after the transformation -*/
     options.add_bool("DELETE_TEI", true);
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_bool("SEMICANONICAL", true);
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT"|| options.read_globals()) {
@@ -1079,6 +1081,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("OMEGA", new ArrayType());
     /*- -*/
     options.add_str("OMEGA_UNITS", "AU", "AU HZ EV NM");
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -1087,6 +1091,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("NUM_THREADS",1);
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -1306,6 +1312,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("RESTART_EOM_CC3", false);
     /*- -*/
     options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -1489,6 +1497,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("CC_SCALE_OS", 1.27);
     /*- -*/
     options.add_double("CC_SCALE_SS",1.13);
+    /*- Convert ROHF MOs to semicanonical MOs -*/
+    options.add_bool("SEMICANONICAL", true);
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "CIS"|| options.read_globals()) {
