@@ -6,6 +6,7 @@
  *
  */
 
+#if HAVE_MADNESS
 
 #include "dist_mat.h"
 #include "libqt/qt.h"
@@ -317,3 +318,5 @@ madness::Void Distributed_Matrix::non_local_copy_invert_tile(const int &ti, cons
 }
 
 } // End of namespace psi
+
+#endif

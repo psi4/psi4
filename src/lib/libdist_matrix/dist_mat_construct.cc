@@ -6,6 +6,7 @@
  *
  */
 
+#if HAVE_MADNESS
 
 #include "dist_mat.h"
 
@@ -229,3 +230,6 @@ namespace psi {
 
 
 } // End of namespace psi
+
+
+#endif

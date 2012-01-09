@@ -1,6 +1,8 @@
 #ifndef _psi_src_lib_libdist_array_dist_mat_h
 #define _psi_src_lib_libdist_array_dist_mat_h
 
+#if HAVE_MADNESS
+
 #include <stdio.h>
 #include <cstdio>
 #include <string>
@@ -1814,7 +1816,6 @@ public:
 } // End of namespace psi
 
 // serialization for double* (only use for local pointers)
-#ifdef HAVE_MADNESS
 namespace madness {  namespace archive {
 
     /// Serialize a psi Tile
@@ -1833,6 +1834,7 @@ namespace madness {  namespace archive {
 
 
 } }
-#endif // End of HAVE_MADNESS
+
+#endif
 
 #endif // dist_mat_h

@@ -6,6 +6,7 @@
  *
  */
 
+#if HAVE_MADNESS
 
 #include "dist_mat.h"
 #include "libqt/qt.h"
@@ -825,3 +826,5 @@ madness::Void Distributed_Matrix::mxm(const madness::Tensor<double> &a,
 
 
 } // End of namespace psi
+
+#endif

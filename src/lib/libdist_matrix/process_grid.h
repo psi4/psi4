@@ -1,6 +1,8 @@
 #ifndef _psi_src_lib_libmints_process_grid_h_
 #define _psi_src_lib_libmints_process_grid_h_
 
+#if HAVE_MADNESS
+
 #include <cstdio>
 #include <string>
 #include <cstring>
@@ -543,4 +545,5 @@ public:
 
 } // End of psi4 namespace
 
+#endif
 #endif // PROCESS_GRID_H
