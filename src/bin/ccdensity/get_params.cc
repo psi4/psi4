@@ -34,6 +34,18 @@ void get_params( Options& options)
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
+  params.calc_xi = options.get_bool("CALC_XI");
+  if(params.calc_xi) {
+    params.ground = 0;
+    params.restart = 0;
+  }
+
+  params.use_zeta = options.get_bool("ZETA");
+  if(params.use_zeta) {
+    params.ground = 0;
+    params.restart = 1;
+  }
+
   /* For EOM-CCSD Zeta calcs to use ROHF refs for now */
   if(params.wfn == "EOM_CCSD" && params.ref==0 && params.use_zeta) params.ref = 1;
 
@@ -57,12 +69,6 @@ void get_params( Options& options)
   if( params.gauge != "LENGTH" && params.gauge != "VELOCITY") {
     printf("Invalid choice of gauge: %s\n", params.gauge.c_str());
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
-  }
-
-  params.calc_xi = options.get_bool("CALC_XI");
-  if(params.calc_xi) {
-    params.ground = 0;
-    params.restart = 0;
   }
 
   /*** determine DERTYPE from input */

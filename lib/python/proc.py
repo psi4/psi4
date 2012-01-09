@@ -281,10 +281,20 @@ def run_eom_cc_gradient(name, **kwargs):
       PsiMod.set_global_option('WFN', 'EOM_CCSD')
 
     PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    PsiMod.set_global_option('ZETA', 'FALSE')
     PsiMod.cclambda()
-    PsiMod.set_global_option('DERTYPE', 'FIRST')
     PsiMod.set_global_option('CALC_XI', 'TRUE')
     PsiMod.ccdensity()
+    PsiMod.set_global_option('ZETA', 'TRUE')
+    PsiMod.cclambda()
+    PsiMod.set_global_option('CALC_XI', 'FALSE')
+    PsiMod.ccdensity()
+    PsiMod.deriv()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_adc(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
