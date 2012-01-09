@@ -6,9 +6,9 @@
  *
  */
 
-#if HAVE_MADNESS
-
 #include "dist_mat.h"
+
+#ifdef HAVE_MADNESS
 
 namespace psi {
 

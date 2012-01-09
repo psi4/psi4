@@ -1,8 +1,6 @@
 #ifndef _psi_src_lib_libdist_array_dist_mat_h
 #define _psi_src_lib_libdist_array_dist_mat_h
 
-#if HAVE_MADNESS
-
 #include <stdio.h>
 #include <cstdio>
 #include <string>
@@ -13,6 +11,8 @@
 #include "process_grid.h"
 
 #include <libparallel/parallel.h>
+
+#ifdef HAVE_MADNESS
 
 
 namespace boost {
