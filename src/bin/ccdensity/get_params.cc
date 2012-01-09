@@ -59,6 +59,12 @@ void get_params( Options& options)
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
+  params.calc_xi = options.get_bool("CALC_XI");
+  if(params.calc_xi) {
+    params.ground = 0;
+    params.restart = 0;
+  }
+
   /*** determine DERTYPE from input */
   params.dertype = 0;
   junk = options.get_str("DERTYPE");
@@ -89,13 +95,14 @@ void get_params( Options& options)
     params.connect_xi = 0;
   else
     params.connect_xi = 1;
-  params.connect_xi = options.get_bool("CONNECT_XI");
-
+  if(options["CONNECT_XI"].has_changed()) 
+    params.connect_xi = options.get_bool("CONNECT_XI");
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
   fprintf(outfile, "\tWave function    = %6s\n", params.wfn.c_str() );
   fprintf(outfile, "\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+  fprintf(outfile, "\tDertype          = %d\n", params.dertype);
   fprintf(outfile, "\tTolerance        = %3.1e\n", params.tolerance);
   fprintf(outfile, "\tCache Level      = %1d\n", params.cachelev);
   fprintf(outfile, "\tAO Basis         = %s\n",
