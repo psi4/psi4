@@ -1113,6 +1113,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_ROOT", 1);
     /*- -*/
     options.add_bool("CALC_XI", false);
+    /*- -*/
+    options.add_bool("ZETA",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -1159,6 +1161,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_ROOT",1);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",50);
+    /*- -*/
+    options.add_bool("ZETA",false);
   }
   if(name == "CLAG"|| options.read_globals()) {
     /*- Do ? -*/

@@ -1,0 +1,19 @@
+#! Single point gradient of 2-1A1 state of H2O with EOM-CCSD
+
+molecule h2o {
+  1 2
+  H -0.107055195862289   0.000000000000000  -1.832806614599657
+  O -0.107055195862289   0.000000000000000   0.094714436481352
+  H  1.806098405595803   0.000000000000000   0.329620161376194
+  units bohr
+}
+
+set {
+  reference uhf
+  basis DZ
+  states_per_irrep [0, 0, 1, 0]
+}
+
+optimize('eom-ccsd')
+
+clean()

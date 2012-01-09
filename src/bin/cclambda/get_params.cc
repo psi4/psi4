@@ -224,6 +224,7 @@ void get_params(Options& options)
           }
         }
 
+  params.zeta = options.get_bool("ZETA");
 
   if (params.zeta) { /* only use Xi to solve for Zeta */
           params.nstates = 1;
