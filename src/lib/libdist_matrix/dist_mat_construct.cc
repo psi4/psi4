@@ -129,7 +129,7 @@ namespace psi {
         }
 
 
-        print_matrix_info();
+//        print_matrix_info();
     }
 
     // clear the distributed matrix

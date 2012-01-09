@@ -58,8 +58,6 @@ private:
         int *ptr = pgrid_.ptr();
         int *end = ptr + pgrid_.size();
         while (ptr < end) {
-            if (me_ == 0)
-                std::cout << "owner " << v%nprocs_ << std::endl;
             *ptr++ = v%nprocs_;
             v++;
         }

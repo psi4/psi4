@@ -143,7 +143,6 @@ madness::Void Distributed_Matrix::copy_col(const int &yj, Distributed_Matrix &X,
 
 
                             if (local_copy) {
-                                std::cout << "non_local_copy" << std::endl;
                                 this->task(me_, &Distributed_Matrix::local_copy_tile_col,
                                            yb, y_tij, const_cast<double*>(&X.data_[X.local(x_tij)](0,xb)),
                                            X.data_[X.local(x_tij)].dim(1));
@@ -232,7 +231,6 @@ madness::Void Distributed_Matrix::copy(const int &length, Distributed_Matrix &X,
         this->copy_col(yj, X, xj);
     // Case: this copies element by element.
     else {
-        std::cout << "default" << std::endl;
         for (int i=0, y_index = yi * this->ncols_ + yj,
              x_index = xi * X.ncols_ + xj;
              i < length; i++, y_index += y_inc, x_index = x_inc) {

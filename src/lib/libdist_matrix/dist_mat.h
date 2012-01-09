@@ -1084,8 +1084,10 @@ private:
      * @param A The lhs of the mxm.
      * @param B The rhs of the mxm.
      */
-    madness::Tensor<double> mxm(const madness::Tensor<double> &A,
-                                const madness::Tensor<double> &B);
+    madness::Void mxm(const madness::Tensor<double> &a,
+                      const madness::Tensor<double> &b,
+                      const int &c,
+                      const double &c_scale);
 
     /**
      * Convert an "ij" matrix index to an "i" matrix row index
@@ -1322,7 +1324,7 @@ public:
      *
      * NOTE: MUST BE CALLED BY ALL PROCESS
      */
-    madness::Void print(const std::string str="") const;
+    madness::Void print(const std::string str="") const __attribute__((weak_import)) ;
 
     /**
      * Process 0 gets and prints a specific tile.
@@ -1341,8 +1343,6 @@ public:
      * @param tij The tile index.
      */
     madness::Void print(const int &tij) const;
-
-    madness::Void print_test(const int &owner, const int &tij);
 
     /**
      * Clears the distributed matrix and deallocates the tiles.
