@@ -7,8 +7,7 @@ molecule h2o {
 }
 
 set {
-    wfn ccsd
-    jobtype opt
+#    jobtype opt
     dertype first
     docc [3, 0, 1, 1]
     basis 6-31G**
