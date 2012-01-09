@@ -13,6 +13,6 @@ set {
     states_per_irrep [20]
 }
 
-run_adc(h2o)
+energy('adc')
 
 clean()
