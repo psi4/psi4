@@ -15,9 +15,6 @@ set globals {
   basis sto-3g
   e_converge 10
   d_converge 10
-}
-
-set findif {
   points 3
 }
 
