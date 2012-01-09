@@ -118,7 +118,6 @@ madness::Void Distributed_Matrix::print(const int &ti, const int &tj) const
 {
     Communicator::world->sync();
     if (me_ == 0) {
-        std::cout << "owner(" << ti << ", " << tj << ") = " << owner(ti,tj) << std::endl;
         madness::Future<madness::Tensor<double> > tile = task(owner(ti,tj), &Distributed_Matrix::get_tile, ti, tj);
         task(me_, &Distributed_Matrix::print_tile, ti, tj, tile);
     }
@@ -136,22 +135,6 @@ madness::Void Distributed_Matrix::print(const int &tij) const
     Communicator::world->sync();
     return madness::None;
 
-}
-
-madness::Void Distributed_Matrix::print_test(const int &owner_, const int &tij)
-{
-    Communicator::world->sync();
-    if (me_ == owner_) {
-        std::cout << "owner = " << me_ << std::endl;
-        for (int i=0; i < data_[local(tij)].dim(0); i++) {
-            for (int j=0; j < data_[local(tij)].dim(1); j++) {
-                std::cout << "data[" << local(tij) << "][" << i << "][" << j << "] = " << data_[local(tij)](i,j) << std::endl;
-            }
-        }
-        std::cout << std::endl << std::endl;
-    }
-    Communicator::world->sync();
-    return madness::None;
 }
 
 void Distributed_Matrix::print_matrix_info()
