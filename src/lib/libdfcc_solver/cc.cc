@@ -109,7 +109,7 @@ void CC::get_params()
   denominator_algorithm_ = options_.get_str("DENOMINATOR_ALGORITHM");
   denominator_delta_ = options_.get_double("DENOMINATOR_DELTA");
 
-  schwarz_cutoff_ = options_.get_double("SCHWARZ_CUTOFF");
+  schwarz_cutoff_ = options_.get_double("INTS_TOLERANCE");
   fitting_condition_ = options_.get_double("FITTING_CONDITION");
   fitting_algorithm_ = options_.get_str("FITTING_TYPE");
 

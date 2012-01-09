@@ -67,8 +67,7 @@ void get_params(Options &options)
 
   params.print = options.get_int("PRINT");
   params.maxiter = options.get_int("MAXITER");
-  iconv = options.get_int("CONVERGENCE");
-  params.convergence = 1.0*pow(10.0,(double) -iconv);
+  params.convergence = options.get_double("CONVERGENCE");
   params.restart = options.get_bool("RESTART");
   /* If the MO orbital phases are screwed up, don't restart */
   if(!moinfo.phase) params.restart = 0;
@@ -117,11 +116,10 @@ void get_params(Options &options)
     local.pairdef = "BP";
 
   params.num_amps = options.get_int("NUM_AMPS");
-  iconv = options.get_int("BRUECKNER_CONV");
-  params.bconv = 1.0*pow(10.0,(double) -iconv);
+  params.bconv = options.get_double("BRUECKNER_CONV");
 
-  params.print_mp2_amps = options.get_bool("PRINT_MP2_AMPS");
-  params.print_pair_energies = options.get_bool("PRINT_PAIR_ENERGIES");
+  params.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
+  params.print_pair_energies = options.get_bool("PAIR_ENERGIES_PRINT");
   params.spinadapt_energies = options.get_bool("SPINADAPT_ENERGIES");
   params.t3_Ws_incore = options.get_bool("T3_WS_INCORE");
 

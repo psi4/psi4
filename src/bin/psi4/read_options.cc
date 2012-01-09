@@ -67,7 +67,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat -*/
-  options.add_int("PRINT_MAT_NCOLUMN", 5);
+  options.add_int("MAT_NUM_COLUMN_PRINT", 5);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -81,11 +81,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Reference wavefunction -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
 
-    /*- Convergence is achieved when the RMS of the error in the CI vector is
-    less than 10**(-n).  The default is 4 for energies and 7 for gradients. -*/
-    options.add_int("CONVERGENCE", 4);
+    /*- Convergence criterion for CI vector (RMS error). 
+    The default is 1e-4 for energies and 1e-7 for gradients. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE", 1e-4);
 
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-6);
 
     /*- Wavefunction type !expert -*/
@@ -150,7 +151,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ISTOP",false);
 
     /*- Do print a summary of the CI blocks? -*/
-    options.add_bool("PRINT_CIBLKS",false);
+    options.add_bool("CIBLKS_PRINT",false);
 
     /*- Guess vector type.  Accepted values are UNIT for a unit vector
     guess (NUM_ROOTS and NUM_INIT_VECS must both be 1); H0_BLOCK to use
@@ -196,10 +197,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("H0_BLOCK_COUPLING_SIZE",0);
 
     /*- number of important determinants to print out -*/
-    options.add_int("NPRINT",20);
+    options.add_int("NUM_PRINT",20);
 
     /*- number of important CC amps per ex lvl to print -*/
-    options.add_int("CC_NPRINT",10);
+    options.add_int("CC_NUM_PRINT",10);
 
     /*- How to average H diag energies over spin coupling sets.
       HD_EXACT uses the exact diagonal energies which results in expansion
@@ -267,7 +268,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CALC_SSQ",false);
 
     /*- Do compute the MPn series out to
-    kth order where k is determined by MAXNVECT?  For open-shell systems
+    kth order where k is determined by MAX_NUM_VECS?  For open-shell systems
     (REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series.
     GUESS_VECTOR must be set to UNIT, HD_OTF must be set to TRUE, and
     HD_AVE must be set to orb_ener; these should happen by default for
@@ -286,8 +287,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use Wigner formulas in the Empn series? !expert -*/
     options.add_bool("WIGNER",true);
 
-    /*- z in H = H0 + z * H1 !expert -*/
-    options.add_double("PERTURBATION_PARAMETER",1.0);
+    /*- $z$ in $H = H@@0 + z H@@1$ !expert -*/
+    options.add_double("PERTURB_MAGNITUDE",1.0);
 
     /*- maximum number of alpha electrons in RAS III -*/
     options.add_int("A_RAS3_MAX",-1);
@@ -363,14 +364,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     be held on disk for the CI coefficient and sigma vectors.  (There
     is one H(diag) vector and the number of D vectors is equal to the
     number of roots).  When the number of vectors on disk reaches
-    the value of MAXNVECT, the Davidson subspace will be
+    the value of MAX_NUM_VECS, the Davidson subspace will be
     collapsed to COLLAPSE_SIZE vectors for each root.  This is very
     helpful for saving disk space.  Defaults to MAXITER * NUM_ROOTS
     + NUM_INIT_VECS. -*/
-    options.add_int("MAXNVECT", 0);
+    options.add_int("MAX_NUM_VECS", 0);
 
     /*- Gives the number of vectors to retain when the Davidson subspace is
-    collapsed (see MAXNVECT below).  If greater than one, the
+    collapsed (see MAX_NUM_VECS below).  If greater than one, the
     collapsed subspace retains the best estimate of the CI vector for
     the previous n iterations.   Defaults to 1. -*/
     options.add_int("COLLAPSE_SIZE", 1);
@@ -382,7 +383,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of iterations between least-squares extrapolations -*/
     options.add_int("LSE_COLLAPSE", 3);
 
-    /*- Energy must be converged to $10^{-n}$ for least-squares
+    /*- Minimum converged energy for least-squares
     extrapolation to be performed -*/
     options.add_int("LSE_TOLERANCE", 3);
 
@@ -568,21 +569,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     do this).  Not doing this is experimental.  !expert -*/
     options.add_bool("CC_UPDATE_EPS", true);
 
-    /*- Do DIIS? -*/
+    /*- Do use DIIS extrapolation to accelerate CC convergence? -*/
     options.add_bool("DIIS", true);
 
     // CDS-TODO: Check difference between DIIS_START AND DIIS_MIN_VECS
-    /*- how many diis vectors built up before start -*/
+    /*- Iteration at which to start using DIIS -*/
     options.add_int("DIIS_START", 1);
 
-    /*- how often to do a DIIS exterpolation.  1 means do DIIS every
+    /*- How often to do a DIIS extrapolation. 1 means do DIIS every
     iteration, 2 is every other iteration, etc. -*/
     options.add_int("DIIS_FREQ", 1);
 
-    /*- how many vectors required before do diis? -*/
+    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MIN_VECS", 2);
 
-    /*- how many vectors maximum to hold? -*/
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MAX_VECS", 5);
 
     /*- CC_MACRO = [ [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
@@ -606,9 +607,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE",1e-10);
-    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE",1e-8);
     /*- Don't solve the CPHF equations? -*/
     options.add_bool("NO_RESPONSE",false);
@@ -618,18 +619,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("AIO_DF_INTS",false);
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
-    /*- The number of DIIS vectors used to extrapolate -*/
-    options.add_int("DIISVECS",5);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS",5);
     /*- Do compute third-order corrections? -*/
     options.add_bool("DO_THIRD_ORDER",false);
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
     /*- Do use natural orbitals for T2's? -*/
     options.add_bool("NAT_ORBS_T2",false);
-    /*- Natural Orbital Occupation Cutoff -*/
-    options.add_double("OCC_CUTOFF",1.0E-6);
-    /*- Schwarz cutoff -*/
-    options.add_double("SCHWARZ_CUTOFF",1.0E-12);
+    /*- Minimum occupation below which natural orbitals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("OCC_TOLERANCE",1.0E-6);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
     /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory? -*/
@@ -665,10 +668,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 40);
       /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
       options.add_bool("COMPUTE_TPDM", 0);
-      /*- The number of decimal digits required in the SCF density -*/
-      options.add_int("SCF_CONV", 8);
-      /*- The number of decimal digits required in the determination of lambda -*/
-      options.add_int("CONVERGENCE", 10);
+      /*- Convergence criterion for the SCF density. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("SCF_CONV", 1e-8);
+      /*- Convergence criterion for the lambda energy. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("CONVERGENCE", 1e-10);
       /*- Do relax the orbitals? -*/
       options.add_bool("RELAX_ORBITALS", true);
       /*- The damping factor used in the initial SCF procedure (0 - 1000) 0 means full standard SCF update
@@ -678,14 +681,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("IGNORE_TAU", false);
       /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$? -*/
       options.add_bool("TAU_SQUARED", false);
-      /*- An integral is considered to be zero if it's magnitude is less than $10^{-int_thresh}$ -*/
-      options.add_int("INTS_TOL", 14);
-      /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{diis_start}$ -*/
+      /*- Minimum absolute value below which integrals are neglected. 
+      See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("INTS_TOLERANCE", 1e-14);
+      /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{-diis_start}$ -*/
       options.add_int("DIIS_START", 3);
-      /*- The maximum number of vectors used in DIIS extrapolation -*/
-      options.add_int("MAX_DIIS", 6);
-      /*- The number of DIIS vectors needed for extrapolation to start -*/
-      options.add_int("DIIS_NUM_VECS", 3);
+      /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+      options.add_int("DIIS_MAX_VECS", 6);
+      /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+      options.add_int("DIIS_MIN_VECS", 3);
       /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
@@ -722,8 +726,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DFT_MIN_POINTS",0);
     /*- The boxing scheme for DFT -*/
     options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
-    /*- The DFT basis cutoff -*/
-    options.add_double("DFT_BASIS_CUTOFF", 0.0);
+    /*- The DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("DFT_BASIS_TOLERANCE", 0.0);
     /*- The DFT combined functional name (for now) -*/
     options.add_str("DFT_FUNCTIONAL", "");
     /*- The DFT Range-separation parameter (only used if changed by the user) -*/
@@ -774,8 +778,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Do perturb the Hamiltonian? -*/
     options.add_bool("PERTURB_H", false);
-    /*- How big is the perturbation? -*/
-    options.add_double("LAMBDA", 0.0);
+    /*- Size of the perturbation -*/
+    options.add_double("PERTURB_MAGNITUDE", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
     /*- Do look for an ExternalPotential object in Python? -*/
@@ -812,43 +816,46 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("START_DIIS_ITER", 1);
-    /*- The minimum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("MIN_DIIS_VECTORS", 2);
-    /*- The maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("MAX_DIIS_VECTORS", 10);
+    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MIN_VECS", 2);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS", 10);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
-    /*- Do print the molecular orbitals? -*/
-    options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- The energy convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
-    /*- The density convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-8);
-    /*- Minimum absolute TEI value for seive -*/
-    options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Minimum absolute S matrix value for DF-SCF exchange -*/
-    options.add_double("OVERLAP_CUTOFF", 0.0);
-    /*- Minimum absolute three-index value for DF-SCF seive -*/
-    options.add_double("THREE_INDEX_CUTOFF", 0.0);
+    /*- Minimum absolute value below which TEI are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 0.0);
+    /*- Minimum absolute S matrix value for DF-SCF exchange.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("OVERLAP_TOLERANCE", 0.0);
+    /*- Minimum absolute three-index value for DF-SCF seive.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("THREE_INDEX_TOLERANCE", 0.0);
     /*- Maximum number of rows to read/write in each DF-SCF operation -*/
     options.add_int("ROWS_PER_READ", 0);
 
     /*- The amount of SAD information to print to the output -*/
     options.add_int("SAD_PRINT", 0);
-    /*- SAD Guess Convergence in E.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
-    /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_D_CONVERGE", 1E-5);
     /*- Maximum number of SAD guess iterations -*/
     options.add_int("SAD_MAXITER", 50);
     /*- SAD Guess F-mix Iteration Start -*/
     options.add_int("SAD_F_MIX_START", 50);
-    /*- SAD Guess Schwarz Sieve (for rough molecular F) -*/
-    options.add_double("SAD_SCHWARZ_CUTOFF", 1E-7);
-    /*- SAD Guess Cholesky Cutoff (for eliminating redundancies) -*/
-    options.add_double("SAD_CHOL_CUTOFF", 1E-7);
+    /*- SAD Guess Schwarz Sieve (for rough molecular F).
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SAD_INTS_TOLERANCE", 1E-7);
+    /*- SAD Guess Cholesky Cutoff (for eliminating redundancies).
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
   }
   if (name == "MP2"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -882,8 +889,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- Do ? -*/
     options.add_bool("PRINT_TEI", false);
-    /*- -*/
-    options.add_int("TOLERANCE", 14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
     options.add_int("CACHELEV", 2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
@@ -907,8 +915,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PSIMRCC", false);
     /*- -*/
     options.add_str("MP2R12A", "MP2R12AERI", "MP2R12AERI MP2R12AR12 MP2R12AR12T1");
-    /*- -*/
-    options.add_int("TOLERANCE", 14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
     options.add_int("OEI_FILE", PSIF_OEI);
     /*- -*/
@@ -1061,8 +1070,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("KEEP_TEIFILE", false);
     /*- Do ? -*/
     options.add_bool("KEEP_OEIFILE", false);
-    /*- -*/
-    options.add_int("TOLERANCE", 14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
     options.add_int("CACHELEV", 2);
     /*- Do ? -*/
@@ -1089,8 +1099,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "SCF");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- Integrals are neglected if their magnitude is below $10^{-tolerance}$ -*/
-    options.add_int("TOLERANCE",14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE",1e-14);
     /*- The amount of cacheing of data to perform -*/
     options.add_int("CACHELEV",2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
@@ -1119,15 +1130,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCLAMBDA"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","SCF");
-    /*- -*/
-    options.add_int("CONVERGENCE",7);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE",1e-7);
     /*- Do ? -*/
     options.add_bool("RESTART",false);
     /*- -*/
     options.add_int("CACHELEV",2);
     /*- Do ? -*/
     options.add_bool("SEKINO",false);
-    /*- Do ? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
@@ -1195,14 +1206,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MEMORY", 1000);
     /*- The Reference -*/
     options.add_str("REFERENCE", "");
-    /*- The convergence criterion for pole searching step -*/
-    options.add_int("NEWTON_CONV", 7);
+    /*- The convergence criterion for pole searching step. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("NEWTON_CONV", 1e-7);
     /*- The maximum numbers of the pole searching iteration  -*/
     options.add_int("POLE_MAX", 20);
     /*- Maximu iteration number in simultaneous expansion method -*/
     options.add_int("SEM_MAX", 30);
-    /*- The cutoff norm of residual vector in SEM step -*/
-    options.add_int("NORM_TOL", 6);
+    /*- The cutoff norm of residual vector in SEM step.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("NORM_TOLERANCE", 1e-6);
     /*- The poles per irrep vector -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Do use the partial renormalization scheme for the ground state wavefunction? -*/
@@ -1276,29 +1289,29 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     excited states in the EOM-CC calculation !expert -*/
     options.add_int("EXCITATION_RANGE", 2);
     /*- Do ? -*/
-    options.add_bool("PRINT_SINGLES", false);
+    options.add_bool("SINGLES_PRINT", false);
     /*- -*/
-    options.add_int("VECTORS_PER_ROOT_SS", 5);
+    options.add_int("VECS_PER_ROOT_SS", 5);
     /*- -*/
-    options.add_int("VECTORS_PER_ROOT", 12);
+    options.add_int("VECS_PER_ROOT", 12);
     /*- -*/
-    options.add_int("VECTORS_CC3", 10);
+    options.add_int("VECS_CC3", 10);
     /*- Do ? -*/
     options.add_bool("COLLAPSE_WITH_LAST", true);
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("COMPLEX_TOLERANCE", 1E-12);
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("RESIDUAL_TOLERANCE", 1E-6);
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SS_RESIDUAL_TOLERANCE", 1E-6);
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("EVAL_TOLERANCE", 1E-8);
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SS_EVAL_TOLERANCE", 1E-6);
     /*- -*/
-    options.add_double("COMPLEX_TOL", 1E-12);
-    /*- -*/
-    options.add_double("RESIDUAL_TOL", 1E-6);
-    /*- -*/
-    options.add_double("RESIDUAL_TOL_SS", 1E-6);
-    /*- -*/
-    options.add_double("EVAL_TOL", 1E-8);
-    /*- -*/
-    options.add_double("EVAL_TOL_SS", 1E-6);
-    /*- -*/
-    options.add_int("AMPS_TO_PRINT", 5);
-    /*- -*/
-    options.add_double("SCHMIDT_ADD_RESIDUAL_TOL", 1E-3);
+    options.add_int("NUM_AMPS_PRINT", 5);
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
     /*- Do ? -*/
     options.add_bool("SKIP_DIAGSS", false);
     /*- Do ? -*/
@@ -1311,25 +1324,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
-    /*- -*/
+    /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEV",2);
     /*- -*/
     options.add_str("REFERENCE","RHF");
-    /*- -*/
+    /*- Gauge for optical rotation -*/
     options.add_str("GAUGE","LENGTH");
-    /*- Maximum number of iterations -*/
+    /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);
-    /*- -*/
-    options.add_int("CONVERGENCE",7);
-    /*- Do ? -*/
+    /*- Convergence criterion for perturbed wavefunctions. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE",1e-7);
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
     /*- -*/
     options.add_str("PROPERTY","POLARIZABILITY");
     /*- -*/
     options.add_str("ABCD","NEW");
-    /*- Do ? -*/
+    /*- Do restart from on-disk amplitudes? -*/
     options.add_bool("RESTART",1);
-    /*- Do ? -*/
+    /*- Do simulate local correlation? -*/
     options.add_bool("LOCAL",0);
     /*- -*/
     options.add_double("LOCAL_CUTOFF",0.01);
@@ -1347,11 +1360,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ANALYZE",0);
     /*- -*/
     options.add_int("NUM_AMPS",5);
-    /*- Do ? -*/
+    /*- Do Sekino-Bartlett size-extensive model-III? -*/
     options.add_bool("SEKINO",0);
-    /*- Do ? -*/
+    /*- Do Bartlett size-extensive linear model? -*/
     options.add_bool("LINEAR",0);
-    /*- -*/
+    /*- Energy of applied field for dynamic polarizabilities -*/
     options.add("OMEGA",new ArrayType());
     /*- -*/
     options.add("MU_IRREPS",new ArrayType());
@@ -1369,14 +1382,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-12);
-    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-12);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",100);
-    /*- Number of previous iterations to consider within the DIIS method -*/
-    options.add_int("NDIIS",7);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS",7);
     /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
     options.add_int("FOLLOW_ROOT",1);
     /*- Iteration at which to begin using the averaged Fock matrix-*/
@@ -1391,10 +1404,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("ROTATE_MO_P",1);
     /*- For orbital rotations after convergence, number of the second orbital (1-based) to rotate. !expert -*/
     options.add_int("ROTATE_MO_Q",2);
-    /*- Do use the DIIS method to optimize the CI coefficients? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence of the CI coefficients? -*/
     options.add_bool("CI_DIIS",false);
-    /*- Do use the DIIS method to optimize the SCF energy (MO coefficients only)? -*/
-    options.add_bool("USE_DIIS",true);
+    /*- Do use DIIS extrapolation to accelerate convergence of the SCF energy (MO coefficients only)? -*/
+    options.add_bool("DIIS",true);
     /*- Do read in the MOs from a previous computation? -*/
     options.add_bool("READ_MOS",true);
     /*- Do use the average Fock matrix during the SCF optimization? -*/
@@ -1427,8 +1440,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ANALYZE", 0);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
-    /*- -*/
-    options.add_int("CONVERGENCE", 7);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE", 1e-7);
     /*- Do restart the coupled-cluster iterations? -*/
     options.add_bool("RESTART",1);
     /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? -*/
@@ -1442,7 +1455,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
     /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
-    /*- Do ? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
     /*- Do ? -*/
     options.add_bool("T2_COUPLED", false);
@@ -1466,12 +1479,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- -*/
     options.add_int("NUM_AMPS", 10);
-    /*- -*/
-    options.add_int("BRUECKNER_CONV", 5);
+    /*- Convergence criterion for Breuckner orbitals. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("BRUECKNER_CONV", 1e-5);
     /*- Do ? -*/
-    options.add_bool("PRINT_MP2_AMPS", 0);
+    options.add_bool("MP2_AMPS_PRINT", 0);
     /*- Do ? -*/
-    options.add_bool("PRINT_PAIR_ENERGIES", 0);
+    options.add_bool("PAIR_ENERGIES_PRINT", 0);
     /*- Do ? -*/
     options.add_bool("SPINADAPT_ENERGIES", false);
     /*- Do ? -*/
@@ -1503,8 +1516,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 500);
-    /*- -*/
-    options.add_int("CONVERGENCE", 7);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE", 1e-7);
     /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- -*/
@@ -1541,22 +1554,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF");
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
-    /*- -*/
-    options.add_int("ENERGY_CONV", 7);
-    /*- -*/
-    options.add_int("RMS_CONV", 5);
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("ENERGY_CONV", 1e-7);
+    /*- Convergence criterion for T2 amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("RMS_CONV", 1e-5);
     /*- -*/
     options.add_int("FSKIP", 2);
-    /*- Do ? -*/
-    options.add_bool("USE_DIIS", 1);
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
+    options.add_bool("DIIS", 1);
     /*- Don't ? -*/
     options.add_bool("NEGLECT_DP", 1);
     /*- -*/
     options.add_double("DISTANT_PAIR", 8.0);
-    /*- -*/
+    /*- Iteration -*/
     options.add_int("DIISSTART", 3);
-    /*- -*/
-    options.add_int("NDIIS", 5);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS", 5);
     /*- -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
     /*- -*/
@@ -1573,8 +1586,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SCREENING", 7);
     /*- Do ? -*/
     options.add_bool("SCREEN_INTS", false);
-    /*- -*/
-    options.add_int("SCHWARTZ_TOL", 12);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-12);
    }
   if(name=="DFMP2"|| options.read_globals()) {
     options.add_int("MADMP2_SLEEP", 0);
@@ -1591,8 +1605,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE_SS", 1.0/3.0);
     /*- \% of memory for DF-MP2 three-index buffers  -*/
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
-    /*- Schwarz cutoff -*/
-    options.add_double("SCHWARZ_CUTOFF", 0.0);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 0.0);
     /*- DFMP2 Fitting Type -*/
     options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- DFMP2 Algorithm (usually for debugging)  -*/
@@ -1613,9 +1628,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- Do use parallel algorithm? -*/
     options.add_bool("PARALLEL_DFMP2",false);
-    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
-    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
@@ -1623,18 +1638,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
     /*- MO basis -*/
     options.add_str("BASIS","NONE");
-    /*- Schwarz cutoff -*/
-    options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Convergence of CC energy.  See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SCHWARZ_TOLERANCE", 0.0);
+    /*- Convergence criterion for CC energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
-    /*- Convergence of cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("T_CONVERGE", 1e-8);
-    /*- Do turn on DIIS? -*/
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
-    /*- Minimum DIIS vectors -*/
-    options.add_int("MIN_DIIS_VECS", 2);
-    /*- Maximum DIIS vectors -*/
-    options.add_int("MAX_DIIS_VECS", 6);
+    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MIN_VECS", 2);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS", 6);
     /*- Maximum number iterations -*/
     options.add_int("MAXITER", 40);
     /*- Debugging information? -*/
@@ -1691,8 +1707,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PS_MAX_POINTS",5000);
     /*- The number of grid points per evaluation block -*/
     options.add_int("PS_MIN_POINTS",0);
-    /*- The DFT basis cutoff -*/
-    options.add_double("PS_BASIS_CUTOFF", 0.0);
+    /*- The DFT basis cutoff.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("PS_BASIS_TOLERANCE", 0.0);
     /*- Minumum eigenvalue for primary basis -*/
     options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
     /*- Minumum eigenvalue for dealias basis -*/
@@ -1767,14 +1784,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         A value of 1000 retains the amplitudes from the previous iteration always being used.  A value in between these extremes
         can help in cases where oscillatory convergence is observed -*/
     options.add_int("DAMPING_FACTOR",0);
-    /*- The number of DIIS vectors to use in extrapolations -*/
-    options.add_int("MAXDIIS",7);
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS",7);
     /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
     /*- Which root of the effective hamiltonian is the target state? -*/
     options.add_int("FOLLOW_ROOT",1);
-    /*- The number of digits after the decimal to converge the energy to -*/
-    options.add_int("CONVERGENCE",9);
+    /*- Convergence criterion for energy.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("CONVERGENCE",1e-9);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/
@@ -1783,8 +1801,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
     /*- The cycle after which Tikhonow regularization is stopped.  Set to zero to allow regularization in all iterations -*/
     options.add_int("TIKHONOW_MAX",5);
-    /*- Do perform DIIS extrapolation for iterative triple excitation computations? -*/
-    options.add_bool("DIIS_TRIPLES",false);
+    /*- Do use DIIS extrapolation to accelerate convergence for iterative triples excitations? -*/
+    options.add_bool("TRIPLES_DIIS",false);
     /*- Do lock onto a singlet root? -*/
     options.add_bool("LOCK_SINGLET",false);
     /*- Do start from a MP2 guess? -*/
@@ -1799,8 +1817,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIAGONAL_CCSD_T",true);
     /*- Do diagonalize the effective Hamiltonian? -*/
     options.add_bool("DIAGONALIZE_HEFF",false);
-    /*- Do perform DIIS extrapolation? -*/
-    options.add_bool("USE_DIIS",true);
+    /*- Do use DIIS extrapolation to accelerate convergence? -*/
+    options.add_bool("DIIS",true);
     /*- Do use symmetry to map equivalent determinants onto each other, for efficiency? -*/
     options.add_bool("USE_SPIN_SYMMETRY",true);
     /*- Do zero the internal amplitudes, i.e., those that map reference determinants onto each other? -*/
@@ -1808,12 +1826,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do include the terms that couple the reference determinants? -*/
     options.add_bool("COUPLING_TERMS",true);
     /*- Do print the effective Hamiltonian? -*/
-    options.add_bool("PRINT_HEFF",false);
+    options.add_bool("HEFF_PRINT",false);
     /*- Do compute the perturbative corrections for basis set incompleteness? !expert -*/
-    options.add_bool("PERT_CBS",false);
+    options.add_bool("PERTURB_CBS",false);
     /*- Do include the terms that couple different reference determinants in
         perturbative CBS correction computations? !expert -*/
-    options.add_bool("PERT_CBS_COUPLING",true);
+    options.add_bool("PERTURB_CBS_COUPLING",true);
     /*- Do use Tikhonow regularization in (T) computations? !expert -*/
     options.add_bool("TIKHONOW_TRIPLES",false);
     /*- The type of perturbation theory computation to perform -*/
@@ -1910,7 +1928,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
-      /*- QCHEM optimization criteria: maximum force.g -*/
+      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_FORCE", 3.0e-4);
       /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DE", 1.0e-6);
