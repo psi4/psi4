@@ -12,13 +12,12 @@ molecule h2o {
 }
 
 set globals {
-  wfn detci
   basis 6-31G**
   conv_max_force 0.000001
   conv_max_disp  0.0001
 }
 
-thisenergy = optimize('detci', dertype = 0)
+thisenergy = optimize('cisd', dertype = 0)
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(),         4, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("SCF total energy"),       7, "SCF energy") #TEST
