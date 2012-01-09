@@ -627,9 +627,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NAT_ORBS",false);
     /*- Do use natural orbitals for T2's? -*/
     options.add_bool("NAT_ORBS_T2",false);
-    /*- Minimum occupation below which natural orbitals are neglected -*/
+    /*- Minimum occupation below which natural orbitals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("OCC_TOLERANCE",1.0E-6);
-    /*- Minimum absolute integral value for seive -*/
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
@@ -679,8 +681,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("IGNORE_TAU", false);
       /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$? -*/
       options.add_bool("TAU_SQUARED", false);
-      /*- Minimum absolute integral value for seive -*/
-      options.add_int("INTS_TOLERANCE", 14);
+      /*- Minimum absolute value below which integrals are neglected. 
+      See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("INTS_TOLERANCE", 1e-14);
       /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{-diis_start}$ -*/
       options.add_int("DIIS_START", 3);
       /*- Maximum number of error vectors stored for DIIS extrapolation -*/
@@ -723,7 +726,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DFT_MIN_POINTS",0);
     /*- The boxing scheme for DFT -*/
     options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
-    /*- The DFT basis cutoff -*/
+    /*- The DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("DFT_BASIS_TOLERANCE", 0.0);
     /*- The DFT combined functional name (for now) -*/
     options.add_str("DFT_FUNCTIONAL", "");
@@ -825,11 +828,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E_CONVERGE", 1e-8);
     /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-8);
-    /*- Minimum absolute TEI value for seive -*/
+    /*- Minimum absolute value below which TEI are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- Minimum absolute S matrix value for DF-SCF exchange -*/
+    /*- Minimum absolute S matrix value for DF-SCF exchange.
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("OVERLAP_TOLERANCE", 0.0);
-    /*- Minimum absolute three-index value for DF-SCF seive -*/
+    /*- Minimum absolute three-index value for DF-SCF seive.
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("THREE_INDEX_TOLERANCE", 0.0);
     /*- Maximum number of rows to read/write in each DF-SCF operation -*/
     options.add_int("ROWS_PER_READ", 0);
@@ -844,9 +850,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAD_MAXITER", 50);
     /*- SAD Guess F-mix Iteration Start -*/
     options.add_int("SAD_F_MIX_START", 50);
-    /*- SAD Guess Schwarz Sieve (for rough molecular F) -*/
+    /*- SAD Guess Schwarz Sieve (for rough molecular F).
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_INTS_TOLERANCE", 1E-7);
-    /*- SAD Guess Cholesky Cutoff (for eliminating redundancies) -*/
+    /*- SAD Guess Cholesky Cutoff (for eliminating redundancies).
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
   }
   if (name == "MP2"|| options.read_globals()) {
@@ -881,8 +889,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- Do ? -*/
     options.add_bool("PRINT_TEI", false);
-    /*- -*/
-    options.add_int("INTS_TOLERANCE", 14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
     options.add_int("CACHELEV", 2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
@@ -904,8 +913,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PSIMRCC", false);
     /*- -*/
     options.add_str("MP2R12A", "MP2R12AERI", "MP2R12AERI MP2R12AR12 MP2R12AR12T1");
-    /*- -*/
-    options.add_int("INTS_TOLERANCE", 14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
     options.add_int("OEI_FILE", PSIF_OEI);
     /*- -*/
@@ -1058,8 +1068,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("KEEP_TEIFILE", false);
     /*- Do ? -*/
     options.add_bool("KEEP_OEIFILE", false);
-    /*- -*/
-    options.add_int("INTS_TOLERANCE", 14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
     options.add_int("CACHELEV", 2);
     /*- Do ? -*/
@@ -1082,8 +1093,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "SCF");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- Minimum absolute integral value below which they are neglected -*/
-    options.add_int("INTS_TOLERANCE",14);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE",1e-14);
     /*- The amount of cacheing of data to perform -*/
     options.add_int("CACHELEV",2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
@@ -1189,8 +1201,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("POLE_MAX", 20);
     /*- Maximu iteration number in simultaneous expansion method -*/
     options.add_int("SEM_MAX", 30);
-    /*- The cutoff norm of residual vector in SEM step -*/
-    options.add_int("NORM_TOLERANCE", 6);
+    /*- The cutoff norm of residual vector in SEM step.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("NORM_TOLERANCE", 1e-6);
     /*- The poles per irrep vector -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Do use the partial renormalization scheme for the ground state wavefunction? -*/
@@ -1273,19 +1286,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("VECS_CC3", 10);
     /*- Do ? -*/
     options.add_bool("COLLAPSE_WITH_LAST", true);
-    /*- -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("COMPLEX_TOLERANCE", 1E-12);
-    /*- -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("RESIDUAL_TOLERANCE", 1E-6);
-    /*- -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SS_RESIDUAL_TOLERANCE", 1E-6);
-    /*- -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("EVAL_TOLERANCE", 1E-8);
-    /*- -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SS_EVAL_TOLERANCE", 1E-6);
     /*- -*/
     options.add_int("NUM_AMPS_PRINT", 5);
-    /*- -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
     /*- Do ? -*/
     options.add_bool("SKIP_DIAGSS", false);
@@ -1557,8 +1570,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SCREENING", 7);
     /*- Do ? -*/
     options.add_bool("SCREEN_INTS", false);
-    /*- -*/
-    options.add_int("INTS_TOLERANCE", 12);
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 1e-12);
    }
   if(name=="DFMP2"|| options.read_globals()) {
     options.add_int("MADMP2_SLEEP", 0);
@@ -1575,7 +1589,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE_SS", 1.0/3.0);
     /*- \% of memory for DF-MP2 three-index buffers  -*/
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
-    /*- Schwarz cutoff -*/
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
     /*- DFMP2 Fitting Type -*/
     options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
@@ -1607,7 +1622,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
     /*- MO basis -*/
     options.add_str("BASIS","NONE");
-    /*- Schwarz cutoff -*/
+    /*- Minimum absolute value below which integrals are neglected. 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHWARZ_TOLERANCE", 0.0);
     /*- Convergence criterion for CC energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
@@ -1675,7 +1691,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PS_MAX_POINTS",5000);
     /*- The number of grid points per evaluation block -*/
     options.add_int("PS_MIN_POINTS",0);
-    /*- The DFT basis cutoff -*/
+    /*- The DFT basis cutoff.
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("PS_BASIS_TOLERANCE", 0.0);
     /*- Minumum eigenvalue for primary basis -*/
     options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
