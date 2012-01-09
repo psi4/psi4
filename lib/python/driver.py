@@ -47,7 +47,8 @@ procedures = {
             'scf'           : run_scf_gradient,
             'ccsd'          : run_cc_gradient,
             'ccsd(t)'       : run_cc_gradient,
-            'mp2'           : run_mp2_gradient
+            'mp2'           : run_mp2_gradient,
+            'eom-ccsd'      : run_eom_cc_gradient
         },
         'hessian' : {
         },

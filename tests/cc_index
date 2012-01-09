@@ -22,7 +22,7 @@ cc8: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 cc8a: ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 <ab|cd>)
 
-cc8b:
+cc8b: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO <ab|cd>, semican)
 
 cc8c: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis <ab|cd>)
 
