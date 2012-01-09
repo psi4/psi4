@@ -205,7 +205,7 @@ void HF::common_init()
     if (perturb_h_) {
         string perturb_with;
 
-        lambda_ = options_.get_double("LAMBDA");
+        lambda_ = options_.get_double("PERTURB_MAGNITUDE");
 
         if (options_["PERTURB_WITH"].has_changed()) {
             perturb_with = options_.get_str("PERTURB_WITH");
@@ -249,8 +249,8 @@ void HF::common_init()
 
     // Allocate memory for DIISmin_diis_vectors_
     //  First, did the user request a different number of diis vectors?
-    min_diis_vectors_ = options_.get_int("MIN_DIIS_VECTORS");
-    max_diis_vectors_ = options_.get_int("MAX_DIIS_VECTORS");
+    min_diis_vectors_ = options_.get_int("DIIS_MIN_VECS");
+    max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
     diis_start_ = options_.get_int("START_DIIS_ITER");
     diis_enabled_ = options_.get_bool("DIIS");
 

@@ -71,7 +71,7 @@ void PseudospectralHF::common_init()
     Jinv_->form_cholesky_factor();
 
     // Build a Schwarz sieve object
-    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("INTS_TOLERANCE")));
 
     // Build a set of thread-local integrators
     int nthread = 1;
