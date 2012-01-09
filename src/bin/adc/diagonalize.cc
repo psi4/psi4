@@ -31,12 +31,12 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     maxdim = 10 * rpi_[irrep];
     iter = 0;
     converged = 0;
-    cutoff = pow(10, -(conv_+1));
+    cutoff = conv_;
     length = rpi_[irrep];
     
     residual_ok   = init_int_array(rpi_[irrep]);
     residual_norm = init_array(rpi_[irrep]);
-    conv          = init_int_array(rpi_[nirrep_]);
+    conv          = init_int_array(rpi_[irrep]);
     
     G        = block_matrix(maxdim, maxdim);
     Alpha    = block_matrix(maxdim, maxdim);
@@ -101,7 +101,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
         
             double norm = dpd_file2_dot_self(&F);
             residual_norm[k] = sqrt(norm);
-            if(residual_norm[k] > pow(10, -norm_tol_)) dpd_file2_scm(&F, 1/residual_norm[k]);
+            if(residual_norm[k] > norm_tol_) dpd_file2_scm(&F, 1/residual_norm[k]);
             else {
                 dpd_file2_scm(&F, 0.0);
                 residual_ok[k] = 1;
@@ -131,7 +131,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
             double norm = dpd_file2_dot_self(&B);
             norm = sqrt(norm);
         
-            if(norm > pow(10, -norm_tol_)){
+            if(norm > norm_tol_){
                 dpd_file2_scm(&B, 1/norm);
                 sprintf(lbl, "B^(%d)_[%d]12", length, irrep);
                 dpd_file2_copy(&B, PSIF_ADC, lbl);
@@ -208,8 +208,6 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     }
     timer_off("SEM");
     
-    fclose(iter_adc);
-
     fclose(iter_adc);
     free(residual_ok);
     free(residual_norm);

@@ -14,14 +14,14 @@ molecule ch2 {
     a1 = 125.0
 }
 
-set {
+set globals {
     reference rohf
     basis     6-31G**
     docc      [2, 0, 0, 1]
     socc      [1, 0, 1, 0]
 }
 
-thisenergy = run_mcscf()
+thisenergy = energy('mcscf')
 
 compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST

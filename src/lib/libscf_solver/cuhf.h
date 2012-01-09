@@ -82,7 +82,8 @@ public:
     CUHF(Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~CUHF();
 
-    virtual bool restricted() const { return false; }
+    virtual bool same_a_b_orbs() const { return false; }
+    virtual bool same_a_b_dens() const { return false; }
 };
 
 }}

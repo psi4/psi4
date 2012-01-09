@@ -496,7 +496,7 @@ SharedMatrix Deriv::compute()
         if (!X)
             throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
 
-        if(wfn_->restricted()){
+        if(wfn_->same_a_b_orbs()){
             // We need to account for spin integration
             X->scale(2.0);
             ScfRestrictedFunctor functor(TPDMcont_vector, Da);
@@ -549,7 +549,7 @@ SharedMatrix Deriv::compute()
             }
             fprintf(outfile, "\n");
 
-            if(wfn_->restricted()){
+            if(wfn_->same_a_b_orbs()){
                 // In the restricted case, the alpha D is really the total D.  Undefine the beta one, so
                 // that the one-electron contribution, computed below, is correct.
                 Db = factory_->create_shared_matrix("NULL");
@@ -574,7 +574,7 @@ SharedMatrix Deriv::compute()
             boost::shared_ptr<IntegralTransform> ints_transform = boost::shared_ptr<IntegralTransform>(
                         new IntegralTransform(wfn_,
                                               spaces,
-                                              wfn_->restricted() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type
+                                              wfn_->same_a_b_orbs() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type
                                               IntegralTransform::DPDOnly,    // Output buffer
                                               IntegralTransform::QTOrder,    // MO ordering
                                               IntegralTransform::None));     // Frozen orbitals?

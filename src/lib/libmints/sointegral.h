@@ -239,9 +239,9 @@ public:
     void compute_integrals_deriv1(TwoBodySOIntFunctor &functor);
 
     template<typename TwoBodySOIntFunctor>
-    int compute_pq_pair_deriv1(const int &p, const int &q, size_t pair_number, TwoBodySOIntFunctor &body) {
+    int compute_pq_pair_deriv1(const int &p, const int &q, const size_t &pair_number, const TwoBodySOIntFunctor &body) {
 
-        body.load_tpdm(pair_number);
+        const_cast<TwoBodySOIntFunctor &>(body).load_tpdm(pair_number);
         boost::shared_ptr<SO_RS_Iterator> shellIter(
                     new SO_RS_Iterator(p, q,
                                        b1_, b2_, b3_, b4_));

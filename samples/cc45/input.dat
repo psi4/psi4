@@ -1,0 +1,23 @@
+#! RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
+
+molecule h2o {
+  0 1
+  H
+  O 1 0.9
+  H 2 0.9 1 104.0
+}
+
+set {
+  wfn eom_cc2
+  basis "cc-pVDZ"
+  states_per_irrep [2, 2, 2, 2]
+}
+
+energy('eom-cc2')
+
+
+compare_values(scf_0, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy")
+compare_values(cc2_0, get_variable("CC2 TOTAL ENERGY"), 7, "CC2 energy")
+
+clean()
+

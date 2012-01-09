@@ -88,7 +88,8 @@ public:
 
     virtual SharedMatrix Da() const;
 
-    virtual bool restricted() const { return true; }
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
 };
 
 }}

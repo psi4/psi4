@@ -224,7 +224,7 @@ void  DFMP2::setup()
     // Skip over the frozen virtual orbitals in this irrep
   }
 
-  schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
+  schwarz_ = options_.get_double("INTS_TOLERANCE");
   schwarz_shell_pairs_ = NULL;
   sig_shell_pairs_ = 0;
 

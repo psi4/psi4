@@ -1,5 +1,6 @@
 molecule C4H4N {
-  units bohr
+    -1 1
+    units bohr
     C         0.00000000     0.00000000     2.13868804
     N         0.00000000     0.00000000     4.42197911
     C         0.00000000     0.00000000    -0.46134192
@@ -12,9 +13,7 @@ molecule C4H4N {
 }
 
 set {
-  wfn ccsd_t
   basis aug-cc-pvtz
-  charge -1
   print 2
   docc [10, 1, 4, 3]
   freeze_core true

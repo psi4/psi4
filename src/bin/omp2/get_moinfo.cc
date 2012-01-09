@@ -473,10 +473,10 @@ void OMP2Wave::get_moinfo()
 /************************** Read orbital coefficients ***************************************/
 /********************************************************************************************/
 	// read orbital coefficients from chkpt
-	Ca_ = shared_ptr<Matrix>(new Matrix("Alpha MO coefficients", nirreps, sopi, mopi));
-	Cb_ = shared_ptr<Matrix>(new Matrix("Beta MO coefficients", nirreps, sopi, mopi));
-	Ca_ref = shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirreps, sopi, mopi));
-	Cb_ref = shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirreps, sopi, mopi));
+	Ca_ = boost::shared_ptr<Matrix>(new Matrix("Alpha MO coefficients", nirreps, sopi, mopi));
+	Cb_ = boost::shared_ptr<Matrix>(new Matrix("Beta MO coefficients", nirreps, sopi, mopi));
+	Ca_ref = boost::shared_ptr<Matrix>(new Matrix("Ref alpha MO coefficients", nirreps, sopi, mopi));
+	Cb_ref = boost::shared_ptr<Matrix>(new Matrix("Ref beta MO coefficients", nirreps, sopi, mopi));
 	
 	Ca_->copy(reference_wavefunction_->Ca());
 	Cb_->copy(reference_wavefunction_->Cb());
@@ -523,9 +523,9 @@ void OMP2Wave::get_moinfo()
 /************************** Create all required matrice *************************************/
 /********************************************************************************************/
         // Build Hso
-	Hso = shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nirreps, sopi, sopi));
-	Tso = shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nirreps, sopi, sopi));
-	Vso = shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nirreps, sopi, sopi));
+	Hso = boost::shared_ptr<Matrix>(new Matrix("SO-basis One-electron Ints", nirreps, sopi, sopi));
+	Tso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Kinetic Energy Ints", nirreps, sopi, sopi));
+	Vso = boost::shared_ptr<Matrix>(new Matrix("SO-basis Potential Energy Ints", nirreps, sopi, sopi));
 	Hso->zero();
 	Tso->zero();
 	Vso->zero();

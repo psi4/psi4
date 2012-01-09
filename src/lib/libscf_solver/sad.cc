@@ -103,7 +103,7 @@ void SADGuess::form_D()
 }
 void SADGuess::form_C()
 {
-    Ca_ = Da_->partial_cholesky_factorize(options_.get_double("SAD_CHOL_CUTOFF"));
+    Ca_ = Da_->partial_cholesky_factorize(options_.get_double("SAD_CHOL_TOLERANCE"));
     Ca_->set_name("Ca SAD");
     if (nalpha_ == nbeta_) {
         

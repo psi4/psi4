@@ -21,6 +21,8 @@ public:
     OMP2Wave(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
 
     virtual ~OMP2Wave();
+    virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
+    virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
 
     virtual double compute_energy();
 
