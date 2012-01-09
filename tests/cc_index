@@ -12,13 +12,26 @@ cc4a: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>),
 cc5: RHF-CCSD(T)/aug-cc-pVTZ planar (C2v) C4NH4 single-point energy
   (fzc, MO-basis <ab|cd>)  Note: one file exceeds 17 GB in this case.
 
+cc6:
+
+cc7:
+
 cc8: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 <ab|cd>)
 
 cc8a: ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 <ab|cd>)
 
+cc8b:
+
+cc8c: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis <ab|cd>)
+
 cc9: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, AO-basis <ab|cd>)
+
+cc9a: ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (nofzc, AO-basis 
+<ab|cd>)
+
+cc10: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis <ab|cd>)
 
 cc11: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, AO-basis <ab|cd>)
 
@@ -26,6 +39,10 @@ cc12: RHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in H2O.
 
 cc13: UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
   (all electron, MO-basis <ab|cd>)
+
+cc13a: UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+
+cc14:
 
 cc15: RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
 
@@ -37,7 +54,19 @@ cc18: RHF-CCSD-LR/cc-pVDZ static polarizabilities of HOF molecule.
 
 cc19: RHF-CCSD-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
 
+cc21:
+
 cc22: ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in 3B1 CH2.
+
+cc23:
+
+cc24:
+
+cc25:
+
+cc26:
+
+cc27:
 
 cc28: RHF-CCSD-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega =
 (589 355 nm)
@@ -86,6 +115,23 @@ quantities.
 
 cc45: RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
+cc46:
+
+cc47:
+
+cc48:
+
+cc49: UHF-CC3-LR 3-2A1 excitation energy of CH radical.  This corresponds to
+the ^2Sigma+ state in full C-infinity-v symmetry and should compare to results
+published in JCP 122, 054110 (2005).
+
+cc50: ROHF-CC3-LR 3-2A1 excitation energy of CH radical.  This corresponds to
+the ^2Sigma+ state in full C-infinity-v symmetry and should compare to results
+published in JCP 122, 054110 (2005).
+
+cc51: RHF-CC3-LR 1-B1 excitation energy of H2O.
+
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.
 
+cc53(ooccd):

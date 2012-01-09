@@ -24,6 +24,8 @@ files available under {\tt psi4/samples}.
 For the latest \PSIfour\ documentation, check \htmladdnormallink{{\tt
 www.psicode.org}} {http://www.psicode.org/}.
 
+\subsection{Citing \PSIfour}
+
 The following citation should be used in any publication utilizing the
 \PSIfour\ program package:
 
@@ -31,6 +33,93 @@ The following citation should be used in any publication utilizing the
 \noindent
 \input{reference}
 \end{quotation}
+
+Additional references for theoretical, algorithmic, or implementation
+contributions specific to \PSIfour\ should also be cited if certain
+modules are used (in addition to appropriate references for the
+underlying theory):
+
+{\bf SAPT0} 
+\begin{enumerate}
+\item ``Large-scale Symmetry-adapted Perturbation Theory Computations via
+  Density Fitting and Laplace Transformation Techniques: Investigating the
+  Fundamental Forces of {DNA}-Intercalator Interactions,'' E. G. Hohenstein,
+  R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, {\em J.
+  Chem. Phys.} {\bf 135}, 174017 (2011).
+\item ``Density Fitting and Cholesky Decomposition Approximations
+  in Symmetry-Adapted Perturbation Theory: Implementation and Application
+  to Probe the Nature of $\pi$-$\pi$ Interactions in Linear Acenes,''
+  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 132},
+  184111 (2010).
+\end{enumerate}
+
+{\bf SAPT2} 
+\begin{enumerate}
+\item ``Density Fitting of Intramonomer Correlation Effects in
+  Symmetry-Adapted Perturbation Theory,''
+  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133},
+  014101 (2010).
+\end{enumerate}
+
+{\bf SAPT2+, SAPT2+(3), SAPT2+3} 
+\begin{enumerate}
+\item ``Wavefunction Methods for Noncovalent Interactions,'' E. G.
+  Hohenstein and C. D. Sherrill, {\em WIREs: Comput. Mol. Sci.}, in press.
+\end{enumerate}
+
+{\bf Using Natural Orbitals in SAPT2+, SAPT2+(3), SAPT2+3, etc.} 
+\begin{enumerate}
+\item ``Efficient Evaluation of Triple Excitations in Symmetry-Adapted
+  Perturbation Theory via MP2 Natural Orbitals,'' E. G. Hohenstein
+  and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133}, 104107 (2010).
+\end{enumerate}
+
+{\bf DCFT} 
+\begin{enumerate}
+\item ``Density Cumulant Functional Theory: First Implementation and
+  Benchmark Results for the {DCFT-06} Model,'' A. C. Simmonett,
+  J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, {\em J. Chem. Phys.}
+  {\bf 133}, 174122 (2010).
+\end{enumerate}
+
+{\bf ADC(2)} 
+\begin{enumerate}
+\item ``Spin-adaptation of Open-shell Electron Propagator Theory,''
+  M. Saitow, T. Ida, and M. Mizuno, {\em Chem. Phys. Lett.} {\bf 486},
+  171-177 (2010).
+\end{enumerate}
+
+{\bf PR-CIS(D) and PR-ADC(2)} 
+\begin{enumerate}
+\item ``Excited State Calculation for Free-Base and Metalloporphyrins with
+  the Partially Renormalized Polarization Propagator Approach,''
+  M. Saitow and Y. Mochizuki, {\em Chem. Phys. Lett.}, in press.
+\end{enumerate}
+
+{\bf CI} 
+\begin{enumerate}
+\item ``The Configuration Interaction Method: Advances in Highly 
+   Correlated Approaches,'' C. D. Sherrill and H. F. Schaefer, in
+   {\em Advances in Quantum Chemistry}, vol. 34, P.-O. L{\"o}wdin, Ed.
+   (Academic Press, New York, 1999), pp. 143-269.
+\end{enumerate}
+
+{\bf Mk-MRCCSD} 
+\begin{enumerate}
+\item ``Coupling Term Derivation and General Implementation of
+  State-Specific Multireference Coupled-Cluster Theories,''
+  F. A. Evangelista, W. D. Allen, and H. F. Schaefer, 
+  {\em J. Chem. Phys.} {\bf 127}, 024102 (2007).
+\end{enumerate}
+
+{\bf Mk-MRCCSDT(-n)} 
+\begin{enumerate}
+\item ``Triple Excitations in State-Specific Multireference Coupled
+  Cluster Theory: Application of Mk-MRCCSDT and Mk-MRCCSDT-n Methods to
+  Model Systems,'' F. A. Evangelista, A. C. Simmonett, W. D. Allen,
+  H. F. Schaefer, and J. Gauss, {\em J. Chem. Phys.} {\bf 128}, 124104
+  (2008).
+\end{enumerate}
 
 \subsection{Obtaining and Installing \PSIfour}
 \label{installation}
@@ -66,9 +155,9 @@ principle, it should work on any Unix system; however, we have not tested
 extensively on sytems other than Mac and Linux.  There is not a Windows
 version of \PSIfour.
 
-\PSIfour\ has been successfully compiled using Intel, GCC, and Clang.
-For the Intel compilers, use version 11 or
-12.1 (have have had trouble with version 12.0).  
+\PSIfour\ has been successfully compiled using Intel, GCC, and Clang
+compilers.  For the Intel compilers, use versions 11 or
+12.1 (we have had trouble with version 12.0).  
 
 
 \subsection{Capabilities}
@@ -84,29 +173,30 @@ available in \PSIfour.
 \caption{Summary of theoretical methods available in \PSIfour.} \label{table:methods}
 \parsep 10pt
 \begin{center}
-\begin{tabular}{lccc} \hline\hline
-Method                & Energy & Gradient & Hessian \\ \hline
-RHF/ROHF/UHF SCF     & Y & N & N \\
-RHF/ROHF/UHF DF-SCF   & Y & N & N \\
-%HF DBOC               & Y & N & N \\
-%TCSCF                 & Y & Y & N \\
-%CASSCF                & Y & Y & N \\
-%RASSCF                & Y & Y & N \\
-CIS/RPA/TDHF          & Y & N & N \\
-UHF DCFT              & Y & N & N \\
-RHF SAPT              & Y & N & N \\
-RHF MP2               & Y & Y & N \\
-UHF/ROHF MP2          & Y & N & N \\
-RHF DF-MP2            & Y & N & N \\
-%RHF MP2-R12           & Y & N & N \\
-RHF/ROHF CI(n)        & Y & Y & N \\
-RHF/ROHF RAS-CI       & Y & Y & N \\
-RHF/ROHF MP(n)        & Y & N & N \\
-RHF/ROHF ZAPT(n)      & Y & N & N \\
-%RAS-CI DBOC           & Y & N & N \\
-RHF/UHF/ROHF CCSD     & Y & Y & N \\
-RHF/UHF/ROHF CCSD(T)  & Y & Y$^*$ & N \\
-RHF/UHF/ROHF EOM-CCSD & Y & Y & N \\
+\begin{tabular}{lcc} \hline\hline
+Method                & Energy & Gradient \\ \hline
+RHF/ROHF/UHF SCF     & Y & N \\
+RHF/ROHF/UHF DF-SCF   & Y & N \\
+%HF DBOC               & Y & N \\
+%TCSCF                 & Y & Y \\
+%CASSCF                & Y & Y \\
+%RASSCF                & Y & Y \\
+CIS/RPA/TDHF          & Y & N \\
+UHF DCFT              & Y & N \\
+RHF SAPT              & Y & N \\
+RHF MP2               & Y & Y \\
+UHF/ROHF MP2          & Y & N \\
+RHF DF-MP2            & Y & N \\
+RHF ADC(2)            & Y & N \\
+%RHF MP2-R12           & Y & N \\
+RHF/ROHF CI(n)        & Y & Y \\
+RHF/ROHF RAS-CI       & Y & Y \\
+RHF/ROHF MP(n)        & Y & N \\
+RHF/ROHF ZAPT(n)      & Y & N \\
+%RAS-CI DBOC           & Y & N \\
+RHF/UHF/ROHF CCSD     & Y & Y \\
+RHF/UHF/ROHF CCSD(T)  & Y & Y$^*$ \\
+RHF/UHF/ROHF EOM-CCSD & Y & Y \\
 \hline\hline
 \end{tabular}
 \end{center}

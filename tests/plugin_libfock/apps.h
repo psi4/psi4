@@ -44,7 +44,7 @@ public:
     RBase();
     virtual ~RBase();
 
-    virtual bool restricted() const { return true; }
+    virtual bool same_a_b_orbs() const { return true; }
 
     void set_print(int print) { print_ = print; }
 

@@ -171,18 +171,18 @@ IntegralTransform::presort_so_tei()
         IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, tolerance_, 1, 1);
         // In the functors below, we only want to build the Fock matrix on the first pass
         if(transformationType_ == Restricted){
+            FrozenCoreAndFockRestrictedFunctor fock(aD, aFzcD,aFock,aFzcOp);
+            if(n)
+                iwl_integrals(iwl, dpdfiller, null);
+            else
+                iwl_integrals(iwl, dpdfiller, fock);
+        }else{
             FrozenCoreAndFockUnrestrictedFunctor fock(aD, bD, aFzcD, bFzcD,
                                                       aFock, bFock, aFzcOp, bFzcOp);
             if(n)
-                iwl_integrals(iwl, dpdfiller, fock);
-            else
                 iwl_integrals(iwl, dpdfiller, null);
-        }else{
-            FrozenCoreAndFockRestrictedFunctor fock(aD, aFzcD,aFock,aFzcOp);
-            if(n)
-                iwl_integrals(iwl, dpdfiller, fock);
             else
-                iwl_integrals(iwl, dpdfiller, null);
+                iwl_integrals(iwl, dpdfiller, fock);
         }
         delete iwl;
 

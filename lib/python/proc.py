@@ -178,19 +178,24 @@ def run_ccenergy(name, **kwargs):
 
 def run_cc_gradient(name, **kwargs):
 
-    run_ccenergy(name, **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
-    PsiMod.set_global_option('DERTYPE', 'FIRST')
+   PsiMod.set_global_option('DERTYPE', 'FIRST')
 
-    PsiMod.cchbar()
-    PsiMod.cclambda()
-    PsiMod.ccdensity()
-    PsiMod.deriv()
+   run_ccenergy(name, **kwargs)
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-    PsiMod.set_global_option('DERTYPE', 'NONE')
-    PsiMod.revoke_global_option_changed('DERTYPE')
+   PsiMod.cchbar()
+   PsiMod.cclambda()
+   PsiMod.ccdensity()
+   PsiMod.deriv()
+
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
+       PsiMod.set_global_option('DERTYPE', 'NONE')
+       PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_bccd(name, **kwargs):
 
@@ -284,7 +289,7 @@ def run_detci(name, **kwargs):
         PsiMod.set_global_option('WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
            PsiMod.set_global_option('SAVE_MPN2', 2)
         else:
@@ -295,7 +300,7 @@ def run_detci(name, **kwargs):
 
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
            PsiMod.set_global_option('SAVE_MPN2', 2)
         else:
@@ -332,8 +337,8 @@ def run_detci(name, **kwargs):
         PsiMod.revoke_global_option_changed('WFN')
         PsiMod.set_global_option('MPN', 'FALSE')
         PsiMod.revoke_global_option_changed('MPN')
-        PsiMod.set_global_option('MAXNVECT', 12)
-        PsiMod.revoke_global_option_changed('MAXNVECT')
+        PsiMod.set_global_option('MAX_NUM_VECS', 12)
+        PsiMod.revoke_global_option_changed('MAX_NUM_VECS')
         PsiMod.set_global_option('SAVE_MPN2', 0)
         PsiMod.revoke_global_option_changed('SAVE_MPN2')
         PsiMod.set_global_option('FCI', 'FALSE')

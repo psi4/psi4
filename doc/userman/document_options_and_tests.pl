@@ -44,6 +44,8 @@ while(<DRIVER>){
     if(/\/\*-/ and $CurrentModule){
         ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
+        # process @@ as math mode subscript in tex
+        $CommentString =~ s/@@/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
             $Expert{$CurrentModule}{$Keyword}{"Type"}    = $Type;
@@ -162,6 +164,18 @@ sub determine_keyword_type_and_default
          $Keyword = $1;
          $Default = $2;
          $Default = "No Default" unless $Default =~ /\w+/;
+     }elsif(/add_bool\(\s*\"(.*)\"\s*,\s*(?:\")?([-\w]+)(?:\")?/){
+         # This is a boolean with a default
+         $Type = "bool";
+         $Keyword = $1;
+         $Default = lc ($2);
+         if ($Default eq "1") { $Default = "true"; }
+         if ($Default eq "0") { $Default = "false"; }
+     }elsif(/add_double\(\s*\"(.*)\"\s*,\s*(?:\")?([\/.-\w]+)(?:\")?/){
+         # This is a double with a default
+         $Type = "bool";
+         $Keyword = $1;
+         $Default = lc ($2);
      }elsif(/add_(\w+)\(\s*\"(\w+)\"\s*\,\s*(?:\")?([-\w]+)(?:\")?/){
          # This is a keyword with a default
          $Type = $1;

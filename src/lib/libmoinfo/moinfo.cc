@@ -139,7 +139,7 @@ void MOInfo::read_info()
         throw PSIEXCEPTION("Wavefuntion symmetry " + wavefunction_sym_str +
                            " is not a valid choice for this point group");
     // The lowest root in the input is 1, here we subtract one
-    root = options.get_int("ROOT") - 1;
+    root = options.get_int("FOLLOW_ROOT") - 1;
 }
 
 void MOInfo::setup_model_space()

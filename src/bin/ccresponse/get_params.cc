@@ -111,7 +111,7 @@ void get_params(Options &options)
     moinfo.l_irreps[i] = moinfo.mu_irreps[(int) (i+1)%3] ^ moinfo.mu_irreps[(int) (i+2)%3];
 
   params.maxiter = options.get_int("MAXITER");
-  params.convergence = 1.0*pow(10.0, (double) -options.get_int("CONVERGENCE"));
+  params.convergence = options.get_double("CONVERGENCE");
   params.diis = options.get_bool("DIIS");
 
   params.prop = options.get_str("PROPERTY");

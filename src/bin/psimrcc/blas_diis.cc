@@ -37,8 +37,8 @@ void CCBLAS::diis_add(string amps, string delta_amps)
 
 void CCBLAS::diis_save_t_amps(int cycle)
 {
-  if(options_.get_int("MAXDIIS") != 0){
-    int diis_step = cycle % options_.get_int("MAXDIIS");
+  if(options_.get_int("DIIS_MAX_VECS") != 0){
+    int diis_step = cycle % options_.get_int("DIIS_MAX_VECS");
     for(vector<pair<string,string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
       for(int h=0;h<moinfo->get_nirreps();h++){
         CCMatIrTmp Amps = get_MatIrTmp(it->first,h,none);
@@ -56,8 +56,8 @@ void CCBLAS::diis_save_t_amps(int cycle)
 
 void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
 {
-  if(options_.get_int("MAXDIIS") != 0){
-    int diis_step = cycle % options_.get_int("MAXDIIS");
+  if(options_.get_int("DIIS_MAX_VECS") != 0){
+    int diis_step = cycle % options_.get_int("DIIS_MAX_VECS");
 
     for(vector<pair<string,string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
       if(it->second.find("t3_delta")==string::npos){
@@ -79,10 +79,10 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
     // Decide if we are doing a DIIS extrapolation in this cycle
     bool do_diis_extrapolation = false;
     if(diis_type == DiisEachCycle){
-      if(cycle >= options_.get_int("MAXDIIS") + options_.get_int("START_DIIS"))
+      if(cycle >= options_.get_int("DIIS_MAX_VECS") + options_.get_int("START_DIIS"))
         do_diis_extrapolation = true;
     }else if(diis_type == DiisCC){
-      if(diis_step == options_.get_int("MAXDIIS")-1)
+      if(diis_step == options_.get_int("DIIS_MAX_VECS")-1)
         do_diis_extrapolation = true;
     }
 
@@ -90,19 +90,19 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
     if(do_diis_extrapolation){
       double** diis_B;
       double*  diis_A;
-      allocate1(double,diis_A,options_.get_int("MAXDIIS")+1);
-      allocate2(double,diis_B,options_.get_int("MAXDIIS")+1,options_.get_int("MAXDIIS")+1);
+      allocate1(double,diis_A,options_.get_int("DIIS_MAX_VECS")+1);
+      allocate2(double,diis_B,options_.get_int("DIIS_MAX_VECS")+1,options_.get_int("DIIS_MAX_VECS")+1);
       bool singularities_found = false;
       for(vector<pair<string,string> >::iterator it=diis_matrices.begin();it!=diis_matrices.end();++it){
         // Zero A and B
-        for(int i=0;i<options_.get_int("MAXDIIS");i++){
+        for(int i=0;i<options_.get_int("DIIS_MAX_VECS");i++){
           diis_A[i]=0.0;
-          diis_B[i][options_.get_int("MAXDIIS")]=diis_B[options_.get_int("MAXDIIS")][i]=-1.0;
-          for(int j=0;j<options_.get_int("MAXDIIS");j++)
+          diis_B[i][options_.get_int("DIIS_MAX_VECS")]=diis_B[options_.get_int("DIIS_MAX_VECS")][i]=-1.0;
+          for(int j=0;j<options_.get_int("DIIS_MAX_VECS");j++)
             diis_B[i][j]=0.0;
         }
-        diis_B[options_.get_int("MAXDIIS")][options_.get_int("MAXDIIS")]=0.0;
-        diis_A[options_.get_int("MAXDIIS")]=-1.0;
+        diis_B[options_.get_int("DIIS_MAX_VECS")][options_.get_int("DIIS_MAX_VECS")]=0.0;
+        diis_A[options_.get_int("DIIS_MAX_VECS")]=-1.0;
 
         // Build B
         for(int h=0;h<moinfo->get_nirreps();h++){
@@ -115,13 +115,13 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
             allocate1(double,j_matrix,block_sizepi);
 
             // Build the diis_B matrix
-            for(int i=0;i<options_.get_int("MAXDIIS");i++){
+            for(int i=0;i<options_.get_int("DIIS_MAX_VECS");i++){
               // Load vector i irrep h
               char i_data_label[80];
               sprintf(i_data_label,"%s_%s_%d_%d",(it->second).c_str(),"DIIS",h,i);
               _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS,i_data_label,(char*)&(i_matrix[0]),block_sizepi*sizeof(double));
 
-              for(int j=i;j<options_.get_int("MAXDIIS");j++){
+              for(int j=i;j<options_.get_int("DIIS_MAX_VECS");j++){
                 // Load vector j irrep h
                 char j_data_label[80];
                 sprintf(j_data_label,"%s_%s_%d_%d",(it->second).c_str(),"DIIS",h,j);
@@ -143,7 +143,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
         }
 
         // Solve B x = A
-        int  matrix_size = options_.get_int("MAXDIIS") + 1;
+        int  matrix_size = options_.get_int("DIIS_MAX_VECS") + 1;
         int* IPIV = new int[matrix_size];
         int nrhs = 1;
         int info = 0;
@@ -163,7 +163,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
               allocate1(double,j_matrix,block_sizepi);
               double* t_matrix = &(Amps->get_matrix()[h][0][0]);
               Amps->zero_matrix_block(h);
-              for(int i=0;i<options_.get_int("MAXDIIS");i++){
+              for(int i=0;i<options_.get_int("DIIS_MAX_VECS");i++){
                 char i_data_label[80];
                 sprintf(i_data_label,"%s_%s_%d_%d",(it->first).c_str(),"DIIS",h,i);
                 _default_psio_lib_->read_entry(PSIF_PSIMRCC_INTEGRALS,i_data_label,(char*)&(i_matrix[0]),block_sizepi*sizeof(double));

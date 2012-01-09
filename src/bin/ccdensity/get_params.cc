@@ -38,8 +38,7 @@ void get_params( Options& options)
   if(params.wfn == "EOM_CCSD" && params.ref==0 && params.use_zeta) params.ref = 1;
 
   params.tolerance = 1e-14;
-  tol = options.get_int("TOLERANCE");
-  params.tolerance = 1.0*pow(10.0,(double) -tol);
+  params.tolerance = options.get_double("INTS_TOLERANCE");
 
   params.memory = Process::environment.get_memory();
   //fndcor(&(params.memory),infile,outfile);
@@ -78,7 +77,8 @@ void get_params( Options& options)
   if(params.transition)
     params.relax_opdm = 0;
 
-  params.relax_opdm = options.get_bool("RELAX_OPDM");
+  if(options["RELAX_OPDM"].has_changed())
+    params.relax_opdm = options.get_bool("RELAX_OPDM");
   if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
     fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
     params.relax_opdm = 0;

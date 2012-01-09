@@ -14,7 +14,6 @@ molecule ch2 {
 
 set globals {
   reference uhf
-  relax_opdm true
   basis cc-pvdz
   # The next 3 options control the geometry optimization tolerances
   conv_max_disp  1e-6

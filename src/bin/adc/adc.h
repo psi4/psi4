@@ -10,7 +10,7 @@
 #define PSIF_ADC       260
 #define PSIF_ADC_SEM   261
 
-#define DEBUG_         false 
+#define DEBUG_         false
 #define ANGL_TOL_      50.0
 #define CUTOFF_DENS_   1e-6
 
@@ -46,6 +46,8 @@ public:
     ADC();
     ~ADC();
     double compute_energy();
+    virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
+    virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
 
 protected:
     void init();
@@ -65,13 +67,13 @@ protected:
     // Number of singly occupied orbitals
     int nopen_;
     // Convergence criteria in Newton-Raphson procedure
-    int conv_;
+    double conv_;
     // Maximum iteration number in Newton-Raphson procedure
     int pole_max_;
     // MAximum iteration number in simultaneous expansion method
     int sem_max_;
     // Norm tolerance for the residual vector 
-    int norm_tol_;
+    double norm_tol_;
     // Number of components of transition amplitudes printed in outfile
     int num_amps_;
     // Number of alpha active occupied MOs per irrep

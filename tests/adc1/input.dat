@@ -1,0 +1,18 @@
+
+molecule h2o {
+    O
+    H 1 0.9584
+    H 1 0.9584 2 104.45
+    symmetry c1
+}
+
+set {
+    reference rhf
+    basis 6-31G**
+    guess core
+    states_per_irrep [20]
+}
+
+run_adc(h2o)
+
+clean()

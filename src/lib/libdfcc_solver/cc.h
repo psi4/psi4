@@ -111,6 +111,8 @@ protected:
 public:
   CC(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
   virtual ~CC();
+  virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
+  virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
 
   virtual double compute_energy()=0;
 } ;
