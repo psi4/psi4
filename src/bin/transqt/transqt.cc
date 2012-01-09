@@ -343,7 +343,7 @@ void get_parameters(Options & options)
   if(params.ref == "ROHF" && params.wfn == "ZAPTN")
     params.semicanonical = 2;
 
-  tol = options.get_int("TOLERANCE");
+  tol = options.get_int("INTS_TOLERANCE");
   params.tolerance = 1.0*pow(10.0,(double) -tol);
 
   params.h_bare_file = options.get_int("OEI_FILE");

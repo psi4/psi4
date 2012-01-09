@@ -38,7 +38,7 @@ void get_params( Options& options)
   if(params.wfn == "EOM_CCSD" && params.ref==0 && params.use_zeta) params.ref = 1;
 
   params.tolerance = 1e-14;
-  tol = options.get_int("TOLERANCE");
+  tol = options.get_int("INTS_TOLERANCE");
   params.tolerance = 1.0*pow(10.0,(double) -tol);
 
   params.memory = Process::environment.get_memory();
