@@ -1,3 +1,4 @@
+#! CCSD Response for H2O2
 molecule h2o2 {
     O        -0.054730547952    -1.312218696095    -0.093235962587
     O         0.054730547952     1.312218696095    -0.093235962587
@@ -9,16 +10,14 @@ noreorient
 #  o 1 1.39
 #  h 1 0.94 2 102.3
 #  h 2 0.94 1 102.3 3 -50.0
-}
+} # TEST
 
 set {
-  wfn ccsd
-  dertype response
   property roa
   freeze_core false
   omega [589]
   omega_units nm
-  mu_irreps [1, 1, 0]
+  #mu_irreps [1, 1, 0]
   gauge length
   basis cc-pVDZ
 }

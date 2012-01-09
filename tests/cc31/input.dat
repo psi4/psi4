@@ -13,8 +13,6 @@ noreorient
 }
 
 set {
-  wfn ccsd
-  dertype response
   property rotation
   freeze_core true
   omega [633, 355]

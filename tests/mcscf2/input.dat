@@ -22,7 +22,7 @@ set mcscf {
     maxiter     120
 }
 
-thisenergy = run_mcscf()
+thisenergy = energy('mcscf')
 
 compare_values(nucenergy, ozone.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 10, "Reference energy")                               #TEST
