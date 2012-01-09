@@ -30,15 +30,20 @@ protected:
     double oss_;
 
     void common_init();
-    virtual void print_header();
+    // Common printing of energies/SCS
     virtual void print_energies();
 
+    // Print header/reference information
+    virtual void print_header() = 0;
     // Form the (A|ia) = (A|mn) C_mi C_na tensor(s)
     virtual void form_Aia() = 0;
     // Apply the fitting (Q|ia) = J_QA^-1/2 (A|ia)
     virtual void form_Qia() = 0;
     // Form the energy contributions
     virtual void form_energy() = 0;
+    // Compute singles correction [for ROHF-MBPT(2) or dual-basis]
+    virtual void form_singles();
+
 
 public:
     DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
@@ -103,6 +108,21 @@ protected:
 public:
     UDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~UDFMP2();
+
+};
+
+class RODFMP2 : public UDFMP2 {
+
+protected:
+
+    void common_init();
+
+    // Print additional header
+    virtual void print_header();
+
+public:
+    RODFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    virtual ~RODFMP2();
 
 };
 
