@@ -25,7 +25,7 @@ energies = []
 for l in lambdas:
     set scf perturb_h true
     set scf perturb_with dipole_z
-    set scf lambda $l
+    set scf perturb_magnitude $l
     energies.append(energy('scf'))
 
 # The nuclear dipole is returned in a zero-based vector, containing [x, y, z]
