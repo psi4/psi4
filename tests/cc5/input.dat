@@ -21,7 +21,6 @@ molecule C4NH4 {
 }
 
 set globals {
-  wfn         ccsd_t
   docc        [10, 1, 4, 3]
   basis       aug-cc-pVTZ
   freeze_core true

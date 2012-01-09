@@ -10,7 +10,6 @@ molecule CN {
 
 set {
   reference   uhf
-  wfn         ccsd_t
   basis       cc-pVDZ
   docc        [4, 0, 1, 1]
   socc        [1, 0, 0, 0]

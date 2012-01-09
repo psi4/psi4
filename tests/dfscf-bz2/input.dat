@@ -46,8 +46,6 @@ molecule bz2 {
 
 set globals {
   basis cc-pVDZ
-  ri_basis_scf cc-pVDZ-jkfit
-  ri_basis_mp2 cc-pVDZ-RI
   scf_type df
   guess sad
 }
