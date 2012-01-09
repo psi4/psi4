@@ -6,25 +6,20 @@ refci    = -75.7850672033928    #TEST
 refcorr  = refci - refscf  #TEST
 
 molecule h2o {
+    1 2
     O
     H 1 1.00
     H 1 1.00 2 103.1
 }
 
 set globals {
-  wfn detci
-  charge 1
-  multp 2
   reference rohf
   basis 6-31G**
   freeze_core true
-}
-
-set detci {
   icore 0
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('cisd')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
 # Odd .. PSI4 SCF energy doesn't match PSI3 SCF energy to 8 digits.... #TEST

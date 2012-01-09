@@ -266,7 +266,8 @@ void NBOWriter::write(const std::string &filename)
     fprintf(file47, "$GENNBO NATOMS = %d NBAS = %d BOHR BODM ", mol.natom(), basisset.nbf());
 
     //To make this more user-friendly in the case of RHF wavefunctions...
-    if(wavefunction_->restricted() )
+    bool open_shell = (wavefunction_->nalpha() != wavefunction_->nbeta());
+    if(open_shell)
         fprintf(file47, "OPEN $END\n");
     else
         fprintf(file47, "$END\n");
@@ -454,7 +455,7 @@ void NBOWriter::write(const std::string &filename)
     betadens->remove_symmetry (sobetadens, sotoao);
     //Now print the density matrix
     fprintf(file47, "\n$DENSITY\n ");
-    if(wavefunction_->restricted ())
+    if(wavefunction_->same_a_b_dens ())
     {
         SharedMatrix density(new Matrix(nbf, nbf));
         density->copy (alphadens);
@@ -502,7 +503,7 @@ void NBOWriter::write(const std::string &filename)
     alphafock->remove_symmetry (alphasofock, sotoao);
     //Print the Fock matrix
     fprintf(file47, "\n$FOCK\n ");
-    if(wavefunction_->restricted ())
+    if(wavefunction_->same_a_b_dens ())
     {
         for(int i = 0; i < nbf; i++)
         {
@@ -551,7 +552,7 @@ void NBOWriter::write(const std::string &filename)
     alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
 
     fprintf(file47, "\n$LCAOMO\n ");
-    if(wavefunction_->restricted ())
+    if(wavefunction_->same_a_b_orbs ())
     {
         for(int i = 0; i < nbf; i++)
         {

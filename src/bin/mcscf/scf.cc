@@ -58,15 +58,23 @@ void SCF::startup()
 
   if(options_.get_str("REFERENCE")=="RHF"){
     reference = rhf;
+    same_orbs_ = true;
+    same_dens_ = true;
   }
   else if(options_.get_str("REFERENCE")=="ROHF"){
     reference = rohf;
+    same_orbs_ = true;
+    same_dens_ = false;
   }
   else if(options_.get_str("REFERENCE")=="UHF"){
     reference = uhf;
+    same_orbs_ = false;
+    same_dens_ = false;
   }
   else if(options_.get_str("REFERENCE")=="TWOCON"){
     reference = tcscf;
+    same_orbs_ = true;
+    same_dens_ = false;
     if(moinfo_scf->get_guess_occupation()){
       printf("\n  ERROR:  MCSCF cannot guess the active orbital occupation\n");
       fprintf(outfile,"\n\n  MCSCF cannot guess the active orbital occupation\n");
@@ -75,14 +83,14 @@ void SCF::startup()
     }
   }
 
-  root = options_.get_int("ROOT") - 1;
+  root = options_.get_int("FOLLOW_ROOT") - 1;
 
   // OUT OF CORE ALGORITHM
   out_of_core  = false;
 
   // DIIS
-  use_diis = options_.get_bool("USE_DIIS");
-  ndiis    = options_.get_int("NDIIS");
+  use_diis = options_.get_bool("DIIS");
+  ndiis    = options_.get_int("DIIS_MAX_VECS");
   current_diis = 0;
 
   turn_on_actv = options_.get_int("TURN_ON_ACTV");

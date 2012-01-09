@@ -67,10 +67,6 @@ protected:
     bool fix_orientation_;
     /// Move to center of mass or not?
     bool move_to_com_;
-    /// Whether the user specified the charge, or default was used
-    bool charge_specified_;
-    /// Whether the user spefified the multiplicity, or default was used
-    bool multiplicity_specified_;
 
     /// The molecular charge
     int molecular_charge_;
@@ -297,11 +293,6 @@ public:
 
     /// Compute inertia tensor.
     Matrix* inertia_tensor() const;
-
-    /// Returns true if the user specified the charge
-    bool charge_specified() const { return charge_specified_; }
-    /// Returns true if the user specified the multiplicity
-    bool multiplicity_specified() const { return multiplicity_specified_; }
 
     /// Print the molecule
     void print() const;

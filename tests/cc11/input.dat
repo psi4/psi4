@@ -6,7 +6,6 @@ molecule cn {
 }
 
 set {
-  wfn ccsd
   reference rohf
   freeze_core true
   ao_basis disk

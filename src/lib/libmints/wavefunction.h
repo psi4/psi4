@@ -200,7 +200,8 @@ public:
     void init_with_chkpt();
 
     /// Is this a restricted wavefunction?
-    virtual bool restricted() const { return true; }
+    virtual bool same_a_b_orbs() const = 0;
+    virtual bool same_a_b_dens() const = 0;
 
     /// Returns the molecule object that pertains to this wavefunction.
     boost::shared_ptr<Molecule> molecule() const;
@@ -262,7 +263,7 @@ public:
      * exit, the alpha and beta Fock matrices correspond to those in the semicanonical
      * basis, and there are distinct alpha and beta C and epsilons, also in the
      * semicanonical basis. */
-    void semicanonicalize();
+    virtual void semicanonicalize();
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
