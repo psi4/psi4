@@ -101,7 +101,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
         
             double norm = dpd_file2_dot_self(&F);
             residual_norm[k] = sqrt(norm);
-            if(residual_norm[k] > pow(10, -norm_tol_)) dpd_file2_scm(&F, 1/residual_norm[k]);
+            if(residual_norm[k] > norm_tol_) dpd_file2_scm(&F, 1/residual_norm[k]);
             else {
                 dpd_file2_scm(&F, 0.0);
                 residual_ok[k] = 1;
@@ -131,7 +131,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
             double norm = dpd_file2_dot_self(&B);
             norm = sqrt(norm);
         
-            if(norm > pow(10, -norm_tol_)){
+            if(norm > norm_tol_){
                 dpd_file2_scm(&B, 1/norm);
                 sprintf(lbl, "B^(%d)_[%d]12", length, irrep);
                 dpd_file2_copy(&B, PSIF_ADC, lbl);

@@ -59,8 +59,7 @@ void get_params(Options & options)
   params.print_tei = options.get_bool("PRINT_TEI");
 
   params.tolerance = 1e-14;
-  tol = options.get_int("INTS_TOLERANCE");
-  params.tolerance = 1.0*pow(10.0,(double) -tol);
+  params.tolerance = options.get_double("INTS_TOLERANCE");
 
   params.memory = Process::environment.get_memory();
 
