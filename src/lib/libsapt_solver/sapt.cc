@@ -75,7 +75,7 @@ void SAPT::initialize()
 
   print_ = options_.get_int("PRINT");
   debug_ = options_.get_int("DEBUG");
-  schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
+  schwarz_ = options_.get_double("INTS_TOLERANCE");
   mem_ = (long int) ((double) memory_*options_.get_double("SAPT_MEM_SAFETY"));
   mem_ /= 8L;
 

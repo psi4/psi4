@@ -416,7 +416,7 @@ void py_psi_print_out(std::string s)
  * @return whether key describes a convergence threshold or not
  */
 bool specifies_convergence(std::string const & key){
-    return (key.find("CONV") != key.npos);
+    return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
 bool check_for_basis(std::string const & name, std::string const & type)
