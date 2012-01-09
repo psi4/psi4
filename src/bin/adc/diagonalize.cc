@@ -31,7 +31,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     maxdim = 10 * rpi_[irrep];
     iter = 0;
     converged = 0;
-    cutoff = pow(10, -(conv_+1));
+    cutoff = conv_;
     length = rpi_[irrep];
     
     residual_ok   = init_int_array(rpi_[irrep]);

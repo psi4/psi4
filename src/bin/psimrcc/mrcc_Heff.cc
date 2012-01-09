@@ -41,7 +41,7 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
       print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);
     )
     double delta_energy = current_energy-old_energy;
-    if(fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE"))
+    if(fabs(delta_energy) > options_.get_double("CONVERGENCE"))
       converged = true;
 
 

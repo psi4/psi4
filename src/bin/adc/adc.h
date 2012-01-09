@@ -67,7 +67,7 @@ protected:
     // Number of singly occupied orbitals
     int nopen_;
     // Convergence criteria in Newton-Raphson procedure
-    int conv_;
+    double conv_;
     // Maximum iteration number in Newton-Raphson procedure
     int pole_max_;
     // MAximum iteration number in simultaneous expansion method

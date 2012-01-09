@@ -41,17 +41,15 @@ void LMP2::params() {
 
     maxiter_ = options_.get_int("MAXITER");
 
-    iconv = options_.get_int("ENERGY_CONV");
+    econv_ = options_.get_double("ENERGY_CONV");
     std::cout << "e_conv = " << iconv << std::endl;
-    econv_ = 1.0*pow(10.0,(double) -iconv);
 
     iconv = options_.get_int("SCREENING");
     escreen_ = 1.0*pow(10, (double) -iconv);
 
     screen_int_ = options_.get_bool("SCREEN_INTS");
 
-    rconv = options_.get_int("RMS_CONV");
-    rmsconv_ = 1.0*pow(10.0,(double) -rconv);
+    rmsconv_ = options_.get_double("RMS_CONV");
 
     fs = options_.get_int("FSKIP");
     fskip_ = 1.0*pow(10.0,(double) -fs);
