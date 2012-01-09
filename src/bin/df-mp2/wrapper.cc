@@ -34,7 +34,7 @@ PsiReturnType dfmp2(Options & options)
     } else if (options.get_str("REFERENCE") == "UHF" || options.get_str("REFERENCE") == "UKS") {
         dfmp2 = boost::shared_ptr<DFMP2>(new UDFMP2(options,psio,chkpt)); 
     } else if (options.get_str("REFERENCE") == "ROHF") {
-        throw PSIEXCEPTION("DFMP2: ROHF-MBPT(2) not yet implemented");
+        dfmp2 = boost::shared_ptr<DFMP2>(new RODFMP2(options,psio,chkpt)); 
     } else {
         throw PSIEXCEPTION("DFMP2: Unrecognized reference");
     }
