@@ -7,13 +7,13 @@
 
 #include <libdpd/dpd.h>
 
-#include "tensor/tensor.h"
-#include "process_grid.h"
 
 #include <libparallel/parallel.h>
 
 #ifdef HAVE_MADNESS
 
+#include "tensor/tensor.h"
+#include "process_grid.h"
 
 namespace boost {
 template<class T> class shared_ptr;
