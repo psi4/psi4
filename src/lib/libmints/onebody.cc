@@ -335,22 +335,23 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
             int nj = force_cartesian_ ? bs2_->shell(i)->ncartesian() : bs2_->shell(j)->nfunction();
             int center_j3 = 3*bs2_->shell(j)->ncenter();
 
-            // Compute the shell
-            compute_shell_deriv1(i, j);
+            if (center_i3 != center_j3) {
 
-            // Center i
-            location = buffer_;
-            for (int r=0; r<3; ++r) {
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-                        result[center_i3+r]->add(0, i_offset+p, j_offset+q, *location);
-                        location++;
+                // Compute the shell
+                compute_shell_deriv1(i, j);
+
+                // Center i
+                location = buffer_;
+                for (int r=0; r<3; ++r) {
+                    for (int p=0; p<ni; ++p) {
+                        for (int q=0; q<nj; ++q) {
+                            result[center_i3+r]->add(0, i_offset+p, j_offset+q, *location);
+                            location++;
+                        }
                     }
                 }
-            }
 
-            // Center j -- only if center i != center j
-            if (center_i3 != center_j3) {
+                // Center j -- only if center i != center j
                 for (int r=0; r<3; ++r) {
                     for (int p=0; p<ni; ++p) {
                         for (int q=0; q<nj; ++q) {
@@ -359,6 +360,7 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
                         }
                     }
                 }
+
             }
 
             j_offset += nj;
