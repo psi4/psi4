@@ -1081,15 +1081,17 @@ private:
 
     /**
      * Do a matrix-matrix muliplication of the two tiles, and return
-     * the result in a Tensor
+     * the result in a Future<Tensor>
      *
      * @param A The lhs of the mxm.
      * @param B The rhs of the mxm.
      */
-    madness::Void mxm(const madness::Tensor<double> &a,
-                      const madness::Tensor<double> &b,
-                      const int &c,
-                      const double &c_scale);
+    madness::Future<madness::Tensor<double> >  mxm(const madness::Tensor<double> &a,
+                                                   const madness::Tensor<double> &b);
+//    madness::Void mxm(const madness::Tensor<double> &a,
+//                      const madness::Tensor<double> &b,
+//                      const int &c,
+//                      const double &c_scale);
 
     /**
      * Convert an "ij" matrix index to an "i" matrix row index

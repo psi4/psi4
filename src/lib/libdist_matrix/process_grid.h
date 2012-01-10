@@ -66,6 +66,12 @@ private:
     }
 
 public:
+    ~process_grid()
+    {
+        dims_.clear();
+        pgrid_.clear();
+    }
+
     /// The default constructor sets only initializes the parallel stuff
     process_grid()
     {

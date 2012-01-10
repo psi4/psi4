@@ -51,6 +51,9 @@ def cp(name, **kwargs):
 
     ri_ints_io = PsiMod.get_option('RI_INTS_IO')
     PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    psioh = PsiMod.IOManager.shared_object()
+    psioh.set_specific_retention(97, True)
+
     activate(molecule) 
     molecule.update_geometry()
 
@@ -59,6 +62,8 @@ def cp(name, **kwargs):
     PsiMod.print_out("\n")
     e_dimer = call_function_in_1st_argument(func, **kwargs)
     #e_dimer = energy(name, **kwargs)
+
+    PsiMod.clean()  
     PsiMod.set_global_option('RI_INTS_IO','LOAD')
 
     # All monomers with ghosts
@@ -74,7 +79,7 @@ def cp(name, **kwargs):
         e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
         #e_monomer_full.append(energy(name,**kwargs))
         cluster_n = cluster_n + 1
-        
+        PsiMod.clean()  
 
     PsiMod.set_global_option('RI_INTS_IO','NONE')
     if (check_bsse): 
@@ -94,6 +99,8 @@ def cp(name, **kwargs):
             cluster_n = cluster_n + 1
 
     PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    psioh.set_specific_retention(97, False)
+
     activate(molecule) 
         
     if (check_bsse != True):
