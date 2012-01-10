@@ -13,7 +13,7 @@ input_directory = get_input_directory() + "/"                        #TEST
 # Test Angular Momentum Integrals SO                                 #TEST
 #################################################################### #TEST
 
-set {
+set globals {
   basis sto-3g
 }
 
@@ -39,7 +39,7 @@ compare_matrices(RefX, Li[0], 13, "SO Lx")                           #TEST
 compare_matrices(RefY, Li[1], 13, "SO Ly")                           #TEST
 compare_matrices(RefZ, Li[2], 13, "SO Lz")                           #TEST
 
-set {
+set globals {
   basis 6-311G**
 }
 
@@ -65,7 +65,7 @@ compare_matrices(RefX, Li[0], 13, "SO Lx")                           #TEST
 compare_matrices(RefY, Li[1], 13, "SO Ly")                           #TEST
 compare_matrices(RefZ, Li[2], 13, "SO Lz")                           #TEST
 
-set {
+set globals {
   basis cc-pVTZ
 }
 
@@ -95,7 +95,7 @@ compare_matrices(RefZ, Li[2], 13, "SO Lz")                           #TEST
 # Test Nabla integrals                                               #TEST
 #################################################################### #TEST
 
-set {
+set globals {
   basis sto-3g
 }
 
@@ -121,7 +121,7 @@ compare_matrices(RefX, Pi[0], 13, "SO Px")                           #TEST
 compare_matrices(RefY, Pi[1], 13, "SO Py")                           #TEST
 compare_matrices(RefZ, Pi[2], 13, "SO Pz")                           #TEST
 
-set {
+set globals {
   basis 6-311G**
 }
 
@@ -147,7 +147,7 @@ compare_matrices(RefX, Pi[0], 13, "SO Px")                           #TEST
 compare_matrices(RefY, Pi[1], 13, "SO Py")                           #TEST
 compare_matrices(RefZ, Pi[2], 13, "SO Pz")                           #TEST
 
-set {
+set globals {
   basis cc-pVTZ
 }
 

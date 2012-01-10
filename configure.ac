@@ -904,6 +904,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
+          src/lib/libdist_matrix/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
@@ -1066,6 +1067,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/mints4/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
+          tests/props1/Makefile
           tests/props2/Makefile
           tests/dft1/Makefile
           tests/mom/Makefile
