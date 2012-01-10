@@ -1951,10 +1951,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     //options.add_int("memory", 256);
     //options.add_str("reference", "UHF", "UHF");
     
-    options.add_int("e_convergence",8);
-    options.add_int("a_convergence",5);
-    options.add_int("g_convergence",5);
-    options.add_int("mg_convergence",4);
+    options.add_double("e_convergence",1e-8);
+    options.add_double("a_convergence",1e-5);
+    options.add_double("g_convergence",1e-5);
+    options.add_double("mg_convergence",1e-4);
     options.add_int("cc_maxiter",50);
     options.add_int("mo_maxiter",50);
     options.add_int("print",0);
