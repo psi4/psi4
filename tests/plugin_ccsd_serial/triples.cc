@@ -38,18 +38,47 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   #ifdef _OPENMP
       nthreads = omp_get_max_threads();
   #endif
+
   if (options["NUM_THREADS"].has_changed())
      nthreads = options.get_int("NUM_THREADS");
-  fprintf(outfile,"        (T) correction will use %i threads\n",nthreads);
-  fprintf(outfile,"\n");
-  fflush(outfile);
-  
 
-  // TODO: should put an exception here if not enough memory.
-  fprintf(outfile,"        (T) correction requires %9.2lf mb memory\n",
+  long int memory = Process::environment.get_memory();
+  memory -= 8L*(2L*o*o*v*v+o*o*o*v+o*v+5L*nthreads*v*v*v);
+
+  fprintf(outfile,"        num_threads =             %9i\n",nthreads);
+  fprintf(outfile,"        available memory =     %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
+  fprintf(outfile,"        memory requirements =  %9.2lf mb\n",
            8.*(2.*o*o*v*v+1.*o*o*o*v+(5.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
   fprintf(outfile,"\n");
   fflush(outfile);
+
+  if (memory<0){
+     while (memory<0 && nthreads>0){
+           memory += 8L*5L*v*v*v;
+           nthreads--;
+     }
+     if (nthreads<1){
+        fprintf(outfile,"        Error: not enough memory.\n");
+        fprintf(outfile,"\n");
+        fprintf(outfile,"        Setting num_threads = 1 will reduce the requirements to %7.2lf mb\n",
+             8.*(2.*o*o*v*v+1.*o*o*o*v+5.*v*v*v+1.*o*v)/1024./1024.);
+        fprintf(outfile,"\n");
+        fflush(outfile);
+        return Failure;
+     }
+     fprintf(outfile,"        Not enough memory.  Decreasing num_threads ... \n");
+     fprintf(outfile,"\n");
+     fprintf(outfile,"        num_threads =             %9i\n",nthreads);
+     fprintf(outfile,"        memory requirements =  %9.2lf mb\n",
+              8.*(2.*o*o*v*v+1.*o*o*o*v+(5.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
+     fprintf(outfile,"\n");
+     fflush(outfile);
+  }
+
+  if (memory<0){
+  }
+
+  // TODO: should put an exception here if not enough memory.
 
   int nijk = 0;
   for (int i=0; i<o; i++){
