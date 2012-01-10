@@ -10,7 +10,6 @@ molecule ch2 {
 }
 
 set {
-  wfn eom_ccsd
   reference rohf
   basis DZ
   states_per_irrep [1, 0, 0, 1]
