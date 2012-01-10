@@ -596,11 +596,19 @@ void CoupledCluster::DefineTilingCPU(){
   long int ndoubles = memory/8L;
   // minus storage for other necessary buffers 
   ndoubles -= 3L*o*o*v*v+5L*o*v+v*v+(o+v);
+  if (t2_on_disk){
+     ndoubles += o*o*v*v;
+     fprintf(outfile,"\n");
+     fprintf(outfile,"  Redefine tiling, assuming T2 is stored on disk:\n");
+     fprintf(outfile,"\n");
+  }else{
+     fprintf(outfile,"\n");
+     fprintf(outfile,"  Define tiling:\n");
+     fprintf(outfile,"\n");
+  }
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Define tiling:\n");
-  fprintf(outfile,"\n");
 
+  // if not enough space, check to see if keeping t2 on disk will help
   if (ndoubles<0){
      throw PsiException("out of memory: no amount of tiling can fix this!",__FILE__,__LINE__);
   }
@@ -664,7 +672,6 @@ void CoupledCluster::DefineTilingCPU(){
   lastovtile = ov - (novtiles-1L)*ovtilesize;
   fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3li blocks over ov.\n",novtiles); 
   fflush(outfile);
-
 }
 
 /*===================================================================
@@ -686,12 +693,34 @@ void CoupledCluster::AllocateMemory(Options&options){
   if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
   if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
 
+  // if integrals buffer isn't at least o^2v^2, try tiling again assuming t2 is on disk.
   if (dim<o*o*v*v){
-     throw PsiException("out of memory: general buffer cannot accomodate t2",__FILE__,__LINE__);
+     fprintf(outfile,"\n");
+     fprintf(outfile,"  Warning: general buffer cannot accomodate T2.\n");
+     fflush(outfile);
+     t2_on_disk = true;
+     DefineTilingCPU();
+     dim = 0;
+     if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
+     if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
+     if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
+
+     if (dim<o*o*v*v){
+        throw PsiException("out of memory: general buffer cannot accomodate t2",__FILE__,__LINE__);
+     }
+
+     fprintf(outfile,"\n");
+     fprintf(outfile,"  T2 will be stored on disk.\n");
+     fprintf(outfile,"  Increase memory by %7.2lf mb to hold T2 in core.\n",o*o*v*v*8L/1024./1024.);
+     fprintf(outfile,"\n");
   }
+
+
+
   maxelem = dim;
 
   double total_memory = 1.*dim+2.*(o*o*v*v+o*v)+1.*o*o*v*v+2.*o*v+2.*v*v;
+  if (t2_on_disk) total_memory = 1.*dim+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v;
   total_memory *= 8./1024./1024.;
 
   fprintf(outfile,"\n");
