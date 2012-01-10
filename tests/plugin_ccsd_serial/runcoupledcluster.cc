@@ -25,30 +25,11 @@
 using namespace psi;
 using namespace boost;
 
-// Forward declaration to call cctriples
-namespace psi { namespace cctriples {
-PsiReturnType cctriples(Options &options);
-}}
-// Forward declaration to call ccsort
-namespace psi { namespace ccsort {
-PsiReturnType ccsort(Options &options);
-}}
-// Forward declaration to call ccenergy
-namespace psi { namespace ccenergy {
-  PsiReturnType ccenergy(Options &options);
-  struct dpd_file4_cache_entry *priority_list(void);
-  int **cacheprep_rhf(int level, int *cachefiles);
-}}
-
 // wrapper to crawford's triples code and my triples code
 namespace psi{
-  PsiReturnType tdc_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
 }
-
-
-
 
 namespace psi{
 
