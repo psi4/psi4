@@ -598,9 +598,9 @@ void CoupledCluster::DefineTilingCPU(){
   ndoubles -= o*o*v*v+2L*(o*o*v*v+o*v)+2L*o*v+2*v*v+(o+v);
   if (t2_on_disk){
      ndoubles += o*o*v*v;
-     fprintf(outfile,"\n");
-     fprintf(outfile,"  Redefine tiling, assuming T2 is stored on disk:\n");
-     fprintf(outfile,"\n");
+     //fprintf(outfile,"\n");
+     //fprintf(outfile,"  Redefine tiling, assuming T2 is stored on disk:\n");
+     //fprintf(outfile,"\n");
   }else{
      fprintf(outfile,"\n");
      fprintf(outfile,"  Define tiling:\n");
@@ -609,8 +609,13 @@ void CoupledCluster::DefineTilingCPU(){
 
 
   // if not enough space, check to see if keeping t2 on disk will help
-  if (ndoubles<0){
-     throw PsiException("out of memory: no amount of tiling can fix this!",__FILE__,__LINE__);
+  if (ndoubles<o*o*v*v){
+     if (t2_on_disk)
+        throw PsiException("out of memory: no amount of tiling can fix this!",__FILE__,__LINE__);
+     else{
+        tilesize = ov2tilesize = ovtilesize = 0;
+        return;
+     }
   }
 
   ntiles = -999L;
@@ -693,7 +698,8 @@ void CoupledCluster::AllocateMemory(Options&options){
   // if integrals buffer isn't at least o^2v^2, try tiling again assuming t2 is on disk.
   if (dim<o*o*v*v){
      fprintf(outfile,"\n");
-     fprintf(outfile,"  Warning: general buffer cannot accomodate T2.\n");
+     fprintf(outfile,"  Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
+     fprintf(outfile,"\n");
      fflush(outfile);
      t2_on_disk = true;
      DefineTilingCPU();
@@ -707,7 +713,6 @@ void CoupledCluster::AllocateMemory(Options&options){
      }
 
      fprintf(outfile,"\n");
-     fprintf(outfile,"  T2 will be stored on disk.\n");
      fprintf(outfile,"  Increase memory by %7.2lf mb to hold T2 in core.\n",o*o*v*v*8L/1024./1024.);
      fprintf(outfile,"\n");
   }
