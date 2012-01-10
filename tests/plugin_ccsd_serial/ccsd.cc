@@ -144,7 +144,7 @@ void CoupledCluster::Initialize(Options &options){
   scale_t = 1.0;
 
   // get paramters from input 
-  conv    = pow(10.,-options.get_int("CONVERGENCE"));
+  conv    = options.get_double("CONVERGENCE");
   maxiter = options.get_int("MAXITER");
   maxdiis = options.get_int("MAX_DIIS_VECS");
 
@@ -2258,7 +2258,7 @@ void CoupledCluster::I2iabj(CCTaskParams params){
           }
       }
   }
-  memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
+  //memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
   for (i=0,id=0; i<o; i++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
@@ -2315,7 +2315,7 @@ void CoupledCluster::I2iabj(CCTaskParams params){
       }
   }
 
-  memset((void*)integrals,'\0',o*o*v*v*sizeof(double));
+  //memset((void*)integrals,'\0',o*o*v*v*sizeof(double));
 
   for (mytile=0; mytile<niabjtiles-1; mytile++){
      helper_->GPUTiledDGEMM('n','n',o*v,iabjtilesize,o*v,1.0,tempv,o*v,tempt+mytile*iabjtilesize*o*v,o*v,0.0,integrals+mytile*iabjtilesize*o*v,o*v);

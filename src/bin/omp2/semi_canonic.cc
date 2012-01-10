@@ -43,18 +43,18 @@ void OMP2Wave::semi_canonic()
 /********************************************************************************************/
 /************************** memalloc ********************************************************/
 /********************************************************************************************/ 
-	SharedMatrix UooA = shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
-	SharedMatrix UooB = shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
-	SharedMatrix UvvA = shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
-	SharedMatrix UvvB = shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
-	SharedMatrix FockooA = shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
-	SharedMatrix FockooB = shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
-	SharedMatrix FockvvA = shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
-	SharedMatrix FockvvB = shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
-	SharedVector eigooA = shared_ptr<Vector>(new Vector(nirreps, aoccpiA));
-	SharedVector eigooB = shared_ptr<Vector>(new Vector(nirreps, aoccpiB));
-	SharedVector eigvvA = shared_ptr<Vector>(new Vector(nirreps, avirtpiA));
-	SharedVector eigvvB = shared_ptr<Vector>(new Vector(nirreps, avirtpiB));
+	SharedMatrix UooA = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
+	SharedMatrix UooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
+	SharedMatrix UvvA = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
+	SharedMatrix UvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
+	SharedMatrix FockooA = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiA, aoccpiA));
+	SharedMatrix FockooB = boost::shared_ptr<Matrix>(new Matrix(nirreps, aoccpiB, aoccpiB));
+	SharedMatrix FockvvA = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiA, avirtpiA));
+	SharedMatrix FockvvB = boost::shared_ptr<Matrix>(new Matrix(nirreps, avirtpiB, avirtpiB));
+	SharedVector eigooA = boost::shared_ptr<Vector>(new Vector(nirreps, aoccpiA));
+	SharedVector eigooB = boost::shared_ptr<Vector>(new Vector(nirreps, aoccpiB));
+	SharedVector eigvvA = boost::shared_ptr<Vector>(new Vector(nirreps, avirtpiA));
+	SharedVector eigvvB = boost::shared_ptr<Vector>(new Vector(nirreps, avirtpiB));
       
 /********************************************************************************************/
 /************************** Initialize ******************************************************/
@@ -343,8 +343,8 @@ void OMP2Wave::semi_canonic()
 /********************************************************************************************/
 /************************** Build new MO coeff. *********************************************/
 /********************************************************************************************/
-        Ca_new = shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirreps, sopi, mopi));
-	Cb_new = shared_ptr<Matrix>(new Matrix("New beta MO coefficients", nirreps, sopi, mopi));
+        Ca_new = boost::shared_ptr<Matrix>(new Matrix("New alpha MO coefficients", nirreps, sopi, mopi));
+	Cb_new = boost::shared_ptr<Matrix>(new Matrix("New beta MO coefficients", nirreps, sopi, mopi));
 	Ca_new->zero();
 	Cb_new->zero();
 	Ca_new->gemm(false, false, 1.0, Ca_, UorbA, 0.0); 

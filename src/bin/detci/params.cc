@@ -62,7 +62,7 @@ void get_parameters(Options &options)
   Parameters.num_roots = options.get_int("NUM_ROOTS");
 
   Parameters.istop = options["ISTOP"].to_integer();
-  Parameters.print_ciblks = options["PRINT_CIBLKS"].to_integer();
+  Parameters.print_ciblks = options["CIBLKS_PRINT"].to_integer();
 
   // CDS-TODO: We might override the default for PRINT by command line
   // (or similar mechanism) in CASSCF, etc.
@@ -217,8 +217,8 @@ void get_parameters(Options &options)
   Parameters.h0block_coupling_size = options.get_int("H0_BLOCK_COUPLING_SIZE");
   Parameters.h0block_coupling = options["H0_BLOCK_COUPLING"].to_integer();
 
-  Parameters.nprint = options.get_int("NPRINT");
-  Parameters.cc_nprint = options.get_int("CC_NPRINT");
+  Parameters.nprint = options.get_int("NUM_PRINT");
+  Parameters.cc_nprint = options.get_int("CC_NUM_PRINT");
   Parameters.fzc = options["DETCI_FREEZE_CORE"].to_integer();
 
   if (options["FCI"].has_changed())
@@ -264,7 +264,7 @@ void get_parameters(Options &options)
 
   Parameters.save_mpn2 = options.get_int("SAVE_MPN2");
   Parameters.perturbation_parameter =
-    options.get_double("PERTURBATION_PARAMETER");
+    options.get_double("PERTURB_MAGNITUDE");
 
   if (Parameters.perturbation_parameter <= 1.0 &&
       Parameters.perturbation_parameter >= -1.0) Parameters.z_scale_H = 1;
@@ -399,7 +399,7 @@ void get_parameters(Options &options)
 
   Parameters.lse_tolerance = options.get_int("LSE_TOLERANCE");
 
-  Parameters.maxnvect = options.get_int("MAXNVECT");
+  Parameters.maxnvect = options.get_int("MAX_NUM_VECS");
 
   if (Parameters.maxnvect == 0 &&
       Parameters.diag_method == METHOD_DAVIDSON_LIU_SEM) {
@@ -837,7 +837,7 @@ void print_parameters(void)
       Parameters.val_ex_lvl, Parameters.h0guess_size);
    fprintf(outfile, "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
-   fprintf(outfile, "   NPRINT        =   %6d\n", Parameters.nprint);
+   fprintf(outfile, "   NUM PRINT     =   %6d\n", Parameters.nprint);
    fprintf(outfile, "   MAXITER       =   %6d      FREEZE CORE  =   %6s\n",
       Parameters.maxiter, Parameters.fzc ? "yes" : "no");
    fprintf(outfile, "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
@@ -925,7 +925,7 @@ void print_parameters(void)
 
    fprintf(outfile, "   S             =   %.4lf      Ms0          =   %6s\n",
       Parameters.S, Parameters.Ms0 ? "yes" : "no");
-   fprintf(outfile, "   MAXNVECT      =   %6d\n", Parameters.maxnvect);
+   fprintf(outfile, "   MAX NUM VECS  =   %6d\n", Parameters.maxnvect);
    fprintf(outfile, "   RESTART       =   %6s\n",
       Parameters.restart ? "yes" : "no");
    fprintf(outfile, "   GUESS VECTOR  =  ");

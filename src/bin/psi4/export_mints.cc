@@ -11,6 +11,12 @@ using namespace boost;
 using namespace boost::python;
 using namespace psi;
 
+boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
+{
+    //SharedMolecule mol = Process::environment.molecule();
+    return DipoleInt::nuclear_contribution(mol);
+}
+
 boost::shared_ptr<MatrixFactory> get_matrix_factory()
 {
     // We need a valid molecule with a valid point group to create a matrix factory.
@@ -39,6 +45,8 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
 
 void export_mints()
 {
+    def("nuclear_dipole", py_nuclear_dipole);
+
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
     // is going to contain boost::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle

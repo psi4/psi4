@@ -8,14 +8,12 @@ reftotal = -92.490873565295587  #TEST
 
 molecule CN {
   units bohr
-  0 2
   C  0.000000000000      0.000000000000      1.195736583480
   N  0.000000000000      0.000000000000     -1.024692078304
 }
 
 set globals {
   reference rohf
-  wfn ccsd_t
   basis cc-pVDZ
   docc [4, 0, 1, 1]
   socc [1, 0, 0, 0]

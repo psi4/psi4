@@ -500,7 +500,7 @@ void DFTGrid::buildGridFromOptions()
     // Blocking/sieving info
     int max_points = options_.get_int("DFT_MAX_POINTS");
     int min_points = options_.get_int("DFT_MIN_POINTS");
-    double epsilon = options_.get_double("DFT_BASIS_CUTOFF");
+    double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights
@@ -896,7 +896,7 @@ void PseudospectralGrid::buildGridFromOptions()
 
     int max_points = options_.get_int("PS_MAX_POINTS");
     int min_points = options_.get_int("PS_MIN_POINTS");
-    double epsilon = options_.get_double("PS_BASIS_CUTOFF");
+    double epsilon = options_.get_double("PS_BASIS_TOLERANCE");
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights

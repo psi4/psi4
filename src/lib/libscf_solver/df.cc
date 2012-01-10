@@ -102,7 +102,7 @@ void DFHF::common_init()
     }
 
     timer_on("Schwarz");
-    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("INTS_TOLERANCE")));
     timer_off("Schwarz");
 
     if (print_ > 1) {
@@ -114,7 +114,7 @@ void DFHF::common_init()
         double ntri_shell_savings = 1.0 - ntri_shell / (double) ntri_shell_naive;
         double ntri_fun_savings   = 1.0 - ntri_fun / (double) ntri_fun_naive;
 
-        fprintf(outfile, "  Schwarz Cutoff is %8.3E\n", options_.get_double("SCHWARZ_CUTOFF"));
+        fprintf(outfile, "  Schwarz Cutoff is %8.3E\n", options_.get_double("INTS_TOLERANCE"));
         fprintf(outfile, "   -Shell Pairs:    %12d of %12d remain, %3.0f%% savings\n",
             ntri_shell, ntri_shell_naive, 100.0*ntri_shell_savings);
         fprintf(outfile, "   -Function Pairs: %12d of %12d remain, %3.0f%% savings\n\n",
