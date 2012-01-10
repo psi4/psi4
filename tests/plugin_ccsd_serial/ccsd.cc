@@ -154,10 +154,10 @@ void CoupledCluster::Initialize(Options &options){
      memory  = options.get_int("MEMORY");
      memory *= (long int)1024*1024;
   }
-  // minus some extra in case i've miscounted...
-  //memory -= (long int)200*1024*1024;
 
-  // initialize gpu helper class
+  /**
+    *  GPU helper class knows if we have gpus or not and how to use them
+    */
   helper_ = boost::shared_ptr<GPUHelper>(new GPUHelper);
 
   // get device parameters, allocate gpu memory and pinned cpu memory
@@ -595,7 +595,7 @@ void CoupledCluster::DefineTilingCPU(){
   // number of doubles in total memory
   long int ndoubles = memory/8L;
   // minus storage for other necessary buffers 
-  ndoubles -= 3L*o*o*v*v+5L*o*v+v*v+(o+v);
+  ndoubles -= o*o*v*v+2L*(o*o*v*v+o*v)+2L*o*v+2*v*v+(o+v);
   if (t2_on_disk){
      ndoubles += o*o*v*v;
      fprintf(outfile,"\n");
@@ -617,25 +617,17 @@ void CoupledCluster::DefineTilingCPU(){
   tilesize = v*(v+1L)/2L;
   ntiles = 1L;
 
-  // check whether blocking of the vabcd diagram is necessary
-  if (ndoubles>v*(v+1L)/2L*v*(v+1L)/2L){
-     tilesize = v*(v+1L)/2L;
-     ntiles = 1L;
-  }
-  else{
-     for (i=2L; i<=v*(v+1L)/2L; i++){
-         if (ndoubles>tilesize*v*(v+1L)/2L/i+1L){
-            tilesize = v*(v+1L)/2L/i;
-            if (i*tilesize < v*(v+1L)/2L) tilesize++;
-            ntiles = i;
-            break;
-         }
-     }
-     if (ntiles==-999L){
-        throw PsiException("out of memory: (ab,cd)",__FILE__,__LINE__);
-     }
+  // tiling for vabcd diagram
+  ntiles=1L;
+  tilesize=v*(v+1L)/2L/1L;
+  if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
+  while(v*(v+1L)/2L*tilesize>ndoubles){
+     ntiles++;
+     tilesize = v*(v+1L)/2L/ntiles;
+     if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
   }
   lasttile = v*(v+1L)/2L - (ntiles-1L)*tilesize;
+
 
   fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
   fflush(outfile);
@@ -684,6 +676,11 @@ void CoupledCluster::AllocateMemory(Options&options){
   long int i,o=ndoccact;
   long int v=nvirt;
   long int dim;
+
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  available memory =             %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
+  fprintf(outfile,"  minimum memory requirements =  %9.2lf mb\n",
+         8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();

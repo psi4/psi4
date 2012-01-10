@@ -55,7 +55,17 @@ class GPUHelper{
     void GPU_DGEMM_2DTile_tt_threaded(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc);
     void GPU_DGEMM_2DTile_tn_threaded(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc);
 
+    /**
+      * Initialize cuda.  To keep nvcc out of the picture for now, call CudaInit,
+      * which will call CudaInitGPU only if the -DCUDA flag is present in the 
+      * makefile.
+      */
     void CudaInit(Options&options);
+    void CudaInitGPU(Options&options);
+
+    /**
+      * wrapper for cuda error messages
+      */
     inline void Check_CUDA_Error(FILE*fp,const char *message);
 
     /**
@@ -74,9 +84,9 @@ class GPUHelper{
     double**gpuarray,**tmp;
 
     // tiling
-    void Tiling(long int mem1,long int mem1,long int m,long int n,long int k);
-    void TilingWithCpuStealing(long int mem1,long int mem1,long int m,long int n,long int k);
-    void TilingNoThread(long int mem1,long int mem1,long int m,long int n,long int k);
+    void Tiling(long int mem1,long int mem2,long int m,long int n,long int k);
+    void TilingWithCpuStealing(long int mem1,long int mem2,long int m,long int n,long int k);
+    void TilingNoThread(long int mem1,long int mem2,long int m,long int n,long int k);
     long int ntilesN,ntilesM,ntilesK;
     long int tilesizeK,tilesizeN,tilesizeM;
     long int lasttileK,lasttileN,lasttileM;
