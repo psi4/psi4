@@ -1,9 +1,4 @@
-#! 6-31G** H2O Test CCSD energy, with Z-Matrix input
-
-refnuc   = 9.077238846804       #TEST
-refscf   = -76.0219978763       #TEST
-refccsd  = -0.208990979379479   #TEST
-reftotal = -76.230988855677879  #TEST
+#! 6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 
 molecule h2o {
     o
@@ -12,19 +7,22 @@ molecule h2o {
 }
 
 set globals {
-  reference rhf
   basis 6-31G**
-
   convergence 10
   e_converge 10
   d_converge 10
 }
 
-energy('ccsd')
+optimize('ccsd', dertype=0)
 
-compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          9, "Nuclear repulsion energy")  #TEST
-compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy")                #TEST
-compare_values(refccsd,  get_variable("CCSD correlation energy"), 7, "CCSD contribution")         #TEST
-compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")              #TEST
+refnuc   =  9.166137300098260  #TEST
+refscf   = -76.02293995043653  #TEST
+refccsd  = -0.208238532935749  #TEST
+reftotal = -76.2311784833722   #TEST
+
+compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        5, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
+compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")             #TEST
 
 clean()
