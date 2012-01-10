@@ -159,8 +159,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   #ifdef _OPENMP
       nthreads = omp_get_max_threads();
   #endif
-  if (options["triples_threads"].has_changed())
-     nthreads = options.get_int("triples_threads");
+  if (options["NUM_THREADS"].has_changed())
+     nthreads = options.get_int("NUM_THREADS");
   fprintf(outfile,"        (T) correction will use %i threads\n",nthreads);
   fprintf(outfile,"\n");
   fflush(outfile);
