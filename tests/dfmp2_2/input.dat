@@ -42,8 +42,8 @@ for basisset in basissets:
     set ri_basis_scf $jkbasis
     ribasis = basisset + "-ri"
     set ri_basis_mp2 $ribasis
-    edfscf = scf()
-    edfmp2 = dfmp2()
+    edfmp2 = energy('dfmp2')
+    edfscf = get_variable('SCF TOTAL ENERGY')
     compare_values(edfscf, refscf[count], 10, basisset + " DF-SCF Energy")            #TEST
     compare_values(edfmp2, refmp2[count], 10, basisset + " DF-MP2 Energy")            #TEST
     count  = count + 1                                                                #TEST
@@ -59,4 +59,3 @@ print_out("\nSummary of results\n")
 print str(table)
 print_out("\nAnd again, but more precision\n")
 print str(longtable)
-
