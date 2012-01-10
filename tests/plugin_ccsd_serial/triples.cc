@@ -149,180 +149,343 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   fflush(outfile);
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
-  
+ 
+  /**
+    *  if there is only one thread due to memory constraints, 
+    *  don't use the pragma so mkl will pick up more threads in dgemm
+    */
 
-  //ccsd->helper_->num_gpus = 0;
-  #pragma omp parallel for schedule (dynamic) num_threads(nthreads)
-  for (int ind=0; ind<nijk; ind++){
-      int i = ijk[ind][0];
-      int j = ijk[ind][1];
-      int k = ijk[ind][2];
+  if (nthreads==1){
+     #pragma omp parallel for schedule (dynamic) num_threads(nthreads)
+     for (int ind=0; ind<nijk; ind++){
+         int i = ijk[ind][0];
+         int j = ijk[ind][1];
+         int k = ijk[ind][2];
 
-      int thread = 0;
-      #ifdef _OPENMP
-          thread = omp_get_thread_num();
-      #endif
+         int thread = 0;
+         #ifdef _OPENMP
+             thread = omp_get_thread_num();
+         #endif
 
-      psio_address addr;
-      #pragma omp critical
-      {
-          addr = psio_get_address(PSIO_ZERO,(long int)k*v*v*v*sizeof(double));
-          psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
-      }
-      ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+i*v*v,v,0.0,Z[thread],v*v,thread);
-      ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+k*o*v,v,tempt+i*v*v*o,v*v,1.0,Z[thread],v,thread);
+         psio_address addr;
+         #pragma omp critical
+         {
+             addr = psio_get_address(PSIO_ZERO,(long int)k*v*v*v*sizeof(double));
+             psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
+         }
+         ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+i*v*v,v,0.0,Z[thread],v*v,thread);
+         ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+k*o*v,v,tempt+i*v*v*o,v*v,1.0,Z[thread],v,thread);
 
-      //(ab)(ij)
-      ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+i*v*v*o+j*v*v,v,0.0,Z2[thread],v*v,thread);
-      ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+i*o*o*v+k*o*v,v,tempt+j*v*v*o,v*v,1.0,Z2[thread],v,thread);
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+b*v*v+a*v,1,Z[thread]+a*v*v+b*v,1);
-          }
-      }
+         //(ab)(ij)
+         ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+i*v*v*o+j*v*v,v,0.0,Z2[thread],v*v,thread);
+         ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+i*o*o*v+k*o*v,v,tempt+j*v*v*o,v*v,1.0,Z2[thread],v,thread);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+b*v*v+a*v,1,Z[thread]+a*v*v+b*v,1);
+             }
+         }
 
-      //(bc)(jk)
-      #pragma omp critical
-      {
-          addr = psio_get_address(PSIO_ZERO,(long int)j*v*v*v*sizeof(double));
-          psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
-      }
-      ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+k*v*v*o+i*v*v,v,0.0,Z2[thread],v*v,thread);
-      ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+k*o*o*v+j*o*v,v,tempt+i*v*v*o,v*v,1.0,Z2[thread],v,thread);
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+a*v*v+b,v,Z[thread]+a*v*v+b*v,1);
-          }
-      }
+         //(bc)(jk)
+         #pragma omp critical
+         {
+             addr = psio_get_address(PSIO_ZERO,(long int)j*v*v*v*sizeof(double));
+             psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
+         }
+         ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+k*v*v*o+i*v*v,v,0.0,Z2[thread],v*v,thread);
+         ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+k*o*o*v+j*o*v,v,tempt+i*v*v*o,v*v,1.0,Z2[thread],v,thread);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+a*v*v+b,v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
 
-      //(ikj)(acb)
-      ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+i*v*v*o+k*v*v,v,0.0,Z2[thread],v*v,thread);
-      ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+i*o*o*v+j*o*v,v,tempt+k*v*v*o,v*v,1.0,Z2[thread],v,thread);
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+a*v+b,v*v,Z[thread]+a*v*v+b*v,1);
-          }
-      }
+         //(ikj)(acb)
+         ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+i*v*v*o+k*v*v,v,0.0,Z2[thread],v*v,thread);
+         ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+i*o*o*v+j*o*v,v,tempt+k*v*v*o,v*v,1.0,Z2[thread],v,thread);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+a*v+b,v*v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
 
-      //(ac)(ik)
-      #pragma omp critical
-      {
-          addr = psio_get_address(PSIO_ZERO,(long int)i*v*v*v*sizeof(double));
-          psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
-      }
-      ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+k*v*v,v,0.0,Z2[thread],v*v,thread);
-      ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+i*o*v,v,tempt+k*v*v*o,v*v,1.0,Z2[thread],v,thread);
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+b*v+a,v*v,Z[thread]+a*v*v+b*v,1);
-          }
-      }
+         //(ac)(ik)
+         #pragma omp critical
+         {
+             addr = psio_get_address(PSIO_ZERO,(long int)i*v*v*v*sizeof(double));
+             psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
+         }
+         ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+k*v*v,v,0.0,Z2[thread],v*v,thread);
+         ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+i*o*v,v,tempt+k*v*v*o,v*v,1.0,Z2[thread],v,thread);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+b*v+a,v*v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
 
-      //(ijk)(abc)
-      ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+k*v*v*o+j*v*v,v,0.0,Z2[thread],v*v,thread);
-      ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+k*o*o*v+i*o*v,v,tempt+j*v*v*o,v*v,1.0,Z2[thread],v,thread);
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              F_DAXPY(v,1.0,Z2[thread]+b*v*v+a,v,Z[thread]+a*v*v+b*v,1);
-          }
-      }
+         //(ijk)(abc)
+         ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+k*v*v*o+j*v*v,v,0.0,Z2[thread],v*v,thread);
+         ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+k*o*o*v+i*o*v,v,tempt+j*v*v*o,v*v,1.0,Z2[thread],v,thread);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+b*v*v+a,v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
 
-      F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              for (int c=0; c<v; c++){
-                  Z2[thread][a*v*v+b*v+c] += (t1[a*o+i]*E2klcd[j*v*v*o+b*v*o+k*v+c] +
-                                              t1[b*o+j]*E2klcd[i*v*v*o+a*v*o+k*v+c] +
-                                              t1[c*o+k]*E2klcd[i*v*v*o+a*v*o+j*v+b]);
-                  Z2[thread][a*v*v+b*v+c] /= (1 + (a==b) + (b==c) + (a==c));
-              }
-          }
-      }
+         F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 for (int c=0; c<v; c++){
+                     Z2[thread][a*v*v+b*v+c] += (t1[a*o+i]*E2klcd[j*v*v*o+b*v*o+k*v+c] +
+                                                 t1[b*o+j]*E2klcd[i*v*v*o+a*v*o+k*v+c] +
+                                                 t1[c*o+k]*E2klcd[i*v*v*o+a*v*o+j*v+b]);
+                     Z2[thread][a*v*v+b*v+c] /= (1 + (a==b) + (b==c) + (a==c));
+                 }
+             }
+         }
 
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              for (int c=0; c<v; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bac = b*v*v+a*v+c;
-                  long int acb = a*v*v+c*v+b;
-                  long int bca = b*v*v+c*v+a;
-                  long int cab = c*v*v+a*v+b;
-                  long int cba = c*v*v+b*v+a;
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 for (int c=0; c<v; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bac = b*v*v+a*v+c;
+                     long int acb = a*v*v+c*v+b;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int cba = c*v*v+b*v+a;
 
-                  //Y[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
-                  E2abci[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
-              }
-          }
-      }
-      double dijk = F[i]+F[j]+F[k];
-      // separate out these bits to save v^3 storage
-      for (int a=0; a<v; a++){
-          double dijka = dijk-F[a+o];
-          for (int b=0; b<=a; b++){
-              double dijkab = dijka-F[b+o];
-              for (int c=0; c<=b; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bca = b*v*v+c*v+a;
-                  long int cab = c*v*v+a*v+b;
-                  long int acb = a*v*v+c*v+b;
-                  long int bac = b*v*v+a*v+c;
-                  long int cba = c*v*v+b*v+a;
-                  double dum      = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
-                                  + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
-                                  + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
+                     //Y[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
+                     E2abci[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
+                 }
+             }
+         }
+         double dijk = F[i]+F[j]+F[k];
+         // separate out these bits to save v^3 storage
+         for (int a=0; a<v; a++){
+             double dijka = dijk-F[a+o];
+             for (int b=0; b<=a; b++){
+                 double dijkab = dijka-F[b+o];
+                 for (int c=0; c<=b; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int acb = a*v*v+c*v+b;
+                     long int bac = b*v*v+a*v+c;
+                     long int cba = c*v*v+b*v+a;
+                     double dum      = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
+                                     + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
+                                     + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
 
-                  dum            =  (E2abci[thread][abc])
-                                 * ((Z[thread][abc] + Z[thread][bca] + Z[thread][cab])*-2.0
-                                 +  (Z[thread][acb] + Z[thread][bac] + Z[thread][cba]))
-                                 + 3.0*dum;
-                  //dum            = (Y[thread][abc] - 2.0*E2abci[thread][abc])
-                  //               * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab])
-                  //               + (E2abci[thread][abc] - 2.0*Y[thread][abc])
-                  //               * (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])
-                  //               + 3.0*dum;
-                  double denom = dijkab-F[c+o];
-                  etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
-              }
-          }
-      }
-      // the second bit
-      for (int a=0; a<v; a++){
-          for (int b=0; b<v; b++){
-              for (int c=0; c<v; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bac = b*v*v+a*v+c;
-                  long int acb = a*v*v+c*v+b;
-                  long int bca = b*v*v+c*v+a;
-                  long int cab = c*v*v+a*v+b;
-                  long int cba = c*v*v+b*v+a;
+                     dum            =  (E2abci[thread][abc])
+                                    * ((Z[thread][abc] + Z[thread][bca] + Z[thread][cab])*-2.0
+                                    +  (Z[thread][acb] + Z[thread][bac] + Z[thread][cba]))
+                                    + 3.0*dum;
+                     //dum            = (Y[thread][abc] - 2.0*E2abci[thread][abc])
+                     //               * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab])
+                     //               + (E2abci[thread][abc] - 2.0*Y[thread][abc])
+                     //               * (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])
+                     //               + 3.0*dum;
+                     double denom = dijkab-F[c+o];
+                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                 }
+             }
+         }
+         // the second bit
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 for (int c=0; c<v; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bac = b*v*v+a*v+c;
+                     long int acb = a*v*v+c*v+b;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int cba = c*v*v+b*v+a;
 
-                  E2abci[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
-              }
-          }
-      }
-      for (int a=0; a<v; a++){
-          double dijka = dijk-F[a+o];
-          for (int b=0; b<=a; b++){
-              double dijkab = dijka-F[b+o];
-              for (int c=0; c<=b; c++){
-                  long int abc = a*v*v+b*v+c;
-                  long int bca = b*v*v+c*v+a;
-                  long int cab = c*v*v+a*v+b;
-                  long int acb = a*v*v+c*v+b;
-                  long int bac = b*v*v+a*v+c;
-                  long int cba = c*v*v+b*v+a;
+                     E2abci[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
+                 }
+             }
+         }
+         for (int a=0; a<v; a++){
+             double dijka = dijk-F[a+o];
+             for (int b=0; b<=a; b++){
+                 double dijkab = dijka-F[b+o];
+                 for (int c=0; c<=b; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int acb = a*v*v+c*v+b;
+                     long int bac = b*v*v+a*v+c;
+                     long int cba = c*v*v+b*v+a;
 
-                  double dum     = (E2abci[thread][abc])
-                                 * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab]
-                                 + (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])*-2.0);
+                     double dum     = (E2abci[thread][abc])
+                                    * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab]
+                                    + (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])*-2.0);
 
-                  double denom = dijkab-F[c+o];
-                  etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
-              }
-          }
-      }
+                     double denom = dijkab-F[c+o];
+                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                 }
+             }
+         }
+     }
   }
+  else{
+     for (int ind=0; ind<nijk; ind++){
+         int i = ijk[ind][0];
+         int j = ijk[ind][1];
+         int k = ijk[ind][2];
 
+         int thread = 0;
+
+         psio_address addr;
+         addr = psio_get_address(PSIO_ZERO,(long int)k*v*v*v*sizeof(double));
+         psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
+         ccsd->helper_->GPUTiledDGEMM('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+i*v*v,v,0.0,Z[thread],v*v);
+         ccsd->helper_->GPUTiledDGEMM('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+k*o*v,v,tempt+i*v*v*o,v*v,1.0,Z[thread],v);
+
+         //(ab)(ij)
+         ccsd->helper_->GPUTiledDGEMM('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+i*v*v*o+j*v*v,v,0.0,Z2[thread],v*v);
+         ccsd->helper_->GPUTiledDGEMM('n','t',v,v*v,o,-1.0,E2ijak+i*o*o*v+k*o*v,v,tempt+j*v*v*o,v*v,1.0,Z2[thread],v);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+b*v*v+a*v,1,Z[thread]+a*v*v+b*v,1);
+             }
+         }
+
+         //(bc)(jk)
+         addr = psio_get_address(PSIO_ZERO,(long int)j*v*v*v*sizeof(double));
+         psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
+         ccsd->helper_->GPUTiledDGEMM('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+k*v*v*o+i*v*v,v,0.0,Z2[thread],v*v);
+         ccsd->helper_->GPUTiledDGEMM('n','t',v,v*v,o,-1.0,E2ijak+k*o*o*v+j*o*v,v,tempt+i*v*v*o,v*v,1.0,Z2[thread],v);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+a*v*v+b,v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
+
+         //(ikj)(acb)
+         ccsd->helper_->GPUTiledDGEMM('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+i*v*v*o+k*v*v,v,0.0,Z2[thread],v*v);
+         ccsd->helper_->GPUTiledDGEMM('n','t',v,v*v,o,-1.0,E2ijak+i*o*o*v+j*o*v,v,tempt+k*v*v*o,v*v,1.0,Z2[thread],v);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+a*v+b,v*v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
+
+         //(ac)(ik)
+         addr = psio_get_address(PSIO_ZERO,(long int)i*v*v*v*sizeof(double));
+         psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
+         ccsd->helper_->GPUTiledDGEMM('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+k*v*v,v,0.0,Z2[thread],v*v);
+         ccsd->helper_->GPUTiledDGEMM('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+i*o*v,v,tempt+k*v*v*o,v*v,1.0,Z2[thread],v);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+b*v+a,v*v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
+
+         //(ijk)(abc)
+         ccsd->helper_->GPUTiledDGEMM('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+k*v*v*o+j*v*v,v,0.0,Z2[thread],v*v);
+         ccsd->helper_->GPUTiledDGEMM('n','t',v,v*v,o,-1.0,E2ijak+k*o*o*v+i*o*v,v,tempt+j*v*v*o,v*v,1.0,Z2[thread],v);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 F_DAXPY(v,1.0,Z2[thread]+b*v*v+a,v,Z[thread]+a*v*v+b*v,1);
+             }
+         }
+
+         F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 for (int c=0; c<v; c++){
+                     Z2[thread][a*v*v+b*v+c] += (t1[a*o+i]*E2klcd[j*v*v*o+b*v*o+k*v+c] +
+                                                 t1[b*o+j]*E2klcd[i*v*v*o+a*v*o+k*v+c] +
+                                                 t1[c*o+k]*E2klcd[i*v*v*o+a*v*o+j*v+b]);
+                     Z2[thread][a*v*v+b*v+c] /= (1 + (a==b) + (b==c) + (a==c));
+                 }
+             }
+         }
+
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 for (int c=0; c<v; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bac = b*v*v+a*v+c;
+                     long int acb = a*v*v+c*v+b;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int cba = c*v*v+b*v+a;
+
+                     //Y[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
+                     E2abci[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
+                 }
+             }
+         }
+         double dijk = F[i]+F[j]+F[k];
+         // separate out these bits to save v^3 storage
+         for (int a=0; a<v; a++){
+             double dijka = dijk-F[a+o];
+             for (int b=0; b<=a; b++){
+                 double dijkab = dijka-F[b+o];
+                 for (int c=0; c<=b; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int acb = a*v*v+c*v+b;
+                     long int bac = b*v*v+a*v+c;
+                     long int cba = c*v*v+b*v+a;
+                     double dum      = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
+                                     + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
+                                     + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
+
+                     dum            =  (E2abci[thread][abc])
+                                    * ((Z[thread][abc] + Z[thread][bca] + Z[thread][cab])*-2.0
+                                    +  (Z[thread][acb] + Z[thread][bac] + Z[thread][cba]))
+                                    + 3.0*dum;
+                     //dum            = (Y[thread][abc] - 2.0*E2abci[thread][abc])
+                     //               * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab])
+                     //               + (E2abci[thread][abc] - 2.0*Y[thread][abc])
+                     //               * (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])
+                     //               + 3.0*dum;
+                     double denom = dijkab-F[c+o];
+                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                 }
+             }
+         }
+         // the second bit
+         for (int a=0; a<v; a++){
+             for (int b=0; b<v; b++){
+                 for (int c=0; c<v; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bac = b*v*v+a*v+c;
+                     long int acb = a*v*v+c*v+b;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int cba = c*v*v+b*v+a;
+
+                     E2abci[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
+                 }
+             }
+         }
+         for (int a=0; a<v; a++){
+             double dijka = dijk-F[a+o];
+             for (int b=0; b<=a; b++){
+                 double dijkab = dijka-F[b+o];
+                 for (int c=0; c<=b; c++){
+                     long int abc = a*v*v+b*v+c;
+                     long int bca = b*v*v+c*v+a;
+                     long int cab = c*v*v+a*v+b;
+                     long int acb = a*v*v+c*v+b;
+                     long int bac = b*v*v+a*v+c;
+                     long int cba = c*v*v+b*v+a;
+
+                     double dum     = (E2abci[thread][abc])
+                                    * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab]
+                                    + (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])*-2.0);
+
+                     double denom = dijkab-F[c+o];
+                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                 }
+             }
+         }
+     }
+  }
 
   double et = 0.0;
   for (int i=0; i<nthreads; i++) et += etrip[i];
