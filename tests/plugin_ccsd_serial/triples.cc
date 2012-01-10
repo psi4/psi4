@@ -99,6 +99,14 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   psio->close(PSIF_IJAK,1);
 
   double *tempt = (double*)malloc(o*o*v*v*sizeof(double));
+
+  if (ccsd->t2_on_disk){
+     ccsd->tb = (double*)malloc(o*o*v*v*sizeof(double));
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&ccsd->tb[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+  }
+
   for (int a=0; a<v*v; a++){
       F_DCOPY(o*o,ccsd->tb+a*o*o,1,tempt+a,v*v);
   }
@@ -335,6 +343,10 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   // free memory:
   //for (int i=0; i<nijk; i++) free(ijk[i]);
   //free(ijk);
+
+  if (ccsd->t2_on_disk){
+     free(ccsd->tb);
+  }
   free(E2ijak);
   for (int i=0; i<nthreads; i++){  
       free(E2abci[i]);
