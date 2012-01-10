@@ -337,3 +337,125 @@ perpendicular geometry does not allow much overlap between the monomers.
 Hence, the SAPT analysis helps clarify (and quantify) our physical
 understanding about the interaction between the two monomers. 
 
+\subsection{Potential Surface Scans and Counterpoise Correction Made Easy
+with Psithon}
+
+Finally, let's consider an example that shows how the Python driver
+in \PSIfour\ simplifies some routine tasks.  \PSIfour\ can interpret
+valid Python code in addition to the computational chemistry directives
+we've seen in the previous examples; we call this mixture Psithon.
+The Python computer language is very easy to pick up, and even users
+previously unfamiliar with Python can use it to simplify tasks by
+modifying some of the example input files supplied with \PSIfour\
+in the {\tt psi4/samples} directory.
+
+Suppose you want to do a limited potential energy surface scan, such as
+computing the interaction energy between two neon atoms at various
+interatomic distances.  One simple but unappealing way to do this is to
+create separate input files for each distance to be studied.  But most of
+these input files are identical, except that the interatomic distance is
+different.  Psithon lets you specify all this in a single input file,
+looping over the different distances with an array like this: {\tt
+Rvals=[2.0, 2.5, 3.0, 4.0, 5.0]}.
+
+Let's also suppose you want to do counterpoise (CP) corrected energies.
+Counterpoise correction involves computing the dimer energy and then
+subtracting out the energies of the two monomers, each evaluated in the
+dimer basis.  Again, each of these computations could be run in a separate
+input file, but because counterpoise correction is a fairly standard
+procedure for intermolecular interactions, \PSIfour\ knows about it and has
+a built-in routine to perform counterpoise correction.  It only needs to
+know what method you want to do the counterpoise correction on (here, let's
+consider CCSD(T)), and it needs to know what's monomer A and what's monomer
+B.  This last issue of specifying the monomers separately was already dealt
+with in the previous SAPT example, where we saw that two dashes in the {\tt
+molecule} section can be used to separate monomers.
+
+So, we're going to do counterpoise-corrected CCSD(T) energies for Ne$_2$ at
+a series of different interatomic distances.  And let's print out a table
+of the interatomic distances we've considered, and the CP-corrected CCSD(T)
+interaction energies (in kcal mol$^{-1}$) at each geometry.  Doing all this
+in a single input is surprisingly easy in \PSIfour.  Here's the input.
+
+\begin{Snippet}
+#! Example potential energy surface scan and CP-correction for Ne2
+
+molecule dimer {
+  Ne
+--
+  Ne 1 R
+}
+
+Rvals=[2.0, 2.5, 3.0, 4.0, 5.0]
+
+set basis aug-cc-pVDZ
+set freeze_core True
+
+# Initialize a blank dictionary of counterpoise corrected energies
+# (Need this for the syntax below to work)
+ecp = {}
+
+for R in Rvals:
+  dimer.R = R
+  ecp[R] = cp('ccsd(t)')
+
+print "\n"
+print "CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n"
+print "        R (Ang)         E_int (kcal/mol)             \n"
+print "-----------------------------------------------------\n"
+for R in Rvals:
+  e = ecp[R] * 627.5095
+  print "        %3.1f            %10.6f\n" % (R, e)
+\end{Snippet}
+
+First, you can see the {\tt molecule} section has a couple dashes to
+separate the monomers from each other.  Also note we've used a Z-matrix to
+specify the geometry, and we've used a variable ({\tt R}) as the
+interatomic distance.  We have {\em not} specified the value of {\tt R} in
+the {\tt molecule} section like we normally would.  That's because we're
+going to vary it during the scan across the potential energy surface.
+Below the {\tt molecule} section, you can see the {\tt Rvals} array
+specified.  This is a Python array holding the interatomic distances we
+want to consider.  In Python, arrays are surrounded by square brackets, and
+elements are separated by commas.
+
+The next lines, {\tt set basis aug-cc-pVDZ} and {\tt set freeze\_core
+True}, are familiar from previous test cases.  Next comes a slightly
+unusual-looking line, {\tt ecp = \{\}}.  This is Python's way of initializing
+a ``dictionary.''  We're going to use this dictionary to store the
+counterpoise-corrected energies as they become available.  A dictionary is
+like an array, but we can index it using strings or floating-point numbers
+instead of integers if we want.  Here, we will index it using
+floating-point numbers, namely, the {\tt R} values.  This winds up being
+slightly more elegant than a regular array in later parts of the input
+file.
+
+The next section, beginning with {\tt for R in Rvals:}, loops over the
+interatomic distances, {\tt R}, in our aray {\tt Rvals}.  In Python,
+loops need to be indented, and each line in the loop has to be indented
+by the same amount.  The first line in the loop, {\tt dimer.R = R},
+sets the Z-matrix variable {\tt R} of the molecule called {\tt dimer}
+to the {\tt R} value extracted from the {\tt Rvals} array.  The next line,
+{\tt ecp[R] = cp('ccsd(t)')}, computes the counterpoise-corrected
+CCSD(T) energy and places it in the {\tt ecp} dictionary with {\tt R} as
+the index.  Note we didn't need to specify ghost atoms, and we didn't need
+to call the monomer and dimer computations separately.  The built-in
+Psithon function {\tt cp()} does it all for us, automatically.
+
+And that's it!  The only remaining part of the example input is a little
+table of the different R values and the CP-corrected CCSD(T) energies,
+converted to units of kcal mol$^{-1}$ by multiplying by 627.5095.  Notice
+the loop over {\tt R} to create the table looks just like the loop over
+{\tt R} to run the different computations, and the CP-corrected energies 
+{\tt ecp[R]} are accessed the same way they were stored.  The {\tt print}
+line at the end just specifies some formatting for the printed table (first
+element is a floating point number 3 spaces wide with one digit after the
+decimal, and the second element is a floating point number 10 spaces wide
+with 6 digits after the decimal); the format strings are the same as in the
+C programming language.  For tables more complicated than the simple one
+used here, Psithon has built-in support for tables (see the next section).
+
+The following section goes over Psithon in much more detail, but
+hopefully this example already makes it clear that many complex tasks
+can be done very easily in \PSIfour.
+
