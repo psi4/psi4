@@ -153,6 +153,8 @@ Molecule::Molecule():
     nunique_(0),
     nequiv_(0),
     equiv_(0),
+    multiplicity_specified_(false),
+    charge_specified_(false),
     atom_to_unique_(0),
     old_com_vector_(0),
     old_symmetry_frame_(0)
@@ -205,6 +207,8 @@ Molecule& Molecule::operator=(const Molecule& other)
     all_variables_           = other.all_variables_;
     fragment_types_          = other.fragment_types_;
     geometry_variables_      = other.geometry_variables_;
+    charge_specified_        = other.charge_specified_;
+    multiplicity_specified_  = other.multiplicity_specified_;
 
     // These are symmetry related variables, and are filled in by the following funtions
     pg_             = boost::shared_ptr<PointGroup>();
@@ -804,8 +808,10 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
-                mol->molecular_charge_      = tempCharge;
-                mol->multiplicity_          = tempMultiplicity;
+                mol->charge_specified_       = true;
+                mol->multiplicity_specified_ = true;
+                mol->molecular_charge_       = tempCharge;
+                mol->multiplicity_           = tempMultiplicity;
                 lines.erase(lines.begin() + lineNumber);
             }
         }

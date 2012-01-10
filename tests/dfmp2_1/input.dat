@@ -12,6 +12,7 @@ molecule formic_dim {
    H  -2.979488  -0.258829   0.000000
    H  -0.498833   1.107195   0.000000
    --
+   0 1
    C   1.888896   0.179692   0.000000
    O   1.493280  -1.073689   0.000000
    O   1.170435   1.166590   0.000000
@@ -26,6 +27,7 @@ set globals {
    basis cc-pvdz
    ri_basis_scf cc-pvdz-jkfit
    ri_basis_mp2 cc-pvdz-ri
+   # not necessary to specify ri_basis* for Dunning basis sets
    scf_type df
    guess sad
    d_converge 11

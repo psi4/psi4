@@ -68,6 +68,10 @@ protected:
     /// Move to center of mass or not?
     bool move_to_com_;
 
+    /// Whether the charge was given by the user
+    bool charge_specified_;
+    /// Whether the multiplicity was specified by the user
+    bool multiplicity_specified_;
     /// The molecular charge
     int molecular_charge_;
     /// The multiplicity (defined as 2Ms + 1)
@@ -174,6 +178,10 @@ public:
                   const char *symb = "", double mass = 0.0,
                   double charge = 0.0, int lineno = -1);
 
+    /// Whether the multiplicity was given by the user
+    bool multiplicity_specified() const { return multiplicity_specified_; }
+    /// Whether the charge was given by the user
+    bool charge_specified() const { return charge_specified_; }
     /// The number of fragments in the molecule
     int nfragments() const { return fragments_.size();}
     /// Get molecule name

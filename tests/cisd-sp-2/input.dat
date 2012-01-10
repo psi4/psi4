@@ -12,16 +12,12 @@ molecule h2o {
 }
 
 set globals {
-  wfn detci
   basis 6-31G**
-}
-
-set detci {
   hd_ave hd_kave
   icore 2
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('cisd')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST

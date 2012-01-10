@@ -735,6 +735,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "SCF"|| options.read_globals()) {
 
+    /*- The dimension sizes of the processor grid -*/
+    options.add("PROCESS_GRID", new ArrayType());
+
+    /*- The tile size for the distributed matrices -*/
+    options.add_int("TILE_SZ", 512);
+
+    /*- The dimension sizes of the distributed matrix -*/
+    options.add("DISTRIBUTED_MATRIX", new ArrayType());
+
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF", "SCF");
 
