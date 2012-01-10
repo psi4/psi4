@@ -64,7 +64,7 @@ PsiReturnType tdc_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&opt
   psio_open(CC_TAMPS,PSIO_OPEN_OLD);
 
   // write ccsd energy to disk - cctriples won't run without it
-  psio_write_entry(CC_INFO, "CCSD Energy", (char *) &(ccsd->energy),sizeof(double));
+  psio_write_entry(CC_INFO, "CCSD Energy", (char *) &(ccsd->eccsd),sizeof(double));
 
   // set up cache stuff like ccenergy would so we can use dpd the
   // same exact way as it's used in there.
