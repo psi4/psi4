@@ -74,9 +74,9 @@ class GPUHelper{
     double**gpuarray,**tmp;
 
     // tiling
-    void Tiling(long int mem1,long int mem1,long int m,long int n,long int k);
-    void TilingWithCpuStealing(long int mem1,long int mem1,long int m,long int n,long int k);
-    void TilingNoThread(long int mem1,long int mem1,long int m,long int n,long int k);
+    void Tiling(long int mem1,long int mem2,long int m,long int n,long int k);
+    void TilingWithCpuStealing(long int mem1,long int mem2,long int m,long int n,long int k);
+    void TilingNoThread(long int mem1,long int mem2,long int m,long int n,long int k);
     long int ntilesN,ntilesM,ntilesK;
     long int tilesizeK,tilesizeN,tilesizeM;
     long int lasttileK,lasttileN,lasttileM;
