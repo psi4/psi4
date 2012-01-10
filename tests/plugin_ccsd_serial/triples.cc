@@ -72,7 +72,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
           }
       }
   }
-  fprintf(outfile,"        Number of ijk pairs: %i\n",nijk);
+  fprintf(outfile,"        Number of ijk combinations: %i\n",nijk);
   fprintf(outfile,"\n");
   fflush(outfile);
   
