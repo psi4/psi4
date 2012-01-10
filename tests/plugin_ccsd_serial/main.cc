@@ -8,7 +8,6 @@
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 
-
 #include "globals.h"
 #include "ccsd.h" 
 #include "runcoupledcluster.h"

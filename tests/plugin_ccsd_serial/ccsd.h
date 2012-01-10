@@ -65,9 +65,9 @@ class CoupledCluster{
 
     /**
       * Flag to indicate if t2 is stored in core memory or 
-      * needs to be read from disk.  Default true.
+      * needs to be read from disk.  Default false.
       */
-    bool t2_in_core;
+    bool t2_on_disk;
 
     /**
       * Define CCSD Tasks.  most diagrams are designated as
