@@ -8,7 +8,6 @@
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 
-
 #include "globals.h"
 #include "ccsd.h" 
 #include "runcoupledcluster.h"
@@ -27,7 +26,7 @@ read_options(std::string name, Options &options)
              to the output file -*/
       options.add_int("DEBUG", 0);
       /*- default convergence of amplitudes-*/
-      options.add_int("CONVERGENCE", 7);
+      options.add_double("CONVERGENCE", 1.0e-7);
       /*- default maximum iterations -*/
       options.add_int("MAXITER", 100);
       /*- default memory available (mb) -*/
@@ -43,7 +42,7 @@ read_options(std::string name, Options &options)
       /*- triples by default use the full virtual space*/
       options.add_bool("TRIPLES_USE_NOS", false);
       /*- number of threads for triples, not set by default -*/
-      options.add_int("TRIPLES_THREADS", 0);
+      options.add_int("NUM_THREADS", 1);
       /*- generate density-fitted integrals so we can skip
           transqt2() and OutOfCoreSort(). default false */
       options.add_bool("DF_INTEGRALS",false);
