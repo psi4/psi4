@@ -1797,7 +1797,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FOLLOW_ROOT",1);
     /*- Convergence criterion for energy.
     See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("CONVERGENCE",1e-9);
+    options.add_double("E_CONVERGENCE",1e-9);
+    /*- Convergence criterion for amplitudes (residuals).
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE",1e-9);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/
