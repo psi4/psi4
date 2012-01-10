@@ -7,9 +7,6 @@ molecule h2o {
 }
 
 set {
-#    jobtype opt
-    dertype first
-    docc [3, 0, 1, 1]
     basis 6-31G**
 
     convergence 11
@@ -17,7 +14,7 @@ set {
     d_converge 11
 }
 
-thisenergy = optimize('ccsd')
+optimize('ccsd')
 
 refnuc   =  9.166137300098260  #TEST
 refscf   = -76.02293995043653  #TEST
