@@ -965,6 +965,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/tu3-h2o-opt/Makefile
           tests/tu4-h2o-freq/Makefile
           tests/tu5-sapt/Makefile
+          tests/tu6-cp-ne2/Makefile
           tests/dcft1/Makefile
           tests/dcft2/Makefile
           tests/dcft3/Makefile

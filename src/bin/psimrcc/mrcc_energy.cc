@@ -24,7 +24,7 @@ void CCMRCC::print_mrccsd_energy(int cycle)
     fprintf(outfile,"\n  @CC %3d  %18.12f  %11.4e   %8.3e   %8.3e %7.0f",cycle,current_energy,delta_energy,delta_t1_amps,delta_t2_amps,total_time);
 
     
-    if((fabs(delta_energy) > options_.get_double("CONVERGENCE")) && (cycle!=0)){
+    if((fabs(delta_energy) < options_.get_double("E_CONVERGENCE")) && (cycle!=0)){
       char star = (options_.get_str("CORR_WFN") == "CCSD") ? '*' : ' ';
       fprintf(outfile,"\n  ------------------------------------------------------------------------------");
       fprintf(outfile,"\n\n%6c%1c Mk-MRCCSD total energy      = %20.12f\n",' ',star,current_energy);
