@@ -21,9 +21,7 @@ H     3.00000000    -0.37149000     0.00000000
 }
 
 set {
-  wfn detci
   reference rohf
-  fci true
   basis cc-pVDZ 
   docc [3,0,0,0]
   socc [1,0,0,0]
@@ -35,7 +33,7 @@ set {
 set scf d_converge 10
 set detci e_converge 8
 
-thisenergy = energy('detci')
+thisenergy = energy('fci')
 
 compare_values(refnuc, bh_h2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST

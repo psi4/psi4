@@ -160,7 +160,8 @@ void MAD_MP2::common_init()
         frzvpi_   = reference_->frzvpi();
 
         // End copy constructor opportunity
-        if (!reference_->restricted()) {
+//        if (!reference_->restricted()) {
+        if (!same_a_b_orbs()) {
             throw PSIEXCEPTION("DFMP2 MADNESS is only closed-shell for now");
         }
     }

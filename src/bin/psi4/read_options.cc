@@ -196,10 +196,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
      within the generalized davidson preconditioner. !expert -*/
     options.add_int("H0_BLOCK_COUPLING_SIZE",0);
 
-    /*- number of important determinants to print out -*/
+    /*- Number of important determinants to print -*/
     options.add_int("NUM_PRINT",20);
 
-    /*- number of important CC amps per ex lvl to print -*/
+    /*- Number of important CC amplitudes per excitation level to print -*/
     options.add_int("CC_NUM_PRINT",10);
 
     /*- How to average H diag energies over spin coupling sets.
@@ -734,6 +734,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_OMEGA", 0.0);
   }
   if (name == "SCF"|| options.read_globals()) {
+
+    /*- The dimension sizes of the processor grid -*/
+    options.add("PROCESS_GRID", new ArrayType());
+
+    /*- The tile size for the distributed matrices -*/
+    options.add_int("TILE_SZ", 512);
+
+    /*- The dimension sizes of the distributed matrix -*/
+    options.add("DISTRIBUTED_MATRIX", new ArrayType());
 
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF", "SCF");
@@ -1302,7 +1311,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("EVAL_TOLERANCE", 1E-8);
     /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SS_EVAL_TOLERANCE", 1E-6);
-    /*- -*/
+    /*- Number of important CC amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 5);
     /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
@@ -1428,24 +1437,34 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NEWTRIPS", 1);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
-    /*- -*/
+    /*- Type of orbitals for the single-determinant reference function -*/
     options.add_str("REFERENCE", "RHF");
     /*- Do ? -*/
     options.add_bool("ANALYZE", 0);
-    /*- Maximum number of iterations -*/
+    /*- Maximum number of iterations to solve the CC equations -*/
     options.add_int("MAXITER", 50);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("CONVERGENCE", 1e-7);
-    /*- Do restart the coupled-cluster iterations? -*/
+    /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$ amplitudes? -*/
     options.add_bool("RESTART",1);
-    /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? -*/
+    /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? !expert -*/
     options.add_bool("FORCE_RESTART", 0);
 //#warning CCEnergy ao_basis keyword type was changed.
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- -*/
+    /*- Cacheing level for libdpd governing the storage of amplitudes, 
+    integrals, and intermediates in the CC procedure. A value of 0 retains 
+    no quantities in cache, while a level of 6 attempts to store all 
+    quantities in cache.  For particularly large calculations, a value of 
+    0 may help with certain types of memory problems.  The default is 2, 
+    which means that all four-index quantites with up to two virtual-orbital 
+    indices (e.g., <ij|ab> integrals) may be held in the cache. -*/
     options.add_int("CACHELEV", 2);
-    /*- -*/
+    /*- Selects the priority type for maintaining the automatic memory 
+    cache used by the libdpd codes. A value of LOW selects a "low priority" 
+    scheme in which the deletion of items from the cache is based on 
+    pre-programmed priorities. A value of LRU selects a "least recently used" 
+    scheme in which the oldest item in the cache will be the first one deleted. -*/
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
     /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
@@ -1457,29 +1476,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION MAGNETIZABILITY ROA ALL");
     /*- -*/
     options.add_str("ABCD", "NEW", "NEW OLD");
-    /*- Do ? -*/
+    /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL", 0);
-    /*- -*/
+    /*- Value (always between one and zero) for the Broughton-Pulay completeness 
+    check used to contruct orbital domains for local-CC calculations. See 
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel 
+    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
     /*- -*/
     options.add_double("LOCAL_MOS", 0);
-    /*- -*/
+    /*- Type of local-CCSD scheme to be simulated. WERNER selects the method 
+    developed by H.-J. Werner and co-workers, and AOBASIS selects the method 
+    developed by G.E. Scuseria and co-workers (currently inoperative). -*/
     options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
-    /*- -*/
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of 
+    NEGLECT ignores weak pairs entirely. A value of NONE treats weak pairs in 
+    the same manner as strong pairs. A value of MP2 uses second-order perturbation 
+    theory to correct the local-CCSD energy computed with weak pairs ignored. -*/
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
     /*- -*/
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
-    /*- -*/
+    /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
     options.add_int("NUM_AMPS", 10);
     /*- Convergence criterion for Breuckner orbitals. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("BRUECKNER_CONV", 1e-5);
-    /*- Do ? -*/
+    /*- Do print the MP2 amplitudes which are the starting guesses for RHF and UHF reference functions? -*/
     options.add_bool("MP2_AMPS_PRINT", 0);
-    /*- Do ? -*/
+    /*- Do print MP2 and CCSD pair energies for RHF references? -*/
     options.add_bool("PAIR_ENERGIES_PRINT", 0);
-    /*- Do ? -*/
+    /*- Do print spin-adapted pair energies? -*/
     options.add_bool("SPINADAPT_ENERGIES", false);
     /*- Do ? -*/
     options.add_bool("T3_WS_INCORE", 0);
