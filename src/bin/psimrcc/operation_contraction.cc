@@ -85,7 +85,7 @@ void CCOperation::setup_contractions()
       }
     }
     if(B_on_disk && C_on_disk)
-//      print_developing(outfile,"Both on disk matrix multiply",__FILE__,__LINE__);
+        throw PSIEXCEPTION("BOTH ON DISK MULTIPLY");
 
     //////////////////////////////////////////////////////////
     // Case I. A,B,C are in core. Perform direct a BLAS call
