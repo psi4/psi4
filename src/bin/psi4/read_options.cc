@@ -573,7 +573,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIIS", true);
 
     /*- Iteration at which to start using DIIS -*/
-    options.add_int("DIIS_START", 1);
+    options.add_int("DIIS_START_ITER", 1);
 
     /*- How often to do a DIIS extrapolation. 1 means do DIIS every
     iteration, 2 is every other iteration, etc. -*/
@@ -682,7 +682,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("INTS_TOLERANCE", 1e-14);
       /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{-diis_start}$ -*/
-      options.add_int("DIIS_START", 3);
+      options.add_double("DIIS_START_CONVERGENCE", 1e-3);
       /*- Maximum number of error vectors stored for DIIS extrapolation -*/
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation -*/
@@ -821,7 +821,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MOM_VIR", new ArrayType());
 
     /*- The minimum iteration to start storing DIIS vectors -*/
-    options.add_int("START_DIIS_ITER", 1);
+    options.add_int("DIIS_START", 1);
     /*- Minimum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MIN_VECS", 2);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
@@ -1578,7 +1578,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_double("DISTANT_PAIR", 8.0);
     /*- Iteration -*/
-    options.add_int("DIISSTART", 3);
+    options.add_int("DIIS_START_ITER", 3);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MAX_VECS", 5);
     /*- -*/
@@ -1811,7 +1811,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/
-    options.add_int("START_DIIS",2);
+    options.add_int("DIIS_START",2);
     /*- The shift to apply to the denominators ($\times$ 1000), {\it c.f.} Taube and Bartlett, JCP, 130, 144112 (2009) -*/
     options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
     /*- The cycle after which Tikhonow regularization is stopped.  Set to zero to allow regularization in all iterations -*/

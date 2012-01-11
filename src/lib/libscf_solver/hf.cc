@@ -251,7 +251,7 @@ void HF::common_init()
     //  First, did the user request a different number of diis vectors?
     min_diis_vectors_ = options_.get_int("DIIS_MIN_VECS");
     max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
-    diis_start_ = options_.get_int("START_DIIS_ITER");
+    diis_start_ = options_.get_int("DIIS_START");
     diis_enabled_ = options_.get_bool("DIIS");
 
     // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number

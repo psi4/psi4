@@ -780,7 +780,7 @@ void get_parameters(Options &options)
   /* DIIS only kicks in for CC anyway, no need to prefix with CC_ */
   Parameters.diis = options["DIIS"].to_integer();
   /* Iteration to turn on DIIS */
-  Parameters.diis_start = options.get_int("DIIS_START");
+  Parameters.diis_start = options.get_int("DIIS_START_ITER");
   /* Do DIIS every n iterations */
   Parameters.diis_freq = options.get_int("DIIS_FREQ");
   Parameters.diis_min_vecs = options.get_int("DIIS_MIN_VECS");
