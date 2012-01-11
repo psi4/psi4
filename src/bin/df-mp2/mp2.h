@@ -41,9 +41,11 @@ protected:
     virtual void form_Qia() = 0;
     // Form the energy contributions
     virtual void form_energy() = 0;
+
     // Compute singles correction [for ROHF-MBPT(2) or dual-basis]
     virtual void form_singles();
-
+    // Apply the fitting and transposition to a given disk entry Aia tensor
+    virtual void apply_fitting(SharedMatrix Jm12, unsigned int file, unsigned long int naux, unsigned long int nia);
 
 public:
     DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
@@ -78,6 +80,8 @@ public:
     RDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~RDFMP2();
 
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
 };
 
 class UDFMP2 : public DFMP2 {
@@ -109,6 +113,9 @@ public:
     UDFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~UDFMP2();
 
+    virtual bool same_a_b_orbs() const { return false; }
+    virtual bool same_a_b_dens() const { return false; }
+
 };
 
 class RODFMP2 : public UDFMP2 {
@@ -124,6 +131,8 @@ public:
     RODFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     virtual ~RODFMP2();
 
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return false; }
 };
 
 }}
