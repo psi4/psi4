@@ -1,5 +1,5 @@
 # Any line starting with the # character is a comment line
-# Here's a sample HF/cc-pVDZ H2O computation
+#! Sample HF/cc-pVDZ H2O computation
 
 molecule h2o {
   O 
