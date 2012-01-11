@@ -499,17 +499,12 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
      fprintf(outfile,"        (T) energy                   %20.12lf %20.12lf\n",et,et*ccsd->scale_t);
   }
   fprintf(outfile,"\n");
-  fprintf(outfile,"        MP2 correlation energy       %20.12lf\n",ccsd->emp2);
-  fprintf(outfile,"        CCSD correlation energy      %20.12lf\n",ccsd->eccsd);
   if (ccsd->scale_t == 1.0)
      fprintf(outfile,"        CCSD(T) correlation energy   %20.12lf\n",ccsd->eccsd+et);
   else{
      fprintf(outfile,"                                                 unscaled               scaled\n");
      fprintf(outfile,"        CCSD(T) correlation energy   %20.12lf %20.12lf\n",ccsd->eccsd+et,ccsd->eccsd+et*ccsd->scale_t);
   }
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        MP2 total energy             %20.12lf\n",ccsd->emp2+ccsd->escf);
-  fprintf(outfile,"        CCSD total energy            %20.12lf\n",ccsd->eccsd+ccsd->escf);
   if (ccsd->scale_t == 1.0)
      fprintf(outfile,"      * CCSD(T) total energy         %20.12lf\n",ccsd->eccsd+et+ccsd->escf);
   else{

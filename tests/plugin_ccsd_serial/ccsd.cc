@@ -139,6 +139,12 @@ void CoupledCluster::Initialize(Options &options){
      memory *= (long int)1024*1024;
   }
 
+  // SCS MP2 and CCSD
+  emp2_os_fac = options.get_double("MP2_SCALE_OS");
+  emp2_ss_fac = options.get_double("MP2_SCALE_SS");
+  eccsd_os_fac = options.get_double("CC_SCALE_OS");
+  eccsd_ss_fac = options.get_double("CC_SCALE_SS");
+
   /**
     *  GPU helper class knows if we have gpus or not and how to use them
     */
@@ -432,7 +438,7 @@ return;
   solve ccsd equations
 
 ===================================================================*/
-PsiReturnType CoupledCluster::CCSDIterations(){
+PsiReturnType CoupledCluster::CCSDIterations(Options&options){
 
   // timer stuff:
   struct tms total_tmstime;
@@ -535,6 +541,7 @@ double eccsd2 = 0.0;
       fflush(outfile);
       iter++;
       if (iter==1) emp2 = eccsd;
+      if (iter==1 && options.get_bool("SCS_MP2"))  SCS_MP2();
   }
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -546,14 +553,26 @@ double eccsd2 = 0.0;
      throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
 
+  if (options.get_bool("SCS_CCSD")) SCS_CCSD();
+
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
   fprintf(outfile,"\n");
-  fprintf(outfile,"        MP2 correlation energy:  %20.12lf\n",emp2);
-  fprintf(outfile,"        CCSD correlation energy: %20.12lf\n",eccsd);
+  fprintf(outfile,"        OS SCS-MP2 correlation energy:  %20.12lf\n",emp2_os);
+  fprintf(outfile,"        SS SCS-MP2 correlation energy:  %20.12lf\n",emp2_ss);
+  fprintf(outfile,"        SCS-MP2 correlation energy:     %20.12lf\n",emp2_os+emp2_ss);
+  fprintf(outfile,"      * SCS-MP2 total energy:           %20.12lf\n",emp2_os+emp2_ss+escf);
   fprintf(outfile,"\n");
-  fprintf(outfile,"      * MP2 total energy:        %20.12lf\n",emp2+escf);
-  fprintf(outfile,"      * CCSD total energy:       %20.12lf\n",eccsd+escf);
+  fprintf(outfile,"        MP2 correlation energy:         %20.12lf\n",emp2);
+  fprintf(outfile,"      * MP2 total energy:               %20.12lf\n",emp2+escf);
+  fprintf(outfile,"\n");
+  fprintf(outfile,"        OS SCS-CCSD correlation energy: %20.12lf\n",eccsd_os);
+  fprintf(outfile,"        SS SCS-CCSD correlation energy: %20.12lf\n",eccsd_ss);
+  fprintf(outfile,"        SCS-CCSD correlation energy:    %20.12lf\n",eccsd_os+eccsd_ss);
+  fprintf(outfile,"      * SCS-CCSD total energy:          %20.12lf\n",eccsd_os+eccsd_ss+escf);
+  fprintf(outfile,"\n");
+  fprintf(outfile,"        CCSD correlation energy:        %20.12lf\n",eccsd);
+  fprintf(outfile,"      * CCSD total energy:              %20.12lf\n",eccsd+escf);
   fprintf(outfile,"\n");
   fprintf(outfile,"  Total time for CCSD iterations: %10.2lf s (user)\n",user_stop-user_start);
   fprintf(outfile,"                                  %10.2lf s (system)\n",sys_stop-sys_start);
@@ -1245,6 +1264,83 @@ void CoupledCluster::UpdateT1(long int iter){
   F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   F_DCOPY(o*v,w1,1,t1,1);
+}
+void CoupledCluster::SCS_CCSD(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int iajb,jaib,ijab=0;
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempv;
+  }
+  for (a=o; a<rs; a++){
+      for (b=o; b<rs; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  jaib = iajb + (i-j)*v*(1-v*o);
+                  osenergy += integrals[iajb]*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+                  ssenergy += integrals[iajb]*(tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+                  ssenergy += integrals[iajb]*(t1[(a-o)*o+i]*t1[(b-o)*o+j]-t1[(b-o)*o+i]*t1[(a-o)*o+j]);
+                  ijab++;
+              }
+          }
+      }
+  }
+  eccsd_os = eccsd_os_fac * osenergy;
+  eccsd_ss = eccsd_ss_fac * ssenergy;
+
+  psio.reset();
+}
+void CoupledCluster::SCS_MP2(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int iajb,jaib,ijab=0;
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempv;
+  }
+  for (a=o; a<rs; a++){
+      for (b=o; b<rs; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  jaib = iajb + (i-j)*v*(1-v*o);
+                  osenergy += integrals[iajb]*tb[ijab];
+                  ssenergy += integrals[iajb]*(tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+                  ijab++;
+              }
+          }
+      }
+  }
+  emp2_os = emp2_os_fac * osenergy;
+  emp2_ss = emp2_ss_fac * ssenergy;
+
+  psio.reset();
 }
 double CoupledCluster::CheckEnergy(){
 
