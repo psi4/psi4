@@ -1065,19 +1065,32 @@ private:
 //    inline int rc_to_tile(const int &rc) { return rc/tile_sz_; }
 
     /**
-     * Return a vector containing a tile row.
+     * Return a vector containing a matrix row.
      *
      * @param a The local row index.
      * @param tij The tile index.
      */
-    std::vector<double> get_tile_row(const int &a, const int &tij);
+    std::vector<double> get_matrix_row(const int &a, const int &tij);
     /**
-     * Return a vector containing a tile column.
+     * Return a vector containing a matrix column.
      *
      * @param b The local column index.
      * @param tij The tile index.
      */
-    std::vector<double> get_tile_col(const int &b, const int &tij);
+    std::vector<double> get_matrix_col(const int &b, const int &tij);
+
+    /**
+     * Return a vector of future<tensor> containing a tile row.
+     *
+     * @param ti The tile row index.
+     */
+    std::vector<madness::Future<madness::Tensor<double> > > get_tile_row(const int &ti);
+    /**
+     * Return a vector of future<tensor> containing a tile column.
+     *
+     * @param tj The tile column index.
+     */
+    std::vector<madness::Future<madness::Tensor<double> > > get_tile_col(const int &tj);
 
     /**
      * Do a matrix-matrix muliplication of the two tiles, and return
