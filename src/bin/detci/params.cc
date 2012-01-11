@@ -397,7 +397,7 @@ void get_parameters(Options &options)
   Parameters.lse_collapse = options.get_int("LSE_COLLAPSE");
   if (Parameters.lse_collapse < 1) Parameters.lse_collapse = 3;
 
-  Parameters.lse_tolerance = options.get_int("LSE_TOLERANCE");
+  Parameters.lse_tolerance = options.get_double("LSE_TOLERANCE");
 
   Parameters.maxnvect = options.get_int("MAX_NUM_VECS");
 

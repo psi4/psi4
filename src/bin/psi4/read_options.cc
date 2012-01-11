@@ -385,7 +385,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Minimum converged energy for least-squares
     extrapolation to be performed -*/
-    options.add_int("LSE_TOLERANCE", 3);
+    options.add_double("LSE_TOLERANCE", 3);
 
     /*- Do result a DETCI iteration that
     terminated prematurely? It assumes that the CI and sigma vectors are on
