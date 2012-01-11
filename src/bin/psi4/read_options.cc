@@ -1786,8 +1786,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
+      /*- The multiplicity, $S(S+1)$, of the target state.  Must be specified if different from the reference $M_s$. -*/
+      options.add_int("CORR_MULTP",1);
     /*- The molecular charge of the target state -*/
-    options.add_int("CORR_CHARGE",0);
+      options.add_int("CORR_CHARGE",0);
     /*- Amount of debugging output to produce !expert -*/
     options.add_int("DEBUG",0);
     /*- The amount of damping to apply to the amplitude updates.  If this is set to 0, the full update is performed.
@@ -1802,7 +1804,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FOLLOW_ROOT",1);
     /*- Convergence criterion for energy.
     See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("CONVERGENCE",1e-9);
+    options.add_double("E_CONVERGENCE",1e-9);
+    /*- Convergence criterion for amplitudes (residuals).
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE",1e-9);
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/

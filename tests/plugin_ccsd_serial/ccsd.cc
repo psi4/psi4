@@ -154,10 +154,10 @@ void CoupledCluster::Initialize(Options &options){
      memory  = options.get_int("MEMORY");
      memory *= (long int)1024*1024;
   }
-  // minus some extra in case i've miscounted...
-  //memory -= (long int)200*1024*1024;
 
-  // initialize gpu helper class
+  /**
+    *  GPU helper class knows if we have gpus or not and how to use them
+    */
   helper_ = boost::shared_ptr<GPUHelper>(new GPUHelper);
 
   // get device parameters, allocate gpu memory and pinned cpu memory
@@ -595,12 +595,12 @@ void CoupledCluster::DefineTilingCPU(){
   // number of doubles in total memory
   long int ndoubles = memory/8L;
   // minus storage for other necessary buffers 
-  ndoubles -= 3L*o*o*v*v+5L*o*v+v*v+(o+v);
+  ndoubles -= o*o*v*v+2L*(o*o*v*v+o*v)+2L*o*v+2*v*v+(o+v);
   if (t2_on_disk){
      ndoubles += o*o*v*v;
-     fprintf(outfile,"\n");
-     fprintf(outfile,"  Redefine tiling, assuming T2 is stored on disk:\n");
-     fprintf(outfile,"\n");
+     //fprintf(outfile,"\n");
+     //fprintf(outfile,"  Redefine tiling, assuming T2 is stored on disk:\n");
+     //fprintf(outfile,"\n");
   }else{
      fprintf(outfile,"\n");
      fprintf(outfile,"  Define tiling:\n");
@@ -609,33 +609,30 @@ void CoupledCluster::DefineTilingCPU(){
 
 
   // if not enough space, check to see if keeping t2 on disk will help
-  if (ndoubles<0){
-     throw PsiException("out of memory: no amount of tiling can fix this!",__FILE__,__LINE__);
+  if (ndoubles<o*o*v*v){
+     if (t2_on_disk)
+        throw PsiException("out of memory: no amount of tiling can fix this!",__FILE__,__LINE__);
+     else{
+        tilesize = ov2tilesize = ovtilesize = 0;
+        return;
+     }
   }
 
   ntiles = -999L;
   tilesize = v*(v+1L)/2L;
   ntiles = 1L;
 
-  // check whether blocking of the vabcd diagram is necessary
-  if (ndoubles>v*(v+1L)/2L*v*(v+1L)/2L){
-     tilesize = v*(v+1L)/2L;
-     ntiles = 1L;
-  }
-  else{
-     for (i=2L; i<=v*(v+1L)/2L; i++){
-         if (ndoubles>tilesize*v*(v+1L)/2L/i+1L){
-            tilesize = v*(v+1L)/2L/i;
-            if (i*tilesize < v*(v+1L)/2L) tilesize++;
-            ntiles = i;
-            break;
-         }
-     }
-     if (ntiles==-999L){
-        throw PsiException("out of memory: (ab,cd)",__FILE__,__LINE__);
-     }
+  // tiling for vabcd diagram
+  ntiles=1L;
+  tilesize=v*(v+1L)/2L/1L;
+  if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
+  while(v*(v+1L)/2L*tilesize>ndoubles){
+     ntiles++;
+     tilesize = v*(v+1L)/2L/ntiles;
+     if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
   }
   lasttile = v*(v+1L)/2L - (ntiles-1L)*tilesize;
+
 
   fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
   fflush(outfile);
@@ -685,6 +682,11 @@ void CoupledCluster::AllocateMemory(Options&options){
   long int v=nvirt;
   long int dim;
 
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  available memory =             %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
+  fprintf(outfile,"  minimum memory requirements =  %9.2lf mb\n",
+         8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
+
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
 
@@ -696,7 +698,8 @@ void CoupledCluster::AllocateMemory(Options&options){
   // if integrals buffer isn't at least o^2v^2, try tiling again assuming t2 is on disk.
   if (dim<o*o*v*v){
      fprintf(outfile,"\n");
-     fprintf(outfile,"  Warning: general buffer cannot accomodate T2.\n");
+     fprintf(outfile,"  Warning: cannot accomodate T2 in core. T2 will be stored on disk.\n");
+     fprintf(outfile,"\n");
      fflush(outfile);
      t2_on_disk = true;
      DefineTilingCPU();
@@ -710,7 +713,6 @@ void CoupledCluster::AllocateMemory(Options&options){
      }
 
      fprintf(outfile,"\n");
-     fprintf(outfile,"  T2 will be stored on disk.\n");
      fprintf(outfile,"  Increase memory by %7.2lf mb to hold T2 in core.\n",o*o*v*v*8L/1024./1024.);
      fprintf(outfile,"\n");
   }
