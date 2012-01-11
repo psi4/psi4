@@ -202,7 +202,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          m_alpha[i][j] = init_matrix(maxnvect, maxnvect);
       }
 
-   if (Parameters.lse) lse_tolerance = pow(10.0, -Parameters.lse_tolerance);
+   if (Parameters.lse) lse_tolerance = Parameters.lse_tolerance;
 
    if (Parameters.nodfile == FALSE) {
      if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE && 

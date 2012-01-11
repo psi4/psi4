@@ -42,7 +42,7 @@ void RunCoupledCluster(Options &options){
   ccsd->WriteBanner();
   ccsd->Initialize(options);
   ccsd->AllocateMemory(options);
-  status = ccsd->CCSDIterations();
+  status = ccsd->CCSDIterations(options);
   tstop();
 
   // mp2 energy
