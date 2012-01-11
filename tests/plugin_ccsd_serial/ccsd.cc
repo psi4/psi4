@@ -78,28 +78,12 @@ void CoupledCluster::WriteBanner(){
   fprintf(outfile, "        *                                                     *\n");
   fprintf(outfile, "        *                        CCSD                         *\n");
   fprintf(outfile, "        *           Coupled-Cluster Singles Doubles           *\n");
-  fprintf(outfile, "        *          (for heterogeneous architectures)          *\n");
   fprintf(outfile, "        *                                                     *\n");
   fprintf(outfile, "        *                   Eugene DePrince                   *\n");
   fprintf(outfile, "        *                                                     *\n");
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile,"\n\n");
   fflush(outfile);
-
-
-  /*boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
-  int nocc = ref->doccpi()[0];
-  int nvir = ref->nmopi()[0]-ref->doccpi()[0];
-  int aocc = nocc-ref->frzcpi()[0];
-  int avir = nvir-ref->frzvpi()[0];
-
-  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, ref->molecule(), "RI_BASIS_CC");
-
-  boost::shared_ptr<DFTensor> DF (new DFTensor(ref->basisset(),auxiliary,ref->Ca(),nocc,nvir,aocc,avir,Process::environment.options));
-  SharedMatrix Qoo = DF->Qoo();
-  SharedMatrix Qov = DF->Qov();
-  SharedMatrix Qvv = DF->Qvv();*/
 }
 
 /*================================================================
@@ -474,7 +458,7 @@ PsiReturnType CoupledCluster::CCSDIterations(){
 
   fprintf(outfile,"\n");
   fprintf(outfile,
-    "  Begin singles and doubles coupled cluster iterations ... on GPUs!\n\n");
+    "  Begin singles and doubles coupled cluster iterations\n\n");
   fprintf(outfile,
     "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
   fflush(outfile);
@@ -563,8 +547,11 @@ PsiReturnType CoupledCluster::CCSDIterations(){
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
   fprintf(outfile,"\n");
-  fprintf(outfile,"  MP2 Correlation Energy:  %20.12lf\n",emp2);
-  fprintf(outfile,"  CCSD Correlation Energy: %20.12lf\n",eccsd);
+  fprintf(outfile,"        MP2 correlation energy:  %20.12lf\n",emp2);
+  fprintf(outfile,"        CCSD correlation energy: %20.12lf\n",eccsd);
+  fprintf(outfile,"\n");
+  fprintf(outfile,"      * MP2 total energy:        %20.12lf\n",emp2+escf);
+  fprintf(outfile,"      * CCSD total energy:       %20.12lf\n",eccsd+escf);
   fprintf(outfile,"\n");
   fprintf(outfile,"  Total time for CCSD iterations: %10.2lf s (user)\n",user_stop-user_start);
   fprintf(outfile,"                                  %10.2lf s (system)\n",sys_stop-sys_start);
@@ -683,9 +670,24 @@ void CoupledCluster::AllocateMemory(Options&options){
   long int dim;
 
   fprintf(outfile,"\n");
-  fprintf(outfile,"  available memory =             %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
-  fprintf(outfile,"  minimum memory requirements =  %9.2lf mb\n",
+  fprintf(outfile,"  available memory =                        %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
+  fprintf(outfile,"  minimum memory requirements for CCSD =    %9.2lf mb\n",
          8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
+  if (options.get_bool("COMPUTE_TRIPLES")){
+     fprintf(outfile,"  minimum memory requirements for CCSD(T) = %9.2lf mb\n",
+            8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v));
+     int nthreads = 1;
+     #ifdef _OPENMP
+         nthreads = omp_get_max_threads();
+     #endif
+     if (options["NUM_THREADS"].has_changed())
+        nthreads = options.get_int("NUM_THREADS");
+     if (nthreads>1){
+        fprintf(outfile,"     --explicitly threading on %2i threads = %9.2lf mb\n",
+               nthreads,8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v));
+     }
+  }
+
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
@@ -709,15 +711,13 @@ void CoupledCluster::AllocateMemory(Options&options){
      if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
 
      if (dim<o*o*v*v){
-        throw PsiException("out of memory: general buffer cannot accomodate t2",__FILE__,__LINE__);
+        throw PsiException("out of memory: general buffer cannot accomodate T2",__FILE__,__LINE__);
      }
 
      fprintf(outfile,"\n");
      fprintf(outfile,"  Increase memory by %7.2lf mb to hold T2 in core.\n",o*o*v*v*8L/1024./1024.);
      fprintf(outfile,"\n");
   }
-
-
 
   maxelem = dim;
 
