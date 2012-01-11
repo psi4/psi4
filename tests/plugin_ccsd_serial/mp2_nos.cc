@@ -280,7 +280,6 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
           }
       }
   }
-  ccsd->scale_t = ccsd->eccsd/eccsd;
   fprintf(outfile,"        CCSD correlation energy in original space:  %20.12lf\n",ccsd->eccsd);
   fprintf(outfile,"        CCSD correlation energy in truncated space: %20.12lf\n",eccsd);
   fprintf(outfile,"\n");
