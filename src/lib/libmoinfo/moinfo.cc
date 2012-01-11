@@ -55,6 +55,9 @@ MOInfo::MOInfo(Options& options_, bool silent_)
     //  mo_spaces.print();
 
 
+    if(options_["CORR_MULTP"].has_changed())
+        multiplicity = options_.get_int("CORR_MULTP");
+
     no_damp_convergence = 1.0e-9;
     dgemm_timing        = 0.0;
     scf                 = NULL;
