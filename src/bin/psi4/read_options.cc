@@ -1416,8 +1416,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of active orbitals, per irrep -*/
     options.add("ACTIVE", new ArrayType());
-    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
-    options.add("ACTV", new ArrayType());
+//    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
+//    options.add("ACTV", new ArrayType());
     /*- The type of SCF reference to be computed. -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     /*- The symmetry of the SCF wavefunction.-*/
@@ -1866,20 +1866,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     /*- How to perform MP2_CCSD computations -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
-    /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
-    options.add("CORR_FOCC", new ArrayType());
-    /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
-    options.add("CORR_DOCC", new ArrayType());
-    /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
+//    /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
+//    options.add("CORR_FOCC", new ArrayType());
+//    /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
+//    options.add("CORR_DOCC", new ArrayType());
+//    /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
+    /*- The number of doubly occupied orbitals per irrep -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
-    /*- The number of active orbitals per irrep (same as ACTV) -*/
-    options.add("CORR_ACTV", new ArrayType());
-    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTIVE) -*/
-    options.add("ACTV", new ArrayType());
-    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTV) -*/
+//    /*- The number of active orbitals per irrep (same as ACTV) -*/
+//    options.add("CORR_ACTV", new ArrayType());
+//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTIVE) -*/
+//    options.add("ACTV", new ArrayType());
+//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTV) -*/
+    /*- The number of active orbitals per irrep -*/
     options.add("ACTIVE", new ArrayType());
-    /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
-    options.add("CORR_FVIR", new ArrayType());
+//    /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
+//    options.add("CORR_FVIR", new ArrayType());
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
     /*- Do ? -*/
