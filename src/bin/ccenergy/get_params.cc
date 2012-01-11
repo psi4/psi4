@@ -22,7 +22,7 @@ void get_params(Options &options)
   std::string cachetype = "";
   std::string junk;
 
-  params.newtrips = options.get_bool("NEWTRIPS");
+  params.newtrips = options.get_bool("NEW_TRIPLES");
 
   params.wfn = options.get_str("WFN");
 
@@ -115,7 +115,7 @@ void get_params(Options &options)
   else if(params.local)
     local.pairdef = "BP";
 
-  params.num_amps = options.get_int("NUM_AMPS");
+  params.num_amps = options.get_int("NUM_AMPS_PRINT");
   params.bconv = options.get_double("BRUECKNER_CONV");
 
   params.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
