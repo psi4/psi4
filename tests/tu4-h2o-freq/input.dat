@@ -1,4 +1,4 @@
-# Frequencies for H2O HF/cc-pVDZ at optimized geometry
+#! Frequencies for H2O HF/cc-pVDZ at optimized geometry
 
 molecule h2o {
   O 

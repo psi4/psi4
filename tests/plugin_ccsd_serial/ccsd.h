@@ -101,7 +101,7 @@ class CoupledCluster{
     /**
       * this function solves the CCSD equations (requires a minimum of 4o^2v^2 memory)
      */
-    PsiReturnType CCSDIterations();
+    PsiReturnType CCSDIterations(Options&options);
   
     /**
       * delete temporary files
@@ -148,9 +148,14 @@ class CoupledCluster{
     void UpdateT1(long int iter);
 
     /**
-      * Update t2 - returns the energy for that iteration
+      * Update t2
       */
-    double UpdateT2(long int iter);
+    void UpdateT2(long int iter);
+    /**
+      * Get the energy for that iteration. If there is a diis extrapolation,
+      * the energy is evaluated after that step.
+      */
+    double CheckEnergy();
 
     /**
       * the N^6 CC diagrams.
@@ -208,6 +213,18 @@ class CoupledCluster{
      * helper class definied in gpuhelper.h
      */
     boost::shared_ptr<GPUHelper> helper_;
+
+    /**
+      *  SCS-MP2 function and variables
+      */
+    void SCS_MP2();
+    double emp2_os,emp2_ss,emp2_os_fac,emp2_ss_fac;
+
+    /**
+      *  SCS-CCSD function and variables
+      */
+    void SCS_CCSD();
+    double eccsd_os,eccsd_ss,eccsd_os_fac,eccsd_ss_fac;
 
 };
 };

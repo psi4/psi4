@@ -83,7 +83,7 @@ void get_params(Options &options)
     local.filter_singles = options["LOCAL_FILTER_SINGLES"].to_integer();
   }
 
-  params.newtrips = options["NEWTRIPS"].to_integer();
+  params.newtrips = options["NEW_TRIPLES"].to_integer();
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
