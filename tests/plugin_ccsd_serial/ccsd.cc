@@ -130,7 +130,7 @@ void CoupledCluster::Initialize(Options &options){
   // get paramters from input 
   conv    = options.get_double("CONVERGENCE");
   maxiter = options.get_int("MAXITER");
-  maxdiis = options.get_int("MAX_DIIS_VECS");
+  maxdiis = options.get_int("DIIS_MAX_VECS");
 
   // memory is from process::environment, but can override that
   memory = Process::environment.get_memory();
@@ -477,6 +477,7 @@ PsiReturnType CoupledCluster::CCSDIterations(){
      psio->write_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_T2,1);
   }
+double eccsd2 = 0.0;
 
   // cc diagrams split up as tasks
   DefineTasks();
@@ -508,7 +509,7 @@ PsiReturnType CoupledCluster::CCSDIterations(){
       // update the amplitudes and check the energy
       Eold = eccsd;
       UpdateT1(iter);
-      eccsd = UpdateT2(iter);
+      UpdateT2(iter);
 
       // add vector to list for diis
       DIISOldVector(iter,diis_iter,replace_diis_iter);
@@ -517,11 +518,12 @@ PsiReturnType CoupledCluster::CCSDIterations(){
       nrm = DIISErrorVector(diis_iter,replace_diis_iter,iter);
 
       // diis extrapolation
-      if (diis_iter>2){
+      if (diis_iter>1){
          if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,arraysize+o*v);
          else                   DIIS(diisvec,maxdiis,arraysize+o*v);
          DIISNewAmplitudes(diis_iter);
       }
+      eccsd = CheckEnergy();
 
       if (diis_iter<=maxdiis) diis_iter++;
       else if (replace_diis_iter<maxdiis) replace_diis_iter++;
@@ -1244,7 +1246,7 @@ void CoupledCluster::UpdateT1(long int iter){
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   F_DCOPY(o*v,w1,1,t1,1);
 }
-double CoupledCluster::UpdateT2(long int iter){
+double CoupledCluster::CheckEnergy(){
 
   long int v = nvirt;
   long int o = ndoccact;
@@ -1253,6 +1255,43 @@ double CoupledCluster::UpdateT2(long int iter){
   double ta,tnew,dijab,da,dab,dabi;
   long int iajb,jaib,ijab=0;
   double energy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempv;
+  }
+  for (a=o; a<rs; a++){
+      for (b=o; b<rs; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  jaib = iajb + (i-j)*v*(1-v*o);
+                  energy += (2.*integrals[iajb]-integrals[jaib])*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+                  ijab++;
+              }
+          }
+      }
+  }
+
+  psio.reset();
+
+  return energy;
+}
+void CoupledCluster::UpdateT2(long int iter){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  double ta,tnew,dijab,da,dab,dabi;
+  long int iajb,jaib,ijab=0;
+  //double energy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
@@ -1269,13 +1308,13 @@ double CoupledCluster::UpdateT2(long int iter){
               for (j=0; j<o; j++){
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  jaib = iajb + (i-j)*v*(1-v*o);
+                  //jaib = iajb + (i-j)*v*(1-v*o);
 
                   dijab = dabi-eps[j];
 
                   tnew = - (integrals[iajb] + tempv[ijab])/dijab;
                   tempt[ijab] = tnew;
-                  energy += (2.*integrals[iajb]-integrals[jaib])*(tnew+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+                  //energy += (2.*integrals[iajb]-integrals[jaib])*(tnew+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
                   ijab++;
               }
           }
@@ -1305,7 +1344,7 @@ double CoupledCluster::UpdateT2(long int iter){
 
   psio.reset();
 
-  return energy;
+  //return energy;
 }
 
 /*================================================================
