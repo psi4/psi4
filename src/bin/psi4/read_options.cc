@@ -572,7 +572,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use DIIS extrapolation to accelerate CC convergence? -*/
     options.add_bool("DIIS", true);
 
-    // CDS-TODO: Check difference between DIIS_START AND DIIS_MIN_VECS
     /*- Iteration at which to start using DIIS -*/
     options.add_int("DIIS_START", 1);
 
@@ -1139,7 +1138,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("ABCD","NEW");
     /*- -*/
-    options.add_int("NUM_AMPS",10);
+    options.add_int("NUM_AMPS_PRINT",10);
     /*- Type of job being performed !expert -*/
     options.add_str("JOBTYPE","");
     /*- Do ? -*/
@@ -1261,8 +1260,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("LOCAL_FILTER_SINGLES", true);
     /*- Do ? -*/
-    options.add_bool("NEWTRIPS", true);
-    /*- -*/
+    options.add_bool("NEW_TRIPLES", true);
+    /*- Number of excited states per irreducible representation for EOM-CC
+    and CC-LR calculations. Irreps denote the final state symmetry, not the
+    symmetry of the transtion. -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 80);
@@ -1280,10 +1281,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic 
     excited states in the EOM-CC calculation !expert -*/
     options.add_int("EXCITATION_RANGE", 2);
-    /*- Do ? -*/
+    /*- Do print information on the iterative solution to the single-excitation
+    EOM-CC problem used as a guess to full EOM-CC? -*/
     options.add_bool("SINGLES_PRINT", false);
     /*- -*/
-    options.add_int("VECS_PER_ROOT_SS", 5);
+    options.add_int("SS_VECS_PER_ROOT", 5);
     /*- -*/
     options.add_int("VECS_PER_ROOT", 12);
     /*- -*/
@@ -1351,7 +1353,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("ANALYZE",0);
     /*- -*/
-    options.add_int("NUM_AMPS",5);
+    options.add_int("NUM_AMPS_PRINT",5);
     /*- Do Sekino-Bartlett size-extensive model-III? -*/
     options.add_bool("SEKINO",0);
     /*- Do Bartlett size-extensive linear model? -*/
@@ -1423,7 +1425,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "CCENERGY"|| options.read_globals()) {
     /*- Do ? -*/
-    options.add_bool("NEWTRIPS", 1);
+    options.add_bool("NEW_TRIPLES", 1);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- Type of orbitals for the single-determinant reference function -*/
@@ -1488,7 +1490,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
-    options.add_int("NUM_AMPS", 10);
+    options.add_int("NUM_AMPS_PRINT", 10);
     /*- Convergence criterion for Breuckner orbitals. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("BRUECKNER_CONV", 1e-5);
     /*- Do print the MP2 amplitudes which are the starting guesses for RHF and UHF reference functions? -*/
@@ -1516,14 +1518,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
-  // Options of this module not standardized since it's bound for deletion
   if(name == "CIS"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- -*/
-    options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
+    options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 500);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
