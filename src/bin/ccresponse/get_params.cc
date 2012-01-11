@@ -162,7 +162,7 @@ void get_params(Options &options)
     local.pairdef = strdup("BP");
 
   params.analyze = options.get_bool("ANALYZE");
-  params.num_amps = options.get_int("NUM_AMPS");
+  params.num_amps = options.get_int("NUM_AMPS_PRINT");
   params.sekino = options.get_bool("SEKINO");
   params.linear = options.get_bool("LINEAR");
 

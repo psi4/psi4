@@ -31,7 +31,7 @@ void MRCCSD_T::startup()
 
   nirreps   = moinfo->get_nirreps();
   nrefs     = moinfo->get_ref_size(AllRefs);
-  threshold = 0.1 * options_.get_double("CONVERGENCE");
+  threshold = 0.1 * options_.get_double("E_CONVERGENCE");
 
   build_W_intermediates();
 

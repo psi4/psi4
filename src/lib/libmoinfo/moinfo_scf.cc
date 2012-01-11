@@ -106,7 +106,8 @@ void MOInfoSCF::read_mo_spaces()
     }else{
         // For a single-point only
         read_mo_space(nirreps,ndocc,docc,"DOCC");
-        read_mo_space(nirreps,nactv,actv,"ACTV ACTIVE SOCC");
+        read_mo_space(nirreps,nactv,actv,"SOCC");
+//        read_mo_space(nirreps,nactv,actv,"ACTV ACTIVE SOCC");
     }
 
     nactive_ael = nael  - ndocc;
