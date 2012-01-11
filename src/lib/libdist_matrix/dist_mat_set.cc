@@ -721,42 +721,106 @@ Distributed_Matrix Distributed_Matrix::operator* (Distributed_Matrix &b_mat)
             int b_mat_col = b_mat.tile_ncols_;
             int c_mat_col = c_mat.tile_ncols_;
 
-            for (int i=0; i < a_mat_row; i++) {
+            int cols_of_futures = 0;
+            for (int tk=0; tk < b_mat_col; tk++) {
+                std::vector<int> proc_col = c_mat.pgrid_col(tk);
+                for (int pcol=0; pcol < proc_col.size(); pcol++) {
+                    if (c_mat.me_ == proc_col[pcol]) {
+                        cols_of_futures++;
+                    }
+                }
+            }
+
+            // a vector of futures for all of the required tile columns of B
+            std::vector<madness::Future<madness::Tensor<double> > > B =
+                    madness::future_vector_factory<madness::Tensor<double> >(cols_of_futures*a_mat_col);
+
+            // set up all of the required tile column futures
+            for (int tk=0, offset_tk=0; tk < b_mat_col; tk++) {
+                std::vector<int> proc_col = c_mat.pgrid_col(tk);
+                for (int pcol=0; pcol < proc_col.size(); pcol++) {
+                    if (c_mat.me_ == proc_col[pcol]) {
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tjk = tj*b_mat_col + tk;
+                            B[offset_tk*a_mat_col + tj] =
+                                    b_mat.task(b_mat.owner(tjk),
+                                               &Distributed_Matrix::get_tile_tij, tjk);
+                        }
+                        offset_tk++;
+                    }
+                }
+            }
+
+            // Now do the matrix multiplication
+            for (int ti=0; ti < a_mat_row; ti++) {
+
+                // a vector for all of the future tile rows of A
+                std::vector<madness::Future<madness::Tensor<double> > > A =
+                        madness::future_vector_factory<madness::Tensor<double> >(a_mat_col);
+
+                // if I am in the process grid row, get all of the tile rows of A
+                std::vector<int> proc_row = c_mat.pgrid_row(ti);
+                for (int prow=0; prow < proc_row.size(); prow++) {
+                    if (c_mat.me_ == proc_row[prow]) {
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tij = ti*a_mat_col + tj;
+                            A[tj] = this->task(this->owner(tij), &Distributed_Matrix::get_tile_tij, tij);
+                        }
+                    }
+                }
+
+                for (int tk=0, offset_tk=0; tk < b_mat_col; tk++) {
+                    int tik = ti*c_mat_col + tk;
+                    if (c_mat.me_ == c_mat.owner(tik)) {
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            c_mat.task(me_, &Distributed_Matrix::sum_tile_tij, tik,
+                                       task(me_, &Distributed_Matrix::mxm,
+                                            A[tj],
+                                            B[offset_tk*a_mat_col + tj]));
+                        }
+                        offset_tk++;
+                    }
+                }
+            }
+
+
+/* This works
+            for (int ti=0; ti < a_mat_row; ti++) {
 
                 std::vector<madness::Future<madness::Tensor<double> > > A =
                         madness::future_vector_factory<madness::Tensor<double> >(a_mat_col);
 
-                std::vector<int> proc_row = c_mat.pgrid_row(i);
+                std::vector<int> proc_row = c_mat.pgrid_row(ti);
                 for (int prow=0; prow < proc_row.size(); prow++) {
                     if (c_mat.me_ == proc_row[prow]) {
-                        for (int j=0; j < a_mat_col; j++) {
-                            int ij = i*a_mat_col + j;
-                            A[j] = this->task(this->owner(ij), &Distributed_Matrix::get_tile_tij, ij);
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tij = ti*a_mat_col + tj;
+                            A[tj] = this->task(this->owner(tij), &Distributed_Matrix::get_tile_tij, tij);
                         }
                     }
                 }
 
 
-                for (int k=0; k < b_mat_col; k++) {
-                    int ik = i*c_mat_col + k;
+                for (int tk=0; tk < b_mat_col; tk++) {
+                    int tik = ti*c_mat_col + tk;
 
-                    if (c_mat.me_ == c_mat.owner(ik)) {
+                    if (c_mat.me_ == c_mat.owner(tik)) {
 
-                        for (int j=0; j < a_mat_col; j++) {
-                            int jk = j*b_mat_col + k;
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tjk = tj*b_mat_col + tk;
                             madness::Future<madness::Tensor<double> > B =
-                                    b_mat.task(b_mat.owner(jk),
-                                               &Distributed_Matrix::get_tile_tij, jk);
+                                    b_mat.task(b_mat.owner(tjk),
+                                               &Distributed_Matrix::get_tile_tij, tjk);
 
-                            c_mat.task(me_, &Distributed_Matrix::sum_tile_tij, ik,
-                                       task(me_, &Distributed_Matrix::mxm, A[j], B));
+                            c_mat.task(me_, &Distributed_Matrix::sum_tile_tij, tik,
+                                       task(me_, &Distributed_Matrix::mxm, A[tj], B));
 //                            c_mat.task(me_, &Distributed_Matrix::mxm, A[j], B, ik, 1.0);
 
                         }
                     }
                 }
             }
-
+*/
             Communicator::world->sync();
 
             return c_mat;
