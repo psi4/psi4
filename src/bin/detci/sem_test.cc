@@ -117,7 +117,7 @@ void sem_test(double **A, int N, int M, int L, double **evecs, double *evals,
    int iter2=0; /* iterations since last collapse */
    double *lastroot;
    int lse_do=0, last_lse_collapse_num=-Parameters.lse_collapse, collapse_num=0;
-   double lse_tolerance=5e-3;
+   double lse_tolerance=Parameters.lse_tolerance;
    double **sigma_overlap, ***Mmatrix;
    int *Lvec;
 
