@@ -619,8 +619,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("AIO_DF_INTS",false);
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
-    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MAX_VECS",5);
     /*- Do compute third-order corrections? -*/
     options.add_bool("DO_THIRD_ORDER",false);
     /*- Do compute natural orbitals? -*/
@@ -840,12 +838,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum absolute value below which TEI are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- Minimum absolute S matrix value for DF-SCF exchange.
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("OVERLAP_TOLERANCE", 0.0);
-    /*- Minimum absolute three-index value for DF-SCF seive.
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("THREE_INDEX_TOLERANCE", 0.0);
     /*- Maximum number of rows to read/write in each DF-SCF operation -*/
     options.add_int("ROWS_PER_READ", 0);
 
@@ -859,9 +851,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAD_MAXITER", 50);
     /*- SAD Guess F-mix Iteration Start -*/
     options.add_int("SAD_F_MIX_START", 50);
-    /*- SAD Guess Schwarz Sieve (for rough molecular F).
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SAD_INTS_TOLERANCE", 1E-7);
     /*- SAD Guess Cholesky Cutoff (for eliminating redundancies).
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
@@ -1612,8 +1601,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE", 1e-12);
    }
   if(name=="DFMP2"|| options.read_globals()) {
+    /*- -*/
     options.add_int("MADMP2_SLEEP", 0);
+    /*- -*/
     options.add_int("MADMP2_DEBUG", 0);
+    /*- -*/
     options.add_str("MP2_ALGORITHM", "DFMP2");
     //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
@@ -1649,10 +1641,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- Do use parallel algorithm? -*/
     options.add_bool("PARALLEL_DFMP2",false);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE", 1e-8);
-    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
@@ -1838,8 +1826,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIAGONAL_CCSD_T",true);
     /*- Do diagonalize the effective Hamiltonian? -*/
     options.add_bool("DIAGONALIZE_HEFF",false);
-    /*- Do use DIIS extrapolation to accelerate convergence? -*/
-    options.add_bool("DIIS",true);
     /*- Do use symmetry to map equivalent determinants onto each other, for efficiency? -*/
     options.add_bool("USE_SPIN_SYMMETRY",true);
     /*- Do zero the internal amplitudes, i.e., those that map reference determinants onto each other? -*/
