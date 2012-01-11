@@ -148,9 +148,14 @@ class CoupledCluster{
     void UpdateT1(long int iter);
 
     /**
-      * Update t2 - returns the energy for that iteration
+      * Update t2
       */
-    double UpdateT2(long int iter);
+    void UpdateT2(long int iter);
+    /**
+      * Get the energy for that iteration. If there is a diis extrapolation,
+      * the energy is evaluated after that step.
+      */
+    double CheckEnergy();
 
     /**
       * the N^6 CC diagrams.
