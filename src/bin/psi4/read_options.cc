@@ -1596,8 +1596,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name=="DFMP2"|| options.read_globals()) {
     options.add_int("MADMP2_SLEEP", 0);
     options.add_int("MADMP2_DEBUG", 0);
-    options.add_str("MP2_ALGORITHM", "DFMP2");
-    //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
     options.add_str("RI_BASIS_MP2","");
     /*- Basis, needed by Python -*/
@@ -1611,30 +1609,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum absolute value below which integrals are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- DFMP2 Fitting Type -*/
-    options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
-    /*- DFMP2 Algorithm (usually for debugging)  -*/
-    options.add_str("DFMP2_TYPE","DEFAULT", "DEFAULT DISK CORE OLD");
-    /*- DFMP2 Fitting symmetry  -*/
-    options.add_str("FITTING_SYMMETRY","SYMMETRIC", "SYMMETRIC ASYMMETRIC");
-    /*- DFMP2 Fitting conditioning  -*/
-    options.add_str("FITTING_CONDITIONING","FINISHED", "RAW FINISHED");
-    /*- DFMP2 Fitting inversion  -*/
-    options.add_str("FITTING_INVERSION","EIG", "EIG CHOLESKY SOLVE");
-    /*- Max condition number in auxiliary basis -*/
-    options.add_double("RI_MAX_COND", 1.0E8);
-    /*- -Maximum number of rows to read/write in each DF-MP2 operation -*/
-    options.add_int("ROWS_PER_READ", 0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("RI_INTS_NUM_THREADS", 0);
-    /*- Debugging information? -*/
-    options.add_int("DEBUG",0);
-    /*- Do use parallel algorithm? -*/
-    options.add_bool("PARALLEL_DFMP2",false);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE", 1e-8);
-    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
