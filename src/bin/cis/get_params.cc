@@ -37,7 +37,7 @@ void get_params(Options & options)
     throw PsiException("cis input comparison error REFERENCE and params.ref", __FILE__, __LINE__);
   }
 
-  local.amp_print_cutoff = options.get_double("LOCAL_AMP_PRINT_CUTOFF"); //default 0.60
+  local.amp_print_cutoff = options.get_double("LOCAL_AMPS_PRINT_CUTOFF"); //default 0.60
   params.print = options.get_int("PRINT"); //default 0
   params.maxiter = options.get_int("MAXITER"); //default 500
 
