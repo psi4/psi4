@@ -42,7 +42,7 @@ Rvals = [ 4.0, 5.0 ]
 
 set globals {
     BASIS sto-3g
-    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DF_BASIS_SCF cc-pVDZ-JKFIT
     DIIS True
     DIIS_MIN_VECS 5
     DIIS_MAX_VECS 9
@@ -51,7 +51,7 @@ set globals {
     D_CONVERGE 11
     GUESS SAD
     SCF_TYPE DF
-    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DF_BASIS_SCF cc-pVDZ-JKFIT
     REFERENCE RHF
 }
 
