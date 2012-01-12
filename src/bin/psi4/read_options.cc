@@ -635,9 +635,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory? -*/
     options.add_bool("SAPT_MEM_CHECK",true);
     /*- SAPT DF Basis -*/
-    options.add_str("RI_BASIS_SAPT", "");
+    options.add_str("DF_BASIS_SAPT", "");
     /*- SAPT DF Basis for Elst10 and Exch10 -*/
-    options.add_str("RI_BASIS_ELST", "");
+    options.add_str("DF_BASIS_ELST", "");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
     /*- Denominator algorithm for PT methods -*/
@@ -748,7 +748,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
     /*- The name of the auxiliary basis to be used in RI computations -*/
-    options.add_str("RI_BASIS_SCF", "");
+    options.add_str("DF_BASIS_SCF", "");
 
     /*- Atomic Charge cutoff (for primary domain) -*/
     options.add_double("CHARGE_CUTOFF",0.05);
@@ -792,21 +792,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("EXTERN", false);
 
     /*- The storage scheme for the three index tensors in density fitting -*/
-    options.add_str("RI_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
+    options.add_str("DF_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
     /*- Do save restart information for RI SCF? -*/
-    options.add_bool("RI_SCF_SAVE",false);
+    options.add_bool("DF_SCF_SAVE",false);
     /*- Do try to restart? -*/
-    options.add_bool("RI_SCF_RESTART",false);
+    options.add_bool("DF_SCF_RESTART",false);
     /*- Do find the raw fitting metric condition number? -*/
     options.add_bool("FIND_RAW_J_COND",false);
     /*- Max J basis condition number to be allowed -*/
-    options.add_double("RI_MAX_COND",1E8);
+    options.add_double("DF_MAX_COND",1E8);
     /*- SCF Fitting Type -*/
-    options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
+    options.add_str("DF_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
-    options.add_int("RI_INTS_NUM_THREADS",0);
+    options.add_int("DF_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc -*/
-    options.add_str("RI_INTS_IO", "NONE", "NONE SAVE LOAD");
+    options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
 
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
@@ -1550,15 +1550,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
-    options.add_str("RI_BASIS_MP2", "");
+    options.add_str("DF_BASIS_MP2", "");
 //    options.read_ipv1();
     /*- -*/
-    if(options.get_str("RI_BASIS_MP2") != "")
+    if(options.get_str("DF_BASIS_MP2") != "")
     /*- Do ? -*/
-      options.add_bool("RI_LMP2", true);
+      options.add_bool("DF_LMP2", true);
     else
     /*- Do ? -*/
-      options.add_bool("RI_LMP2", false);
+      options.add_bool("DF_LMP2", false);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "LMP2");
     /*- -*/
@@ -1610,7 +1610,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MP2_ALGORITHM", "DFMP2");
     //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
-    options.add_str("RI_BASIS_MP2","");
+    options.add_str("DF_BASIS_MP2","");
     /*- Basis, needed by Python -*/
     options.add_str("BASIS","NONE");
     /*- OS Scale -*/
@@ -1623,7 +1623,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
     /*- DFMP2 Fitting Type -*/
-    options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
+    options.add_str("DF_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- DFMP2 Algorithm (usually for debugging)  -*/
     options.add_str("DFMP2_TYPE","DEFAULT", "DEFAULT DISK CORE OLD");
     /*- DFMP2 Fitting symmetry  -*/
@@ -1633,11 +1633,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- DFMP2 Fitting inversion  -*/
     options.add_str("FITTING_INVERSION","EIG", "EIG CHOLESKY SOLVE");
     /*- Max condition number in auxiliary basis -*/
-    options.add_double("RI_MAX_COND", 1.0E8);
+    options.add_double("DF_MAX_COND", 1.0E8);
     /*- -Maximum number of rows to read/write in each DF-MP2 operation -*/
     options.add_int("ROWS_PER_READ", 0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
-    options.add_int("RI_INTS_NUM_THREADS", 0);
+    options.add_int("DF_INTS_NUM_THREADS", 0);
     /*- Debugging information? -*/
     options.add_int("DEBUG",0);
     /*- Do use parallel algorithm? -*/
@@ -1669,7 +1669,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // => DF <= //
 
     /*- DF basis for MO integrals -*/
-    options.add_str("RI_BASIS_CC","NONE");
+    options.add_str("DF_BASIS_CC","NONE");
     /*- Fitting metric algorithm -*/
     options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
     /*- Desired Fitting condition (inverse of max condition number) -*/

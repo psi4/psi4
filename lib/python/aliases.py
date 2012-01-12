@@ -90,7 +90,7 @@ def run_plugin_omega(name, **kwargs):
     PsiMod.plugin_load("%s" % (plugfile))
 
     PsiMod.set_global_option('BASIS', 'AUG-CC-PVDZ')
-    PsiMod.set_global_option('RI_BASIS_SCF', 'AUG-CC-PVDZ-RI')
+    PsiMod.set_global_option('DF_BASIS_SCF', 'AUG-CC-PVDZ-RI')
     PsiMod.set_global_option('REFERENCE', 'UHF')
     PsiMod.set_global_option('SCF_TYPE', 'DF')
     energy('scf', **kwargs)

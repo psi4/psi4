@@ -35,7 +35,7 @@ void LMP2::params() {
     /* Default glob.reference is RHF */
     reference_ = options_.get_str("REFERENCE");
 
-    ri_lmp2_ = options_.get_bool("RI_LMP2");
+    ri_lmp2_ = options_.get_bool("DF_LMP2");
 
     print_ = options_.get_int("PRINT");
 
