@@ -14,7 +14,7 @@ molecule h2o {
 set globals {
   basis 6-31G**
   max_force_g_convergence 0.000001
-  max_disp_g_conv  0.0001
+  max_disp_g_convergence  0.0001
 }
 
 thisenergy = optimize('cisd', dertype = 0)
