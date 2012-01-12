@@ -103,7 +103,7 @@ void get_params(Options &options)
 
   params.print = options.get_int("PRINT");
   
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
   
   cachetype = options.get_str("CACHETYPE");
   if(cachetype != "NULL") {

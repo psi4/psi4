@@ -51,10 +51,10 @@ void get_parameters(Options &options)
  *        X = now it's an internal parameter, not in read_options
  */
 
-  Parameters.ex_lvl = options.get_int("EX_LVL");
-  Parameters.cc_ex_lvl = options.get_int("CC_EX_LVL");
-  Parameters.val_ex_lvl = options.get_int("VAL_EX_LVL");
-  Parameters.cc_val_ex_lvl = options.get_int("CC_VAL_EX_LVL");
+  Parameters.ex_lvl = options.get_int("EX_LEVEL");
+  Parameters.cc_ex_lvl = options.get_int("CC_EX_LEVEL");
+  Parameters.val_ex_lvl = options.get_int("VAL_EX_LEVEL");
+  Parameters.cc_val_ex_lvl = options.get_int("CC_VAL_EX_LEVEL");
 
   Parameters.cc_a_val_ex_lvl = -1;
   Parameters.cc_b_val_ex_lvl = -1;
@@ -831,9 +831,9 @@ void print_parameters(void)
 
    fprintf(outfile, "\n");
    fprintf(outfile, "PARAMETERS: \n");
-   fprintf(outfile, "   EX LVL        =   %6d      H0 BLOCKSIZE =   %6d\n",
+   fprintf(outfile, "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
       Parameters.ex_lvl, Parameters.h0blocksize);
-   fprintf(outfile, "   VAL EX LVL    =   %6d      H0 GUESS SIZE=   %6d\n",
+   fprintf(outfile, "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
       Parameters.val_ex_lvl, Parameters.h0guess_size);
    fprintf(outfile, "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
@@ -1078,7 +1078,7 @@ void set_ras_parms(void)
      if (Parameters.print_lvl) {
        fprintf(outfile, "Note: Calculation requested is a full CI.\n");
        fprintf(outfile,
-               "Resetting EX_LVL to %d and turning on all excitations\n\n",
+               "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
                Parameters.ex_lvl);
      }
 

@@ -78,7 +78,7 @@ void get_params(Options &options)
   params.memory = Process::environment.get_memory();
 
   params.aobasis = options.get_str("AO_BASIS");
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   params.cachetype = 1;
   cachetype = options.get_str("CACHETYPE");

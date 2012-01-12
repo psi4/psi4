@@ -92,22 +92,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
-    /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LVL -*/
+    /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LEVEL -*/
     options.add_bool("FCI",false);
 
     /*- The CI excitation level -*/
-    options.add_int("EX_LVL", 2);
+    options.add_int("EX_LEVEL", 2);
 
     /*- The CC excitation level -*/
-    options.add_int("CC_EX_LVL", 2);
+    options.add_int("CC_EX_LEVEL", 2);
 
     /*- In a RAS CI, this is the additional excitation level for allowing
     electrons out of RAS I into RAS II.  The maximum number of holes in
-    RAS I is therefore EX_LVL + VAL_EX_LVL. -*/
-    options.add_int("VAL_EX_LVL", 0);
+    RAS I is therefore EX_LEVEL + VAL_EX_LEVEL. -*/
+    options.add_int("VAL_EX_LEVEL", 0);
 
     /*- The CC valence excitation level -*/
-    options.add_int("CC_VAL_EX_LVL", 0);
+    options.add_int("CC_VAL_EX_LEVEL", 0);
 
     /*- number of CI roots to find -*/
     options.add_int("NUM_ROOTS", 1);
@@ -239,21 +239,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do allow `mixed' RAS II/RAS III excitations into the CI space?
       If FALSE, then if there are any electrons
       in RAS III, then the number of holes in RAS I cannot exceed the given
-      excitation level EX_LVL. !expert -*/
+      excitation level EX_LEVEL. !expert -*/
     options.add_bool("MIXED",true);
 
     /*- Do allow `mixed' excitations involving RAS IV into the CI space.
       Useful to specify a split-virtual
       CISD[TQ] computation.  If FALSE, then if there are any electrons
       in RAS IV, then the number of holes in RAS I cannot exceed the given
-      excitation level EX_LVL.  !expert -*/
+      excitation level EX_LEVEL.  !expert -*/
     options.add_bool("MIXED4",true);
 
     /*- Do restrict strings with $e-$ in RAS IV?  Useful to reduce the number of
       strings required if MIXED4=true, as in a split-virutal CISD[TQ]
       computation.  If more than one electron is in RAS IV, then the
       holes in RAS I cannot exceed the number of particles in
-      RAS III + RAS IV (i.e., EX_LVL), or else the string is discarded.
+      RAS III + RAS IV (i.e., EX_LEVEL), or else the string is discarded.
       !expert -*/
     options.add_bool("R4S",false);
 
@@ -481,7 +481,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     and ICORE=1). -*/
     options.add_double("S", 0.0);
 
-    /*- An array of length EX_LVL specifying whether each excitation type
+    /*- An array of length EX_LEVEL specifying whether each excitation type
     (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed).  Used to
     specify non-standard CI spaces such as CIST.  !expert -*/
     options.add("EX_ALLOW", new ArrayType());
@@ -654,7 +654,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
-      options.add_int("CACHELEV", 2);
+      options.add_int("CACHELEVEL", 2);
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
       /*- Maximum number of lambda iterations per macro-iteration -*/
@@ -755,7 +755,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Extended domain radius, Angstrom -*/
     options.add_double("R_EXT",3.0);
     /*- Iterations per full Pipek-Mizey Localization -*/
-    options.add_int("STEPS_PER_LOCALIZE",1);
+    options.add_int("LOCAL_ITER",1);
     /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF PSEUDOSPECTRAL POISSON L_DF CD 1C_CD");
     /*- Do run in parallel? -*/
@@ -866,7 +866,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
     options.add_bool("RELAX_OPDM", false);
     /*- The amount of cacheing of data to perform -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- The criterion used to retain/release cached data -*/
     options.add_str("CACHETYPE", "LRU", "LRU LOW");
     /*- Do perform a spin component scaled MP2 computation? -*/
@@ -890,7 +890,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Boolean to delete the SO-basis two-electron integral file after the transformation -*/
@@ -1071,7 +1071,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- Do ? -*/
     options.add_bool("LOCAL", false);
     /*- -*/
@@ -1100,7 +1100,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE",1e-14);
     /*- The amount of cacheing of data to perform -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034. !expert -*/
@@ -1128,7 +1128,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("RESTART",false);
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- Do ? -*/
     options.add_bool("SEKINO",false);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
@@ -1176,7 +1176,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "STABLE"|| options.read_globals()) {
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- -*/
     options.add_str("REFERENCE","RHF");
     /*- Do ? -*/
@@ -1192,7 +1192,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The amount of information printed to the output file -*/
     options.add_int("PRINT", 1);
     /*- How to cache quantities within the DPD library -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
     options.add_int("MEMORY", 1000);
     /*- The Reference -*/
@@ -1216,7 +1216,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute the Tamplitude equation matrix elements? -*/
     options.add_bool("T_AMPS",false);
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- Do use the minimal-disk algorithm for Wabei? It's VERY slow! -*/
@@ -1234,7 +1234,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("FULL_MATRIX",false);
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- -*/
     options.add_str("CACHETYPE", "LRU", "LOW LRU");
     /*- Number of threads -*/
@@ -1319,7 +1319,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- Cacheing level for libdpd -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- -*/
     options.add_str("REFERENCE","RHF");
     /*- Gauge for optical rotation -*/
@@ -1450,7 +1450,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     0 may help with certain types of memory problems.  The default is 2, 
     which means that all four-index quantites with up to two virtual-orbital 
     indices (e.g., <ij|ab> integrals) may be held in the cache. -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- Selects the priority type for maintaining the automatic memory 
     cache used by the libdpd codes. A value of LOW selects a "low priority" 
     scheme in which the deletion of items from the cache is based on 
@@ -1650,7 +1650,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("BASIS","NONE");
     /*- Minimum absolute value below which integrals are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SCHWARZ_TOLERANCE", 0.0);
+    options.add_double("INTS_TOLERANCE", 0.0);
     /*- Convergence criterion for CC energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-8);
     /*- Convergence criterion for cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
