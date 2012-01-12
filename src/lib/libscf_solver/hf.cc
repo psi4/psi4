@@ -44,8 +44,7 @@ namespace psi { namespace scf {
 HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt),
       nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6),
-      print_(1)
+      nuclear_quadrupole_contribution_(6)
 {
     common_init();
 }
@@ -53,8 +52,7 @@ HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> 
 HF::HF(Options& options, boost::shared_ptr<PSIO> psio)
     : Wavefunction(options, psio),
       nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6),
-      print_(1)
+      nuclear_quadrupole_contribution_(6)
 {
     common_init();
 }
