@@ -11,7 +11,12 @@ molecule o2 {
   O 1 1.19865141
 }
 
-set basis cc-pvtz
+set {
+  basis cc-pvtz
+  e_convergence 10
+  r_convergence 10
+  d_converge    10
+}
 
 set mcscf {
   reference       rohf
@@ -35,4 +40,4 @@ psimrcc()
 
 compare_values(refnuc, o2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
-compare_values(refmkccsd, get_variable("CURRENT ENERGY") , 9, "MkCCSD energy")            #TEST 
+compare_values(refmkccsd, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST 
