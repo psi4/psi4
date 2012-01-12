@@ -61,7 +61,7 @@ void get_params(Options &options)
   else params.eom_ref = 2; /* run in UHF mode - ignore EOM_REFERENCE */
 
   params.full_matrix = options["FULL_MATRIX"].to_integer();
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   std::string cachetype = options.get_str("CACHETYPE");
   if(cachetype == "LOW") params.cachetype = 1;

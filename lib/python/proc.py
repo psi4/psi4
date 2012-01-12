@@ -310,17 +310,17 @@ def run_detci(name, **kwargs):
 	    PsiMod.set_global_option('FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
 	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 2)
+	    PsiMod.set_global_option('EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
 	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 3)
+	    PsiMod.set_global_option('EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
 	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 4)
+	    PsiMod.set_global_option('EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
         PsiMod.set_global_option('WFN', 'DETCI')
         level = kwargs['level']
-        PsiMod.set_global_option('EX_LVL', level)
+        PsiMod.set_global_option('EX_LEVEL', level)
     # Call a plain energy('detci') and have full control over options
     elif(name.lower() == 'detci'):
         pass
@@ -343,8 +343,8 @@ def run_detci(name, **kwargs):
         PsiMod.revoke_global_option_changed('SAVE_MPN2')
         PsiMod.set_global_option('FCI', 'FALSE')
         PsiMod.revoke_global_option_changed('FCI')
-        PsiMod.set_global_option('EX_LVL', 2)
-        PsiMod.revoke_global_option_changed('EX_LVL')
+        PsiMod.set_global_option('EX_LEVEL', 2)
+        PsiMod.revoke_global_option_changed('EX_LEVEL')
 
     return returnvalue
 

@@ -38,7 +38,7 @@ void get_params(Options &options)
 
   params.memory = Process::environment.get_memory();
 
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
   params.cachelev = 0;
 
   junk = options.get_str("REFERENCE");
