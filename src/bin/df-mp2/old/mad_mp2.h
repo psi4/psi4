@@ -200,8 +200,8 @@ protected:
     madness::Future<double> energy_j(const SharedMatrix I,const int &i, const int &j);
     madness::Future<double> energy_k(const SharedMatrix I,const int &i, const int &j);
 
-    virtual bool same_a_b_orbs() const {};
-    virtual bool same_a_b_dens() const {};
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
 
 public:
     MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio);

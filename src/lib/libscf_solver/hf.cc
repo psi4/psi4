@@ -153,9 +153,9 @@ void HF::common_init()
     nelectron_ -= charge_;
 
     // If the user told us the multiplicity, read it from the input
-    //if(molecule_->multiplicity_specified()){
+    if(molecule_->multiplicity_specified()){
         multiplicity_ = molecule_->multiplicity();
-    /*}else{
+    }else{
         if(nelectron_%2){
             multiplicity_ = 2;
             molecule_->set_multiplicity(2);
@@ -174,7 +174,7 @@ void HF::common_init()
                             "\tinput if this is incorrect\n\n");
             }
         }
-    }*/
+    }
 
     // Make sure that the multiplicity is reasonable
     if(multiplicity_ - 1 > nelectron_){
@@ -249,7 +249,7 @@ void HF::common_init()
     //  First, did the user request a different number of diis vectors?
     min_diis_vectors_ = options_.get_int("DIIS_MIN_VECS");
     max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
-    diis_start_ = options_.get_int("START_DIIS_ITER");
+    diis_start_ = options_.get_int("DIIS_START");
     diis_enabled_ = options_.get_bool("DIIS");
 
     // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number

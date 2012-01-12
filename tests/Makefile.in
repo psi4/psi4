@@ -2,7 +2,7 @@
 .PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
 
 # Tutorial test cases
-tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sapt
+tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sapt tu6-cp-ne2
 
 # Tests that depend on madness:
 #  This is probably not the final solution:

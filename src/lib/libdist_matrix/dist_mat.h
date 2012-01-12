@@ -1,19 +1,19 @@
 #ifndef _psi_src_lib_libdist_array_dist_mat_h
 #define _psi_src_lib_libdist_array_dist_mat_h
 
-#if HAVE_MADNESS
-
 #include <stdio.h>
 #include <cstdio>
 #include <string>
 
 #include <libdpd/dpd.h>
 
-#include "tensor/tensor.h"
-#include "process_grid.h"
 
 #include <libparallel/parallel.h>
 
+#ifdef HAVE_MADNESS
+
+#include "tensor/tensor.h"
+#include "process_grid.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -1065,31 +1065,46 @@ private:
 //    inline int rc_to_tile(const int &rc) { return rc/tile_sz_; }
 
     /**
-     * Return a vector containing a tile row.
+     * Return a vector containing a matrix row.
      *
      * @param a The local row index.
      * @param tij The tile index.
      */
-    std::vector<double> get_tile_row(const int &a, const int &tij);
+    std::vector<double> get_matrix_row(const int &a, const int &tij);
     /**
-     * Return a vector containing a tile column.
+     * Return a vector containing a matrix column.
      *
      * @param b The local column index.
      * @param tij The tile index.
      */
-    std::vector<double> get_tile_col(const int &b, const int &tij);
+    std::vector<double> get_matrix_col(const int &b, const int &tij);
+
+    /**
+     * Return a vector of future<tensor> containing a tile row.
+     *
+     * @param ti The tile row index.
+     */
+    std::vector<madness::Future<madness::Tensor<double> > > get_tile_row(const int &ti);
+    /**
+     * Return a vector of future<tensor> containing a tile column.
+     *
+     * @param tj The tile column index.
+     */
+    std::vector<madness::Future<madness::Tensor<double> > > get_tile_col(const int &tj);
 
     /**
      * Do a matrix-matrix muliplication of the two tiles, and return
-     * the result in a Tensor
+     * the result in a Future<Tensor>
      *
      * @param A The lhs of the mxm.
      * @param B The rhs of the mxm.
      */
-    madness::Void mxm(const madness::Tensor<double> &a,
-                      const madness::Tensor<double> &b,
-                      const int &c,
-                      const double &c_scale);
+    madness::Future<madness::Tensor<double> >  mxm(const madness::Tensor<double> &a,
+                                                   const madness::Tensor<double> &b);
+//    madness::Void mxm(const madness::Tensor<double> &a,
+//                      const madness::Tensor<double> &b,
+//                      const int &c,
+//                      const double &c_scale);
 
     /**
      * Convert an "ij" matrix index to an "i" matrix row index

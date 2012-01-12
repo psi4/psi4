@@ -6,10 +6,11 @@
  *
  */
 
-#if HAVE_MADNESS
 
 #include "dist_mat.h"
 #include "libqt/qt.h"
+
+#ifdef HAVE_MADNESS
 
 
 namespace psi {
@@ -54,7 +55,7 @@ madness::Void Distributed_Matrix::copy_row(const int &yi, Distributed_Matrix &X,
                                            ya, y_tij, const_cast<double*>(&X.data_[X.local(x_tij)](xa,0)));
                             }
                             else {
-                                madness::Future<std::vector<double> > xrow = X.task(owner(x_tij), &Distributed_Matrix::get_tile_row, xa, x_tij);
+                                madness::Future<std::vector<double> > xrow = X.task(owner(x_tij), &Distributed_Matrix::get_matrix_row, xa, x_tij);
                                 this->task(me_, &Distributed_Matrix::non_local_copy_tile_row, xrow, ya, y_tij);
                             }
 
@@ -95,7 +96,7 @@ madness::Void Distributed_Matrix::non_local_copy_tile_row(const std::vector<doub
 
 
 
-std::vector<double> Distributed_Matrix::get_tile_row(const int &a, const int &tij)
+std::vector<double> Distributed_Matrix::get_matrix_row(const int &a, const int &tij)
 {
     int loc = local(tij);
     int ncols = data_[loc].dim(1);
@@ -107,7 +108,7 @@ std::vector<double> Distributed_Matrix::get_tile_row(const int &a, const int &ti
     return temp;
 }
 
-std::vector<double> Distributed_Matrix::get_tile_col(const int &b, const int &tij)
+std::vector<double> Distributed_Matrix::get_matrix_col(const int &b, const int &tij)
 {
     int loc = local(tij);
     int nrows = data_[loc].dim(0);
@@ -120,7 +121,36 @@ std::vector<double> Distributed_Matrix::get_tile_col(const int &b, const int &ti
     return temp;
 }
 
+std::vector<madness::Future<madness::Tensor<double> > >  Distributed_Matrix::get_tile_row(const int &ti)
+{
+    int ncols = this->tile_ncols_;
 
+    std::vector<madness::Future<madness::Tensor<double> > > tile_row =
+            madness::future_vector_factory<madness::Tensor<double> >(ncols);
+
+    for (int tj=0; tj < ncols; tj++) {
+        int tij = ti*ncols + tj;
+        tile_row[tj] = this->task(this->owner(tij), &Distributed_Matrix::get_tile_tij, tij);
+    }
+
+    return tile_row;
+}
+
+std::vector<madness::Future<madness::Tensor<double> > >  Distributed_Matrix::get_tile_col(const int &tj)
+{
+    int nrows = this->tile_nrows_;
+    int ncols = this->tile_ncols_;
+
+    std::vector<madness::Future<madness::Tensor<double> > > tile_col =
+            madness::future_vector_factory<madness::Tensor<double> >(nrows);
+
+    for (int ti=0; ti < nrows; ti++) {
+        int tij = ti*ncols + tj;
+        tile_col[ti] = this->task(this->owner(tij), &Distributed_Matrix::get_tile_tij, tij);
+    }
+
+    return tile_col;
+}
 
 madness::Void Distributed_Matrix::copy_col(const int &yj, Distributed_Matrix &X, const int &xj)
 {
@@ -149,7 +179,7 @@ madness::Void Distributed_Matrix::copy_col(const int &yj, Distributed_Matrix &X,
                                            X.data_[X.local(x_tij)].dim(1));
                             }
                             else {
-                                madness::Future<std::vector<double> > x_tile = X.task(owner(x_tij), &Distributed_Matrix::get_tile_col, xb, x_tij);
+                                madness::Future<std::vector<double> > x_tile = X.task(owner(x_tij), &Distributed_Matrix::get_matrix_col, xb, x_tij);
                                 task(me_, &Distributed_Matrix::non_local_copy_tile_col, x_tile, y_tij, yb);
                             }
                         }

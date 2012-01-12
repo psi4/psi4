@@ -1,8 +1,6 @@
 #ifndef _psi_src_lib_libmints_process_grid_h_
 #define _psi_src_lib_libmints_process_grid_h_
 
-#if HAVE_MADNESS
-
 #include <cstdio>
 #include <string>
 #include <cstring>
@@ -14,6 +12,8 @@
 
 #include <libparallel/parallel.h>
 //#include <boost/multi_array.hpp>
+
+#ifdef HAVE_MADNESS
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -66,6 +66,12 @@ private:
     }
 
 public:
+    ~process_grid()
+    {
+        dims_.clear();
+        pgrid_.clear();
+    }
+
     /// The default constructor sets only initializes the parallel stuff
     process_grid()
     {

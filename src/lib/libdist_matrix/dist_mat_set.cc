@@ -6,10 +6,11 @@
  *
  */
 
-#if HAVE_MADNESS
 
 #include "dist_mat.h"
 #include "libqt/qt.h"
+
+#ifdef HAVE_MADNESS
 
 using namespace psi;
 using namespace std;
@@ -361,15 +362,15 @@ madness::Void Distributed_Matrix::sum_tile(const int &ti, const int &tj,
 madness::Void Distributed_Matrix::sum_tile_tij(//const int &tij, const double *rhs_ptr)
                                                const int &tij, const madness::Tensor<double> &tile)
 {
-    int loc = local(tij);
+    add_mutex_->lock();
 
-    double *ptr = const_cast<double*>(this->data_[loc].ptr());
-    double *end = ptr + this->data_[loc].size();
+    double *ptr = this->data_[local(tij)].ptr();
+    double *end = ptr + this->data_[local(tij)].size();
     double *rhs_ptr = const_cast<double*>(tile.ptr());
 
-    add_mutex_->lock();
     while (ptr < end)
         *ptr++ += *rhs_ptr++;
+
     add_mutex_->unlock();
 
     return madness::None;
@@ -720,22 +721,106 @@ Distributed_Matrix Distributed_Matrix::operator* (Distributed_Matrix &b_mat)
             int b_mat_col = b_mat.tile_ncols_;
             int c_mat_col = c_mat.tile_ncols_;
 
-            for (int i=0; i < a_mat_row; i++) {
-                for (int j=0; j < b_mat_col; j++) {
-                    int ij = i*c_mat_col + j;
-
-                    if (me_ == owner(ij)) {
-                        for (int k=0; k < a_mat_col; k++) {
-                            int ik = i*a_mat_col + k;
-                            int kj = k*b_mat_col + j;
-                            madness::Future<madness::Tensor<double> > A = this->task(this->owner(kj), &Distributed_Matrix::get_tile_tij, kj);
-                            madness::Future<madness::Tensor<double> > B = b_mat.task(b_mat.owner(kj), &Distributed_Matrix::get_tile_tij, kj);
-                            c_mat.task(me_, &Distributed_Matrix::mxm, A, B, ik, 1.0);
-                        }
+            int cols_of_futures = 0;
+            for (int tk=0; tk < b_mat_col; tk++) {
+                std::vector<int> proc_col = c_mat.pgrid_col(tk);
+                for (int pcol=0; pcol < proc_col.size(); pcol++) {
+                    if (c_mat.me_ == proc_col[pcol]) {
+                        cols_of_futures++;
                     }
                 }
             }
 
+            // a vector of futures for all of the required tile columns of B
+            std::vector<madness::Future<madness::Tensor<double> > > B =
+                    madness::future_vector_factory<madness::Tensor<double> >(cols_of_futures*a_mat_col);
+
+            // set up all of the required tile column futures
+            for (int tk=0, offset_tk=0; tk < b_mat_col; tk++) {
+                std::vector<int> proc_col = c_mat.pgrid_col(tk);
+                for (int pcol=0; pcol < proc_col.size(); pcol++) {
+                    if (c_mat.me_ == proc_col[pcol]) {
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tjk = tj*b_mat_col + tk;
+                            B[offset_tk*a_mat_col + tj] =
+                                    b_mat.task(b_mat.owner(tjk),
+                                               &Distributed_Matrix::get_tile_tij, tjk);
+                        }
+                        offset_tk++;
+                    }
+                }
+            }
+
+            // Now do the matrix multiplication
+            for (int ti=0; ti < a_mat_row; ti++) {
+
+                // a vector for all of the future tile rows of A
+                std::vector<madness::Future<madness::Tensor<double> > > A =
+                        madness::future_vector_factory<madness::Tensor<double> >(a_mat_col);
+
+                // if I am in the process grid row, get all of the tile rows of A
+                std::vector<int> proc_row = c_mat.pgrid_row(ti);
+                for (int prow=0; prow < proc_row.size(); prow++) {
+                    if (c_mat.me_ == proc_row[prow]) {
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tij = ti*a_mat_col + tj;
+                            A[tj] = this->task(this->owner(tij), &Distributed_Matrix::get_tile_tij, tij);
+                        }
+                    }
+                }
+
+                for (int tk=0, offset_tk=0; tk < b_mat_col; tk++) {
+                    int tik = ti*c_mat_col + tk;
+                    if (c_mat.me_ == c_mat.owner(tik)) {
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            c_mat.task(me_, &Distributed_Matrix::sum_tile_tij, tik,
+                                       task(me_, &Distributed_Matrix::mxm,
+                                            A[tj],
+                                            B[offset_tk*a_mat_col + tj]));
+                        }
+                        offset_tk++;
+                    }
+                }
+            }
+
+
+/* This works
+            for (int ti=0; ti < a_mat_row; ti++) {
+
+                std::vector<madness::Future<madness::Tensor<double> > > A =
+                        madness::future_vector_factory<madness::Tensor<double> >(a_mat_col);
+
+                std::vector<int> proc_row = c_mat.pgrid_row(ti);
+                for (int prow=0; prow < proc_row.size(); prow++) {
+                    if (c_mat.me_ == proc_row[prow]) {
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tij = ti*a_mat_col + tj;
+                            A[tj] = this->task(this->owner(tij), &Distributed_Matrix::get_tile_tij, tij);
+                        }
+                    }
+                }
+
+
+                for (int tk=0; tk < b_mat_col; tk++) {
+                    int tik = ti*c_mat_col + tk;
+
+                    if (c_mat.me_ == c_mat.owner(tik)) {
+
+                        for (int tj=0; tj < a_mat_col; tj++) {
+                            int tjk = tj*b_mat_col + tk;
+                            madness::Future<madness::Tensor<double> > B =
+                                    b_mat.task(b_mat.owner(tjk),
+                                               &Distributed_Matrix::get_tile_tij, tjk);
+
+                            c_mat.task(me_, &Distributed_Matrix::sum_tile_tij, tik,
+                                       task(me_, &Distributed_Matrix::mxm, A[tj], B));
+//                            c_mat.task(me_, &Distributed_Matrix::mxm, A[j], B, ik, 1.0);
+
+                        }
+                    }
+                }
+            }
+*/
             Communicator::world->sync();
 
             return c_mat;
@@ -746,81 +831,37 @@ Distributed_Matrix Distributed_Matrix::operator* (Distributed_Matrix &b_mat)
     else {
         throw PSIEXCEPTION("The columns of A do not match the rows of B.\n");
     }
-
-
-//    if (this->ncols_ == b_mat.nrows_) {
-//        if (this->tile_sz_ == b_mat.tile_sz_) {
-//            madness::TaskAttributes attr;
-//            attr.set_highpriority(true);
-
-//            Distributed_Matrix c_mat(pgrid_, this->nrows_, b_mat.ncols_,
-//                                     this->tile_sz_, "Multiply Result");
-
-//            c_mat.zero();
-
-//            int a_mat_row = this->tile_nrows_;
-//            int a_mat_col = this->tile_ncols_;
-//            int b_mat_col = b_mat.tile_ncols_;
-//            int c_mat_col = c_mat.tile_ncols_;
-
-//            for (int i=0; i < a_mat_row; i++) {
-
-//                std::vector<madness::Future<madness::Tensor<double> > > A =
-//                        madness::future_vector_factory<madness::Tensor<double> >(a_mat_col);
-
-//                std::vector<int> proc_row = c_mat.pgrid_row(i);
-//                for (int prow=0; prow < proc_row.size(); prow++) {
-//                    if (c_mat.me_ == proc_row[prow]) {
-//                       for (int j=0; j < a_mat_col; j++) {
-//                            int ij = i*a_mat_col + j;
-//                            A[j] = this->task(this->owner(ij), &Distributed_Matrix::get_tile_tij, ij);
-//                        }
-//                    }
-//                }
-
-
-//                for (int k=0; k < b_mat_col; k++) {
-//                    int ik = i*c_mat_col + k;
-
-//                    if (c_mat.me_ == c_mat.owner(ik)) {
-
-//                        for (int j=0; j < a_mat_col; j++) {
-//                            int jk = j*b_mat_col + k;
-//                            madness::Future<madness::Tensor<double> > B = b_mat.task(b_mat.owner(jk), &Distributed_Matrix::get_tile_tij, jk);
-//                            c_mat.task(c_mat.owner(ik), &Distributed_Matrix::mxm,
-//                                       A[j], B, ik, 1.0);
-//                        }
-//                    }
-//                }
-//            }
-
-//            Communicator::world->sync();
-
-//            return c_mat;
-//        }
-//        else
-//            throw PSIEXCEPTION("The tile sizes of A and B do not match.\n");
-//    }
-//    else {
-//        throw PSIEXCEPTION("The columns of A do not match the rows of B.\n");
-//    }
 }
 
-madness::Void Distributed_Matrix::mxm(const madness::Tensor<double> &a,
-                                      const madness::Tensor<double> &b,
-                                      const int &c,
-                                      const double &c_scale)
-{
-    mult_mutex_->lock();
+// This is a matrix matrix multiplication that does the multiply and sum together
+//madness::Void Distributed_Matrix::mxm(const madness::Tensor<double> &a,
+//                                      const madness::Tensor<double> &b,
+//                                      const int &c,
+//                                      const double &c_scale)
+//{
+//    mult_mutex_->lock();
+//    C_DGEMM('n', 'n', a.dim(0), b.dim(1), a.dim(1), 1.0,
+//            const_cast<double*>(a.ptr()), a.dim(1),
+//            const_cast<double*>(b.ptr()), b.dim(1), c_scale,
+//            this->data_[local(c)].ptr(), b.dim(1));
+//    mult_mutex_->unlock();
+//    return madness::None;
+//}
 
+// This is a matrix multiplication that does not put the multiply and sum together
+// This passes a temporary mxm result to a sum task, which increases the memory overhead
+// because you have to store the mxm result in a temporary tensor before the next task sums the result
+madness::Future<madness::Tensor<double> > Distributed_Matrix::mxm(const madness::Tensor<double> &a,
+                                                                  const madness::Tensor<double> &b)
+{
+    madness::Tensor<double> temp(a.dim(0), b.dim(1));
     C_DGEMM('n', 'n', a.dim(0), b.dim(1), a.dim(1), 1.0,
             const_cast<double*>(a.ptr()), a.dim(1),
-            const_cast<double*>(b.ptr()), b.dim(1), c_scale,
-            const_cast<double*>(this->data_[local(c)].ptr()), b.dim(1));
-    mult_mutex_->unlock();
-
-    return madness::None;
+            const_cast<double*>(b.ptr()), b.dim(1), 0.0,
+            temp.ptr(), b.dim(1));
+    return madness::Future<madness::Tensor<double> >(temp);
 }
+
 
 
 
