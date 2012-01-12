@@ -56,12 +56,12 @@ void LMP2::params() {
 
     diis_ = options_.get_bool("DIIS");
 
-    diis_start_ = options_.get_int("DIISSTART");
+    diis_start_ = options_.get_int("DIIS_START_ITER");
     if(diis_start_ < 3) {
     if (me_ == 0) {
       fprintf(outfile, "\n\t*** WARNING ***\n");
-      fprintf(outfile, "\tDIISSTART can not be less than 3\n");
-      fprintf(outfile, "\tReseting DIISSTART to 3\n");
+      fprintf(outfile, "\tDIIS_START_ITER can not be less than 3\n");
+      fprintf(outfile, "\tReseting DIIS_START_ITER to 3\n");
       fprintf(outfile, "\t***************\n");
     }
     diis_start_ = 3;

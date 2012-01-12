@@ -79,7 +79,7 @@ void CCBLAS::diis(int cycle, double delta, DiisType diis_type)
     // Decide if we are doing a DIIS extrapolation in this cycle
     bool do_diis_extrapolation = false;
     if(diis_type == DiisEachCycle){
-      if(cycle >= options_.get_int("DIIS_MAX_VECS") + options_.get_int("START_DIIS"))
+      if(cycle >= options_.get_int("DIIS_MAX_VECS") + options_.get_int("DIIS_START"))
         do_diis_extrapolation = true;
     }else if(diis_type == DiisCC){
       if(diis_step == options_.get_int("DIIS_MAX_VECS")-1)

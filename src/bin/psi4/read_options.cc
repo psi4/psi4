@@ -196,10 +196,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
      within the generalized davidson preconditioner. !expert -*/
     options.add_int("H0_BLOCK_COUPLING_SIZE",0);
 
-    /*- number of important determinants to print out -*/
+    /*- Number of important determinants to print -*/
     options.add_int("NUM_PRINT",20);
 
-    /*- number of important CC amps per ex lvl to print -*/
+    /*- Number of important CC amplitudes per excitation level to print -*/
     options.add_int("CC_NUM_PRINT",10);
 
     /*- How to average H diag energies over spin coupling sets.
@@ -385,7 +385,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Minimum converged energy for least-squares
     extrapolation to be performed -*/
-    options.add_int("LSE_TOLERANCE", 3);
+    options.add_double("LSE_TOLERANCE", 3);
 
     /*- Do result a DETCI iteration that
     terminated prematurely? It assumes that the CI and sigma vectors are on
@@ -572,9 +572,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use DIIS extrapolation to accelerate CC convergence? -*/
     options.add_bool("DIIS", true);
 
-    // CDS-TODO: Check difference between DIIS_START AND DIIS_MIN_VECS
     /*- Iteration at which to start using DIIS -*/
-    options.add_int("DIIS_START", 1);
+    options.add_int("DIIS_START_ITER", 1);
 
     /*- How often to do a DIIS extrapolation. 1 means do DIIS every
     iteration, 2 is every other iteration, etc. -*/
@@ -619,8 +618,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("AIO_DF_INTS",false);
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
-    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MAX_VECS",5);
     /*- Do compute third-order corrections? -*/
     options.add_bool("DO_THIRD_ORDER",false);
     /*- Do compute natural orbitals? -*/
@@ -685,7 +682,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("INTS_TOLERANCE", 1e-14);
       /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{-diis_start}$ -*/
-      options.add_int("DIIS_START", 3);
+      options.add_double("DIIS_START_CONVERGENCE", 1e-3);
       /*- Maximum number of error vectors stored for DIIS extrapolation -*/
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation -*/
@@ -824,7 +821,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MOM_VIR", new ArrayType());
 
     /*- The minimum iteration to start storing DIIS vectors -*/
-    options.add_int("START_DIIS_ITER", 1);
+    options.add_int("DIIS_START", 1);
     /*- Minimum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MIN_VECS", 2);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
@@ -840,12 +837,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum absolute value below which TEI are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- Minimum absolute S matrix value for DF-SCF exchange.
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("OVERLAP_TOLERANCE", 0.0);
-    /*- Minimum absolute three-index value for DF-SCF seive.
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("THREE_INDEX_TOLERANCE", 0.0);
     /*- Maximum number of rows to read/write in each DF-SCF operation -*/
     options.add_int("ROWS_PER_READ", 0);
 
@@ -859,9 +850,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAD_MAXITER", 50);
     /*- SAD Guess F-mix Iteration Start -*/
     options.add_int("SAD_F_MIX_START", 50);
-    /*- SAD Guess Schwarz Sieve (for rough molecular F).
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SAD_INTS_TOLERANCE", 1E-7);
     /*- SAD Guess Cholesky Cutoff (for eliminating redundancies).
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
@@ -1154,7 +1142,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("ABCD","NEW");
     /*- -*/
-    options.add_int("NUM_AMPS",10);
+    options.add_int("NUM_AMPS_PRINT",10);
     /*- Type of job being performed !expert -*/
     options.add_str("JOBTYPE","");
     /*- Do ? -*/
@@ -1278,8 +1266,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("LOCAL_FILTER_SINGLES", true);
     /*- Do ? -*/
-    options.add_bool("NEWTRIPS", true);
-    /*- -*/
+    options.add_bool("NEW_TRIPLES", true);
+    /*- Number of excited states per irreducible representation for EOM-CC
+    and CC-LR calculations. Irreps denote the final state symmetry, not the
+    symmetry of the transtion. -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 80);
@@ -1297,10 +1287,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic 
     excited states in the EOM-CC calculation !expert -*/
     options.add_int("EXCITATION_RANGE", 2);
-    /*- Do ? -*/
+    /*- Do print information on the iterative solution to the single-excitation
+    EOM-CC problem used as a guess to full EOM-CC? -*/
     options.add_bool("SINGLES_PRINT", false);
     /*- -*/
-    options.add_int("VECS_PER_ROOT_SS", 5);
+    options.add_int("SS_VECS_PER_ROOT", 5);
     /*- -*/
     options.add_int("VECS_PER_ROOT", 12);
     /*- -*/
@@ -1317,7 +1308,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("EVAL_TOLERANCE", 1E-8);
     /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SS_EVAL_TOLERANCE", 1E-6);
-    /*- -*/
+    /*- Number of important CC amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 5);
     /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
@@ -1368,7 +1359,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("ANALYZE",0);
     /*- -*/
-    options.add_int("NUM_AMPS",5);
+    options.add_int("NUM_AMPS_PRINT",5);
     /*- Do Sekino-Bartlett size-extensive model-III? -*/
     options.add_bool("SEKINO",0);
     /*- Do Bartlett size-extensive linear model? -*/
@@ -1431,8 +1422,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of active orbitals, per irrep -*/
     options.add("ACTIVE", new ArrayType());
-    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
-    options.add("ACTV", new ArrayType());
+//    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
+//    options.add("ACTV", new ArrayType());
     /*- The type of SCF reference to be computed. -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     /*- The symmetry of the SCF wavefunction.-*/
@@ -1440,27 +1431,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "CCENERGY"|| options.read_globals()) {
     /*- Do ? -*/
-    options.add_bool("NEWTRIPS", 1);
+    options.add_bool("NEW_TRIPLES", 1);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
-    /*- -*/
+    /*- Type of orbitals for the single-determinant reference function -*/
     options.add_str("REFERENCE", "RHF");
     /*- Do ? -*/
     options.add_bool("ANALYZE", 0);
-    /*- Maximum number of iterations -*/
+    /*- Maximum number of iterations to solve the CC equations -*/
     options.add_int("MAXITER", 50);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("CONVERGENCE", 1e-7);
-    /*- Do restart the coupled-cluster iterations? -*/
+    /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$ amplitudes? -*/
     options.add_bool("RESTART",1);
-    /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? -*/
+    /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? !expert -*/
     options.add_bool("FORCE_RESTART", 0);
 //#warning CCEnergy ao_basis keyword type was changed.
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- -*/
+    /*- Cacheing level for libdpd governing the storage of amplitudes, 
+    integrals, and intermediates in the CC procedure. A value of 0 retains 
+    no quantities in cache, while a level of 6 attempts to store all 
+    quantities in cache.  For particularly large calculations, a value of 
+    0 may help with certain types of memory problems.  The default is 2, 
+    which means that all four-index quantites with up to two virtual-orbital 
+    indices (e.g., <ij|ab> integrals) may be held in the cache. -*/
     options.add_int("CACHELEV", 2);
-    /*- -*/
+    /*- Selects the priority type for maintaining the automatic memory 
+    cache used by the libdpd codes. A value of LOW selects a "low priority" 
+    scheme in which the deletion of items from the cache is based on 
+    pre-programmed priorities. A value of LRU selects a "least recently used" 
+    scheme in which the oldest item in the cache will be the first one deleted. -*/
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
     /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
@@ -1472,29 +1473,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION MAGNETIZABILITY ROA ALL");
     /*- -*/
     options.add_str("ABCD", "NEW", "NEW OLD");
-    /*- Do ? -*/
+    /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL", 0);
-    /*- -*/
+    /*- Value (always between one and zero) for the Broughton-Pulay completeness 
+    check used to contruct orbital domains for local-CC calculations. See 
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel 
+    and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
     /*- -*/
     options.add_double("LOCAL_MOS", 0);
-    /*- -*/
+    /*- Type of local-CCSD scheme to be simulated. WERNER selects the method 
+    developed by H.-J. Werner and co-workers, and AOBASIS selects the method 
+    developed by G.E. Scuseria and co-workers (currently inoperative). -*/
     options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
-    /*- -*/
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of 
+    NEGLECT ignores weak pairs entirely. A value of NONE treats weak pairs in 
+    the same manner as strong pairs. A value of MP2 uses second-order perturbation 
+    theory to correct the local-CCSD energy computed with weak pairs ignored. -*/
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
     /*- -*/
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
-    /*- -*/
-    options.add_int("NUM_AMPS", 10);
+    /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
+    options.add_int("NUM_AMPS_PRINT", 10);
     /*- Convergence criterion for Breuckner orbitals. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("BRUECKNER_CONV", 1e-5);
-    /*- Do ? -*/
+    /*- Do print the MP2 amplitudes which are the starting guesses for RHF and UHF reference functions? -*/
     options.add_bool("MP2_AMPS_PRINT", 0);
-    /*- Do ? -*/
+    /*- Do print MP2 and CCSD pair energies for RHF references? -*/
     options.add_bool("PAIR_ENERGIES_PRINT", 0);
-    /*- Do ? -*/
+    /*- Do print spin-adapted pair energies? -*/
     options.add_bool("SPINADAPT_ENERGIES", false);
     /*- Do ? -*/
     options.add_bool("T3_WS_INCORE", 0);
@@ -1515,14 +1524,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
-  // Options of this module not standardized since it's bound for deletion
   if(name == "CIS"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- -*/
-    options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
+    options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 500);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
@@ -1576,7 +1584,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_double("DISTANT_PAIR", 8.0);
     /*- Iteration -*/
-    options.add_int("DIISSTART", 3);
+    options.add_int("DIIS_START_ITER", 3);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MAX_VECS", 5);
     /*- -*/
@@ -1600,8 +1608,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE", 1e-12);
    }
   if(name=="DFMP2"|| options.read_globals()) {
+    /*- -*/
     options.add_int("MADMP2_SLEEP", 0);
+    /*- -*/
     options.add_int("MADMP2_DEBUG", 0);
+    /*- -*/
     options.add_str("MP2_ALGORITHM", "DFMP2");
     //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
@@ -1637,10 +1648,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- Do use parallel algorithm? -*/
     options.add_bool("PARALLEL_DFMP2",false);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE", 1e-8);
-    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
@@ -1810,7 +1817,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of iterations to determine the amplitudes -*/
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/
-    options.add_int("START_DIIS",2);
+    options.add_int("DIIS_START",2);
     /*- The shift to apply to the denominators ($\times$ 1000), {\it c.f.} Taube and Bartlett, JCP, 130, 144112 (2009) -*/
     options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
     /*- The cycle after which Tikhonow regularization is stopped.  Set to zero to allow regularization in all iterations -*/
@@ -1831,8 +1838,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIAGONAL_CCSD_T",true);
     /*- Do diagonalize the effective Hamiltonian? -*/
     options.add_bool("DIAGONALIZE_HEFF",false);
-    /*- Do use DIIS extrapolation to accelerate convergence? -*/
-    options.add_bool("DIIS",true);
     /*- Do use symmetry to map equivalent determinants onto each other, for efficiency? -*/
     options.add_bool("USE_SPIN_SYMMETRY",true);
     /*- Do zero the internal amplitudes, i.e., those that map reference determinants onto each other? -*/
@@ -1867,20 +1872,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     /*- How to perform MP2_CCSD computations -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
-    /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
-    options.add("CORR_FOCC", new ArrayType());
-    /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
-    options.add("CORR_DOCC", new ArrayType());
-    /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
+//    /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
+//    options.add("CORR_FOCC", new ArrayType());
+//    /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
+//    options.add("CORR_DOCC", new ArrayType());
+//    /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
+    /*- The number of doubly occupied orbitals per irrep -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
-    /*- The number of active orbitals per irrep (same as ACTV) -*/
-    options.add("CORR_ACTV", new ArrayType());
-    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTIVE) -*/
-    options.add("ACTV", new ArrayType());
-    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTV) -*/
+//    /*- The number of active orbitals per irrep (same as ACTV) -*/
+//    options.add("CORR_ACTV", new ArrayType());
+//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTIVE) -*/
+//    options.add("ACTV", new ArrayType());
+//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTV) -*/
+    /*- The number of active orbitals per irrep -*/
     options.add("ACTIVE", new ArrayType());
-    /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
-    options.add("CORR_FVIR", new ArrayType());
+//    /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
+//    options.add("CORR_FVIR", new ArrayType());
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
     /*- Do ? -*/
