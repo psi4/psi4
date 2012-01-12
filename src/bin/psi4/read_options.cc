@@ -1923,11 +1923,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
       /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("CONV_MAX_FORCE", 3.0e-4);
+      options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
+      /*- QCHEM optimization criteria: rms force. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
       /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("CONV_MAX_DE", 1.0e-6);
+      options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
       /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("CONV_MAX_DISP", 1.2e-3);
+      options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
+      /*- QCHEM optimization criteria: rms displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
