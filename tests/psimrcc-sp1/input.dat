@@ -1,0 +1,43 @@
+#! Mk-MRCCSD single point. $^3 \Sigma ^-$O$_2$ state described using
+#! the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+refnuc    =   28.254539771492  #TEST
+refscf    = -149.654222103828  #TEST
+refmkccsd = -150.108419685404  #TEST
+
+molecule o2 {
+  0 3
+  O
+  O 1 1.19865141
+}
+
+set {
+  basis cc-pvtz
+  e_convergence 10
+  r_convergence 10
+  d_converge    10
+}
+
+set mcscf {
+  reference       rohf
+  # The socc and docc needn't be specified; in this case the code will converge correctly without
+  docc            [3,0,0,0,0,2,1,1]      # Doubly occupied MOs
+  socc            [0,0,1,1,0,0,0,0]      # Singly occupied MOs
+}
+
+set psimrcc {
+  corr_wfn        ccsd                   # Do Mk-MRCCSD 
+  frozen_docc     [1,0,0,0,0,1,0,0]      # Frozen MOs
+  restricted_docc [2,0,0,0,0,1,1,1]      # Doubly occupied MOs
+  active          [0,0,1,1,0,0,0,0]      # Active MOs
+  frozen_uocc     [0,0,0,0,0,0,0,0]      # Frozen virtual MOs
+  corr_multp      1                      # Select the Ms = 0 component
+  wfn_sym         B1g                    # Select the B1g state
+}
+
+mcscf()
+psimrcc()
+
+compare_values(refnuc, o2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
+compare_values(refmkccsd, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST 

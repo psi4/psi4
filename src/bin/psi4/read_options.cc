@@ -56,7 +56,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file -*/
   options.add_int("PRINT", 1);
-  /*- The amount of information to print to the output file -*/
+  /*- The amount of information to print to the output file !expert -*/
   options.add_int("DEBUG", 0);
   /*- Some codes (DFT) can dump benchmarking data to separate output files -*/
   options.add_int("BENCH", 0);
@@ -66,7 +66,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("WFN", "SCF");
   /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
-  /*- Number of columns to print in calls to Matrix::print_mat -*/
+  /*- Number of columns to print in calls to Matrix::print_mat !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
 
   // CDS-TODO: We should go through and check that the user hasn't done
@@ -1414,8 +1414,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("INTERNAL_ROTATIONS",true);
     /*- Do attempt to force a two configruation solution by starting with CI coefficents of $\pm \sqrt{\frac{1}{2}}$ -*/
     options.add_bool("FORCE_TWOCON",false);
-    /*- The number of active orbitals, per irrep -*/
-    options.add("ACTIVE", new ArrayType());
+    /*- The number of singly occupied orbitals, per irrep -*/
+    options.add("SOCC", new ArrayType());
+    /*- The number of doubly occupied orbitals, per irrep -*/
+    options.add("DOCC", new ArrayType());
 //    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
 //    options.add("ACTV", new ArrayType());
     /*- The type of SCF reference to be computed. -*/
@@ -1765,7 +1767,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
-      /*- The multiplicity, $S(S+1)$, of the target state.  Must be specified if different from the reference $M_s$. -*/
+      /*- The multiplicity, $M_S(M_S+1)$, of the target state.  Must be specified if different from the reference $M_s$. -*/
       options.add_int("CORR_MULTP",1);
     /*- The molecular charge of the target state -*/
       options.add_int("CORR_CHARGE",0);
@@ -1845,22 +1847,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     /*- How to perform MP2_CCSD computations -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
-//    /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
-//    options.add("CORR_FOCC", new ArrayType());
-//    /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
-//    options.add("CORR_DOCC", new ArrayType());
-//    /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
+    /*- The number of frozen occupied orbitals per irrep -*/
+    options.add("FROZEN_DOCC", new ArrayType());
     /*- The number of doubly occupied orbitals per irrep -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
-//    /*- The number of active orbitals per irrep (same as ACTV) -*/
-//    options.add("CORR_ACTV", new ArrayType());
-//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTIVE) -*/
-//    options.add("ACTV", new ArrayType());
-//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTV) -*/
     /*- The number of active orbitals per irrep -*/
     options.add("ACTIVE", new ArrayType());
-//    /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
-//    options.add("CORR_FVIR", new ArrayType());
+    /*- The number of frozen virtual orbitals per irrep -*/
+    options.add("FROZEN_UOCC", new ArrayType());
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
     /*- Do ? -*/
