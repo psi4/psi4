@@ -88,7 +88,7 @@ void get_params(Options& options)
   }
 
   params.num_amps = 10;
-   params.num_amps = options.get_int("NUM_AMPS");
+   params.num_amps = options.get_int("NUM_AMPS_PRINT");
 
   /* Determine DERTYPE */
   params.dertype = 0;

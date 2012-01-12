@@ -429,7 +429,7 @@ struct params {
    int lse_collapse;       /* iterations between lst sqr ext */
    int lse_iter;           /* iterations between last lst sqr ext */
    int lse;                /* 1(0) if lst sqr ext is TRUE or FALSE */
-   int lse_tolerance;   /* energy converged to tol to perform lse */
+   double lse_tolerance;   /* energy converged to tol to perform lse */
    int neg_only;           /* 1(0) if get -(+) values of diag elements */
    int first_tmp_unit;     /* first number for the tmp files */ 
    int first_hd_tmp_unit;  /* first tmp file for H diagonal */

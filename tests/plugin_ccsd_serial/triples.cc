@@ -145,17 +145,23 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   double *renorm = (double*)malloc(nthreads*sizeof(double));
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
   for (int i=0; i<nthreads; i++) renorm[i] = 0.0;
-  fprintf(outfile,"        Computing (T) correction... \n");
+  fprintf(outfile,"        Computing (T) correction...\n");
+  fprintf(outfile,"\n");
+  fprintf(outfile,"        %% complete  total time\n");
   fflush(outfile);
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
  
+
+  time_t stop,start = time(NULL);
+  int pct10,pct20,pct30,pct40,pct50,pct60,pct70,pct80,pct90;
+  pct10=pct20=pct30=pct40=pct50=pct60=pct70=pct80=pct90=0;
+
   /**
     *  if there is only one thread due to memory constraints, 
     *  don't use the pragma so mkl will pick up more threads in dgemm
     */
-
-  if (nthreads==1){
+  if (nthreads>1){
      #pragma omp parallel for schedule (dynamic) num_threads(nthreads)
      for (int ind=0; ind<nijk; ind++){
          int i = ijk[ind][0];
@@ -325,6 +331,24 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                  }
              }
          }
+         // print out update 
+         if (thread==0){
+            int print = 0;
+            stop = time(NULL);
+            if ((double)ind/nijk >= 0.1 && !pct10){      pct10 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.2 && !pct20){ pct20 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.3 && !pct30){ pct30 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.4 && !pct40){ pct40 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.5 && !pct50){ pct50 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.6 && !pct60){ pct60 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.7 && !pct70){ pct70 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.8 && !pct80){ pct80 = 1; print=1;}
+            else if ((double)ind/nijk >= 0.9 && !pct90){ pct90 = 1; print=1;}
+            if (print){
+               fprintf(outfile,"              %3.1lf  %8d s\n",100.0*ind/nijk,(int)stop-(int)start);
+               fflush(outfile);
+            }
+         }
      }
   }
   else{
@@ -484,6 +508,21 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                  }
              }
          }
+         int print = 0;
+         stop = time(NULL);
+         if ((double)ind/nijk >= 0.1 && !pct10){      pct10 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.2 && !pct20){ pct20 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.3 && !pct30){ pct30 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.4 && !pct40){ pct40 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.5 && !pct50){ pct50 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.6 && !pct60){ pct60 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.7 && !pct70){ pct70 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.8 && !pct80){ pct80 = 1; print=1;}
+         else if ((double)ind/nijk >= 0.9 && !pct90){ pct90 = 1; print=1;}
+         if (print){
+               fprintf(outfile,"              %3.1lf  %8d s\n",100.0*ind/nijk,(int)stop-(int)start);
+            fflush(outfile);
+         }
      }
   }
 
@@ -499,13 +538,17 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
      fprintf(outfile,"        (T) energy                   %20.12lf %20.12lf\n",et,et*ccsd->scale_t);
   }
   fprintf(outfile,"\n");
-  fprintf(outfile,"        MP2 correlation energy       %20.12lf\n",ccsd->emp2);
-  fprintf(outfile,"        CCSD correlation energy      %20.12lf\n",ccsd->eccsd);
   if (ccsd->scale_t == 1.0)
      fprintf(outfile,"        CCSD(T) correlation energy   %20.12lf\n",ccsd->eccsd+et);
   else{
      fprintf(outfile,"                                                 unscaled               scaled\n");
      fprintf(outfile,"        CCSD(T) correlation energy   %20.12lf %20.12lf\n",ccsd->eccsd+et,ccsd->eccsd+et*ccsd->scale_t);
+  }
+  if (ccsd->scale_t == 1.0)
+     fprintf(outfile,"      * CCSD(T) total energy         %20.12lf\n",ccsd->eccsd+et+ccsd->escf);
+  else{
+     fprintf(outfile,"                                                 unscaled               scaled\n");
+     fprintf(outfile,"      * CCSD(T) total energy         %20.12lf %20.12lf\n",ccsd->eccsd+et,ccsd->eccsd+et*ccsd->scale_t+ccsd->escf);
   }
   fflush(outfile);
   ccsd->et = et;

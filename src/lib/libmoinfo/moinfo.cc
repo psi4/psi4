@@ -286,10 +286,14 @@ void MOInfo::read_mo_spaces()
         ndocc = std::accumulate( docc.begin(), docc.end(), 0 );
         nactv = std::accumulate( actv.begin(), actv.end(), 0 );
 
-        read_mo_space(nirreps,nfocc,focc,"CORR_FOCC FROZEN_DOCC");
-        read_mo_space(nirreps,ndocc,docc,"CORR_DOCC RESTRICTED_DOCC");
-        read_mo_space(nirreps,nactv,actv,"CORR_ACTV ACTV ACTIVE");
-        read_mo_space(nirreps,nfvir,fvir,"CORR_FVIR FROZEN_UOCC");
+        read_mo_space(nirreps,nfocc,focc,"FROZEN_DOCC");
+        read_mo_space(nirreps,ndocc,docc,"RESTRICTED_DOCC");
+        read_mo_space(nirreps,nactv,actv,"ACTIVE");
+        read_mo_space(nirreps,nfvir,fvir,"FROZEN_UOCC");
+//        read_mo_space(nirreps,nfocc,focc,"CORR_FOCC FROZEN_DOCC");
+//        read_mo_space(nirreps,ndocc,docc,"CORR_DOCC RESTRICTED_DOCC");
+//        read_mo_space(nirreps,nactv,actv,"CORR_ACTV ACTV ACTIVE");
+//        read_mo_space(nirreps,nfvir,fvir,"CORR_FVIR FROZEN_UOCC");
         //    read_mo_space(nirreps,nactv_docc,actv_docc,"ACTIVE_DOCC");
     }
 
