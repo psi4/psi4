@@ -193,18 +193,11 @@ void ROHF::semicanonicalize()
             }
         }
     }
-
-    /*
-     * Now, we need to backtransform the Fock matrices to the SO basis
-     * Ct S C = 1, so  Cinv = Ct S
-     */
-    SharedMatrix Cinv = SharedMatrix(new Matrix(nirrep_, nmopi_, nsopi_));
-    // Alpha
-    Cinv->gemm(true, false, 1.0, Ca_, S_, 0.0);
-    Fa_->transform(moFa, Cinv);
-    // Beta
-    Cinv->gemm(true, false, 1.0, Cb_, S_, 0.0);
-    Fb_->transform(moFb, Cinv);
+    // Given the invariance w.r.t. occ-occ rotations, the existing Fa and Fb matrices
+    // are still valid, because the densities used to construct them in the old basis
+    // are equivalent to those in the new basis.  If the user forward transforms them
+    // using the semicanonical orbitals, the correct semicanonical basis Fa and Fb
+    // will be obtained.
 }
 
 void ROHF::finalize()

@@ -64,6 +64,7 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     factory_ = other->factory_;
     reference_wavefunction_ = other; 
     memory_ = other->memory_;
+    print_ = other->print_;
     debug_ = other->debug_;
     density_fitted_ = other->density_fitted_;
     energy_threshold_ = other->energy_threshold_;   
@@ -161,6 +162,7 @@ void Wavefunction::common_init()
 
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");
+    print_ = options_.get_int("PRINT");
 
     // Read in energy convergence threshold
     energy_threshold_ = options_.get_double("E_CONVERGE");
