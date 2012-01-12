@@ -6,16 +6,16 @@
  *
  */
 
-#if HAVE_MADNESS
 
 #include "dist_mat.h"
+
+#ifdef HAVE_MADNESS
 
 namespace psi {
 
     // default constructor
     Distributed_Matrix::Distributed_Matrix() :
-        madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld()),
-        data_(NULL)
+        madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
     {
         parallel_init();
         process_pending();
@@ -26,8 +26,7 @@ namespace psi {
                                            const int &nrows, const int &ncols,
                                            const int &tile_sz,
                                            const std::string &name) :
-        madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld()),
-        data_(NULL)
+        madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
     {
         parallel_init();
         initialize(pgrid, nrows, ncols, tile_sz, name);
@@ -95,8 +94,8 @@ namespace psi {
         for (int tij=0; tij < local_ntiles_; tij++)
             data_.push_back(madness::Tensor<double>());
 
-        Communicator::world->sync();
-        Communicator::world->sync();
+//        Communicator::world->sync();
+//        Communicator::world->sync();
 
         for (int ti=0, tij=0; ti < tile_nrows_; ti++) {
             for (int tj=0; tj < tile_ncols_; tj++, tij++) {
@@ -162,6 +161,10 @@ namespace psi {
     Distributed_Matrix::~Distributed_Matrix()
     {
         data_.clear();
+        pgrid_dims_.clear();
+        global_to_local_map_.clear();
+        local_to_global_map_.clear();
+//        free_vector(data_);
 //        if (data_ != NULL)
 //            delete(data_);
     }

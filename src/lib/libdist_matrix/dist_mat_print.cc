@@ -6,9 +6,10 @@
  *
  */
 
-#if HAVE_MADNESS
 
 #include "dist_mat.h"
+
+#ifdef HAVE_MADNESS
 
 using namespace psi;
 using namespace std;
