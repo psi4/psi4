@@ -118,7 +118,7 @@ basis assign df_basis_scf{
    # all of the same commands can be used
 }
  
-set d_converge 11
+set d_convergence 11
  
 scfenergy = energy('scf')
 

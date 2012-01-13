@@ -57,7 +57,7 @@ void get_params(Options& options)
   /* read in the easy-to-understand parameters */
 
   params.convergence = 1e-7;
-  params.convergence = options.get_double("CONVERGENCE");
+  params.convergence = options.get_double("R_CONVERGENCE");
 
   params.restart = 1;
   params.restart = options.get_bool("RESTART");

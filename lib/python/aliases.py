@@ -100,8 +100,8 @@ def run_plugin_omega(name, **kwargs):
     PsiMod.set_global_option('dft_n_radial', 35) 
     PsiMod.set_global_option('omega_procedure', 'ip')
     PsiMod.set_global_option('maxiter', 50)
-    PsiMod.set_global_option('d_converge', 5)
-    PsiMod.set_global_option('e_converge', 7)
+    PsiMod.set_global_option('d_convergence', 5)
+    PsiMod.set_global_option('e_convergence', 7)
     PsiMod.plugin("plugin_omega.so")
     
     return PsiMod.get_variable('SCF TOTAL ENERGY')

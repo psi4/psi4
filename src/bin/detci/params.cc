@@ -171,11 +171,11 @@ void get_parameters(Options &options)
   if (options["MAXITER"].has_changed()) {
     Parameters.maxiter = options.get_int("MAXITER");
   }
-  if (options["CONVERGENCE"].has_changed()) {
-    Parameters.convergence = options.get_double("CONVERGENCE");
+  if (options["R_CONVERGENCE"].has_changed()) {
+    Parameters.convergence = options.get_double("R_CONVERGENCE");
   }
-  if (options["E_CONVERGE"].has_changed()) {
-    Parameters.energy_convergence = options.get_double("E_CONVERGE");
+  if (options["E_CONVERGENCE"].has_changed()) {
+    Parameters.energy_convergence = options.get_double("E_CONVERGENCE");
   }
 
   Parameters.multp = Process::environment.molecule()->multiplicity();
@@ -846,10 +846,10 @@ void print_parameters(void)
       Parameters.print_lvl, Parameters.fci ? "yes" : "no");
    if (Parameters.have_special_conv)
       fprintf(outfile,
-         "   CONV          =   %8.2g    MIXED        =   %6s\n",
+         "   R CONV        =   %8.2g    MIXED        =   %6s\n",
          Parameters.special_conv, Parameters.mixed ? "yes" : "no");
    else
-      fprintf(outfile, "   CONV          =   %6.2e      MIXED        =   %6s\n",
+      fprintf(outfile, "   R CONV        =   %6.2e      MIXED        =   %6s\n",
          Parameters.convergence, Parameters.mixed ? "yes" : "no");
 
    fprintf(outfile, "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
