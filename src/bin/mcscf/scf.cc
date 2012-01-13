@@ -126,6 +126,7 @@ void SCF::startup()
     Fo        .allocate("Fo",nirreps,sopi,sopi);
     Fo_t      .allocate("Fo_t",nirreps,sopi,sopi);
   }
+  nci = 1;
   if(reference == tcscf){
     int count = 0;
     for(int h = 0; h < nirreps; ++h){
