@@ -30,8 +30,8 @@ set {
   num_roots 2
 }
 
-set scf d_converge 10
-set detci e_converge 8
+set scf d_convergence 10
+set detci e_convergence 8
 
 thisenergy = energy('fci')
 

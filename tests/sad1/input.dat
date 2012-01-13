@@ -23,13 +23,13 @@ set globals {
 set docc       [3, 0, 1, 1]
 
 set maxiter    1
-set e_converge 0
-set d_converge 0
+set e_convergence 0
+set d_convergence 0
 E1 = energy('scf')
 
 set maxiter    50
-set e_converge 11
-set d_converge 11
+set e_convergence 11
+set d_convergence 11
 E = energy('scf')
 
 molecule h2o_c1 {
@@ -44,13 +44,13 @@ set basis cc-pvdz
 set docc [5]
 
 set maxiter 1
-set e_converge 0
-set d_converge 0
+set e_convergence 0
+set d_convergence 0
 E1_c1 = energy('scf')
 
 set maxiter 50
-set e_converge 11
-set d_converge 11
+set e_convergence 11
+set d_convergence 11
 E_c1 = energy('scf')
 
 compare_values(Nref, h2o_c1.nuclear_repulsion_energy(), 9, "C1  SAD Nuclear Repulsion Energy") #TEST

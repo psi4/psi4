@@ -70,7 +70,7 @@ void get_params(Options & options)
   params.memory = Process::environment.get_memory();
 
   params.cachelev = 2;
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   params.delete_tei = 1;
   /* If AO-basis chosen, keep the SO_TEI file */

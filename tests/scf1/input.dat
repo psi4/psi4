@@ -11,7 +11,7 @@ molecule bh {
 set globals = {
     scf_type   direct
     basis      cc-pVQZ
-    e_converge 10
+    e_convergence 10
 }
 
 thisenergy = energy('scf')

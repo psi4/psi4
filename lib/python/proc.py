@@ -67,8 +67,8 @@ def scf_helper(name, **kwargs):
         # Are we in a DF algorithm here?
         scf_type = PsiMod.get_option('SCF_TYPE')
         guess_type = PsiMod.get_option('GUESS')
-        ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-        ri_ints = PsiMod.get_option("RI_INTS_IO")
+        df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+        df_ints = PsiMod.get_option("DF_INTS_IO")
 
         # Which basis is the final one
         basis = PsiMod.get_option('BASIS')
@@ -76,8 +76,8 @@ def scf_helper(name, **kwargs):
         # Setup initial SCF
         PsiMod.set_local_option('SCF','BASIS',guessbasis)
         if (scf_type == 'DF'):
-            PsiMod.set_local_option('SCF','RI_BASIS_SCF','cc-pvdz-ri')
-            PsiMod.set_global_option('RI_INTS_IO','none')
+            PsiMod.set_local_option('SCF','DF_BASIS_SCF','cc-pvdz-ri')
+            PsiMod.set_global_option('DF_INTS_IO','none')
 
         # Print some info about the guess
         PsiMod.print_out('\n')
@@ -95,8 +95,8 @@ def scf_helper(name, **kwargs):
         PsiMod.set_local_option('SCF','GUESS','READ')
         PsiMod.set_local_option('SCF','BASIS',basis)
         if (scf_type == 'DF'):
-            PsiMod.set_local_option('SCF','RI_BASIS_SCF',ri_basis_scf)
-            PsiMod.set_global_option('RI_INTS_IO',ri_ints)
+            PsiMod.set_local_option('SCF','DF_BASIS_SCF',df_basis_scf)
+            PsiMod.set_global_option('DF_INTS_IO',df_ints)
 
         # Print the banner for the standard operation
         PsiMod.print_out('\n')
@@ -310,17 +310,17 @@ def run_detci(name, **kwargs):
 	    PsiMod.set_global_option('FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
 	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 2)
+	    PsiMod.set_global_option('EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
 	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 3)
+	    PsiMod.set_global_option('EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
 	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 4)
+	    PsiMod.set_global_option('EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
         PsiMod.set_global_option('WFN', 'DETCI')
         level = kwargs['level']
-        PsiMod.set_global_option('EX_LVL', level)
+        PsiMod.set_global_option('EX_LEVEL', level)
     # Call a plain energy('detci') and have full control over options
     elif(name.lower() == 'detci'):
         pass
@@ -343,8 +343,8 @@ def run_detci(name, **kwargs):
         PsiMod.revoke_global_option_changed('SAVE_MPN2')
         PsiMod.set_global_option('FCI', 'FALSE')
         PsiMod.revoke_global_option_changed('FCI')
-        PsiMod.set_global_option('EX_LVL', 2)
-        PsiMod.revoke_global_option_changed('EX_LVL')
+        PsiMod.set_global_option('EX_LEVEL', 2)
+        PsiMod.revoke_global_option_changed('EX_LEVEL')
 
     return returnvalue
 
@@ -422,20 +422,20 @@ def run_mp2c(name, **kwargs):
     monomerB.set_name("monomerB")
 
     ri = PsiMod.get_option('SCF_TYPE')
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
 
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_local_option("SCF","SAPT","2-dimer")
     PsiMod.print_out("\n")
     banner('Dimer HF')
     PsiMod.print_out("\n")
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
     PsiMod.print_out("\n")
     banner('Dimer DFMP2')
     PsiMod.print_out("\n")
     e_dimer_mp2 = PsiMod.dfmp2()
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     activate(monomerA)
     if (ri == "DF"):
@@ -464,15 +464,15 @@ def run_mp2c(name, **kwargs):
     banner('Monomer B DFMP2')
     PsiMod.print_out("\n")
     e_monomerB_mp2 = PsiMod.dfmp2()
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
 
     PsiMod.IO.change_file_namespace(121,"monomerA","dimer")
     PsiMod.IO.change_file_namespace(122,"monomerB","dimer")
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     PsiMod.set_local_option("SAPT","SAPT_LEVEL","MP2C")
     PsiMod.print_out("\n")
     banner("MP2C")
@@ -508,7 +508,7 @@ def run_sapt(name, **kwargs):
         monomerB.set_name("monomerB")
 
     ri = PsiMod.get_option('SCF_TYPE')
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
 
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_local_option("SCF","SAPT","2-dimer")
@@ -516,10 +516,10 @@ def run_sapt(name, **kwargs):
     banner('Dimer HF')
     PsiMod.print_out("\n")
     if (sapt_basis == "dimer"):
-        PsiMod.set_global_option('RI_INTS_IO','SAVE')
+        PsiMod.set_global_option('DF_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
     if (sapt_basis == "dimer"):
-        PsiMod.set_global_option('RI_INTS_IO','LOAD')
+        PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     activate(monomerA)
     if (ri == "DF" and sapt_basis == "dimer"):
@@ -540,15 +540,15 @@ def run_sapt(name, **kwargs):
     banner('Monomer B HF')
     PsiMod.print_out("\n")
     e_monomerB = scf_helper('RHF',**kwargs)
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
 
     PsiMod.IO.change_file_namespace(121,"monomerA","dimer")
     PsiMod.IO.change_file_namespace(122,"monomerB","dimer")
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     if (name.lower() == 'sapt0'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2'):
@@ -578,16 +578,16 @@ def run_sapt_ct(name, **kwargs):
     monomerBm.set_name("monomerBm")
 
     ri = PsiMod.get_option('SCF_TYPE')
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
 
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_local_option("SCF","SAPT","2-dimer")
     PsiMod.print_out("\n")
     banner('Dimer HF')
     PsiMod.print_out("\n")
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     activate(monomerA)
     if (ri == "DF"):
@@ -608,7 +608,7 @@ def run_sapt_ct(name, **kwargs):
     banner('Monomer B HF (Dimer Basis)')
     PsiMod.print_out("\n")
     e_monomerB = scf_helper('RHF',**kwargs)
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
 
     activate(monomerAm)
     PsiMod.IO.set_default_namespace("monomerAm")
@@ -628,8 +628,8 @@ def run_sapt_ct(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     if (name.lower() == 'sapt0-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2-ct'):
