@@ -30,7 +30,7 @@ set globals {
    # not necessary to specify df_basis* for Dunning basis sets
    scf_type df
    guess sad
-   d_converge 11
+   d_convergence 11
 }
 
 e_cp = cp('dfmp2')

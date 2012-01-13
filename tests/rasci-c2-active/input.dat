@@ -15,7 +15,7 @@ molecule c2 {
 set globals {
   wfn detci
   basis 6-31G*
-  d_converge 10
+  d_convergence 10
   restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]
   active          [2, 0, 1, 1, 0, 2, 1, 1]
 }

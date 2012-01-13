@@ -25,7 +25,7 @@ molecule ne {
 set globals {
   wfn detci
   basis cc-pVQZ
-  d_converge 10
+  d_convergence 10
 # docc            [2, 0, 0, 0, 0, 1, 1, 1]
   frozen_docc     [1, 0, 0, 0, 0, 0, 0, 0]
   ex_level 2
@@ -62,7 +62,7 @@ refcorr  = refci - refscf     #TEST
 
 set globals {
   wfn detci
-  d_converge 10
+  d_convergence 10
   frozen_docc     [2, 0, 0, 0, 0, 1, 1, 1]
   ras1            [1, 0, 0, 0, 0, 1, 1, 1]
   ras2            [1, 0, 0, 0, 0, 1, 1, 1]

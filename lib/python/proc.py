@@ -471,8 +471,8 @@ def run_mp2c(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     PsiMod.set_local_option("SAPT","SAPT_LEVEL","MP2C")
     PsiMod.print_out("\n")
     banner("MP2C")
@@ -547,8 +547,8 @@ def run_sapt(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     if (name.lower() == 'sapt0'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2'):
@@ -628,8 +628,8 @@ def run_sapt_ct(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     if (name.lower() == 'sapt0-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2-ct'):

@@ -39,7 +39,7 @@ PsiMod.IO.set_default_namespace("dimer")
 PsiMod.set_memory(256000000)
 
 PsiMod.set_global_option('BASIS', '6-31+G*')
-PsiMod.set_global_option('CONVERGENCE', 11)
+PsiMod.set_global_option('R_CONVERGENCE', 11)
 PsiMod.set_global_option('GUESS', 'CORE')
 PsiMod.set_global_option('JOBTYPE', 'SP')
 PsiMod.set_global_option('PRINT', 1)

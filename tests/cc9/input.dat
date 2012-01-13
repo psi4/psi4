@@ -17,9 +17,9 @@ set {
   ao_basis disk
   delete_tei false
 
-  convergence 10
-  e_converge 10
-  d_converge 10
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
 }
 
 energy('ccsd(t)')

@@ -19,8 +19,8 @@ molecule h2 {
 set {
    scf_type   df
    guess      sad
-   d_converge 12
-   e_converge 12
+   d_convergence 12
+   e_convergence 12
 }
 
 # This is a table that uses just the default parameters
