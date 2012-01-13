@@ -49,8 +49,8 @@ def three_body(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    ri_ints_io = PsiMod.get_option('DF_INTS_IO')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
     psioh = PsiMod.IOManager.shared_object()
     psioh.set_specific_retention(97, True)
 
@@ -64,7 +64,7 @@ def three_body(name, **kwargs):
     e_trimer_full.append(call_function_in_1st_argument(func, **kwargs))
 
     PsiMod.clean()  
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     # All dimers with ghosts
     dimers = extract_clusters(molecule, True, 2)
@@ -95,7 +95,7 @@ def three_body(name, **kwargs):
         e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
         PsiMod.clean()  
 
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',ri_ints_io)
     psioh.set_specific_retention(97, False)
 
     activate(molecule) 
