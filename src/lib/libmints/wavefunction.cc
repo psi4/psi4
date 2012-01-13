@@ -165,10 +165,10 @@ void Wavefunction::common_init()
     print_ = options_.get_int("PRINT");
 
     // Read in energy convergence threshold
-    energy_threshold_ = options_.get_double("E_CONVERGE");
+    energy_threshold_ = options_.get_double("E_CONVERGENCE");
 
     // Read in density convergence threshold
-    density_threshold_ = options_.get_double("D_CONVERGE");;
+    density_threshold_ = options_.get_double("D_CONVERGENCE");;
 
     density_fitted_ = false;
 }

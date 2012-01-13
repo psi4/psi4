@@ -113,12 +113,12 @@ basis assign {
    # here would override all of the above and assign cc-pvtz to all atoms
 }
 
-basis assign ri_basis_scf{
+basis assign df_basis_scf{
    # This is analogous to the block above, but sets the scf ri basis
    # all of the same commands can be used
 }
  
-set d_converge 11
+set d_convergence 11
  
 scfenergy = energy('scf')
 

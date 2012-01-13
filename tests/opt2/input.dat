@@ -15,8 +15,8 @@ molecule allene {
 
 set globals {
   basis DZ
-  e_converge 10
-  d_converge 10
+  e_convergence 10
+  d_convergence 10
 }
 
 thisenergy = optimize('scf')

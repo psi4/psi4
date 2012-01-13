@@ -52,14 +52,14 @@ void DFMP2::common_init()
     sss_ = options_.get_double("SCALE_SS");
     oss_ = options_.get_double("SCALE_OS");
 
-    if (options_.get_str("RI_BASIS_MP2") == "") {
-        molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_MP2");
+    if (options_.get_str("DF_BASIS_MP2") == "") {
+        molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_MP2");
         fprintf(outfile, "\tNo auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
         fflush(outfile);
     }
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_MP2");
+    ribasis_ = BasisSet::construct(parser, molecule_, "DF_BASIS_MP2");
 }
 double DFMP2::compute_energy()
 {
@@ -325,10 +325,10 @@ void RDFMP2::form_Aia()
     // ERI objects
     int nthread = 1;
     #ifdef _OPENMP
-        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
+        if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
             nthread = omp_get_max_threads(); 
         } else {
-            nthread = options_.get_int("RI_INTS_NUM_THREADS");
+            nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
     #endif
 
@@ -655,10 +655,10 @@ void UDFMP2::form_Aia()
     // ERI objects
     int nthread = 1;
     #ifdef _OPENMP
-        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
+        if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
             nthread = omp_get_max_threads(); 
         } else {
-            nthread = options_.get_int("RI_INTS_NUM_THREADS");
+            nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
     #endif
 

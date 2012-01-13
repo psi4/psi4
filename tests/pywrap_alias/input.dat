@@ -54,7 +54,7 @@ clean()
 
 set globals {
     basis sto-3g
-    ri_basis_scf cc-pVDZ-JKFIT
+    df_basis_scf cc-pVDZ-JKFIT
     scf_type df
 }
 
