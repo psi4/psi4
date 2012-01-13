@@ -388,6 +388,7 @@ def process_input(raw_input):
     imports += 'from aliases import *\n'
     imports += 'from psiexceptions import *\n'
     imports += 'from util import *\n'
+    imports += 'from qmmm import *\n'
     imports += 'from pubchem import *\n'
     imports += 'import pickle\n'
     imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'

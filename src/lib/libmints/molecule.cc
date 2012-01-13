@@ -971,7 +971,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
 
 void Molecule::update_geometry()
 {
-fprintf(outfile,"update_geometry() is called.\n");
+    //fprintf(outfile,"update_geometry() is called.\n");
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
@@ -996,9 +996,9 @@ fprintf(outfile,"update_geometry() is called.\n");
         }
     }
 
-fprintf(outfile,"Geometry bf reorientation.\n");
-Matrix min = full_geometry();
-min.print_out();
+    //fprintf(outfile,"Geometry bf reorientation.\n");
+    //Matrix min = full_geometry();
+    //min.print_out();
 
     if (move_to_com_)
         move_to_com();
