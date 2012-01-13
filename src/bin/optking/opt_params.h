@@ -13,8 +13,10 @@ struct OPT_PARAMS {
 
   // convergence criteria
   double conv_max_force;
+  double conv_rms_force;
   double conv_max_DE;
   double conv_max_disp;
+  double conv_rms_disp;
 
   double scale_connectivity;
 

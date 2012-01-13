@@ -19,8 +19,8 @@ molecule h2 {
 set {
    scf_type   df
    guess      sad
-   d_converge 12
-   e_converge 12
+   d_convergence 12
+   e_convergence 12
 }
 
 # This is a table that uses just the default parameters
@@ -39,9 +39,9 @@ count = 0                                                                       
 for basisset in basissets:
     set basis        $basisset
     jkbasis = basisset + "-jkfit"
-    set ri_basis_scf $jkbasis
+    set df_basis_scf $jkbasis
     ribasis = basisset + "-ri"
-    set ri_basis_mp2 $ribasis
+    set df_basis_mp2 $ribasis
     edfmp2 = energy('dfmp2')
     edfscf = get_variable('SCF TOTAL ENERGY')
     compare_values(edfscf, refscf[count], 10, basisset + " DF-SCF Energy")            #TEST

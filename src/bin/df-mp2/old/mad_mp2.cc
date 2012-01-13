@@ -247,13 +247,13 @@ void MAD_MP2::common_init()
 
     // Auxiliary basis information
     auxiliary_automatic_ = false;
-    if (options_.get_str("RI_BASIS_MP2") == "") {
+    if (options_.get_str("DF_BASIS_MP2") == "") {
         auxiliary_automatic_ = true;
-        basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_MP2");
+        basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_MP2");
     }
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    auxiliary_ = BasisSet::construct(parser, basisset_->molecule(), "RI_BASIS_MP2");
+    auxiliary_ = BasisSet::construct(parser, basisset_->molecule(), "DF_BASIS_MP2");
     parser.reset();
 
     naux_ = auxiliary_->nbf();

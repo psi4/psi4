@@ -14,7 +14,7 @@ molecule he2 {
 }
 
 set globals {
-    convergence 11
+    r_convergence 11
     reference   uhf
     ao_basis    disk
     algorithm   simultaneous

@@ -49,8 +49,8 @@ def cp(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
     psioh = PsiMod.IOManager.shared_object()
     psioh.set_specific_retention(97, True)
 
@@ -64,7 +64,7 @@ def cp(name, **kwargs):
     #e_dimer = energy(name, **kwargs)
 
     PsiMod.clean()  
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     # All monomers with ghosts
     monomers = extract_clusters(molecule, True, 1)
@@ -81,7 +81,7 @@ def cp(name, **kwargs):
         cluster_n = cluster_n + 1
         PsiMod.clean()  
 
-    PsiMod.set_global_option('RI_INTS_IO','NONE')
+    PsiMod.set_global_option('DF_INTS_IO','NONE')
     if (check_bsse): 
         # All monomers without ghosts
         monomers = extract_clusters(molecule, False, 1)
@@ -98,7 +98,7 @@ def cp(name, **kwargs):
             #e_monomer_bsse.append(energy(name,**kwargs))
             cluster_n = cluster_n + 1
 
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
     psioh.set_specific_retention(97, False)
 
     activate(molecule) 
@@ -255,11 +255,11 @@ def database(name, db_name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
-    user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-    user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
-    user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
-    user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
-    user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
+    user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+    user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
+    user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
+    user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
+    user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
 
     b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
     user_reference = PsiMod.get_option('REFERENCE')
@@ -538,16 +538,16 @@ def database(name, db_name, **kwargs):
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
-        if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
-        if not((user_ri_basis_mp2 == "") or (user_ri_basis_mp2 == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_MP2', '%s')\n""" % (user_ri_basis_mp2)
-        if not((user_ri_basis_cc == "") or (user_ri_basis_cc == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_CC', '%s')\n""" % (user_ri_basis_cc)
-        if not((user_ri_basis_sapt == "") or (user_ri_basis_sapt == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_SAPT', '%s')\n""" % (user_ri_basis_sapt)
-        if not((user_ri_basis_elst == "") or (user_ri_basis_elst == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_ELST', '%s')\n""" % (user_ri_basis_elst)
+        if not((user_df_basis_scf == "") or (user_df_basis_scf == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_SCF', '%s')\n""" % (user_df_basis_scf)
+        if not((user_df_basis_mp2 == "") or (user_df_basis_mp2 == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_MP2', '%s')\n""" % (user_df_basis_mp2)
+        if not((user_df_basis_cc == "") or (user_df_basis_cc == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_CC', '%s')\n""" % (user_df_basis_cc)
+        if not((user_df_basis_sapt == "") or (user_df_basis_sapt == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_SAPT', '%s')\n""" % (user_df_basis_sapt)
+        if not((user_df_basis_elst == "") or (user_df_basis_elst == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_ELST', '%s')\n""" % (user_df_basis_elst)
         commands += """molecule = PsiMod.get_active_molecule()\n"""
         commands += """molecule.update_geometry()\n"""
 
@@ -871,11 +871,11 @@ def complete_basis_set(name, **kwargs):
     # Must collect (here) and set (below) basis sets after every new molecule activation
     b_user_basis = PsiMod.has_global_option_changed('BASIS')
     user_basis = PsiMod.get_option('BASIS')
-    #user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-    #user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
-    #user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
-    #user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
-    #user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
+    #user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+    #user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
+    #user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
+    #user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
+    #user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
     user_wfn = PsiMod.get_option('WFN')
 
