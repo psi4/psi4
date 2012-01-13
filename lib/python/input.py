@@ -391,6 +391,7 @@ def process_input(raw_input):
     imports += 'from qmmm import *\n'
     imports += 'from pubchem import *\n'
     imports += 'import pickle\n'
+    imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'
 
     # psirc (a baby PSithon script that might live in ~/.psirc
     psirc = ''
