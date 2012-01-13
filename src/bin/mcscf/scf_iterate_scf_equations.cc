@@ -102,10 +102,10 @@ void SCF::iterate_scf_equations()
   }
   fflush(outfile);
 
-    if(fabs(delta_energy) < options_.get_double("E_CONVERGE") ){
+    if( (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"))
+          && (rms_dens < options_.get_double("D_CONVERGENCE") )){
       if(reference == tcscf){
-        if(2.0 * fabs(norm_ci_grad) < options_.get_double("D_CONVERGE") &&
-          rms_dens < options_.get_double("D_CONVERGE") )
+        if(2.0 * fabs(norm_ci_grad) < options_.get_double("D_CONVERGENCE"))
           converged = true;
       }else{
         converged = true;

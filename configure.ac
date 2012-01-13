@@ -1062,6 +1062,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
+          tests/psimrcc-sp1/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile

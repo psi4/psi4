@@ -38,7 +38,7 @@ void get_params(Options &options)
 
   params.memory = Process::environment.get_memory();
 
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
   params.cachelev = 0;
 
   junk = options.get_str("REFERENCE");
@@ -111,7 +111,7 @@ void get_params(Options &options)
     moinfo.l_irreps[i] = moinfo.mu_irreps[(int) (i+1)%3] ^ moinfo.mu_irreps[(int) (i+2)%3];
 
   params.maxiter = options.get_int("MAXITER");
-  params.convergence = options.get_double("CONVERGENCE");
+  params.convergence = options.get_double("R_CONVERGENCE");
   params.diis = options.get_bool("DIIS");
 
   params.prop = options.get_str("PROPERTY");
