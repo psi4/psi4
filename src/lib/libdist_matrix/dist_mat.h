@@ -1341,7 +1341,7 @@ public:
      *
      * NOTE: MUST BE CALLED BY ALL PROCESS
      */
-    madness::Void print(const std::string str="") const __attribute__((weak_import)) ;
+    madness::Void print(const std::string str="") const;
 
     /**
      * Process 0 gets and prints a specific tile.
