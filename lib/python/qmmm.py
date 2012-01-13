@@ -34,7 +34,7 @@ class Diffuse:
         PsiMod.print_out("    => Diffuse SCF (Determines Da) <=\n\n")
         activate(self.molecule)
         PsiMod.set_global_option("BASIS", self.basisname) 
-        PsiMod.set_global_option("RI_BASIS_SCF", self.ribasisname) 
+        PsiMod.set_global_option("DF_BASIS_SCF", self.ribasisname) 
         PsiMod.set_global_option("SCF_TYPE", "DF") 
         energy('scf') 
         PsiMod.print_out("\n")
@@ -48,7 +48,7 @@ class Diffuse:
         self.Da  = self.wfn.Da() 
         self.basis = self.wfn.basisset()
         parser = PsiMod.Gaussian94BasisSetParser()
-        self.ribasis = PsiMod.BasisSet.construct(parser,self.molecule,"RI_BASIS_SCF")
+        self.ribasis = PsiMod.BasisSet.construct(parser,self.molecule,"DF_BASIS_SCF")
 
         fitter = PsiMod.DFChargeFitter()
         fitter.setPrimary(self.basis)
