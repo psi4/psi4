@@ -280,8 +280,8 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
         blas->solve("t2_delta[oO][vV]{" + i_str + "} = t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "} - t2[oO][vV]{" + i_str + "}");
         blas->solve("t2_delta[OO][VV]{" + i_str + "} = t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "} - t2[OO][VV]{" + i_str + "}");
 
-        std::string damp = to_string(double(options_.get_int("DAMPING_FACTOR"))/1000.0);
-        std::string one_minus_damp = to_string(1.0-double(options_.get_int("DAMPING_FACTOR"))/1000.0);
+        std::string damp = to_string(options_.get_double("DAMPING_PERCENTAGE")/100.0);
+        std::string one_minus_damp = to_string(1.0-options_.get_double("DAMPING_PERCENTAGE")/100.0);
         blas->solve("t2[oo][vv]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oo][vv]{" + i_str + "} / d'2[oo][vv]{" + i_str + "}");
         blas->solve("t2[oO][vV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "}");
         blas->solve("t2[OO][VV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "}");
