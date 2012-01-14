@@ -4,13 +4,13 @@
 
 set globals {
     BASIS sto-3g
-    RI_BASIS_SCF  cc-pVDZ-JKFIT
-    RI_BASIS_SAPT cc-pVDZ-RI
-    RI_BASIS_MP2  cc-pVDZ-RI
+    DF_BASIS_SCF  cc-pVDZ-JKFIT
+    DF_BASIS_SAPT cc-pVDZ-RI
+    DF_BASIS_MP2  cc-pVDZ-RI
     REFERENCE RHF
     SCF_TYPE DF
     PRINT 1
-    CONVERGENCE 11
+    R_CONVERGENCE 11
     JOBTYPE SP
     GUESS CORE
 }

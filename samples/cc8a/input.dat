@@ -9,15 +9,14 @@ molecule CN {
 
 set globals {
   reference rohf
-  wfn ccsd_t
   basis cc-pVDZ
   docc [4, 0, 1, 1]
   socc [1, 0, 0, 0]
   freeze_core true
   
-  convergence 10
-  e_converge 10
-  d_converge 10
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
 }
 
 energy('ccsd(t)')

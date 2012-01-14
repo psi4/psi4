@@ -26,7 +26,7 @@ set globals {
 
 set detci {
   hd_ave hd_kave
-  ex_lvl 2
+  ex_level 2
 }
 
 thisenergy = energy('detci')

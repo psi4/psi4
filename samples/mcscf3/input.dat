@@ -11,10 +11,10 @@ set globals {
   reference rhf
   basis 6-31G**
   docc [3, 0, 1, 1]
-  convergence 12
+  r_convergence 12
 }
 
-thisenergy = run_mcscf()
+thisenergy = energy('mcscf')
 
 
 clean()

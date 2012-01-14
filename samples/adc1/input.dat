@@ -6,7 +6,7 @@ molecule h2o {
     symmetry c1
 }
 
-set globals {
+set {
     reference rhf
     basis 6-31G**
     guess core
