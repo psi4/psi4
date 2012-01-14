@@ -1,3 +1,4 @@
+#! DFT Functional Test
 
 molecule h2o {
 0 1
@@ -9,6 +10,7 @@ H 1 1.0 2 104.5
 set globals {
 print 2
 basis sto-3g
+
 guess core
 scf_type direct
 dft_order_spherical 29 
@@ -49,6 +51,7 @@ H 1 1.0 2 104.5
 }
 
 set basis sto-3g
+# Must be reset in each new molecule
 set dft_functional b_x
 V31 = energy('scf')
 

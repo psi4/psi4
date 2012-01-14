@@ -1,4 +1,4 @@
-# Here's a sample UHF/6-31G** CH2 computation
+#! Sample UHF/6-31G** CH2 computation
 
 molecule ch2 {
   0 3

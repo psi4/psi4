@@ -8,7 +8,6 @@ molecule h2o {
 }
 
 set {
-  wfn eom_ccsd
   basis cc-pVDZ
   states_per_irrep [2, 2, 2, 2]
 }

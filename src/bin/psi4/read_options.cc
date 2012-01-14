@@ -599,6 +599,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if (name == "SAPT"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) analysis
+        to quantitatively analyze noncovalent interactions. -*/
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3 MP2C");
     /*- The ubiquitous debug flag -*/
