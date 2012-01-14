@@ -1567,17 +1567,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
     options.add_str("DF_BASIS_MP2", "");
-//    options.read_ipv1();
-    /*- -*/
+    /*- Do use density fitting? Turned on with specification of fitting basis. -*/
     if(options.get_str("DF_BASIS_MP2") != "")
-    /*- Do ? -*/
       options.add_bool("DF_LMP2", true);
     else
-    /*- Do ? -*/
       options.add_bool("DF_LMP2", false);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "LMP2");
-    /*- -*/
+    /*- Reference to be used -*/
     options.add_str("REFERENCE", "RHF", "RHF");
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
@@ -1587,19 +1584,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for T2 amplitudes (RMS change). 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE", 1e-5);
-    /*- -*/
-    options.add_int("FSKIP", 2);
+    /*- Minimum absolute value below which parts of the Fock matrix are skipped.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("FOCK_TOLERANCE", 1e-2);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", 1);
-    /*- Don't ? -*/
-    options.add_bool("NEGLECT_DP", 1);
-    /*- -*/
-    options.add_double("DISTANT_PAIR", 8.0);
-    /*- Iteration -*/
+    /*- Do neglect distant pairs? -*/
+    options.add_bool("NEGLECT_DISTANT_PAIR", 1);
+    /*-  Distant pair cutoff -*/
+    options.add_double("DISTANT_PAIR_CUTOFF", 8.0);
+    /*- Iteration at which to start DIIS extrapolation -*/
     options.add_int("DIIS_START_ITER", 3);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MAX_VECS", 5);
-    /*- -*/
+    /*- Localization cutoff -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
     /*- -*/
     options.add_int("MEMORY", 2000);
@@ -1611,13 +1609,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- -*/
     options.add_double("SCALE_SS", 1.0/3.0);
-    /*- -*/
-    options.add_int("SCREENING", 7);
-    /*- Do ? -*/
+    /*- Do screen integrals? -*/
     options.add_bool("SCREEN_INTS", false);
     /*- Minimum absolute value below which integrals are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("INTS_TOLERANCE", 1e-12);
+    options.add_double("INTS_TOLERANCE", 1e-7);
+    /*- Do exit after printing the domains? -*/
+    options.add_bool("DOMAIN_PRINT_EXIT", 0);
    }
   if(name=="DFMP2"|| options.read_globals()) {
     /*- -*/
