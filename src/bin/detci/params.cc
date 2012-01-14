@@ -78,7 +78,7 @@ void get_parameters(Options &options)
 
   Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
 
-  Parameters.ref_sym = options.get_int("REF_SYM");
+  Parameters.ref_sym = options.get_int("REFERENCE_SYM");
 
   Parameters.oei_file = PSIF_OEI;  /* always need fzc operator */
   Parameters.tei_file = PSIF_MO_TEI;

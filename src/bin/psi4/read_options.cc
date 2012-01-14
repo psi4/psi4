@@ -27,32 +27,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- An array containing the number of doubly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("DOCC", new ArrayType());
-
   /*- An array containing the number of singly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("SOCC", new ArrayType());
-
   /*- An array containing the number of frozen doubly-occupied orbitals per
-  irrep (these are not excited in a CI, nor can they be optimized in
-  MCSCF -*/
+  irrep (these are not excited in a CI, nor can they be optimized in MCSCF -*/
   options.add("FROZEN_DOCC", new ArrayType());
   /*- An array containing the number of frozen unoccupied orbitals per
-  irrep (these are not populated in a CI, nor can they be optimized in
-  MCSCF -*/
+  irrep (these are not populated in a CI, nor can they be optimized in MCSCF -*/
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The scope of core orbitals to freeze in later correlated computations
-      FROZEN_DOCC trumps this option -*/
+  FROZEN_DOCC trumps this option -*/
   options.add_int("NUM_FROZEN_DOCC", 0);
   /*- The scope of virtual orbitals to freeze in later correlated computations
-      FROZEN_UOCC trumps this option -*/
+  FROZEN_UOCC trumps this option -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
   /*- The scope of core orbitals to freeze in later correlated computations
-      FROZEN_DOCC or NUM_FROZEN_DOCC trumps this option  -*/
-  options.add_str("FREEZE_CORE","FALSE", \
-    "FALSE TRUE SMALL LARGE");
+  FROZEN_DOCC or NUM_FROZEN_DOCC trumps this option  -*/
+  options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
 
   /*- Do use pure angular momentum basis functions?
-      If not explicitly set, the default comes from the basis set. -*/
+  If not explicitly set, the default comes from the basis set. -*/
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file -*/
   options.add_int("PRINT", 1);
@@ -78,7 +73,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // frozen_uocc.
 
   if (name == "DETCI" || options.read_globals()) {
-    /*- Reference wavefunction -*/
+    /*- Wavefunction type !expert -*/
+    options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
+
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
 
     /*- Convergence criterion for CI residual vector in the Davidson algorithm (RMS error). 
@@ -88,9 +86,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE", 1e-6);
-
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
     /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LEVEL -*/
     options.add_bool("FCI",false);
@@ -167,7 +162,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     than the reference.  This probably only makes sense for Full CI,
     and it would probably not work with unit vector guesses.  Numbering
     starts from zero for the totally-symmetric irrep. !expert -*/
-    options.add_int("REF_SYM", -1);
+    options.add_int("REFERENCE_SYM", -1);
 
     /*- This parameter specifies the size of the H0 block of the Hamiltonian
     which is solved exactly.  The n determinants with the lowest SCF
@@ -733,6 +728,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "SCF"|| options.read_globals()) {
 
+    /*- Wavefunction type !expert -*/
+    options.add_str("WFN", "SCF", "SCF");
+
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
+
     /*- The dimension sizes of the processor grid -*/
     options.add("PROCESS_GRID", new ArrayType());
 
@@ -741,9 +742,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The dimension sizes of the distributed matrix -*/
     options.add("DISTRIBUTED_MATRIX", new ArrayType());
-
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "SCF", "SCF");
 
     /*- Are going to do SAPT? If so, what part?  -*/
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
@@ -767,8 +765,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The type of guess orbitals -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
-    /*- The reference wavefunction used in the computation -*/
-    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
 
@@ -856,7 +852,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "MP2"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "MP2", "MP2");
-    /*- The reference wavefunction type -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
     /*- Type of job being performed !expert -*/
     options.add_str("JOBTYPE", "SP");
@@ -881,7 +877,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "TRANSQT2"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "");
-    /*- -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
     /*- Do ? -*/
     options.add_bool("PRINT_TEI", false);
@@ -899,14 +895,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT"|| options.read_globals()) {
+    /*- Wavefunction type !expert -*/
+    options.add_str("WFN", "CCSD");
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE","RHF");
     /*- -*/
     options.add_int("PRINT_LVL", 1);
     /*- -*/
-    options.add_str("REFERENCE","RHF");
-    /*- -*/
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "CCSD");
     /*- Do ? -*/
     options.add_bool("PSIMRCC", false);
     /*- -*/
@@ -1032,8 +1028,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCSORT"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "");
-    /*- -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
+    /*- -*/
+    options.add_str("EOM_REFERENCE","RHF");
     /*- -*/
     options.add_str("PROPERTY", "POLARIZABILITY");
     /*- Do ? -*/
@@ -1060,8 +1058,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL_FILTER_SINGLES", false);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- -*/
-    options.add_str("EOM_REFERENCE","RHF");
     /*- Do ? -*/
     options.add_bool("KEEP_TEIFILE", false);
     /*- Do ? -*/
@@ -1083,17 +1079,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCTRIPLES"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE","RHF");
     /*- Number of threads -*/
     options.add_int("NUM_THREADS",1);
-    /*- The reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
-    /*- The reference wavefunction type -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
     /*- Minimum absolute value below which integrals are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
@@ -1175,10 +1171,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FOLLOW_ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE","RHF");
     /*- -*/
     options.add_int("CACHELEVEL",2);
-    /*- -*/
-    options.add_str("REFERENCE","RHF");
     /*- Do ? -*/
     options.add_bool("FOLLOW",false);
     /*- -*/
@@ -1189,12 +1185,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE",0.5);
   }
   if(name == "ADC" || options.read_globals()) {
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE", "");
     /*- How to cache quantities within the DPD library -*/
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
     options.add_int("MEMORY", 1000);
-    /*- The Reference -*/
-    options.add_str("REFERENCE", "");
     /*- The convergence criterion for pole searching step. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("NEWTON_CONVERGENCE", 1e-7);
@@ -1211,21 +1207,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PR", false);
   }
   if(name == "CCHBAR"|| options.read_globals()) {
+    /*- Wavefunction type !expert -*/
+    options.add_str("WFN", "SCF");
+    /*- -*/
+    options.add_str("EOM_REFERENCE","RHF");
     /*- Do compute the Tamplitude equation matrix elements? -*/
     options.add_bool("T_AMPS",false);
     /*- -*/
     options.add_int("CACHELEVEL",2);
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "SCF");
     /*- Do use the minimal-disk algorithm for Wabei? It's VERY slow! -*/
     options.add_bool("WABEI_LOWDISK", false);
-    /*- -*/
-    options.add_str("EOM_REFERENCE","RHF");
   }
   if(name == "CCEOM"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
-    /*- -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- -*/
     options.add_str("EOM_REFERENCE","RHF", "RHF ROHF UHF");
@@ -1321,10 +1317,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE","RHF");
     /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEVEL",2);
-    /*- -*/
-    options.add_str("REFERENCE","RHF");
     /*- Gauge for optical rotation -*/
     options.add_str("GAUGE","LENGTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/
@@ -1368,7 +1364,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MU_IRREPS",new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
-    /*- -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
     /*- -*/
     options.add("OMEGA", new ArrayType());
@@ -1376,6 +1372,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY","POLARIZABILITY");
   }
   if(name == "MCSCF"|| options.read_globals()) {
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
@@ -1422,18 +1420,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("DOCC", new ArrayType());
 //    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
 //    options.add("ACTV", new ArrayType());
-    /*- The type of SCF reference to be computed. -*/
-    options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     /*- The symmetry of the SCF wavefunction.-*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
   if(name == "CCENERGY"|| options.read_globals()) {
-    /*- Do ? -*/
-    options.add_bool("NEW_TRIPLES", 1);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
-    /*- Type of orbitals for the single-determinant reference function -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
+    /*- Do ? -*/
+    options.add_bool("NEW_TRIPLES", 1);
     /*- Do ? -*/
     options.add_bool("ANALYZE", 0);
     /*- Maximum number of iterations to solve the CC equations -*/
@@ -1526,7 +1522,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CIS"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
-    /*- -*/
+    /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- -*/
     options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
@@ -1555,17 +1551,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DOMAIN_PRINT", 0);
   }
   if(name == "LMP2"|| options.read_globals()) {
-    /*- The wavefunction desired -*/
+    /*- Wavefunction type !expert -*/
+    options.add_str("WFN", "LMP2");
+    /*- Reference wavefunction type -*/
+    options.add_str("REFERENCE", "RHF", "RHF");
+    /*- -*/
     options.add_str("DF_BASIS_MP2", "");
     /*- Do use density fitting? Turned on with specification of fitting basis. -*/
     if(options.get_str("DF_BASIS_MP2") != "")
       options.add_bool("DF_LMP2", true);
     else
       options.add_bool("DF_LMP2", false);
-    /*- Wavefunction type !expert -*/
-    options.add_str("WFN", "LMP2");
-    /*- Reference to be used -*/
-    options.add_str("REFERENCE", "RHF", "RHF");
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
     /*- Convergence criterion for energy (change).
@@ -1634,9 +1630,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum absolute value below which integrals are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- Convergence criterion for CC energy. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for CC energy. 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for cluster amplitudes (RMS change). 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE", 1e-8);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
@@ -1834,7 +1832,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CORR_WFN","CCSD","PT2 CCSD MP2-CCSD CCSD_T");
     /*- The type of CCSD(T) computation to perform -*/
     options.add_str("CORR_CCSD_T","STANDARD","STANDARD PITTNER");
-    /*- The type of reference function used in MRCC computations -*/
+    /*- Reference wavefunction type used in MRCC computations -*/
     options.add_str("CORR_REFERENCE","GENERAL","RHF ROHF TCSCF MCSCF GENERAL");
     /*- The ansatz to use for MRCC computations -*/
     options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
