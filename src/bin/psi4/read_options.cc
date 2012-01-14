@@ -676,9 +676,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("R_CONVERGENCE", 1e-10);
       /*- Do relax the orbitals? -*/
       options.add_bool("RELAX_ORBITALS", true);
-      /*- The damping factor used in the initial SCF procedure (0 - 1000) 0 means full standard SCF update
-          is performed, 1000 will completely damp the iteration to the extent that no update is performed -*/
-      options.add_int("DAMPING_FACTOR", 0);
+      /*- The amount (percentage) of damping to apply to the initial SCF procedures
+          0 will result in a full update, 100 will completely stall the update. A
+          value around 20 (which corresponds to 20\% of the previous iteration's
+          density being mixed into the current iteration)
+          can help in cases where oscillatory convergence is observed. -*/
+      options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- Don't include the tau terms? -*/
       options.add_bool("IGNORE_TAU", false);
       /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$? -*/
@@ -780,7 +783,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
         density being mixed into the current density)
-        could help to solve problems with oscillatory convergence -*/
+        could help to solve problems with oscillatory convergence. -*/
     options.add_double("DAMPING_PERCENTAGE", 100.0);
     /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
         It is recommended to leave damping on until convergence, which is the default.
@@ -1781,16 +1784,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
-      /*- The multiplicity, $M_S(M_S+1)$, of the target state.  Must be specified if different from the reference $M_s$. -*/
+    /*- The multiplicity, $M@@S(M@@S+1)$, of the target state.  Must be specified if different from the reference $M@@s$. -*/
       options.add_int("CORR_MULTP",1);
     /*- The molecular charge of the target state -*/
       options.add_int("CORR_CHARGE",0);
     /*- Amount of debugging output to produce !expert -*/
     options.add_int("DEBUG",0);
-    /*- The amount of damping to apply to the amplitude updates.  If this is set to 0, the full update is performed.
-        A value of 1000 retains the amplitudes from the previous iteration always being used.  A value in between these extremes
-        can help in cases where oscillatory convergence is observed -*/
-    options.add_int("DAMPING_FACTOR",0);
+    /*- The amount (percentage) of damping to apply to the amplitude updates. 
+        0 will result in a full update, 100 will completely stall the update. A
+        value around 20 (which corresponds to 20\% of the amplitudes from the
+        previous iteration being mixed into the current iteration)
+        can help in cases where oscillatory convergence is observed. -*/
+    options.add_double("DAMPING_PERCENTAGE",0.0);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MAX_VECS",7);
     /*- Number of threads -*/
