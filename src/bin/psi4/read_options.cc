@@ -112,9 +112,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- number of CI roots to find -*/
     options.add_int("NUM_ROOTS", 1);
 
-    /*- The amount of information to print to the output file -*/
-    options.add_int("PRINT", 1);
-
     /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
     options.add("RAS1", new ArrayType());
 
@@ -603,10 +600,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         to quantitatively analyze noncovalent interactions. -*/
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3 MP2C");
-    /*- The ubiquitous debug flag -*/
-    options.add_int("DEBUG",0);
-    /*- The amount of information to print to the output file -*/
-    options.add_int("PRINT",1);
     /*- Convergence criterion for energy (change) in the SAPT Ind20 term. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE",1e-10);
@@ -836,8 +829,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_MAX_VECS", 10);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
-    /*- The amount of debugging information to print -*/
-    options.add_int("DEBUG", false);
     /*- Convergence criterion for SCF energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for SCF density. See the note at the beginning of Section \ref{keywords}. -*/
@@ -1198,8 +1189,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE",0.5);
   }
   if(name == "ADC" || options.read_globals()) {
-    /*- The amount of information printed to the output file -*/
-    options.add_int("PRINT", 1);
     /*- How to cache quantities within the DPD library -*/
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
@@ -1389,8 +1378,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "MCSCF"|| options.read_globals()) {
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
-    /*- The amount of debugging information to print -*/
-    options.add_int("DEBUG", false);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE", 1e-12);
     /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
@@ -1623,8 +1610,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name=="DFMP2"|| options.read_globals()) {
     /*- -*/
     options.add_int("MADMP2_SLEEP", 0);
-    /*- -*/
-    options.add_int("MADMP2_DEBUG", 0);
     /*- RI Basis, needed by Python -*/
     options.add_str("DF_BASIS_MP2","");
     /*- Basis, needed by Python -*/
@@ -1661,8 +1646,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_MAX_VECS", 6);
     /*- Maximum number iterations -*/
     options.add_int("MAXITER", 40);
-    /*- Debugging information? -*/
-    options.add_int("DEBUG",0);
 
     // => DF <= //
 
@@ -1788,8 +1771,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CORR_MULTP",1);
     /*- The molecular charge of the target state -*/
       options.add_int("CORR_CHARGE",0);
-    /*- Amount of debugging output to produce !expert -*/
-    options.add_int("DEBUG",0);
     /*- The amount (percentage) of damping to apply to the amplitude updates. 
         0 will result in a full update, 100 will completely stall the update. A
         value around 20 (which corresponds to 20\% of the amplitudes from the

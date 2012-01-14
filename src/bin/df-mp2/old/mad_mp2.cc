@@ -78,7 +78,7 @@ MAD_MP2::~MAD_MP2()
 void MAD_MP2::common_init()
 {
     print_ = options_.get_int("PRINT");
-    debug_ = options_.get_int("MADMP2_DEBUG");
+    debug_ = options_.get_int("DEBUG");
 
     omp_nthread_ = 1;
     #ifdef _OPENMP
