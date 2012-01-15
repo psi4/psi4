@@ -2,13 +2,13 @@
 
 molecule h2o {
   0 1
-  O
-  H 1 0.9
-  H 1 0.9 2 104.0
-#  H -0.107055195862289   0.000000000000000  -1.832806614599657
-#  O -0.107055195862289   0.000000000000000   0.094714436481352
-#  H  1.806098405595803   0.000000000000000   0.329620161376194
-#  units bohr
+#  O
+#  H 1 0.9
+#  H 1 0.9 2 104.0
+  H -0.107055195862289   0.000000000000000  -1.832806614599657
+  O -0.107055195862289   0.000000000000000   0.094714436481352
+  H  1.806098405595803   0.000000000000000   0.329620161376194
+  units bohr
 }
 
 set {
@@ -17,6 +17,37 @@ set {
   states_per_irrep [1, 0, 0, 0]
 }
 
-optimize('ccsd', dertype=0)
+gradient('eom-ccsd')
+analytic_grad = PsiMod.reference_wavefunction().gradient()
+
+nirreps = analytic_grad.nirrep()
+print "Num irreps = %d\n" % nirreps
+symmetry = analytic_grad.symmetry()
+print "Symmetry = %d\n" % symmetry
+for irrep in range(nirreps):
+  rows = analytic_grad.rows(irrep)
+  cols = analytic_grad.cols(irrep ^ symmetry)
+  for row in range(rows):
+    for col in range(cols):
+      val = analytic_grad.get(irrep, row, col)
+      print "%d %d %20.10f\n" % (row, col, val)
+
+gradient('eom-ccsd', dertype=0)
+findif_grad = PsiMod.reference_wavefunction().gradient()
+
+nirreps = findif_grad.nirrep()
+print "\nNum irreps = %d\n" % nirreps
+symmetry = findif_grad.symmetry()
+print "Symmetry = %d\n" % symmetry
+for irrep in range(nirreps):
+  rows = findif_grad.rows(irrep)
+  cols = findif_grad.cols(irrep ^ symmetry)
+  for row in range(rows):
+    for col in range(cols):
+      val = findif_grad.get(irrep, row, col)
+      print "%d %d %20.10f\n" % (row, col, val)
+
+
+#compare_matrices(findif_grad, findif_grad, 4, "Finite-difference vs. analytic gradient to 0.0001") #TEST
 
 clean()
