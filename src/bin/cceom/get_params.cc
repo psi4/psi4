@@ -61,7 +61,7 @@ void get_params(Options &options)
   else params.eom_ref = 2; /* run in UHF mode - ignore EOM_REFERENCE */
 
   params.full_matrix = options["FULL_MATRIX"].to_integer();
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   std::string cachetype = options.get_str("CACHETYPE");
   if(cachetype == "LOW") params.cachetype = 1;
@@ -69,7 +69,7 @@ void get_params(Options &options)
   if(params.ref == 2) /* No LRU cacheing yet for UHF references */
     params.cachetype = 0;
 
-  params.nthreads = options.get_int("NTHREADS");
+  params.nthreads = options.get_int("NUM_THREADS");
   params.abcd = options.get_str("ABCD");
   params.t3_Ws_incore = options["T3_WS_INCORE"].to_integer();
   params.local = options["LOCAL"].to_integer();
@@ -83,7 +83,7 @@ void get_params(Options &options)
     local.filter_singles = options["LOCAL_FILTER_SINGLES"].to_integer();
   }
 
-  params.newtrips = options["NEWTRIPS"].to_integer();
+  params.newtrips = options["NEW_TRIPLES"].to_integer();
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");

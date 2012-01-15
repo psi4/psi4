@@ -33,7 +33,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 
   // allocate memory for a couple of buffers
   long int memory = Process::environment.get_memory();
-  memory *= 1024L*1024L;
+  //memory *= 1024L*1024L;
   memory -= 8L*(o*o*v*v+o*v);
   // how many tiles for the ov^2 transformation?
   long int ntiles,tilesize,lasttile;
@@ -217,6 +217,15 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   F_DCOPY(o*v,amps1,1,ccsd->t1,1);
 
   // transform t2(a_mo,b_mo,i,j) -> t2(a_no,b_mo,i,j)
+
+  if (ccsd->t2_on_disk){
+     ccsd->tb = (double*)malloc(o*o*v*v*sizeof(double));
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&ccsd->tb[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+  }
+
+
   F_DGEMM('n','n',o*o*v,nvirt_no,v,1.0,ccsd->tb,o*o*v,Dab,v,0.0,amps1,o*o*v);
   // sort t2(a_no,b_mo,i,j) -> t2(b_mo,a_no,j,i)
   // if we go ahead and swap i & j, we won't need to sort again after this
@@ -271,12 +280,17 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
           }
       }
   }
-  ccsd->scale_t = ccsd->eccsd/eccsd;
   fprintf(outfile,"        CCSD correlation energy in original space:  %20.12lf\n",ccsd->eccsd);
   fprintf(outfile,"        CCSD correlation energy in truncated space: %20.12lf\n",eccsd);
   fprintf(outfile,"\n");
 
   // free memory
+  if (ccsd->t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->write_entry(PSIF_T2,"t2",(char*)&ccsd->tb[0],o*o*nvirt_no*nvirt_no*sizeof(double));
+     psio->close(PSIF_T2,1);
+     free(ccsd->tb);
+  }
   free(tilesizes);
   free(amps1);
   free(amps2);
@@ -290,7 +304,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 }
 
 void Transformation(boost::shared_ptr<psi::CoupledCluster>ccsd,double*Ca_motono){
-  shared_ptr<PSIO> psio(_default_psio_lib_);
+  /*shared_ptr<PSIO> psio(_default_psio_lib_);
   std::vector<shared_ptr<MOSpace> > spaces;
   shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
@@ -330,7 +344,7 @@ void Transformation(boost::shared_ptr<psi::CoupledCluster>ccsd,double*Ca_motono)
   ints.set_keep_dpd_so_ints(1);
   ints.set_keep_iwl_so_ints(1);
   ints.initialize();
-  ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+  ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);*/
 }
 
 } // end of namespace

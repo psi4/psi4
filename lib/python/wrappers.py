@@ -18,6 +18,122 @@ def call_function_in_1st_argument(funcarg, **kwargs):
 ##  Start of cp  ##
 ###################
 
+def three_body(name, **kwargs):
+
+    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    if not('name' in kwargs) and name:
+        kwargs['name'] = name.lower()
+
+    # Establish function to call
+    if not('cp_func' in kwargs):
+        if ('func' in kwargs):
+            kwargs['cp_func'] = kwargs['func']
+            del kwargs['func'] 
+        else:
+            kwargs['cp_func'] = energy
+    func = kwargs['cp_func']
+    if not func:
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper counterpoise_correct.' % (func.__name__))
+    if (func is db):
+        raise ValidationError('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
+
+    check_bsse = False
+    if (kwargs.has_key('check_bsse')):
+        check_bsse = kwargs['check_bsse']
+
+    # Make sure the molecule the user provided is the active one
+    if (kwargs.has_key('molecule')):
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
+    ri_ints_io = PsiMod.get_option('DF_INTS_IO')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
+    psioh = PsiMod.IOManager.shared_object()
+    psioh.set_specific_retention(97, True)
+
+    activate(molecule) 
+    molecule.update_geometry()
+
+    PsiMod.print_out("\n")
+    banner("Three-Body Computation: Trimer ABC.\nFull Basis Set.")
+    PsiMod.print_out("\n")
+    e_trimer_full = []
+    e_trimer_full.append(call_function_in_1st_argument(func, **kwargs))
+
+    PsiMod.clean()  
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
+
+    # All dimers with ghosts
+    dimers = extract_clusters(molecule, True, 2)
+    if (len(dimers) != 3):
+        print 'three_body: error, only trimers are allowed at present'
+
+    e_dimer_full = []
+    names = ['AB', 'AC', 'BC']
+    for index in range(len(dimers)):
+        cluster = dimers[index]
+        activate(cluster)
+        PsiMod.print_out("\n")
+        banner(("Three-Body Computation: Dimer %s.\n Full Basis Set." % (names[index])))
+        PsiMod.print_out("\n")
+        e_dimer_full.append(call_function_in_1st_argument(func, **kwargs))
+        PsiMod.clean()  
+
+    # All monomers with ghosts
+    monomers = extract_clusters(molecule, True, 1)
+    e_monomer_full = []
+    names = ['A', 'B', 'C']
+    for index in range(len(monomers)):
+        cluster = monomers[index]
+        activate(cluster)
+        PsiMod.print_out("\n")
+        banner(("CP Computation: Monomer %s.\n Full Basis Set." % (names[index])))
+        PsiMod.print_out("\n")
+        e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
+        PsiMod.clean()  
+
+    PsiMod.set_global_option('DF_INTS_IO',ri_ints_io)
+    psioh.set_specific_retention(97, False)
+
+    activate(molecule) 
+
+    # Energy analysis
+    E_AB_A_B = e_dimer_full[0] - e_monomer_full[0] - e_monomer_full[1];
+    E_AC_A_C = e_dimer_full[1] - e_monomer_full[0] - e_monomer_full[2];
+    E_BC_B_C = e_dimer_full[2] - e_monomer_full[1] - e_monomer_full[2];
+
+    E_ABC_A_B_C = e_trimer_full[0] - e_monomer_full[0] - e_monomer_full[1] - e_monomer_full[2]
+
+    E_ABC_AB_AC_A = e_trimer_full[0] + e_monomer_full[0] - e_dimer_full[0] - e_dimer_full[1] 
+    E_ABC_AB_BC_B = e_trimer_full[0] + e_monomer_full[1] - e_dimer_full[0] - e_dimer_full[2]
+    E_ABC_AC_BC_C = e_trimer_full[0] + e_monomer_full[2] - e_dimer_full[1] - e_dimer_full[2]
+
+    E_ABC_AB_AC_BC_A_B_C = e_trimer_full[0] + e_monomer_full[0] + e_monomer_full[1] + e_monomer_full[2] - e_dimer_full[0] - e_dimer_full[1] - e_dimer_full[2]
+
+    PsiMod.print_out('\n\t==> Three-Body Computation Energy Results <==\n\n')
+
+    PsiMod.print_out('    ABC =                %18.10E H %18.10E kcal mol^-1\n' % (e_trimer_full[0], 627.509 * e_trimer_full[0]))
+    PsiMod.print_out('    AB =                 %18.10E H %18.10E kcal mol^-1\n' % (e_dimer_full[0], 627.509 * e_dimer_full[0]))
+    PsiMod.print_out('    AC =                 %18.10E H %18.10E kcal mol^-1\n' % (e_dimer_full[1], 627.509 * e_dimer_full[1]))
+    PsiMod.print_out('    BC =                 %18.10E H %18.10E kcal mol^-1\n' % (e_dimer_full[2], 627.509 * e_dimer_full[2]))
+    PsiMod.print_out('    A =                  %18.10E H %18.10E kcal mol^-1\n' % (e_monomer_full[0], 627.509 * e_monomer_full[0]))
+    PsiMod.print_out('    B =                  %18.10E H %18.10E kcal mol^-1\n' % (e_monomer_full[1], 627.509 * e_monomer_full[1]))
+    PsiMod.print_out('    C =                  %18.10E H %18.10E kcal mol^-1\n' % (e_monomer_full[2], 627.509 * e_monomer_full[2]))
+    PsiMod.print_out('    AB-A-B =             %18.10E H %18.10E kcal mol^-1\n' % (E_AB_A_B, 627.509 * E_AB_A_B))
+    PsiMod.print_out('    AC-A-C =             %18.10E H %18.10E kcal mol^-1\n' % (E_AC_A_C, 627.509 * E_AC_A_C))
+    PsiMod.print_out('    BC-B-C =             %18.10E H %18.10E kcal mol^-1\n' % (E_BC_B_C, 627.509 * E_BC_B_C))
+    PsiMod.print_out('    ABC-A-B-C =          %18.10E H %18.10E kcal mol^-1\n' % (E_ABC_A_B_C, 627.509 * E_ABC_A_B_C))
+    PsiMod.print_out('    ABC-AB-AC+A =        %18.10E H %18.10E kcal mol^-1\n' % (E_ABC_AB_AC_A, 627.509 * E_ABC_AB_AC_A))
+    PsiMod.print_out('    ABC-AB-BC+B =        %18.10E H %18.10E kcal mol^-1\n' % (E_ABC_AB_BC_B, 627.509 * E_ABC_AB_BC_B))
+    PsiMod.print_out('    ABC-AC-BC+C =        %18.10E H %18.10E kcal mol^-1\n' % (E_ABC_AC_BC_C, 627.509 * E_ABC_AC_BC_C))
+    PsiMod.print_out('    ABC-AB-AC-BC+A+B+C = %18.10E H %18.10E kcal mol^-1\n' % (E_ABC_AB_AC_BC_A_B_C, 627.509 * E_ABC_AB_AC_BC_A_B_C))
+        
+    return 0.0 
+
+
 def cp(name, **kwargs):
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
@@ -49,8 +165,11 @@ def cp(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
+    psioh = PsiMod.IOManager.shared_object()
+    psioh.set_specific_retention(97, True)
+
     activate(molecule) 
     molecule.update_geometry()
 
@@ -59,7 +178,9 @@ def cp(name, **kwargs):
     PsiMod.print_out("\n")
     e_dimer = call_function_in_1st_argument(func, **kwargs)
     #e_dimer = energy(name, **kwargs)
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+
+    PsiMod.clean()  
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     # All monomers with ghosts
     monomers = extract_clusters(molecule, True, 1)
@@ -74,9 +195,9 @@ def cp(name, **kwargs):
         e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
         #e_monomer_full.append(energy(name,**kwargs))
         cluster_n = cluster_n + 1
-        
+        PsiMod.clean()  
 
-    PsiMod.set_global_option('RI_INTS_IO','NONE')
+    PsiMod.set_global_option('DF_INTS_IO','NONE')
     if (check_bsse): 
         # All monomers without ghosts
         monomers = extract_clusters(molecule, False, 1)
@@ -93,7 +214,9 @@ def cp(name, **kwargs):
             #e_monomer_bsse.append(energy(name,**kwargs))
             cluster_n = cluster_n + 1
 
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
+    psioh.set_specific_retention(97, False)
+
     activate(molecule) 
         
     if (check_bsse != True):
@@ -248,11 +371,11 @@ def database(name, db_name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
-    user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-    user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
-    user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
-    user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
-    user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
+    user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+    user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
+    user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
+    user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
+    user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
 
     b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
     user_reference = PsiMod.get_option('REFERENCE')
@@ -531,16 +654,16 @@ def database(name, db_name, **kwargs):
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
-        if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
-        if not((user_ri_basis_mp2 == "") or (user_ri_basis_mp2 == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_MP2', '%s')\n""" % (user_ri_basis_mp2)
-        if not((user_ri_basis_cc == "") or (user_ri_basis_cc == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_CC', '%s')\n""" % (user_ri_basis_cc)
-        if not((user_ri_basis_sapt == "") or (user_ri_basis_sapt == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_SAPT', '%s')\n""" % (user_ri_basis_sapt)
-        if not((user_ri_basis_elst == "") or (user_ri_basis_elst == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_ELST', '%s')\n""" % (user_ri_basis_elst)
+        if not((user_df_basis_scf == "") or (user_df_basis_scf == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_SCF', '%s')\n""" % (user_df_basis_scf)
+        if not((user_df_basis_mp2 == "") or (user_df_basis_mp2 == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_MP2', '%s')\n""" % (user_df_basis_mp2)
+        if not((user_df_basis_cc == "") or (user_df_basis_cc == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_CC', '%s')\n""" % (user_df_basis_cc)
+        if not((user_df_basis_sapt == "") or (user_df_basis_sapt == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_SAPT', '%s')\n""" % (user_df_basis_sapt)
+        if not((user_df_basis_elst == "") or (user_df_basis_elst == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_ELST', '%s')\n""" % (user_df_basis_elst)
         commands += """molecule = PsiMod.get_active_molecule()\n"""
         commands += """molecule.update_geometry()\n"""
 
@@ -864,11 +987,11 @@ def complete_basis_set(name, **kwargs):
     # Must collect (here) and set (below) basis sets after every new molecule activation
     b_user_basis = PsiMod.has_global_option_changed('BASIS')
     user_basis = PsiMod.get_option('BASIS')
-    #user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-    #user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
-    #user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
-    #user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
-    #user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
+    #user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+    #user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
+    #user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
+    #user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
+    #user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
     user_wfn = PsiMod.get_option('WFN')
 

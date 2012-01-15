@@ -63,7 +63,7 @@ void PseudospectralHF::common_init()
     // Build auxiliary basis from options
     boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "RI_BASIS_SCF");
+    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
     parser.reset();
 
     // Build a fitting metric object
@@ -71,7 +71,7 @@ void PseudospectralHF::common_init()
     Jinv_->form_cholesky_factor();
 
     // Build a Schwarz sieve object
-    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("INTS_TOLERANCE")));
 
     // Build a set of thread-local integrators
     int nthread = 1;

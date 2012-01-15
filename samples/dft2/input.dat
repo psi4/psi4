@@ -1,0 +1,28 @@
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set globals {
+print 6
+#debug 0
+basis sto-3g
+guess core
+scf_type direct
+dft_order_spherical 29 
+dft_max_points 400
+dft_basis_tol 1.0E-10
+dft_n_radial 100
+reference rks
+}
+
+set dft_functional b_x
+V11 = energy('scf')
+
+set dft_boxing_scheme octree
+V11 = energy('scf')
+
+clean()

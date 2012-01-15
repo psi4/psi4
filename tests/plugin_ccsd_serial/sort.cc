@@ -1,4 +1,5 @@
 #include <libplugin/plugin.h>
+#include<psifiles.h>
 #include"psi4-dec.h"
 #include<boost/shared_ptr.hpp>
 #include<lib3index/dftensor.h>
@@ -76,11 +77,27 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
 
   ULI nelem = 1000000;
 
+  // available memory:
+  ULI memory = Process::environment.get_memory();
+
+  // 8 bytes for tmp, 16 for integral struct
+  ULI maxelem = memory / (sizeof(double) + sizeof(struct integral));
+  if (maxelem > v*(v+1)/2*v*(v+1)/2) maxelem = v*(v+1)/2*v*(v+1)/2;
+
+  fprintf(outfile,"        CC integral sort will use                   %7.2lf mb\n",
+         maxelem*(sizeof(double) + sizeof(struct integral))/1024./1024.);
+  if (maxelem <v*(v+1)/2*v*(v+1)/2){
+     fprintf(outfile,"       (for most efficient sort, increase memory by %7.2lf mb)\n",
+         (v*(v+1)/2*v*(v+1)/2-maxelem)*(sizeof(double) + sizeof(struct integral))/1024./1024.);
+  }
+  fprintf(outfile,"\n");
+
+
   struct integral*integralbuffer;
-  if ((nelem+20)*12>o*o*v*v)
+  if ((nelem+20)*12>maxelem)
      integralbuffer= new integral[(nelem+20)*12];
   else
-     integralbuffer= new integral[o*o*v*v];
+     integralbuffer= new integral[maxelem];
 
   ijkl  = integralbuffer;
   ijak  = integralbuffer+(nelem+20);
@@ -156,6 +173,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   ULI totalnabcd1=0;
   ULI nabcd2=0;
   ULI totalnabcd2=0;
+  fprintf(outfile,"        Initial sort.....");fflush(outfile);
   /**
     * first buffer (read in when Buf was initialized)
     */
@@ -446,6 +464,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       }
 
   }
+  fprintf(outfile,"done.\n\n");fflush(outfile);
   /**
     * write any leftover bits that might not have been dumped to disk
     */
@@ -531,53 +550,53 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
     * sort values in each of the files
     */
   double *tmp;
-  tmp = new double[o*o*v*v];
+  tmp = new double[maxelem];
 
   fprintf(outfile,"        IJKL block.......");fflush(outfile);
-  SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_IJKL,"E2ijkl",o*o*v*v);
+  SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_IJKL,"E2ijkl",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        IJAK block 1/2...");fflush(outfile);
-  SortBlock(totalnijak,o*o*o*v,integralbuffer,tmp,PSIF_IJAK,"E2ijak",o*o*v*v);
+  SortBlock(totalnijak,o*o*o*v,integralbuffer,tmp,PSIF_IJAK,"E2ijak",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        IJAK block 2/2...");fflush(outfile);
-  SortBlock(totalnijak2,o*o*o*v,integralbuffer,tmp,PSIF_IJAK2,"E2ijak2",o*o*v*v);
+  SortBlock(totalnijak2,o*o*o*v,integralbuffer,tmp,PSIF_IJAK2,"E2ijak2",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        KCLD block.......");fflush(outfile);
-  SortBlock(totalnklcd,o*o*v*v,integralbuffer,tmp,PSIF_KLCD,"E2klcd",o*o*v*v);
+  SortBlock(totalnklcd,o*o*v*v,integralbuffer,tmp,PSIF_KLCD,"E2klcd",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        KLCD block.......");fflush(outfile);
-  SortBlock(totalnakjc,o*o*v*v,integralbuffer,tmp,PSIF_AKJC2,"E2akjc2",o*o*v*v);
+  SortBlock(totalnakjc,o*o*v*v,integralbuffer,tmp,PSIF_AKJC2,"E2akjc2",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        ABCI block 1/4...");fflush(outfile);
-  SortBlock(totalnabci1,o*v*v*v,integralbuffer,tmp,PSIF_ABCI,"E2abci",o*o*v*v);
+  SortBlock(totalnabci1,o*v*v*v,integralbuffer,tmp,PSIF_ABCI,"E2abci",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        ABCI block 2/4...");fflush(outfile);
-  SortBlock(totalnabci3,o*v*v*v,integralbuffer,tmp,PSIF_ABCI3,"E2abci3",o*o*v*v);
+  SortBlock(totalnabci3,o*v*v*v,integralbuffer,tmp,PSIF_ABCI3,"E2abci3",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        ABCI block 3/4...");fflush(outfile);
-  SortBlock(totalnabci4,o*v*v*v,integralbuffer,tmp,PSIF_ABCI4,"E2abci4",o*o*v*v);
+  SortBlock(totalnabci4,o*v*v*v,integralbuffer,tmp,PSIF_ABCI4,"E2abci4",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        ABCI block 4/4...");fflush(outfile);
-  SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_ABCI5,"E2abci5",o*o*v*v);
+  SortBlock(totalnabci5,o*v*v*v,integralbuffer,tmp,PSIF_ABCI5,"E2abci5",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        ABCD block 1/2...");fflush(outfile);
-  SortBlock(totalnabcd1,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD1,"E2abcd1",o*o*v*v);
+  SortBlock(totalnabcd1,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD1,"E2abcd1",maxelem);
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"        ABCD block 2/2...");fflush(outfile);
-  SortBlock(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD2,"E2abcd2",o*o*v*v);
+  SortBlock(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD2,"E2abcd2",maxelem);
   fprintf(outfile,"done.\n\n");fflush(outfile);
 
   delete integralbuffer;
 
   double *tmp2;
-  tmp2 = new double[o*o*v*v];
+  tmp2 = new double[maxelem];
   /**
     *  Sort ABCI2 integrals (actually, just 2*ABCI3-ABCI5)
     */
 
   ULI nbins,binsize,lastbin;
   for (ULI i=1; i<=o*v*v*v; i++){
-      if (o*o*v*v>=(double)o*v*v*v/i){
+      if (maxelem>=(double)o*v*v*v/i){
          binsize = o*v*v*v/i;
          if (i*binsize < o*v*v*v) binsize++;
          nbins = i;
@@ -609,7 +628,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
     *  Combine ABCD1 and ABCD2 integrals
     */
   for (ULI i=1; i<=v*(v+1)/2*v*(v+1)/2; i++){
-      if (o*o*v*v>=(double)v*(v+1)/2*v*(v+1)/2/i){
+      if (maxelem>=(double)v*(v+1)/2*v*(v+1)/2/i){
          binsize = v*(v+1)/2*v*(v+1)/2/i;
          if (i*binsize < v*(v+1)/2*v*(v+1)/2) binsize++;
          nbins = i;
@@ -1587,12 +1606,11 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
      psio->read_entry(PSIFILE,string,(char*)&buffer[0],nelem*sizeof(struct integral));
      psio->close(PSIFILE,0);
 
-     qsort(buffer,nelem,sizeof(struct integral),integral_comp);
-
      memset((void*)tmp,'\0',blockdim*sizeof(double));
      for (ULI j=0; j<nelem; j++){
          tmp[buffer[j].ind] = buffer[j].val;
      }
+
      psio->open(PSIFILE,PSIO_OPEN_NEW);
      psio->write_entry(PSIFILE,string,(char*)&tmp[0],blockdim*sizeof(double));
      psio->close(PSIFILE,1);
@@ -1619,132 +1637,49 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
      }
      initiallastbin = nelem - (initialnbins-1)*initialbinsize;
 
-     psio_address*addr,addr1;
+     psio_address*addr,addr1,addr2;
      addr = new psio_address[nbins];
      addr1 = PSIO_ZERO;
-     ULI*actualbinsize = (ULI*)malloc(nbins*sizeof(ULI));
-     for (ULI i=0; i<nbins; i++){
-         addr[i] = PSIO_ZERO;
-         actualbinsize[i] = 0;
-     }
-     char*temporary = (char*)malloc(100*sizeof(char));
 
      // rough sort of integrals into bins
      psio->open(PSIFILE,PSIO_OPEN_OLD);
-     psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
-
-     // write zeros to temporary array.
-     // i *think* memset will work on the integral struct
-     memset((void*)buffer,'\0',binsize*sizeof(struct integral));
-     for (ULI i=0; i<nbins-1; i++){
-         sprintf(temporary,"temporary%li",i);
-         psio->write_entry(PSIF_TEMP,temporary,(char*)&buffer[0],binsize*sizeof(struct integral));
-     }
-     sprintf(temporary,"temporary%li",nbins-1);
-     psio->write_entry(PSIF_TEMP,temporary,(char*)&buffer[0],lastbin*sizeof(struct integral));
-     psio->close(PSIF_TEMP,1);
 
      // i really would prefer not to write individual elements to disk!
      // this should be 1 mb per bucket
-     ULI *countbuckets,bucketsize = 1024*1024/12;
-     integral**buckets;
-     buckets = (integral**)malloc(nbins*sizeof(integral*));
-     countbuckets = (ULI*)malloc(nbins*sizeof(ULI));
-     for (ULI i=0; i<nbins; i++){
-         countbuckets[i] = 0;
-         buckets[i] = (integral*)malloc(bucketsize*sizeof(integral));
-     }
      
-     
-     psio->open(PSIF_TEMP,PSIO_OPEN_OLD);
-     for (ULI i=0; i<initialnbins-1; i++){
-         psio->read(PSIFILE,string,(char*)&buffer[0],initialbinsize*sizeof(struct integral),addr1,&addr1);
-         for (ULI j=0; j<initialbinsize; j++){
-             for (ULI k=0; k<nbins; k++){
-                 if (buffer[j].ind < (k+1)*binsize){
-                    buckets[k][countbuckets[k]].val = buffer[j].val;
-                    buckets[k][countbuckets[k]++].ind = buffer[j].ind;
-                    if (countbuckets[k]==bucketsize){
-                       sprintf(temporary,"temporary%li",k);
-                       psio->write(PSIF_TEMP,temporary,(char*)&buckets[k][0],bucketsize*sizeof(struct integral),addr[k],&addr[k]);
-                       actualbinsize[k] += bucketsize;
-                       countbuckets[k] = 0;
-                    }
-                    break;
+
+// new way
+     psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
+     addr2=PSIO_ZERO;
+     for (ULI k=0; k<nbins; k++){
+         addr1=PSIO_ZERO;
+         memset((void*)tmp,'\0',binsize*sizeof(double));
+         for (ULI i=0; i<initialnbins-1; i++){
+             psio->read(PSIFILE,string,(char*)&buffer[0],initialbinsize*sizeof(struct integral),addr1,&addr1);
+             for (ULI j=0; j<initialbinsize; j++){
+                 if (buffer[j].ind < (k+1)*binsize && buffer[j].ind>=k*binsize){
+                     tmp[buffer[j].ind-k*binsize] = buffer[j].val;
                  }
              }
          }
-     }
-     psio->read(PSIFILE,string,(char*)&buffer[0],initiallastbin*sizeof(struct integral),addr1,&addr1);
-     for (ULI j=0; j<initiallastbin; j++){
-         for (ULI k=0; k<nbins; k++){
-             if (buffer[j].ind < (k+1)*binsize){
-                //actualbinsize[k]++;
-                //sprintf(temporary,"temporary%li",k);
-                //psio->write(PSIF_TEMP,temporary,(char*)&buffer[j],1*sizeof(struct integral),addr[k],&addr[k]);
-                //break;
-                buckets[k][countbuckets[k]].val = buffer[j].val;
-                buckets[k][countbuckets[k]++].ind = buffer[j].ind;
-                if (countbuckets[k]==bucketsize){
-                   sprintf(temporary,"temporary%li",k);
-                   psio->write(PSIF_TEMP,temporary,(char*)&buckets[k][0],bucketsize*sizeof(struct integral),addr[k],&addr[k]);
-                   actualbinsize[k] += bucketsize;
-                   countbuckets[k] = 0;
-                }
-                break;
+         psio->read(PSIFILE,string,(char*)&buffer[0],initiallastbin*sizeof(struct integral),addr1,&addr1);
+         for (ULI j=0; j<initiallastbin; j++){
+             if (buffer[j].ind < (k+1)*binsize && buffer[j].ind>=k*binsize){
+                 tmp[buffer[j].ind-k*binsize] = buffer[j].val;
              }
          }
+         psio->write(PSIF_TEMP,"heyhey",(char*)&tmp[0],binsize*sizeof(double),addr2,&addr2);
      }
-     // write leftovers in each bucket
+     addr1=addr2=PSIO_ZERO;
      for (ULI k=0; k<nbins; k++){
-         sprintf(temporary,"temporary%li",k);
-         psio->write(PSIF_TEMP,temporary,(char*)&buckets[k][0],countbuckets[k]*sizeof(struct integral),addr[k],&addr[k]);
-         actualbinsize[k] += countbuckets[k];
-         countbuckets[k] = 0;
-     }
-     psio->close(PSIF_TEMP,1);
-     psio->close(PSIFILE,0);
-
-     // sort each bin
-     psio->open(PSIFILE,PSIO_OPEN_NEW);
-     psio->open(PSIF_TEMP,PSIO_OPEN_OLD);
-     addr1 = PSIO_ZERO;
-     for (ULI i=0; i<nbins-1; i++){
-         sprintf(temporary,"temporary%li",i);
-         psio->read_entry(PSIF_TEMP,temporary,(char*)&buffer[0],actualbinsize[i]*sizeof(struct integral));
-
-         qsort(buffer,actualbinsize[i],sizeof(struct integral),integral_comp);
-
-         ULI count=i*binsize;
-         memset((void*)tmp,'\0',binsize*sizeof(double));
-         for (ULI j=0; j<actualbinsize[i]; j++){
-             tmp[buffer[j].ind-i*binsize] = buffer[j].val;
-         }
+         psio->read(PSIF_TEMP,"heyhey",(char*)&tmp[0],binsize*sizeof(double),addr2,&addr2);
          psio->write(PSIFILE,string,(char*)&tmp[0],binsize*sizeof(double),addr1,&addr1);
      }
-     sprintf(temporary,"temporary%li",nbins-1);
-     psio->read_entry(PSIF_TEMP,temporary,(char*)&buffer[0],actualbinsize[nbins-1]*sizeof(struct integral));
-
-     qsort(buffer,actualbinsize[nbins-1],sizeof(struct integral),integral_comp);
-
-     ULI count=(nbins-1)*binsize;
-     memset((void*)tmp,'\0',binsize*sizeof(double));
-     for (ULI j=0; j<actualbinsize[nbins-1]; j++){
-         tmp[buffer[j].ind-(nbins-1)*binsize] = buffer[j].val;
-     }
-     psio->write(PSIFILE,string,(char*)&tmp[0],lastbin*sizeof(double),addr1,&addr1);
 
      psio->close(PSIFILE,1);
      psio->close(PSIF_TEMP,0);
 
      delete addr;
-     for (ULI i=0; i<nbins; i++){
-         free(buckets[i]);
-     }
-     free(buckets);
-     free(countbuckets);
-     free(actualbinsize);
-     free(temporary);
   }
 }
 

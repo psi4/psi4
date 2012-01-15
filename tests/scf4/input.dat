@@ -20,7 +20,7 @@ Avals = range(102, 106, 2)
 count = 0
 
 set basis cc-pvdz
-set scf e_converge = 11
+set scf e_convergence = 11
 
 for R in Rvals:
     h2o.R = R
@@ -29,7 +29,7 @@ for R in Rvals:
 
         h2o.A = A
 
-        thisenergy = scf()
+        thisenergy = energy('scf')
 
         compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
                        10, "Nuclear repulsion energy %d" % count)                      #TEST

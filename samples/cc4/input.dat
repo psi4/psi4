@@ -8,14 +8,12 @@ molecule bh {
 }
 
 set {
-   wfn ccsd_t
    docc [3, 0, 0, 0]
    basis cc-pvqz
    freeze_core true
-   dertype none
-   convergence 10
-   e_converge 10
-   d_converge 10
+   r_convergence 10
+   e_convergence 10
+   d_convergence 10
 }
 
 energy('ccsd(t)')

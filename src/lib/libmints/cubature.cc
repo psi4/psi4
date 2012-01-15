@@ -500,7 +500,7 @@ void DFTGrid::buildGridFromOptions()
     // Blocking/sieving info
     int max_points = options_.get_int("DFT_MAX_POINTS");
     int min_points = options_.get_int("DFT_MIN_POINTS");
-    double epsilon = options_.get_double("DFT_BASIS_CUTOFF");
+    double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights
@@ -510,18 +510,16 @@ void DFTGrid::buildGridFromOptions()
 
 PseudospectralGrid::PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
                                        boost::shared_ptr<BasisSet> primary,
-                                       boost::shared_ptr<BasisSet> dealias,
                                        Options& options) :
-    MolecularGrid(molecule), primary_(primary), dealias_(dealias), filename_(""),  options_(options)
+    MolecularGrid(molecule), primary_(primary), filename_(""),  options_(options)
 {
     buildGridFromOptions();
 }
 PseudospectralGrid::PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
                                        boost::shared_ptr<BasisSet> primary,
-                                       boost::shared_ptr<BasisSet> dealias,
                                        const std::string& filename,
                                        Options& options) :
-    MolecularGrid(molecule), primary_(primary), dealias_(dealias), filename_(filename), options_(options)
+    MolecularGrid(molecule), primary_(primary), filename_(filename), options_(options)
 {
     buildGridFromFile();
 }
@@ -898,7 +896,7 @@ void PseudospectralGrid::buildGridFromOptions()
 
     int max_points = options_.get_int("PS_MAX_POINTS");
     int min_points = options_.get_int("PS_MIN_POINTS");
-    double epsilon = options_.get_double("PS_BASIS_CUTOFF");
+    double epsilon = options_.get_double("PS_BASIS_TOLERANCE");
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights
@@ -906,7 +904,8 @@ void PseudospectralGrid::buildGridFromOptions()
 }
 
 MolecularGrid::MolecularGrid(boost::shared_ptr<Molecule> molecule) :
-    molecule_(molecule), npoints_(0), max_points_(0), max_functions_(0), scheme_("")
+    molecule_(molecule), npoints_(0), max_points_(0), max_functions_(0), scheme_(""),
+    print_(1), debug_(0)
 {
 }
 MolecularGrid::~MolecularGrid()
@@ -1064,12 +1063,14 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
     I2->diagonalize(V,D);
 
-    fprintf(outfile, "  => MolecularGrid: Standard Orientation <= \n\n");
-    fprintf(outfile, "  Total Charge: %d\n\n", (int) Z); 
-    X->print();
-    I->print();
-    D->print();
-    V->print();
+    if (debug_) {
+        fprintf(outfile, "  => MolecularGrid: Standard Orientation <= \n\n");
+        fprintf(outfile, "  Total Charge: %d\n\n", (int) Z); 
+        X->print();
+        I->print();
+        D->print();
+        V->print();
+    }
 
     // What kinda bug are we dealing with here?
     
@@ -1079,15 +1080,15 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
     double jitter = 1.0E-6;
     if (Dp[0] < jitter && Dp[1] < jitter && Dp[2] < jitter) {
         // Spherical top, single atom
-        fprintf(outfile, "    Spherical top, single atom\n\n");
+        if (debug_) fprintf(outfile, "    Spherical top, single atom\n\n");
         R->identity();
     } else if (Dp[0] < jitter && Dp[1] < jitter) {
         // Symmetric top, linear
-        fprintf(outfile, "    Spherical top, linear\n\n");
+        if (debug_) fprintf(outfile, "    Spherical top, linear\n\n");
         R->copy(V);
     } else if (fabs(Dp[0] - Dp[1]) < jitter && fabs(Dp[1] - Dp[2]) < jitter) {
         // Spherical top, polyatomic
-        fprintf(outfile, "    Spherical top, polyatomic\n\n");
+        if (debug_) fprintf(outfile, "    Spherical top, polyatomic\n\n");
         // Case 1 Icosohedral
         // Case 2 Octohedral
         // Case 3 Tetrahedral
@@ -1190,7 +1191,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
     } else if (fabs(Dp[0] - Dp[1]) < jitter || fabs(Dp[1] - Dp[2]) < jitter) {
         // Symmetric top, nonlinear
-        fprintf(outfile, "    Symmetric top, nonlinear\n\n");
+        if (debug_) fprintf(outfile, "    Symmetric top, nonlinear\n\n");
     
         // Put the unique axis in z
         if (fabs(Dp[1] - Dp[2]) < jitter) {
@@ -1307,11 +1308,11 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
     } else {
         // Asymmetric top
-        fprintf(outfile, "    Asymmetric top\n\n");
+        if (debug_) fprintf(outfile, "    Asymmetric top\n\n");
         R->copy(V);
     }
 
-    R->print();
+    if (debug_) R->print();
 
     return R;
 }

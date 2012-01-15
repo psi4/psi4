@@ -1,20 +1,16 @@
 import os
-
-# Get a pointer to the default PsiMod object
-psioh = PsiMod.IOManager.shared_object()
-
 # Set the default path for all PSI4 data files. Be sure to include the trailing '/' .
 # Uncomment the final line(s) of one of the options below or construct your own set_default_path
 
 #  [1]
 #  Sends scratch files for all jobs to one place. Usually safe since pid labeled.
 #  Useful when psi4 is run on box from which it's called (not queued cluster system)
-psioh.set_default_path('/scratch/parrish/')
+psi4_io.set_default_path('/scratch/parrish/')
 
 #  [2]
 #  Sends scratch files to directory from which psi4 was called.
 #  Useful when running from scratch in a queued cluster system.
-#psioh.set_default_path('./')
+#psi4_io.set_default_path('./')
 
 #  [3]
 #  Sends scratch files to directory in an environment variable.
@@ -22,20 +18,20 @@ psioh.set_default_path('/scratch/parrish/')
 #  but want big scratch files in an on-the-fly-named scratch directory $myscratch
 #job_scratch_pbs = os.environ.get('myscratch')
 #if job_scratch_pbs == None:
-#   psioh.set_default_path('./')
+#   psi4_io.set_default_path('./')
 #else:
 #   job_scratch_pbs += '/'
-#   psioh.set_default_path(job_scratch_pbs)
+#   psi4_io.set_default_path(job_scratch_pbs)
 
 
 # Specifications for particular files like the below work with any option
 # above, but cause trouble for multijob input files
 # Set the path for files of a specific type
 # This keeps the chkpt on the NFS, while the heavies go to scratch
-#psioh.set_specific_path(32, './')
+#psi4_io.set_specific_path(32, './')
 
 # Set a specific file number to be retained where it lies
 # and not be removed by psiclean
-#psioh.set_specific_retention(32, True)
+#psi4_io.set_specific_retention(32, True)
 
 

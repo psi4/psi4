@@ -146,8 +146,6 @@ Molecule::Molecule():
     name_("default"),
     fix_orientation_(false),
     move_to_com_(true),
-    charge_specified_(false),
-    multiplicity_specified_(false),
     molecular_charge_(0),
     multiplicity_(1),
     units_(Angstrom),
@@ -155,6 +153,8 @@ Molecule::Molecule():
     nunique_(0),
     nequiv_(0),
     equiv_(0),
+    multiplicity_specified_(false),
+    charge_specified_(false),
     atom_to_unique_(0),
     old_com_vector_(0),
     old_symmetry_frame_(0)
@@ -183,6 +183,15 @@ Molecule& Molecule::operator=(const Molecule& other)
     }
     if (other.old_symmetry_frame_)
         old_symmetry_frame_ = other.old_symmetry_frame_->clone();
+
+    if (old_com_vector_) {
+        delete old_com_vector_;
+        old_com_vector_ = 0;
+    }
+    if (other.old_com_vector_) {
+        old_com_vector_ = new Vector3;
+        *old_com_vector_ = *other.old_com_vector_;
+    }
 
     name_                    = other.name_;
     all_variables_           = other.all_variables_;
@@ -222,7 +231,7 @@ Molecule& Molecule::operator=(const Molecule& other)
 }
 
 Molecule::Molecule(const Molecule& other)
-    : old_symmetry_frame_(0)
+    : old_symmetry_frame_(0), old_com_vector_(0)
 {
     *this = other;
 }
@@ -583,10 +592,8 @@ void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
 {
     int natoms = 0;
     double *zvals, **geom;
-    molecular_charge_       = Process::environment.options.get_int("CHARGE");
-    charge_specified_       = Process::environment.options["CHARGE"].has_changed();
-    multiplicity_           = Process::environment.options.get_int("MULTP");
-    multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
+    molecular_charge_       = 0;
+    multiplicity_           = 1;
 
     natoms = chkpt->rd_natom();
     zvals = chkpt->rd_zvals();
@@ -712,11 +719,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
  */
 int Molecule::molecular_charge() const
 {
-    if(Process::environment.options["CHARGE"].has_changed()){
-        return Process::environment.options.get_int("CHARGE");
-    }else{
-        return molecular_charge_;
-    }
+    return molecular_charge_;
 }
 
 /**
@@ -726,11 +729,7 @@ int Molecule::molecular_charge() const
  */
 int Molecule::multiplicity() const
 {
-    if(Process::environment.options["MULTP"].has_changed()){
-        return Process::environment.options.get_int("MULTP");
-    }else{
-        return multiplicity_;
-    }
+    return multiplicity_;
 }
 
 boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &text)
@@ -754,10 +753,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         throw PSIEXCEPTION("Unit " + units + " is not recognized");
     }
 
-    mol->molecular_charge_ = Process::environment.options.get_int("CHARGE");
-    mol->charge_specified_ = Process::environment.options["CHARGE"].has_changed();
-    mol->multiplicity_ = Process::environment.options.get_int("MULTP");
-    mol->multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
+    mol->molecular_charge_ = 0;
+    mol->multiplicity_ = 1;
 
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
@@ -811,10 +808,10 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
-                mol->molecular_charge_       = tempCharge;
                 mol->charge_specified_       = true;
-                mol->multiplicity_          = tempMultiplicity;
                 mol->multiplicity_specified_ = true;
+                mol->molecular_charge_       = tempCharge;
+                mol->multiplicity_           = tempMultiplicity;
                 lines.erase(lines.begin() + lineNumber);
             }
         }
@@ -974,7 +971,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
 
 void Molecule::update_geometry()
 {
-fprintf(outfile,"update_geometry() is called.\n");
+    //fprintf(outfile,"update_geometry() is called.\n");
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
@@ -999,9 +996,9 @@ fprintf(outfile,"update_geometry() is called.\n");
         }
     }
 
-fprintf(outfile,"Geometry bf reorientation.\n");
-Matrix min = full_geometry();
-min.print_out();
+    //fprintf(outfile,"Geometry bf reorientation.\n");
+    //Matrix min = full_geometry();
+    //min.print_out();
 
     if (move_to_com_)
         move_to_com();
@@ -1268,79 +1265,128 @@ void Molecule::print() const
     }
 }
 
+void Molecule::print_distances() const
+{
+  fprintf(outfile, "\t\tInteratomic Distances\n\tAtom 1\tAtom 2\tDistance\n");
+  for(int i=0;i<natom();i++) {
+    for(int j=i;j<natom();j++) {
+      double xx = x(i) - x(j);
+      double yy = y(i) - y(j);
+      double zz = z(i) - z(j);
+      double distance = sqrt(xx*xx+yy*yy+zz*zz);
+      fprintf(outfile, "\t %d\t %d\t %lf\n",i,j,distance);
+    }
+  }
+}
+
+void Molecule::print_bond_angles() const
+{
+  fprintf(outfile, "\t\tBond Angles\n\tAtom 1\tAtom 2\tAtom 3\tBond Angle (degrees)\n");
+  for(int i=0;i<natom();i++) {
+    for(int j=i+1;j<natom();j++) {
+      for(int k=j+1;k<natom();k++) {
+        double rijxx = x(i) - x(j);
+        double rijyy = y(i) - y(j);
+        double rijzz = z(i) - z(j);
+        double rij = sqrt(rijxx*rijxx+rijyy*rijyy+rijzz*rijzz);
+        
+        double rjkxx = x(j) - x(k);
+        double rjkyy = y(j) - y(k);
+        double rjkzz = z(j) - z(k);
+        double rjk = sqrt(rjkxx*rjkxx+rjkyy*rjkyy+rjkzz*rjkzz);
+        
+        double rikxx = x(i) - x(k);
+        double rikyy = y(i) - y(k);
+        double rikzz = z(i) - z(k);
+        double rik = sqrt(rikxx*rikxx+rikyy*rikyy+rikzz*rikzz);
+        
+        double invAngle = (rij*rij+rjk*rjk-rik*rik) / (2*rij*rjk);
+        double bondAngle = acos(invAngle);
+        printf("\t %d\t %d\t %d\t %lf\n", i, j, k, (bondAngle*180));
+      }
+    }
+  }
+
+}
+
+void Molecule::print_dihedrals() const
+{
+
+}
+
 void Molecule::save_xyz(const std::string& filename) const
 {
 
-    double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
+  double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
 
-    if (Communicator::world->me() == 0) {
-        FILE* fh = fopen(filename.c_str(), "w");
+  if (Communicator::world->me() == 0) {
+    FILE* fh = fopen(filename.c_str(), "w");
 
-        fprintf(fh,"%d\n\n", natom());
+    fprintf(fh,"%d\n\n", natom());
 
-        for (int i = 0; i < natom(); i++) {
-            Vector3 geom = atoms_[i]->compute();
-            fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
-        }
-
-        fclose(fh);
+    for (int i = 0; i < natom(); i++) {
+      Vector3 geom = atoms_[i]->compute();
+      fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
     }
+
+    fclose(fh);
+  }
 }
 
 std::string Molecule::save_string_xyz() const
 {
 
-    double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
-    char buffer[120];
-    std::stringstream ss;
+  double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
+  char buffer[120];
+  std::stringstream ss;
 
-    if (Communicator::world->me() == 0) {
+  if (Communicator::world->me() == 0) {
 
-        sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
-        ss << buffer;
+    sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
+    ss << buffer;
 
-        for (int i = 0; i < natom(); i++) {
-            Vector3 geom = atoms_[i]->compute();
-            sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
-            ss << buffer;
-        }
-
-        return ss.str();
+    for (int i = 0; i < natom(); i++) {
+      Vector3 geom = atoms_[i]->compute();
+      sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
+      ss << buffer;
     }
+
+    return ss.str();
+  }
 }
 
 Matrix* Molecule::inertia_tensor() const
 {
-    int i;
-    Matrix* tensor = new Matrix("Inertia Tensor", 3, 3);
-    Matrix& temp = *tensor;
+  int i;
+  Matrix* tensor = new Matrix("Inertia Tensor", 3, 3);
+  Matrix& temp = *tensor;
 
-    for (i = 0; i < natom(); i++) {
-        // I(alpha, alpha)
-        temp(0, 0) += mass(i) * (y(i) * y(i) + z(i) * z(i));
-        temp(1, 1) += mass(i) * (x(i) * x(i) + z(i) * z(i));
-        temp(2, 2) += mass(i) * (x(i) * x(i) + y(i) * y(i));
+  for (i = 0; i < natom(); i++) {
+    // I(alpha, alpha)
+    temp(0, 0) += mass(i) * (y(i) * y(i) + z(i) * z(i));
+    temp(1, 1) += mass(i) * (x(i) * x(i) + z(i) * z(i));
+    temp(2, 2) += mass(i) * (x(i) * x(i) + y(i) * y(i));
 
-        // I(alpha, beta)
-        temp(0, 1) -= mass(i) * x(i) * y(i);
-        temp(0, 2) -= mass(i) * x(i) * z(i);
-        temp(1, 2) -= mass(i) * y(i) * z(i);
+    // I(alpha, beta)
+    temp(0, 1) -= mass(i) * x(i) * y(i);
+    temp(0, 2) -= mass(i) * x(i) * z(i);
+    temp(1, 2) -= mass(i) * y(i) * z(i);
+  }
+
+  //    mirror
+  temp(1, 0) = temp(0, 1);
+  temp(2, 0) = temp(0, 2);
+  temp(2, 1) = temp(1, 2);
+
+  // Check the elements for zero and make them a hard zero.
+  for (int i=0; i < 3; ++i) {
+    for (int j=0; j<3; ++j) {
+      if (fabs(tensor->get(i, j)) < ZERO)
+        tensor->set(i, j, 0.0);
     }
+  }
 
-    //    mirror
-    temp(1, 0) = temp(0, 1);
-    temp(2, 0) = temp(0, 2);
-    temp(2, 1) = temp(1, 2);
-
-    // Check the elements for zero and make them a hard zero.
-    for (int i=0; i < 3; ++i) {
-        for (int j=0; j<3; ++j) {
-            if (fabs(tensor->get(i, j)) < ZERO)
-                tensor->set(i, j, 0.0);
-        }
-    }
-
-    return tensor;
+  return tensor;
 }
 
 //
@@ -1348,415 +1394,415 @@ Matrix* Molecule::inertia_tensor() const
 //
 bool Molecule::has_inversion(Vector3& origin, double tol) const
 {
-    for (int i=0; i<natom(); ++i) {
-        Vector3 inverted = origin-(xyz(i) - origin);
-        int atom = atom_at_position2(inverted, tol);
-        if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
-            return false;
-        }
+  for (int i=0; i<natom(); ++i) {
+    Vector3 inverted = origin-(xyz(i) - origin);
+    int atom = atom_at_position2(inverted, tol);
+    if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
+      return false;
     }
-    return true;
+  }
+  return true;
 }
 
 bool Molecule::is_plane(Vector3& origin, Vector3& uperp, double tol) const
 {
-    for (int i=0; i<natom(); ++i) {
-        Vector3 A = xyz(i)-origin;
-        Vector3 Apar = uperp.dot(A)*uperp;
-        Vector3 Aperp = A - Apar;
-        A = (Aperp- Apar) + origin;
-        int atom = atom_at_position2(A, tol);
-        if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
-            return false;
-        }
+  for (int i=0; i<natom(); ++i) {
+    Vector3 A = xyz(i)-origin;
+    Vector3 Apar = uperp.dot(A)*uperp;
+    Vector3 Aperp = A - Apar;
+    A = (Aperp- Apar) + origin;
+    int atom = atom_at_position2(A, tol);
+    if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
+      return false;
     }
-    return true;
+  }
+  return true;
 }
 
 bool Molecule::is_axis(Vector3& origin, Vector3& axis, int order, double tol) const
 {
-    for (int i=0; i<natom(); ++i) {
-        Vector3 A = xyz(i) - origin;
-        for (int j=1; j<order; ++j) {
-            Vector3 R = A;
-            R.rotate(j*2.0*M_PI/order, axis);
-            R += origin;
-            int atom = atom_at_position2(R, tol);
-            if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
-                return false;
-            }
-        }
+  for (int i=0; i<natom(); ++i) {
+    Vector3 A = xyz(i) - origin;
+    for (int j=1; j<order; ++j) {
+      Vector3 R = A;
+      R.rotate(j*2.0*M_PI/order, axis);
+      R += origin;
+      int atom = atom_at_position2(R, tol);
+      if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
+        return false;
+      }
     }
-    return true;
+  }
+  return true;
 }
 
 enum AxisName { XAxis, YAxis, ZAxis };
 
 static AxisName like_world_axis(Vector3& axis, const Vector3& worldxaxis, const Vector3& worldyaxis, const Vector3& worldzaxis)
 {
-    AxisName like;
-    double xlikeness = fabs(axis.dot(worldxaxis));
-    double ylikeness = fabs(axis.dot(worldyaxis));
-    double zlikeness = fabs(axis.dot(worldzaxis));
-    if (xlikeness > ylikeness && xlikeness > zlikeness) {
-        like = XAxis;
-        if (axis.dot(worldxaxis) < 0) axis = - axis;
-    }
-    else if (ylikeness > zlikeness) {
-        like = YAxis;
-        if (axis.dot(worldyaxis) < 0) axis = - axis;
-    }
-    else {
-        like = ZAxis;
-        if (axis.dot(worldzaxis) < 0) axis = - axis;
-    }
-    return like;
+  AxisName like;
+  double xlikeness = fabs(axis.dot(worldxaxis));
+  double ylikeness = fabs(axis.dot(worldyaxis));
+  double zlikeness = fabs(axis.dot(worldzaxis));
+  if (xlikeness > ylikeness && xlikeness > zlikeness) {
+    like = XAxis;
+    if (axis.dot(worldxaxis) < 0) axis = - axis;
+  }
+  else if (ylikeness > zlikeness) {
+    like = YAxis;
+    if (axis.dot(worldyaxis) < 0) axis = - axis;
+  }
+  else {
+    like = ZAxis;
+    if (axis.dot(worldzaxis) < 0) axis = - axis;
+  }
+  return like;
 }
 
 void Molecule::is_linear_planar(bool& linear, bool& planar, double tol) const
 {
-    if (natom() < 3) {
-        linear = true;
-        planar = true;
-        return;
-    }
-
-    // find three atoms not on the same line
-    Vector3 A = xyz(0);
-    Vector3 B = xyz(1);
-    Vector3 BA = B-A;
-    BA.normalize();
-    Vector3 CA;
-
-    int i;
-    double min_BAdotCA = 1.0;
-    for (i=2; i<natom(); ++i) {
-        Vector3 tmp = xyz(i) - A;
-        tmp.normalize();
-        if (fabs(BA.dot(tmp)) < min_BAdotCA) {
-            CA = tmp;
-            min_BAdotCA = fabs(BA.dot(tmp));
-        }
-    }
-    if (min_BAdotCA >= 1.0 - tol) {
-        linear = true;
-        planar = true;
-        return;
-    }
-
-    linear = false;
-    if (natom() < 4) {
-        planar = true;
-        return;
-    }
-
-    // check for nontrivial planar molecules
-    Vector3 BAxCA = BA.cross(CA);
-    BAxCA.normalize();
-    for (i=2; i<natom(); ++i) {
-        Vector3 tmp = xyz(i)-A;
-        if (fabs(tmp.dot(BAxCA)) > tol) {
-            planar = false;
-            return;
-        }
-    }
+  if (natom() < 3) {
+    linear = true;
     planar = true;
+    return;
+  }
+
+  // find three atoms not on the same line
+  Vector3 A = xyz(0);
+  Vector3 B = xyz(1);
+  Vector3 BA = B-A;
+  BA.normalize();
+  Vector3 CA;
+
+  int i;
+  double min_BAdotCA = 1.0;
+  for (i=2; i<natom(); ++i) {
+    Vector3 tmp = xyz(i) - A;
+    tmp.normalize();
+    if (fabs(BA.dot(tmp)) < min_BAdotCA) {
+      CA = tmp;
+      min_BAdotCA = fabs(BA.dot(tmp));
+    }
+  }
+  if (min_BAdotCA >= 1.0 - tol) {
+    linear = true;
+    planar = true;
+    return;
+  }
+
+  linear = false;
+  if (natom() < 4) {
+    planar = true;
+    return;
+  }
+
+  // check for nontrivial planar molecules
+  Vector3 BAxCA = BA.cross(CA);
+  BAxCA.normalize();
+  for (i=2; i<natom(); ++i) {
+    Vector3 tmp = xyz(i)-A;
+    if (fabs(tmp.dot(BAxCA)) > tol) {
+      planar = false;
+      return;
+    }
+  }
+  planar = true;
 }
 
 int Molecule::atom_to_unique_offset(int iatom) const
 {
-    int iuniq = atom_to_unique_[iatom];
-    int nequiv = nequiv_[iuniq];
-    for (int i=0; i<nequiv; ++i) {
-        if (equiv_[iuniq][i] == iatom)
-            return i;
-    }
-    throw PSIEXCEPTION("Molecule::atom_to_unique_offset: I should've found the atom requested...but didn't.");
-    return -1;
+  int iuniq = atom_to_unique_[iatom];
+  int nequiv = nequiv_[iuniq];
+  for (int i=0; i<nequiv; ++i) {
+    if (equiv_[iuniq][i] == iatom)
+      return i;
+  }
+  throw PSIEXCEPTION("Molecule::atom_to_unique_offset: I should've found the atom requested...but didn't.");
+  return -1;
 }
 
 int Molecule::max_nequivalent() const
 {
-    int max = 0;
-    for (int i=0; i<nunique(); ++i)
-        if (max < nequivalent(i))
-            max = nequivalent(i);
-    return max;
+  int max = 0;
+  for (int i=0; i<nunique(); ++i)
+    if (max < nequivalent(i))
+      max = nequivalent(i);
+  return max;
 }
 
 boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
 {
-    int i, j;
+  int i, j;
 
-    Vector3 com = center_of_mass();
+  Vector3 com = center_of_mass();
 
-    Vector3 worldxaxis(1.0, 0.0, 0.0);
-    Vector3 worldyaxis(0.0, 1.0, 0.0);
-    Vector3 worldzaxis(0.0, 0.0, 1.0);
+  Vector3 worldxaxis(1.0, 0.0, 0.0);
+  Vector3 worldyaxis(0.0, 1.0, 0.0);
+  Vector3 worldzaxis(0.0, 0.0, 1.0);
 
-    bool linear, planar;
-    is_linear_planar(linear, planar, tol);
+  bool linear, planar;
+  is_linear_planar(linear, planar, tol);
 
-    bool have_inversion = has_inversion(com, tol);
+  bool have_inversion = has_inversion(com, tol);
 
-    // check for C2 axis
-    Vector3 c2axis;
-    bool have_c2axis = false;
-    if (natom() < 2) {
+  // check for C2 axis
+  Vector3 c2axis;
+  bool have_c2axis = false;
+  if (natom() < 2) {
+    have_c2axis = true;
+    c2axis = Vector3(0.0, 0.0, 1.0);
+  }
+  else if (linear) {
+    have_c2axis = true;
+    c2axis = xyz(1) - xyz(0);
+    c2axis.normalize();
+  }
+  else if (planar && have_inversion) {
+    // there is a c2 axis that won't be found using the usual
+    // algorithm. fine two noncolinear atom-atom vectors (we know
+    // that linear == 0)
+    Vector3 BA = xyz(1) - xyz(0);
+    BA.normalize();
+    for (i=2; i<natom(); ++i) {
+      Vector3 CA = xyz(i) - xyz(0);
+      CA.normalize();
+      Vector3 BAxCA = BA.cross(CA);
+      if (BAxCA.norm() > tol) {
         have_c2axis = true;
-        c2axis = Vector3(0.0, 0.0, 1.0);
+        BAxCA.normalize();
+        c2axis = BAxCA;
+        break;
+      }
     }
-    else if (linear) {
-        have_c2axis = true;
-        c2axis = xyz(1) - xyz(0);
-        c2axis.normalize();
-    }
-    else if (planar && have_inversion) {
-        // there is a c2 axis that won't be found using the usual
-        // algorithm. fine two noncolinear atom-atom vectors (we know
-        // that linear == 0)
-        Vector3 BA = xyz(1) - xyz(0);
-        BA.normalize();
-        for (i=2; i<natom(); ++i) {
-            Vector3 CA = xyz(i) - xyz(0);
-            CA.normalize();
-            Vector3 BAxCA = BA.cross(CA);
-            if (BAxCA.norm() > tol) {
-                have_c2axis = true;
-                BAxCA.normalize();
-                c2axis = BAxCA;
-                break;
-            }
+  }
+  else {
+    // loop through pairs of atoms o find c2 axis candidates
+    for (i=0; i<natom(); ++i) {
+      Vector3 A = xyz(i) - com;
+      double AdotA = A.dot(A);
+      for (j=0; j<=i; ++j) {
+        // the atoms must be identical
+        if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
+        Vector3 B = xyz(j)-com;
+        // the atoms must be the same distance from the com
+        if (fabs(AdotA - B.dot(B)) > tol) continue;
+        Vector3 axis = A+B;
+        // atoms colinear with the com don't work
+        if (axis.norm() < tol) continue;
+        axis.normalize();
+        if (is_axis(com, axis, 2, tol)) {
+          have_c2axis = true;
+          c2axis = axis;
+          goto found_c2axis;
         }
+      }
     }
-    else {
-        // loop through pairs of atoms o find c2 axis candidates
-        for (i=0; i<natom(); ++i) {
-            Vector3 A = xyz(i) - com;
-            double AdotA = A.dot(A);
-            for (j=0; j<=i; ++j) {
-                // the atoms must be identical
-                if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                Vector3 B = xyz(j)-com;
-                // the atoms must be the same distance from the com
-                if (fabs(AdotA - B.dot(B)) > tol) continue;
-                Vector3 axis = A+B;
-                // atoms colinear with the com don't work
-                if (axis.norm() < tol) continue;
-                axis.normalize();
-                if (is_axis(com, axis, 2, tol)) {
-                    have_c2axis = true;
-                    c2axis = axis;
-                    goto found_c2axis;
-                }
-            }
-        }
-    }
+  }
 found_c2axis:
 
-    AxisName c2like = ZAxis;
-    if (have_c2axis) {
-        // try to make the sign of the axis correspond to one of the
-        // world axes
-        c2like = like_world_axis(c2axis, worldxaxis, worldyaxis, worldzaxis);
-    }
+  AxisName c2like = ZAxis;
+  if (have_c2axis) {
+    // try to make the sign of the axis correspond to one of the
+    // world axes
+    c2like = like_world_axis(c2axis, worldxaxis, worldyaxis, worldzaxis);
+  }
 
-    // check for c2 axis perp to first c2 axis
-    Vector3 c2axisperp;
-    bool have_c2axisperp = false;
-    if (have_c2axis) {
-        if (natom() < 2) {
-            have_c2axisperp = true;
-            c2axisperp = Vector3(1.0, 0.0, 0.0);
-        }
-        else if (linear) {
-            if (have_inversion) {
-                have_c2axisperp = true;
-                c2axisperp = c2axis.perp_unit(Vector3(0.0,0.0,1.0));
-            }
-        }
-        else {
-            // loop through paris of atoms to find c2 axis candidates
-            for (i=0; i<natom(); ++i) {
-                Vector3 A = xyz(i) - com;
-                double AdotA = A.dot(A);
-                for (j=0; j<i; ++j) {
-                    // the atoms must be identical
-                    if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                    Vector3 B = xyz(j) - com;
-                    // the atoms must be the same distance from the com
-                    if (fabs(AdotA - B.dot(B)) > tol) continue;
-                    Vector3 axis= A+B;
-                    // atoms colinear with the com don't work
-                    if (axis.norm() < tol) continue;
-                    axis.normalize();
-                    // if axis is not perp continue
-                    if (fabs(axis.dot(c2axis)) > tol) continue;
-                    if (is_axis(com, axis, 2, tol)) {
-                        have_c2axisperp = true;
-                        c2axisperp = axis;
-                        goto found_c2axisperp;
-                    }
-                }
-            }
-        }
+  // check for c2 axis perp to first c2 axis
+  Vector3 c2axisperp;
+  bool have_c2axisperp = false;
+  if (have_c2axis) {
+    if (natom() < 2) {
+      have_c2axisperp = true;
+      c2axisperp = Vector3(1.0, 0.0, 0.0);
     }
+    else if (linear) {
+      if (have_inversion) {
+        have_c2axisperp = true;
+        c2axisperp = c2axis.perp_unit(Vector3(0.0,0.0,1.0));
+      }
+    }
+    else {
+      // loop through paris of atoms to find c2 axis candidates
+      for (i=0; i<natom(); ++i) {
+        Vector3 A = xyz(i) - com;
+        double AdotA = A.dot(A);
+        for (j=0; j<i; ++j) {
+          // the atoms must be identical
+          if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
+          Vector3 B = xyz(j) - com;
+          // the atoms must be the same distance from the com
+          if (fabs(AdotA - B.dot(B)) > tol) continue;
+          Vector3 axis= A+B;
+          // atoms colinear with the com don't work
+          if (axis.norm() < tol) continue;
+          axis.normalize();
+          // if axis is not perp continue
+          if (fabs(axis.dot(c2axis)) > tol) continue;
+          if (is_axis(com, axis, 2, tol)) {
+            have_c2axisperp = true;
+            c2axisperp = axis;
+            goto found_c2axisperp;
+          }
+        }
+      }
+    }
+  }
 found_c2axisperp:
 
-    AxisName c2perplike;
-    if (have_c2axisperp) {
-        // try to make the sign of the axis correspond to one of
-        // the world axes
-        c2perplike = like_world_axis(c2axisperp, worldxaxis, worldyaxis, worldzaxis);
+  AxisName c2perplike;
+  if (have_c2axisperp) {
+    // try to make the sign of the axis correspond to one of
+    // the world axes
+    c2perplike = like_world_axis(c2axisperp, worldxaxis, worldyaxis, worldzaxis);
 
-        // try to make c2axis the z axis
-        if (c2perplike == ZAxis) {
-            Vector3 tmpv = c2axisperp;
-            tmpv = c2axisperp; c2axisperp = c2axis; c2axis = tmpv;
-            c2perplike = c2like;
-            c2like = ZAxis;
-        }
-        if (c2like != ZAxis) {
-            if (c2like == XAxis) c2axis = c2axis.cross(c2axisperp);
-            else c2axis = c2axisperp.cross(c2axis);
-            c2like = like_world_axis(c2axis, worldxaxis, worldyaxis, worldzaxis);
-        }
-        // try to make c2axisperplike the x axis
-        if (c2perplike == YAxis) {
-            c2axisperp = c2axisperp.cross(c2axis);
-            c2perplike = like_world_axis(c2axisperp, worldxaxis, worldyaxis, worldzaxis);
-        }
+    // try to make c2axis the z axis
+    if (c2perplike == ZAxis) {
+      Vector3 tmpv = c2axisperp;
+      tmpv = c2axisperp; c2axisperp = c2axis; c2axis = tmpv;
+      c2perplike = c2like;
+      c2like = ZAxis;
     }
+    if (c2like != ZAxis) {
+      if (c2like == XAxis) c2axis = c2axis.cross(c2axisperp);
+      else c2axis = c2axisperp.cross(c2axis);
+      c2like = like_world_axis(c2axis, worldxaxis, worldyaxis, worldzaxis);
+    }
+    // try to make c2axisperplike the x axis
+    if (c2perplike == YAxis) {
+      c2axisperp = c2axisperp.cross(c2axis);
+      c2perplike = like_world_axis(c2axisperp, worldxaxis, worldyaxis, worldzaxis);
+    }
+  }
 
-    // Check for vertical plane
-    bool have_sigmav = false;
-    Vector3 sigmav;
-    if (have_c2axis) {
-        if (natom() < 2) {
-            have_sigmav = true;
-            sigmav = c2axisperp;
-        }
-        else if (linear) {
-            have_sigmav = true;
-            if (have_c2axisperp) {
-                sigmav = c2axisperp;
-            }
-            else {
-                sigmav = c2axis.perp_unit(Vector3(0.0, 0.0, 1.0));
-            }
-        }
-        else {
-            // loop through pairs of atoms to find sigma v plane
-            // candidates
-            for (i=0; i<natom(); ++i) {
-                Vector3 A = xyz(i) - com;
-                double AdotA = A.dot(A);
-                // the second atom can equal i because i might be
-                // in the plane
-                for (j=0; j<=i; ++j) {
-                    // the atoms must be identical
-                    if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                    Vector3 B = xyz(j) - com;
-                    // the atoms must be the same distance from the com
-                    if (fabs(AdotA - B.dot(B)) > tol) continue;
-                    Vector3 inplane = B+A;
-                    double norm_inplane = inplane.norm();
-                    if (norm_inplane < tol) continue;
-                    inplane *= 1.0/norm_inplane;
-                    Vector3 perp = c2axis.cross(inplane);
-                    double norm_perp = perp.norm();
-                    if (norm_perp < tol) continue;
-                    perp *= 1.0/norm_perp;
-                    if (is_plane(com, perp, tol)) {
-                        have_sigmav = true;
-                        sigmav = perp;
-                        goto found_sigmav;
-                    }
-                }
-            }
-        }
+  // Check for vertical plane
+  bool have_sigmav = false;
+  Vector3 sigmav;
+  if (have_c2axis) {
+    if (natom() < 2) {
+      have_sigmav = true;
+      sigmav = c2axisperp;
     }
+    else if (linear) {
+      have_sigmav = true;
+      if (have_c2axisperp) {
+        sigmav = c2axisperp;
+      }
+      else {
+        sigmav = c2axis.perp_unit(Vector3(0.0, 0.0, 1.0));
+      }
+    }
+    else {
+      // loop through pairs of atoms to find sigma v plane
+      // candidates
+      for (i=0; i<natom(); ++i) {
+        Vector3 A = xyz(i) - com;
+        double AdotA = A.dot(A);
+        // the second atom can equal i because i might be
+        // in the plane
+        for (j=0; j<=i; ++j) {
+          // the atoms must be identical
+          if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
+          Vector3 B = xyz(j) - com;
+          // the atoms must be the same distance from the com
+          if (fabs(AdotA - B.dot(B)) > tol) continue;
+          Vector3 inplane = B+A;
+          double norm_inplane = inplane.norm();
+          if (norm_inplane < tol) continue;
+          inplane *= 1.0/norm_inplane;
+          Vector3 perp = c2axis.cross(inplane);
+          double norm_perp = perp.norm();
+          if (norm_perp < tol) continue;
+          perp *= 1.0/norm_perp;
+          if (is_plane(com, perp, tol)) {
+            have_sigmav = true;
+            sigmav = perp;
+            goto found_sigmav;
+          }
+        }
+      }
+    }
+  }
 
 found_sigmav:
-    if (have_sigmav) {
-        // try to make the sign of the oop vec correspond to one of
-        // the world axes
-        int sigmavlike = like_world_axis(sigmav, worldxaxis, worldyaxis, worldzaxis);
+  if (have_sigmav) {
+    // try to make the sign of the oop vec correspond to one of
+    // the world axes
+    int sigmavlike = like_world_axis(sigmav, worldxaxis, worldyaxis, worldzaxis);
 
-        // Choose sigmav to be the world x axis, if possible
-        if (c2like == ZAxis && sigmavlike == YAxis) {
-            sigmav = sigmav.cross(c2axis);
-        }
-        else if (c2like == YAxis && sigmavlike == ZAxis) {
-            sigmav = c2axis.cross(sigmav);
-        }
+    // Choose sigmav to be the world x axis, if possible
+    if (c2like == ZAxis && sigmavlike == YAxis) {
+      sigmav = sigmav.cross(c2axis);
     }
+    else if (c2like == YAxis && sigmavlike == ZAxis) {
+      sigmav = c2axis.cross(sigmav);
+    }
+  }
 
-    // under certain conditions i need to know if there is any sigma
-    // plane
-    bool have_sigma = false;
-    Vector3 sigma;
-    if (!have_inversion && !have_c2axis) {
-        if (planar) {
-            // find two noncolinear atom-atom vectors
-            // we know that linear==0 since !have_c2axis
-            Vector3 BA = xyz(1) - xyz(0);
-            BA.normalize();
-            for (i=2; i<natom(); ++i) {
-                Vector3 CA = xyz(i) - xyz(0);
-                CA.normalize();
-                Vector3 BAxCA = BA.cross(CA);
-                if (BAxCA.norm() > tol) {
-                    have_sigma = true;
-                    BAxCA.normalize();
-                    sigma = BAxCA;
-                    break;
-                }
-            }
+  // under certain conditions i need to know if there is any sigma
+  // plane
+  bool have_sigma = false;
+  Vector3 sigma;
+  if (!have_inversion && !have_c2axis) {
+    if (planar) {
+      // find two noncolinear atom-atom vectors
+      // we know that linear==0 since !have_c2axis
+      Vector3 BA = xyz(1) - xyz(0);
+      BA.normalize();
+      for (i=2; i<natom(); ++i) {
+        Vector3 CA = xyz(i) - xyz(0);
+        CA.normalize();
+        Vector3 BAxCA = BA.cross(CA);
+        if (BAxCA.norm() > tol) {
+          have_sigma = true;
+          BAxCA.normalize();
+          sigma = BAxCA;
+          break;
         }
-        else {
-            // loop through pairs of atoms to contruct trial planes
-            for (i=0; i<natom(); ++i) {
-                Vector3 A = xyz(i) - com;
-                double AdotA = A.dot(A);
-                for (j=0; j<i; ++j) {
-                    // the atomsmust be identical
-                    if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
-                    Vector3 B = xyz(j)-com;
-                    double BdotB = B.dot(B);
-                    // the atoms must be the same distance from the com
-                    if (fabs(AdotA - BdotB) > tol) continue;
-                    Vector3 perp = B-A;
-                    double norm_perp = perp.norm();
-                    if (norm_perp < tol) continue;
-                    perp *= 1.0 / norm_perp;
-                    if (is_plane(com, perp, tol)) {
-                        have_sigma = true;
-                        sigma = perp;
-                        goto found_sigma;
-                    }
-                }
-            }
-        }
+      }
     }
+    else {
+      // loop through pairs of atoms to contruct trial planes
+      for (i=0; i<natom(); ++i) {
+        Vector3 A = xyz(i) - com;
+        double AdotA = A.dot(A);
+        for (j=0; j<i; ++j) {
+          // the atomsmust be identical
+          if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
+          Vector3 B = xyz(j)-com;
+          double BdotB = B.dot(B);
+          // the atoms must be the same distance from the com
+          if (fabs(AdotA - BdotB) > tol) continue;
+          Vector3 perp = B-A;
+          double norm_perp = perp.norm();
+          if (norm_perp < tol) continue;
+          perp *= 1.0 / norm_perp;
+          if (is_plane(com, perp, tol)) {
+            have_sigma = true;
+            sigma = perp;
+            goto found_sigma;
+          }
+        }
+      }
+    }
+  }
 found_sigma:
 
-    if (have_sigma) {
-        // try to make the sign of the oop vec correspond to one of
-        // the world axes
-        double xlikeness = fabs(sigma.dot(worldxaxis));
-        double ylikeness = fabs(sigma.dot(worldyaxis));
-        double zlikeness = fabs(sigma.dot(worldzaxis));
+  if (have_sigma) {
+    // try to make the sign of the oop vec correspond to one of
+    // the world axes
+    double xlikeness = fabs(sigma.dot(worldxaxis));
+    double ylikeness = fabs(sigma.dot(worldyaxis));
+    double zlikeness = fabs(sigma.dot(worldzaxis));
 
-        if (xlikeness > ylikeness && xlikeness > zlikeness) {
-            if (sigma.dot(worldxaxis) < 0) sigma = -sigma;
-        }
-        else if (ylikeness > zlikeness) {
-            if (sigma.dot(worldyaxis) < 0) sigma = -sigma;
-        }
-        else {
-            if (sigma.dot(worldzaxis) < 0) sigma = -sigma;
-        }
+    if (xlikeness > ylikeness && xlikeness > zlikeness) {
+      if (sigma.dot(worldxaxis) < 0) sigma = -sigma;
+    }
+    else if (ylikeness > zlikeness) {
+      if (sigma.dot(worldyaxis) < 0) sigma = -sigma;
+    }
+    else {
+      if (sigma.dot(worldzaxis) < 0) sigma = -sigma;
+    }
     }
 
 //    fprintf(outfile, "find point group:\n");

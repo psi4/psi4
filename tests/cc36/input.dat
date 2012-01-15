@@ -1,0 +1,18 @@
+#! cc36: RHF-CC2/cc-pVDZ energy of H2O.
+
+# H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+molecule h2o {
+  0 1
+  O 0.0  0.00000000 -0.00900000
+  H 0.0 -1.51526300 -1.05889800
+  H 0.0  1.51526300 -1.05889800
+  units bohr
+}
+
+set {
+  basis "cc-pVDZ"
+}
+
+energy('cc2')
+clean()
+

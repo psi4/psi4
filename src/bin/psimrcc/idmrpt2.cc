@@ -94,9 +94,7 @@ void IDMRPT2::compute_mrpt2_energy(Updater* updater)
     // Compute the energy
     current_energy=c_H_c(moinfo->get_nrefs(),Heff_mrpt2,zeroth_order_eigenvector);
     delta_energy = current_energy - old_energy;
-    if(fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE")){
-      converged=true;
-    }
+    converged = (fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
     fprintf(outfile,"\n    @PT %5d   %20.15f  %11.4e",cycle,current_energy,delta_energy);
     old_energy=current_energy;
 

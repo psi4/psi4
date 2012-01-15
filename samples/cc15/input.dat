@@ -1,0 +1,17 @@
+#! RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+
+molecule h2o {
+    o
+    h 1 0.97
+    h 1 0.97 2 103.0
+}
+
+set {
+   basis 6-31G**
+   freeze_core true
+}
+
+energy("bccd(t)")
+
+
+clean()

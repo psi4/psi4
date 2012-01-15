@@ -7,6 +7,18 @@ molecule h2o {
     H 1 1.00 2 103.1
 }
 
+# Perform a detci calc using helper function
+set globals {
+  basis 6-31G**
+  hd_ave hd_kave
+}
+
+thisenergy = energy('cisd')
+
+
+clean()
+
+# Perform same detci calc setting all options explicitly
 set globals {
   wfn detci
   basis 6-31G**
@@ -14,6 +26,7 @@ set globals {
 
 set detci {
   hd_ave hd_kave
+  ex_level 2
 }
 
 thisenergy = energy('detci')

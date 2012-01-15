@@ -109,7 +109,7 @@ void CC::get_params()
   denominator_algorithm_ = options_.get_str("DENOMINATOR_ALGORITHM");
   denominator_delta_ = options_.get_double("DENOMINATOR_DELTA");
 
-  schwarz_cutoff_ = options_.get_double("SCHWARZ_CUTOFF");
+  schwarz_cutoff_ = options_.get_double("INTS_TOLERANCE");
   fitting_condition_ = options_.get_double("FITTING_CONDITION");
   fitting_algorithm_ = options_.get_str("FITTING_TYPE");
 
@@ -121,11 +121,11 @@ void CC::get_ribasis()
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   // If the user doesn't spec a basis name, pick it yourself
   // TODO: Verify that the basis assign does not messs this up
-  if (options_.get_str("RI_BASIS_CC") == "") {
-      basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_CC");
+  if (options_.get_str("DF_BASIS_CC") == "") {
+      basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_CC");
       fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
   }
-  ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_CC");
+  ribasis_ = BasisSet::construct(parser, molecule_, "DF_BASIS_CC");
   zero_ = BasisSet::zero_ao_basis_set();
   ndf_ = ribasis_->nbf();
 }

@@ -154,10 +154,10 @@ void PSTensorII::buildGrid()
 {
     if (options_.get_str("PS_GRID_FILE") == "") {
         grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
-            primary_, dealias_, options_));
+            primary_, options_));
     } else {
         grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
-            primary_, dealias_, options_.get_str("PS_GRID_FILE"), options_));
+            primary_, options_.get_str("PS_GRID_FILE"), options_));
     }
 
     naux_ = grid_->npoints();
@@ -938,10 +938,10 @@ void PSTensor::buildGrid()
 {
     if (options_.get_str("PS_GRID_FILE") == "") {
         grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
-            primary_, dealias_, options_));
+            primary_, options_));
     } else {
         grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_,
-            primary_, dealias_, options_.get_str("PS_GRID_FILE"), options_));
+            primary_, options_.get_str("PS_GRID_FILE"), options_));
     }
 
     grid_->print(outfile, print_);

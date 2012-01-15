@@ -14,10 +14,7 @@ noreorient
 }
 
 set {
-    wfn ccsd
-    dertype response
     basis cc-pVDZ
-    mu_irreps = [0, 0, 1]
 }
 
 response('ccsd')

@@ -89,7 +89,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
     }
   else {
     printf("Error: invalid cache level!\n");
-    throw InputException("Invalid cache level!", "CACHELEV", level, __FILE__, __LINE__);
+    throw InputException("Invalid cache level!", "CACHELEVEL", level, __FILE__, __LINE__);
   }
 }
 
@@ -155,7 +155,7 @@ int **cacheprep_rhf(int level, int *cachefiles)
     }
   else {
     printf("Error: invalid cache level!\n");
-    throw InputException("Invalid cache level!", "CACHELEV", level, __FILE__, __LINE__);
+    throw InputException("Invalid cache level!", "CACHELEVEL", level, __FILE__, __LINE__);
   }
 }
 

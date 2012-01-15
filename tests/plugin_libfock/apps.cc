@@ -40,7 +40,7 @@ void RBase::common_init()
         throw PSIEXCEPTION("RBase: Run SCF first");
     }
 
-    if (!reference_wavefunction_->restricted()) {
+    if (!reference_wavefunction_->same_a_b_dens()) {
         throw PSIEXCEPTION("RBase: Reference is not restricted");
     }
     
