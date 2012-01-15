@@ -75,7 +75,6 @@ void CCMRCC::build_F_ae_intermediates()
   blas->append_zero_two_diagonal("F_ae[v][v]{o}");
 
   blas->append("F_ae[v][v]{o} += -1/2 t1[o][v]{o} 1@1 fock[o][v]{o}");
-
   blas->append("F_ae[v][v]{o} += #12# ([ov]:[vv]) 1@1 t1[ov]{o}");
   blas->append("F_ae[v][v]{o} += #12# ([ov]|[vv]) 1@1 t1[OV]{o} ");
 

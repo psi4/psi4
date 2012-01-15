@@ -1,0 +1,21 @@
+#! Single point energies of multiple excited states with EOM-CCSD
+
+molecule ch2 {
+  0 3
+  c
+  h 1 r
+  h 1 r 2 a
+  r = 1.1
+  a = 109.0
+}
+
+set {
+  reference uhf
+  basis cc-pVDZ
+  states_per_irrep [2, 2, 2, 2]
+}
+
+energy('eom-ccsd')
+
+
+clean()

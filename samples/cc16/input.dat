@@ -1,0 +1,21 @@
+#! UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+
+molecule ch2 {
+    0 3
+    c
+    h 1 r
+    h 1 r 2 a
+    r = 1.1
+    a = 109.0
+}
+
+set {
+   reference = uhf
+   basis cc-pVDZ
+   freeze_core true
+}
+
+energy("bccd(t)")
+
+
+clean()

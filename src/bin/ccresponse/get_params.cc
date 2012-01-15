@@ -11,6 +11,10 @@
 #include <psi4-dec.h>
 #include <psifiles.h>
 #include <physconst.h>
+#include <libmints/wavefunction.h>
+#include <libmints/molecule.h>
+#include <libmints/integral.h>
+#include <libmints/multipolesymmetry.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -34,7 +38,7 @@ void get_params(Options &options)
 
   params.memory = Process::environment.get_memory();
 
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
   params.cachelev = 0;
 
   junk = options.get_str("REFERENCE");
@@ -91,10 +95,15 @@ void get_params(Options &options)
     }
   }
 
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+  boost::shared_ptr<Molecule> mol = wfn->molecule();
+  boost::shared_ptr<IntegralFactory> fact = wfn->integral();
+
+  OperatorSymmetry dipsym(1, mol, fact);
   moinfo.mu_irreps = init_int_array(3);
-  moinfo.mu_irreps[0] = options["MU_IRREPS"][0].to_integer();
-  moinfo.mu_irreps[1] = options["MU_IRREPS"][1].to_integer();
-  moinfo.mu_irreps[2] = options["MU_IRREPS"][2].to_integer();
+  moinfo.mu_irreps[0] = dipsym.component_symmetry(0);
+  moinfo.mu_irreps[1] = dipsym.component_symmetry(1);
+  moinfo.mu_irreps[2] = dipsym.component_symmetry(2);
 
   /* compute the irreps of the angular momentum operator while we're here */
   moinfo.l_irreps = init_int_array(3);
@@ -102,7 +111,7 @@ void get_params(Options &options)
     moinfo.l_irreps[i] = moinfo.mu_irreps[(int) (i+1)%3] ^ moinfo.mu_irreps[(int) (i+2)%3];
 
   params.maxiter = options.get_int("MAXITER");
-  params.convergence = 1.0*pow(10.0, (double) -options.get_int("CONVERGENCE"));
+  params.convergence = options.get_double("R_CONVERGENCE");
   params.diis = options.get_bool("DIIS");
 
   params.prop = options.get_str("PROPERTY");
@@ -153,7 +162,7 @@ void get_params(Options &options)
     local.pairdef = strdup("BP");
 
   params.analyze = options.get_bool("ANALYZE");
-  params.num_amps = options.get_int("NUM_AMPS");
+  params.num_amps = options.get_int("NUM_AMPS_PRINT");
   params.sekino = options.get_bool("SEKINO");
   params.linear = options.get_bool("LINEAR");
 

@@ -148,9 +148,6 @@ public:
     /// Nuclear contributions
     Vector nuclear_dipole_contribution_;
     Vector nuclear_quadrupole_contribution_;
-    //
-    /// Set the amount of information to print
-    void set_print(const int n) {print_ = n;}
 
     /// The number of iterations needed to reach convergence
     int iterations_needed() {return iterations_needed_;}
@@ -170,12 +167,6 @@ protected:
 
     /// Perform casting of basis set if desired.
     SharedMatrix dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
-
-    /// UHF Atomic Density Matrix for SAD
-    /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
-    void getUHFAtomicDensity(boost::shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
-    // Computes the C and D matrix in place for SAD Atomic UHF
-    void atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D);
 
     /// Common initializer
     void common_init();
@@ -210,9 +201,6 @@ protected:
 
     /// Do any needed integral setup
     virtual void integrals();
-
-    /// The amout of information to print
-    int print_;
 
     /// The number of electrons
     int nelectron_;

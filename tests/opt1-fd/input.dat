@@ -13,11 +13,8 @@ molecule h2o {
 set globals {
   diis false
   basis sto-3g
-  e_converge 10
-  d_converge 10
-}
-
-set findif {
+  e_convergence 10
+  d_convergence 10
   points 3
 }
 

@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include <libmoinfo/libmoinfo.h>
+#include <libtrans/integraltransform.h>
 #include <libutil/libutil.h>
 #include <libutil/memory_manager.h>
 #include <libciomr/libciomr.h>
@@ -30,6 +31,18 @@ using namespace std;
 CCSort::CCSort(SortAlgorithm algorithm):
   fraction_of_memory_for_sorting(0.5),nfzc(0),efzc(0.0),frozen_core(0)
 {
+
+  // Use libtrans to generate MO basis integrals in Pitzer order
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+  std::vector<boost::shared_ptr<MOSpace> > spaces;
+  spaces.push_back(MOSpace::all);
+  IntegralTransform *ints = new IntegralTransform(wfn, spaces,
+                                                  IntegralTransform::Restricted,
+                                                  IntegralTransform::IWLOnly,
+                                                  IntegralTransform::PitzerOrder,
+                                                  IntegralTransform::None);
+  ints->transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+  delete ints;
   init();
 
   // Presort the integrals in the CCTransform class

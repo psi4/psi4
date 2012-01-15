@@ -67,11 +67,11 @@ protected:
     bool fix_orientation_;
     /// Move to center of mass or not?
     bool move_to_com_;
-    /// Whether the user specified the charge, or default was used
-    bool charge_specified_;
-    /// Whether the user spefified the multiplicity, or default was used
-    bool multiplicity_specified_;
 
+    /// Whether the charge was given by the user
+    bool charge_specified_;
+    /// Whether the multiplicity was specified by the user
+    bool multiplicity_specified_;
     /// The molecular charge
     int molecular_charge_;
     /// The multiplicity (defined as 2Ms + 1)
@@ -178,6 +178,10 @@ public:
                   const char *symb = "", double mass = 0.0,
                   double charge = 0.0, int lineno = -1);
 
+    /// Whether the multiplicity was given by the user
+    bool multiplicity_specified() const { return multiplicity_specified_; }
+    /// Whether the charge was given by the user
+    bool charge_specified() const { return charge_specified_; }
     /// The number of fragments in the molecule
     int nfragments() const { return fragments_.size();}
     /// Get molecule name
@@ -298,16 +302,16 @@ public:
     /// Compute inertia tensor.
     Matrix* inertia_tensor() const;
 
-    /// Returns true if the user specified the charge
-    bool charge_specified() const { return charge_specified_; }
-    /// Returns true if the user specified the multiplicity
-    bool multiplicity_specified() const { return multiplicity_specified_; }
-
     /// Print the molecule
     void print() const;
 
     /// Print the molecule in Bohr
     void print_in_bohr() const;
+
+    ///Print the geometrical parameters of the molecule
+    void print_distances() const;
+    void print_bond_angles() const;
+    void print_dihedrals() const;
 
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;

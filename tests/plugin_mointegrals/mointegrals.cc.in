@@ -5,6 +5,7 @@
 #include <libpsio/psio.hpp>
 #include <libtrans/integraltransform.h>
 #include <libmints/wavefunction.h>
+#include <libdpd/dpd.h>
 
 // This allows us to be lazy in getting the spaces in DPD calls
 #define ID(x) ints.DPD_ID(x)

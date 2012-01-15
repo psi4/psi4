@@ -26,6 +26,7 @@ molecule n {
 }
 
 set reference uhf
+set basis cc-pvdz
 
 eUHFMonomer = energy('scf')
 plugin("plugin_mp2.so")

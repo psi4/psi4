@@ -23,30 +23,38 @@ procedures = {
             'sapt2+-ct'     : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
-            'ccsd'          : run_ccsd,
-            'ccsd(t)'       : run_ccsd_t,
-            'cc3'           : run_cc3,
+            'ccenergy'      : run_ccenergy,  # full control over ccenergy
+            'ccsd'          : run_ccenergy,
+            'ccsd(t)'       : run_ccenergy,
+            'cc2'           : run_ccenergy,
+            'cc3'           : run_ccenergy,
             'bccd'          : run_bccd,
             'bccd(t)'       : run_bccd_t,
-            'eom-ccsd'      : run_eom_ccsd,
-            'detci'         : run_detci,
+            'eom-ccsd'      : run_eom_cc,
+            'eom-cc2'       : run_eom_cc,
+            'eom-cc3'       : run_eom_cc,
+            'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
             'cisd'          : run_detci,
             'cisdt'         : run_detci,
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
-            'fci'           : run_detci
+            'fci'           : run_detci,
+            'adc'           : run_adc
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
-            'ccsd'          : run_ccsd_gradient,
-            'mp2'           : run_mp2_gradient
+            'ccsd'          : run_cc_gradient,
+            'ccsd(t)'       : run_cc_gradient,
+            'mp2'           : run_mp2_gradient,
+            'eom-ccsd'      : run_eom_cc_gradient
         },
         'hessian' : {
         },
         'response' : {
-            'ccsd' : run_ccsd_response
+            'cc2'  : run_cc_response,
+            'ccsd' : run_cc_response
         }}
 
 def energy(name, **kwargs):
@@ -58,9 +66,6 @@ def energy(name, **kwargs):
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    # Line below needed when passing in molecule as a keyword argument
-    #    but causes mints2 test case to fail
-    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)

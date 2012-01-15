@@ -1,6 +1,5 @@
 #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
-
 molecule h2o {
     O
     H 1 0.97
@@ -8,19 +7,18 @@ molecule h2o {
 }
 
 set {
-    wfn ccsd
-    jobtype opt
+#    jobtype opt
     dertype first
     docc [3, 0, 1, 1]
     basis 6-31G**
-    relax_opdm true     # Currently needed until ccdensity is fixed.
 
-    convergence 11
-    e_converge 11
-    d_converge 11
+    r_convergence 11
+    e_convergence 11
+    d_convergence 11
 }
 
 thisenergy = optimize('ccsd')
+
 
 
 clean()

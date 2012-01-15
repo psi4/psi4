@@ -22,7 +22,7 @@ void get_eom_params(Options &options)
   // Number of excited states per irrep
   chkpt_init(PSIO_OPEN_OLD);
   if (chkpt_rd_override_occ()) eom_params.states_per_irrep = chkpt_rd_statespi();
-  else if (options.exists("STATES_PER_IRREP")) {
+  else if (options["STATES_PER_IRREP"].has_changed()) {
     if(options["STATES_PER_IRREP"].size() != moinfo.nirreps) 
       throw PsiException("STATES_PER_IRREP is wrong size. Should be number of irreps.", __FILE__, __LINE__);
     eom_params.states_per_irrep = new int[moinfo.nirreps];
@@ -45,7 +45,7 @@ void get_eom_params(Options &options)
   eom_params.max_iter = options.get_int("MAXITER");
 
   // Use prop_sym and prop_root only to determine what energy to write to chkpt
-  if (options.exists("PROP_SYM")) {
+  if (options["PROP_SYM"].has_changed()) {
     eom_params.prop_sym = options.get_int("PROP_SYM");
     eom_params.prop_sym = (eom_params.prop_sym - 1)^moinfo.sym;
   }
@@ -53,7 +53,7 @@ void get_eom_params(Options &options)
     for (int i = 0;i < moinfo.nirreps; ++i)
       if (eom_params.states_per_irrep[i]) eom_params.prop_sym = i^moinfo.sym;
   }
-  if (options.exists("PROP_ROOT")) {
+  if (options["PROP_ROOT"].has_changed()) {
     eom_params.prop_root = options.get_int("PROP_ROOT");
     if (eom_params.prop_root > eom_params.states_per_irrep[eom_params.prop_sym^moinfo.sym])
       throw PsiException("Value of prop_root is too large.", __FILE__, __LINE__);
@@ -65,7 +65,7 @@ void get_eom_params(Options &options)
   if (params.wfn == "EOM_CC3" && eom_params.prop_root != 0) eom_params.follow_root = true;
   // allow user to explicitly turn off root-following which may help in bizarre cases
   // in this case prop_root is used to determine which residuals are used
-  if (options.exists("CC3_FOLLOW_ROOT")) eom_params.follow_root = options.get_bool("CC3_FOLLOW_ROOT");
+  if (options["CC3_FOLLOW_ROOT"].has_changed()) eom_params.follow_root = options.get_bool("CC3_FOLLOW_ROOT");
 
   /* so far, all R's are always kept so this is not used */
   eom_params.save_all = 0;
@@ -75,22 +75,22 @@ void get_eom_params(Options &options)
   if (eom_params.rhf_triplets) eom_params.mult = 3;
 
   eom_params.excitation_range = options.get_int("EXCITATION_RANGE");
-  eom_params.print_singles = options["PRINT_SINGLES"].to_integer();
-  eom_params.vectors_per_root_SS = options.get_int("VECTORS_PER_ROOT_SS");
-  eom_params.vectors_per_root = options.get_int("VECTORS_PER_ROOT");
+  eom_params.print_singles = options["SINGLES_PRINT"].to_integer();
+  eom_params.vectors_per_root_SS = options.get_int("SS_VECS_PER_ROOT");
+  eom_params.vectors_per_root = options.get_int("VECS_PER_ROOT");
   eom_params.vectors_cc3 = eom_params.prop_root + 9;
-  eom_params.vectors_cc3 = options.get_int("VECTORS_CC3");
+  eom_params.vectors_cc3 = options.get_int("VECS_CC3");
   if (eom_params.vectors_cc3 > eom_params.vectors_per_root)
     eom_params.vectors_cc3 = eom_params.vectors_per_root;
 
   eom_params.collapse_with_last = options.get_bool("COLLAPSE_WITH_LAST");
-  eom_params.complex_tol = options.get_double("COMPLEX_TOL");
-  eom_params.residual_tol = options.get_double("RESIDUAL_TOL");
-  eom_params.residual_tol_SS = options.get_double("RESIDUAL_TOL_SS");
-  eom_params.eval_tol = options.get_double("EVAL_TOL");
-  eom_params.eval_tol_SS = options.get_double("EVAL_TOL_SS");
-  eom_params.amps_to_print = options.get_int("AMPS_TO_PRINT");
-  eom_params.schmidt_add_residual_tol = options.get_double("SCHMIDT_ADD_RESIDUAL_TOL");
+  eom_params.complex_tol = options.get_double("COMPLEX_TOLERANCE");
+  eom_params.residual_tol = options.get_double("R_CONVERGENCE");
+  eom_params.residual_tol_SS = options.get_double("SS_R_CONVERGENCE");
+  eom_params.eval_tol = options.get_double("E_CONVERGENCE");
+  eom_params.eval_tol_SS = options.get_double("SS_E_CONVERGENCE");
+  eom_params.amps_to_print = options.get_int("NUM_AMPS_PRINT");
+  eom_params.schmidt_add_residual_tol = options.get_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE");
   eom_params.skip_diagSS = options["SKIP_DIAGSS"].to_integer();
   eom_params.restart_eom_cc3 = options["RESTART_EOM_CC3"].to_integer();
   eom_params.max_iter_SS = 500;

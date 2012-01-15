@@ -35,7 +35,7 @@ compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nucl
 activate(singlet_o2)
 set globals {
     basis cc-pvtz
-    ri_basis_scf cc-pvtz-jkfit
+    df_basis_scf cc-pvtz-jkfit
     guess core
     print 2
 }
@@ -100,7 +100,7 @@ compare_values(Eref_sing_df, E, 9, 'Singlet DF CUHF energy') #TEST
 activate(triplet_o2)
 set globals {
     basis cc-pvtz
-    ri_basis_scf cc-pvtz-jkfit
+    df_basis_scf cc-pvtz-jkfit
     guess core
     print 2
 }

@@ -22,7 +22,7 @@ void get_params(Options &options)
   std::string cachetype = "";
   std::string junk;
 
-  params.newtrips = options.get_bool("NEWTRIPS");
+  params.newtrips = options.get_bool("NEW_TRIPLES");
 
   params.wfn = options.get_str("WFN");
 
@@ -49,6 +49,12 @@ void get_params(Options &options)
   else  
    throw PsiException("Invalid value of input keyword REFERENCE", __FILE__, __LINE__);
 
+  // Allow user to force semicanonical
+  if(options["SEMICANONICAL"].has_changed()) {
+   params.semicanonical = options.get_bool("SEMICANONICAL");
+   params.ref = 2;
+  }
+
   params.analyze = options.get_bool("ANALYZE");
 
   params.dertype = 0;
@@ -61,8 +67,7 @@ void get_params(Options &options)
 
   params.print = options.get_int("PRINT");
   params.maxiter = options.get_int("MAXITER");
-  iconv = options.get_int("CONVERGENCE");
-  params.convergence = 1.0*pow(10.0,(double) -iconv);
+  params.convergence = options.get_double("R_CONVERGENCE");
   params.restart = options.get_bool("RESTART");
   /* If the MO orbital phases are screwed up, don't restart */
   if(!moinfo.phase) params.restart = 0;
@@ -73,7 +78,7 @@ void get_params(Options &options)
   params.memory = Process::environment.get_memory();
 
   params.aobasis = options.get_str("AO_BASIS");
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   params.cachetype = 1;
   cachetype = options.get_str("CACHETYPE");
@@ -86,7 +91,7 @@ void get_params(Options &options)
  if(params.ref == 2) /* No LOW cacheing yet for UHF references */
     params.cachetype = 0;
 
-  params.nthreads = options.get_int("NTHREADS");
+  params.nthreads = options.get_int("NUM_THREADS");
   params.diis = options.get_bool("DIIS");
   params.t2_coupled = options.get_bool("T2_COUPLED");
   params.prop = options.get_str("PROPERTY");
@@ -110,12 +115,11 @@ void get_params(Options &options)
   else if(params.local)
     local.pairdef = "BP";
 
-  params.num_amps = options.get_int("NUM_AMPS");
-  iconv = options.get_int("BRUECKNER_CONV");
-  params.bconv = 1.0*pow(10.0,(double) -iconv);
+  params.num_amps = options.get_int("NUM_AMPS_PRINT");
+  params.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
 
-  params.print_mp2_amps = options.get_bool("PRINT_MP2_AMPS");
-  params.print_pair_energies = options.get_bool("PRINT_PAIR_ENERGIES");
+  params.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
+  params.print_pair_energies = options.get_bool("PAIR_ENERGIES_PRINT");
   params.spinadapt_energies = options.get_bool("SPINADAPT_ENERGIES");
   params.t3_Ws_incore = options.get_bool("T3_WS_INCORE");
 

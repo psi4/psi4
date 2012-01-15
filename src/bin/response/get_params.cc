@@ -28,7 +28,7 @@ void get_params()
 
   /*  Clearly, this isn't doing anything right now
   params.cachelev = 2;
-  errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);
+  errcod = ip_data("CACHELEVEL", "%d", &(params.cachelev),0);
   */
   params.cachelev = 0;
 

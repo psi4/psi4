@@ -12,6 +12,7 @@
 \newcommand{\PSIversion}{@PSI_VERSION@\xspace}
 \newcommand{\PSImmmversion}{@PSI_VERSION@\xspace}
 \newcommand{\PSIemail}{@PSI_BUGREPORT@\xspace}
+\newcommand{\psirc}{{\tt .psi4rc}\xspace}
 
 %
 % Psi Modules
@@ -64,6 +65,10 @@
 % Psi Keywords
 %
 \def\keyword#1{{\tt #1}}
+\def\optionname#1{{\MakeUppercase{\underline{\tt #1}}}}
+\def\optionval#1{{\MakeUppercase{\tt #1}}}
+\def\pyoptionname#1{{\MakeUppercase{\underline{\textsf {#1}}}}}
+\def\pyoptionval#1{{\MakeUppercase{\textsf {#1}}}}
 
 %
 % Psi C and Fortran Language elements
