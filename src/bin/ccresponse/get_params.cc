@@ -71,25 +71,31 @@ void get_params(Options &options)
     throw PsiException("Invalid choice of gauge",__FILE__,__LINE__);
   }
 
-  /* grab the field frequencies from input -- a few different units are converted to E_h */
-  units = options.get_str("OMEGA_UNITS");
+  // grab the field freqs from input -- a few units are converted to E_h
   count = options["OMEGA"].size();
-  if(count == 0) {
+  if(count == 0) { // Assume 0.0 E_h for field energy
     params.nomega = 1;
     params.omega = init_array(1);
     params.omega[0] = 0.0;
   }
-  else {
-    params.nomega = count;
+  else if(count == 1) { // Assume E_h for field energy and read value
+    params.nomega = 1;
+    params.omega = init_array(1);
+    params.omega[0] = options["OMEGA"][0].to_double();
+  }
+  else if(count >= 2) { 
+    params.nomega = count-1;
     params.omega = init_array(params.nomega);
-
-    for(i=0; i < count; i++) {
+    units = options["OMEGA"][count-1].to_string();
+    for(i=0; i < (count-1); i++) {
       params.omega[i] = options["OMEGA"][i].to_double();
-
-      if(units == "HZ") params.omega[i] *= _h / _hartree2J;
-      else if(units == "AU") 1; /* do nothing */
-      else if(units == "NM") params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
-      else if(units == "EV") params.omega[i] /= _hartree2ev;
+      if(units == "HZ" || units == "Hz" || units == "hz") 
+        params.omega[i] *= _h / _hartree2J;
+      else if(units == "AU" || units == "Au" || units == "au") 1; // do nothing
+      else if(units == "NM" || units == "nm") 
+        params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
+      else if(units == "EV" || units == "ev" || units == "eV") 
+        params.omega[i] /= _hartree2ev;
       else
         throw PsiException("Error in unit for input field frequencies, should be au, Hz, nm, or eV", __FILE__,__LINE__);
     }

@@ -11,8 +11,7 @@ noreorient
 set {
   property roa
   freeze_core false
-  omega [589]
-  omega_units nm
+  omega [589, nm]
   gauge length
   basis cc-pVDZ
 }
