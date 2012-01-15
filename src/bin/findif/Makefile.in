@@ -7,8 +7,6 @@ LDLIBS += $(BLAS)
 
 PSITARGET = $(top_objdir)/lib/libPSI_findif.a
 
-CXXINC += $(PYTHON_INCLUDE)
-
 CXXSRC = \
 fd_misc.cc \
 fd_geoms_1_0.cc fd_1_0.cc \
