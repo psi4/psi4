@@ -1,7 +1,6 @@
 #include <libmints/mints.h>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <cstdio>
@@ -12,7 +11,6 @@
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -732,16 +730,6 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
-void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
-{
-    Process::environment.set_potential(potential);
-}
-
-boost::shared_ptr<ExternalPotential> py_psi_get_active_potential()
-{
-    return Process::environment.potential();
-}
-
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -862,8 +850,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
-    def("set_active_potential", py_psi_set_active_potential);
-    def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("get_gradient", py_psi_get_gradient);
     def("set_gradient", py_psi_set_gradient);

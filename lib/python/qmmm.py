@@ -31,8 +31,17 @@ class Diffuse:
         
     def fitScf(self):
 
+        basisChanged = PsiMod.has_option_changed("BASIS")  
+        ribasisChanged = PsiMod.has_option_changed("DF_BASIS_SCF")  
+        scftypeChanged = PsiMod.has_option_changed("SCF_TYPE")  
+
+        basis = PsiMod.get_option("BASIS")
+        ribasis = PsiMod.get_option("DF_BASIS_SCF")
+        scftype = PsiMod.get_option("SCF_TYPE")
+
         PsiMod.print_out("    => Diffuse SCF (Determines Da) <=\n\n")
         activate(self.molecule)
+
         PsiMod.set_global_option("BASIS", self.basisname) 
         PsiMod.set_global_option("DF_BASIS_SCF", self.ribasisname) 
         PsiMod.set_global_option("SCF_TYPE", "DF") 
@@ -40,6 +49,17 @@ class Diffuse:
         PsiMod.print_out("\n")
 
         self.fitGeneral()
+
+        PsiMod.set_global_option("BASIS", basis)
+        PsiMod.set_global_option("DF_BASIS_SCF", ribasis)
+        PsiMod.set_global_option("SCF_TYPE", scftype)
+
+        if not basisChanged:
+            PsiMod.revoke_option_changed("BASIS")
+        if not ribasisChanged:
+            PsiMod.revoke_option_changed("DF_BASIS_SCF")
+        if not scftypeChanged:
+            PsiMod.revoke_option_changed("SCF_TYPE")
 
     def fitGeneral(self):
 
@@ -55,6 +75,7 @@ class Diffuse:
         fitter.setAuxiliary(self.ribasis)
         fitter.setD(self.Da)
         self.da = fitter.fit()
+        self.da.scale(2.0)
 
     def populateExtern(self, extern):
         # Electronic Part
@@ -68,6 +89,7 @@ class QMMM:
     def __init__(self):
         self.charges = []
         self.diffuses = []
+        self.extern = PsiMod.ExternalPotential()
      
     def addDiffuse(self, diffuse):
         self.diffuses.append(diffuse)
@@ -95,18 +117,11 @@ class QMMM:
 
         return s 
     
-    def populateExtern(self, extern=None):
+    def populateExtern(self):
 
-        if (extern == None):
-            extern = PsiMod.ExternalPotential()
-            extern.setName("QM/MM Field")
-            activate_potential(extern)
-    
         # Charges
         for charge in self.charges:
-            extern.addCharge(charge[0],charge[1],charge[2],charge[3])
+            self.extern.addCharge(charge[0],charge[1],charge[2],charge[3])
         # Diffuses
         for diffuse in self.diffuses:
-            diffuse.populateExtern(extern)
-
-        extern.print_out()
+            diffuse.populateExtern(self.extern)
