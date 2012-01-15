@@ -111,7 +111,7 @@ void set_params(void)
 // optimization, i.e., the one at which a gradient was computed.  If this keyword is
 // set to true, then the structure obtained from the last projected step is printed out and saved instead.
 //  Opt_params.write_final_step_geometry = false;
-    Opt_params.write_final_step_geometry = options.get_bool("WRITE_FINAL_STEP_GEOMETRY");
+    Opt_params.write_final_step_geometry = options.get_bool("FINAL_GEOM_WRITE");
 
 // Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL}
     s = options.get_str("H_UPDATE");

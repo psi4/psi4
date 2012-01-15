@@ -1165,11 +1165,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER",50);
   }
   if(name == "CLAG"|| options.read_globals()) {
-    /*- Do ? -*/
-    options.add_bool("WRITE_CAS_FILES",0);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","NONE");
-    /*- -*/
+    /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
+    options.add_bool("CAS_FILES_WRITE",0);
+    /*- Root to get OPDM -*/
     options.add_int("FOLLOW_ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
@@ -1347,7 +1347,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("LOCAL_WEAKP","NONE");
     /*- Do ? -*/
-    options.add_bool("LOCAL_FILER_SINGLES", false);
+    options.add_bool("LOCAL_FILTER_SINGLES", false);
     /*- -*/
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
     /*- -*/
@@ -1652,7 +1652,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Fitting metric algorithm -*/
     options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
     /*- Desired Fitting condition (inverse of max condition number) -*/
-    options.add_double("FITTING_CONDITION", 1.0E-10);
+    options.add_double("FITTING_COND", 1.0E-10);
 
     // => PS <= //
 
@@ -1812,7 +1812,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do diagonalize the effective Hamiltonian? -*/
     options.add_bool("DIAGONALIZE_HEFF",false);
     /*- Do use symmetry to map equivalent determinants onto each other, for efficiency? -*/
-    options.add_bool("USE_SPIN_SYMMETRY",true);
+    options.add_bool("USE_SPIN_SYM",true);
     /*- Do zero the internal amplitudes, i.e., those that map reference determinants onto each other? -*/
     options.add_bool("ZERO_INTERNAL_AMPS",true);
     /*- Do include the terms that couple the reference determinants? -*/
@@ -1856,7 +1856,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
     /*- Do ? -*/
-    options.add_bool("NOSINGLES", false);
+    options.add_bool("NO_SINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
@@ -1894,10 +1894,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
       options.add_bool("ADD_AUXILIARY_BONDS", false);
       /*- Do save and print the geometry from the last projected step at the end
-          of a geometry optimization? Otherwise (and by default), save and print
-          the previous geometry at which was computed the gradient that satisfied 
-          the convergence criteria. -*/
-      options.add_bool("WRITE_FINAL_STEP_GEOMETRY", false);
+      of a geometry optimization? Otherwise (and by default), save and print
+      the previous geometry at which was computed the gradient that satisfied 
+      the convergence criteria. -*/
+      options.add_bool("FINAL_GEOM_WRITE", false);
       /*- Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} -*/
       options.add_str("H_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
       /*-  How many previous steps' data to use in Hessian update; 0=use them all ; {integer} -*/
