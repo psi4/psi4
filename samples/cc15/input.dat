@@ -7,7 +7,6 @@ molecule h2o {
 }
 
 set {
-   wfn bccd_t
    basis 6-31G**
    freeze_core true
 }

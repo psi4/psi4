@@ -35,13 +35,13 @@ void LMP2::params() {
     /* Default glob.reference is RHF */
     reference_ = options_.get_str("REFERENCE");
 
-    ri_lmp2_ = options_.get_bool("RI_LMP2");
+    ri_lmp2_ = options_.get_bool("DF_LMP2");
 
     print_ = options_.get_int("PRINT");
 
     maxiter_ = options_.get_int("MAXITER");
 
-    econv_ = options_.get_double("ENERGY_CONV");
+    econv_ = options_.get_double("E_CONVERGENCE");
     std::cout << "e_conv = " << iconv << std::endl;
 
     iconv = options_.get_int("SCREENING");
@@ -49,19 +49,19 @@ void LMP2::params() {
 
     screen_int_ = options_.get_bool("SCREEN_INTS");
 
-    rmsconv_ = options_.get_double("RMS_CONV");
+    rmsconv_ = options_.get_double("R_CONVERGENCE");
 
     fs = options_.get_int("FSKIP");
     fskip_ = 1.0*pow(10.0,(double) -fs);
 
     diis_ = options_.get_bool("DIIS");
 
-    diis_start_ = options_.get_int("DIISSTART");
+    diis_start_ = options_.get_int("DIIS_START_ITER");
     if(diis_start_ < 3) {
     if (me_ == 0) {
       fprintf(outfile, "\n\t*** WARNING ***\n");
-      fprintf(outfile, "\tDIISSTART can not be less than 3\n");
-      fprintf(outfile, "\tReseting DIISSTART to 3\n");
+      fprintf(outfile, "\tDIIS_START_ITER can not be less than 3\n");
+      fprintf(outfile, "\tReseting DIIS_START_ITER to 3\n");
       fprintf(outfile, "\t***************\n");
     }
     diis_start_ = 3;

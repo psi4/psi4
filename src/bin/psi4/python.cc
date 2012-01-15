@@ -1105,6 +1105,7 @@ void Python::run(FILE *input)
     }
 
     if (s)
-        free(s);
+      free(s);
+    Process::environment.reference_wavefunction().reset();
     py_psi_plugin_close_all();
 }

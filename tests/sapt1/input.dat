@@ -28,7 +28,7 @@ set globals {
     guess         sad
     scf_type      df
     sad_print     2
-    d_converge    11
+    d_convergence 11
     puream        true
     print         1
 }

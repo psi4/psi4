@@ -9,7 +9,7 @@ molecule h2o {
 
 set globals {
   basis sto-3g
-  d_converge 11
+  d_convergence 11
 }
 
 # Test against Analytic second derivatives from PSI3 (for now).

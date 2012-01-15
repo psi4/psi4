@@ -23,7 +23,7 @@ mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
 df_subdirs = sapt1 
 
-psimrcc_subdirs = 
+psimrcc_subdirs = #psimrcc-sp1
 
 mints_subdirs = mints1 mints2 mints3 mints4
 
@@ -50,6 +50,7 @@ $(ci_subdirs) \
 $(cc_subdirs) \
 $(python_test_subdirs) \
 ${mcscf_subdirs} \
+$(psimrcc_subdirs) \
 $(dcft_subdirs)
 
 HAVE_MADNESS=@HAVE_MPI@
