@@ -625,9 +625,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAPT_MEM_SAFETY",0.9);
     /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory? -*/
     options.add_bool("SAPT_MEM_CHECK",true);
-    /*- SAPT DF Basis -*/
+    /*- Auxiliary basis set for SAPT density fitting computations. Defaults to BASIS-RI. -*/
     options.add_str("DF_BASIS_SAPT", "");
-    /*- SAPT DF Basis for Elst10 and Exch10 -*/
+    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting computations. Defaults to BASIS-RI. -*/
     options.add_str("DF_BASIS_ELST", "");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
@@ -691,7 +691,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("LOCK_OCCUPATION", true);
   }
   if (name == "MINTS"|| options.read_globals()) {
-      /*- primary basis set -*/
+      /*- Primary basis set -*/
       options.add_str("BASIS","");
   }
   if (name == "DFT" || options.read_globals()) {
@@ -719,7 +719,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DFT_MIN_POINTS",0);
     /*- The boxing scheme for DFT -*/
     options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
-    /*- The DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("DFT_BASIS_TOLERANCE", 0.0);
     /*- The DFT combined functional name (for now) -*/
     options.add_str("DFT_FUNCTIONAL", "");
@@ -746,7 +746,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Are going to do SAPT? If so, what part?  -*/
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
-    /*- The name of the auxiliary basis to be used in RI computations -*/
+    /*- Primary basis set -*/
+    options.add_str("BASIS", "");
+    /*- Auxiliary basis set for SCF density fitting computations. Defaults to BASIS-JKFIT. -*/
     options.add_str("DF_BASIS_SCF", "");
 
     /*- Atomic Charge cutoff (for primary domain) -*/
@@ -760,7 +762,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do run in parallel? -*/
     options.add_bool("PARALLEL", false);
 
-    /*- primary basis set -*/
+    /*- Primary basis set -*/
     options.add_str("BASIS","");
 
     /*- The type of guess orbitals -*/
@@ -1553,7 +1555,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "LMP2");
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF");
-    /*- -*/
+    /*- Auxiliary basis set for MP2 density fitting calculations -*/
     options.add_str("DF_BASIS_MP2", "");
     /*- Do use density fitting? Turned on with specification of fitting basis. -*/
     if(options.get_str("DF_BASIS_MP2") != "")
@@ -1604,10 +1606,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name=="DFMP2"|| options.read_globals()) {
     /*- -*/
     options.add_int("MADMP2_SLEEP", 0);
-    /*- RI Basis, needed by Python -*/
-    options.add_str("DF_BASIS_MP2","");
-    /*- Basis, needed by Python -*/
+    /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
+    /*- Auxiliary basis set for MP2 density fitting computations. Defaults to BASIS-RI. -*/
+    options.add_str("DF_BASIS_MP2","");
     /*- OS Scale -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
@@ -1623,7 +1625,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
     options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
-    /*- MO basis -*/
+    /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
     /*- Minimum absolute value below which integrals are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
@@ -1645,7 +1647,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     // => DF <= //
 
-    /*- DF basis for MO integrals -*/
+    /*- Auxiliary basis set for density fitting MO integrals. Defaults to BASIS-RI. -*/
     options.add_str("DF_BASIS_CC","NONE");
     /*- Fitting metric algorithm -*/
     options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
@@ -1945,13 +1947,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     //options.add_int("MEMORY", 256);
     //options.add_str("REFERENCE", "UHF", "UHF");
     
-    /*- -*/
+    /*- 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE",1e-8);
-    /*- -*/
+    /*-
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE",1e-5);
-    /*- -*/
+    /*-
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
-    /*- -*/
+    /*- 
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
     /*- -*/
     options.add_int("CC_MAXITER",50);
