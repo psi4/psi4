@@ -145,7 +145,7 @@ void get_params(Options &options)
     local.filter_singles = 0;
   else
     local.filter_singles = 1;
-  local.filter_singles = options.get_bool("LOCAL_FILER_SINGLES");
+  local.filter_singles = options.get_bool("LOCAL_FILTER_SINGLES");
 
   local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
   local.freeze_core = options.get_str("FREEZE_CORE");
