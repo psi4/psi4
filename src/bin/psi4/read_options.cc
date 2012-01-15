@@ -1081,8 +1081,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL", false);
     /*- -*/
     options.add("OMEGA", new ArrayType());
-    /*- -*/
-    options.add_str("OMEGA_UNITS", "AU", "AU HZ EV NM");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
