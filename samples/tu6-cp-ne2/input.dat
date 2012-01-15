@@ -1,0 +1,30 @@
+#! Example potential energy surface scan and CP-correction for Ne2
+
+molecule dimer {
+  Ne
+--
+  Ne 1 R
+}
+
+Rvals=[2.0, 2.5, 3.0, 4.0, 5.0]
+
+
+set basis aug-cc-pVDZ
+set freeze_core True
+
+# Initialize a blank dictionary of counterpoise corrected energies
+# (Need this for the syntax below to work)
+ecp = {}
+
+for R in Rvals:
+  dimer.R = R
+  ecp[R] = cp('ccsd(t)')
+
+print "\n"
+print "CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n"
+print "        R (Ang)         E_int (kcal/mol)             \n"
+print "-----------------------------------------------------\n"
+for R in Rvals:
+  e = ecp[R] * 627.5095
+  print "        %3.1f            %10.6f\n" % (R, e)
+

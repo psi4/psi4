@@ -361,6 +361,13 @@ void export_mints()
             def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix).
             def("print_out", &ExternalPotential::py_print);
 
+    class_<DFChargeFitter, boost::shared_ptr<DFChargeFitter>, boost::noncopyable>("DFChargeFitter").
+            def("setPrimary", &DFChargeFitter::setPrimary).
+            def("setAuxiliary", &DFChargeFitter::setAuxiliary).
+            def("setD", &DFChargeFitter::setD).
+            def("d", &DFChargeFitter::d).
+            def("fit", &DFChargeFitter::fit);
+
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).
             def("nso", &Wavefunction::nso).
             def("nmo", &Wavefunction::nmo).

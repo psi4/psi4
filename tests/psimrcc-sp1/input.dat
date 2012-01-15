@@ -14,8 +14,8 @@ molecule o2 {
 set {
   basis cc-pvtz
   e_convergence 10
+  d_convergence 10
   r_convergence 10
-  d_converge    10
 }
 
 set mcscf {

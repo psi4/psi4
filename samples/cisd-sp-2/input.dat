@@ -8,16 +8,12 @@ molecule h2o {
 }
 
 set globals {
-  wfn detci
   basis 6-31G**
-}
-
-set detci {
   hd_ave hd_kave
   icore 2
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('cisd')
 
 
 clean()

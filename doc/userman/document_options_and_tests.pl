@@ -26,6 +26,7 @@ my $DriverFile = $DriverPath . "../../src/bin/psi4/read_options.cc";
 
 my $CurrentModule;
 my %Keywords;
+my %ModuleDescriptions;
 my %Expert;
 open(DRIVER, $DriverFile) or die "\nI can't read the PSI driver file\n";
 
@@ -41,6 +42,7 @@ while(<DRIVER>){
     my $Expert;
     # If we find a /*- it means the comment block has started, but we
     # don't know if it's a multi-line comment, let's find out
+    $ModuleDescriptions{$CurrentModule} = get_description($_) if(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule);
     if(/\/\*-/ and $CurrentModule){
         ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
@@ -63,23 +65,27 @@ while(<DRIVER>){
 close DRIVER;
 
 my @temp = ();
-print_hash(\%Keywords, "keywords.tex", "Keywords Recognized by Each Module", "keywords");
+print_hash(\%Keywords, "keywords.tex", 1);
 my @PSIMODULES = @temp;
-print_hash(\%Expert, "expert_keywords.tex", "Expert Keywords Recognized by Each Module, for Advanced Users", "expertkeywords");
-
-
+print_hash(\%Expert, "expert_keywords.tex", 0);
 
 sub print_hash
 {
  my %hash     = %{$_[0]};
  my $filename = $_[1];
- my $title    = $_[2];
- my $label    = $_[3];
+ my $print_description = $_[2];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
  print OUT "{\n \\footnotesize\n";
  foreach my $Module (sort {$a cmp $b} keys %hash){
      push(@temp, $Module);
      printf OUT "\n\\subsection{%s}\n",$Module;
+     if (exists $ModuleDescriptions{$Module} and $print_description){
+         printf OUT "\n{\\large $ModuleDescriptions{$Module}}\\\\\n";
+         # Insert an empty table entry as a spacer
+         printf OUT '\\begin{tabular*}{\\textwidth}[tb]{c}';
+         printf OUT "\n\t  \\\\ \n";
+         print OUT "\\end{tabular*}\n";
+     }
      foreach my $Keyword (sort {$a gt $b} keys %{$hash{$Module}}){
          printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
          printf OUT "\n\t %s & %s \\\\ \n", $Keyword, $hash{$Module}{$Keyword}{"Comment"};
@@ -99,6 +105,32 @@ sub print_hash
  close OUT;
 }
 
+
+sub get_description
+{
+ my $Line = shift;
+ chomp $Line;
+ my $String;
+ #Process the inputted line
+ if($Line =~ /(?:\/\*\-\s*MODULEDESCRIPTION)\s+(.*)/){
+     $String = $1;
+ }else{
+     die "\nI don't know what to do with $Line\n";
+ }
+ if(!($String =~ s/\s*-\*\///g)){
+     # 'twas more than a one-liner, let's keep searching
+     while(<DRIVER>){
+         # Add on the current line, sans the newline
+         chomp;
+         $String .= $_;
+         # Attempt to nuke any -*/ patterns, if successful we're done
+         last if $String =~ s/\s*-\*\///g;
+     }
+ }
+ # Search and replace multiple spaces with a single space, not that LaTeX cares
+ $String =~ s/ +/ /g;
+ return $String;
+}
 
 sub determine_comment
 {

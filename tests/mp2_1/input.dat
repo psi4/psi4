@@ -12,8 +12,8 @@ molecule h2o {
 set globals {
   basis 6-31G**
   reference rhf
-  d_converge 9
-  e_converge 9
+  d_convergence 9
+  e_convergence 9
 }
 
 optimized_energy = optimize('mp2')
