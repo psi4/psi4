@@ -39,45 +39,41 @@ OMP2Wave::~OMP2Wave()
 void OMP2Wave::common_init()
 {
  
-	exp_tol_Eod=options_.get_int("e_convergence");
-	exp_tol_t2=options_.get_int("a_convergence");
-        exp_tol_grad=options_.get_int("g_convergence");
-	exp_mograd_max=options_.get_int("mg_convergence");
-        cc_maxiter=options_.get_int("cc_maxiter");
-	mo_maxiter=options_.get_int("mo_maxiter");
-	print_=options_.get_int("print"); 
-	cachelev=options_.get_int("cachelev"); 
-	num_vecs=options_.get_int("num_vecs");
-	exp_cutoff=options_.get_int("cutoff");
-	memory=options_.get_int("memory"); 
+	tol_Eod=options_.get_double("E_CONVERGENCE");
+	tol_t2=options_.get_double("R_CONVERGENCE");
+    tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
+	mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
+        cc_maxiter=options_.get_int("CC_MAXITER");
+	mo_maxiter=options_.get_int("MO_MAXITER");
+	print_=options_.get_int("PRINT"); 
+	cachelev=options_.get_int("CACHELEVEL"); 
+	num_vecs=options_.get_int("DIIS_MAX_VECS");
+	exp_cutoff=options_.get_int("CUTOFF");
+	memory=options_.get_int("MEMORY"); 
 	
-	step_max=options_.get_double("mo_step_max");
-	lshift_parameter=options_.get_double("lshift_parameter");
-	os_scale=options_.get_double("os_scale");
-	ss_scale=options_.get_double("ss_scale");
-	sos_scale=options_.get_double("sos_scale");
-	sos_scale2=options_.get_double("sos_scale2");
+	step_max=options_.get_double("MO_STEP_MAX");
+	lshift_parameter=options_.get_double("LSHIFT_PARAMETER");
+	os_scale=options_.get_double("OS_SCALE");
+	ss_scale=options_.get_double("SS_SCALE");
+	sos_scale=options_.get_double("SOS_SCALE");
+	sos_scale2=options_.get_double("SOS_SCALE2");
 	
-	//wfn=options_.get_str("wfn");
-	level_shift=options_.get_str("level_shift");
-	//lineq=options_.get_str("lineq");
-	orth_type=options_.get_str("orth_type");
-	//stability=options_.get_str("stability");
-	opt_method=options_.get_str("opt_method");
-	hess_type=options_.get_str("hess_type");
-	omp2_orb_energy=options_.get_str("omp2_orb_energy");
-	natorb=options_.get_str("natorb");
-	reference=options_.get_str("reference");
-	do_scs=options_.get_str("do_scs");
-	do_sos=options_.get_str("do_sos");
-	write_mo_coeff=options_.get_str("write_mo");
-	read_mo_coeff=options_.get_str("read_mo");
+	//wfn=options_.get_str("WFN");
+	level_shift=options_.get_str("LEVEL_SHIFT");
+	//lineq=options_.get_str("LINEQ");
+	orth_type=options_.get_str("ORTH_TYPE");
+	//stability=options_.get_str("STABILITY");
+	opt_method=options_.get_str("OPT_METHOD");
+	hess_type=options_.get_str("HESS_TYPE");
+	omp2_orb_energy=options_.get_str("OMP2_ORB_ENERGY");
+	natorb=options_.get_str("NATORB");
+	reference=options_.get_str("REFERENCE");
+	do_scs=options_.get_str("DO_SCS");
+	do_sos=options_.get_str("DO_SOS");
+	write_mo_coeff=options_.get_str("WRITE_MO");
+	read_mo_coeff=options_.get_str("READ_MO");
 	
-	tol_Eod = pow(10.0,-exp_tol_Eod);
-	tol_grad = pow(10.0,-exp_tol_grad);
-	mograd_max = pow(10.0,-exp_mograd_max);
 	cutoff = pow(10.0,-exp_cutoff);
-	tol_t2 = pow(10.0,-exp_tol_t2);
 	
 	
 	if (print_ > 0) options_.print();
