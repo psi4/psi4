@@ -11,8 +11,8 @@ SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
   psio_->open(PSIF_SAPT_AMPS,PSIO_OPEN_NEW);
 
   maxiter_ = options_.get_int("MAXITER");
-  e_conv_ = options_.get_double("E_CONVERGE");
-  d_conv_ = options_.get_double("D_CONVERGE");
+  e_conv_ = options_.get_double("E_CONVERGENCE");
+  d_conv_ = options_.get_double("D_CONVERGENCE");
 
   nat_orbs_ = options.get_bool("NAT_ORBS");
   nat_orbs_t2_ = options.get_bool("NAT_ORBS_T2");

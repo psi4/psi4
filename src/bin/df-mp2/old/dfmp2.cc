@@ -116,15 +116,15 @@ void  DFMP2::setup()
 
   // If the user doesn't spec a basis name, pick it yourself
   // TODO: Verify that the basis assign does not messs this up
-  if (options_.get_str("RI_BASIS_MP2") == "") {
-      molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_MP2");
+  if (options_.get_str("DF_BASIS_MP2") == "") {
+      molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_MP2");
       fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
       fflush(outfile);
   }
 
   // Form ribasis object and auxiliary basis indexing:
   boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_MP2");
+  ribasis_ = BasisSet::construct(parser, molecule_, "DF_BASIS_MP2");
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later
   zerobasis_ = BasisSet::zero_ao_basis_set();
@@ -652,7 +652,7 @@ void DFMP2::form_Wm12_fin()
     timer_off("Form W_S");
 
     int clipped = 0;
-    double max_cond = options_.get_double("RI_MAX_COND");
+    double max_cond = options_.get_double("DF_MAX_COND");
     timer_on("Form X");
     double** X = form_X(SJ, naux_raw_,max_cond, &clipped);
     timer_off("Form X");
@@ -708,7 +708,7 @@ void DFMP2::form_Wm12_raw()
   W_ = form_W(ribasis_);
   timer_off("Form W");
 
-  double max_cond = options_.get_double("RI_MAX_COND");
+  double max_cond = options_.get_double("DF_MAX_COND");
 
   timer_on("W^+1/2");
   matrix_power(W_, naux_raw_, -1.0/2.0,max_cond);
@@ -815,10 +815,10 @@ void DFMP2::form_Aia_disk()
 
   int nthread = 1;
   #ifdef _OPENMP
-  if (options_.get_int("RI_INTS_NUM_THREADS") == 0)
+  if (options_.get_int("DF_INTS_NUM_THREADS") == 0)
     nthread = omp_get_max_threads();
   else
-    nthread = options_.get_int("RI_INTS_NUM_THREADS");
+    nthread = options_.get_int("DF_INTS_NUM_THREADS");
   #endif
   int rank = 0;
 
@@ -934,11 +934,11 @@ void DFMP2::form_Aia_disk()
 void DFMP2::form_Qia_disk()
 {
   //Form fitting metric
-  if (options_.get_str("RI_FITTING_TYPE") == "RAW")
+  if (options_.get_str("DF_FITTING_TYPE") == "RAW")
       form_Wm12_raw();
-  else if (options_.get_str("RI_FITTING_TYPE") == "FINISHED")
+  else if (options_.get_str("DF_FITTING_TYPE") == "FINISHED")
       form_Wm12_fin();
-  else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
+  else if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY")
       form_Wp12_chol();
 
   //Available memory is lower due to W
@@ -995,7 +995,7 @@ void DFMP2::form_Qia_disk()
 
     //Embed fitting
     timer_on("(Q|ia)");
-    if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+    if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY") {
 
         #pragma omp parallel for schedule(static)
         for (int A = 0; A< naux_raw_; A++) {
@@ -1286,10 +1286,10 @@ double** DFMP2::form_Aia_core()
 
   int nthread = 1;
   #ifdef _OPENMP
-  if (options_.get_int("RI_INTS_NUM_THREADS") == 0)
+  if (options_.get_int("DF_INTS_NUM_THREADS") == 0)
     nthread = omp_get_max_threads();
   else
-    nthread = options_.get_int("RI_INTS_NUM_THREADS");
+    nthread = options_.get_int("DF_INTS_NUM_THREADS");
   #endif
   int rank = 0;
 
@@ -1408,11 +1408,11 @@ void DFMP2::form_Qia_core()
   Qia_ = form_Aia_core();
 
   //Setup fitting tensor
-  if (options_.get_str("RI_FITTING_TYPE") == "RAW")
+  if (options_.get_str("DF_FITTING_TYPE") == "RAW")
       form_Wm12_raw();
-  else if (options_.get_str("RI_FITTING_TYPE") == "FINISHED")
+  else if (options_.get_str("DF_FITTING_TYPE") == "FINISHED")
       form_Wm12_fin();
-  else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
+  else if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY")
       form_Wp12_chol();
 
   unsigned long int three_mem = naux_raw_*nact_docc_*(ULI)nact_virt_;
@@ -1441,7 +1441,7 @@ void DFMP2::form_Qia_core()
 
   //Apply fitting by blocks
   double** Abuffer;
-  if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+  if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY") {
       Abuffer = block_matrix(max_cols, naux_raw_);
   } else {
       Abuffer = block_matrix(naux_raw_, max_cols);
@@ -1449,7 +1449,7 @@ void DFMP2::form_Qia_core()
   timer_on("(Q|ia)");
   for (int block = 0; block < nblocks; block++) {
 
-     if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+     if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY") {
 
       #pragma omp parallel for schedule(static)
       for (int A = 0; A< naux_raw_; A++) {
@@ -1646,10 +1646,10 @@ double** DFMP2::form_Aia_core_parallel()
 
   int nthread = 1;
   #ifdef _OPENMP
-  if (options_.get_int("RI_INTS_NUM_THREADS") == 0)
+  if (options_.get_int("DF_INTS_NUM_THREADS") == 0)
     nthread = omp_get_max_threads();
   else
-    nthread = options_.get_int("RI_INTS_NUM_THREADS");
+    nthread = options_.get_int("DF_INTS_NUM_THREADS");
   #endif
   int rank = 0;
 
@@ -1768,11 +1768,11 @@ void DFMP2::form_Qia_core_parallel()
   Qia_ = form_Aia_core_parallel();
 
   //Setup fitting tensor
-  if (options_.get_str("RI_FITTING_TYPE") == "RAW")
+  if (options_.get_str("DF_FITTING_TYPE") == "RAW")
       form_Wm12_raw();
-  else if (options_.get_str("RI_FITTING_TYPE") == "FINISHED")
+  else if (options_.get_str("DF_FITTING_TYPE") == "FINISHED")
       form_Wm12_fin();
-  else if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY")
+  else if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY")
       form_Wp12_chol();
 
   unsigned long int three_mem = naux_raw_*nact_docc_*(ULI)nact_virt_;
@@ -1801,7 +1801,7 @@ void DFMP2::form_Qia_core_parallel()
 
   //Apply fitting by blocks
   double** Abuffer;
-  if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+  if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY") {
       Abuffer = block_matrix(max_cols, naux_raw_);
   } else {
       Abuffer = block_matrix(naux_raw_, max_cols);
@@ -1809,7 +1809,7 @@ void DFMP2::form_Qia_core_parallel()
   timer_on("(Q|ia)");
   for (int block = 0; block < nblocks; block++) {
 
-     if (options_.get_str("RI_FITTING_TYPE") == "CHOLESKY") {
+     if (options_.get_str("DF_FITTING_TYPE") == "CHOLESKY") {
 
       #pragma omp parallel for schedule(static)
       for (int A = 0; A< naux_raw_; A++) {

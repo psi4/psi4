@@ -23,7 +23,7 @@ void get_params()
   params.print_lvl = options.get_int("PRINT");
 
   // TODO find memory from driver
-  params.cachelev = options.get_int("CACHELEV"); 
+  params.cachelev = options.get_int("CACHELEVEL"); 
   params.cachelev = 0;
 
   junk = options.get_str("REFERENCE");

@@ -56,7 +56,7 @@ void get_params( Options& options)
   //fndcor(&(params.memory),infile,outfile);
 
 //  params.cachelev = 2;
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   //params.aobasis = 0;
   params.aobasis = options.get_bool("AO_BASIS");

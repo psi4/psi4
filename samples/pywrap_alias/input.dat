@@ -8,6 +8,7 @@ set globals {
     basis 6-31g
 }
 
+set mp2 scs on
 
 banner('gold standard')
 energy('sherrillgroup_gold_standard')
@@ -53,7 +54,7 @@ clean()
 
 set globals {
     basis sto-3g
-    ri_basis_scf cc-pVDZ-JKFIT
+    df_basis_scf cc-pVDZ-JKFIT
     scf_type df
 }
 

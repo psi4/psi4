@@ -10,7 +10,6 @@ molecule ch2 {
 }
 
 set {
-   wfn bccd_t
    reference = uhf
    basis cc-pVDZ
    freeze_core true

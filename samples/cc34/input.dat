@@ -8,10 +8,9 @@ molecule h2o {
 }
 
 set {
-  wfn ccsd
   basis "cc-pVDZ"
   freeze_core true
-  print_pair_energies true
+  pair_energies_print true
   spinadapt_energies true
 }
 

@@ -153,9 +153,11 @@ void set_params(void)
 //  Opt_params.conv_max_force = 3.0e-4;
 //  Opt_params.conv_max_DE    = 1.0e-6;
 //  Opt_params.conv_max_disp  = 1.2e-3;
-    Opt_params.conv_max_force = options.get_double("CONV_MAX_FORCE");
-    Opt_params.conv_max_DE = options.get_double("CONV_MAX_DE");
-    Opt_params.conv_max_disp = options.get_double("CONV_MAX_DISP");
+    Opt_params.conv_max_force = options.get_double("MAX_FORCE_G_CONVERGENCE");
+    Opt_params.conv_rms_force = options.get_double("RMS_FORCE_G_CONVERGENCE");
+    Opt_params.conv_max_DE = options.get_double("MAX_ENERGY_G_CONVERGENCE");
+    Opt_params.conv_max_disp = options.get_double("MAX_DISP_G_CONVERGENCE");
+    Opt_params.conv_rms_disp = options.get_double("RMS_DISP_G_CONVERGENCE");
 
 // Whether to test B matrix and derivative B matrix numerically
 //  Opt_params.test_B = false;
@@ -274,8 +276,14 @@ void set_params(void)
   i = rem_read(REM_GEOM_OPT2_TOL_GRADIENT);
   Opt_params.conv_max_force = i / 1.0e6; // default (300 -> 3e-4)
 
+  i = rem_read(REM_GEOM_OPT2_RMSTOL_GRADIENT);
+  Opt_params.conv_rms_force = i / 1.0e6; // default (300 -> 3e-4)
+
   i = rem_read(REM_GEOM_OPT2_TOL_DISPLACEMENT);
   Opt_params.conv_max_disp  = i / 1.0e6; // default (1200 -> 1.2e-3)
+
+  i = rem_read(REM_GEOM_OPT2_RMSTOL_DISPLACEMENT);
+  Opt_params.conv_rms_disp  = i / 1.0e6; // default (1200 -> 1.2e-3)
 
   i = rem_read(REM_GEOM_OPT2_TOL_ENERGY);
   Opt_params.conv_max_DE    = i / 1.0e8; // default (100 -> 1.0e-6)
@@ -361,8 +369,10 @@ void set_params(void)
 void print_params(void) {
 
   fprintf(outfile, "conv_max_force         = %18.2e\n", Opt_params.conv_max_force);
+  fprintf(outfile, "conv_rms_force         = %18.2e\n", Opt_params.conv_rms_force);
   fprintf(outfile, "conv_max_DE            = %18.2e\n", Opt_params.conv_max_DE);
   fprintf(outfile, "conv_max_disp          = %18.2e\n", Opt_params.conv_max_disp);
+  fprintf(outfile, "conv_rms_disp          = %18.2e\n", Opt_params.conv_rms_disp);
 
   fprintf(outfile, "scale_connectivity     = %18.2e\n", Opt_params.scale_connectivity);
 
