@@ -98,7 +98,6 @@ void get_params(Options &options)
   params.abcd = options.get_str("ABCD");
   params.local = options.get_bool("LOCAL");
   local.cutoff = options.get_double("LOCAL_CUTOFF");
-  params.local_mos = options.get_bool("LOCAL_MOS");
   local.method = options.get_str("LOCAL_METHOD");
   local.weakp = options.get_str("LOCAL_WEAKP");
 

@@ -32,7 +32,6 @@ struct Params {
   int print_pair_energies;
   int spinadapt_energies;
   int semicanonical;
-  int local_mos;
   int dertype;
   int t2_coupled;
   std::string prop;            /* user-selected property */

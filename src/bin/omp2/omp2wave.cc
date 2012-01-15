@@ -65,13 +65,13 @@ void OMP2Wave::common_init()
 	//stability=options_.get_str("STABILITY");
 	opt_method=options_.get_str("OPT_METHOD");
 	hess_type=options_.get_str("HESS_TYPE");
-	omp2_orb_energy=options_.get_str("OMP2_ORB_ENERGY");
-	natorb=options_.get_str("NATORB");
+	omp2_orb_energy=options_.get_str("OMP2_ORBS_PRINT");
+	natorb=options_.get_str("NAT_ORBS");
 	reference=options_.get_str("REFERENCE");
 	do_scs=options_.get_str("DO_SCS");
 	do_sos=options_.get_str("DO_SOS");
-	write_mo_coeff=options_.get_str("WRITE_MO");
-	read_mo_coeff=options_.get_str("READ_MO");
+	write_mo_coeff=options_.get_str("MO_WRITE");
+	read_mo_coeff=options_.get_str("MO_READ");
 	
 	cutoff = pow(10.0,-exp_cutoff);
 	
