@@ -469,15 +469,15 @@ void get_parameters(Options &options)
   Parameters.opdm_print = options["OPDM_PRINT"].to_integer();
   // Make this an internal parameter
   // errcod = ip_data("OPDM_FILE","%d",&(Parameters.opdm_file),0);
-  Parameters.opdm_wrtnos = options["NOS_WRITE"].to_integer();
-  // Make this an internal parameter, essentially same as NOS_WRITE
+  Parameters.opdm_wrtnos = options["NAT_ORBS_WRITE"].to_integer();
+  // Make this an internal parameter, essentially same as NAT_ORBS_WRITE
   // errcod = ip_boolean("OPDM_DIAG",&(Parameters.opdm_diag),0);
   Parameters.opdm_ave = options["OPDM_AVE"].to_integer();
   // Make an internal parameter
   // errcod = ip_data("ORBSFILE","%d",&(Parameters.opdm_orbsfile),0);
 
   // User numbering starts from 1, but internal numbering starts from 0
-  Parameters.opdm_orbs_root = options.get_int("ORBS_ROOT");
+  Parameters.opdm_orbs_root = options.get_int("NAT_ORBS_WRITE_ROOT");
   Parameters.opdm_orbs_root -= 1;
   if (Parameters.opdm_orbs_root < 0) Parameters.opdm_orbs_root = 0;
 

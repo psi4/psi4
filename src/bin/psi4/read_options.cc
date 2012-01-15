@@ -407,7 +407,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("OPDM_PRINT", false);
 
     /*- Do write the natural orbitals? -*/
-    options.add_bool("NOS_WRITE", false);
+    options.add_bool("NAT_ORBS_WRITE", false);
 
     /*- Do average the OPDM over several roots in
     order to obtain a state-average one-particle density matrix?  This
@@ -416,7 +416,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Sets the root number for which CI natural orbitals are written
     to PSIF_CHKPT.  The default value is 1 (lowest root). -*/
-    options.add_int("ORBS_ROOT", 1);
+    options.add_int("NAT_ORBS_WRITE_ROOT", 1);
 
     /*- Do compute the kinetic energy contribution from the correlated part of
     the one-particle density matrix? !expert -*/
@@ -663,12 +663,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("R_CONVERGENCE", 1e-10);
       /*- Do relax the orbitals? -*/
-      options.add_bool("RELAX_ORBITALS", true);
+      options.add_bool("MO_RELAX", true);
       /*- The amount (percentage) of damping to apply to the initial SCF procedures
-          0 will result in a full update, 100 will completely stall the update. A
-          value around 20 (which corresponds to 20\% of the previous iteration's
-          density being mixed into the current iteration)
-          can help in cases where oscillatory convergence is observed. -*/
+      0 will result in a full update, 100 will completely stall the update. A
+      value around 20 (which corresponds to 20\% of the previous iteration's
+      density being mixed into the current iteration)
+      can help in cases where oscillatory convergence is observed. -*/
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- Don't include the tau terms? -*/
       options.add_bool("IGNORE_TAU", false);
@@ -1402,8 +1402,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CI_DIIS",false);
     /*- Do use DIIS extrapolation to accelerate convergence of the SCF energy (MO coefficients only)? -*/
     options.add_bool("DIIS",true);
-    /*- Do read in the MOs from a previous computation? -*/
-    options.add_bool("READ_MOS",true);
+    /*- Do read in from file the MOs from a previous computation? -*/
+    options.add_bool("MO_READ",true);
     /*- Do use the average Fock matrix during the SCF optimization? -*/
     options.add_bool("USE_FAVG",false);
     /*- Do canonicalize the active orbitals such that the average Fock matrix is diagonal? -*/
@@ -1475,8 +1475,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel 
     and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- -*/
-    options.add_double("LOCAL_MOS", 0);
     /*- Type of local-CCSD scheme to be simulated. WERNER selects the method 
     developed by H.-J. Werner and co-workers, and AOBASIS selects the method 
     developed by G.E. Scuseria and co-workers (currently inoperative). -*/
@@ -1984,21 +1982,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     //options.add_str("STABILITY","FALSE","TRUE FALSE");
     /*- Do ? -*/ 
-    options.add_bool("NATORB",false);
+    options.add_bool("NAT_ORBS",false);
     /*- -*/
     options.add_str("OPT_METHOD","DIIS","SD DIIS");    
     /*- -*/
     options.add_str("HESS_TYPE","NONE","NONE");    
     /*- Do ? -*/ 
-    options.add_bool("OMP2_ORB_ENERGY",false);  
+    options.add_bool("OMP2_ORBS_PRINT",false);  
     /*- Do ? -*/ 
     options.add_bool("DO_SCS",false); 
     /*- Do ? -*/ 
     options.add_bool("DO_SOS",false); 
     /*- Do write coefficient matrices to psi files? -*/
-    options.add_bool("WRITE_MO",false);   
-    /*- Do read coefficient matrices to psi files? -*/ 
-    options.add_bool("READ_MO",false);
+    options.add_bool("MO_WRITE",false);   
+    /*- Do read coefficient matrices from psi files? -*/ 
+    options.add_bool("MO_READ",false);
   }
   return true;
 }
