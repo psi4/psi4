@@ -40,8 +40,8 @@ compare_values(Enuc, water.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Ene
 
 set globals {
 basis cc-pvdz
-e_converge 12
-d_converge 10
+e_convergence 12
+d_convergence 10
 reference rhf
 }
 

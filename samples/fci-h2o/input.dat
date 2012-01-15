@@ -9,12 +9,10 @@ units bohr
 }
 
 set globals {
-  wfn detci
-  fci true 
   basis 6-31G
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('fci')
 
 
 clean()

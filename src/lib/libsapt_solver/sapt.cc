@@ -56,18 +56,18 @@ void SAPT::initialize()
   //
   // If the user doesn't spec a basis name, pick it yourself
   // TODO: Verify that the basis assign does not messs this up
-  if (options_.get_str("RI_BASIS_SAPT") == "") {
+  if (options_.get_str("DF_BASIS_SAPT") == "") {
     basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") 
-      + "-RI", "RI_BASIS_SAPT");
+      + "-RI", "DF_BASIS_SAPT");
     fprintf(outfile, "    No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str()); 
   }
 
   ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, 
-    "RI_BASIS_SAPT"));
+    "DF_BASIS_SAPT"));
   elst_basis_ = 0;
-  if (options_.get_str("RI_BASIS_ELST") != "") {
+  if (options_.get_str("DF_BASIS_ELST") != "") {
     elstbasis_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, 
-      molecule_,"RI_BASIS_ELST"));
+      molecule_,"DF_BASIS_ELST"));
     elst_basis_ = 1;
   }
   zero_ = boost::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());

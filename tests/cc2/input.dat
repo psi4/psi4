@@ -8,9 +8,10 @@ molecule h2o {
 
 set globals {
   basis 6-31G**
-  convergence 10
-  e_converge 10
-  d_converge 10
+
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
 }
 
 optimize('ccsd', dertype=0)

@@ -22,7 +22,7 @@ void get_params(Options &options)
   std::string cachetype = "";
   std::string junk;
 
-  params.newtrips = options.get_bool("NEWTRIPS");
+  params.newtrips = options.get_bool("NEW_TRIPLES");
 
   params.wfn = options.get_str("WFN");
 
@@ -67,7 +67,7 @@ void get_params(Options &options)
 
   params.print = options.get_int("PRINT");
   params.maxiter = options.get_int("MAXITER");
-  params.convergence = options.get_double("CONVERGENCE");
+  params.convergence = options.get_double("R_CONVERGENCE");
   params.restart = options.get_bool("RESTART");
   /* If the MO orbital phases are screwed up, don't restart */
   if(!moinfo.phase) params.restart = 0;
@@ -78,7 +78,7 @@ void get_params(Options &options)
   params.memory = Process::environment.get_memory();
 
   params.aobasis = options.get_str("AO_BASIS");
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   params.cachetype = 1;
   cachetype = options.get_str("CACHETYPE");
@@ -115,8 +115,8 @@ void get_params(Options &options)
   else if(params.local)
     local.pairdef = "BP";
 
-  params.num_amps = options.get_int("NUM_AMPS");
-  params.bconv = options.get_double("BRUECKNER_CONV");
+  params.num_amps = options.get_int("NUM_AMPS_PRINT");
+  params.bconv = options.get_double("BRUECKNER_ORBS_R_CONVERGENCE");
 
   params.print_mp2_amps = options.get_bool("MP2_AMPS_PRINT");
   params.print_pair_energies = options.get_bool("PAIR_ENERGIES_PRINT");

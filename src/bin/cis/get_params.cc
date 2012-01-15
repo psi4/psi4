@@ -37,11 +37,11 @@ void get_params(Options & options)
     throw PsiException("cis input comparison error REFERENCE and params.ref", __FILE__, __LINE__);
   }
 
-  local.amp_print_cutoff = options.get_double("LOCAL_AMP_PRINT_CUTOFF"); //default 0.60
+  local.amp_print_cutoff = options.get_double("LOCAL_AMPS_PRINT_CUTOFF"); //default 0.60
   params.print = options.get_int("PRINT"); //default 0
   params.maxiter = options.get_int("MAXITER"); //default 500
 
-  params.convergence = options.get_double("CONVERGENCE"); //default 7 ==> 1e-7
+  params.convergence = options.get_double("R_CONVERGENCE"); //default 7 ==> 1e-7
 
   if (options["STATES_PER_IRREP"].size() > 0) {
     i = options["STATES_PER_IRREP"].size();

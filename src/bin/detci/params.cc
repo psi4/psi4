@@ -51,10 +51,10 @@ void get_parameters(Options &options)
  *        X = now it's an internal parameter, not in read_options
  */
 
-  Parameters.ex_lvl = options.get_int("EX_LVL");
-  Parameters.cc_ex_lvl = options.get_int("CC_EX_LVL");
-  Parameters.val_ex_lvl = options.get_int("VAL_EX_LVL");
-  Parameters.cc_val_ex_lvl = options.get_int("CC_VAL_EX_LVL");
+  Parameters.ex_lvl = options.get_int("EX_LEVEL");
+  Parameters.cc_ex_lvl = options.get_int("CC_EX_LEVEL");
+  Parameters.val_ex_lvl = options.get_int("VAL_EX_LEVEL");
+  Parameters.cc_val_ex_lvl = options.get_int("CC_VAL_EX_LEVEL");
 
   Parameters.cc_a_val_ex_lvl = -1;
   Parameters.cc_b_val_ex_lvl = -1;
@@ -171,11 +171,11 @@ void get_parameters(Options &options)
   if (options["MAXITER"].has_changed()) {
     Parameters.maxiter = options.get_int("MAXITER");
   }
-  if (options["CONVERGENCE"].has_changed()) {
-    Parameters.convergence = options.get_double("CONVERGENCE");
+  if (options["R_CONVERGENCE"].has_changed()) {
+    Parameters.convergence = options.get_double("R_CONVERGENCE");
   }
-  if (options["E_CONVERGE"].has_changed()) {
-    Parameters.energy_convergence = options.get_double("E_CONVERGE");
+  if (options["E_CONVERGENCE"].has_changed()) {
+    Parameters.energy_convergence = options.get_double("E_CONVERGENCE");
   }
 
   Parameters.multp = Process::environment.molecule()->multiplicity();
@@ -397,7 +397,7 @@ void get_parameters(Options &options)
   Parameters.lse_collapse = options.get_int("LSE_COLLAPSE");
   if (Parameters.lse_collapse < 1) Parameters.lse_collapse = 3;
 
-  Parameters.lse_tolerance = options.get_int("LSE_TOLERANCE");
+  Parameters.lse_tolerance = options.get_double("LSE_TOLERANCE");
 
   Parameters.maxnvect = options.get_int("MAX_NUM_VECS");
 
@@ -780,7 +780,7 @@ void get_parameters(Options &options)
   /* DIIS only kicks in for CC anyway, no need to prefix with CC_ */
   Parameters.diis = options["DIIS"].to_integer();
   /* Iteration to turn on DIIS */
-  Parameters.diis_start = options.get_int("DIIS_START");
+  Parameters.diis_start = options.get_int("DIIS_START_ITER");
   /* Do DIIS every n iterations */
   Parameters.diis_freq = options.get_int("DIIS_FREQ");
   Parameters.diis_min_vecs = options.get_int("DIIS_MIN_VECS");
@@ -831,9 +831,9 @@ void print_parameters(void)
 
    fprintf(outfile, "\n");
    fprintf(outfile, "PARAMETERS: \n");
-   fprintf(outfile, "   EX LVL        =   %6d      H0 BLOCKSIZE =   %6d\n",
+   fprintf(outfile, "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
       Parameters.ex_lvl, Parameters.h0blocksize);
-   fprintf(outfile, "   VAL EX LVL    =   %6d      H0 GUESS SIZE=   %6d\n",
+   fprintf(outfile, "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
       Parameters.val_ex_lvl, Parameters.h0guess_size);
    fprintf(outfile, "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
@@ -846,10 +846,10 @@ void print_parameters(void)
       Parameters.print_lvl, Parameters.fci ? "yes" : "no");
    if (Parameters.have_special_conv)
       fprintf(outfile,
-         "   CONV          =   %8.2g    MIXED        =   %6s\n",
+         "   R CONV        =   %8.2g    MIXED        =   %6s\n",
          Parameters.special_conv, Parameters.mixed ? "yes" : "no");
    else
-      fprintf(outfile, "   CONV          =   %6.2e      MIXED        =   %6s\n",
+      fprintf(outfile, "   R CONV        =   %6.2e      MIXED        =   %6s\n",
          Parameters.convergence, Parameters.mixed ? "yes" : "no");
 
    fprintf(outfile, "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
@@ -1078,7 +1078,7 @@ void set_ras_parms(void)
      if (Parameters.print_lvl) {
        fprintf(outfile, "Note: Calculation requested is a full CI.\n");
        fprintf(outfile,
-               "Resetting EX_LVL to %d and turning on all excitations\n\n",
+               "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
                Parameters.ex_lvl);
      }
 

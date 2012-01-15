@@ -76,7 +76,7 @@ void get_eom_params(Options &options)
 
   eom_params.excitation_range = options.get_int("EXCITATION_RANGE");
   eom_params.print_singles = options["SINGLES_PRINT"].to_integer();
-  eom_params.vectors_per_root_SS = options.get_int("VECS_PER_ROOT_SS");
+  eom_params.vectors_per_root_SS = options.get_int("SS_VECS_PER_ROOT");
   eom_params.vectors_per_root = options.get_int("VECS_PER_ROOT");
   eom_params.vectors_cc3 = eom_params.prop_root + 9;
   eom_params.vectors_cc3 = options.get_int("VECS_CC3");
@@ -85,10 +85,10 @@ void get_eom_params(Options &options)
 
   eom_params.collapse_with_last = options.get_bool("COLLAPSE_WITH_LAST");
   eom_params.complex_tol = options.get_double("COMPLEX_TOLERANCE");
-  eom_params.residual_tol = options.get_double("RESIDUAL_TOLERANCE");
-  eom_params.residual_tol_SS = options.get_double("SS_RESIDUAL_TOLERANCE");
-  eom_params.eval_tol = options.get_double("EVAL_TOLERANCE");
-  eom_params.eval_tol_SS = options.get_double("SS_EVAL_TOLERANCE");
+  eom_params.residual_tol = options.get_double("R_CONVERGENCE");
+  eom_params.residual_tol_SS = options.get_double("SS_R_CONVERGENCE");
+  eom_params.eval_tol = options.get_double("E_CONVERGENCE");
+  eom_params.eval_tol_SS = options.get_double("SS_E_CONVERGENCE");
   eom_params.amps_to_print = options.get_int("NUM_AMPS_PRINT");
   eom_params.schmidt_add_residual_tol = options.get_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE");
   eom_params.skip_diagSS = options["SKIP_DIAGSS"].to_integer();
