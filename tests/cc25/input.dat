@@ -1,4 +1,4 @@
-#! Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
+#! Single point gradient of 1-2B2 state of H2O+ with EOM-CCSD
 
 molecule h2o {
   1 2
@@ -11,7 +11,7 @@ molecule h2o {
 set {
   reference uhf
   basis DZ
-  states_per_irrep [0, 0, 1, 0]
+  states_per_irrep [0, 0, 0, 1]
 }
 
 gradient('eom-ccsd')
