@@ -1228,8 +1228,8 @@ namespace psi{ namespace dcft{
       dpdbuf4 tau1_AO_aa, tau2_AO_aa;
       dpdbuf4 tau1_AO_ab, tau2_AO_ab;
       dpdbuf4 tau1_AO_bb, tau2_AO_bb;
-      dpdfile2 s_aa_1, s_aa_2, tau;
-      dpdfile2 s_bb_1, s_bb_2;
+      dpdfile2 s_aa_1, s_aa_2, s_aa_3, s_aa_4, tau;
+      dpdfile2 s_bb_1, s_bb_2, s_bb_3, s_bb_4;
 
 
       bool buildTensors = (options_.get_str("AO_BASIS") == "DISK");
@@ -1294,17 +1294,6 @@ namespace psi{ namespace dcft{
                   ID("[n,n]"), ID("[O,O]"), 0, "tau2AO <nn|OO>");
           dpd_buf4_scm(&tau2_AO_aa, 0.0);
 
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
-          dpd_file2_scm(&s_aa_1, 0.0);
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-          file2_transform(&s_aa_1, &tau, avir_c_, true);
-          dpd_file2_init(&s_aa_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
-          dpd_file2_scm(&s_aa_2, 0.0);
-          dpd_file2_close(&tau);
-
-
-
           /********** BB ***********/
           dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
@@ -1328,17 +1317,6 @@ namespace psi{ namespace dcft{
           dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
                   ID("[n,n]"), ID("[o,o]"), 0, "tau2AO <nn|oo>");
           dpd_buf4_scm(&tau2_AO_bb, 0.0);
-
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
-          dpd_file2_scm(&s_bb_1, 0.0);
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-          file2_transform(&s_bb_1, &tau, bvir_c_, true);
-          dpd_file2_init(&s_bb_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
-          dpd_file2_scm(&s_bb_2, 0.0);
-          dpd_file2_close(&tau);
-
-
 
           /********** AB ***********/
           dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -1364,7 +1342,36 @@ namespace psi{ namespace dcft{
                   ID("[n,n]"), ID("[O,o]"), 0, "tau2AO <nn|Oo>");
           dpd_buf4_scm(&tau2_AO_ab, 0.0);
 
+          // Preparing Tau for the GTau terms
+          // This is where the SO-basis Tau will be
+          dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
+          dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
 
+          // Write SO-basis Tau to disk
+          dpd_file2_mat_init(&s_aa_1);
+          dpd_file2_mat_init(&s_bb_1);
+          for(int h = 0; h < nirrep_; ++h){
+              for(int i = 0 ; i < nsopi_[h]; ++i){
+                  for(int j = 0 ; j < nsopi_[h]; ++j){
+                      s_aa_1.matrix[h][i][j] = a_tau_->get(h, i, j);
+                      s_bb_1.matrix[h][i][j] = b_tau_->get(h, i, j);
+                  }
+              }
+          }
+          dpd_file2_mat_wrt(&s_aa_1);
+          dpd_file2_mat_wrt(&s_bb_1);
+          dpd_file2_close(&s_aa_1);
+          dpd_file2_close(&s_bb_1);
+
+          // Reopen the arrays
+          dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
+          dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
+
+          // This is where GTau contribution will be placed
+          dpd_file2_init(&s_aa_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
+          dpd_file2_init(&s_bb_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
+          dpd_file2_scm(&s_aa_2, 0.0);
+          dpd_file2_scm(&s_bb_2, 0.0);
 
           // Now put stuff in memory
           dpd_file2_mat_init(&s_aa_1);
@@ -1375,6 +1382,7 @@ namespace psi{ namespace dcft{
           dpd_file2_mat_init(&s_bb_2);
           dpd_file2_mat_rd(&s_bb_1);
           dpd_file2_mat_rd(&s_bb_2);
+
           for(int h = 0; h < nirrep_; ++h){
               dpd_buf4_mat_irrep_init(&tau1_AO_aa, h);
               dpd_buf4_mat_irrep_rd(&tau1_AO_aa, h);
@@ -1455,7 +1463,7 @@ namespace psi{ namespace dcft{
                   ID("[O,O]"), ID("[V,V]"), 0, "tau(temp) <OO|VV>");
           dpd_buf4_scm(&tau_temp, 0.0);
           half_transform(&tau2_AO_aa, &tau_temp, avir_c_, avir_c_, navirpi_, navirpi_,
-                  pq_row_start, CD_row_start, false, 1.0, 0.0);
+                  pq_row_start, CD_row_start, false, 0.5, 0.0);
           dpd_buf4_close(&tau2_AO_aa);
           dpd_buf4_close(&tau_temp);
 
@@ -1471,7 +1479,7 @@ namespace psi{ namespace dcft{
                   ID("[o,o]"), ID("[v,v]"), 0, "tau(temp) <oo|vv>");
           dpd_buf4_scm(&tau_temp, 0.0);
           half_transform(&tau2_AO_bb, &tau_temp, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_,
-                  pq_row_start, cd_row_start, false, 1.0, 0.0);
+                  pq_row_start, cd_row_start, false, 0.5, 0.0);
           dpd_buf4_close(&tau2_AO_bb);
           dpd_buf4_close(&tau_temp);
 
