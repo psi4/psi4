@@ -59,7 +59,7 @@ void OMP2Wave::common_init()
 	sos_scale2=options_.get_double("SOS_SCALE2");
 	
 	//wfn=options_.get_str("WFN");
-    if (options["LEVEL_SHIFT"].has_changed()) {
+    if (options_["LEVEL_SHIFT"].has_changed()) {
 	  level_shift="TRUE";
     }
 	//lineq=options_.get_str("LINEQ");
