@@ -4,6 +4,8 @@ cc1: RHF-CCSD/6-31G** H2O geometry optimization via analytic gradients
 cc2: RHF-CCSD/6-31G** H2O geometry optimization via finite differences
   (all electron, MO-basis <ab|cd>)
 
+cc3:
+
 cc4: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>)
 
 cc4a: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>),
@@ -22,7 +24,7 @@ cc8: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 cc8a: ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 <ab|cd>)
 
-cc8b:
+cc8b: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO <ab|cd>, semican)
 
 cc8c: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis <ab|cd>)
 
@@ -60,13 +62,13 @@ cc22: ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in 3B1 CH2.
 
 cc23:
 
-cc24:
+cc24: UHF-EOM-CCSD/DZ analytic gradient lowest 2B1 state of H2O+ (A1 excitation)
 
-cc25:
+cc25: UHF-EOM-CCSD/DZ analytic gradient lowest 2B2 state of H2O+ (A2 excitation)
 
-cc26:
+cc26: RHF-EOM-CCSD/DZ analytic gradient lowest 1A1 state of H2O (A1 excitation)
 
-cc27:
+cc27: RHF-EOM-CCSD/DZ analytic gradient lowest 1B2 state of H2O (B2 excitation)
 
 cc28: RHF-CCSD-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega =
 (589 355 nm)

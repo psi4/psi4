@@ -73,11 +73,13 @@ namespace psi {
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &, int irrep=-1);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       //PsiReturnType fd_2_0(Options &, const boost::python::list&);
       PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&, int irrep=-1);
+      PsiReturnType fd_hessian_0(Options &, const boost::python::list&);
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -178,6 +180,12 @@ std::vector< SharedMatrix > py_psi_fd_geoms_freq_0(int irrep)
     return findif::fd_geoms_freq_0(Process::environment.options, irrep);
 }
 
+std::vector< SharedMatrix > py_psi_fd_geoms_hessian_0()
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_geoms_hessian_0(Process::environment.options);
+}
+
 std::vector< SharedMatrix > py_psi_fd_geoms_freq_1(int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
@@ -200,6 +208,12 @@ PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_freq_0(Process::environment.options, energies, irrep);
+}
+
+PsiReturnType py_psi_fd_hessian_0(const boost::python::list& energies)
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_hessian_0(Process::environment.options, energies);
 }
 
 PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
@@ -929,10 +943,12 @@ BOOST_PYTHON_MODULE(PsiMod)
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
     def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1);
+    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0);
     def("fd_1_0", py_psi_fd_1_0);
     //def("fd_2_0", py_psi_fd_2_0);
     def("fd_freq_0", py_psi_fd_freq_0);
     def("fd_freq_1", py_psi_fd_freq_1);
+    def("fd_hessian_0", py_psi_fd_hessian_0);
     def("sapt", py_psi_sapt);
     def("psimrcc", py_psi_psimrcc);
     def("optking", py_psi_optking);

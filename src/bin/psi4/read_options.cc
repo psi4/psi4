@@ -599,6 +599,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if (name == "SAPT"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) analysis
+        to quantitatively analyze noncovalent interactions. -*/
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3 MP2C");
     /*- The ubiquitous debug flag -*/
@@ -1079,8 +1081,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL", false);
     /*- -*/
     options.add("OMEGA", new ArrayType());
-    /*- -*/
-    options.add_str("OMEGA_UNITS", "AU", "AU HZ EV NM");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
@@ -1122,6 +1122,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_SYM", 1);
     /*- -*/
     options.add_int("PROP_ROOT", 1);
+    /*- -*/
+    options.add_bool("CALC_XI", false);
+    /*- -*/
+    options.add_bool("ZETA",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -1169,6 +1173,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_ROOT",1);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",50);
+    /*- -*/
+    options.add_bool("ZETA",false);
   }
   if(name == "CLAG"|| options.read_globals()) {
     /*- Do ? -*/

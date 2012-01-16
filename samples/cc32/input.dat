@@ -7,7 +7,6 @@ molecule h2o {
 }
 
 set {
- wfn cc3
  basis cc-pVDZ
 }
 

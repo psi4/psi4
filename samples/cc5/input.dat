@@ -16,15 +16,14 @@ molecule C4NH4 {
 }
 
 set globals {
-  wfn         ccsd_t
   docc        [10, 1, 4, 3]
   basis       aug-cc-pVTZ
   freeze_core true
   dertype     none
 
-  convergence 10
-  e_converge  10
-  d_converge  10
+  r_convergence 10
+  e_convergence  10
+  d_convergence  10
 }
 
 energy('ccsd(t)')

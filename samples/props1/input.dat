@@ -1,6 +1,5 @@
 #! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
-
 molecule h2o {
 0 1
 O
@@ -11,41 +10,52 @@ r=0.98944
 a=100.047
 }
 
-lambdas = [0.001, -0.001]
+pert = 0.001
+lambdas = [pert, -pert, 2.0*pert, -2.0*pert]
 
 set {
-    scf_type     pk
     basis        sto-3g
-    e_converge   10
+    e_convergence   10
 }
-
-energy('scf')
 
 energies = []
 for l in lambdas:
     set scf perturb_h true
     set scf perturb_with dipole_z
-    set scf lambda $l
+    set scf perturb_magnitude $l
     energies.append(energy('scf'))
 
-mydmz=(energies[0]-energies[1])/(2.0*lambdas[0]) 
+# The nuclear dipole is returned in a zero-based vector, containing [x, y, z]
+nuc = nuclear_dipole(h2o)
+nuc_z = nuc[2]
 
-print "positive disp = %f\n" % energies[0]
-print "negative disp = %f\n" % energies[1]
-print "electronic mu(z) = %f\n" % mydmz
+# Now use 3- and 5-point finite difference formulae to compute the dipole
+dm_z_3point = (energies[0] - energies[1]) / (2.0*pert)
+dm_z_5point = (8.0*energies[0] - 8.0*energies[1] - energies[2] + energies[3]) / (12.0*pert)
 
-nuc = h2o.nuclear_dipole_contribution()
-nucz = nuc[0, 2]
+# The a.u. to Debye conversion factor
+debye = 2.54175
 
-print "nuclear z component = %f\n" % nucz
+set scf perturb_h false
+# So we can get the analytic result to compare to
+energy('scf')
 
-mydmz = mydmz + nucz
+# Tabulate the results of the energy computation
+for val in range(len(lambdas)):
+    print "Perturbation strength = %7.4f, computed energy = %16.10f\n" % (lambdas[val], energies[val])
+    compare_values(ref_energies[val], energies[val], 8, "Energy for displacement %d" % val)
 
-print "mu(z) hartree = %f\n" % mydmz
+print "nuclear z component    = %10.6f Eh, %10.6f Debye\n" % (nuc_z, nuc_z*debye)
+print "Electronic contributions:\n"
+print "3 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*debye)
+print "5 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*debye)
+dm_z_3point = dm_z_3point + nuc_z
+dm_z_5point = dm_z_5point + nuc_z
+print "Total dipoles\n"
+print "3 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*debye)
+print "5 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*debye)
 
-mydmz = mydmz * 2.54175
-
-print "mu(z) debye = %f\n" % mydmz
-
+compare_values(ref_3pt, dm_z_3point, 8, "Z dipole, using 3 point formula")
+compare_values(ref_5pt, dm_z_5point, 8, "Z dipole, using 5 point formula")
 
 clean()
