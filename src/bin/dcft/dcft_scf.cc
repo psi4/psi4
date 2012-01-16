@@ -479,7 +479,6 @@ namespace psi{ namespace dcft{
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
                   Da[muNu] = kappa_a_->get(h, mu, nu);
                   Db[muNu] = kappa_b_->get(h, mu, nu);
-//                  Ta[muNu] = a_tau_[h][mu][nu];
                   Ta[muNu] = a_tau_->get(h,mu,nu);
                   Tb[muNu] = b_tau_->get(h,mu,nu);
               }
@@ -1075,6 +1074,142 @@ namespace psi{ namespace dcft{
     delete [] Gb;
 }
 
+  /*
+  * Updates the Fock operator every lambda iteration using new Tau
+  */
+  void
+  DCFTSolver::update_fock()
+  {
+      dpdfile2 Gtau, F;
+
+      // Builds new Tau and transforms it to SO basis
+      build_tau();
+
+      moFa_->copy(F0a_);
+      moFb_->copy(F0b_);
+
+      // Copy MO basis GTau to the memory
+
+      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+      // Alpha occupied
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < naoccpi_[h]; ++i){
+              for(int j = 0 ; j < naoccpi_[h]; ++j){
+                  moG_tau_a_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Alpha virtual
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < navirpi_[h]; ++i){
+              for(int j = 0; j < navirpi_[h]; ++j){
+                  moG_tau_a_->set(h, naoccpi_[h] + i, naoccpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Beta occupied
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < nboccpi_[h]; ++i){
+              for(int j = 0 ; j < nboccpi_[h]; ++j){
+                  moG_tau_b_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Beta virtual
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0; i < nbvirpi_[h]; ++i){
+              for(int j = 0; j < nbvirpi_[h]; ++j){
+                  moG_tau_b_->set(h, nboccpi_[h] + i, nboccpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Add the GTau contribution to the Fock operator
+      moFa_->add(moG_tau_a_);
+      moFb_->add(moG_tau_b_);
+
+      // Write the MO basis Fock operator to the DPD file
+
+      //Alpha Occupied
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < naoccpi_[h]; ++i){
+              for(int j = 0 ; j < naoccpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFa_->get(h, i, j);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      //Alpha Virtual
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < navirpi_[h]; ++i){
+              for(int j = 0 ; j < navirpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      //Beta Occupied
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < nboccpi_[h]; ++i){
+              for(int j = 0 ; j < nboccpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFb_->get(h, i, j);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      //Beta Virtual
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < nbvirpi_[h]; ++i){
+              for(int j = 0 ; j < nbvirpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFb_->get(h, i + nboccpi_[h], j + nboccpi_[h]);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+  }
+
 
   /**
   * Builds the AO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G and X intermediates
@@ -1327,14 +1462,6 @@ namespace psi{ namespace dcft{
           dpd_buf4_close(&tau2_AO_aa);
           dpd_buf4_close(&tau_temp);
 
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "s(add)A <V|V>");
-          dpd_file2_scm(&tau, 0.0);
-          file2_transform(&s_aa_2, &tau, avir_c_, false);
-          dpd_file2_close(&s_aa_1);
-          dpd_file2_close(&s_aa_2);
-          dpd_file2_close(&tau);
-
 
           /********** BB ***********/
           dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
@@ -1350,14 +1477,6 @@ namespace psi{ namespace dcft{
                   pq_row_start, cd_row_start, false, 1.0, 0.0);
           dpd_buf4_close(&tau2_AO_bb);
           dpd_buf4_close(&tau_temp);
-
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "s(add)B <v|v>");
-          dpd_file2_scm(&tau, 0.0);
-          file2_transform(&s_bb_2, &tau, bvir_c_, false);
-          dpd_file2_close(&s_bb_1);
-          dpd_file2_close(&s_bb_2);
-          dpd_file2_close(&tau);
 
 
           /********** AB ***********/
@@ -1375,6 +1494,35 @@ namespace psi{ namespace dcft{
           dpd_buf4_close(&tau2_AO_ab);
           dpd_buf4_close(&tau_temp);
 
+          // Transform the GTau contribution from MO to SO basis for the future use in the Fock operator
+          // Alpha occupied
+          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
+          dpd_file2_scm(&tau, 0.0);
+          file2_transform(&s_aa_2, &tau, aocc_c_, false);
+          dpd_file2_close(&tau);
+
+          // Alpha virtual
+          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
+          dpd_file2_scm(&tau, 0.0);
+          file2_transform(&s_aa_2, &tau, avir_c_, false);
+          dpd_file2_close(&tau);
+
+          // Beta occupied
+          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
+          dpd_file2_scm(&tau, 0.0);
+          file2_transform(&s_bb_2, &tau, bocc_c_, false);
+          dpd_file2_close(&tau);
+
+          // Beta virtual
+          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
+          dpd_file2_scm(&tau, 0.0);
+          file2_transform(&s_bb_2, &tau, bvir_c_, false);
+          dpd_file2_close(&tau);
+
+          dpd_file2_close(&s_aa_1);
+          dpd_file2_close(&s_aa_2);
+          dpd_file2_close(&s_bb_1);
+          dpd_file2_close(&s_bb_2);
 
           free_int_matrix(pq_row_start);
           free_int_matrix(CD_row_start);

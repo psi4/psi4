@@ -57,6 +57,11 @@ DCFTSolver::compute_energy()
         dpd_buf4_close(&Lbb);
         old_ca_->copy(Ca_);
         old_cb_->copy(Cb_);
+        // Save F0 = H + G * Kappa for the Fock intermediate update in lambda iterations
+        F0a_->copy(Fa_);
+        F0b_->copy(Fb_);
+        F0a_->transform(Ca_);
+        F0b_->transform(Cb_);
         // Just so the correct value is printed in the first macro iteration
         scf_convergence_ = compute_scf_error_vector();
         // Start macro-iterations
@@ -71,6 +76,8 @@ DCFTSolver::compute_energy()
                 std::string diisString;
                 // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
                 build_tensors();
+                // Update Fock operator for the F intermediate
+                if (options_.get_str("AO_BASIS") == "DISK") update_fock();
                 // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
                 build_intermediates();
                 // Compute the residuals for density cumulant equations
@@ -146,6 +153,11 @@ DCFTSolver::compute_energy()
                 Fb_->copy(so_h_);
                 // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
                 process_so_ints();
+                // Save F0 = H + G * Kappa for the Fock intermediate update in lambda iterations
+                F0a_->copy(Fa_);
+                F0b_->copy(Fb_);
+                F0a_->transform(Ca_);
+                F0b_->transform(Cb_);
                 // Save old SCF energy
                 old_total_energy_ = new_total_energy_;
                 // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
