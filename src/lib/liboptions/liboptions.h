@@ -5,10 +5,11 @@
 #include <vector>
 #include <map>
 #include <exception.h>
-#include <boost/python.hpp>
-#include <boost/python/object.hpp>
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
 #include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
+
+// Forward boost python object
+#include <boost/python/object_fwd.hpp>
 
 namespace psi {
 extern FILE *outfile;
@@ -93,21 +94,6 @@ public:
 
     virtual Data& operator[](std::string);
     virtual Data& operator[](unsigned int);
-};
-
-class PythonDataType : public DataType
-{
-    boost::python::object python_object_;
-public:
-    PythonDataType();
-    PythonDataType(const boost::python::object& p);
-    virtual ~PythonDataType();
-
-    virtual std::string type() const;
-
-    const boost::python::object& to_python() const;
-
-    void assign(const boost::python::object& p);
 };
 
 #pragma warning disable 654

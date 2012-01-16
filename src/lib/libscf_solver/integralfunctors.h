@@ -4,13 +4,10 @@
 #include "hf.h"
 #include <libiwl/iwl.hpp>
 #include <libmints/mints.h>
+#include <libmints/sointegral_twobody.h>
 #include "pseudospectral.h"
 #include "pkintegrals.h"
 #include "df.h"
-
-namespace boost {
-template<class T> class shared_ptr;
-}
 
 // We're assuming that for (PQ|RS) P>=Q, R>=S and PQ>=RS
 

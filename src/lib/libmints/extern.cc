@@ -1,4 +1,5 @@
 #include <libciomr/libciomr.h>
+#include <libqt/qt.h>
 
 #include "mints.h"
 #include "extern.h"
@@ -41,7 +42,7 @@ void ExternalPotential::print(FILE* out) const
         fprintf(out,"\n");
     }
 
-    // Bases 
+    // Bases
     if (bases_.size()) {
         fprintf(out, "    > Diffuse Bases < \n\n");
         for (int i = 0; i < bases_.size(); i++) {
@@ -53,7 +54,7 @@ void ExternalPotential::print(FILE* out) const
                 fprintf(out, "    Density Coefficients %d\n\n", i+1);
                 bases_[i].second->print();
             }
-        } 
+        }
     }
 
     fflush(out);
@@ -84,7 +85,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basi
     V_charge.reset();
     pot.reset();
 
-    // Diffuse Bases 
+    // Diffuse Bases
     for (int ind = 0; ind < bases_.size(); ind++) {
 
         boost::shared_ptr<BasisSet> aux = bases_[ind].first;
@@ -107,9 +108,9 @@ SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basi
                     int Qstart = aux->shell(Q)->function_index();
                     int Mstart = basis->shell(M)->function_index();
                     int Nstart = basis->shell(N)->function_index();
-                    
+
                     eri->compute_shell(Q,0,M,N);
-            
+
                     for (int oq = 0, index = 0; oq < numQ; oq++) {
                         for (int om = 0; om < numM; om++) {
                             for (int on = 0; on < numN; on++, index++) {
@@ -119,7 +120,7 @@ SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basi
                     }
                 }
             }
-        } 
+        }
     }
 
     return V;
@@ -131,18 +132,18 @@ double ExternalPotential::computeNuclearEnergy(boost::shared_ptr<Molecule> mol)
     // Nucleus-charge interaction
     for (int A = 0; A < mol->natom(); A++) {
 
-        double xA = mol->x(A);        
-        double yA = mol->y(A);        
-        double zA = mol->z(A);        
-        double ZA = mol->Z(A);        
+        double xA = mol->x(A);
+        double yA = mol->y(A);
+        double zA = mol->z(A);
+        double ZA = mol->Z(A);
 
         for (int B = 0; B < charges_.size(); B++) {
-    
-            double ZB = get<0>(charges_[B]);           
-            double xB = get<1>(charges_[B]);           
-            double yB = get<2>(charges_[B]);           
-            double zB = get<3>(charges_[B]);           
- 
+
+            double ZB = get<0>(charges_[B]);
+            double xB = get<1>(charges_[B]);
+            double yB = get<2>(charges_[B]);
+            double zB = get<3>(charges_[B]);
+
             double dx = xA - xB;
             double dy = yA - yB;
             double dz = zA - zB;
@@ -159,7 +160,7 @@ double ExternalPotential::computeNuclearEnergy(boost::shared_ptr<Molecule> mol)
         SharedMatrix Zxyz(new Matrix("Charges (Z,x,y,z)", mol->natom(), 4));
         double** Zxyzp = Zxyz->pointer();
         for (int A = 0; A < mol->natom(); A++) {
-            Zxyzp[A][0] = mol->Z(A); 
+            Zxyzp[A][0] = mol->Z(A);
             Zxyzp[A][1] = mol->x(A);
             Zxyzp[A][2] = mol->y(A);
             Zxyzp[A][3] = mol->z(A);
@@ -178,7 +179,7 @@ double ExternalPotential::computeNuclearEnergy(boost::shared_ptr<Molecule> mol)
             pot->set_charge_field(Zxyz);
             pot->compute(V);
 
-            E += C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);        
+            E += C_DDOT(aux->nbf(), d->pointer(), 1, V->pointer()[0], 1);
         }
     }
 

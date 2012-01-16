@@ -1,3 +1,11 @@
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/regex_actions.hpp>
+#include <boost/algorithm/string.hpp>
+
 #include <libmints/mints.h>
 #include "cubature.h"
 #include "gridblocker.h"
@@ -13,14 +21,6 @@
 #include <utility>
 #include <limits>
 #include <ctype.h>
-
-#include <boost/tuple/tuple.hpp>
-#include <boost/tuple/tuple_comparison.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/regex.hpp>
-#include <boost/xpressive/xpressive.hpp>
-#include <boost/xpressive/regex_actions.hpp>
-#include <boost/algorithm/string.hpp>
 
 using namespace boost;
 using namespace std;
@@ -56,7 +56,7 @@ void BasisExtents::computeExtents()
 {
     // Here we assume the absolute spherical basis functions
     // |\phi|_P(r) = |C_k| r^l exp(-a_k r^2)
-    
+
     // We are trying to zero the objective function
     // O(r) = |\phi|_P(r) - \delta
 
@@ -75,11 +75,11 @@ void BasisExtents::computeExtents()
             maxR_ = std::numeric_limits<double>::max();
             continue;
         }
-    
+
         // Stage 1: Collect information on the shell
         boost::shared_ptr<GaussianShell> Pshell = primary_->shell(P);
         int l         = Pshell->am();
-        int nprim     = Pshell->nprimitive();      
+        int nprim     = Pshell->nprimitive();
         double* alpha = Pshell->exps();
         double* norm  = Pshell->coefs();
 
@@ -91,13 +91,13 @@ void BasisExtents::computeExtents()
             if (alpha_max > alpha[K]) {
                 alpha_max = alpha[K];
                 norm_max = fabs(norm[K]);
-            }    
-        } 
+            }
+        }
 
         // Stage 2: Form a well-posed bounding box for R
-        
+
         // A: Force O at the right end of the box to be negative
-       
+
         // Take a crude guess based on most-diffuse exponent
         // Removing nonlinearity with R0 = 10.0 a.u.
         double Rr = 2.0;
@@ -107,28 +107,28 @@ void BasisExtents::computeExtents()
             Or = 0.0;
             for (int K = 0; K < nprim; K++) {
                 Or += fabs(norm[K]) * pow(Rr,l) * exp(-alpha[K] * Rr * Rr);
-            }        
-            Or = fabs(Or) - delta_; 
-           
-            // Move further right 
-            if (Or > 0.0) 
+            }
+            Or = fabs(Or) - delta_;
+
+            // Move further right
+            if (Or > 0.0)
                 Rr *= 2.0;
- 
+
         } while (Or > 0.0);
 
         // B: Force O at the left end of the box to be positive
-        double Rl = Rr; // We know this is negative due to Rr 
+        double Rl = Rr; // We know this is negative due to Rr
         double Ol = 0.0;
         do {
             // Compute Ol
             Ol = 0.0;
             for (int K = 0; K < nprim; K++) {
                 Ol += fabs(norm[K]) * pow(Rl,l) * exp(-alpha[K] * Rl * Rl);
-            }       
-            Ol = fabs(Ol) - delta_; 
-            
+            }
+            Ol = fabs(Ol) - delta_;
+
             // Move further left
-            if (Ol < 0.0) 
+            if (Ol < 0.0)
                 Rl /= 2.0;
 
             // Check if we missed the positive bit in the middle somehow
@@ -136,7 +136,7 @@ void BasisExtents::computeExtents()
                 throw PSIEXCEPTION("BasisExtents: Left root of basis cutoffs found the nuclear cusp.\n"
                     "This is very bad.");
             }
- 
+
         } while (Ol < 0.0);
 
         // Stage 3: Locate R via bisection
@@ -148,17 +148,17 @@ void BasisExtents::computeExtents()
                 Oc += fabs(norm[K]) * pow(Rc,l) * exp(-alpha[K] * Rc * Rc);
             }
             Oc = fabs(Oc) - delta_;
-            
+
             if (Oc > 0.0) {
                 Rl = Rc;
                 Ol = Oc;
             } else {
                 Rr = Rc;
                 Or = Oc;
-            }           
-            // My MechE profs would disapprove of this cutoff.  
+            }
+            // My MechE profs would disapprove of this cutoff.
         } while (fabs(Rr - Rl) > 1.0E-8 * Rl && fabs(Oc) != 0.0);
-    
+
         // Assign the calculated value
         Rp[P] = Rc;
 
@@ -173,13 +173,13 @@ void BasisExtents::print(FILE* out)
     fprintf(out, "   => BasisExtents: Cutoff = %11.3E <=\n\n", delta_);
 
     double* Rp = shell_extents_->pointer();
-    fprintf(out, "   Shell Extents:\n"); 
+    fprintf(out, "   Shell Extents:\n");
     fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
     for (int Q = 0; Q < primary_->nshell(); Q++) {
         Vector3 v = primary_->shell(Q)->center();
-        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", Q+1, 
-            v[0], v[1], v[2], Rp[Q]); 
-    } 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", Q+1,
+            v[0], v[1], v[2], Rp[Q]);
+    }
     fprintf(out, "\n\n");
 }
 BlockOPoints::BlockOPoints(int npoints, double* x, double* y, double* z, double* w, boost::shared_ptr<BasisExtents> extents) :
@@ -193,7 +193,7 @@ BlockOPoints::~BlockOPoints()
 }
 void BlockOPoints::bound()
 {
-    // Initially: mean center and max spread of point cloud 
+    // Initially: mean center and max spread of point cloud
     double R2 = 0.0;
 
     xc_[0] = xc_[1] = xc_[2] = R2 = 0.0;
@@ -202,7 +202,7 @@ void BlockOPoints::bound()
         xc_[0] += x_[Q];
         xc_[1] += y_[Q];
         xc_[2] += z_[Q];
-    } 
+    }
 
     xc_[0] /= (double) npoints_;
     xc_[1] /= (double) npoints_;
@@ -226,16 +226,16 @@ void BlockOPoints::populate()
     boost::shared_ptr<BasisSet> primary = extents_->basis();
     double* Rp = extents_->shell_extents()->pointer();
 
-    // Determine significant shell/functions 
+    // Determine significant shell/functions
     for (int P = 0; P < primary->nshell(); P++) {
-       
-        // First pass: mean center/max spread of point clould 
+
+        // First pass: mean center/max spread of point clould
         Vector3 v = primary->shell(P)->center();
         double Reff = sqrt((v[0] - xc_[0]) * (v[0] - xc_[0]) +
                            (v[1] - xc_[1]) * (v[1] - xc_[1]) +
                            (v[2] - xc_[2]) * (v[2] - xc_[2]));
-        
-        
+
+
         if (Reff > R_ + Rp[P]) continue;
 
         // Second pass: check individual points
@@ -252,33 +252,33 @@ void BlockOPoints::populate()
                 shells_local_to_global_.push_back(P);
                 for (int oP = 0; oP < nP; oP++) {
                     functions_local_to_global_.push_back(oP + pstart);
-                } 
+                }
 
                 break;
-            } 
+            }
         }
     }
 }
 void BlockOPoints::print(FILE* out, int print)
 {
     fprintf(out, "   => BlockOPoints: %d Points <=\n\n", npoints_);
-    
+
     fprintf(out, "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
         xc_[0],xc_[1],xc_[2],R_);
 
-    fprintf(out, "    %-6lu Significant Shells.\n", shells_local_to_global_.size()); 
+    fprintf(out, "    %-6lu Significant Shells.\n", shells_local_to_global_.size());
     fprintf(out, "    %-6lu Significant Functions.\n\n", functions_local_to_global_.size());
 
     if (print > 3) {
         fprintf(out, "    Significant Shells: ");
         for (int i = 0; i < shells_local_to_global_.size(); i++) {
             fprintf(out, "%d ", shells_local_to_global_[i]);
-        } 
+        }
         fprintf(out, "\n\n");
         fprintf(out, "    Significant Functions: ");
         for (int i = 0; i < functions_local_to_global_.size(); i++) {
             fprintf(out, "%d ", functions_local_to_global_[i]);
-        } 
+        }
         fprintf(out, "\n\n");
     }
 
@@ -287,11 +287,11 @@ void BlockOPoints::print(FILE* out, int print)
         fprintf(out, "   Quadrature Points:\n\n");
         fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
         for (int i = 0; i < npoints_; i++) {
-            fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
-                x_[i], y_[i], z_[i], w_[i]); 
-        } 
+            fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1,
+                x_[i], y_[i], z_[i], w_[i]);
+        }
         fprintf(out, "\n\n");
-    } 
+    }
 }
 DFTGrid::DFTGrid(boost::shared_ptr<Molecule> molecule,
                  boost::shared_ptr<BasisSet> primary,
@@ -310,7 +310,7 @@ void DFTGrid::buildGridFromOptions()
     std::vector<boost::shared_ptr<AtomicGrid> > atoms;
 
     boost::shared_ptr<Vector> alpha(new Vector("Alpha Center per Atom", molecule_->natom()));
-    double* alphap = alpha->pointer(); 
+    double* alphap = alpha->pointer();
 
     MolecularGrid::getBSRadii();
     for (int A = 0; A < molecule_->natom(); A++) {
@@ -323,18 +323,18 @@ void DFTGrid::buildGridFromOptions()
     for (std::map<int, int>::iterator it = leb_orders.begin(); it != leb_orders.end(); it++) {
         if ((*it).first > 1) // Order 1 is for trial purposes only
             valid_orders.push_back((*it).first);
-    } 
+    }
 
     std::sort(valid_orders.begin(), valid_orders.end());
 
     if (options_.get_str("DFT_GRID_NAME") != "") {
-        throw FeatureNotImplemented("DFTGrid","Named Grids, e.g., SG1",__FILE__,__LINE__); 
+        throw FeatureNotImplemented("DFTGrid","Named Grids, e.g., SG1",__FILE__,__LINE__);
         // TODO: Named grids
     }
 
     for (int A = 0; A < molecule_->natom(); A++) {
         boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
-            options_.get_str("DFT_RADIAL_SCHEME"), 
+            options_.get_str("DFT_RADIAL_SCHEME"),
             options_.get_int("DFT_NUM_RADIAL"),
             alphap[A]);
         std::vector<boost::shared_ptr<SphericalGrid> > spheres;
@@ -349,8 +349,8 @@ void DFTGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -363,7 +363,7 @@ void DFTGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -373,8 +373,8 @@ void DFTGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(2.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -387,7 +387,7 @@ void DFTGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -397,8 +397,8 @@ void DFTGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL"));
                 double R = log(radial->r()[i] / alphap[A]);
 
-                int Ldesired = (int) ceil(Ap * exp(-exponent * fabs(R)) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * exp(-exponent * fabs(R)) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -411,7 +411,7 @@ void DFTGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -421,8 +421,8 @@ void DFTGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(1.0 / 2.0) / (alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -435,7 +435,7 @@ void DFTGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -445,8 +445,8 @@ void DFTGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -459,7 +459,7 @@ void DFTGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -469,8 +469,8 @@ void DFTGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("DFT_ORDER_SPHERICAL"));
                 double R = log(radial->r()[i] / alphap[A]);
 
-                int Ldesired = (int) ceil(Ap * exp(-exponent * R * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * exp(-exponent * R * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -483,7 +483,7 @@ void DFTGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -504,7 +504,7 @@ void DFTGrid::buildGridFromOptions()
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights
-    buildGrid(atoms, options_.get_str("DFT_NUCLEAR_SCHEME"), extents, max_points, min_points);     
+    buildGrid(atoms, options_.get_str("DFT_NUCLEAR_SCHEME"), extents, max_points, min_points);
 }
 
 
@@ -525,7 +525,7 @@ PseudospectralGrid::PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
 }
 PseudospectralGrid::~PseudospectralGrid()
 {
-} 
+}
 void PseudospectralGrid::buildGridFromFile()
 {
     throw FeatureNotImplemented("PseudospectralGrid","buildGridFromFile",__FILE__,__LINE__);
@@ -620,7 +620,7 @@ void PseudospectralGrid::buildGridFromFile()
             throw PSIEXCEPTION("PseudoGridParser::parser: Unable to find the grid for " + molecule_->label(atom));
     }
 
-    std::map<int,int> lebedev_orders_to_points = SphericalGrid::lebedevOrdersToPoints(); 
+    std::map<int,int> lebedev_orders_to_points = SphericalGrid::lebedevOrdersToPoints();
 
     int npoints = 0;
     for (int atom = 0; atom < molecule_->natom(); atom++) {
@@ -640,7 +640,7 @@ void PseudospectralGrid::buildGridFromFile()
         throw PSIEXCEPTION("PseudoGridParser: No Grid points in this molecule");
 
 
-    std::vector<AtomicGrid> atoms;    
+    std::vector<AtomicGrid> atoms;
 
     // Phase II: build the grid
     for (int atom = 0; atom < molecule_->natom(); atom++) {
@@ -712,7 +712,7 @@ void PseudospectralGrid::buildGridFromOptions()
     std::vector<boost::shared_ptr<AtomicGrid> > atoms;
 
     boost::shared_ptr<Vector> alpha(new Vector("Alpha Center per Atom", molecule_->natom()));
-    double* alphap = alpha->pointer(); 
+    double* alphap = alpha->pointer();
 
     MolecularGrid::getBSRadii();
     for (int A = 0; A < molecule_->natom(); A++) {
@@ -725,13 +725,13 @@ void PseudospectralGrid::buildGridFromOptions()
     for (std::map<int, int>::iterator it = leb_orders.begin(); it != leb_orders.end(); it++) {
         if ((*it).first > 1) // Order 1 is for trial purposes only
             valid_orders.push_back((*it).first);
-    } 
+    }
 
     std::sort(valid_orders.begin(), valid_orders.end());
 
     for (int A = 0; A < molecule_->natom(); A++) {
         boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
-            options_.get_str("PS_RADIAL_SCHEME"), 
+            options_.get_str("PS_RADIAL_SCHEME"),
             options_.get_int("PS_NUM_RADIAL"),
             alphap[A]);
         std::vector<boost::shared_ptr<SphericalGrid> > spheres;
@@ -746,8 +746,8 @@ void PseudospectralGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -760,7 +760,7 @@ void PseudospectralGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -770,8 +770,8 @@ void PseudospectralGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(2.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -784,7 +784,7 @@ void PseudospectralGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -794,8 +794,8 @@ void PseudospectralGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL"));
                 double R = log(radial->r()[i] / alphap[A]);
 
-                int Ldesired = (int) ceil(Ap * exp(-exponent * fabs(R)) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * exp(-exponent * fabs(R)) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -808,7 +808,7 @@ void PseudospectralGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -818,8 +818,8 @@ void PseudospectralGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0 / 2.0) / (alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -832,7 +832,7 @@ void PseudospectralGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -842,8 +842,8 @@ void PseudospectralGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A] * alphap[A]);
                 double R = radial->r()[i];
 
-                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -856,7 +856,7 @@ void PseudospectralGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -866,8 +866,8 @@ void PseudospectralGrid::buildGridFromOptions()
                 double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL"));
                 double R = log(radial->r()[i] / alphap[A]);
 
-                int Ldesired = (int) ceil(Ap * exp(-exponent * R * R) - 1.0E-10); 
-    
+                int Ldesired = (int) ceil(Ap * exp(-exponent * R * R) - 1.0E-10);
+
                 int Lselected = 0;
 
                 for (int j = 0; j < valid_orders.size(); j++) {
@@ -880,7 +880,7 @@ void PseudospectralGrid::buildGridFromOptions()
                 if (Lselected == 0)
                     throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
 
-                // Must use lebedev for pruned grids 
+                // Must use lebedev for pruned grids
                 spheres.push_back(SphericalGrid::buildGrid(
                     "LEBEDEV",
                     Lselected));
@@ -900,7 +900,7 @@ void PseudospectralGrid::buildGridFromOptions()
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights
-    buildGrid(atoms, options_.get_str("PS_NUCLEAR_SCHEME"), extents, max_points, min_points);     
+    buildGrid(atoms, options_.get_str("PS_NUCLEAR_SCHEME"), extents, max_points, min_points);
 }
 
 MolecularGrid::MolecularGrid(boost::shared_ptr<Molecule> molecule) :
@@ -920,7 +920,7 @@ MolecularGrid::~MolecularGrid()
 void MolecularGrid::sieve()
 {
     // => Remove points with 0.0 weight <= //
-    remove_zero_points();    
+    remove_zero_points();
 
     // => Remove points that are very distant <= //
     remove_distant_points(extents_->maxR());
@@ -990,14 +990,14 @@ void MolecularGrid::remove_distant_points(double Rmax)
     int offset = 0;
     for (int Q = 0; Q < npoints_; Q++) {
         Vector3 v = molecule_->xyz(0);
-        double R = (x_[Q] - v[0]) * (x_[Q] - v[0]) + 
-                   (y_[Q] - v[1]) * (y_[Q] - v[1]) + 
-                   (z_[Q] - v[2]) * (z_[Q] - v[2]);  
+        double R = (x_[Q] - v[0]) * (x_[Q] - v[0]) +
+                   (y_[Q] - v[1]) * (y_[Q] - v[1]) +
+                   (z_[Q] - v[2]) * (z_[Q] - v[2]);
         for (int A = 1; A < natom; A++) {
             v = molecule_->xyz(A);
-            double R2 = (x_[Q] - v[0]) * (x_[Q] - v[0]) + 
-                        (y_[Q] - v[1]) * (y_[Q] - v[1]) + 
-                        (z_[Q] - v[2]) * (z_[Q] - v[2]);  
+            double R2 = (x_[Q] - v[0]) * (x_[Q] - v[0]) +
+                        (y_[Q] - v[1]) * (y_[Q] - v[1]) +
+                        (z_[Q] - v[2]) * (z_[Q] - v[2]);
             if (R > R2) {
                 R = R2;
             }
@@ -1015,14 +1015,14 @@ void MolecularGrid::remove_distant_points(double Rmax)
     }
     npoints_ = npoints2;
 }
-SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol) 
+SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol)
 {
     SharedMatrix R(new Matrix("Standard Orientation", 3, 3));
     int natom = mol->natom();
 
     // These rules are based on the industry-standard, and entirely
     // inelegant rules of Gill, Johnson, and Pople, Chem Phys Lett
-    // 209(5), 1993, pp. 511    
+    // 209(5), 1993, pp. 511
 
     // Center of nuclear charge
     double Z = 0.0;
@@ -1036,14 +1036,14 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
         Z += mol->Z(A);
     }
 
-    Xp[0] /= Z; 
-    Xp[1] /= Z; 
-    Xp[2] /= Z; 
-    
+    Xp[0] /= Z;
+    Xp[1] /= Z;
+    Xp[2] /= Z;
+
     // Second moment of charge tensor
     SharedMatrix I(new Matrix("Second Moment of Charge", 3, 3));
     double** Ip = I->pointer();
-    
+
     for (int A = 0; A < natom; A++) {
         Ip[0][0] += (mol->x(A) - Xp[0]) * (mol->x(A) - Xp[0]) * mol->Z(A);
         Ip[0][1] += (mol->x(A) - Xp[0]) * (mol->y(A) - Xp[1]) * mol->Z(A);
@@ -1065,7 +1065,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
     if (debug_) {
         fprintf(outfile, "  => MolecularGrid: Standard Orientation <= \n\n");
-        fprintf(outfile, "  Total Charge: %d\n\n", (int) Z); 
+        fprintf(outfile, "  Total Charge: %d\n\n", (int) Z);
         X->print();
         I->print();
         D->print();
@@ -1073,7 +1073,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
     }
 
     // What kinda bug are we dealing with here?
-    
+
     // Jitter tolerance
     double* Dp = D->pointer();
     double** Vp = V->pointer();
@@ -1103,7 +1103,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
             v1[2] = mol->z(A) - Xp[2];
 
             double norm = sqrt(v1[0] * v1[0] + v1[1] * v1[1] + v1[2] * v1[2]);
-        
+
             if (norm > jitter) {
                 v1[0] /= norm;
                 v1[1] /= norm;
@@ -1123,7 +1123,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
             v2[2] = mol->z(A) - Xp[2];
 
             double norm = sqrt(v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2]);
-        
+
             if (norm > jitter) {
                 v2[0] /= norm;
                 v2[1] /= norm;
@@ -1137,7 +1137,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
             }
         }
         if (!index2) throw PSIEXCEPTION("No relevant atom found in tetrahedral or higher symmetry");
-        
+
         // Householder to place significant atom 1 in Z or -Z (choice is arbitrary, but more stable)
         double** Rp = R->pointer();
 
@@ -1146,9 +1146,9 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
         V[0] = v1[0];
         V[1] = v1[1];
         V[2] = v1[2] + alpha;
-        double norm2 = V[0] * V[0] + V[1] * V[1] + V[2] * V[2]; 
-        
-        R->identity();    
+        double norm2 = V[0] * V[0] + V[1] * V[1] + V[2] * V[2];
+
+        R->identity();
         Rp[0][0] -= 2.0/norm2 * V[0] * V[0];
         Rp[0][1] -= 2.0/norm2 * V[0] * V[1];
         Rp[0][2] -= 2.0/norm2 * V[0] * V[2];
@@ -1161,16 +1161,16 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
         // Givens rotation in X and Y to place atom 2 in X
         double v3[3];
-        v3[0] = Rp[0][0] * v2[0] + Rp[0][1] * v2[1] + Rp[0][2] * v2[2];  
-        v3[1] = Rp[1][0] * v2[0] + Rp[1][1] * v2[1] + Rp[1][2] * v2[2];  
-        v3[2] = Rp[2][0] * v2[0] + Rp[2][1] * v2[1] + Rp[2][2] * v2[2];  
+        v3[0] = Rp[0][0] * v2[0] + Rp[0][1] * v2[1] + Rp[0][2] * v2[2];
+        v3[1] = Rp[1][0] * v2[0] + Rp[1][1] * v2[1] + Rp[1][2] * v2[2];
+        v3[2] = Rp[2][0] * v2[0] + Rp[2][1] * v2[1] + Rp[2][2] * v2[2];
 
         double norm = sqrt(v3[0] * v3[0] + v3[1] * v3[1]);
         v3[0] /= norm;
         v3[1] /= norm;
         v3[2] /= norm;
-        
-        double c = v3[0]; 
+
+        double c = v3[0];
         double s = v3[1];
 
         double xc, yc;
@@ -1192,7 +1192,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
     } else if (fabs(Dp[0] - Dp[1]) < jitter || fabs(Dp[1] - Dp[2]) < jitter) {
         // Symmetric top, nonlinear
         if (debug_) fprintf(outfile, "    Symmetric top, nonlinear\n\n");
-    
+
         // Put the unique axis in z
         if (fabs(Dp[1] - Dp[2]) < jitter) {
             double temp = Dp[0];
@@ -1206,22 +1206,22 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
             C_DCOPY(3, &Vp[0][2], 3, &Vp[0][1], 3);
             C_DCOPY(3, tempp, 1, &Vp[0][2], 3);
         }
-    
+
         // Develop projection onto Z and R for each atom
         SharedVector Zproj(new Vector("Projection on Z", natom));
         SharedVector Rproj(new Vector("Projection on R", natom));
         double* Zp = Zproj->pointer();
         double* Rp = Rproj->pointer();
-        
+
         double v[3];
         for (int A = 0; A < natom; A++) {
             v[0] = mol->x(A) - Xp[0];
             v[1] = mol->y(A) - Xp[1];
             v[2] = mol->z(A) - Xp[2];
 
-            Zp[A] = v[0] * Vp[0][2] +     
-                    v[1] * Vp[1][2] +     
-                    v[2] * Vp[2][2];     
+            Zp[A] = v[0] * Vp[0][2] +
+                    v[1] * Vp[1][2] +
+                    v[2] * Vp[2][2];
 
             Rp[A] = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2] - Zp[A] * Zp[A]);
         }
@@ -1231,12 +1231,12 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
         // Eliminate non-significant digits (below jitter) in Z and R to prevent false sorting
         for (int A = 0; A < natom; A++) {
-            if (Zp[A] > 0) { 
+            if (Zp[A] > 0) {
                 Zp[A] = jitter * round(Zp[A] / jitter);
             } else {
                 Zp[A] = -jitter * round(-Zp[A] / jitter);
             }
-            if (Rp[A] > 0) { 
+            if (Rp[A] > 0) {
                 Rp[A] = jitter * round(Rp[A] / jitter);
             } else {
                 Rp[A] = -jitter * round(-Rp[A] / jitter);
@@ -1249,7 +1249,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
         for (int A = 0; A < natom; A++) {
             tests.push_back(boost::tuple<double,int,double,int,int>(fabs(Zp[A]), (int) (Zp[A] < 0) - (int) (Zp[A] > 0), Rp[A], mol->Z(A), A));
         }
-    
+
         std::sort(tests.begin(), tests.end());
 
         // Set index of projection
@@ -1269,13 +1269,13 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
         v3[2] = Vp[2][2];
 
         double v1[3];
-        v1[0] = mol->x(index) - Xp[0]; 
-        v1[1] = mol->y(index) - Xp[1]; 
-        v1[2] = mol->z(index) - Xp[2]; 
+        v1[0] = mol->x(index) - Xp[0];
+        v1[1] = mol->y(index) - Xp[1];
+        v1[2] = mol->z(index) - Xp[2];
 
-        double zproj = v1[0] * v3[0] +     
-                       v1[1] * v3[1] +     
-                       v1[2] * v3[2];     
+        double zproj = v1[0] * v3[0] +
+                       v1[1] * v3[1] +
+                       v1[2] * v3[2];
 
         v1[0] -= zproj * v3[0];
         v1[1] -= zproj * v3[1];
@@ -1287,9 +1287,9 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
         v1[2] /= v1norm;
 
         double v2[3];
-        v2[0] = (v1[1] * v3[2] - v1[2] * v3[1]); 
-        v2[1] = -(v1[0] * v3[2] - v1[2] * v3[0]); 
-        v2[2] = (v1[0] * v3[1] - v1[1] * v3[0]); 
+        v2[0] = (v1[1] * v3[2] - v1[2] * v3[1]);
+        v2[1] = -(v1[0] * v3[2] - v1[2] * v3[0]);
+        v2[2] = (v1[0] * v3[1] - v1[1] * v3[0]);
 
         double v2norm = sqrt(v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2]);
         v2[0] /= v2norm;
@@ -1316,7 +1316,7 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
     return R;
 }
-boost::shared_ptr<GridBlock> MolecularGrid::fullGrid() 
+boost::shared_ptr<GridBlock> MolecularGrid::fullGrid()
 {
     boost::shared_ptr<GridBlock>g(new GridBlock());
     g->setMaxPoints(npoints_);
@@ -1330,7 +1330,7 @@ void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms
     extents_ = extents;
     primary_ = extents_->basis();
     atoms_ = atoms;
-        
+
     if (npoints_) {
         delete[] x_;
         delete[] y_;
@@ -1347,8 +1347,8 @@ void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms
     y_ = new double[npoints_];
     z_ = new double[npoints_];
     w_ = new double[npoints_];
-   
-    for (int i = 0, ij = 0; i < atoms_.size(); i++) {   
+
+    for (int i = 0, ij = 0; i < atoms_.size(); i++) {
         double* x = atoms_[i]->x();
         double* y = atoms_[i]->y();
         double* z = atoms_[i]->z();
@@ -1379,61 +1379,61 @@ void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms
 void MolecularGrid::getBSRadii()
 {
     if (BSRadii_.size() == 0) {
-        BSRadii_.push_back(1.000);     
-        BSRadii_.push_back(1.001);     
-        BSRadii_.push_back(1.012);     
-        BSRadii_.push_back(0.825);     
-        BSRadii_.push_back(1.408);     
-        BSRadii_.push_back(1.485);     
-        BSRadii_.push_back(1.452);     
-        BSRadii_.push_back(1.397);     
-        BSRadii_.push_back(1.342);     
-        BSRadii_.push_back(1.287);     
-        BSRadii_.push_back(1.243);     
-        BSRadii_.push_back(1.144);     
-        BSRadii_.push_back(1.364);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.716);     
-        BSRadii_.push_back(1.705);     
-        BSRadii_.push_back(1.683);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.595);     
-        BSRadii_.push_back(1.485);     
-        BSRadii_.push_back(1.474);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.562);     
-        BSRadii_.push_back(1.650);     
-        BSRadii_.push_back(1.727);     
-        BSRadii_.push_back(1.760);     
-        BSRadii_.push_back(1.771);     
-        BSRadii_.push_back(1.749);     
-        BSRadii_.push_back(1.727);     
-        BSRadii_.push_back(1.628);     
-        BSRadii_.push_back(1.606);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.639);     
-        BSRadii_.push_back(1.672);     
-        BSRadii_.push_back(1.804);     
-        BSRadii_.push_back(1.881);     
-        BSRadii_.push_back(1.892);     
-        BSRadii_.push_back(1.892);     
-        BSRadii_.push_back(1.881);     
+        BSRadii_.push_back(1.000);
+        BSRadii_.push_back(1.001);
+        BSRadii_.push_back(1.012);
+        BSRadii_.push_back(0.825);
+        BSRadii_.push_back(1.408);
+        BSRadii_.push_back(1.485);
+        BSRadii_.push_back(1.452);
+        BSRadii_.push_back(1.397);
+        BSRadii_.push_back(1.342);
+        BSRadii_.push_back(1.287);
+        BSRadii_.push_back(1.243);
+        BSRadii_.push_back(1.144);
+        BSRadii_.push_back(1.364);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.716);
+        BSRadii_.push_back(1.705);
+        BSRadii_.push_back(1.683);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.595);
+        BSRadii_.push_back(1.485);
+        BSRadii_.push_back(1.474);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.562);
+        BSRadii_.push_back(1.650);
+        BSRadii_.push_back(1.727);
+        BSRadii_.push_back(1.760);
+        BSRadii_.push_back(1.771);
+        BSRadii_.push_back(1.749);
+        BSRadii_.push_back(1.727);
+        BSRadii_.push_back(1.628);
+        BSRadii_.push_back(1.606);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.639);
+        BSRadii_.push_back(1.672);
+        BSRadii_.push_back(1.804);
+        BSRadii_.push_back(1.881);
+        BSRadii_.push_back(1.892);
+        BSRadii_.push_back(1.892);
+        BSRadii_.push_back(1.881);
     }
 }
 void MolecularGrid::applyStandardWeights(SharedMatrix chi_values)
@@ -1452,33 +1452,33 @@ void MolecularGrid::applyStandardWeights(SharedMatrix chi_values)
     }
 
     // Now chip is the aij value
-    double** inv_dist = block_matrix(natom, natom); 
+    double** inv_dist = block_matrix(natom, natom);
 
     // Build the inverse distance map
     for (int A = 0; A < natom; A++) {
         for (int B = 0; B < natom; B++) {
             if (A == B) continue;
-            inv_dist[A][B] = 1.0 / sqrt((molecule_->x(A) - molecule_->x(B)) * (molecule_->x(A) - molecule_->x(B)) +    
-                           (molecule_->y(A) - molecule_->y(B)) * (molecule_->y(A) - molecule_->y(B)) +    
-                           (molecule_->z(A) - molecule_->z(B)) * (molecule_->z(A) - molecule_->z(B)));   
-        } 
+            inv_dist[A][B] = 1.0 / sqrt((molecule_->x(A) - molecule_->x(B)) * (molecule_->x(A) - molecule_->x(B)) +
+                           (molecule_->y(A) - molecule_->y(B)) * (molecule_->y(A) - molecule_->y(B)) +
+                           (molecule_->z(A) - molecule_->z(B)) * (molecule_->z(A) - molecule_->z(B)));
+        }
     }
 
     double* dist = new double[natom];
 
     for (int A = 0, ij = 0; A < natom; A++) {
         for (int k = 0; k < atoms_[A]->npoints(); k++, ij++) {
-            double x = x_[ij]; 
-            double y = y_[ij]; 
-            double z = z_[ij]; 
-            
-            for (int l = 0; l < natom; l++) { 
-                dist[l] = sqrt((x - molecule_->x(l)) * (x - molecule_->x(l)) + 
-                               (y - molecule_->y(l)) * (y - molecule_->y(l)) + 
-                               (z - molecule_->z(l)) * (z - molecule_->z(l))); 
+            double x = x_[ij];
+            double y = y_[ij];
+            double z = z_[ij];
+
+            for (int l = 0; l < natom; l++) {
+                dist[l] = sqrt((x - molecule_->x(l)) * (x - molecule_->x(l)) +
+                               (y - molecule_->y(l)) * (y - molecule_->y(l)) +
+                               (z - molecule_->z(l)) * (z - molecule_->z(l)));
             }
-            
-            double numerator = 0.0; 
+
+            double numerator = 0.0;
             double denominator = 0.0;
             double prod, mu, nu, s;
             for (int i =0; i <natom; i++) {
@@ -1504,10 +1504,10 @@ void MolecularGrid::applyStandardWeights(SharedMatrix chi_values)
 
     delete[] dist;
     free_block(inv_dist);
-} 
+}
 void MolecularGrid::applyNaiveWeights()
 {
-    scheme_ = "Naive"; 
+    scheme_ = "Naive";
 
     int natom = molecule_->natom();
 
@@ -1522,12 +1522,12 @@ void MolecularGrid::applyNaiveWeights()
             chip[j][i] = 1.0;
         }
     }
-    
+
     applyStandardWeights(chi);
 }
 void MolecularGrid::applyBeckeWeights()
 {
-    scheme_ = "Naive"; 
+    scheme_ = "Naive";
 
     int natom = molecule_->natom();
 
@@ -1542,12 +1542,12 @@ void MolecularGrid::applyBeckeWeights()
             chip[j][i] = 1.0 / chip[i][j];
         }
     }
-    
+
     applyStandardWeights(chi);
 }
 void MolecularGrid::applyTreutlerWeights()
 {
-    scheme_ = "Treutler"; 
+    scheme_ = "Treutler";
 
     int natom = molecule_->natom();
 
@@ -1562,7 +1562,7 @@ void MolecularGrid::applyTreutlerWeights()
             chip[j][i] = 1.0 / chip[i][j];
         }
     }
-    
+
     applyStandardWeights(chi);
 }
 void MolecularGrid::applyStratmannWeights()
@@ -1573,7 +1573,7 @@ void MolecularGrid::print(FILE* out, int print)
 {
     fprintf(out, "   => Molecular Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d\n\n", npoints_);
-   
+
     if (print > 4) {
         for (int A = 0; A < atoms_.size(); A++) {
             fprintf(outfile,"\tAtom %d: %s <%8.5f, %8.5f, %8.5f>, %6d Points\n", A+1, molecule_->label(A).c_str(),
@@ -1583,13 +1583,13 @@ void MolecularGrid::print(FILE* out, int print)
             std::vector<boost::shared_ptr<SphericalGrid> > sphere = atom->spherical();
             fprintf(outfile,"\t Radial Grid: %s, %4d Points\n", rad->scheme().c_str(), rad->npoints());
             for (int i = 0; i < sphere.size(); i++) {
-                fprintf(outfile,"\t  Spherical Grid: R %11.5E, Order %4d, Points %4d, %s\n", 
-                    rad->r()[i], sphere[i]->order(), sphere[i]->npoints(),sphere[i]->scheme().c_str());    
-            }   
-            fprintf(outfile, "\n"); 
+                fprintf(outfile,"\t  Spherical Grid: R %11.5E, Order %4d, Points %4d, %s\n",
+                    rad->r()[i], sphere[i]->order(), sphere[i]->npoints(),sphere[i]->scheme().c_str());
+            }
+            fprintf(outfile, "\n");
         }
     }
- 
+
     if (print > 5) {
 
         for (int i = 0; i < atoms_.size(); i++) {
@@ -1600,9 +1600,9 @@ void MolecularGrid::print(FILE* out, int print)
         fprintf(out, "   Total Quadrature:\n\n");
         fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
         for (int i = 0; i < npoints_; i++) {
-            fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
-                x_[i], y_[i], z_[i], w_[i]); 
-        } 
+            fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1,
+                x_[i], y_[i], z_[i], w_[i]);
+        }
         fprintf(out, "\n\n");
     }
 
@@ -1614,7 +1614,7 @@ void MolecularGrid::print(FILE* out, int print)
 AtomicGrid::AtomicGrid() : npoints_(0)
 {
 }
-AtomicGrid::~AtomicGrid() 
+AtomicGrid::~AtomicGrid()
 {
     if (npoints_) {
         delete[] x_;
@@ -1626,7 +1626,7 @@ AtomicGrid::~AtomicGrid()
 void AtomicGrid::buildGrid(const Vector3& center,
                       SharedMatrix rotation,
                       boost::shared_ptr<RadialGrid> radial,
-                      std::vector<boost::shared_ptr<SphericalGrid> > sphericals)  
+                      std::vector<boost::shared_ptr<SphericalGrid> > sphericals)
 {
     center_ = center;
     rotation_ = rotation;
@@ -1643,7 +1643,7 @@ void AtomicGrid::buildGrid(const Vector3& center,
     npoints_ = 0;
     for (int i = 0; i < sphericals_.size(); i++) {
         npoints_ += sphericals_[i]->npoints();
-    }    
+    }
 
     x_ = new double[npoints_];
     y_ = new double[npoints_];
@@ -1658,17 +1658,17 @@ void AtomicGrid::buildGrid(const Vector3& center,
     for (int i = 0, ij = 0; i < sphericals_.size(); i++) {
 
         double Rr = r[i];
-        double Wr = wr[i];    
+        double Wr = wr[i];
 
         double* x = sphericals_[i]->x();
         double* y = sphericals_[i]->y();
         double* z = sphericals_[i]->z();
         double* wth = sphericals_[i]->w();
         for (int j = 0; j < sphericals_[i]->npoints(); j++, ij++) {
-            x_[ij] = Rr * x[j]; 
-            y_[ij] = Rr * y[j]; 
-            z_[ij] = Rr * z[j]; 
-            w_[ij] = Wr * wth[j]; 
+            x_[ij] = Rr * x[j];
+            y_[ij] = Rr * y[j];
+            z_[ij] = Rr * z[j];
+            w_[ij] = Wr * wth[j];
         }
     }
 
@@ -1685,12 +1685,12 @@ void AtomicGrid::buildGrid(const Vector3& center,
     double R22 = Rot[2][2];
     double xh, yh, zh;
     for (int ij = 0; ij < npoints_; ij++) {
-        xh = x_[ij]; 
-        yh = y_[ij]; 
-        zh = z_[ij]; 
-        x_[ij] = R00 * xh + R01 * yh + R02 * zh; 
-        y_[ij] = R10 * xh + R11 * yh + R12 * zh; 
-        z_[ij] = R20 * xh + R21 * yh + R22 * zh; 
+        xh = x_[ij];
+        yh = y_[ij];
+        zh = z_[ij];
+        x_[ij] = R00 * xh + R01 * yh + R02 * zh;
+        y_[ij] = R10 * xh + R11 * yh + R12 * zh;
+        z_[ij] = R20 * xh + R21 * yh + R22 * zh;
     }
 
     // Translate
@@ -1698,13 +1698,13 @@ void AtomicGrid::buildGrid(const Vector3& center,
         x_[ij] += center_[0];
         y_[ij] += center_[1];
         z_[ij] += center_[2];
-    } 
+    }
 }
 void AtomicGrid::print(FILE* out)
 {
     fprintf(out, "   => Atomic Quadrature <=\n\n");
     fprintf(out, "      Points: %d\n\n", npoints_);
-    
+
     fprintf(out, "   Radial Quadrature:\n\n");
     radial_->print(out);
 
@@ -1716,9 +1716,9 @@ void AtomicGrid::print(FILE* out)
 
     fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
     for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
-            x_[i], y_[i], z_[i], w_[i]); 
-    } 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1,
+            x_[i], y_[i], z_[i], w_[i]);
+    }
     fprintf(out, "\n\n");
 }
 
@@ -1734,15 +1734,15 @@ RadialGrid::~RadialGrid()
         delete[] w_r_;
     }
 }
-void RadialGrid::print(FILE* out) 
+void RadialGrid::print(FILE* out)
 {
     fprintf(out, "   => Radial Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d\n\n", npoints_);
     fprintf(out, "   %4s %14s %14s %14s\n", "N", "R", "W", "WR^2");
     for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.6E %14.6E %14.6E\n", i+1, r_[i], 
-            w_x_[i], w_r_[i]); 
-    } 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E\n", i+1, r_[i],
+            w_x_[i], w_r_[i]);
+    }
     fprintf(out, "\n\n");
 }
 boost::shared_ptr<RadialGrid> RadialGrid::buildGrid(const std::string& scheme, int n, double xi)
@@ -1786,7 +1786,7 @@ boost::shared_ptr<RadialGrid> RadialGrid::buildTreutlerGrid(int n, double xi, do
     }
 
     return boost::shared_ptr<RadialGrid>(r);
-} 
+}
 boost::shared_ptr<RadialGrid> RadialGrid::buildBeckeGrid(int n, double xi)
 {
     RadialGrid* r = new RadialGrid();
@@ -1809,19 +1809,19 @@ boost::shared_ptr<RadialGrid> RadialGrid::buildBeckeGrid(int n, double xi)
     }
 
     return boost::shared_ptr<RadialGrid>(r);
-} 
+}
 boost::shared_ptr<RadialGrid> RadialGrid::buildMuraGrid(int n, double xi)
 {
     throw FeatureNotImplemented("psi::RadialGrid","buildMuraGrid", __FILE__, __LINE__);
-} 
+}
 boost::shared_ptr<RadialGrid> RadialGrid::buildMultiExpGrid(int n, double xi)
 {
     throw FeatureNotImplemented("psi::RadialGrid","buildMultiExpGrid", __FILE__, __LINE__);
-} 
+}
 boost::shared_ptr<RadialGrid> RadialGrid::buildEMGrid(int n, double xi)
 {
     throw FeatureNotImplemented("psi::RadialGrid","buildEMGrid", __FILE__, __LINE__);
-} 
+}
 
 SphericalGrid::SphericalGrid() :
     npoints_(0), order_(0), scheme_("")
@@ -1836,15 +1836,15 @@ SphericalGrid::~SphericalGrid()
         delete[] w_;
     }
 }
-void SphericalGrid::print(FILE* out) 
+void SphericalGrid::print(FILE* out)
 {
     fprintf(out, "   => Spherical Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d, Order %d\n\n", npoints_, order_);
     fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
     for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
-            x_[i], y_[i], z_[i], w_[i]); 
-    } 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1,
+            x_[i], y_[i], z_[i], w_[i]);
+    }
     fprintf(out, "\n\n");
 }
 boost::shared_ptr<SphericalGrid> SphericalGrid::buildGrid(const std::string& scheme, int order)
@@ -1855,56 +1855,56 @@ boost::shared_ptr<SphericalGrid> SphericalGrid::buildGrid(const std::string& sch
         throw PSIEXCEPTION("Unrecognized spherical grid type.");
     }
 }
-boost::shared_ptr<SphericalGrid> SphericalGrid::lookupLebedevGrid(int order) 
+boost::shared_ptr<SphericalGrid> SphericalGrid::lookupLebedevGrid(int order)
 {
     if (lebedev_grids_.size() == 0) {
-        lebedev_grids_[0]   = buildLebedevGrid(0);   
-        lebedev_grids_[3]   = buildLebedevGrid(3); 
-        lebedev_grids_[5]   = buildLebedevGrid(5); 
-        lebedev_grids_[7]   = buildLebedevGrid(7); 
-        lebedev_grids_[9]   = buildLebedevGrid(9); 
-        lebedev_grids_[11]  = buildLebedevGrid(11); 
-        lebedev_grids_[13]  = buildLebedevGrid(13); 
-        lebedev_grids_[15]  = buildLebedevGrid(15); 
-        lebedev_grids_[17]  = buildLebedevGrid(17); 
-        lebedev_grids_[19]  = buildLebedevGrid(19); 
-        lebedev_grids_[21]  = buildLebedevGrid(21); 
-        lebedev_grids_[23]  = buildLebedevGrid(23); 
-        lebedev_grids_[25]  = buildLebedevGrid(25); 
-        lebedev_grids_[27]  = buildLebedevGrid(27); 
-        lebedev_grids_[29]  = buildLebedevGrid(29); 
-        lebedev_grids_[31]  = buildLebedevGrid(31); 
-        lebedev_grids_[35]  = buildLebedevGrid(35); 
-        lebedev_grids_[41]  = buildLebedevGrid(41); 
-        lebedev_grids_[47]  = buildLebedevGrid(47); 
-        lebedev_grids_[53]  = buildLebedevGrid(53); 
-        lebedev_grids_[59]  = buildLebedevGrid(59); 
-        lebedev_grids_[65]  = buildLebedevGrid(65); 
-        lebedev_grids_[71]  = buildLebedevGrid(71); 
-        lebedev_grids_[77]  = buildLebedevGrid(77); 
-        lebedev_grids_[83]  = buildLebedevGrid(83); 
-        lebedev_grids_[89]  = buildLebedevGrid(89); 
-        lebedev_grids_[95]  = buildLebedevGrid(95); 
-        lebedev_grids_[101] = buildLebedevGrid(101); 
-        lebedev_grids_[107] = buildLebedevGrid(107); 
-        lebedev_grids_[113] = buildLebedevGrid(113); 
-        lebedev_grids_[119] = buildLebedevGrid(119); 
-        lebedev_grids_[125] = buildLebedevGrid(125); 
-        lebedev_grids_[131] = buildLebedevGrid(131); 
+        lebedev_grids_[0]   = buildLebedevGrid(0);
+        lebedev_grids_[3]   = buildLebedevGrid(3);
+        lebedev_grids_[5]   = buildLebedevGrid(5);
+        lebedev_grids_[7]   = buildLebedevGrid(7);
+        lebedev_grids_[9]   = buildLebedevGrid(9);
+        lebedev_grids_[11]  = buildLebedevGrid(11);
+        lebedev_grids_[13]  = buildLebedevGrid(13);
+        lebedev_grids_[15]  = buildLebedevGrid(15);
+        lebedev_grids_[17]  = buildLebedevGrid(17);
+        lebedev_grids_[19]  = buildLebedevGrid(19);
+        lebedev_grids_[21]  = buildLebedevGrid(21);
+        lebedev_grids_[23]  = buildLebedevGrid(23);
+        lebedev_grids_[25]  = buildLebedevGrid(25);
+        lebedev_grids_[27]  = buildLebedevGrid(27);
+        lebedev_grids_[29]  = buildLebedevGrid(29);
+        lebedev_grids_[31]  = buildLebedevGrid(31);
+        lebedev_grids_[35]  = buildLebedevGrid(35);
+        lebedev_grids_[41]  = buildLebedevGrid(41);
+        lebedev_grids_[47]  = buildLebedevGrid(47);
+        lebedev_grids_[53]  = buildLebedevGrid(53);
+        lebedev_grids_[59]  = buildLebedevGrid(59);
+        lebedev_grids_[65]  = buildLebedevGrid(65);
+        lebedev_grids_[71]  = buildLebedevGrid(71);
+        lebedev_grids_[77]  = buildLebedevGrid(77);
+        lebedev_grids_[83]  = buildLebedevGrid(83);
+        lebedev_grids_[89]  = buildLebedevGrid(89);
+        lebedev_grids_[95]  = buildLebedevGrid(95);
+        lebedev_grids_[101] = buildLebedevGrid(101);
+        lebedev_grids_[107] = buildLebedevGrid(107);
+        lebedev_grids_[113] = buildLebedevGrid(113);
+        lebedev_grids_[119] = buildLebedevGrid(119);
+        lebedev_grids_[125] = buildLebedevGrid(125);
+        lebedev_grids_[131] = buildLebedevGrid(131);
     }
     if (lebedev_grids_.count(order) == 0) {
         fprintf(outfile, " Valid Lebedev Grid Orders/Points:\n\n");
-    
+
         // Sort keys for pretty printing
         std::vector<int> keys;
         for (std::map<int,int>::iterator it = lebedev_order_to_points_.begin();
              it != lebedev_order_to_points_.end(); it++) {
-            keys.push_back((*it).first);  
-        }    
+            keys.push_back((*it).first);
+        }
         std::sort(keys.begin(), keys.end());
-        
+
         for (int i = 0; i < keys.size(); i++) {
-            fprintf(outfile, "  %4d - %4d\n", keys[i], lebedev_order_to_points_[keys[i]]); 
+            fprintf(outfile, "  %4d - %4d\n", keys[i], lebedev_order_to_points_[keys[i]]);
         }
 
         fflush(outfile);
@@ -1960,17 +1960,17 @@ boost::shared_ptr<SphericalGrid> SphericalGrid::buildLebedevGrid(int order)
     // We don't have your grid
     if (lebedev_order_to_points_.count(order) == 0) {
         fprintf(outfile, " Valid Lebedev Grid Orders/Points:\n\n");
-    
+
         // Sort keys for pretty printing
         std::vector<int> keys;
         for (std::map<int,int>::iterator it = lebedev_order_to_points_.begin();
              it != lebedev_order_to_points_.end(); it++) {
-            keys.push_back((*it).first);  
-        }    
+            keys.push_back((*it).first);
+        }
         std::sort(keys.begin(), keys.end());
-        
+
         for (int i = 0; i < keys.size(); i++) {
-            fprintf(outfile, "  %4d - %4d\n", keys[i], lebedev_order_to_points_[keys[i]]); 
+            fprintf(outfile, "  %4d - %4d\n", keys[i], lebedev_order_to_points_[keys[i]]);
         }
 
         fflush(outfile);
@@ -1982,18 +1982,18 @@ boost::shared_ptr<SphericalGrid> SphericalGrid::buildLebedevGrid(int order)
     SphericalGrid* s = new SphericalGrid();
     s->scheme_ = "Lebedev-Laikov";
     s->order_ = order;
-    s->npoints_ = npoints; 
-    
-    s->x_ = new double[npoints]; 
-    s->y_ = new double[npoints]; 
-    s->z_ = new double[npoints]; 
-    s->w_ = new double[npoints]; 
-   
+    s->npoints_ = npoints;
+
+    s->x_ = new double[npoints];
+    s->y_ = new double[npoints];
+    s->z_ = new double[npoints];
+    s->w_ = new double[npoints];
+
     ::memset(static_cast<void*>(s->x_), '\0', npoints*sizeof(double));
     ::memset(static_cast<void*>(s->y_), '\0', npoints*sizeof(double));
     ::memset(static_cast<void*>(s->z_), '\0', npoints*sizeof(double));
     ::memset(static_cast<void*>(s->w_), '\0', npoints*sizeof(double));
- 
+
     //Get Lebedev sphere of number of points degree
     //Translated from FORTRAN code
     //This one requires a bit of faith
@@ -6644,7 +6644,7 @@ boost::shared_ptr<SphericalGrid> SphericalGrid::buildLebedevGrid(int order)
     v=0.1905534498734563E-3;
     start = lebedevReccurence(6,start,a,b,v,s);
     break;
-        
+
     }
     return boost::shared_ptr<SphericalGrid>(s);
 }
@@ -7300,7 +7300,7 @@ int SphericalGrid::lebedevReccurence(int type, int start, double a, double b, do
 
 GridBlocker::GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
-    npoints_ref_(npoints_ref), x_ref_(x_ref), y_ref_(y_ref), z_ref_(z_ref), w_ref_(w_ref), 
+    npoints_ref_(npoints_ref), x_ref_(x_ref), y_ref_(y_ref), z_ref_(z_ref), w_ref_(w_ref),
     tol_max_points_(max_points), tol_min_points_(min_points), extents_(extents), print_(1), debug_(0)
 {
 }
@@ -7321,10 +7321,10 @@ void NaiveGridBlocker::block()
     max_points_ = tol_max_points_;
     max_functions_ = extents_->basis()->nbf();
 
-    x_ = new double[npoints_]; 
-    y_ = new double[npoints_]; 
-    z_ = new double[npoints_]; 
-    w_ = new double[npoints_]; 
+    x_ = new double[npoints_];
+    y_ = new double[npoints_];
+    z_ = new double[npoints_];
+    w_ = new double[npoints_];
 
     ::memcpy((void*)x_,(void*)x_ref_, sizeof(double)*npoints_);
     ::memcpy((void*)y_,(void*)y_ref_, sizeof(double)*npoints_);
@@ -7334,7 +7334,7 @@ void NaiveGridBlocker::block()
     blocks_.clear();
     for (int Q = 0; Q < npoints_; Q += max_points_) {
         int n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
-        blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_))); 
+        blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_)));
     }
 }
 OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
@@ -7364,29 +7364,29 @@ void OctreeGridBlocker::block()
         active_tree[0].push_back(Q);
     }
 
-    // K-PR Tree blocking    
+    // K-PR Tree blocking
     FILE* fh_ktree;
     if (bench_) {
-        fh_ktree = fopen("ktree.dat","w"); 
+        fh_ktree = fopen("ktree.dat","w");
         //fprintf(fh_ktree,"#  %4s %5s %15s %15s %15s\n", "Dept","ID","X","Y","Z");
     }
     int tree_level = 0;
     while (true) {
-            
+
         // X
         new_leaves.clear();
         double const* X = x;
         for (int A = 0; A < active_tree.size(); A++) {
-            
+
             // Block to subdivide
             std::vector<int> block = active_tree[A];
-            
+
             // Determine xcenter of mass
-            double xc = 0.0; 
+            double xc = 0.0;
             for (int Q = 0; Q < block.size(); Q++) {
                 xc += X[block[Q]];
-            } 
-            xc /= block.size();    
+            }
+            xc /= block.size();
 
             double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
             for (int Q = 0; Q < block.size(); Q++) {
@@ -7410,13 +7410,13 @@ void OctreeGridBlocker::block()
             }
 
             if (left.size() > tol_max_points_) {
-                new_leaves.push_back(left);        
+                new_leaves.push_back(left);
             } else {
                 completed_tree.push_back(left);
             }
 
             if (right.size() > tol_max_points_) {
-                new_leaves.push_back(right);        
+                new_leaves.push_back(right);
             } else {
                 completed_tree.push_back(right);
             }
@@ -7424,21 +7424,21 @@ void OctreeGridBlocker::block()
         active_tree = new_leaves;
         tree_level++;
         if (!active_tree.size()) break;
-            
+
         // Y
         new_leaves.clear();
         X = y;
         for (int A = 0; A < active_tree.size(); A++) {
-            
+
             // Block to subdivide
             std::vector<int> block = active_tree[A];
-            
+
             // Determine xcenter of mass
-            double xc = 0.0; 
+            double xc = 0.0;
             for (int Q = 0; Q < block.size(); Q++) {
                 xc += X[block[Q]];
-            } 
-            xc /= block.size();    
+            }
+            xc /= block.size();
 
             double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
             for (int Q = 0; Q < block.size(); Q++) {
@@ -7462,13 +7462,13 @@ void OctreeGridBlocker::block()
             }
 
             if (left.size() > tol_max_points_) {
-                new_leaves.push_back(left);        
+                new_leaves.push_back(left);
             } else {
                 completed_tree.push_back(left);
             }
 
             if (right.size() > tol_max_points_) {
-                new_leaves.push_back(right);        
+                new_leaves.push_back(right);
             } else {
                 completed_tree.push_back(right);
             }
@@ -7476,21 +7476,21 @@ void OctreeGridBlocker::block()
         active_tree = new_leaves;
         tree_level++;
         if (!active_tree.size()) break;
-            
+
         // Z
         new_leaves.clear();
         X = z;
         for (int A = 0; A < active_tree.size(); A++) {
-            
+
             // Block to subdivide
             std::vector<int> block = active_tree[A];
-            
+
             // Determine xcenter of mass
-            double xc = 0.0; 
+            double xc = 0.0;
             for (int Q = 0; Q < block.size(); Q++) {
                 xc += X[block[Q]];
-            } 
-            xc /= block.size();    
+            }
+            xc /= block.size();
 
             double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
             for (int Q = 0; Q < block.size(); Q++) {
@@ -7514,13 +7514,13 @@ void OctreeGridBlocker::block()
             }
 
             if (left.size() > tol_max_points_) {
-                new_leaves.push_back(left);        
+                new_leaves.push_back(left);
             } else {
                 completed_tree.push_back(left);
             }
 
             if (right.size() > tol_max_points_) {
-                new_leaves.push_back(right);        
+                new_leaves.push_back(right);
             } else {
                 completed_tree.push_back(right);
             }
@@ -7531,20 +7531,20 @@ void OctreeGridBlocker::block()
 
     }
     if (bench_) fclose(fh_ktree);
-    
-    
+
+
     // Move stuff over
-    x_ = new double[npoints_]; 
-    y_ = new double[npoints_]; 
-    z_ = new double[npoints_]; 
-    w_ = new double[npoints_]; 
+    x_ = new double[npoints_];
+    y_ = new double[npoints_];
+    z_ = new double[npoints_];
+    w_ = new double[npoints_];
 
     int index = 0;
     int unique_block = 0;
     FILE* fh_blocks;
     if (bench_) {
         fh_blocks = fopen("finished_blocks.dat","w");
-        //fprintf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W"); 
+        //fprintf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W");
     }
     for (int A = 0; A < completed_tree.size(); A++) {
         std::vector<int> block = completed_tree[A];
@@ -7554,9 +7554,9 @@ void OctreeGridBlocker::block()
             y_[index] = y[delta];
             z_[index] = z[delta];
             w_[index] = w[delta];
-            if (bench_) fprintf(fh_blocks, "   %4d %15.6E %15.6E %15.6E %15.6E\n", unique_block, x_[index], y_[index], z_[index], w_[index]); 
+            if (bench_) fprintf(fh_blocks, "   %4d %15.6E %15.6E %15.6E %15.6E\n", unique_block, x_[index], y_[index], z_[index], w_[index]);
             index++;
-        } 
+        }
         if (block.size()) unique_block++;
     }
     if (bench_) fclose(fh_blocks);
@@ -7577,13 +7577,13 @@ void OctreeGridBlocker::block()
     for (int A = 0; A < blocks_.size(); A++) {
         if (max_functions_ < blocks_[A]->functions_local_to_global().size())
             max_functions_ = blocks_[A]->functions_local_to_global().size();
-    } 
+    }
 
     if (bench_) {
         FILE* fh_extents = fopen("extents.dat","w");
         //fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
         boost::shared_ptr<BasisSet> basis = extents_->basis();
-        boost::shared_ptr<Vector> Rc = extents_->shell_extents();         
+        boost::shared_ptr<Vector> Rc = extents_->shell_extents();
         for (int Q = 0; Q < basis->nshell(); Q++) {
             Vector3 v = basis->shell(Q)->center();
             fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
@@ -7593,14 +7593,14 @@ void OctreeGridBlocker::block()
 
     if (bench_ > 2) {
         double delta2 = extents_->delta();
-        for (int i = 2; i < 20; i++) { 
+        for (int i = 2; i < 20; i++) {
             std::stringstream ss;
             ss << "extents" << i << ".dat";
             FILE* fh_extents = fopen(ss.str().c_str(),"w");
             //fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
             extents_->set_delta(pow(10.0,-i));
             boost::shared_ptr<BasisSet> basis = extents_->basis();
-            boost::shared_ptr<Vector> Rc = extents_->shell_extents();         
+            boost::shared_ptr<Vector> Rc = extents_->shell_extents();
             for (int Q = 0; Q < basis->nshell(); Q++) {
                 Vector3 v = basis->shell(Q)->center();
                 fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));

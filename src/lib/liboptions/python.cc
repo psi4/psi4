@@ -1,6 +1,5 @@
 #include "liboptions.h"
-
-#include <boost/python.hpp>
+#include "python.h"
 
 namespace psi {
 
