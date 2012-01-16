@@ -74,10 +74,14 @@ DCFTSolver::compute_energy()
             // Start density cumulant (lambda) iterations
             while((!lambdaDone || !energyConverged) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                 std::string diisString;
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_tensors();
-                // Update Fock operator for the F intermediate
-                if (options_.get_str("AO_BASIS") == "DISK") update_fock();
+                if (options_.get_str("AO_BASIS") == "DISK") {
+                    // Builds new Tau and transforms it to SO basis
+                    build_tau();
+                    // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                    build_tensors();
+                    // Update Fock operator for the F intermediate
+                    update_fock();
+                }
                 // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
                 build_intermediates();
                 // Compute the residuals for density cumulant equations
