@@ -1082,9 +1082,6 @@ namespace psi{ namespace dcft{
   {
       dpdfile2 Gtau, F;
 
-      // Builds new Tau and transforms it to SO basis
-      build_tau();
-
       moFa_->copy(F0a_);
       moFb_->copy(F0b_);
 
