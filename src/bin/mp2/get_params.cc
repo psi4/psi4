@@ -45,8 +45,8 @@ void get_params(Options &options)
   params.dertype = options.get_str("DERTYPE");
 
   params.gradient = options.get_str("DERTYPE") == "FIRST";
-  params.relax_opdm = options.get_bool("RELAX_OPDM");
-  params.opdm = options.get_bool("COMPUTE_OPDM");
+  params.relax_opdm = options.get_bool("OPDM_RELAX");
+  params.opdm = options.get_bool("OPDM");
 //  if(params.jobtype == "SP") {
 //    params.opdm = 0;
 //    params.relax_opdm = 0;

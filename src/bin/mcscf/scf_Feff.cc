@@ -10,8 +10,8 @@ void SCF::construct_Feff(int cycle)
   Feff_t_old = Feff_t;
   Feff_t = Fc_t;
  
-  if(options_.get_bool("USE_FAVG")){
-    if(cycle >= options_.get_int("START_FAVG")){
+  if(options_.get_bool("FAVG")){
+    if(cycle >= options_.get_int("FAVG_START")){
       // Set the diagonal blocks Fock 
       for(int h =0; h < nirreps; ++h){
         // Set the (closed,closed) blocks
@@ -34,7 +34,7 @@ void SCF::construct_Feff(int cycle)
         }        
       }
     }
-    if(cycle == options_.get_int("START_FAVG")){
+    if(cycle == options_.get_int("FAVG_START")){
       fprintf(outfile,"\n  *** Switching from Fc to F_avg ***");
     }
   }

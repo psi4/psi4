@@ -6,7 +6,7 @@
 ** Alpha eigenvalues used for occupied SOCC (sigma+), 
 ** beta for unoccupied (sigma-)
 **
-** Done so that existing HD_AVE = ORB_ENER MPn machinery can be used unaltered.
+** Done so that existing HD_AVG = ORB_ENER MPn machinery can be used unaltered.
 **
 ** Steven E. Wheeler
 ** CCQC/UCLA

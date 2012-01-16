@@ -374,7 +374,7 @@ DCFTSolver::compute_energy()
 
     print_opdm();
 
-    if(options_.get_bool("COMPUTE_TPDM")) dump_density();
+    if(options_.get_bool("TPDM")) dump_density();
     mulliken_charges();
     check_n_representability();
 
