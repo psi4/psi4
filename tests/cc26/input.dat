@@ -10,37 +10,23 @@ molecule h2o {
 
 set {
   basis DZ
-  dertype none
   states_per_irrep [1, 0, 0, 0]
 }
 
 gradient('eom-ccsd')
 analytic_grad = PsiMod.get_gradient()
 
-#shows how to access elements if desired
-#nirreps = analytic_grad.nirrep()
-#print "Num irreps = %d\n" % nirreps
-#symmetry = analytic_grad.symmetry()
-#print "Symmetry = %d\n" % symmetry
-#for irrep in range(nirreps):
-#  rows = analytic_grad.rows(irrep)
-#  cols = analytic_grad.cols(irrep ^ symmetry)
-#  for row in range(rows):
-#    for col in range(cols):
-#      val = analytic_grad.get(irrep, row, col)
-#      print "%d %d %20.10f\n" % (row, col, val)
-
 gradient('eom-ccsd', dertype=0)
 findif_grad = PsiMod.get_gradient()
 
-compare_matrices(analytic_grad, findif_grad, 5, "Finite-difference (3-pt.) vs. analytic gradient to 10^-5") #TEST
+compare_matrices(analytic_grad, findif_grad, 5, "RHF-EOM-CCSD finite-diff. (3-pt.) vs. analytic gradient to 10^-5") #TEST
 
 set findif points 5
 
 gradient('eom-ccsd', dertype=0)
 findif_grad = PsiMod.get_gradient()
 
-compare_matrices(analytic_grad, findif_grad, 7, "Finite-difference (5-pt.) vs. analytic gradient to 10^-7") #TEST
+compare_matrices(analytic_grad, findif_grad, 7, "RHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-7") #TEST
 
 clean()
 
