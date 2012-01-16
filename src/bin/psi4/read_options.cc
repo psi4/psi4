@@ -190,10 +190,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("H0_BLOCK_COUPLING_SIZE",0);
 
     /*- Number of important determinants to print -*/
-    options.add_int("NUM_PRINT",20);
+    options.add_int("NUM_DETS_PRINT",20);
 
-    /*- Number of important CC amplitudes per excitation level to print -*/
-    options.add_int("CC_NUM_PRINT",10);
+    /*- Number of important CC amplitudes per excitation level to print. 
+    CC analog to NUM_DETS_PRINT -*/
+    options.add_int("NUM_AMPS_PRINT",10);
 
     /*- How to average H diag energies over spin coupling sets.
       HD_EXACT uses the exact diagonal energies which results in expansion
@@ -1927,6 +1928,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAG_DIST_INV", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("H_BOND_CONNECT", 4.3);
+//      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
+//      will append or overwrite the criteria set here. -*/
+//      options.add_str("G_CONVERGENCE", "QCHEM", "GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT QCHEM NWCHEM NWCHEM_LOOSE NWCHEM_TIGHT MOLPRO PSI3 CFOUR");
       /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
       /*- QCHEM optimization criteria: rms force. See the note at the beginning of Section \ref{keywords}. -*/

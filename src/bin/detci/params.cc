@@ -217,8 +217,8 @@ void get_parameters(Options &options)
   Parameters.h0block_coupling_size = options.get_int("H0_BLOCK_COUPLING_SIZE");
   Parameters.h0block_coupling = options["H0_BLOCK_COUPLING"].to_integer();
 
-  Parameters.nprint = options.get_int("NUM_PRINT");
-  Parameters.cc_nprint = options.get_int("CC_NUM_PRINT");
+  Parameters.nprint = options.get_int("NUM_DETS_PRINT");
+  Parameters.cc_nprint = options.get_int("NUM_AMPS_PRINT");
   Parameters.fzc = options["DETCI_FREEZE_CORE"].to_integer();
 
   if (options["FCI"].has_changed())
