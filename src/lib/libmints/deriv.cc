@@ -16,6 +16,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "mints.h"
+#include "sointegral_twobody.h"
 #include "deriv.h"
 
 using namespace std;
