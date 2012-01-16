@@ -12,8 +12,7 @@ molecule h2o {
 set globals {
   basis        cc-pVTZ
   scf_type     df
-  ri_basis_scf cc-pVTZ-JKFIT
-  e_converge   10
+  e_convergence   10
 }
 
 thisenergy = energy('scf')

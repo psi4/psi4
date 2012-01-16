@@ -110,6 +110,7 @@ public:
     void assign(const boost::python::object& p);
 };
 
+#pragma warning disable 654
 class BooleanDataType : public DataType
 {
     bool boolean_;
@@ -130,6 +131,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class IntDataType : public DataType
 {
     int integer_;
@@ -150,6 +153,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class DoubleDataType : public DataType
 {
     double double_;
@@ -170,6 +175,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class StringDataType : public DataType
 {
     std::string str_;
@@ -195,6 +202,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class IStringDataType : public DataType
 {
     std::string str_;

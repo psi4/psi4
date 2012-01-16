@@ -12,6 +12,7 @@
 \newcommand{\PSIversion}{@PSI_VERSION@\xspace}
 \newcommand{\PSImmmversion}{@PSI_VERSION@\xspace}
 \newcommand{\PSIemail}{@PSI_BUGREPORT@\xspace}
+\newcommand{\psirc}{{\tt .psi4rc}\xspace}
 
 %
 % Psi Modules

@@ -16,7 +16,7 @@ set {
   wfn eom_ccsd
   basis "aug-cc-pVTZ"
   states_per_irrep [1, 0, 0, 1]
-  cachelev 0
+  cachelevel 0
 }
 
 energy('eom-ccsd')

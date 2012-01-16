@@ -24,7 +24,7 @@ triplet_o2.update_geometry()
 activate(singlet_o2)
 set globals {
     basis cc-pvtz
-    ri_basis_scf cc-pvtz-jkfit
+    df_basis_scf cc-pvtz-jkfit
     guess core
     print 2
 }
@@ -74,7 +74,7 @@ E = energy('scf')
 activate(triplet_o2)
 set globals {
     basis cc-pvtz
-    ri_basis_scf cc-pvtz-jkfit
+    df_basis_scf cc-pvtz-jkfit
     guess core
     print 2
 }

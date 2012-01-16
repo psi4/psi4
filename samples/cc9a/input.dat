@@ -1,0 +1,29 @@
+#! ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical, 
+#! with Z-matrix input.
+
+molecule CN {
+  0 2
+  C
+  N 1 R
+
+  R = 1.175
+}
+
+set {
+  reference   rohf
+  basis       cc-pVDZ
+  docc        [4, 0, 1, 1]
+  socc        [1, 0, 0, 0]
+  ao_basis disk
+  delete_tei false
+
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+energy('ccsd(t)')
+
+
+
+clean()

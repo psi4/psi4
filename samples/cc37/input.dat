@@ -10,7 +10,6 @@ molecule h2o {
 }
 
 set {
-  wfn cc2
   reference uhf
   basis "cc-pVDZ"
   docc = [3, 0, 0, 1]
