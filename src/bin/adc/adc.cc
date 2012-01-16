@@ -69,7 +69,7 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
     fprintf(outfile,     "\t*****************************************************\n\n");
     fflush(outfile);
   
-    conv_     = options_.get_double("NEWTON_CONV");
+    conv_     = options_.get_double("NEWTON_CONVERGENCE");
     norm_tol_ = options_.get_double("NORM_TOLERANCE");
     pole_max_ = options_.get_int("POLE_MAX");
     sem_max_  = options_.get_int("SEM_MAX");

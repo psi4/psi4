@@ -8,18 +8,17 @@ molecule h2o {
 }
 
 set globals {
-  wfn detci
   basis 6-31G**
 }
 
 set detci {
   guess_vector = UNIT
-  convergence = 5
-  maxnvect = 4
+  r_convergence = 5
+  max_num_vecs = 4
   collapse_size = 2
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('cisd')
 
 
 clean()

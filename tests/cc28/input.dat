@@ -7,10 +7,9 @@ molecule h2o2 {
 
 set {
   property rotation
-  freeze_core true
-  omega [589, 355]
-  omega_units nm
   gauge length
+  freeze_core true
+  omega [589, 355, nm]
   basis cc-pVDZ
 }
 

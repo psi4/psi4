@@ -1,7 +1,6 @@
-#include <libmints/mints.h>
-
-#include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
+#include <boost/python/list.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <cstdio>
@@ -9,6 +8,7 @@
 #include <map>
 #include <iomanip>
 
+#include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
@@ -75,11 +75,13 @@ namespace psi {
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &, int irrep=-1);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       //PsiReturnType fd_2_0(Options &, const boost::python::list&);
       PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&, int irrep=-1);
+      PsiReturnType fd_hessian_0(Options &, const boost::python::list&);
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -180,6 +182,12 @@ std::vector< SharedMatrix > py_psi_fd_geoms_freq_0(int irrep)
     return findif::fd_geoms_freq_0(Process::environment.options, irrep);
 }
 
+std::vector< SharedMatrix > py_psi_fd_geoms_hessian_0()
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_geoms_hessian_0(Process::environment.options);
+}
+
 std::vector< SharedMatrix > py_psi_fd_geoms_freq_1(int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
@@ -202,6 +210,12 @@ PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_freq_0(Process::environment.options, energies, irrep);
+}
+
+PsiReturnType py_psi_fd_hessian_0(const boost::python::list& energies)
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_hessian_0(Process::environment.options, energies);
 }
 
 PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
@@ -537,6 +551,13 @@ bool py_psi_set_global_option_double(std::string const & key, double value)
     return true;
 }
 
+bool py_psi_set_global_option_python(std::string const & key, boost::python::object& obj)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_global_python(nonconst_key, obj);
+    return true;
+}
+
 bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -599,7 +620,7 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
     return true;
 }
 
-void py_psi_set_option_python(const string& key, boost::python::object& obj)
+void py_psi_set_local_option_python(const string& key, boost::python::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -732,16 +753,6 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
-void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
-{
-    Process::environment.set_potential(potential);
-}
-
-boost::shared_ptr<ExternalPotential> py_psi_get_active_potential()
-{
-    return Process::environment.potential();
-}
-
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -862,8 +873,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
-    def("set_active_potential", py_psi_set_active_potential);
-    def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("get_gradient", py_psi_get_gradient);
     def("set_gradient", py_psi_set_gradient);
@@ -890,7 +899,9 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
-    def("set_option_python", py_psi_set_option_python);
+    def("set_global_option_python", py_psi_set_global_option_python);
+    def("set_local_option_python", py_psi_set_local_option_python);
+
     def("get_global_option_list", py_psi_get_global_option_list);
 
     // Get the option; letting liboptions decide whether to use global or local
@@ -943,10 +954,12 @@ BOOST_PYTHON_MODULE(PsiMod)
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
     def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1);
+    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0);
     def("fd_1_0", py_psi_fd_1_0);
     //def("fd_2_0", py_psi_fd_2_0);
     def("fd_freq_0", py_psi_fd_freq_0);
     def("fd_freq_1", py_psi_fd_freq_1);
+    def("fd_hessian_0", py_psi_fd_hessian_0);
     def("sapt", py_psi_sapt);
     def("psimrcc", py_psi_psimrcc);
     def("optking", py_psi_optking);

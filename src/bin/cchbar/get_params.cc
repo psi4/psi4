@@ -27,8 +27,8 @@ void get_params(Options &options)
   params.Tamplitude = options.get_bool("T_AMPS");
 
 //  params.cachelev = 2;
-//  errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);
-  params.cachelev = options.get_int("CACHELEV");
+//  errcod = ip_data("CACHELEVEL", "%d", &(params.cachelev),0);
+  params.cachelev = options.get_int("CACHELEVEL");
 
 //  params.print = 0;
 //  errcod = ip_data("PRINT", "%d", &(params.print),0);

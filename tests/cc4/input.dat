@@ -16,9 +16,9 @@ set {
    docc [3, 0, 0, 0]
    basis cc-pvqz
    freeze_core true
-   convergence 10
-   e_converge 10
-   d_converge 10
+   r_convergence 10
+   e_convergence 10
+   d_convergence 10
 }
 
 energy('ccsd(t)')

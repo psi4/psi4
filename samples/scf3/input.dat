@@ -12,7 +12,7 @@ molecule ch2 {
     a1 = 125.0
 }
 
-set global {
+set globals {
     reference uhf
     basis     6-31G**
     docc      [2, 0, 0, 1]

@@ -1,3 +1,4 @@
+#include <libmints/typedefs.h>
 #include <libmints/basisset.h>
 #include <libmints/basisset_parser.h>
 #include <libmints/cartesianiter.h>
@@ -5,7 +6,7 @@
 #include <libmints/osrecur.h>
 #include <libmints/onebody.h>
 #include <libmints/twobody.h>
-#include <libmints/sointegral.h>
+#include <libmints/sointegral_onebody.h>
 #include <libmints/potential.h>
 #include <libmints/pseudospectral.h>
 #include <libmints/dipole.h>
@@ -41,3 +42,5 @@
 #include <libmints/cubature.h>
 #include <libmints/points.h>
 #include <libmints/extern.h>
+#include <libmints/cdsalclist.h>
+

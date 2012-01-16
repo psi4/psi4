@@ -25,10 +25,10 @@ molecule ne {
 set globals {
   wfn detci
   basis cc-pVQZ
-  d_converge 10
+  d_convergence 10
 # docc            [2, 0, 0, 0, 0, 1, 1, 1]
   frozen_docc     [1, 0, 0, 0, 0, 0, 0, 0]
-  ex_lvl 2
+  ex_level 2
 }
 
 set detci {
@@ -62,13 +62,13 @@ refcorr  = refci - refscf     #TEST
 
 set globals {
   wfn detci
-  d_converge 10
+  d_convergence 10
   frozen_docc     [2, 0, 0, 0, 0, 1, 1, 1]
   ras1            [1, 0, 0, 0, 0, 1, 1, 1]
   ras2            [1, 0, 0, 0, 0, 1, 1, 1]
   ras3            [5, 2, 2, 2, 1, 3, 3, 3]
-  ex_lvl 2
-  val_ex_lvl 2
+  ex_level 2
+  val_ex_level 2
 }
 
 set detci {
@@ -77,7 +77,7 @@ set detci {
 
   # This keyword is at the heart of the "split-virtual" CISD[TQ].
   # If electrons are in RAS 4, do not allow the excitation to go beyond
-  # that specified by ex_lvl (here, only singles & doubles allowed if
+  # that specified by ex_level (here, only singles & doubles allowed if
   # RAS 4 is populated)
   mixed4 false
   

@@ -41,9 +41,9 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
       print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);
     )
     double delta_energy = current_energy-old_energy;
-    if(fabs(delta_energy) < options_.get_double("E_CONVERGENCE"))
-      converged = true;
-
+    converged = (delta_t1_amps < options_.get_double("R_CONVERGENCE") && 
+                 delta_t2_amps < options_.get_double("R_CONVERGENCE") && 
+                 fabs(delta_energy) < options_.get_double("E_CONVERGENCE"));
 
 ///    TODO fix this code which is temporarly not working
 //     if(options_get_int("DAMPING_FACTOR")>0){
