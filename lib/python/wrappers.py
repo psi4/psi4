@@ -103,10 +103,10 @@ def n_body(name, **kwargs):
         PsiMod.print_out('    => Total Cluster Energy <=\n')
         # Full cluster always gets the external field
         if (external):
-            PsiMod.set_option_python("EXTERN", external)
+            PsiMod.set_global_option_python("EXTERN", external)
         Etotal = call_function_in_1st_argument(func, **kwargs)
         if (external):
-            PsiMod.set_option_python("EXTERN", None)
+            PsiMod.set_global_option_python("EXTERN", None)
         energies_full[N] = []
         energies_full[N].append(Etotal)
         energies_mon[N] = []
@@ -190,12 +190,12 @@ def n_body(name, **kwargs):
                             do_extern = True
                             break
                     if do_extern:
-                        PsiMod.set_option_python("EXTERN", external)
+                        PsiMod.set_global_option_python("EXTERN", external)
                 PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Full Basis) <=\n' %(n,k+1))
                 energies_full[n].append(call_function_in_1st_argument(func, **kwargs))
                 # Turn the external field off
                 if (external):
-                    PsiMod.set_option_python("EXTERN", externNone)
+                    PsiMod.set_global_option_python("EXTERN", externNone)
                 PsiMod.set_global_option('DF_INTS_IO','LOAD')
                 PsiMod.clean()
             
@@ -215,12 +215,12 @@ def n_body(name, **kwargs):
                             do_extern = True
                             break
                     if do_extern:
-                        PsiMod.set_option_python("EXTERN", external)
+                        PsiMod.set_global_option_python("EXTERN", external)
                 PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Cluster Basis) <=\n' %(n,k+1))
                 energies_mon[n].append(call_function_in_1st_argument(func, **kwargs))
                 # Turn the external field off
                 if (external):
-                    PsiMod.set_option_python("EXTERN", externNone)
+                    PsiMod.set_global_option_python("EXTERN", externNone)
                 PsiMod.clean()
 
     # Report the energies
