@@ -1,7 +1,6 @@
 #include <libmints/mints.h>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/python.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <cstdio>
@@ -12,7 +11,6 @@
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
-#include <liboptions/python.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -551,6 +549,13 @@ bool py_psi_set_global_option_double(std::string const & key, double value)
     return true;
 }
 
+bool py_psi_set_global_option_python(std::string const & key, boost::python::object& obj)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_global_python(nonconst_key, obj);
+    return true;
+}
+
 bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -613,7 +618,7 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
     return true;
 }
 
-void py_psi_set_option_python(const string& key, boost::python::object& obj)
+void py_psi_set_local_option_python(const string& key, boost::python::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -746,16 +751,6 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
-void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
-{
-    Process::environment.set_potential(potential);
-}
-
-boost::shared_ptr<ExternalPotential> py_psi_get_active_potential()
-{
-    return Process::environment.potential();
-}
-
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -876,8 +871,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
-    def("set_active_potential", py_psi_set_active_potential);
-    def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("get_gradient", py_psi_get_gradient);
     def("set_gradient", py_psi_set_gradient);
@@ -904,7 +897,9 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
-    def("set_option_python", py_psi_set_option_python);
+    def("set_global_option_python", py_psi_set_global_option_python);
+    def("set_local_option_python", py_psi_set_local_option_python);
+
     def("get_global_option_list", py_psi_get_global_option_list);
 
     // Get the option; letting liboptions decide whether to use global or local
