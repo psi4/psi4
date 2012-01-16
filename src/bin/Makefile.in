@@ -11,7 +11,7 @@ all: default
 default:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making in $${dir} ...; $(MAKE) default) || exit 1; \
+            (cd $${dir} && echo ... Making in $${dir} ... && $(MAKE) default) || exit 1; \
           done
 
 install:

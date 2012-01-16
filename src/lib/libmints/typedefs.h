@@ -3,6 +3,16 @@
 
 #include <compiler.h>
 
+// Handy mints timer macros, requires libqt to be included
+#ifdef MINTS_TIMER
+#   define mints_timer_on(a) timer_on((a));
+#   define mints_timer_off(a) timer_off((a));
+#else
+#   define mints_timer_on(a)
+#   define mints_timer_off(a)
+#endif
+
+
 // Forward declare boost
 namespace boost {
 template <class T>
