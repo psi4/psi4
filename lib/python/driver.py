@@ -242,7 +242,9 @@ def gradient(name, **kwargs):
                 #    kwargs['name'] = lowername
     
                 # Perform the energy calculation
-                E = func(lowername, **kwargs)
+                #E = func(lowername, **kwargs)
+                func(lowername, **kwargs)
+                E = PsiMod.get_variable("CURRENT ENERGY")
                 #E = func(**kwargs)
     
                 # Save the energy

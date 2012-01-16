@@ -14,6 +14,8 @@
 #include <vector>
 #include <utility>
 
+#include <libmints/mints.h>
+
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -26,8 +28,6 @@
 #include "pseudospectral.h"
 #include "pkintegrals.h"
 #include "df.h"
-
-#include <libmints/mints.h>
 
 #include "hf.h"
 
@@ -542,15 +542,31 @@ void HF::form_H()
         }
     }
 
-    if (options_.get_bool("EXTERN")) {
-        boost::shared_ptr<ExternalPotential> external = Process::environment.potential();
+    // If an external field exists, add it to the one-electron Hamiltonian
+    boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+    if (external) {
+        if (H_->nirrep() != 1) 
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
         if (print_) {
+            external->set_print(print_);
             external->print();
         }
         SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
         if (print_ > 3)
             Vprime->print();
         V_->add(Vprime);
+
+        
+        // Extra nuclear repulsion
+        double enuc2 = external->computeNuclearEnergy(molecule_);
+        if (print_) {
+            fprintf(outfile, "  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
+            fprintf(outfile, "  Additional nuclear repulsion = %20.15f\n", enuc2);
+            fprintf(outfile, "  Total nuclear repulsion      = %20.15f\n\n", nuclearrep_ + enuc2);
+        }
+        nuclearrep_ += enuc2; 
+        
     }
 
     H_->copy(T_);

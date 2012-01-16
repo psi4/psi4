@@ -8,7 +8,6 @@ PSITARGET = $(top_objdir)/lib/libPSI_scf_solver.a
 
 TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
-
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules

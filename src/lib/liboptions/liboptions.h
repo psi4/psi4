@@ -5,6 +5,8 @@
 #include <vector>
 #include <map>
 #include <exception.h>
+#include <boost/python.hpp>
+#include <boost/python/object.hpp>
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
 #include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
 
@@ -93,6 +95,22 @@ public:
     virtual Data& operator[](unsigned int);
 };
 
+class PythonDataType : public DataType
+{
+    boost::python::object python_object_;
+public:
+    PythonDataType();
+    PythonDataType(const boost::python::object& p);
+    virtual ~PythonDataType();
+
+    virtual std::string type() const;
+
+    const boost::python::object& to_python() const;
+
+    void assign(const boost::python::object& p);
+};
+
+#pragma warning disable 654
 class BooleanDataType : public DataType
 {
     bool boolean_;
@@ -113,6 +131,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class IntDataType : public DataType
 {
     int integer_;
@@ -133,6 +153,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class DoubleDataType : public DataType
 {
     double double_;
@@ -153,6 +175,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class StringDataType : public DataType
 {
     std::string str_;
@@ -178,6 +202,8 @@ public:
     virtual void assign(std::string s);
 };
 
+
+#pragma warning disable 654
 class IStringDataType : public DataType
 {
     std::string str_;
@@ -353,12 +379,14 @@ public:
     void set_int(const std::string &module, const std::string &key, int i);
     void set_double(const std::string & module, const std::string &key, double d);
     void set_str(const std::string & module, const std::string &key, std::string s);
+    void set_python(const std::string &module, const std::string& key, const boost::python::object &p);
     void set_array(const std::string &module, const std::string& key);
 
     void set_global_bool(const std::string &key, bool b);
     void set_global_int(const std::string &key, int i);
     void set_global_double(const std::string &key, double d);
     void set_global_str(const std::string &key, const std::string &s);
+    void set_global_python(const std::string& key, const boost::python::object &p);
     void set_global_array(const std::string& key);
 
     DataType* set_global_array_entry(const std::string& key, DataType* entry, DataType* loc);
