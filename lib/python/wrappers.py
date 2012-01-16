@@ -15,10 +15,6 @@ from collections import defaultdict
 def call_function_in_1st_argument(funcarg, **kwargs):
     return funcarg(**kwargs)
 
-###################
-##  Start of cp  ##
-###################
-
 def n_body(name, **kwargs):
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
@@ -47,7 +43,7 @@ def n_body(name, **kwargs):
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     # N-body run configuration
-    bsse = 'off'
+    bsse = 'on'
     if 'bsse' in kwargs:
         bsse = kwargs['bsse']
     
@@ -58,6 +54,14 @@ def n_body(name, **kwargs):
     do_total = False
     if 'do_total' in kwargs:
         do_total = kwargs['do_total']
+
+    external = None
+    external_indices = []
+    if 'external' in kwargs:
+        external = kwargs['external']
+        external_indices = [molecule.nfragments()]
+        if 'external_monomers' in kwargs:
+            external_indices = kwargs['external_monomers']
 
     # Check input args
     if not bsse == 'off' and not bsse == 'on' and not bsse == 'both':
@@ -74,11 +78,20 @@ def n_body(name, **kwargs):
     psioh.set_specific_retention(97, True)
 
     # Tell 'em what you're gonna tell 'em
+    has_external = 'No'
+    if (external):
+        has_external = 'Yes'
     PsiMod.print_out('\n')
     PsiMod.print_out('    ==> N-Body Interaction Energy Analysis <==\n\n')
     PsiMod.print_out('        BSSE Treatment:              %s\n' % (bsse))
     PsiMod.print_out('        Maximum N-Body Interactions: %d\n' % (max_n_body))
     PsiMod.print_out('        Compute Total Energy:        %s\n' % (do_total))
+    PsiMod.print_out('        External Field:              %s\n' % (has_external))
+    if (external):
+        PsiMod.print_out('        External Field Monomers:     ' )
+        for k in external_indices:
+            PsiMod.print_out('%-3d ' % (k))
+        PsiMod.print_out('\n')
     PsiMod.print_out('\n')
 
     # Run the total molecule, if required
@@ -88,7 +101,12 @@ def n_body(name, **kwargs):
     Etotal = 0.0
     if do_total or max_n_body == molecule.nfragments():
         PsiMod.print_out('    => Total Cluster Energy <=\n')
+        # Full cluster always gets the external field
+        if (external):
+            PsiMod.set_option_python("EXTERN", external)
         Etotal = call_function_in_1st_argument(func, **kwargs)
+        if (external):
+            PsiMod.set_option_python("EXTERN", None)
         energies_full[N] = []
         energies_full[N].append(Etotal)
         energies_mon[N] = []
@@ -100,38 +118,13 @@ def n_body(name, **kwargs):
     if (max_effective == N):
         max_effective = N - 1
             
-    # Run the clusters in the full basis
-    if bsse == 'on' or bsse == 'both':
-        for n in range(max_effective,0,-1):
-            energies_full[n] = []
-            clusters = extract_clusters(molecule, True, n)
-            for k in range(len(clusters)):
-                activate(clusters[k])
-                PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Full Basis) <=\n' %(n,k+1))
-                energies_full[n].append(call_function_in_1st_argument(func, **kwargs))
-                PsiMod.set_global_option('DF_INTS_IO','LOAD')
-                PsiMod.clean()
-            
-    # Run the clusters in the minimal cluster bases
-    PsiMod.set_global_option('DF_INTS_IO','NONE')
-    if bsse == 'off' or bsse == 'both':
-        for n in range(max_effective,0,-1):
-            energies_mon[n] = []
-            clusters = extract_clusters(molecule, False, n)
-            for k in range(len(clusters)):
-                activate(clusters[k])
-                PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Cluster Basis) <=\n' %(n,k+1))
-                energies_mon[n].append(call_function_in_1st_argument(func, **kwargs))
-                PsiMod.clean()
-
-    # Report the energies
+    # Build the combos for indexing purposes
     Ns = []
     if (max_n_body == N or do_total):
         Ns.append(N)
     for n in range(max_effective,0,-1):
         Ns.append(n)
 
-    # Build the combos for reporting purposes    
     combos = {} 
     for n in Ns:
 
@@ -179,6 +172,58 @@ def n_body(name, **kwargs):
             if (reals[0] > N):
                 break
 
+    # Hack for external
+    externNone = PsiMod.ExternalPotential()
+    
+    # Run the clusters in the full basis
+    if bsse == 'on' or bsse == 'both':
+        for n in range(max_effective,0,-1):
+            energies_full[n] = []
+            clusters = extract_clusters(molecule, True, n)
+            for k in range(len(clusters)):
+                activate(clusters[k])
+                # Do the external field for this cluster or not?
+                if (external):
+                    do_extern = False
+                    for mon in combos[n][k]:
+                        if (mon in external_indices):
+                            do_extern = True
+                            break
+                    if do_extern:
+                        PsiMod.set_option_python("EXTERN", external)
+                PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Full Basis) <=\n' %(n,k+1))
+                energies_full[n].append(call_function_in_1st_argument(func, **kwargs))
+                # Turn the external field off
+                if (external):
+                    PsiMod.set_option_python("EXTERN", externNone)
+                PsiMod.set_global_option('DF_INTS_IO','LOAD')
+                PsiMod.clean()
+            
+    # Run the clusters in the minimal cluster bases
+    PsiMod.set_global_option('DF_INTS_IO','NONE')
+    if bsse == 'off' or bsse == 'both':
+        for n in range(max_effective,0,-1):
+            energies_mon[n] = []
+            clusters = extract_clusters(molecule, False, n)
+            for k in range(len(clusters)):
+                activate(clusters[k])
+                # Do the external field for this cluster or not?
+                if (external):
+                    do_extern = False
+                    for mon in combos[n][k]:
+                        if (mon in external_indices):
+                            do_extern = True
+                            break
+                    if do_extern:
+                        PsiMod.set_option_python("EXTERN", external)
+                PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Cluster Basis) <=\n' %(n,k+1))
+                energies_mon[n].append(call_function_in_1st_argument(func, **kwargs))
+                # Turn the external field off
+                if (external):
+                    PsiMod.set_option_python("EXTERN", externNone)
+                PsiMod.clean()
+
+    # Report the energies
     PsiMod.print_out('\n    ==> N-Body Interaction Energy Analysis: Combination Definitions <==\n\n')
 
     PsiMod.print_out('     %6s %6s | %-24s\n' % ("N-Body", "Combo", "Monomers"))
@@ -337,8 +382,14 @@ def n_body(name, **kwargs):
 
     if bsse == 'on' or bsse == 'both':
         return energies_n_full[Ns[0]]
-    else 
+    else:
         return energies_n_mon[Ns[0]]
+
+nbody = n_body
+
+###################
+##  Start of cp  ##
+###################
 
 def cp(name, **kwargs):
 
