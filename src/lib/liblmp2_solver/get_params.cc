@@ -70,8 +70,8 @@ void LMP2::params() {
     neglect_dp_ = options_.get_bool("NEGLECT_DISTANT_PAIR");
     dp_cutoff_ = options_.get_double("DISTANT_PAIR_CUTOFF");
 
-//    scs_scale_os = options_.get_double("SCALE_OS");
-//    scs_scale_ss = options_.get_double("SCALE_SS");
+//    scs_scale_os = options_.get_double("MP2_OS_SCALE");
+//    scs_scale_ss = options_.get_double("MP2_SS_SCALE");
 
     only_print_domains_ = options_.get_bool("DOMAIN_PRINT_EXIT");
 

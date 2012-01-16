@@ -119,8 +119,8 @@ void SAPT0::print_header()
 void SAPT0::print_results()
 {
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
-  double SOS = options_.get_double("SCALE_OS");
-  double SSS = options_.get_double("SCALE_SS");
+  double SOS = options_.get_double("SAPT_OS_SCALE");
+  double SSS = options_.get_double("SAPT_SS_SCALE");
   e_sapt0_scs_ = eHF_ + SOS*(e_disp20_os_ + e_exch_disp20_os_) 
     + SSS*(e_disp20_ss_ + e_exch_disp20_ss_);
   double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);

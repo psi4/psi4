@@ -638,9 +638,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Omega (atomic wavenumbers) to center Casimir-Polder on -*/
     options.add_double("OMEGA_CENTER", 0.4);
     /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("SAPT_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations-*/
-    options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_double("SAPT_SS_SCALE", 1.0/3.0);
   }
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
@@ -871,9 +871,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do perform a spin component scaled (N) MP2 computation? -*/
     options.add_bool("SCS_N", false);
     /*- The scale factor used for opposite-spin pairs in SCS computations -*/
-    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations-*/
-    options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_double("MP2_SS_SCALE", 1.0/3.0);
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
@@ -1514,13 +1514,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("SCS_CCSD", 0);
     /*- -*/
-    options.add_double("MP2_SCALE_OS",1.20);
+    options.add_double("MP2_OS_SCALE",1.20);
     /*- -*/
-    options.add_double("MP2_SCALE_SS",1.0/3.0);
+    options.add_double("MP2_SS_SCALE",1.0/3.0);
     /*- -*/
-    options.add_double("CC_SCALE_OS", 1.27);
+    options.add_double("CC_OS_SCALE", 1.27);
     /*- -*/
-    options.add_double("CC_SCALE_SS",1.13);
+    options.add_double("CC_SS_SCALE",1.13);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
@@ -1597,9 +1597,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("SCS_N", false);
     /*- -*/
-    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- -*/
-    options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_double("MP2_SS_SCALE", 1.0/3.0);
     /*- Do screen integrals? -*/
     options.add_bool("SCREEN_INTS", false);
     /*- Minimum absolute value below which integrals are neglected. 
@@ -1608,7 +1608,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do exit after printing the domains? -*/
     options.add_bool("DOMAIN_PRINT_EXIT", 0);
    }
-  if(name=="DFMP2"|| options.read_globals()) {
+  if(name == "DFMP2"|| options.read_globals()) {
     /*- -*/
     options.add_int("MADMP2_SLEEP", 0);
     /*- Primary basis set -*/
@@ -1616,9 +1616,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for MP2 density fitting computations. Defaults to BASIS-RI. -*/
     options.add_str("DF_BASIS_MP2","");
     /*- OS Scale -*/
-    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- SS Scale  -*/
-    options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_double("MP2_SS_SCALE", 1.0/3.0);
     /*- \% of memory for DF-MP2 three-index buffers  -*/
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
     /*- Minimum absolute value below which integrals are neglected. 
@@ -1746,9 +1746,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     -*/
     options.add_str("MP2_ALGORITHM", "DF", "MP2 DF PS PS1 PS2 PS3 PS4 TEST_DENOM TEST_PS TEST_PS_OMEGA TEST_DPS_OMEGA TEST_DF");
     /*- OS Scale  -*/
-    options.add_double("SCALE_OS", 6.0/5.0);
+    options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- SS Scale  -*/
-    options.add_double("SCALE_SS", 1.0/3.0);
+    options.add_double("MP2_SS_SCALE", 1.0/3.0);
 
     // => RPA <= //
 
@@ -1981,9 +1981,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_double("LEVEL_SHIFT",0.02);
     /*- -*/
-    options.add_double("OS_SCALE",1.2);
+    options.add_double("MP2_OS_SCALE",6.0/5.0);
     /*- -*/
-    options.add_double("SS_SCALE",0.3333333333333333);
+    options.add_double("MP2_SS_SCALE",1.0/3.0);
     /*- -*/
     options.add_double("SOS_SCALE",1.3); // It is used for MP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
     /*- -*/

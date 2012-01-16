@@ -53,8 +53,8 @@ void OMP2Wave::common_init()
 	
 	step_max=options_.get_double("MO_STEP_MAX");
 	lshift_parameter=options_.get_double("LEVEL_SHIFT");
-	os_scale=options_.get_double("OS_SCALE");
-	ss_scale=options_.get_double("SS_SCALE");
+	os_scale=options_.get_double("MP2_OS_SCALE");
+	ss_scale=options_.get_double("MP2_SS_SCALE");
 	sos_scale=options_.get_double("SOS_SCALE");
 	sos_scale2=options_.get_double("SOS_SCALE2");
 	
