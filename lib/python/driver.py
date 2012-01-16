@@ -33,7 +33,7 @@ procedures = {
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,
-            'detci'         : run_detci,
+            'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
             'cisd'          : run_detci,
@@ -47,7 +47,8 @@ procedures = {
             'scf'           : run_scf_gradient,
             'ccsd'          : run_cc_gradient,
             'ccsd(t)'       : run_cc_gradient,
-            'mp2'           : run_mp2_gradient
+            'mp2'           : run_mp2_gradient,
+            'eom-ccsd'      : run_eom_cc_gradient
         },
         'hessian' : {
         },
@@ -241,7 +242,9 @@ def gradient(name, **kwargs):
                 #    kwargs['name'] = lowername
     
                 # Perform the energy calculation
-                E = func(lowername, **kwargs)
+                #E = func(lowername, **kwargs)
+                func(lowername, **kwargs)
+                E = PsiMod.get_variable("CURRENT ENERGY")
                 #E = func(**kwargs)
     
                 # Save the energy

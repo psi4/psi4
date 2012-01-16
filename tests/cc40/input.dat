@@ -14,8 +14,7 @@ set {
   freeze_core true
   property rotation
   gauge length
-  omega [589, 355]
-  omega_units nm
+  omega [589, 355, nm]
 }
 
 response('cc2')

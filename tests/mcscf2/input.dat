@@ -13,9 +13,9 @@ set basis cc-pVDZ
 
 set mcscf {
     reference   twocon
-    e_converge  11
+    e_convergence  11
     ci_diis     on
-    d_converge  11
+    d_convergence  11
     diis_max_vecs 4
     docc        [10, 1]
     socc        [ 0, 2]

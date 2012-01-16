@@ -12,14 +12,14 @@ molecule ch2 {
     a1 = 125.0
 }
 
-set {
+set globals {
     reference rohf
     basis     6-31G**
     docc      [2, 0, 0, 1]
     socc      [1, 0, 1, 0]
 }
 
-thisenergy = run_mcscf()
+thisenergy = energy('mcscf')
 
 
 clean()

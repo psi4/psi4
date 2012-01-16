@@ -971,13 +971,24 @@ timer_off("INIT GUESS");
         if (converged[i] == 1) {
 				  if (!params.full_matrix) totalE =lambda_old[i]+moinfo.eref+moinfo.ecc; 
 					else totalE =lambda_old[i]+moinfo.eref;
-					
-		  /* save the state energy */
+
+          // save a list of all converged energies in order by irrep and then energy
 		  eom_params.state_energies[num_converged_index] = totalE;
-					
+          // Put this list in environment for testing - I don't like it much because it mixes all
+          // the irreps together
           std::stringstream s;
           s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";
           Process::environment.globals[s.str()] = totalE;
+					
+          // The 'key' or 'property' root is stored in eom_params.prop_sym and prop_root
+          // by default it is the uppermost state but not necesarily
+          if (C_irr == eom_params.prop_sym && i == eom_params.prop_root) {
+            fprintf(outfile,"\n\tPutting into environment energy for root of R irrep %d and root %d.\n", C_irr+1, i+1);
+            Process::environment.globals["CURRENT ENERGY"] = totalE;
+            fprintf(outfile,"\tPutting into environment CURRENT ENERGY:             %15.10lf\n", totalE);
+            Process::environment.globals["CURRENT CORRELATION ENERGY"] = lambda_old[i]+moinfo.ecc;
+            fprintf(outfile,"\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n\n", lambda_old[i]+moinfo.ecc);
+          }
 
           fprintf(outfile,"EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n",
               ++num_converged_index,

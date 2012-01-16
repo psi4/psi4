@@ -3,6 +3,7 @@
 */
 
 #include <liboptions/liboptions.h>
+#include <liboptions/python.h>
 #include <libparallel/parallel.h>
 #include <physconst.h>
 #include <psifiles.h>
@@ -56,7 +57,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file -*/
   options.add_int("PRINT", 1);
-  /*- The amount of information to print to the output file -*/
+  /*- The amount of information to print to the output file !expert -*/
   options.add_int("DEBUG", 0);
   /*- Some codes (DFT) can dump benchmarking data to separate output files -*/
   options.add_int("BENCH", 0);
@@ -66,7 +67,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("WFN", "SCF");
   /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
-  /*- Number of columns to print in calls to Matrix::print_mat -*/
+  /*- Number of columns to print in calls to Matrix::print_mat !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
 
   // CDS-TODO: We should go through and check that the user hasn't done
@@ -81,33 +82,33 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Reference wavefunction -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
 
-    /*- Convergence criterion for CI vector (RMS error). 
-    The default is 1e-4 for energies and 1e-7 for gradients. 
+    /*- Convergence criterion for CI residual vector in the Davidson algorithm (RMS error).
+    The default is 1e-4 for energies and 1e-7 for gradients.
     See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("CONVERGENCE", 1e-4);
+    options.add_double("R_CONVERGENCE", 1e-4);
 
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE", 1e-6);
+    options.add_double("E_CONVERGENCE", 1e-6);
 
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
-    /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LVL -*/
+    /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LEVEL -*/
     options.add_bool("FCI",false);
 
     /*- The CI excitation level -*/
-    options.add_int("EX_LVL", 2);
+    options.add_int("EX_LEVEL", 2);
 
     /*- The CC excitation level -*/
-    options.add_int("CC_EX_LVL", 2);
+    options.add_int("CC_EX_LEVEL", 2);
 
     /*- In a RAS CI, this is the additional excitation level for allowing
     electrons out of RAS I into RAS II.  The maximum number of holes in
-    RAS I is therefore EX_LVL + VAL_EX_LVL. -*/
-    options.add_int("VAL_EX_LVL", 0);
+    RAS I is therefore EX_LEVEL + VAL_EX_LEVEL. -*/
+    options.add_int("VAL_EX_LEVEL", 0);
 
     /*- The CC valence excitation level -*/
-    options.add_int("CC_VAL_EX_LVL", 0);
+    options.add_int("CC_VAL_EX_LEVEL", 0);
 
     /*- number of CI roots to find -*/
     options.add_int("NUM_ROOTS", 1);
@@ -218,7 +219,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("HD_AVE", "EVANGELISTI",
       "EVANGELISTI HD_EXACT HD_KAVE ORB_ENER LEININGER Z_KAVE");
 
-    /*- Do compute the diagonal elements of the Hamiltonian matrix 
+    /*- Do compute the diagonal elements of the Hamiltonian matrix
       on-the-fly? Otherwise, a diagonal element vector is written
       to a separate file on disk. !expert -*/
     options.add_bool("HD_OTF",true);
@@ -239,21 +240,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do allow `mixed' RAS II/RAS III excitations into the CI space?
       If FALSE, then if there are any electrons
       in RAS III, then the number of holes in RAS I cannot exceed the given
-      excitation level EX_LVL. !expert -*/
+      excitation level EX_LEVEL. !expert -*/
     options.add_bool("MIXED",true);
 
     /*- Do allow `mixed' excitations involving RAS IV into the CI space.
       Useful to specify a split-virtual
       CISD[TQ] computation.  If FALSE, then if there are any electrons
       in RAS IV, then the number of holes in RAS I cannot exceed the given
-      excitation level EX_LVL.  !expert -*/
+      excitation level EX_LEVEL.  !expert -*/
     options.add_bool("MIXED4",true);
 
     /*- Do restrict strings with $e-$ in RAS IV?  Useful to reduce the number of
       strings required if MIXED4=true, as in a split-virutal CISD[TQ]
       computation.  If more than one electron is in RAS IV, then the
       holes in RAS I cannot exceed the number of particles in
-      RAS III + RAS IV (i.e., EX_LVL), or else the string is discarded.
+      RAS III + RAS IV (i.e., EX_LEVEL), or else the string is discarded.
       !expert -*/
     options.add_bool("R4S",false);
 
@@ -474,14 +475,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SIGMA_OVERLAP", false);
 
     /*- The value of the spin quantum number S is given by this option.
-    The default is determined by the value of the multiplicity.  This is used 
-    for two things: (1) determining the phase of the redundant half of the CI 
-    vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making 
+    The default is determined by the value of the multiplicity.  This is used
+    for two things: (1) determining the phase of the redundant half of the CI
+    vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making
     sure the guess vector has the desired value of $<S^2>$ (if CALC_SSQ is TRUE
     and ICORE=1). -*/
     options.add_double("S", 0.0);
 
-    /*- An array of length EX_LVL specifying whether each excitation type
+    /*- An array of length EX_LEVEL specifying whether each excitation type
     (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed).  Used to
     specify non-standard CI spaces such as CIST.  !expert -*/
     options.add("EX_ALLOW", new ArrayType());
@@ -598,18 +599,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("CC_MACRO", new ArrayType());
 
   }
-
   if (name == "SAPT"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) analysis
+        to quantitatively analyze noncovalent interactions. -*/
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3 MP2C");
     /*- The ubiquitous debug flag -*/
     options.add_int("DEBUG",0);
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE",1e-10);
-    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("D_CONVERGE",1e-8);
+    /*- Convergence criterion for energy (change) in the SAPT Ind20 term.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGENCE",1e-10);
+    /*- Convergence criterion for density in the SAPT Ind20 term.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGENCE",1e-8);
     /*- Don't solve the CPHF equations? -*/
     options.add_bool("NO_RESPONSE",false);
     /*- Do use asynchronous I/O in the CPHF solver? -*/
@@ -624,10 +628,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NAT_ORBS",false);
     /*- Do use natural orbitals for T2's? -*/
     options.add_bool("NAT_ORBS_T2",false);
-    /*- Minimum occupation below which natural orbitals are neglected. 
+    /*- Minimum occupation below which natural orbitals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("OCC_TOLERANCE",1.0E-6);
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE",1.0E-12);
     /*- Memory safety -*/
@@ -635,9 +639,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory? -*/
     options.add_bool("SAPT_MEM_CHECK",true);
     /*- SAPT DF Basis -*/
-    options.add_str("RI_BASIS_SAPT", "");
+    options.add_str("DF_BASIS_SAPT", "");
     /*- SAPT DF Basis for Elst10 and Exch10 -*/
-    options.add_str("RI_BASIS_ELST", "");
+    options.add_str("DF_BASIS_ELST", "");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
     /*- Denominator algorithm for PT methods -*/
@@ -654,7 +658,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
-      options.add_int("CACHELEV", 2);
+      options.add_int("CACHELEVEL", 2);
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
       /*- Maximum number of lambda iterations per macro-iteration -*/
@@ -665,10 +669,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 40);
       /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
       options.add_bool("COMPUTE_TPDM", 0);
-      /*- Convergence criterion for the SCF density. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("SCF_CONV", 1e-8);
-      /*- Convergence criterion for the lambda energy. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("CONVERGENCE", 1e-10);
+      /*- Convergence criterion for the SCF density (RMS error).
+      See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("SCF_D_CONVERGENCE", 1e-8);
+      /*- Convergence criterion for residuals (RMS error) in density cummulant equations.
+      See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("R_CONVERGENCE", 1e-10);
       /*- Do relax the orbitals? -*/
       options.add_bool("RELAX_ORBITALS", true);
       /*- The damping factor used in the initial SCF procedure (0 - 1000) 0 means full standard SCF update
@@ -678,7 +684,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("IGNORE_TAU", false);
       /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$? -*/
       options.add_bool("TAU_SQUARED", false);
-      /*- Minimum absolute value below which integrals are neglected. 
+      /*- Minimum absolute value below which integrals are neglected.
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("INTS_TOLERANCE", 1e-14);
       /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{-diis_start}$ -*/
@@ -748,14 +754,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
     /*- The name of the auxiliary basis to be used in RI computations -*/
-    options.add_str("RI_BASIS_SCF", "");
+    options.add_str("DF_BASIS_SCF", "");
 
     /*- Atomic Charge cutoff (for primary domain) -*/
     options.add_double("CHARGE_CUTOFF",0.05);
     /*- Extended domain radius, Angstrom -*/
     options.add_double("R_EXT",3.0);
     /*- Iterations per full Pipek-Mizey Localization -*/
-    options.add_int("STEPS_PER_LOCALIZE",1);
+    options.add_int("LOCAL_ITER",1);
     /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF PSEUDOSPECTRAL POISSON L_DF CD 1C_CD");
     /*- Do run in parallel? -*/
@@ -788,25 +794,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PERTURB_MAGNITUDE", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
-    /*- Do look for an ExternalPotential object in Python? -*/
-    options.add_bool("EXTERN", false);
+    /*- An ExternalPotential (built by Python or NULL) -*/
+    options.add("EXTERN", new PythonDataType());
 
     /*- The storage scheme for the three index tensors in density fitting -*/
-    options.add_str("RI_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
+    options.add_str("DF_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
     /*- Do save restart information for RI SCF? -*/
-    options.add_bool("RI_SCF_SAVE",false);
+    options.add_bool("DF_SCF_SAVE",false);
     /*- Do try to restart? -*/
-    options.add_bool("RI_SCF_RESTART",false);
+    options.add_bool("DF_SCF_RESTART",false);
     /*- Do find the raw fitting metric condition number? -*/
     options.add_bool("FIND_RAW_J_COND",false);
     /*- Max J basis condition number to be allowed -*/
-    options.add_double("RI_MAX_COND",1E8);
+    options.add_double("DF_MAX_COND",1E8);
     /*- SCF Fitting Type -*/
-    options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
+    options.add_str("DF_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
-    options.add_int("RI_INTS_NUM_THREADS",0);
+    options.add_int("DF_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc -*/
-    options.add_str("RI_INTS_IO", "NONE", "NONE SAVE LOAD");
+    options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
 
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
@@ -830,11 +836,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIIS", true);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE", 1e-8);
-    /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("D_CONVERGE", 1e-8);
-    /*- Minimum absolute value below which TEI are neglected. 
+    /*- Convergence criterion for SCF energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGENCE", 1e-8);
+    /*- Convergence criterion for SCF density. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGENCE", 1e-8);
+    /*- Minimum absolute value below which TEI are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
     /*- Maximum number of rows to read/write in each DF-SCF operation -*/
@@ -842,10 +848,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The amount of SAD information to print to the output -*/
     options.add_int("SAD_PRINT", 0);
-    /*- Convergence criterion for energy in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SAD_E_CONVERGE", 1E-5);
-    /*- Convergence criterion for density in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SAD_D_CONVERGE", 1E-5);
+    /*- Convergence criterion for SCF energy in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SAD_E_CONVERGENCE", 1E-5);
+    /*- Convergence criterion for SCF density in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SAD_D_CONVERGENCE", 1E-5);
     /*- Maximum number of SAD guess iterations -*/
     options.add_int("SAD_MAXITER", 50);
     /*- SAD Guess F-mix Iteration Start -*/
@@ -866,7 +872,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
     options.add_bool("RELAX_OPDM", false);
     /*- The amount of cacheing of data to perform -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- The criterion used to retain/release cached data -*/
     options.add_str("CACHETYPE", "LRU", "LRU LOW");
     /*- Do perform a spin component scaled MP2 computation? -*/
@@ -886,11 +892,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- Do ? -*/
     options.add_bool("PRINT_TEI", false);
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Boolean to delete the SO-basis two-electron integral file after the transformation -*/
@@ -912,7 +918,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PSIMRCC", false);
     /*- -*/
     options.add_str("MP2R12A", "MP2R12AERI", "MP2R12AERI MP2R12AR12 MP2R12AR12T1");
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
@@ -1067,17 +1073,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("KEEP_TEIFILE", false);
     /*- Do ? -*/
     options.add_bool("KEEP_OEIFILE", false);
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- Do ? -*/
     options.add_bool("LOCAL", false);
     /*- -*/
     options.add("OMEGA", new ArrayType());
-    /*- -*/
-    options.add_str("OMEGA_UNITS", "AU", "AU HZ EV NM");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
@@ -1096,11 +1100,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "SCF");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE",1e-14);
     /*- The amount of cacheing of data to perform -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034. !expert -*/
@@ -1119,16 +1123,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_SYM", 1);
     /*- -*/
     options.add_int("PROP_ROOT", 1);
+    /*- -*/
+    options.add_bool("CALC_XI", false);
+    /*- -*/
+    options.add_bool("ZETA",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","SCF");
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("CONVERGENCE",1e-7);
+    /*- Convergence criterion for wavefunction (change) in CC lambda-amplitude equations.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE",1e-7);
     /*- Do ? -*/
     options.add_bool("RESTART",false);
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- Do ? -*/
     options.add_bool("SEKINO",false);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
@@ -1165,6 +1174,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_ROOT",1);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",50);
+    /*- -*/
+    options.add_bool("ZETA",false);
   }
   if(name == "CLAG"|| options.read_globals()) {
     /*- Do ? -*/
@@ -1176,7 +1187,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "STABLE"|| options.read_globals()) {
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- -*/
     options.add_str("REFERENCE","RHF");
     /*- Do ? -*/
@@ -1192,14 +1203,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The amount of information printed to the output file -*/
     options.add_int("PRINT", 1);
     /*- How to cache quantities within the DPD library -*/
-    options.add_int("CACHELEV", 2);
+    options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
     options.add_int("MEMORY", 1000);
     /*- The Reference -*/
     options.add_str("REFERENCE", "");
-    /*- The convergence criterion for pole searching step. 
+    /*- The convergence criterion for pole searching step.
     See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("NEWTON_CONV", 1e-7);
+    options.add_double("NEWTON_CONVERGENCE", 1e-7);
     /*- The maximum numbers of the pole searching iteration  -*/
     options.add_int("POLE_MAX", 20);
     /*- Maximu iteration number in simultaneous expansion method -*/
@@ -1216,7 +1227,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute the Tamplitude equation matrix elements? -*/
     options.add_bool("T_AMPS",false);
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- Do use the minimal-disk algorithm for Wabei? It's VERY slow! -*/
@@ -1234,7 +1245,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do ? -*/
     options.add_bool("FULL_MATRIX",false);
     /*- -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- -*/
     options.add_str("CACHETYPE", "LRU", "LOW LRU");
     /*- Number of threads -*/
@@ -1275,10 +1286,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CC3_FOLLOW_ROOT", false);
     /*- Do ? -*/
     options.add_bool("RHF_TRIPLETS", false);
-    /*- The depth into the occupied and valence spaces from which one-electron 
-    excitations are seeded into the Davidson guess to the CIS (the default of 2 
-    includes all single excitations between HOMO-1, HOMO, LUMO, and LUMO+1). This 
-    CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic 
+    /*- The depth into the occupied and valence spaces from which one-electron
+    excitations are seeded into the Davidson guess to the CIS (the default of 2
+    includes all single excitations between HOMO-1, HOMO, LUMO, and LUMO+1). This
+    CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic
     excited states in the EOM-CC calculation !expert -*/
     options.add_int("EXCITATION_RANGE", 2);
     /*- Do print information on the iterative solution to the single-excitation
@@ -1294,17 +1305,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("COLLAPSE_WITH_LAST", true);
     /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("COMPLEX_TOLERANCE", 1E-12);
-    /*- See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("RESIDUAL_TOLERANCE", 1E-6);
-    /*- See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SS_RESIDUAL_TOLERANCE", 1E-6);
-    /*- See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("EVAL_TOLERANCE", 1E-8);
-    /*- See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SS_EVAL_TOLERANCE", 1E-6);
+    /*- Convergence criterion for norm of the residual vector in the Davidson algorithm for CC-EOM.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE", 1E-6);
+    /*- Convergence criterion for norm of the residual vector in the Davidson algorithm for the CIS guess to CC-EOM.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SS_R_CONVERGENCE", 1E-6);
+    /*- Convergence criterion for excitation energy (change) in the Davidson algorithm for CC-EOM.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGENCE", 1E-8);
+    /*- Convergence criterion for excitation energy (change) in the Davidson algorithm for the CIS guess to CC-EOM.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("SS_E_CONVERGENCE", 1E-6);
     /*- Number of important CC amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 5);
-    /*- See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Minimum absolute value above which a guess vector to a root is added to the Davidson algorithm.
+    See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
     /*- Do ? -*/
     options.add_bool("SKIP_DIAGSS", false);
@@ -1319,15 +1335,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- Cacheing level for libdpd -*/
-    options.add_int("CACHELEV",2);
+    options.add_int("CACHELEVEL",2);
     /*- -*/
     options.add_str("REFERENCE","RHF");
     /*- Gauge for optical rotation -*/
     options.add_str("GAUGE","LENGTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);
-    /*- Convergence criterion for perturbed wavefunctions. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("CONVERGENCE",1e-7);
+    /*- Convergence criterion for wavefunction (change) in perturbed CC equations.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE",1e-7);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
     /*- -*/
@@ -1377,9 +1394,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE", 1e-12);
+    options.add_double("E_CONVERGENCE", 1e-12);
     /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("D_CONVERGE", 1e-12);
+    options.add_double("D_CONVERGENCE", 1e-12);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",100);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
@@ -1414,8 +1431,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("INTERNAL_ROTATIONS",true);
     /*- Do attempt to force a two configruation solution by starting with CI coefficents of $\pm \sqrt{\frac{1}{2}}$ -*/
     options.add_bool("FORCE_TWOCON",false);
-    /*- The number of active orbitals, per irrep -*/
-    options.add("ACTIVE", new ArrayType());
+    /*- The number of singly occupied orbitals, per irrep -*/
+    options.add("SOCC", new ArrayType());
+    /*- The number of doubly occupied orbitals, per irrep -*/
+    options.add("DOCC", new ArrayType());
 //    /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
 //    options.add("ACTV", new ArrayType());
     /*- The type of SCF reference to be computed. -*/
@@ -1434,8 +1453,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ANALYZE", 0);
     /*- Maximum number of iterations to solve the CC equations -*/
     options.add_int("MAXITER", 50);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("CONVERGENCE", 1e-7);
+    /*- Convergence criterion for wavefunction (change) in CC amplitude equations.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE", 1e-7);
     /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$ amplitudes? -*/
     options.add_bool("RESTART",1);
     /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? !expert -*/
@@ -1443,18 +1463,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //#warning CCEnergy ao_basis keyword type was changed.
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Cacheing level for libdpd governing the storage of amplitudes, 
-    integrals, and intermediates in the CC procedure. A value of 0 retains 
-    no quantities in cache, while a level of 6 attempts to store all 
-    quantities in cache.  For particularly large calculations, a value of 
-    0 may help with certain types of memory problems.  The default is 2, 
-    which means that all four-index quantites with up to two virtual-orbital 
+    /*- Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
     indices (e.g., <ij|ab> integrals) may be held in the cache. -*/
-    options.add_int("CACHELEV", 2);
-    /*- Selects the priority type for maintaining the automatic memory 
-    cache used by the libdpd codes. A value of LOW selects a "low priority" 
-    scheme in which the deletion of items from the cache is based on 
-    pre-programmed priorities. A value of LRU selects a "least recently used" 
+    options.add_int("CACHELEVEL", 2);
+    /*- Selects the priority type for maintaining the automatic memory
+    cache used by the libdpd codes. A value of LOW selects a "low priority"
+    scheme in which the deletion of items from the cache is based on
+    pre-programmed priorities. A value of LRU selects a "least recently used"
     scheme in which the oldest item in the cache will be the first one deleted. -*/
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
     /*- Number of threads -*/
@@ -1469,20 +1489,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("ABCD", "NEW", "NEW OLD");
     /*- Do simulate the effects of local correlation techniques? -*/
     options.add_bool("LOCAL", 0);
-    /*- Value (always between one and zero) for the Broughton-Pulay completeness 
-    check used to contruct orbital domains for local-CC calculations. See 
-    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel 
+    /*- Value (always between one and zero) for the Broughton-Pulay completeness
+    check used to contruct orbital domains for local-CC calculations. See
+    J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
     and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
     /*- -*/
     options.add_double("LOCAL_MOS", 0);
-    /*- Type of local-CCSD scheme to be simulated. WERNER selects the method 
-    developed by H.-J. Werner and co-workers, and AOBASIS selects the method 
+    /*- Type of local-CCSD scheme to be simulated. WERNER selects the method
+    developed by H.-J. Werner and co-workers, and AOBASIS selects the method
     developed by G.E. Scuseria and co-workers (currently inoperative). -*/
     options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
-    /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of 
-    NEGLECT ignores weak pairs entirely. A value of NONE treats weak pairs in 
-    the same manner as strong pairs. A value of MP2 uses second-order perturbation 
+    /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of
+    NEGLECT ignores weak pairs entirely. A value of NONE treats weak pairs in
+    the same manner as strong pairs. A value of MP2 uses second-order perturbation
     theory to correct the local-CCSD energy computed with weak pairs ignored. -*/
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
@@ -1492,7 +1512,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 10);
     /*- Convergence criterion for Breuckner orbitals. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("BRUECKNER_CONV", 1e-5);
+    options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
     /*- Do print the MP2 amplitudes which are the starting guesses for RHF and UHF reference functions? -*/
     options.add_bool("MP2_AMPS_PRINT", 0);
     /*- Do print MP2 and CCSD pair energies for RHF references? -*/
@@ -1527,8 +1547,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LOCAL_AMPS_PRINT_CUTOFF", 0.60);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 500);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("CONVERGENCE", 1e-7);
+    /*- Convergence criterion for CIS wavefunction.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE", 1e-7);
     /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- -*/
@@ -1550,25 +1571,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
-    options.add_str("RI_BASIS_MP2", "");
+    options.add_str("DF_BASIS_MP2", "");
 //    options.read_ipv1();
     /*- -*/
-    if(options.get_str("RI_BASIS_MP2") != "")
+    if(options.get_str("DF_BASIS_MP2") != "")
     /*- Do ? -*/
-      options.add_bool("RI_LMP2", true);
+      options.add_bool("DF_LMP2", true);
     else
     /*- Do ? -*/
-      options.add_bool("RI_LMP2", false);
+      options.add_bool("DF_LMP2", false);
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "LMP2");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF");
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 50);
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("ENERGY_CONV", 1e-7);
-    /*- Convergence criterion for T2 amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("RMS_CONV", 1e-5);
+    /*- Convergence criterion for energy (change).
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGENCE", 1e-7);
+    /*- Convergence criterion for T2 amplitudes (RMS change).
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("R_CONVERGENCE", 1e-5);
     /*- -*/
     options.add_int("FSKIP", 2);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
@@ -1597,7 +1620,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SCREENING", 7);
     /*- Do ? -*/
     options.add_bool("SCREEN_INTS", false);
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 1e-12);
    }
@@ -1606,11 +1629,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MADMP2_SLEEP", 0);
     /*- -*/
     options.add_int("MADMP2_DEBUG", 0);
-    /*- -*/
-    options.add_str("MP2_ALGORITHM", "DFMP2");
-    //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
-    options.add_str("RI_BASIS_MP2","");
+    options.add_str("DF_BASIS_MP2","");
     /*- Basis, needed by Python -*/
     options.add_str("BASIS","NONE");
     /*- OS Scale -*/
@@ -1619,42 +1639,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE_SS", 1.0/3.0);
     /*- \% of memory for DF-MP2 three-index buffers  -*/
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- DFMP2 Fitting Type -*/
-    options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
-    /*- DFMP2 Algorithm (usually for debugging)  -*/
-    options.add_str("DFMP2_TYPE","DEFAULT", "DEFAULT DISK CORE OLD");
-    /*- DFMP2 Fitting symmetry  -*/
-    options.add_str("FITTING_SYMMETRY","SYMMETRIC", "SYMMETRIC ASYMMETRIC");
-    /*- DFMP2 Fitting conditioning  -*/
-    options.add_str("FITTING_CONDITIONING","FINISHED", "RAW FINISHED");
-    /*- DFMP2 Fitting inversion  -*/
-    options.add_str("FITTING_INVERSION","EIG", "EIG CHOLESKY SOLVE");
-    /*- Max condition number in auxiliary basis -*/
-    options.add_double("RI_MAX_COND", 1.0E8);
-    /*- -Maximum number of rows to read/write in each DF-MP2 operation -*/
-    options.add_int("ROWS_PER_READ", 0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
-    options.add_int("RI_INTS_NUM_THREADS", 0);
-    /*- Debugging information? -*/
-    options.add_int("DEBUG",0);
-    /*- Do use parallel algorithm? -*/
-    options.add_bool("PARALLEL_DFMP2",false);
+    options.add_int("DF_INTS_NUM_THREADS", 0);
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
     options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
     /*- MO basis -*/
     options.add_str("BASIS","NONE");
-    /*- Minimum absolute value below which integrals are neglected. 
+    /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("SCHWARZ_TOLERANCE", 0.0);
+    options.add_double("INTS_TOLERANCE", 0.0);
     /*- Convergence criterion for CC energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGE", 1e-8);
+    options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("T_CONVERGE", 1e-8);
+    options.add_double("R_CONVERGENCE", 1e-8);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",true);
     /*- Minimum number of error vectors stored for DIIS extrapolation -*/
@@ -1669,7 +1671,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // => DF <= //
 
     /*- DF basis for MO integrals -*/
-    options.add_str("RI_BASIS_CC","NONE");
+    options.add_str("DF_BASIS_CC","NONE");
     /*- Fitting metric algorithm -*/
     options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
     /*- Desired Fitting condition (inverse of max condition number) -*/
@@ -1786,7 +1788,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
-      /*- The multiplicity, $S(S+1)$, of the target state.  Must be specified if different from the reference $M_s$. -*/
+      /*- The multiplicity, $M_S(M_S+1)$, of the target state.  Must be specified if different from the reference $M_s$. -*/
       options.add_int("CORR_MULTP",1);
     /*- The molecular charge of the target state -*/
       options.add_int("CORR_CHARGE",0);
@@ -1866,22 +1868,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     /*- How to perform MP2_CCSD computations -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
-//    /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
-//    options.add("CORR_FOCC", new ArrayType());
-//    /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
-//    options.add("CORR_DOCC", new ArrayType());
-//    /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
+    /*- The number of frozen occupied orbitals per irrep -*/
+    options.add("FROZEN_DOCC", new ArrayType());
     /*- The number of doubly occupied orbitals per irrep -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
-//    /*- The number of active orbitals per irrep (same as ACTV) -*/
-//    options.add("CORR_ACTV", new ArrayType());
-//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTIVE) -*/
-//    options.add("ACTV", new ArrayType());
-//    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTV) -*/
     /*- The number of active orbitals per irrep -*/
     options.add("ACTIVE", new ArrayType());
-//    /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
-//    options.add("CORR_FVIR", new ArrayType());
+    /*- The number of frozen virtual orbitals per irrep -*/
+    options.add("FROZEN_UOCC", new ArrayType());
     /*- -*/
     options.add_int("SMALL_CUTOFF", 0);
     /*- Do ? -*/
@@ -1924,7 +1918,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("ADD_AUXILIARY_BONDS", false);
       /*- Do save and print the geometry from the last projected step at the end
           of a geometry optimization? Otherwise (and by default), save and print
-          the previous geometry at which was computed the gradient that satisfied 
+          the previous geometry at which was computed the gradient that satisfied
           the convergence criteria. -*/
       options.add_bool("WRITE_FINAL_STEP_GEOMETRY", false);
       /*- Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} -*/
@@ -1944,11 +1938,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
       /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("CONV_MAX_FORCE", 3.0e-4);
+      options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
+      /*- QCHEM optimization criteria: rms force. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
       /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("CONV_MAX_DE", 1.0e-6);
+      options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
       /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
-      options.add_double("CONV_MAX_DISP", 1.2e-3);
+      options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
+      /*- QCHEM optimization criteria: rms displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
@@ -1971,7 +1969,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "OMP2"|| options.read_globals()) {
     //options.add_int("memory", 256);
     //options.add_str("reference", "UHF", "UHF");
-    
+
     options.add_double("e_convergence",1e-8);
     options.add_double("a_convergence",1e-5);
     options.add_double("g_convergence",1e-5);
@@ -1982,31 +1980,31 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("cachelev",2);
     options.add_int("num_vecs",4);
     options.add_int("cutoff",14);
-    
+
     options.add_double("mo_step_max",0.5);
     options.add_double("lshift_parameter",0.02);
     options.add_double("os_scale",1.2);
     options.add_double("ss_scale",0.3333333333333333);
     options.add_double("sos_scale",1.3); // It is used for MP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
     options.add_double("sos_scale2",1.2); // It is used for OMP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
-    /*- Do ? -*/ 
+    /*- Do ? -*/
     options.add_bool("level_shift",true);
     //options.add_str("lineq","CDGESV","CDGESV FLIN POPLE");
     options.add_str("orth_type","MGS","GS MGS");
     //options.add_str("stability","FALSE","TRUE FALSE");
-    /*- Do ? -*/ 
+    /*- Do ? -*/
     options.add_bool("natorb",false);
-    options.add_str("opt_method","DIIS","SD DIIS");    
-    options.add_str("hess_type","NONE","NONE");    
-    /*- Do ? -*/ 
-    options.add_bool("omp2_orb_energy",false);  
-    /*- Do ? -*/ 
-    options.add_bool("do_scs",false); 
-    /*- Do ? -*/ 
-    options.add_bool("do_sos",false); 
-    /*- Do ? -*/ 
-    options.add_bool("write_mo",false);   
-    /*- Do ? -*/ 
+    options.add_str("opt_method","DIIS","SD DIIS");
+    options.add_str("hess_type","NONE","NONE");
+    /*- Do ? -*/
+    options.add_bool("omp2_orb_energy",false);
+    /*- Do ? -*/
+    options.add_bool("do_scs",false);
+    /*- Do ? -*/
+    options.add_bool("do_sos",false);
+    /*- Do ? -*/
+    options.add_bool("write_mo",false);
+    /*- Do ? -*/
     options.add_bool("read_mo",false);
   }
   return true;

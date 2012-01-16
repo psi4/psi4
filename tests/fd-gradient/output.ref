@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -74,8 +76,8 @@ clean()
 
 --------------------------------------------------------------------------
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -143,7 +145,7 @@ clean()
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898570
+  Initial RHF energy:   -54.63426058898558
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -180,14 +182,14 @@ clean()
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277951   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949073   -1.67848e+00   2.60800e-01 DIIS
-   @RHF iter   3:   -74.96324209064443   -3.17455e-02   3.36189e-02 DIIS
-   @RHF iter   4:   -74.96459579416396   -1.35370e-03   9.22393e-03 DIIS
-   @RHF iter   5:   -74.96465753906593   -6.17449e-05   1.74105e-03 DIIS
-   @RHF iter   6:   -74.96466250922853   -4.97016e-06   5.74970e-04 DIIS
-   @RHF iter   7:   -74.96466254315344   -3.39249e-08   4.82594e-05 DIIS
-   @RHF iter   8:   -74.96466254315349   -5.68434e-14   2.10555e-08 DIIS
+   @RHF iter   1:   -73.25301165277942   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149654949070   -1.67848e+00   2.60800e-01 DIIS
+   @RHF iter   3:   -74.96324209064434   -3.17455e-02   3.36189e-02 DIIS
+   @RHF iter   4:   -74.96459579416401   -1.35370e-03   9.22393e-03 DIIS
+   @RHF iter   5:   -74.96465753906583   -6.17449e-05   1.74105e-03 DIIS
+   @RHF iter   6:   -74.96466250922846   -4.97016e-06   5.74970e-04 DIIS
+   @RHF iter   7:   -74.96466254315341   -3.39249e-08   4.82594e-05 DIIS
+   @RHF iter   8:   -74.96466254315327    1.42109e-13   2.10733e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -209,36 +211,36 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315349
+  @RHF Final Energy:   -74.96466254315327
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3624
+     X:     0.0000      Y:    -0.0000      Z:    -0.3624
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
+     X:     0.0000      Y:    -0.0000      Z:     0.6566     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
+     X:     0.0000      Y:    -0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -315,42 +317,42 @@ Total time:
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000     0.000000000000    -5.962875049132
-       2        0.000000000000    -3.908821022548     2.981437524566
-       3        0.000000000000     3.908821022548     2.981437524566
+       1        0.000000000000     0.000000000000    -5.962875049151
+       2       -0.000000000000    -3.908821022562     2.981437524575
+       3        0.000000000000     3.908821022562     2.981437524575
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000    -0.000000000000     0.303451767836
-       2       -0.000000000000     0.158667993463    -0.151725883918
-       3        0.000000000000    -0.158667993463    -0.151725883918
+       1       -0.000000000000    -0.000000000000     0.303451767919
+       2        0.000000000000     0.158667993502    -0.151725883959
+       3        0.000000000000    -0.158667993502    -0.151725883959
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000    -0.000000000000     2.918158339468
-       2       -0.000000000000     1.847470421991    -1.459079169734
-       3       -0.000000000000    -1.847470421991    -1.459079169734
+       1       -0.000000000000    -0.000000000000     2.918158339495
+       2        0.000000000000     1.847470422008    -1.459079169748
+       3       -0.000000000000    -1.847470422008    -1.459079169748
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000    -0.000000000000     0.001748239951
-       2        0.000000000000    -0.019379916863    -0.000874119975
-       3        0.000000000000     0.019379916863    -0.000874119975
+       1       -0.000000000000     0.000000000000     0.001748240042
+       2       -0.000000000000    -0.019379916821    -0.000874120021
+       3        0.000000000000     0.019379916821    -0.000874120021
 
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.06 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -382,8 +384,8 @@ Total time:
   //    Loading displacement 1 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -408,174 +410,6 @@ Total time:
            O          0.054279931502     0.041811401668     0.000000000000
            H          0.054279931502    -0.956252935259     0.000000000000
            H         -0.915741834414     0.292675649009     0.000000000000
-
-    Number of unique atoms: 3
-
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
-
-  Running in c1 symmetry.
-
-  Nuclear repulsion =    8.801497552207296
-
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 10
-  Nalpha       = 5
-  Nbeta        = 5
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Guess Type is CORE.
-  Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis: STO-3G <==
-
-  Basis Set
-    Number of shells: 5
-    Number of basis function: 7
-    Number of Cartesian functions: 7
-    Spherical Harmonics?: true
-    Max angular momentum: 1
-
-  ==> Pre-Iterations <==
-
-  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  Initial RHF energy:   -54.63424620687556
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A          7       7       5       5       5       0
-   -------------------------------------------------------
-    Total       7       7       5       5       5       0
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   3
-      Number of AO shells:               5
-      Number of SO shells:               5
-      Number of primitives:             15
-      Number of atomic orbitals:         7
-      Number of basis functions:         7
-
-      Number of irreps:                  1
-      Number of functions per irrep: [   7 ]
-
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 206 non-zero two-electron integrals.
-        Stored in file 33.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     Density RMS
-
-   @RHF iter   1:   -73.25300864294861   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93148547109081   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333344995   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778884   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937926   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009911   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403143   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403174   -3.12639e-13   1.18601e-07 DIIS
-   @RHF iter   9:   -74.96465389403173    1.42109e-14   1.39797e-08 DIIS
-
-  ==> Post-Iterations <==
-
-	Orbital Energies (a.u.)
-	-----------------------
-
-	Doubly Occupied:                                                      
-
-	   1A    -20.247270     2A     -1.247778     3A     -0.595851  
-	   4A     -0.447883     5A     -0.388957  
-
-	Virtual:                                                              
-
-	   6A      0.564125     7A      0.693040  
-
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
-
-  Energy converged.
-
-  @RHF Final Energy:   -74.96465389403173
-
-  ==> Properties <==
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.8073      Y:    -0.6219      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.2887      Y:     0.2192      Z:    -0.0000
-
-  Dipole Moment: (a.u.)
-     X:    -0.5187      Y:    -0.4027      Z:    -0.0000     Total:     0.6566
-
-  Dipole Moment: (Debye)
-     X:    -1.3183      Y:    -1.0235      Z:    -0.0000     Total:     1.6690
-
-
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
-Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
-  //    Loading displacement 2 of 7    //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
-
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
-
-	There are an even number of electrons - assuming singlet.
-	Specify the multiplicity with the MULTP option in the
-	input if this is incorrect
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              RHF Reference
-                        1 Threads,    256 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.054070201503     0.042082271596     0.000000000000
-           H          0.054070201503    -0.959853403458     0.000000000000
-           H         -0.912203537130     0.291977214870     0.000000000000
 
     Number of unique atoms: 3
 
@@ -656,15 +490,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25300864294866   -1.86188e+01   0.00000e+00  
+   @RHF iter   1:   -73.25300864294867   -1.86188e+01   0.00000e+00 
    @RHF iter   2:   -74.93148547109092   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333345018   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778891   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937933   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009920   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403146   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403184   -3.83693e-13   1.18603e-07 DIIS
-   @RHF iter   9:   -74.96465389403180    4.26326e-14   1.41818e-08 DIIS
+   @RHF iter   3:   -74.96323333345021   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713778897   -1.35380e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888937938   -6.17516e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465386009919   -4.97072e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465389403153   -3.39323e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465389403187   -3.41061e-13   1.18623e-07 DIIS
+   @RHF iter   9:   -74.96465389403185    1.42109e-14   1.39243e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -686,7 +520,175 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465389403180
+  @RHF Final Energy:   -74.96465389403185
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8073      Y:    -0.6219      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2887      Y:     0.2192      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.5187      Y:    -0.4027      Z:     0.0000     Total:     0.6566
+
+  Dipole Moment: (Debye)
+     X:    -1.3183      Y:    -1.0235      Z:     0.0000     Total:     1.6690
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Loading displacement 2 of 7    //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.054070201503     0.042082271596     0.000000000000
+           H          0.054070201503    -0.959853403458     0.000000000000
+           H         -0.912203537130     0.291977214870     0.000000000000
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801497552207296
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  Basis Set
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -54.63424620687574
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of SO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Number of irreps:                  1
+      Number of functions per irrep: [   7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -73.25300864294880   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93148547109102   -1.67848e+00   2.60802e-01 DIIS
+   @RHF iter   3:   -74.96323333345023   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713778898   -1.35380e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888937942   -6.17516e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465386009920   -4.97072e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465389403158   -3.39324e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465389403188   -2.98428e-13   1.18613e-07 DIIS
+   @RHF iter   9:   -74.96465389403187    1.42109e-14   1.40799e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.247270     2A     -1.247778     3A     -0.595851  
+	   4A     -0.447883     5A     -0.388957  
+
+	Virtual:                                                              
+
+	   6A      0.564125     7A      0.693040  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.96465389403187
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -704,22 +706,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -787,7 +789,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812006
+  Initial RHF energy:   -54.63765013812009
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -824,14 +826,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236330   -1.86156e+01   0.00000e+00  
+   @RHF iter   1:   -73.25324851236331   -1.86156e+01   0.00000e+00 
    @RHF iter   2:   -74.93065163215218   -1.67740e+00   2.60806e-01 DIIS
    @RHF iter   3:   -74.96322356409721   -3.25719e-02   3.40086e-02 DIIS
-   @RHF iter   4:   -74.96459714196185   -1.37358e-03   9.27942e-03 DIIS
-   @RHF iter   5:   -74.96465984832905   -6.27064e-05   1.74800e-03 DIIS
-   @RHF iter   6:   -74.96466497418814   -5.12586e-06   5.83706e-04 DIIS
-   @RHF iter   7:   -74.96466500877627   -3.45881e-08   4.87986e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -5.68434e-14   1.96703e-08 DIIS
+   @RHF iter   4:   -74.96459714196189   -1.37358e-03   9.27942e-03 DIIS
+   @RHF iter   5:   -74.96465984832911   -6.27064e-05   1.74800e-03 DIIS
+   @RHF iter   6:   -74.96466497418822   -5.12586e-06   5.83706e-04 DIIS
+   @RHF iter   7:   -74.96466500877632   -3.45881e-08   4.87986e-05 DIIS
+   @RHF iter   8:   -74.96466500877631    1.42109e-14   1.96505e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -853,40 +855,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500877631
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.3660
+     X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -954,7 +956,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527610
+  Initial RHF energy:   -54.63086725527614
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -991,14 +993,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439036   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275245   -1.67955e+00   2.60796e-01 DIIS
-   @RHF iter   3:   -74.96325235946672   -3.09342e-02   3.32305e-02 DIIS
+   @RHF iter   1:   -73.25277197439038   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231814275246   -1.67955e+00   2.60796e-01 DIIS
+   @RHF iter   3:   -74.96325235946674   -3.09342e-02   3.32305e-02 DIIS
    @RHF iter   4:   -74.96458629515658   -1.33394e-03   9.16818e-03 DIIS
-   @RHF iter   5:   -74.96464708767149   -6.07925e-05   1.73410e-03 DIIS
+   @RHF iter   5:   -74.96464708767158   -6.07925e-05   1.73410e-03 DIIS
    @RHF iter   6:   -74.96465190510284   -4.81743e-06   5.66246e-04 DIIS
-   @RHF iter   7:   -74.96465193838502   -3.32822e-08   4.77315e-05 DIIS
-   @RHF iter   8:   -74.96465193838507   -5.68434e-14   2.27308e-08 DIIS
+   @RHF iter   7:   -74.96465193838509   -3.32822e-08   4.77315e-05 DIIS
+   @RHF iter   8:   -74.96465193838512   -2.84217e-14   2.27065e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1020,40 +1022,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838507
+  @RHF Final Energy:   -74.96465193838512
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0158
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.3589
+     X:    -0.0000      Y:     0.0000      Z:    -0.3589
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
+     X:    -0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
+     X:    -0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1121,7 +1123,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405512
+  Initial RHF energy:   -54.63936652405511
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1158,14 +1160,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438205   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335174   -1.67699e+00   2.60689e-01 DIIS
-   @RHF iter   3:   -74.96308170178375   -3.22440e-02   3.38410e-02 DIIS
-   @RHF iter   4:   -74.96445237771688   -1.37068e-03   9.27477e-03 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   1.75540e-03 DIIS
-   @RHF iter   6:   -74.96452042966443   -5.10897e-06   5.83082e-04 DIIS
-   @RHF iter   7:   -74.96452046394977   -3.42853e-08   4.85397e-05 DIIS
-   @RHF iter   8:   -74.96452046394975    1.42109e-14   2.04457e-08 DIIS
+   @RHF iter   1:   -73.25385038438212   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083766335178   -1.67699e+00   2.60689e-01 DIIS
+   @RHF iter   3:   -74.96308170178382   -3.22440e-02   3.38410e-02 DIIS
+   @RHF iter   4:   -74.96445237771700   -1.37068e-03   9.27477e-03 DIIS
+   @RHF iter   5:   -74.96451532069423   -6.29430e-05   1.75540e-03 DIIS
+   @RHF iter   6:   -74.96452042966452   -5.10897e-06   5.83082e-04 DIIS
+   @RHF iter   7:   -74.96452046394984   -3.42853e-08   4.85397e-05 DIIS
+   @RHF iter   8:   -74.96452046394975    8.52651e-14   2.03902e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1194,33 +1196,33 @@ Total time:
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.3635
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3635
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
+     X:    -0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
+     X:    -0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1242,7 +1244,7 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O          0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.788825926977     0.543701060724
            H          0.000000000000     0.788825926977     0.543701060724
 
@@ -1255,7 +1257,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814746104065891
 
   Charge       = 0
   Multiplicity = 1
@@ -1288,7 +1290,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701518
+  Initial RHF energy:   -54.62913703701523
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1325,14 +1327,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318660   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418393   -1.67997e+00   2.60914e-01 DIIS
-   @RHF iter   3:   -74.96339101002461   -3.12555e-02   3.33988e-02 DIIS
-   @RHF iter   4:   -74.96472799861236   -1.33699e-03   9.17350e-03 DIIS
-   @RHF iter   5:   -74.96478857522615   -6.05766e-05   1.72697e-03 DIIS
-   @RHF iter   6:   -74.96479341033003   -4.83510e-06   5.66972e-04 DIIS
-   @RHF iter   7:   -74.96479344389275   -3.35627e-08   4.79764e-05 DIIS
-   @RHF iter   8:   -74.96479344389269    5.68434e-14   2.18008e-08 DIIS
+   @RHF iter   1:   -73.25216797318666   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213551418398   -1.67997e+00   2.60914e-01 DIIS
+   @RHF iter   3:   -74.96339101002465   -3.12555e-02   3.33988e-02 DIIS
+   @RHF iter   4:   -74.96472799861232   -1.33699e-03   9.17350e-03 DIIS
+   @RHF iter   5:   -74.96478857522624   -6.05766e-05   1.72697e-03 DIIS
+   @RHF iter   6:   -74.96479341033002   -4.83510e-06   5.66972e-04 DIIS
+   @RHF iter   7:   -74.96479344389269   -3.35627e-08   4.79764e-05 DIIS
+   @RHF iter   8:   -74.96479344389269    0.00000e+00   2.17441e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1361,33 +1363,33 @@ Total time:
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3614
+     X:     0.0000      Y:     0.0000      Z:    -0.3614
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
+     X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
+     X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1455,7 +1457,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898570
+  Initial RHF energy:   -54.63426058898558
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1492,14 +1494,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277951   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949073   -1.67848e+00   2.60800e-01 DIIS
-   @RHF iter   3:   -74.96324209064443   -3.17455e-02   3.36189e-02 DIIS
-   @RHF iter   4:   -74.96459579416396   -1.35370e-03   9.22393e-03 DIIS
-   @RHF iter   5:   -74.96465753906593   -6.17449e-05   1.74105e-03 DIIS
-   @RHF iter   6:   -74.96466250922853   -4.97016e-06   5.74970e-04 DIIS
-   @RHF iter   7:   -74.96466254315344   -3.39249e-08   4.82594e-05 DIIS
-   @RHF iter   8:   -74.96466254315349   -5.68434e-14   2.10555e-08 DIIS
+   @RHF iter   1:   -73.25301165277942   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149654949070   -1.67848e+00   2.60800e-01 DIIS
+   @RHF iter   3:   -74.96324209064434   -3.17455e-02   3.36189e-02 DIIS
+   @RHF iter   4:   -74.96459579416401   -1.35370e-03   9.22393e-03 DIIS
+   @RHF iter   5:   -74.96465753906583   -6.17449e-05   1.74105e-03 DIIS
+   @RHF iter   6:   -74.96466250922846   -4.97016e-06   5.74970e-04 DIIS
+   @RHF iter   7:   -74.96466254315341   -3.39249e-08   4.82594e-05 DIIS
+   @RHF iter   8:   -74.96466254315327    1.42109e-13   2.10733e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1521,32 +1523,32 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315349
+  @RHF Final Energy:   -74.96466254315327
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3624
+     X:     0.0000      Y:    -0.0000      Z:    -0.3624
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
+     X:     0.0000      Y:    -0.0000      Z:     0.6566     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
+     X:     0.0000      Y:    -0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 -------------------------------------------------------------
@@ -1595,8 +1597,8 @@ Total time:
   //    Loading displacement 1 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1664,7 +1666,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63420305929719
+  Initial RHF energy:   -54.63420305929716
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1701,15 +1703,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25299961285062   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93145223513734   -1.67845e+00   2.60806e-01 DIIS
-   @RHF iter   3:   -74.96320706100352   -3.17548e-02   3.36226e-02 DIIS
-   @RHF iter   4:   -74.96456116777892   -1.35411e-03   9.22427e-03 DIIS
-   @RHF iter   5:   -74.96462293943462   -6.17717e-05   1.74144e-03 DIIS
-   @RHF iter   6:   -74.96462791182623   -4.97239e-06   5.75089e-04 DIIS
-   @RHF iter   7:   -74.96462794578082   -3.39546e-08   4.82762e-05 DIIS
-   @RHF iter   8:   -74.96462794578203   -1.20792e-12   2.33158e-07 DIIS
-   @RHF iter   9:   -74.96462794578200    2.84217e-14   2.21538e-08 DIIS
+   @RHF iter   1:   -73.25299961285063   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93145223513733   -1.67845e+00   2.60806e-01 DIIS
+   @RHF iter   3:   -74.96320706100350   -3.17548e-02   3.36226e-02 DIIS
+   @RHF iter   4:   -74.96456116777894   -1.35411e-03   9.22427e-03 DIIS
+   @RHF iter   5:   -74.96462293943463   -6.17717e-05   1.74144e-03 DIIS
+   @RHF iter   6:   -74.96462791182621   -4.97239e-06   5.75089e-04 DIIS
+   @RHF iter   7:   -74.96462794578093   -3.39547e-08   4.82762e-05 DIIS
+   @RHF iter   8:   -74.96462794578203   -1.09424e-12   2.33152e-07 DIIS
+   @RHF iter   9:   -74.96462794578208   -5.68434e-14   2.22702e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1731,7 +1733,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96462794578200
+  @RHF Final Energy:   -74.96462794578208
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -1749,22 +1751,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.25 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1789,174 +1791,6 @@ Total time:
            O          0.054279931502     0.041811401668     0.000000000000
            H          0.054279931502    -0.956252935259     0.000000000000
            H         -0.915741834414     0.292675649009     0.000000000000
-
-    Number of unique atoms: 3
-
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
-
-  Running in c1 symmetry.
-
-  Nuclear repulsion =    8.801497552207296
-
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 10
-  Nalpha       = 5
-  Nbeta        = 5
-
-  ==> Algorithm <==
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  MOM disabled.
-  Guess Type is CORE.
-  Energy threshold   = 1.00e-08
-  Density threshold  = 1.00e-08
-  Integral threshold = 0.00e+00
-
-  ==> Primary Basis: STO-3G <==
-
-  Basis Set
-    Number of shells: 5
-    Number of basis function: 7
-    Number of Cartesian functions: 7
-    Spherical Harmonics?: true
-    Max angular momentum: 1
-
-  ==> Pre-Iterations <==
-
-  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Core (One-Electron) Hamiltonian.
-
-  Initial RHF energy:   -54.63424620687556
-
-   -------------------------------------------------------
-    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
-   -------------------------------------------------------
-     A          7       7       5       5       5       0
-   -------------------------------------------------------
-    Total       7       7       5       5       5       0
-   -------------------------------------------------------
-
-  ==> Integral Setup <==
-
- MINTS: Wrapper to libmints.
-   by Justin Turney
-
-   Calculation information:
-      Number of atoms:                   3
-      Number of AO shells:               5
-      Number of SO shells:               5
-      Number of primitives:             15
-      Number of atomic orbitals:         7
-      Number of basis functions:         7
-
-      Number of irreps:                  1
-      Number of functions per irrep: [   7 ]
-
-      Overlap, kinetic, potential, dipole, and quadrupole integrals
-        stored in file 35.
-
-      Computing two-electron integrals...done
-      Computed 206 non-zero two-electron integrals.
-        Stored in file 33.
-
-  ==> Iterations <==
-
-                        Total Energy        Delta E     Density RMS
-
-   @RHF iter   1:   -73.25300864294861   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93148547109081   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333344995   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778884   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937926   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009911   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403143   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403174   -3.12639e-13   1.18601e-07 DIIS
-   @RHF iter   9:   -74.96465389403173    1.42109e-14   1.39797e-08 DIIS
-
-  ==> Post-Iterations <==
-
-	Orbital Energies (a.u.)
-	-----------------------
-
-	Doubly Occupied:                                                      
-
-	   1A    -20.247270     2A     -1.247778     3A     -0.595851  
-	   4A     -0.447883     5A     -0.388957  
-
-	Virtual:                                                              
-
-	   6A      0.564125     7A      0.693040  
-
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
-
-  Energy converged.
-
-  @RHF Final Energy:   -74.96465389403173
-
-  ==> Properties <==
-  Nuclear Dipole Moment: (a.u.)
-     X:    -0.8073      Y:    -0.6219      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:     0.2887      Y:     0.2192      Z:    -0.0000
-
-  Dipole Moment: (a.u.)
-     X:    -0.5187      Y:    -0.4027      Z:    -0.0000     Total:     0.6566
-
-  Dipole Moment: (Debye)
-     X:    -1.3183      Y:    -1.0235      Z:    -0.0000     Total:     1.6690
-
-
-  Saving occupied orbitals to File 180.
-
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
-Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.27 seconds =       0.00 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
-  //    Loading displacement 3 of 13   //
-  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
-
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
-
-	There are an even number of electrons - assuming singlet.
-	Specify the multiplicity with the MULTP option in the
-	input if this is incorrect
-
-
-         ---------------------------------------------------------
-                                   SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonett
-                              RHF Reference
-                        1 Threads,    256 MiB Core
-         ---------------------------------------------------------
-
-  ==> Geometry <==
-
-    Molecular point group: c1
-
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
-
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           O          0.054070201503     0.042082271596     0.000000000000
-           H          0.054070201503    -0.959853403458     0.000000000000
-           H         -0.912203537130     0.291977214870     0.000000000000
 
     Number of unique atoms: 3
 
@@ -2037,15 +1871,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25300864294866   -1.86188e+01   0.00000e+00  
+   @RHF iter   1:   -73.25300864294867   -1.86188e+01   0.00000e+00 
    @RHF iter   2:   -74.93148547109092   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333345018   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778891   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937933   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009920   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403146   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403184   -3.83693e-13   1.18603e-07 DIIS
-   @RHF iter   9:   -74.96465389403180    4.26326e-14   1.41818e-08 DIIS
+   @RHF iter   3:   -74.96323333345021   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713778897   -1.35380e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888937938   -6.17516e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465386009919   -4.97072e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465389403153   -3.39323e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465389403187   -3.41061e-13   1.18623e-07 DIIS
+   @RHF iter   9:   -74.96465389403185    1.42109e-14   1.39243e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2067,7 +1901,175 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465389403180
+  @RHF Final Energy:   -74.96465389403185
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8073      Y:    -0.6219      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2887      Y:     0.2192      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:    -0.5187      Y:    -0.4027      Z:     0.0000     Total:     0.6566
+
+  Dipole Moment: (Debye)
+     X:    -1.3183      Y:    -1.0235      Z:     0.0000     Total:     1.6690
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+  //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
+  //    Loading displacement 3 of 13   //
+  //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
+
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.054070201503     0.042082271596     0.000000000000
+           H          0.054070201503    -0.959853403458     0.000000000000
+           H         -0.912203537130     0.291977214870     0.000000000000
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801497552207296
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  Basis Set
+    Number of shells: 5
+    Number of basis function: 7
+    Number of Cartesian functions: 7
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -54.63424620687574
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:               5
+      Number of SO shells:               5
+      Number of primitives:             15
+      Number of atomic orbitals:         7
+      Number of basis functions:         7
+
+      Number of irreps:                  1
+      Number of functions per irrep: [   7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -73.25300864294880   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93148547109102   -1.67848e+00   2.60802e-01 DIIS
+   @RHF iter   3:   -74.96323333345023   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713778898   -1.35380e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888937942   -6.17516e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465386009920   -4.97072e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465389403158   -3.39324e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465389403188   -2.98428e-13   1.18613e-07 DIIS
+   @RHF iter   9:   -74.96465389403187    1.42109e-14   1.40799e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.247270     2A     -1.247778     3A     -0.595851  
+	   4A     -0.447883     5A     -0.388957  
+
+	Virtual:                                                              
+
+	   6A      0.564125     7A      0.693040  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.96465389403187
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -2085,22 +2087,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.30 seconds =       0.01 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2168,7 +2170,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63420305929718
+  Initial RHF energy:   -54.63420305929721
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2205,15 +2207,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25299961285062   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93145223513731   -1.67845e+00   2.60806e-01 DIIS
-   @RHF iter   3:   -74.96320706100349   -3.17548e-02   3.36226e-02 DIIS
-   @RHF iter   4:   -74.96456116777892   -1.35411e-03   9.22427e-03 DIIS
-   @RHF iter   5:   -74.96462293943455   -6.17717e-05   1.74144e-03 DIIS
-   @RHF iter   6:   -74.96462791182614   -4.97239e-06   5.75089e-04 DIIS
-   @RHF iter   7:   -74.96462794578090   -3.39548e-08   4.82762e-05 DIIS
-   @RHF iter   8:   -74.96462794578194   -1.03739e-12   2.33162e-07 DIIS
-   @RHF iter   9:   -74.96462794578201   -7.10543e-14   2.20910e-08 DIIS
+   @RHF iter   1:   -73.25299961285066   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93145223513733   -1.67845e+00   2.60806e-01 DIIS
+   @RHF iter   3:   -74.96320706100350   -3.17548e-02   3.36226e-02 DIIS
+   @RHF iter   4:   -74.96456116777900   -1.35411e-03   9.22427e-03 DIIS
+   @RHF iter   5:   -74.96462293943465   -6.17717e-05   1.74144e-03 DIIS
+   @RHF iter   6:   -74.96462791182628   -4.97239e-06   5.75089e-04 DIIS
+   @RHF iter   7:   -74.96462794578095   -3.39547e-08   4.82762e-05 DIIS
+   @RHF iter   8:   -74.96462794578206   -1.10845e-12   2.33160e-07 DIIS
+   @RHF iter   9:   -74.96462794578208   -2.84217e-14   2.21946e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2235,7 +2237,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96462794578201
+  @RHF Final Energy:   -74.96462794578208
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -2253,22 +2255,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2336,7 +2338,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64103586596605
+  Initial RHF energy:   -54.64103586596603
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2373,14 +2375,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25348255989455   -1.86124e+01   0.00000e+00  
-   @RHF iter   2:   -74.92978324661517   -1.67630e+00   2.60814e-01 DIIS
-   @RHF iter   3:   -74.96319679296995   -3.34135e-02   3.43995e-02 DIIS
-   @RHF iter   4:   -74.96459035007685   -1.39356e-03   9.33464e-03 DIIS
-   @RHF iter   5:   -74.96465402675778   -6.36767e-05   1.75494e-03 DIIS
-   @RHF iter   6:   -74.96465931125809   -5.28450e-06   5.92450e-04 DIIS
-   @RHF iter   7:   -74.96465934653118   -3.52731e-08   4.93498e-05 DIIS
-   @RHF iter   8:   -74.96465934653115    2.84217e-14   1.83288e-08 DIIS
+   @RHF iter   1:   -73.25348255989454   -1.86124e+01   0.00000e+00 
+   @RHF iter   2:   -74.92978324661513   -1.67630e+00   2.60814e-01 DIIS
+   @RHF iter   3:   -74.96319679296981   -3.34135e-02   3.43995e-02 DIIS
+   @RHF iter   4:   -74.96459035007679   -1.39356e-03   9.33464e-03 DIIS
+   @RHF iter   5:   -74.96465402675776   -6.36767e-05   1.75494e-03 DIIS
+   @RHF iter   6:   -74.96465931125798   -5.28450e-06   5.92450e-04 DIIS
+   @RHF iter   7:   -74.96465934653116   -3.52732e-08   4.93498e-05 DIIS
+   @RHF iter   8:   -74.96465934653111    5.68434e-14   1.83047e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2402,40 +2404,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465934653115
+  @RHF Final Energy:   -74.96465934653111
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0257
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.3695
+     X:    -0.0000      Y:     0.0000      Z:    -0.3695
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
+     X:    -0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
+     X:    -0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2503,7 +2505,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812006
+  Initial RHF energy:   -54.63765013812009
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2540,14 +2542,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236330   -1.86156e+01   0.00000e+00  
+   @RHF iter   1:   -73.25324851236331   -1.86156e+01   0.00000e+00 
    @RHF iter   2:   -74.93065163215218   -1.67740e+00   2.60806e-01 DIIS
    @RHF iter   3:   -74.96322356409721   -3.25719e-02   3.40086e-02 DIIS
-   @RHF iter   4:   -74.96459714196185   -1.37358e-03   9.27942e-03 DIIS
-   @RHF iter   5:   -74.96465984832905   -6.27064e-05   1.74800e-03 DIIS
-   @RHF iter   6:   -74.96466497418814   -5.12586e-06   5.83706e-04 DIIS
-   @RHF iter   7:   -74.96466500877627   -3.45881e-08   4.87986e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -5.68434e-14   1.96703e-08 DIIS
+   @RHF iter   4:   -74.96459714196189   -1.37358e-03   9.27942e-03 DIIS
+   @RHF iter   5:   -74.96465984832911   -6.27064e-05   1.74800e-03 DIIS
+   @RHF iter   6:   -74.96466497418822   -5.12586e-06   5.83706e-04 DIIS
+   @RHF iter   7:   -74.96466500877632   -3.45881e-08   4.87986e-05 DIIS
+   @RHF iter   8:   -74.96466500877631    1.42109e-14   1.96505e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2569,40 +2571,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500877631
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.3660
+     X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2670,7 +2672,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527610
+  Initial RHF energy:   -54.63086725527614
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2707,14 +2709,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439036   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275245   -1.67955e+00   2.60796e-01 DIIS
-   @RHF iter   3:   -74.96325235946672   -3.09342e-02   3.32305e-02 DIIS
+   @RHF iter   1:   -73.25277197439038   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231814275246   -1.67955e+00   2.60796e-01 DIIS
+   @RHF iter   3:   -74.96325235946674   -3.09342e-02   3.32305e-02 DIIS
    @RHF iter   4:   -74.96458629515658   -1.33394e-03   9.16818e-03 DIIS
-   @RHF iter   5:   -74.96464708767149   -6.07925e-05   1.73410e-03 DIIS
+   @RHF iter   5:   -74.96464708767158   -6.07925e-05   1.73410e-03 DIIS
    @RHF iter   6:   -74.96465190510284   -4.81743e-06   5.66246e-04 DIIS
-   @RHF iter   7:   -74.96465193838502   -3.32822e-08   4.77315e-05 DIIS
-   @RHF iter   8:   -74.96465193838507   -5.68434e-14   2.27308e-08 DIIS
+   @RHF iter   7:   -74.96465193838509   -3.32822e-08   4.77315e-05 DIIS
+   @RHF iter   8:   -74.96465193838512   -2.84217e-14   2.27065e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2736,40 +2738,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838507
+  @RHF Final Energy:   -74.96465193838512
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0158
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.3589
+     X:    -0.0000      Y:     0.0000      Z:    -0.3589
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
+     X:    -0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
+     X:    -0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2804,7 +2806,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.821976109952320
+  Nuclear repulsion =    8.821976109952324
 
   Charge       = 0
   Multiplicity = 1
@@ -2837,7 +2839,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62747017439054
+  Initial RHF energy:   -54.62747017439060
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2874,14 +2876,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25252947040769   -1.86251e+01   0.00000e+00  
-   @RHF iter   2:   -74.93311655666180   -1.68059e+00   2.60793e-01 DIIS
-   @RHF iter   3:   -74.96325435792120   -3.01378e-02   3.28435e-02 DIIS
-   @RHF iter   4:   -74.96456863392784   -1.31428e-03   9.11215e-03 DIIS
-   @RHF iter   5:   -74.96462848336269   -5.98494e-05   1.72715e-03 DIIS
-   @RHF iter   6:   -74.96463315104670   -4.66768e-06   5.57537e-04 DIIS
-   @RHF iter   7:   -74.96463318370553   -3.26588e-08   4.72144e-05 DIIS
-   @RHF iter   8:   -74.96463318370562   -8.52651e-14   2.44099e-08 DIIS
+   @RHF iter   1:   -73.25252947040772   -1.86251e+01   0.00000e+00 
+   @RHF iter   2:   -74.93311655666190   -1.68059e+00   2.60793e-01 DIIS
+   @RHF iter   3:   -74.96325435792130   -3.01378e-02   3.28435e-02 DIIS
+   @RHF iter   4:   -74.96456863392783   -1.31428e-03   9.11215e-03 DIIS
+   @RHF iter   5:   -74.96462848336265   -5.98494e-05   1.72715e-03 DIIS
+   @RHF iter   6:   -74.96463315104674   -4.66768e-06   5.57537e-04 DIIS
+   @RHF iter   7:   -74.96463318370556   -3.26588e-08   4.72144e-05 DIIS
+   @RHF iter   8:   -74.96463318370559   -2.84217e-14   2.43335e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2903,40 +2905,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96463318370562
+  @RHF Final Energy:   -74.96463318370559
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0125
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.3554
+     X:    -0.0000      Y:     0.0000      Z:    -0.3554
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6571     Total:     0.6571
+     X:    -0.0000      Y:     0.0000      Z:     0.6571     Total:     0.6571
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6702     Total:     1.6702
+     X:    -0.0000      Y:     0.0000      Z:     1.6702     Total:     1.6702
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.42 seconds =       0.01 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3004,7 +3006,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64445492366320
+  Initial RHF energy:   -54.64445492366313
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3041,14 +3043,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25468418559763   -1.86102e+01   0.00000e+00  
-   @RHF iter   2:   -74.93015880275311   -1.67547e+00   2.60580e-01 DIIS
-   @RHF iter   3:   -74.96290992140165   -3.27511e-02   3.40653e-02 DIIS
-   @RHF iter   4:   -74.96429783045267   -1.38791e-03   9.32601e-03 DIIS
-   @RHF iter   5:   -74.96436200206639   -6.41716e-05   1.77000e-03 DIIS
-   @RHF iter   6:   -74.96436725366604   -5.25160e-06   5.91307e-04 DIIS
-   @RHF iter   7:   -74.96436728830990   -3.46439e-08   4.88177e-05 DIIS
-   @RHF iter   8:   -74.96436728830993   -2.84217e-14   1.97962e-08 DIIS
+   @RHF iter   1:   -73.25468418559753   -1.86102e+01   0.00000e+00 
+   @RHF iter   2:   -74.93015880275304   -1.67547e+00   2.60580e-01 DIIS
+   @RHF iter   3:   -74.96290992140152   -3.27511e-02   3.40653e-02 DIIS
+   @RHF iter   4:   -74.96429783045259   -1.38791e-03   9.32601e-03 DIIS
+   @RHF iter   5:   -74.96436200206634   -6.41716e-05   1.77000e-03 DIIS
+   @RHF iter   6:   -74.96436725366598   -5.25160e-06   5.91307e-04 DIIS
+   @RHF iter   7:   -74.96436728830980   -3.46438e-08   4.88177e-05 DIIS
+   @RHF iter   8:   -74.96436728830989   -8.52651e-14   1.97694e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3070,7 +3072,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96436728830993
+  @RHF Final Energy:   -74.96436728830989
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -3088,22 +3090,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 10 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3171,7 +3173,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405512
+  Initial RHF energy:   -54.63936652405511
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3208,14 +3210,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438205   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335174   -1.67699e+00   2.60689e-01 DIIS
-   @RHF iter   3:   -74.96308170178375   -3.22440e-02   3.38410e-02 DIIS
-   @RHF iter   4:   -74.96445237771688   -1.37068e-03   9.27477e-03 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   1.75540e-03 DIIS
-   @RHF iter   6:   -74.96452042966443   -5.10897e-06   5.83082e-04 DIIS
-   @RHF iter   7:   -74.96452046394977   -3.42853e-08   4.85397e-05 DIIS
-   @RHF iter   8:   -74.96452046394975    1.42109e-14   2.04457e-08 DIIS
+   @RHF iter   1:   -73.25385038438212   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083766335178   -1.67699e+00   2.60689e-01 DIIS
+   @RHF iter   3:   -74.96308170178382   -3.22440e-02   3.38410e-02 DIIS
+   @RHF iter   4:   -74.96445237771700   -1.37068e-03   9.27477e-03 DIIS
+   @RHF iter   5:   -74.96451532069423   -6.29430e-05   1.75540e-03 DIIS
+   @RHF iter   6:   -74.96452042966452   -5.10897e-06   5.83082e-04 DIIS
+   @RHF iter   7:   -74.96452046394984   -3.42853e-08   4.85397e-05 DIIS
+   @RHF iter   8:   -74.96452046394975    8.52651e-14   2.03902e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3244,33 +3246,33 @@ Total time:
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.3635
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3635
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
+     X:    -0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
+     X:    -0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 11 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3292,7 +3294,7 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O          0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.788825926977     0.543701060724
            H          0.000000000000     0.788825926977     0.543701060724
 
@@ -3305,7 +3307,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814746104065891
 
   Charge       = 0
   Multiplicity = 1
@@ -3338,7 +3340,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701518
+  Initial RHF energy:   -54.62913703701523
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3375,14 +3377,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318660   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418393   -1.67997e+00   2.60914e-01 DIIS
-   @RHF iter   3:   -74.96339101002461   -3.12555e-02   3.33988e-02 DIIS
-   @RHF iter   4:   -74.96472799861236   -1.33699e-03   9.17350e-03 DIIS
-   @RHF iter   5:   -74.96478857522615   -6.05766e-05   1.72697e-03 DIIS
-   @RHF iter   6:   -74.96479341033003   -4.83510e-06   5.66972e-04 DIIS
-   @RHF iter   7:   -74.96479344389275   -3.35627e-08   4.79764e-05 DIIS
-   @RHF iter   8:   -74.96479344389269    5.68434e-14   2.18008e-08 DIIS
+   @RHF iter   1:   -73.25216797318666   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213551418398   -1.67997e+00   2.60914e-01 DIIS
+   @RHF iter   3:   -74.96339101002465   -3.12555e-02   3.33988e-02 DIIS
+   @RHF iter   4:   -74.96472799861232   -1.33699e-03   9.17350e-03 DIIS
+   @RHF iter   5:   -74.96478857522624   -6.05766e-05   1.72697e-03 DIIS
+   @RHF iter   6:   -74.96479341033002   -4.83510e-06   5.66972e-04 DIIS
+   @RHF iter   7:   -74.96479344389269   -3.35627e-08   4.79764e-05 DIIS
+   @RHF iter   8:   -74.96479344389269    0.00000e+00   2.17441e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3411,33 +3413,33 @@ Total time:
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3614
+     X:     0.0000      Y:     0.0000      Z:    -0.3614
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
+     X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
+     X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 12 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3505,7 +3507,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62399578631823
+  Initial RHF energy:   -54.62399578631825
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3542,14 +3544,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25131932777830   -1.86273e+01   0.00000e+00  
-   @RHF iter   2:   -74.93275460837243   -1.68144e+00   2.61030e-01 DIIS
-   @RHF iter   3:   -74.96352838159915   -3.07738e-02   3.31808e-02 DIIS
-   @RHF iter   4:   -74.96484890953502   -1.32053e-03   9.12347e-03 DIIS
+   @RHF iter   1:   -73.25131932777833   -1.86273e+01   0.00000e+00 
+   @RHF iter   2:   -74.93275460837245   -1.68144e+00   2.61030e-01 DIIS
+   @RHF iter   3:   -74.96352838159918   -3.07738e-02   3.31808e-02 DIIS
+   @RHF iter   4:   -74.96484890953498   -1.32053e-03   9.12347e-03 DIIS
    @RHF iter   5:   -74.96490834689126   -5.94374e-05   1.71313e-03 DIIS
-   @RHF iter   6:   -74.96491305061319   -4.70372e-06   5.59088e-04 DIIS
-   @RHF iter   7:   -74.96491308381158   -3.31984e-08   4.76907e-05 DIIS
-   @RHF iter   8:   -74.96491308381167   -8.52651e-14   2.25037e-08 DIIS
+   @RHF iter   6:   -74.96491305061309   -4.70372e-06   5.59088e-04 DIIS
+   @RHF iter   7:   -74.96491308381161   -3.31985e-08   4.76907e-05 DIIS
+   @RHF iter   8:   -74.96491308381164   -2.84217e-14   2.24829e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3571,40 +3573,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96491308381167
+  @RHF Final Energy:   -74.96491308381164
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.3603
+     X:     0.0000      Y:    -0.0000      Z:    -0.3603
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6588     Total:     0.6588
+     X:     0.0000      Y:    -0.0000      Z:     0.6588     Total:     0.6588
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6745     Total:     1.6745
+     X:     0.0000      Y:    -0.0000      Z:     1.6745     Total:     1.6745
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.39 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 13 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3672,7 +3674,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898570
+  Initial RHF energy:   -54.63426058898558
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3709,14 +3711,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277951   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949073   -1.67848e+00   2.60800e-01 DIIS
-   @RHF iter   3:   -74.96324209064443   -3.17455e-02   3.36189e-02 DIIS
-   @RHF iter   4:   -74.96459579416396   -1.35370e-03   9.22393e-03 DIIS
-   @RHF iter   5:   -74.96465753906593   -6.17449e-05   1.74105e-03 DIIS
-   @RHF iter   6:   -74.96466250922853   -4.97016e-06   5.74970e-04 DIIS
-   @RHF iter   7:   -74.96466254315344   -3.39249e-08   4.82594e-05 DIIS
-   @RHF iter   8:   -74.96466254315349   -5.68434e-14   2.10555e-08 DIIS
+   @RHF iter   1:   -73.25301165277942   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149654949070   -1.67848e+00   2.60800e-01 DIIS
+   @RHF iter   3:   -74.96324209064434   -3.17455e-02   3.36189e-02 DIIS
+   @RHF iter   4:   -74.96459579416401   -1.35370e-03   9.22393e-03 DIIS
+   @RHF iter   5:   -74.96465753906583   -6.17449e-05   1.74105e-03 DIIS
+   @RHF iter   6:   -74.96466250922846   -4.97016e-06   5.74970e-04 DIIS
+   @RHF iter   7:   -74.96466254315341   -3.39249e-08   4.82594e-05 DIIS
+   @RHF iter   8:   -74.96466254315327    1.42109e-13   2.10733e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3738,33 +3740,33 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315349
+  @RHF Final Energy:   -74.96466254315327
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3624
+     X:     0.0000      Y:    -0.0000      Z:    -0.3624
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
+     X:     0.0000      Y:    -0.0000      Z:     0.6566     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
+     X:     0.0000      Y:    -0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 -------------------------------------------------------------
 
@@ -3806,8 +3808,8 @@ Total time:
   //    Loading displacement 1 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3831,7 +3833,7 @@ Total time:
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068737541067
            H          0.000000000000    -0.790689573744     0.545457329170
-           H          0.000000000000     0.790689573744     0.545457329170
+           H         -0.000000000000     0.790689573744     0.545457329170
 
     Number of unique atoms: 2
 
@@ -3841,7 +3843,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.791217360265589
+  Nuclear repulsion =    8.791217360265591
 
   Charge       = 0
   Multiplicity = 1
@@ -3874,7 +3876,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812002
+  Initial RHF energy:   -54.63765013812003
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3914,14 +3916,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236329   -1.86156e+01   0.00000e+00  
-   @RHF iter   2:   -74.93065163215209   -1.67740e+00   3.98388e-01 DIIS
-   @RHF iter   3:   -74.96322356409721   -3.25719e-02   5.19489e-02 DIIS
-   @RHF iter   4:   -74.96459714196186   -1.37358e-03   1.41745e-02 DIIS
-   @RHF iter   5:   -74.96465984832908   -6.27064e-05   2.67011e-03 DIIS
+   @RHF iter   1:   -73.25324851236330   -1.86156e+01   0.00000e+00 
+   @RHF iter   2:   -74.93065163215218   -1.67740e+00   3.98388e-01 DIIS
+   @RHF iter   3:   -74.96322356409719   -3.25719e-02   5.19489e-02 DIIS
+   @RHF iter   4:   -74.96459714196185   -1.37358e-03   1.41745e-02 DIIS
+   @RHF iter   5:   -74.96465984832905   -6.27064e-05   2.67011e-03 DIIS
    @RHF iter   6:   -74.96466497418820   -5.12586e-06   8.91625e-04 DIIS
-   @RHF iter   7:   -74.96466500877628   -3.45881e-08   7.45411e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -4.26326e-14   3.00111e-08 DIIS
+   @RHF iter   7:   -74.96466500877632   -3.45881e-08   7.45411e-05 DIIS
+   @RHF iter   8:   -74.96466500877629    2.84217e-14   2.99619e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3943,40 +3945,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500877629
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0224
+     X:     0.0000      Y:     0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3998,9 +4000,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068294897553
+           O         -0.000000000000     0.000000000000    -0.068294897553
            H          0.000000000000    -0.790689573744     0.541944792278
-           H          0.000000000000     0.790689573744     0.541944792278
+           H         -0.000000000000     0.790689573744     0.541944792278
 
     Number of unique atoms: 2
 
@@ -4043,7 +4045,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527602
+  Initial RHF energy:   -54.63086725527610
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4083,14 +4085,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439027   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275244   -1.67955e+00   3.98372e-01 DIIS
+   @RHF iter   1:   -73.25277197439031   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231814275242   -1.67955e+00   3.98372e-01 DIIS
    @RHF iter   3:   -74.96325235946669   -3.09342e-02   5.07604e-02 DIIS
-   @RHF iter   4:   -74.96458629515648   -1.33394e-03   1.40046e-02 DIIS
-   @RHF iter   5:   -74.96464708767155   -6.07925e-05   2.64889e-03 DIIS
-   @RHF iter   6:   -74.96465190510274   -4.81743e-06   8.64955e-04 DIIS
-   @RHF iter   7:   -74.96465193838496   -3.32822e-08   7.29110e-05 DIIS
-   @RHF iter   8:   -74.96465193838502   -5.68434e-14   3.47412e-08 DIIS
+   @RHF iter   4:   -74.96458629515647   -1.33394e-03   1.40046e-02 DIIS
+   @RHF iter   5:   -74.96464708767152   -6.07925e-05   2.64889e-03 DIIS
+   @RHF iter   6:   -74.96465190510277   -4.81743e-06   8.64955e-04 DIIS
+   @RHF iter   7:   -74.96465193838499   -3.32822e-08   7.29110e-05 DIIS
+   @RHF iter   8:   -74.96465193838505   -5.68434e-14   3.48001e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4112,7 +4114,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838502
+  @RHF Final Energy:   -74.96465193838505
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -4130,22 +4132,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.59 seconds =       0.01 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4167,9 +4169,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O         -0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.792553220511     0.543701060724
-           H          0.000000000000     0.792553220511     0.543701060724
+           H         -0.000000000000     0.792553220511     0.543701060724
 
     Number of unique atoms: 2
 
@@ -4179,7 +4181,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.788215765827671
+  Nuclear repulsion =    8.788215765827669
 
   Charge       = 0
   Multiplicity = 1
@@ -4212,7 +4214,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405509
+  Initial RHF energy:   -54.63936652405516
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4252,14 +4254,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438209   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335180   -1.67699e+00   3.98209e-01 DIIS
-   @RHF iter   3:   -74.96308170178371   -3.22440e-02   5.16930e-02 DIIS
-   @RHF iter   4:   -74.96445237771694   -1.37068e-03   1.41674e-02 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   2.68141e-03 DIIS
-   @RHF iter   6:   -74.96452042966447   -5.10897e-06   8.90672e-04 DIIS
-   @RHF iter   7:   -74.96452046394978   -3.42853e-08   7.41457e-05 DIIS
-   @RHF iter   8:   -74.96452046394973    5.68434e-14   3.11180e-08 DIIS
+   @RHF iter   1:   -73.25385038438218   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083766335187   -1.67699e+00   3.98209e-01 DIIS
+   @RHF iter   3:   -74.96308170178374   -3.22440e-02   5.16930e-02 DIIS
+   @RHF iter   4:   -74.96445237771697   -1.37068e-03   1.41674e-02 DIIS
+   @RHF iter   5:   -74.96451532069425   -6.29430e-05   2.68141e-03 DIIS
+   @RHF iter   6:   -74.96452042966452   -5.10897e-06   8.90672e-04 DIIS
+   @RHF iter   7:   -74.96452046394980   -3.42853e-08   7.41457e-05 DIIS
+   @RHF iter   8:   -74.96452046394978    1.42109e-14   3.12192e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4281,7 +4283,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96452046394973
+  @RHF Final Energy:   -74.96452046394978
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -4299,22 +4301,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.62 seconds =       0.01 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4336,9 +4338,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O          0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.788825926977     0.543701060724
-           H          0.000000000000     0.788825926977     0.543701060724
+           H         -0.000000000000     0.788825926977     0.543701060724
 
     Number of unique atoms: 2
 
@@ -4348,7 +4350,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814746104065891
 
   Charge       = 0
   Multiplicity = 1
@@ -4381,7 +4383,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701524
+  Initial RHF energy:   -54.62913703701521
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4421,14 +4423,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318667   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418405   -1.67997e+00   3.98553e-01 DIIS
-   @RHF iter   3:   -74.96339101002467   -3.12555e-02   5.10175e-02 DIIS
-   @RHF iter   4:   -74.96472799861243   -1.33699e-03   1.40128e-02 DIIS
-   @RHF iter   5:   -74.96478857522624   -6.05766e-05   2.63798e-03 DIIS
-   @RHF iter   6:   -74.96479341033007   -4.83510e-06   8.66064e-04 DIIS
-   @RHF iter   7:   -74.96479344389280   -3.35627e-08   7.32851e-05 DIIS
-   @RHF iter   8:   -74.96479344389275    5.68434e-14   3.33021e-08 DIIS
+   @RHF iter   1:   -73.25216797318666   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213551418403   -1.67997e+00   3.98553e-01 DIIS
+   @RHF iter   3:   -74.96339101002462   -3.12555e-02   5.10175e-02 DIIS
+   @RHF iter   4:   -74.96472799861240   -1.33699e-03   1.40128e-02 DIIS
+   @RHF iter   5:   -74.96478857522621   -6.05766e-05   2.63798e-03 DIIS
+   @RHF iter   6:   -74.96479341033003   -4.83510e-06   8.66064e-04 DIIS
+   @RHF iter   7:   -74.96479344389275   -3.35627e-08   7.32851e-05 DIIS
+   @RHF iter   8:   -74.96479344389276   -1.42109e-14   3.33442e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4450,7 +4452,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96479344389275
+  @RHF Final Energy:   -74.96479344389276
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -4468,22 +4470,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4505,9 +4507,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O          0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
     Number of unique atoms: 2
 
@@ -4550,7 +4552,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898565
+  Initial RHF energy:   -54.63426058898568
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4590,14 +4592,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277945   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949069   -1.67848e+00   3.98379e-01 DIIS
-   @RHF iter   3:   -74.96324209064436   -3.17455e-02   5.13537e-02 DIIS
-   @RHF iter   4:   -74.96459579416394   -1.35370e-03   1.40898e-02 DIIS
-   @RHF iter   5:   -74.96465753906583   -6.17449e-05   2.65950e-03 DIIS
+   @RHF iter   1:   -73.25301165277943   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149654949070   -1.67848e+00   3.98379e-01 DIIS
+   @RHF iter   3:   -74.96324209064439   -3.17455e-02   5.13537e-02 DIIS
+   @RHF iter   4:   -74.96459579416397   -1.35370e-03   1.40898e-02 DIIS
+   @RHF iter   5:   -74.96465753906587   -6.17449e-05   2.65950e-03 DIIS
    @RHF iter   6:   -74.96466250922849   -4.97016e-06   8.78281e-04 DIIS
-   @RHF iter   7:   -74.96466254315339   -3.39249e-08   7.37174e-05 DIIS
-   @RHF iter   8:   -74.96466254315332    7.10543e-14   3.22428e-08 DIIS
+   @RHF iter   7:   -74.96466254315338   -3.39249e-08   7.37174e-05 DIIS
+   @RHF iter   8:   -74.96466254315339   -1.42109e-14   3.21326e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4619,7 +4621,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315332
+  @RHF Final Energy:   -74.96466254315339
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -4637,15 +4639,15 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.51 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 -------------------------------------------------------------
 
@@ -4686,8 +4688,8 @@ Total time:
   //    Loading displacement 1 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4709,9 +4711,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068958862824
+           O          0.000000000000    -0.000000000000    -0.068958862824
            H          0.000000000000    -0.790689573744     0.547213597616
-           H          0.000000000000     0.790689573744     0.547213597616
+           H         -0.000000000000     0.790689573744     0.547213597616
 
     Number of unique atoms: 2
 
@@ -4721,7 +4723,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.780972773315737
+  Nuclear repulsion =    8.780972773315739
 
   Charge       = 0
   Multiplicity = 1
@@ -4754,7 +4756,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64103586596603
+  Initial RHF energy:   -54.64103586596604
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4794,14 +4796,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25348255989454   -1.86124e+01   0.00000e+00  
-   @RHF iter   2:   -74.92978324661512   -1.67630e+00   3.98400e-01 DIIS
-   @RHF iter   3:   -74.96319679296984   -3.34135e-02   5.25462e-02 DIIS
-   @RHF iter   4:   -74.96459035007679   -1.39356e-03   1.42589e-02 DIIS
-   @RHF iter   5:   -74.96465402675769   -6.36767e-05   2.68071e-03 DIIS
-   @RHF iter   6:   -74.96465931125798   -5.28450e-06   9.04983e-04 DIIS
-   @RHF iter   7:   -74.96465934653114   -3.52732e-08   7.53831e-05 DIIS
-   @RHF iter   8:   -74.96465934653112    1.42109e-14   2.78868e-08 DIIS
+   @RHF iter   1:   -73.25348255989455   -1.86124e+01   0.00000e+00 
+   @RHF iter   2:   -74.92978324661519   -1.67630e+00   3.98400e-01 DIIS
+   @RHF iter   3:   -74.96319679296988   -3.34135e-02   5.25462e-02 DIIS
+   @RHF iter   4:   -74.96459035007685   -1.39356e-03   1.42589e-02 DIIS
+   @RHF iter   5:   -74.96465402675774   -6.36767e-05   2.68071e-03 DIIS
+   @RHF iter   6:   -74.96465931125806   -5.28450e-06   9.04983e-04 DIIS
+   @RHF iter   7:   -74.96465934653114   -3.52731e-08   7.53831e-05 DIIS
+   @RHF iter   8:   -74.96465934653109    4.26326e-14   2.78634e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4823,40 +4825,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465934653112
+  @RHF Final Energy:   -74.96465934653109
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0257
+     X:    -0.0000      Y:     0.0000      Z:     1.0257
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3695
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
+     X:    -0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
+     X:    -0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.69 seconds =       0.01 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.53 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4880,7 +4882,7 @@ Total time:
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068737541067
            H          0.000000000000    -0.790689573744     0.545457329170
-           H          0.000000000000     0.790689573744     0.545457329170
+           H         -0.000000000000     0.790689573744     0.545457329170
 
     Number of unique atoms: 2
 
@@ -4890,7 +4892,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.791217360265589
+  Nuclear repulsion =    8.791217360265591
 
   Charge       = 0
   Multiplicity = 1
@@ -4923,7 +4925,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812002
+  Initial RHF energy:   -54.63765013812003
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4963,14 +4965,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236329   -1.86156e+01   0.00000e+00  
-   @RHF iter   2:   -74.93065163215209   -1.67740e+00   3.98388e-01 DIIS
-   @RHF iter   3:   -74.96322356409721   -3.25719e-02   5.19489e-02 DIIS
-   @RHF iter   4:   -74.96459714196186   -1.37358e-03   1.41745e-02 DIIS
-   @RHF iter   5:   -74.96465984832908   -6.27064e-05   2.67011e-03 DIIS
+   @RHF iter   1:   -73.25324851236330   -1.86156e+01   0.00000e+00 
+   @RHF iter   2:   -74.93065163215218   -1.67740e+00   3.98388e-01 DIIS
+   @RHF iter   3:   -74.96322356409719   -3.25719e-02   5.19489e-02 DIIS
+   @RHF iter   4:   -74.96459714196185   -1.37358e-03   1.41745e-02 DIIS
+   @RHF iter   5:   -74.96465984832905   -6.27064e-05   2.67011e-03 DIIS
    @RHF iter   6:   -74.96466497418820   -5.12586e-06   8.91625e-04 DIIS
-   @RHF iter   7:   -74.96466500877628   -3.45881e-08   7.45411e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -4.26326e-14   3.00111e-08 DIIS
+   @RHF iter   7:   -74.96466500877632   -3.45881e-08   7.45411e-05 DIIS
+   @RHF iter   8:   -74.96466500877629    2.84217e-14   2.99619e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4992,40 +4994,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500877629
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0224
+     X:     0.0000      Y:     0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5047,9 +5049,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068294897553
+           O         -0.000000000000     0.000000000000    -0.068294897553
            H          0.000000000000    -0.790689573744     0.541944792278
-           H          0.000000000000     0.790689573744     0.541944792278
+           H         -0.000000000000     0.790689573744     0.541944792278
 
     Number of unique atoms: 2
 
@@ -5092,7 +5094,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527602
+  Initial RHF energy:   -54.63086725527610
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5132,14 +5134,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439027   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275244   -1.67955e+00   3.98372e-01 DIIS
+   @RHF iter   1:   -73.25277197439031   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231814275242   -1.67955e+00   3.98372e-01 DIIS
    @RHF iter   3:   -74.96325235946669   -3.09342e-02   5.07604e-02 DIIS
-   @RHF iter   4:   -74.96458629515648   -1.33394e-03   1.40046e-02 DIIS
-   @RHF iter   5:   -74.96464708767155   -6.07925e-05   2.64889e-03 DIIS
-   @RHF iter   6:   -74.96465190510274   -4.81743e-06   8.64955e-04 DIIS
-   @RHF iter   7:   -74.96465193838496   -3.32822e-08   7.29110e-05 DIIS
-   @RHF iter   8:   -74.96465193838502   -5.68434e-14   3.47412e-08 DIIS
+   @RHF iter   4:   -74.96458629515647   -1.33394e-03   1.40046e-02 DIIS
+   @RHF iter   5:   -74.96464708767152   -6.07925e-05   2.64889e-03 DIIS
+   @RHF iter   6:   -74.96465190510277   -4.81743e-06   8.64955e-04 DIIS
+   @RHF iter   7:   -74.96465193838499   -3.32822e-08   7.29110e-05 DIIS
+   @RHF iter   8:   -74.96465193838505   -5.68434e-14   3.48001e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5161,7 +5163,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838502
+  @RHF Final Energy:   -74.96465193838505
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5179,22 +5181,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5216,9 +5218,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068073575796
+           O          0.000000000000    -0.000000000000    -0.068073575796
            H          0.000000000000    -0.790689573744     0.540188523833
-           H          0.000000000000     0.790689573744     0.540188523833
+           H         -0.000000000000     0.790689573744     0.540188523833
 
     Number of unique atoms: 2
 
@@ -5228,7 +5230,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.821976109952324
+  Nuclear repulsion =    8.821976109952322
 
   Charge       = 0
   Multiplicity = 1
@@ -5261,7 +5263,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62747017439059
+  Initial RHF energy:   -54.62747017439065
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5301,14 +5303,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25252947040772   -1.86251e+01   0.00000e+00  
-   @RHF iter   2:   -74.93311655666184   -1.68059e+00   3.98368e-01 DIIS
-   @RHF iter   3:   -74.96325435792133   -3.01378e-02   5.01692e-02 DIIS
-   @RHF iter   4:   -74.96456863392788   -1.31428e-03   1.39190e-02 DIIS
+   @RHF iter   1:   -73.25252947040778   -1.86251e+01   0.00000e+00 
+   @RHF iter   2:   -74.93311655666196   -1.68059e+00   3.98368e-01 DIIS
+   @RHF iter   3:   -74.96325435792130   -3.01378e-02   5.01692e-02 DIIS
+   @RHF iter   4:   -74.96456863392794   -1.31428e-03   1.39190e-02 DIIS
    @RHF iter   5:   -74.96462848336267   -5.98494e-05   2.63827e-03 DIIS
-   @RHF iter   6:   -74.96463315104671   -4.66768e-06   8.51652e-04 DIIS
-   @RHF iter   7:   -74.96463318370553   -3.26588e-08   7.21212e-05 DIIS
-   @RHF iter   8:   -74.96463318370553    0.00000e+00   3.72047e-08 DIIS
+   @RHF iter   6:   -74.96463315104680   -4.66768e-06   8.51652e-04 DIIS
+   @RHF iter   7:   -74.96463318370560   -3.26588e-08   7.21212e-05 DIIS
+   @RHF iter   8:   -74.96463318370562   -1.42109e-14   3.72984e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5330,7 +5332,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96463318370553
+  @RHF Final Energy:   -74.96463318370562
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5348,22 +5350,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.77 seconds =       0.01 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.58 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5387,7 +5389,7 @@ Total time:
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.794416867278     0.543701060724
-           H          0.000000000000     0.794416867278     0.543701060724
+           H         -0.000000000000     0.794416867278     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5430,7 +5432,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64445492366322
+  Initial RHF energy:   -54.64445492366324
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5470,14 +5472,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25468418559758   -1.86102e+01   0.00000e+00  
-   @RHF iter   2:   -74.93015880275313   -1.67547e+00   3.98042e-01 DIIS
+   @RHF iter   1:   -73.25468418559763   -1.86102e+01   0.00000e+00 
+   @RHF iter   2:   -74.93015880275317   -1.67547e+00   3.98042e-01 DIIS
    @RHF iter   3:   -74.96290992140163   -3.27511e-02   5.20356e-02 DIIS
    @RHF iter   4:   -74.96429783045272   -1.38791e-03   1.42457e-02 DIIS
-   @RHF iter   5:   -74.96436200206642   -6.41716e-05   2.70371e-03 DIIS
-   @RHF iter   6:   -74.96436725366601   -5.25160e-06   9.03236e-04 DIIS
-   @RHF iter   7:   -74.96436728830987   -3.46439e-08   7.45703e-05 DIIS
-   @RHF iter   8:   -74.96436728830993   -5.68434e-14   3.01955e-08 DIIS
+   @RHF iter   5:   -74.96436200206644   -6.41716e-05   2.70371e-03 DIIS
+   @RHF iter   6:   -74.96436725366604   -5.25160e-06   9.03236e-04 DIIS
+   @RHF iter   7:   -74.96436728830989   -3.46438e-08   7.45703e-05 DIIS
+   @RHF iter   8:   -74.96436728830992   -2.84217e-14   3.01258e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5499,7 +5501,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96436728830993
+  @RHF Final Energy:   -74.96436728830992
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5517,22 +5519,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       0.26 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.60 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5554,9 +5556,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O         -0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.792553220511     0.543701060724
-           H          0.000000000000     0.792553220511     0.543701060724
+           H         -0.000000000000     0.792553220511     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5566,7 +5568,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.788215765827671
+  Nuclear repulsion =    8.788215765827669
 
   Charge       = 0
   Multiplicity = 1
@@ -5599,7 +5601,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405509
+  Initial RHF energy:   -54.63936652405516
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5639,14 +5641,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438209   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335180   -1.67699e+00   3.98209e-01 DIIS
-   @RHF iter   3:   -74.96308170178371   -3.22440e-02   5.16930e-02 DIIS
-   @RHF iter   4:   -74.96445237771694   -1.37068e-03   1.41674e-02 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   2.68141e-03 DIIS
-   @RHF iter   6:   -74.96452042966447   -5.10897e-06   8.90672e-04 DIIS
-   @RHF iter   7:   -74.96452046394978   -3.42853e-08   7.41457e-05 DIIS
-   @RHF iter   8:   -74.96452046394973    5.68434e-14   3.11180e-08 DIIS
+   @RHF iter   1:   -73.25385038438218   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083766335187   -1.67699e+00   3.98209e-01 DIIS
+   @RHF iter   3:   -74.96308170178374   -3.22440e-02   5.16930e-02 DIIS
+   @RHF iter   4:   -74.96445237771697   -1.37068e-03   1.41674e-02 DIIS
+   @RHF iter   5:   -74.96451532069425   -6.29430e-05   2.68141e-03 DIIS
+   @RHF iter   6:   -74.96452042966452   -5.10897e-06   8.90672e-04 DIIS
+   @RHF iter   7:   -74.96452046394980   -3.42853e-08   7.41457e-05 DIIS
+   @RHF iter   8:   -74.96452046394978    1.42109e-14   3.12192e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5668,7 +5670,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96452046394973
+  @RHF Final Energy:   -74.96452046394978
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5686,22 +5688,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.82 seconds =       0.01 minutes
-	system time =       0.27 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5723,9 +5725,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O          0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.788825926977     0.543701060724
-           H          0.000000000000     0.788825926977     0.543701060724
+           H         -0.000000000000     0.788825926977     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5735,7 +5737,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814746104065891
 
   Charge       = 0
   Multiplicity = 1
@@ -5768,7 +5770,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701524
+  Initial RHF energy:   -54.62913703701521
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5808,14 +5810,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318667   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418405   -1.67997e+00   3.98553e-01 DIIS
-   @RHF iter   3:   -74.96339101002467   -3.12555e-02   5.10175e-02 DIIS
-   @RHF iter   4:   -74.96472799861243   -1.33699e-03   1.40128e-02 DIIS
-   @RHF iter   5:   -74.96478857522624   -6.05766e-05   2.63798e-03 DIIS
-   @RHF iter   6:   -74.96479341033007   -4.83510e-06   8.66064e-04 DIIS
-   @RHF iter   7:   -74.96479344389280   -3.35627e-08   7.32851e-05 DIIS
-   @RHF iter   8:   -74.96479344389275    5.68434e-14   3.33021e-08 DIIS
+   @RHF iter   1:   -73.25216797318666   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213551418403   -1.67997e+00   3.98553e-01 DIIS
+   @RHF iter   3:   -74.96339101002462   -3.12555e-02   5.10175e-02 DIIS
+   @RHF iter   4:   -74.96472799861240   -1.33699e-03   1.40128e-02 DIIS
+   @RHF iter   5:   -74.96478857522621   -6.05766e-05   2.63798e-03 DIIS
+   @RHF iter   6:   -74.96479341033003   -4.83510e-06   8.66064e-04 DIIS
+   @RHF iter   7:   -74.96479344389275   -3.35627e-08   7.32851e-05 DIIS
+   @RHF iter   8:   -74.96479344389276   -1.42109e-14   3.33442e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5837,7 +5839,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96479344389275
+  @RHF Final Energy:   -74.96479344389276
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5855,22 +5857,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.84 seconds =       0.01 minutes
-	system time =       0.27 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5894,7 +5896,7 @@ Total time:
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.786962280210     0.543701060724
-           H          0.000000000000     0.786962280210     0.543701060724
+           H         -0.000000000000     0.786962280210     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5937,7 +5939,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62399578631825
+  Initial RHF energy:   -54.62399578631828
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5977,14 +5979,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25131932777838   -1.86273e+01   0.00000e+00  
-   @RHF iter   2:   -74.93275460837255   -1.68144e+00   3.98729e-01 DIIS
-   @RHF iter   3:   -74.96352838159922   -3.07738e-02   5.06845e-02 DIIS
-   @RHF iter   4:   -74.96484890953508   -1.32053e-03   1.39363e-02 DIIS
-   @RHF iter   5:   -74.96490834689136   -5.94374e-05   2.61685e-03 DIIS
-   @RHF iter   6:   -74.96491305061315   -4.70372e-06   8.54021e-04 DIIS
-   @RHF iter   7:   -74.96491308381164   -3.31985e-08   7.28487e-05 DIIS
-   @RHF iter   8:   -74.96491308381161    2.84217e-14   3.44434e-08 DIIS
+   @RHF iter   1:   -73.25131932777839   -1.86273e+01   0.00000e+00 
+   @RHF iter   2:   -74.93275460837249   -1.68144e+00   3.98729e-01 DIIS
+   @RHF iter   3:   -74.96352838159923   -3.07738e-02   5.06845e-02 DIIS
+   @RHF iter   4:   -74.96484890953502   -1.32053e-03   1.39363e-02 DIIS
+   @RHF iter   5:   -74.96490834689125   -5.94374e-05   2.61685e-03 DIIS
+   @RHF iter   6:   -74.96491305061309   -4.70372e-06   8.54021e-04 DIIS
+   @RHF iter   7:   -74.96491308381160   -3.31985e-08   7.28487e-05 DIIS
+   @RHF iter   8:   -74.96491308381161   -1.42109e-14   3.45649e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -6024,22 +6026,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.86 seconds =       0.01 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on bsp-chem-h1.its.bethel.edu
+*** at Sun Jan 15 16:19:17 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -6061,9 +6063,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O          0.000000000000    -0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
     Number of unique atoms: 2
 
@@ -6106,7 +6108,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898565
+  Initial RHF energy:   -54.63426058898568
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -6146,14 +6148,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277945   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949069   -1.67848e+00   3.98379e-01 DIIS
-   @RHF iter   3:   -74.96324209064436   -3.17455e-02   5.13537e-02 DIIS
-   @RHF iter   4:   -74.96459579416394   -1.35370e-03   1.40898e-02 DIIS
-   @RHF iter   5:   -74.96465753906583   -6.17449e-05   2.65950e-03 DIIS
+   @RHF iter   1:   -73.25301165277943   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149654949070   -1.67848e+00   3.98379e-01 DIIS
+   @RHF iter   3:   -74.96324209064439   -3.17455e-02   5.13537e-02 DIIS
+   @RHF iter   4:   -74.96459579416397   -1.35370e-03   1.40898e-02 DIIS
+   @RHF iter   5:   -74.96465753906587   -6.17449e-05   2.65950e-03 DIIS
    @RHF iter   6:   -74.96466250922849   -4.97016e-06   8.78281e-04 DIIS
-   @RHF iter   7:   -74.96466254315339   -3.39249e-08   7.37174e-05 DIIS
-   @RHF iter   8:   -74.96466254315332    7.10543e-14   3.22428e-08 DIIS
+   @RHF iter   7:   -74.96466254315338   -3.39249e-08   7.37174e-05 DIIS
+   @RHF iter   8:   -74.96466254315339   -1.42109e-14   3.21326e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -6175,7 +6177,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315332
+  @RHF Final Energy:   -74.96466254315339
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -6193,15 +6195,15 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on bsp-chem-h1.its.bethel.edu at Sun Jan 15 16:19:17 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.89 seconds =       0.01 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.68 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 -------------------------------------------------------------
 

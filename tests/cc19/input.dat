@@ -8,8 +8,7 @@ noreorient
 
 set {
     basis cc-pVDZ
-    omega = [0.05, 0.1]
-    omega_units = au
+    omega = [0.05, 0.1, au]
 }
 
 response('ccsd')

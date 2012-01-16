@@ -14,10 +14,9 @@ noreorient
 
 set {
   property rotation
-  freeze_core true
-  omega [633, 355]
-  omega_units nm
+  omega [633, 355, nm]
   gauge both
+  freeze_core true
   basis STO-3G
 }
 

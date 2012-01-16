@@ -16,11 +16,11 @@ set globals {
   reference uhf
   basis cc-pvdz
   # The next 3 options control the geometry optimization tolerances
-  conv_max_disp  1e-6
-  conv_max_force 1.0e-6
-  conv_max_de    7
-  e_converge 10
-  d_converge 10
+  max_disp_g_convergence  1e-6
+  max_force_g_convergence 1.0e-6
+  max_energy_g_convergence    7
+  e_convergence 10
+  d_convergence 10
 }
 
 optimize('CCSD')

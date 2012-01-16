@@ -213,7 +213,4 @@ def activate(mol):
     PsiMod.set_active_molecule(mol)
     #PsiMod.IO.set_default_namespace(mol.get_name())
 
-def activate_potential(pot):
-    PsiMod.set_active_potential(pot)
-
 

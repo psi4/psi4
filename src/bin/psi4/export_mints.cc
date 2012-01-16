@@ -75,6 +75,7 @@ void export_mints()
             def("set", vector_setitem_1(&Vector::set)).
             def("set", vector_setitem_2(&Vector::set)).
             def("print_out", &Vector::print_out).
+            def("scale", &Vector::scale).
             def("dim", &Vector::dim).
             def("__getitem__", vector_getitem_1(&Vector::pyget)).
             def("__setitem__", vector_setitem_1(&Vector::pyset)).
@@ -360,6 +361,13 @@ void export_mints()
             def("clear", &ExternalPotential::clear).
             def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix).
             def("print_out", &ExternalPotential::py_print);
+
+    class_<DFChargeFitter, boost::shared_ptr<DFChargeFitter>, boost::noncopyable>("DFChargeFitter").
+            def("setPrimary", &DFChargeFitter::setPrimary).
+            def("setAuxiliary", &DFChargeFitter::setAuxiliary).
+            def("setD", &DFChargeFitter::setD).
+            def("d", &DFChargeFitter::d).
+            def("fit", &DFChargeFitter::fit);
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).
             def("nso", &Wavefunction::nso).

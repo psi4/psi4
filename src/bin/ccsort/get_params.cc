@@ -170,7 +170,7 @@ void get_params(Options & options)
 
   params.tolerance = options.get_double("INTS_TOLERANCE");
   params.memory = Process::environment.get_memory();
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
   params.local = options.get_bool("LOCAL");
 
   /* grab the field frequencies from input -- a few different units are converted to E_h */

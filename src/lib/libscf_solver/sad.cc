@@ -413,8 +413,8 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
 
     const double* buffer = TEI->buffer();
 
-    double E_tol = options_.get_double("SAD_E_CONVERGE");
-    double D_tol = options_.get_double("SAD_D_CONVERGE");
+    double E_tol = options_.get_double("SAD_E_CONVERGENCE");
+    double D_tol = options_.get_double("SAD_D_CONVERGENCE");
     int maxiter = options_.get_int("SAD_MAXITER");
     int f_mixing_iteration = options_.get_int("SAD_F_MIX_START");
 

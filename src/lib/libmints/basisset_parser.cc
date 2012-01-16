@@ -1,13 +1,13 @@
-#include "mints.h"
-
-#include <psi4-dec.h>
-
 #include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
+
+#include "mints.h"
+
+#include <psi4-dec.h>
 
 #include <cstdio>
 #include <fstream>

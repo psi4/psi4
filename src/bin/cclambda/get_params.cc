@@ -57,7 +57,7 @@ void get_params(Options& options)
   /* read in the easy-to-understand parameters */
 
   params.convergence = 1e-7;
-  params.convergence = options.get_double("CONVERGENCE");
+  params.convergence = options.get_double("R_CONVERGENCE");
 
   params.restart = 1;
   params.restart = options.get_bool("RESTART");
@@ -69,7 +69,7 @@ void get_params(Options& options)
   params.print = options.get_int("PRINT");
 
   params.cachelev = 2;
-  params.cachelev  = options.get_int("CACHELEV");
+  params.cachelev  = options.get_int("CACHELEVEL");
 
   params.sekino = 0;
   params.sekino = options.get_bool("SEKINO");
@@ -223,6 +223,7 @@ void get_params(Options& options)
           }
         }
 
+  params.zeta = options.get_bool("ZETA");
 
   if (params.zeta) { /* only use Xi to solve for Zeta */
           params.nstates = 1;
