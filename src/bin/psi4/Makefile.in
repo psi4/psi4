@@ -7,7 +7,7 @@ MODULE = false
 
 MAKE_MADNESS=@HAVE_MPI@
 
-LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -lpthread
+LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -L$(BOOST_LIB) -lboost_python -lboost_regex -lboost_thread -lboost_filesystem -lboost_system -lboost_serialization -lpthread
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 # gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
@@ -23,8 +23,7 @@ PSILIBS = \
 -lPSI_functional -lPSI_3index -lPSI_mints_deriv -lPSI_optking -lPSI_findif\
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
 -lPSI_ciomr -lPSI_options -lPSI_moinfo -lPSI_util -lPSI_yeti -lPSI_smartptr\
--lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel \
--lboost_python -lboost_regex -lboost_thread -lboost_filesystem -lboost_system -lboost_serialization
+-lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel
 
 ifeq ($(MAKE_MADNESS),1)
   PSILIBS += $(madlibs)/world/libMADworld.a
