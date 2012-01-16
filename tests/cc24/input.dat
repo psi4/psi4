@@ -1,0 +1,33 @@
+#! Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
+
+molecule h2o {
+  1 2
+  H -0.107055195862289   0.000000000000000  -1.832806614599657
+  O -0.107055195862289   0.000000000000000   0.094714436481352
+  H  1.806098405595803   0.000000000000000   0.329620161376194
+  units bohr
+}
+
+set {
+  reference uhf
+  basis DZ
+  states_per_irrep [0, 0, 1, 0]
+}
+
+gradient('eom-ccsd')
+analytic_grad = PsiMod.get_gradient()
+
+gradient('eom-ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+compare_matrices(analytic_grad, findif_grad, 5, "UHF-EOM-CCSD finite-diff. (3-pt.) vs. analytic gradient to 10^-5") #TEST
+
+set findif points 5
+
+gradient('eom-ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+compare_matrices(analytic_grad, findif_grad, 6, "UHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-7") #TEST
+
+
+clean()
