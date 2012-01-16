@@ -2,6 +2,16 @@
     \defgroup MINTS libmints: Integral library
     \ingroup MINTS
 */
+#include <boost/shared_ptr.hpp>
+#include <boost/regex.hpp>
+#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/regex_actions.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/foreach.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/thread.hpp>
+
 #include <stdexcept>
 #include <cstdio>
 #include <cstdlib>
@@ -25,16 +35,6 @@
 #include "pointgrp.h"
 #include "wavefunction.h"
 #include "coordentry.h"
-
-#include <boost/shared_ptr.hpp>
-#include <boost/regex.hpp>
-#include <boost/xpressive/xpressive.hpp>
-#include <boost/xpressive/regex_actions.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/foreach.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 
 using namespace std;
 using namespace psi;

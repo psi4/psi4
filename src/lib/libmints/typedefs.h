@@ -1,6 +1,8 @@
 #ifndef libmints_typedefs_h
 #define libmints_typedefs_h
 
+#include <compiler.h>
+
 // Forward declare boost
 namespace boost {
 template <class T>
@@ -15,6 +17,7 @@ namespace psi {
 
 // libmints objects
 class BasisSet;
+class CdSalcList;
 class CoordEntry;
 class CoordValue;
 class GaussianShell;
@@ -27,6 +30,7 @@ class OneBodyAOInt;
 class TwoBodyAOInt;
 class PointGroup;
 class SimpleVector;
+class SOBasisSet;
 class SphericalTransform;
 class Vector;
 class Vector3;
@@ -37,6 +41,18 @@ class PSIO;
 
 typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
 typedef boost::shared_ptr<psi::Vector> SharedVector;
+
+// Useful when working with SO-TEIs
+template<typename T>
+void swap_index(T& a, T& b) {
+    T temp;
+    temp = b;
+    b = a;
+    a = temp;
+}
+
+#define SWAP_INDEX(a, b) swap_index(a ## abs, b ## abs); swap_index(a ## rel, b ## rel); swap_index(a ## irrep, b ## irrep);
+
 }
 
 
