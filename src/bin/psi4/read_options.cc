@@ -1218,7 +1218,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use the partial renormalization scheme for the ground state wavefunction? -*/
     options.add_bool("PR", false);
     /*- Number of components of transition amplitudes printed -*/
-    option.add_int("NUM_AMPS_PRINT", 5);
+    options.add_int("NUM_AMPS_PRINT", 5);
   }
   if(name == "CCHBAR"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
