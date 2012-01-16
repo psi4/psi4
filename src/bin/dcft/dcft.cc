@@ -24,7 +24,7 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
     print_            = options.get_int("PRINT");
     maxdiis_          = options.get_int("DIIS_MAX_VECS");
     mindiisvecs_      = options.get_int("DIIS_MIN_VECS");
-    regularizer_      = options.get_double("REGULARIZER");
+    regularizer_      = options.get_double("TIKHONOW_OMEGA");
     diis_start_thresh_ = options.get_double("DIIS_START_CONVERGENCE");
     scf_threshold_     = options.get_double("R_CONVERGENCE");
     lambda_threshold_  = options.get_double("R_CONVERGENCE");

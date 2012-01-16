@@ -34,7 +34,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
     // Setup the Tikhonow omega parameter
     double omega = 0;
     int    tikhonow_max   = options_.get_int("TIKHONOW_MAX");
-    double tikhonow_omega = static_cast<double>(options_.get_int("TIKHONOW_OMEGA")) /  1000.0;
+    double tikhonow_omega = options_.get_double("TIKHONOW_OMEGA");
     double small_cutoff   = static_cast<double>(options_.get_int("SMALL_CUTOFF"))   / 10000.0;
 
     if(tikhonow_max == 0){  // Tikhonow always turned on

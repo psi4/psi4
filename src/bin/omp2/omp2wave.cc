@@ -52,14 +52,16 @@ void OMP2Wave::common_init()
 	memory=options_.get_int("MEMORY"); 
 	
 	step_max=options_.get_double("MO_STEP_MAX");
-	lshift_parameter=options_.get_double("LSHIFT_PARAMETER");
+	lshift_parameter=options_.get_double("LEVEL_SHIFT");
 	os_scale=options_.get_double("OS_SCALE");
 	ss_scale=options_.get_double("SS_SCALE");
 	sos_scale=options_.get_double("SOS_SCALE");
 	sos_scale2=options_.get_double("SOS_SCALE2");
 	
 	//wfn=options_.get_str("WFN");
-	level_shift=options_.get_str("LEVEL_SHIFT");
+    if (options["LEVEL_SHIFT"].has_changed()) {
+	  level_shift="TRUE";
+    }
 	//lineq=options_.get_str("LINEQ");
 	orth_type=options_.get_str("ORTH_TYPE");
 	//stability=options_.get_str("STABILITY");
