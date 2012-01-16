@@ -127,8 +127,8 @@ void get_params(Options &options)
   if(options.get_int("SCS") == 1) 
     params.scs = 1;
   if (params.scs == 1) { 
-    params.scs_scale_os = options.get_double("SCALE_OS");
-    params.scs_scale_ss = options.get_double("SCALE_SS");
+    params.scs_scale_os = options.get_double("MP2_OS_SCALE");
+    params.scs_scale_ss = options.get_double("MP2_SS_SCALE");
   }
 
   params.memory = Process::environment.get_memory();
@@ -150,8 +150,8 @@ void get_params(Options &options)
   fprintf(outfile, "\tPrint Level   \t=\t%d\n", params.print);
   fprintf(outfile, "\tOPDM          \t=\t%s\n", params.opdm ? "YES":"NO");
   fprintf(outfile, "\tSCS           \t=\t%s\n", (params.scs == 1) ? "True" : "False");
-  fprintf(outfile, "\tSCALE_OS      \t=\t%.6f\n",params.scs_scale_os);
-  fprintf(outfile, "\tSCALE_SS      \t=\t%.6f\n",params.scs_scale_ss);
+  fprintf(outfile, "\tMP2_OS_SCALE  \t=\t%.6f\n",params.scs_scale_os);
+  fprintf(outfile, "\tMP2_SS_SCALE  \t=\t%.6f\n",params.scs_scale_ss);
 
   if (params.scs && params.dertype != "NONE") {
     fprintf(outfile,"\nWarning: SCS-MP2 computation requested but\n");
