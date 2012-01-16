@@ -7,9 +7,9 @@ MAKE_MADNESS=@BUILD_MADNESS@
 default: all
 
 ifeq ($(MAKE_MADNESS),1)
-  subdirs = madness lib include src
+  subdirs = boost madness lib include src
 else
-  subdirs = lib include src
+  subdirs = boost lib include src
 endif
 
 top_srcdir = @top_srcdir@

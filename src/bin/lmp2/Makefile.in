@@ -5,7 +5,6 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_lmp2.a
 
-CXXINC += $(PYTHON_INCLUDE)
 CXXSRC = main.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)

@@ -10,12 +10,15 @@
 #include <algorithm>
 #include <assert.h>
 
+#include "liboptions.h"
+#include "python.h"
+
 #include <exception.h>
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
 #include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
 #include <boost/shared_ptr.hpp>
-
-#include "liboptions.h"
+#include <boost/python.hpp>
+#include <boost/python/object.hpp>
 
 namespace psi {
 
@@ -998,6 +1001,12 @@ void Options::set_str(const std::string & module, const std::string &key, std::s
     locals_[module][key].changed();
 }
 
+void Options::set_python(const std::string & module, const std::string &key, const boost::python::object &p)
+{
+    locals_[module][key] = new PythonDataType(p);
+    locals_[module][key].changed();
+}
+
 void Options::set_array(const std::string &module, const std::string& key)
 {
     locals_[module][key] = Data(new ArrayType);
@@ -1022,6 +1031,12 @@ void Options::set_global_double(const std::string &key, double d)
 void Options::set_global_str(const std::string &key, const std::string &s)
 {
     get_global(key).assign(s);
+}
+
+void Options::set_global_python(const std::string &key, const boost::python::object &p)
+{
+    globals_[key] = Data(new PythonDataType(p));
+    globals_[key].changed();
 }
 
 void Options::set_global_array(const std::string& key)

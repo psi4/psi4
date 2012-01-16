@@ -1,3 +1,9 @@
+#include <boost/regex.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/python.hpp>
+#include <boost/foreach.hpp>
+
 #include <cmath>
 #include <cstdio>
 #include <fstream>
@@ -25,12 +31,6 @@
 #include <physconst.h>
 #include <element_to_Z.h>
 #include <psi4-dec.h>
-
-#include <boost/regex.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/python.hpp>
-#include <boost/foreach.hpp>
 
 using namespace std;
 using namespace psi;
@@ -1289,17 +1289,17 @@ void Molecule::print_bond_angles() const
         double rijyy = y(i) - y(j);
         double rijzz = z(i) - z(j);
         double rij = sqrt(rijxx*rijxx+rijyy*rijyy+rijzz*rijzz);
-        
+
         double rjkxx = x(j) - x(k);
         double rjkyy = y(j) - y(k);
         double rjkzz = z(j) - z(k);
         double rjk = sqrt(rjkxx*rjkxx+rjkyy*rjkyy+rjkzz*rjkzz);
-        
+
         double rikxx = x(i) - x(k);
         double rikyy = y(i) - y(k);
         double rikzz = z(i) - z(k);
         double rik = sqrt(rikxx*rikxx+rikyy*rikyy+rikzz*rikzz);
-        
+
         double invAngle = (rij*rij+rjk*rjk-rik*rik) / (2*rij*rjk);
         double bondAngle = acos(invAngle);
         printf("\t %d\t %d\t %d\t %lf\n", i, j, k, (bondAngle*180));
