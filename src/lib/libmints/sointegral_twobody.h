@@ -39,11 +39,10 @@ public:
 };
 #endif
 
-#if HAVE_MADNESS
-class TwoBodySOInt : public madness::WorldObject<TwoBodySOInt>
-        #else
 class TwoBodySOInt
-        #endif
+#if HAVE_MADNESS
+    : public madness::WorldObject<TwoBodySOInt>
+#endif
 {
 protected:
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb_;
@@ -191,13 +190,8 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 {
     int thread = Communicator::world->thread_id(pthread_self());
 
-#ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::compute_shell overall");
-#endif
-
-#ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::compute_shell setup");
-#endif // MINTS_TIMER
+    mints_timer_on("TwoBodySOInt::compute_shell overall");
+    mints_timer_on("TwoBodySOInt::compute_shell setup");
 
     const double *aobuff = tb_[thread]->buffer();
 
@@ -229,23 +223,14 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     int nirrep = b1_->nirrep();
 
-#ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::compute_shell zero buffer");
-#endif // MINTS_TIMER
+    mints_timer_on("TwoBodySOInt::compute_shell zero buffer");
 
     ::memset(buffer_[thread], 0, nso*sizeof(double));
 
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::compute_shell zero buffer");
-#endif // MINTS_TIMER
+    mints_timer_off("TwoBodySOInt::compute_shell zero buffer");
+    mints_timer_off("TwoBodySOInt::compute_shell setup");
 
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::compute_shell setup");
-#endif // MINTS_TIMER
-
-#ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::compute_shell full shell transform");
-#endif // MINTS_TIMER
+    mints_timer_on("TwoBodySOInt::compute_shell full shell transform");
 
     // Get the atomic stablizer (the first symmetry operation that maps the atom
     // onto itself.
@@ -334,48 +319,42 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         // Compute this unique AO shell
         tb_[thread]->compute_shell(si, sj, sk, sl);
 
-#ifdef MINTS_TIMER
-        timer_on("TwoBodySOInt::compute_shell actual transform");
-#endif // MINTS_TIMER
+        mints_timer_on("TwoBodySOInt::compute_shell actual transform");
 
         for (int isym=0; isym<nirrep; ++isym) {
             unsigned short nifunc = ifuncpi[isym];
             for (int itr=0; itr<nifunc; itr++) {
-#ifdef MINTS_TIMER
-                timer_on("itr");
-#endif // MINTS_TIMER
+                mints_timer_on("itr");
+
                 const AOTransformFunction &ifunc = s1.soshellpi[isym][itr];
                 double icoef = ifunc.coef;
                 int iaofunc = ifunc.aofunc;
                 int isofunc = ifunc.sofunc;
                 int iaooff = iaofunc;
                 int isooff = isofunc;
-#ifdef MINTS_TIMER
-                timer_off("itr");
-#endif // MINTS_TIMER
+
+                mints_timer_off("itr");
 
                 for (int jsym=0; jsym<nirrep; ++jsym) {
                     unsigned short njfunc = jfuncpi[jsym];
                     for (int jtr=0; jtr<njfunc; jtr++) {
-#ifdef MINTS_TIMER
-                        timer_on("jtr");
-#endif // MINTS_TIMER
+
+                        mints_timer_on("jtr");
+
                         const AOTransformFunction &jfunc = s2.soshellpi[jsym][jtr];
                         double jcoef = jfunc.coef * icoef;
                         int jaofunc = jfunc.aofunc;
                         int jsofunc = jfunc.sofunc;
                         int jaooff = iaooff*nao2 + jaofunc;
                         int jsooff = isooff*nso2 + jsofunc;
-#ifdef MINTS_TIMER
-                        timer_off("jtr");
-#endif // MINTS_TIMER
+
+                        mints_timer_off("jtr");
 
                         for (int ksym=0; ksym<nirrep; ++ksym) {
                             unsigned short nkfunc = kfuncpi[ksym];
                             for (int ktr=0; ktr<nkfunc; ktr++) {
-#ifdef MINTS_TIMER
-                                timer_on("ktr");
-#endif // MINTS_TIMER
+
+                                mints_timer_on("ktr");
 
                                 const AOTransformFunction &kfunc = s3.soshellpi[ksym][ktr];
                                 double kcoef = kfunc.coef * jcoef;
@@ -383,16 +362,14 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                                 int ksofunc = kfunc.sofunc;
                                 int kaooff = jaooff*nao3 + kaofunc;
                                 int ksooff = jsooff*nso3 + ksofunc;
-#ifdef MINTS_TIMER
-                                timer_off("ktr");
-#endif // MINTS_TIMER
+
+                                mints_timer_off("ktr");
 
                                 int lsym = isym ^ jsym ^ ksym;
                                 unsigned short nlfunc = lfuncpi[lsym];
                                 for (int ltr=0; ltr<nlfunc; ltr++) {
-#ifdef MINTS_TIMER
-                                    timer_on("ltr");
-#endif // MINTS_TIMER
+
+                                    mints_timer_on("ltr");
 
                                     const AOTransformFunction &lfunc = s4.soshellpi[lsym][ltr];
                                     double lcoef = lfunc.coef * kcoef;
@@ -400,14 +377,13 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                                     int lsofunc = lfunc.sofunc;
                                     int laooff = kaooff*nao4 + laofunc;
                                     int lsooff = ksooff*nso4 + lsofunc;
-#ifdef MINTS_TIMER
-                                    timer_off("ltr");
-                                    timer_on("transform");
-#endif
+
+                                    mints_timer_off("ltr");
+                                    mints_timer_on("transform");
+
                                     buffer_[thread][lsooff] += lambda_T * lcoef * aobuff[laooff];
-#ifdef MINTS_TIMER
-                                    timer_off("transform");
-#endif // MINTS_TIMER
+
+                                    mints_timer_off("transform");
                                 }
                             }
                         }
@@ -416,20 +392,14 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
             }
         }
 
-#ifdef MINTS_TIMER
-        timer_off("TwoBodySOInt::compute_shell actual transform");
-#endif // MINTS_TIMER
+        mints_timer_off("TwoBodySOInt::compute_shell actual transform");
     }
 
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::compute_shell full shell transform");
-#endif // MINTS_TIMER
+    mints_timer_off("TwoBodySOInt::compute_shell full shell transform");
 
     provide_IJKL(uish, ujsh, uksh, ulsh, body);
 
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::compute_shell overall");
-#endif
+    mints_timer_off("TwoBodySOInt::compute_shell overall");
 }
 
 template<typename TwoBodySOIntFunctor>
@@ -437,9 +407,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
 {
     int thread = Communicator::world->thread_id(pthread_self());
 
-#ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::provide_IJKL overall");
-#endif
+    mints_timer_on("TwoBodySOInt::provide_IJKL overall");
 
     const double *aobuff = tb_[thread]->buffer();
 
@@ -571,9 +539,8 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                             }
                         }
 
-#ifdef MINTS_TIMER
-                        timer_on("TwoBodySOInt::provide_IJKL functor");
-#endif
+                        mints_timer_on("TwoBodySOInt::provide_IJKL functor");
+
                         // func off/on
                         body(iiabs, jjabs, kkabs, llabs,
                              iiirrep, iirel,
@@ -581,17 +548,14 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                              kkirrep, kkrel,
                              llirrep, llrel,
                              buffer_[thread][lsooff]);
-#ifdef MINTS_TIMER
-                        timer_off("TwoBodySOInt::provide_IJKL functor");
-#endif
+
+                        mints_timer_off("TwoBodySOInt::provide_IJKL functor");
                     }
                 }
             }
         }
     }
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::provide_IJKL overall");
-#endif
+    mints_timer_off("TwoBodySOInt::provide_IJKL overall");
 }
 
 template<typename TwoBodySOIntFunctor>
@@ -946,9 +910,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
 {
     int thread = Communicator::world->thread_id(pthread_self());
 
-#ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::provide_IJKL overall");
-#endif
+    mints_timer_on("TwoBodySOInt::provide_IJKL overall");
 
     const double *aobuff = tb_[thread]->buffer();
 
@@ -1082,9 +1044,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                         }
                     }
 
-#ifdef MINTS_TIMER
-                    timer_on("TwoBodySOInt::provide_IJKL functor");
-#endif
+                    mints_timer_on("TwoBodySOInt::provide_IJKL functor");
                     for (int i=0; i<cdsalcs_->ncd(); ++i) {
                         if (fabs(deriv_[thread][i][lsooff]) > 1.0e-14)
                             body(i, iiabs, jjabs, kkabs, llabs,
@@ -1096,16 +1056,12 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                     }
                     body.next_tpdm_element();
 
-#ifdef MINTS_TIMER
-                    timer_off("TwoBodySOInt::provide_IJKL functor");
-#endif
+                    mints_timer_off("TwoBodySOInt::provide_IJKL functor");
                 }
             }
         }
     }
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::provide_IJKL overall");
-#endif
+    mints_timer_off("TwoBodySOInt::provide_IJKL overall");
 }
 
 template<typename TwoBodySOIntFunctor>
@@ -1149,7 +1105,7 @@ template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
 {
     if(!only_totally_symmetric_)
-        throw PSIEXCEPTION("The way the TPDM is stored an iterated enables only totally symmetric"
+        throw PSIEXCEPTION("The way the TPDM is stored and iterated enables only totally symmetric"
                            " perturbations to be considered right now!");
 
     if (comm_ == "MADNESS") {
@@ -1183,10 +1139,6 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
                         PQIter->p(), PQIter->q(), pair_number, functor);
             pair_number++;
         }
-
-//        boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
-//                                                                 SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
-//        this->compute_quartets_deriv1(shellIter, functor);
     }
     else {
         throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
