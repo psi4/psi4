@@ -549,6 +549,13 @@ bool py_psi_set_global_option_double(std::string const & key, double value)
     return true;
 }
 
+bool py_psi_set_global_option_python(std::string const & key, boost::python::object& obj)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_global_python(nonconst_key, obj);
+    return true;
+}
+
 bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -611,7 +618,7 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
     return true;
 }
 
-void py_psi_set_option_python(const string& key, boost::python::object& obj)
+void py_psi_set_local_option_python(const string& key, boost::python::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -890,7 +897,9 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
-    def("set_option_python", py_psi_set_option_python);
+    def("set_global_option_python", py_psi_set_global_option_python);
+    def("set_local_option_python", py_psi_set_local_option_python);
+
     def("get_global_option_list", py_psi_get_global_option_list);
 
     // Get the option; letting liboptions decide whether to use global or local
