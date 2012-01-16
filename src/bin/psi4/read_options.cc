@@ -207,7 +207,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the one-electron contribution back in, producing spin pure expansion
       vectors and developed by Matt Leininger and works as well as
       EVANGELISTI. !expert -*/
-    options.add_str("HD_AVE", "EVANGELISTI",
+    options.add_str("HD_AVG", "EVANGELISTI",
       "EVANGELISTI HD_EXACT HD_KAVE ORB_ENER LEININGER Z_KAVE");
 
     /*- Do compute the diagonal elements of the Hamiltonian matrix 
@@ -257,27 +257,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("REPL_OTF",false);
 
     /*- Do calculate the value of $<S^2>$ for each root? -*/
-    options.add_bool("CALC_SSQ",false);
+    options.add_bool("S_SQUARED",false);
 
     /*- Do compute the MPn series out to
     kth order where k is determined by MAX_NUM_VECS?  For open-shell systems
     (REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series.
     GUESS_VECTOR must be set to UNIT, HD_OTF must be set to TRUE, and
-    HD_AVE must be set to orb_ener; these should happen by default for
+    HD_AVG must be set to orb_ener; these should happen by default for
     MPN=TRUE. -*/
     options.add_bool("MPN",false);
 
     /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if
-    available from WIGNER=true); if 2, save the MP(2n-2) energy (if
-    available from WIGNER=true). !expert -*/
-    options.add_int("SAVE_MPN2",0);
+    available from MPN_WIGNER=true); if 2, save the MP(2n-2) energy (if
+    available from MPN_WIGNER=true). !expert -*/
+    options.add_int("MPN_ORDER_SAVE",0);
 
     /*- Do employ an orthonormal vector space rather than
       storing the kth order wavefunction? !expert -*/
     options.add_bool("MPN_SCHMIDT",false);
 
     /*- Do use Wigner formulas in the Empn series? !expert -*/
-    options.add_bool("WIGNER",true);
+    options.add_bool("MPN_WIGNER",true);
 
     /*- $z$ in $H = H@@0 + z H@@1$ !expert -*/
     options.add_double("PERTURB_MAGNITUDE",1.0);
@@ -412,7 +412,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do average the OPDM over several roots in
     order to obtain a state-average one-particle density matrix?  This
     density matrix can be diagonalized to obtain the CI natural orbitals. -*/
-    options.add_bool("OPDM_AVE", false);
+    options.add_bool("OPDM_AVG", false);
 
     /*- Sets the root number for which CI natural orbitals are written
     to PSIF_CHKPT.  The default value is 1 (lowest root). -*/
@@ -435,7 +435,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     between roots of the same symmetry will be evaluated.  DETCI
     does not compute states of different irreps within the same
     computation; to do this, lower the symmetry of the computation.-*/
-    options.add_bool("TRANSITION_DENSITY", false);
+    options.add_bool("TDM", false);
 
     /*- Do write the transition density? -*/
     options.add_bool("TDM_WRITE", false);
@@ -453,10 +453,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     the run?  The vector(s) is(are) stored in a transparent format such that
     other programs can use it easily. The format is specified in
     src/lib/libqt/slaterdset.h. -*/
-    options.add_bool("EXPORT_VECTOR", false);
+    options.add_bool("VECS_WRITE", false);
 
     /*- Number of vectors to export -*/
-    options.add_int("NUM_EXPORT", 1);
+    options.add_int("NUM_VECS_WRITE", 1);
 
     /*- Do eliminate determinants not valid for spin-complete spin-flip CI's?
     [see J. S. Sears et al, J. Chem. Phys. 118, 9084-9094 (2003)] !expert -*/
@@ -515,12 +515,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Array giving the root numbers of the states to average in a
     state-averaged procedure such as SA-CASSCF. Root numbering starts
     from 1. -*/
-    options.add("AVERAGE_STATES", new ArrayType());
+    options.add("AVG_STATES", new ArrayType());
 
     /*- Array giving the weights for each state in a state-averaged
     procedure -*/
     // CDS:TODO - Does this work for doubles??
-    options.add("AVERAGE_WEIGHTS", new ArrayType());
+    options.add("AVG_WEIGHTS", new ArrayType());
 
     /*- In following a particular root (see ROOT keyword), sometimes the
     root number changes.  To follow a root of a particular character,
@@ -535,10 +535,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("FOLLOW_VECTOR", new ArrayType());
 
     /*- Do export a CC vector to disk? -*/
-    options.add_bool("CC_EXPORT", false);
+    options.add_bool("CC_VECS_WRITE", false);
 
     /*- Do import a CC vector from disk? -*/
-    options.add_bool("CC_IMPORT", false);
+    options.add_bool("CC_VECS_READ", false);
 
     /*- Do fix amplitudes involving RAS I or RAS IV?  Useful in mixed
     MP2-CC methods. !expert -*/
@@ -655,7 +655,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Maximum number of iterations -*/
       options.add_int("MAXITER", 40);
       /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
-      options.add_bool("COMPUTE_TPDM", 0);
+      options.add_bool("TPDM", 0);
       /*- Convergence criterion for the SCF density (RMS error). 
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("SCF_D_CONVERGENCE", 1e-8);
@@ -688,7 +688,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- The algorithm to use for lambda and orbital updates -*/
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
-      options.add_bool("LOCK_OCCUPATION", true);
+      options.add_bool("LOCK_OCC", true);
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- Primary basis set -*/
@@ -700,7 +700,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum order of spherical grids -*/
     options.add_int("DFT_ORDER_SPHERICAL", 15);
     /*- Number of radial points -*/
-    options.add_int("DFT_N_RADIAL", 99);
+    options.add_int("DFT_NUM_RADIAL", 99);
     /*- Spherical Scheme -*/
     options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme -*/
@@ -859,9 +859,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Type of job being performed !expert -*/
     options.add_str("JOBTYPE", "SP");
     /*- Do compute the one particle density matrix, for properties? -*/
-    options.add_bool("COMPUTE_OPDM", false);
+    options.add_bool("OPDM", false);
     /*- Do add relaxation terms to the one particle density matrix, for properties? -*/
-    options.add_bool("RELAX_OPDM", false);
+    options.add_bool("OPDM_RELAX", false);
     /*- The amount of cacheing of data to perform -*/
     options.add_int("CACHELEVEL", 2);
     /*- The criterion used to retain/release cached data -*/
@@ -1060,18 +1060,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL_FILTER_SINGLES", false);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- Do ? -*/
+    /*- Do retain the input two-electron integrals? -*/
     options.add_bool("KEEP_TEIFILE", false);
-    /*- Do ? -*/
+    /*- Do retain the input one-electron integrals? -*/
     options.add_bool("KEEP_OEIFILE", false);
     /*- Minimum absolute value below which integrals are neglected. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 1e-14);
     /*- -*/
     options.add_int("CACHELEVEL", 2);
-    /*- Do ? -*/
-    options.add_bool("LOCAL", false);
-    /*- -*/
+    /*- Energy of applied field [au] for dynamic properties -*/
     options.add("OMEGA", new ArrayType());
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
@@ -1103,9 +1101,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The type of gauge to use for properties -*/
     options.add_str("GAUGE","LENGTH");
     /*- Do relax the one-particle density matrix? -*/
-    options.add_bool("RELAX_OPDM",false);
+    options.add_bool("OPDM_RELAX",false);
     /*- Do require $\bar{H}$ and $R$ to be connected? !expert -*/
-    options.add_bool("CONNECT_XI",false);
+    options.add_bool("XI_CONNECT",false);
     /*- The number of electronic states to computed, per irreducible representation -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Do compute all relaxed excited states? -*/
@@ -1114,9 +1112,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_SYM", 1);
     /*- -*/
     options.add_int("PROP_ROOT", 1);
-    /*- -*/
-    options.add_bool("CALC_XI", false);
-    /*- -*/
+    /*- Do compute Xi? -*/
+    options.add_bool("XI", false);
+    /*- Do ? -*/
     options.add_bool("ZETA",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
@@ -1181,13 +1179,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- -*/
     options.add_int("CACHELEVEL",2);
-    /*- Do ? -*/
+    /*- Do follow the most negative eigenvalue of the Hessian towards a lower
+    energy HF solution? Follow a UHF->UHF instability of same symmetry? -*/
     options.add_bool("FOLLOW",false);
-    /*- -*/
-    options.add_int("NUM_EVECS_PRINT",0);
-    /*- -*/
-    options.add_int("ROTATION_METHOD",0);
-    /*- -*/
+    /*- Number of lowest MO Hessian eigenvalues to print -*/
+    options.add_int("NUM_VECS_PRINT",0);
+    /*- Method for following eigenvectors, either 0 by angles or 1 by antisymmetric matrix. -*/
+    options.add_int("ROTATION_SCHEME",0);
+    /*- Scale factor (between 0 and 1) for orbital rotation step -*/
     options.add_double("SCALE",0.5);
   }
   if(name == "ADC" || options.read_globals()) {
@@ -1200,10 +1199,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The convergence criterion for pole searching step. 
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("NEWTON_CONVERGENCE", 1e-7);
-    /*- The maximum numbers of the pole searching iteration  -*/
-    options.add_int("POLE_MAX", 20);
-    /*- Maximu iteration number in simultaneous expansion method -*/
-    options.add_int("SEM_MAX", 30);
+    /*- Maximum iteration number in pole searching -*/
+    options.add_int("POLE_MAXITER", 20);
+    /*- Maximum iteration number in simultaneous expansion method -*/
+    options.add_int("SEM_MAXITER", 30);
     /*- The cutoff norm of residual vector in SEM step.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("NORM_TOLERANCE", 1e-6);
@@ -1211,6 +1210,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Do use the partial renormalization scheme for the ground state wavefunction? -*/
     options.add_bool("PR", false);
+    /*- Number of components of transition amplitudes printed -*/
+    option.add_int("NUM_AMPS_PRINT", 5);
   }
   if(name == "CCHBAR"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -1267,9 +1268,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 80);
-    /*- -*/
+    /*- Symmetry of the state to compute properties. Defaults to last irrep
+    for which states are requested. -*/
     options.add_int("PROP_SYM", 1);
-    /*- -*/
+    /*- Root number (within its irrep) for computing properties. Defaults to
+    highest root requested. -*/
     options.add_int("PROP_ROOT", 0);
     /*- Do ? -*/
     options.add_bool("CC3_FOLLOW_ROOT", false);
@@ -1312,7 +1315,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
     /*- Do ? -*/
-    options.add_bool("SKIP_DIAGSS", false);
+    options.add_bool("SS_SKIP_DIAG", false);
     /*- Do ? -*/
     options.add_bool("RESTART_EOM_CC3", false);
     /*- -*/
@@ -1366,8 +1369,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LINEAR",0);
     /*- Energy of applied field for dynamic polarizabilities -*/
     options.add("OMEGA",new ArrayType());
-    /*- -*/
-    options.add("MU_IRREPS",new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
     /*- Reference wavefunction type -*/
@@ -1393,7 +1394,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
     options.add_int("FOLLOW_ROOT",1);
     /*- Iteration at which to begin using the averaged Fock matrix-*/
-    options.add_int("START_FAVG",5);
+    options.add_int("FAVG_START",5);
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
     /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
@@ -1411,7 +1412,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do read in from file the MOs from a previous computation? -*/
     options.add_bool("MO_READ",true);
     /*- Do use the average Fock matrix during the SCF optimization? -*/
-    options.add_bool("USE_FAVG",false);
+    options.add_bool("FAVG",false);
     /*- Do canonicalize the active orbitals such that the average Fock matrix is diagonal? -*/
     options.add_bool("CANONICALIZE_ACTIVE_FAVG",false);
     /*- Do canonicalize the inactive (DOCC and Virtual) orbitals such that the average Fock matrix is diagonal? -*/
@@ -1626,7 +1627,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("DF_INTS_NUM_THREADS", 0);
   }
-  if(name=="DFCC"|| options.read_globals()) {
+  if(name == "DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
     options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
     /*- Primary basis set -*/
@@ -1683,7 +1684,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum order of spherical grids -*/
     options.add_int("PS_ORDER_SPHERICAL", 7);
     /*- Number of radial points -*/
-    options.add_int("PS_N_RADIAL", 5);
+    options.add_int("PS_NUM_RADIAL", 5);
     /*- Spherical Scheme -*/
     options.add_str("PS_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme -*/
@@ -1797,7 +1798,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_START",2);
     /*- The shift to apply to the denominators, {\it c.f.} Taube and Bartlett, JCP, 130, 144112 (2009) -*/
     options.add_double("TIKHONOW_OMEGA",0.0);  // Omega = TIKHONOW_OMEGA / 1000
-    /*- The cycle after which Tikhonow regularization is stopped.  Set to zero to allow regularization in all iterations -*/
+    /*- The cycle after which Tikhonow regularization is stopped. 
+    Set to zero to allow regularization in all iterations -*/
     options.add_int("TIKHONOW_MAX",5);
     /*- Do use DIIS extrapolation to accelerate convergence for iterative triples excitations? -*/
     options.add_bool("TRIPLES_DIIS",false);
@@ -1863,38 +1865,38 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NO_SINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
-      /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
+      /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
-      /*- Whether to do a Newton-Raphson step, or an RFO step; allowed values = {NR, RFO} -*/
+      /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
       options.add_str("STEP_TYPE", "RFO", "RFO NR SD");
-      /*- Initial maximum step size in bohr or radian along an internal coordinate {double} -*/
-      options.add_double("INTRAFRAGMENT_STEP_LIMIT", 0.4);
-      /*- Lower bound for dynamic trust radius in au {double} -*/
-      options.add_double("INTRAFRAGMENT_STEP_LIMIT_MIN", 0.001);
-      /*- Upper bound for dynamic trust radius in au {double} -*/
-      options.add_double("INTRAFRAGMENT_STEP_LIMIT_MAX", 1.0);
-      /*- Do 'follow' the initial RFO vector after the first step? -*/
+      /*- Initial maximum step size in bohr or radian along an internal coordinate -*/
+      options.add_double("INTRAFRAG_STEP_LIMIT", 0.4);
+      /*- Lower bound for dynamic trust radius [au] -*/
+      options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
+      /*- Upper bound for dynamic trust radius [au] -*/
+      options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
+      /*- Do follow the initial RFO vector after the first step? -*/
       options.add_bool("RFO_FOLLOW_ROOT", false);
-      /*- Which RFO root to follow; 0 indicates lowest (to a minimum); {integer} -*/
+      /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
       options.add_int("RFO_ROOT", 0);
       /*- When determining connectivity, a bond is assigned if interatomic distance
           is less than (this number) * sum of covalent radii {double} -*/
-      options.add_double("SCALE_CONNECTIVITY", 1.3);
-      /*- Whether to treat multiple molecule fragments as a single bonded molecule;
-          or via interfragment coordinates ; a primary difference is that in MULTI mode,
-          the interfragment coordinates are not redundant. {SINGLE, MULTI} -*/
-      options.add_str("FRAGMENT_MODE", "SINGLE", "SINGLE MULTI");
-      /*- whether to use fixed linear combinations of atoms as reference points for
-          interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL_AXES} -*/
-      options.add_str("INTERFRAGMENT_MODE", "FIXED", "FIXED INTERFRAGMENT");
+      options.add_double("COVALENT_CONNECT", 1.3);
+      /*- For multi-fragment molecules, treat as single bonded molecule
+          or via interfragment coordinates. A primary difference is that in MULTI mode,
+          the interfragment coordinates are not redundant. -*/
+      options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
+      /*- When interfragment coordinates are present, use as reference points either
+      principal axes or fixed linear combinations of atoms. -*/
+      options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do only generate the internal coordinates and then stop? -*/
-      options.add_bool("GENERATE_INTCOS_ONLY", false);
+      options.add_bool("INTCOS_PRINT_EXIT", false);
       /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} -*/
-      options.add_str("INTRAFRAGMENT_H", "FISCHER", "FISCHER SCHLEGEL LINDH SIMPLE");
+      options.add_str("INTRAFRAG_H", "FISCHER", "FISCHER SCHLEGEL LINDH SIMPLE");
       /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
-      options.add_str("INTERFRAGMENT_H", "DEFAULT", "DEFAULT FISCHER_LIKE");
+      options.add_str("INTERFRAG_H", "DEFAULT", "DEFAULT FISCHER_LIKE");
       /*- Do freeze all fragments rigid? -*/
-      options.add_bool("FREEZE_INTRAFRAGMENT", false);
+      options.add_bool("FREEZE_INTRAFRAG", false);
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
       options.add_bool("ADD_AUXILIARY_BONDS", false);
       /*- Do save and print the geometry from the last projected step at the end
@@ -1902,9 +1904,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the previous geometry at which was computed the gradient that satisfied 
       the convergence criteria. -*/
       options.add_bool("FINAL_GEOM_WRITE", false);
-      /*- Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} -*/
+      /*- Hessian update scheme -*/
       options.add_str("H_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
-      /*-  How many previous steps' data to use in Hessian update; 0=use them all ; {integer} -*/
+      /*- Number of previous steps to use in Hessian update, 0 uses all -*/
       options.add_int("H_UPDATE_USE_LAST", 6);
       /*- Do limit the magnitude of changes caused by the Hessian update? -*/
       options.add_bool("H_UPDATE_LIMIT", true);
@@ -1915,9 +1917,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           (H_update_limit_scale)*(the previous value) and H_update_limit_max (in au). -*/
       options.add_double("H_UPDATE_LIMIT_SCALE", 0.50);
       /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments? Otherwise, use $R@@{AB}$. -*/
-      options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
+      options.add_bool("INTERFRAG_DIST_INV", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
-      options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
+      options.add_double("H_BOND_CONNECT", 4.3);
       /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
       /*- QCHEM optimization criteria: rms force. See the note at the beginning of Section \ref{keywords}. -*/
@@ -1933,10 +1935,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Do test derivative B matrix? -*/
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Do read Cartesian Hessian? -*/
-      options.add_bool("READ_CARTESIAN_H", false);
-      /*- Define IRC step size in bohr(amu)$^{1/2}$ -*/
+      options.add_bool("CART_H_READ", false);
+      /*- IRC step size in bohr(amu)$^{1/2}$ -*/
       options.add_double("IRC_STEP_SIZE", 0.2);
-      /*- Define IRC mapping direction {FORWARD, BACKWARD} -*/
+      /*- IRC mapping direction -*/
       options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 1);

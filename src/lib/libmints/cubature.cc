@@ -335,7 +335,7 @@ void DFTGrid::buildGridFromOptions()
     for (int A = 0; A < molecule_->natom(); A++) {
         boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
             options_.get_str("DFT_RADIAL_SCHEME"), 
-            options_.get_int("DFT_N_RADIAL"),
+            options_.get_int("DFT_NUM_RADIAL"),
             alphap[A]);
         std::vector<boost::shared_ptr<SphericalGrid> > spheres;
         for (int i = 0; i < radial->npoints(); i++) {
@@ -732,7 +732,7 @@ void PseudospectralGrid::buildGridFromOptions()
     for (int A = 0; A < molecule_->natom(); A++) {
         boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
             options_.get_str("PS_RADIAL_SCHEME"), 
-            options_.get_int("PS_N_RADIAL"),
+            options_.get_int("PS_NUM_RADIAL"),
             alphap[A]);
         std::vector<boost::shared_ptr<SphericalGrid> > spheres;
         for (int i = 0; i < radial->npoints(); i++) {

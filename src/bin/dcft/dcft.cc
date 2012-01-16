@@ -29,7 +29,7 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
     scf_threshold_     = options.get_double("R_CONVERGENCE");
     lambda_threshold_  = options.get_double("R_CONVERGENCE");
     int_tolerance_     = options.get_double("INTS_TOLERANCE");
-    lock_occupation_   = options.get_bool("LOCK_OCCUPATION");
+    lock_occupation_   = options.get_bool("LOCK_OCC");
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
     // Sets up the memory, and orbital info
     init();
