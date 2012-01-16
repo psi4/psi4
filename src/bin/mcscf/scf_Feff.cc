@@ -109,7 +109,7 @@ void SCF::construct_Feff(int cycle)
     }
   }
 //  // Level shift
-//  double shift = static_cast<double>(options_.get_int("LEVELSHIFT")) / 1000.0;
+//  double shift = options_.get_double("LEVELSHIFT");
 //  fprintf(outfile,"\n  Setting level shift to %.3f",shift);
 //  for(int h =0; h < nirreps; ++h){
 //    for(int i = docc[h] + actv[h]; i < sopi[h]; ++i){

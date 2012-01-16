@@ -647,7 +647,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEVEL", 2);
       /*- The shift applied to the denominator -*/
-      options.add_double("REGULARIZER", 0.0);
+      options.add_double("TIKHONOW_OMEGA", 0.0);
       /*- Maximum number of lambda iterations per macro-iteration -*/
       options.add_int("LAMBDA_MAXITER", 50);
       /*- Maximum number of SCF iterations per cycle -*/
@@ -1381,7 +1381,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     /*- Level shift to aid convergence -*/
-    options.add_int("LEVELSHIFT",0);
+    options.add_double("LEVEL_SHIFT",0.0);
     /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE", 1e-12);
     /*- Convergence criterion for density. See the note at the beginning of Section \ref{keywords}. -*/
@@ -1795,8 +1795,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAXITER",100);
     /*- The number of DIIS vectors needed before extrapolation is performed -*/
     options.add_int("DIIS_START",2);
-    /*- The shift to apply to the denominators ($\times$ 1000), {\it c.f.} Taube and Bartlett, JCP, 130, 144112 (2009) -*/
-    options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
+    /*- The shift to apply to the denominators, {\it c.f.} Taube and Bartlett, JCP, 130, 144112 (2009) -*/
+    options.add_double("TIKHONOW_OMEGA",0.0);  // Omega = TIKHONOW_OMEGA / 1000
     /*- The cycle after which Tikhonow regularization is stopped.  Set to zero to allow regularization in all iterations -*/
     options.add_int("TIKHONOW_MAX",5);
     /*- Do use DIIS extrapolation to accelerate convergence for iterative triples excitations? -*/
@@ -1977,7 +1977,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_double("MO_STEP_MAX",0.5);
     /*- -*/
-    options.add_double("LSHIFT_PARAMETER",0.02);
+    options.add_double("LEVEL_SHIFT",0.02);
     /*- -*/
     options.add_double("OS_SCALE",1.2);
     /*- -*/
@@ -1986,8 +1986,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SOS_SCALE",1.3); // It is used for MP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
     /*- -*/
     options.add_double("SOS_SCALE2",1.2); // It is used for OMP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
-    /*- Do ? -*/ 
-    options.add_bool("LEVEL_SHIFT",true);
     //options.add_str("LINEQ","CDGESV","CDGESV FLIN POPLE");
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     //options.add_str("STABILITY","FALSE","TRUE FALSE");
