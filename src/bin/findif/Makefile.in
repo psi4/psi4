@@ -7,13 +7,12 @@ LDLIBS += $(BLAS)
 
 PSITARGET = $(top_objdir)/lib/libPSI_findif.a
 
-CXXINC += $(PYTHON_INCLUDE)
-
 CXXSRC = \
 fd_misc.cc \
 fd_geoms_1_0.cc fd_1_0.cc \
 fd_geoms_freq_0.cc fd_freq_0.cc \
-fd_geoms_freq_1.cc fd_freq_1.cc
+fd_geoms_freq_1.cc fd_freq_1.cc \
+fd_geoms_hessian_0.cc fd_hessian_0.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

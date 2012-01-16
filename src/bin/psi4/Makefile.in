@@ -8,7 +8,7 @@ MODULE = false
 MAKE_MADNESS=@HAVE_MPI@
 
 LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -lpthread
-CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
+CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 # gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
 FILTEREDLDLIBS = $(filter-out -lgfortranbegin,$(LDLIBS))
