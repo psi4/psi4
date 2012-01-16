@@ -31,7 +31,7 @@ endif
 
 # The object files
 %.o: %.cc
-	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) -c $< $(OUTPUT_OPTION)
+	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $(PYTHON_INCLUDE) -c $< $(OUTPUT_OPTION)
 
 #include $(psi_top_objdir)/src/bin/MakeRules
 $(PSITARGET): $(BINOBJ)
