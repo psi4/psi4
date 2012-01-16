@@ -655,13 +655,20 @@ AC_CHECK_LIB(m,exit,CXXLIBS="$CXXLIBS -lm")
 AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
+BOOST_ROOT='$(top_objdir)/boost/boost_1_48_0'
+BOOST_INC='$(BOOST_ROOT)'
+BOOST_LIB='$(BOOST_ROOT)/bin.v2/libs'
+AC_SUBST(BOOST_ROOT)
+AC_SUBST(BOOST_INC)
+AC_SUBST(BOOST_LIB)
+
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
+  PSICPPFLAGS='-I. -I$(BOOST_INC) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
   AC_SUBST(PSICPPFLAGS)
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
 else
-  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
+  PSICPPFLAGS='-I. -I$(BOOST_INC) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
   AC_SUBST(PSICPPFLAGS)
 fi
 AC_SUBST(CPPFLAGS)
@@ -871,9 +878,11 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 ########
 ## Output
-######## #src/lib/libbasis/Makefile
+######## 
 
-AC_CONFIG_FILES([include/Makefile
+AC_CONFIG_FILES([
+          boost/Makefile
+          include/Makefile
           Makefile lib/Makefile src/Makefile
           src/lib/Makefile src/lib/MakeRules src/lib/MakeVars
           src/util/Makefile src/util/MakeRules src/util/MakeVars
@@ -909,12 +918,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
-          src/lib/libboost_python/Makefile
-          src/lib/libboost_regex/Makefile
-          src/lib/libboost_thread/Makefile
-          src/lib/libboost_filesystem/Makefile
-          src/lib/libboost_system/Makefile
-          src/lib/libboost_serialization/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
           src/lib/libplugin/Makefile
