@@ -50,6 +50,8 @@ class Diffuse:
 
         self.fitGeneral()
 
+        PsiMod.clean()
+
         PsiMod.set_global_option("BASIS", basis)
         PsiMod.set_global_option("DF_BASIS_SCF", ribasis)
         PsiMod.set_global_option("SCF_TYPE", scftype)
