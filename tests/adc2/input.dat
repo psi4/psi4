@@ -18,5 +18,3 @@ set globals {
 }
 
 energy('adc')
-
-clean()

@@ -18,5 +18,3 @@ set {
 }
 
 response('cc2')
-clean()
-

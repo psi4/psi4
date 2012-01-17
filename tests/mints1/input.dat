@@ -236,5 +236,3 @@ print_out("\tLi(H20)_4^+ Test...")
 Li_H2O_4_p.update_geometry()
 Li_H2O_4_p.print_out()
 compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
-
-clean()

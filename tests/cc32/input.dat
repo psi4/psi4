@@ -16,5 +16,3 @@ escf = -76.024038511513183  #TEST
 ecc3 = -76.241273893572554  #TEST
 compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
 compare_values(ecc3, get_variable("CC3 TOTAL ENERGY"), 7, "CC3 energy") #TEST
-
-clean()

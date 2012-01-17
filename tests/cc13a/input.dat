@@ -30,8 +30,3 @@ compare_values(refnuc,   ch2.nuclear_repulsion_energy(),          5, "Nuclear re
 compare_values(refscf,   get_variable("SCF total energy"),        6, "SCF energy")                #TEST
 compare_values(refccsd_t,  get_variable("CCSD(T) correlation energy"), 6, "CCSD(T) contribution")         #TEST
 compare_values(reftotal, get_variable("Current energy"),          6, "Total energy")              #TEST
-
-clean()
-
-
-

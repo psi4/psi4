@@ -17,4 +17,3 @@ set {
 }
 
 response('ccsd')
-clean()

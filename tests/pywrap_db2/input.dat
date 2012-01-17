@@ -89,5 +89,3 @@ PsiMod.print_out('\nDATABASE RESULT: computation 80955 for reagent BASIC-ch4-rea
 PsiMod.set_variable('NATOM', molecule.natom())
 
 compare_values(refenergy, electronic_energy, 5, 'Optimized reference energy for sown BASIC reagent')  #TEST
-
-clean()

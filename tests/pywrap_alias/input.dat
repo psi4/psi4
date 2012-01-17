@@ -81,5 +81,4 @@ clean()
 banner('opt(arbitraryorder())')
 optimize('mp3')
 compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 7, 'opt(mp3())')
-clean()
 

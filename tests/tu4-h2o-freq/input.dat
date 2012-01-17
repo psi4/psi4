@@ -17,6 +17,3 @@ ref_freqs.set(0, 2, 4211.79) #TEST
 fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
 
 compare_vectors(ref_freqs, fd_freqs, 1, "Reference vs computed frequencies to 0.1 cm^-1") #TEST
-
-clean()
-
