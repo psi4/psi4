@@ -1,11 +1,9 @@
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
-#! This compuation runs in C1 symmetry, which is currently required for RI-SCF.
 
 nucenergy =   8.801466202085710  #TEST
 refenergy = -76.05098621944234   #TEST
 
 molecule h2o {
-    symmetry c1
     O
     H 1 1.0
     H 1 1.0 2 104.5

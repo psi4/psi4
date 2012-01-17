@@ -389,6 +389,33 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
 
     return all_matched
 
+
+def parse_multiline_array(input_list):
+    line = input_list.pop(0)
+    # Keep adding lines to the current one, until all parens match up
+    while not check_parentheses_and_brackets(line, 0):
+        thisline = input_list.pop(0).strip()
+        line += thisline
+    return "%s\n" % line
+
+
+def process_multiline_arrays(inputfile):
+    # This function takes multiline array inputs, and puts them on a single line
+    # Start by converting the input to a list, splitting at newlines
+    input_list = inputfile.split("\n")
+    set_re = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+\[.*', re.IGNORECASE)
+    newinput = ""
+    while len(input_list):
+        line = input_list[0]
+        if set_re.match(line):
+            # We've found the start of a set matrix [ .... line - hand it off for more checks
+            newinput += parse_multiline_array(input_list)
+        else:
+            # Nothing to do - just add the line to the string
+            newinput += "%s\n" % input_list.pop(0)
+    return newinput
+
+
 def process_input(raw_input):
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
@@ -412,6 +439,14 @@ def process_input(raw_input):
     # First, remove everything from lines containing only spaces
     blankline = re.compile(r'^\s*$')
     temp = re.sub(blankline, '', temp, re.MULTILINE)
+
+    # Look for things like
+    # set matrix [
+    #              [ 1, 2 ],
+    #              [ 3, 4 ]
+    #            ]
+    # and put them on a single line
+    temp = process_multiline_arrays(temp)
 
     # Process all "set name? { ... }"
     set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)

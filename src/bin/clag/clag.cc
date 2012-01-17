@@ -95,7 +95,7 @@ int clag(int argc, char **argv)
 
 
   print_lvl = options.get_int("PRINT");
-  write_cas_files = options.get_bool("WRITE_CAS_FILES");
+  write_cas_files = options.get_bool("CAS_FILES_WRITE");
 
    /* need to figure out whether to filter tei's */
    dertype = options.get_str("DERTYPE");
