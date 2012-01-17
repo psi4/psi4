@@ -46,6 +46,3 @@ compare_values(refnuc, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion ener
 compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
 compare_values(refci_19, thisenergy,                      8, "MP(19) energy") #TEST
 compare_values(refcorr_19, get_variable("CURRENT CORRELATION ENERGY"), 8, "MP(19) correlation energy") #TEST
-
-clean()
-

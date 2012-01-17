@@ -17,5 +17,3 @@ set {
 }
 
 energy('cc2')
-clean()
-

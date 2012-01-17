@@ -27,6 +27,3 @@ compare_values(refS22AmadSAPT0, S22mad, 5, "S22 with S22A subset mean absolute d
 #compare_values(refNBCmadDFMP2, NBCmad, 5, "NBC subset mean absolute deviation")             #TEST
 NBCmad = database('scf','NBC10',cp='on',symm='off',subset='small')
 compare_values(refNBCmadSCF, NBCmad, 5, "NBC subset mean absolute deviation")               #TEST
-
-clean()
-

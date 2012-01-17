@@ -39,6 +39,3 @@ units angstrom
 dimer.update_geometry()
 dimer.print_out()
 compare_values(refENuc, dimer.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
-
-clean()
-

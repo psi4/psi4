@@ -46,5 +46,4 @@ set globals {
 e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
 
 compare_values(-2.9033043421572055642, e_cbs, 7, "He ccsd extrapolated energy") #TEST
-clean()
 

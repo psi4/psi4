@@ -46,7 +46,3 @@ compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch") #TEST
 compare_values(Eref[3], Eind, 6, "SAPT0 Eind")   #TEST
 compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp") #TEST
 compare_values(Eref[5], ET, 6, "SAPT0 Etotal")   #TEST
-
-clean()
-
-

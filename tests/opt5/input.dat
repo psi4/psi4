@@ -24,6 +24,3 @@ thisenergy = optimize('scf')
   
 compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy") # TEST
 compare_values(refenergy, thisenergy, 3, "Reference energy") # TEST
-
-clean()
-

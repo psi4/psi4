@@ -171,6 +171,3 @@ clean()
 set scf scf_type df
 E = energy('scf')
 compare_values(Eref_rohf_df, E, 9, 'Triplet DF CUHF energy') #TEST
-
-clean()
-

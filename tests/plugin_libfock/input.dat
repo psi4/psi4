@@ -21,5 +21,3 @@ set module rcphf
 plugin('./plugin_libfock.so')
 set scf_type pk 
 plugin('./plugin_libfock.so')
-
-clean()

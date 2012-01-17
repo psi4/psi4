@@ -101,4 +101,3 @@ D 2 1.00
 }
 
 energy('eom-cc3')
-clean()

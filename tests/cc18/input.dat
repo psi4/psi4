@@ -14,11 +14,9 @@ set {
 
 response('ccsd')
 
-clean()
-
-refnuc = 46.780362058359806 #TEST
-refscf = -174.41843300162472 #TEST
-refccsd = -0.368843103062227 #TEST
+refnuc = 46.780362058359806     #TEST
+refscf = -174.41843300162472    #TEST
+refccsd = -0.368843103062227    #TEST
 reftotal = -174.787276104686754 #TEST
 
 compare_values(refnuc, hof.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST

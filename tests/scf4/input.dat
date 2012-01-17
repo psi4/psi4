@@ -36,5 +36,3 @@ for R in Rvals:
         compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
 
         count = count + 1
-
-clean()

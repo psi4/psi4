@@ -19,6 +19,7 @@
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include "script.h"
@@ -107,6 +108,9 @@ int main(int argc, char **argv, char **envp)
     // Finish linking Psi4 into Python, preprocess the input file,
     // and then run the input file.
     Script::language->run(infile);
+
+    // Automatically clean scratch, unless the user asked for a messy run
+    if(!messy) PSIOManager::shared_object()->psiclean();
 
     // Shut things down:
     Communicator::world->sync();
