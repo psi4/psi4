@@ -405,7 +405,7 @@ void RDFMP2::form_Aia()
 
         // Compute TEI tensor block (A|mn)
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (ULI QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
+        for (long int QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
 
             int thread = 0;
             #ifdef _OPENMP
@@ -547,7 +547,7 @@ void RDFMP2::form_energy()
             }
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss, e_os)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;
@@ -743,7 +743,7 @@ void UDFMP2::form_Aia()
 
         // Compute TEI tensor block (A|mn)
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (ULI QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
+        for (long int QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
 
             int thread = 0;
             #ifdef _OPENMP
@@ -905,7 +905,7 @@ void UDFMP2::form_energy()
             }
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;
@@ -1021,7 +1021,7 @@ void UDFMP2::form_energy()
             }
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;
@@ -1151,7 +1151,7 @@ void UDFMP2::form_energy()
             psio_->read(PSIF_DFMP2_QIA,"(Q|ia)",(char*)Qjbp[0],sizeof(double)*(nj * navir_b * naux),next_QIA,&next_QIA);
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_os)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;
