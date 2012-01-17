@@ -734,48 +734,36 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "SCF"|| options.read_globals()) {
 
+    // => General Wavefunction Info <= //
+
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF", "SCF");
-
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
-
-    /*- The dimension sizes of the processor grid -*/
-    options.add("PROCESS_GRID", new ArrayType());
-
-    /*- The tile size for the distributed matrices -*/
-    options.add_int("TILE_SZ", 512);
-
-    /*- The dimension sizes of the distributed matrix -*/
-    options.add("DISTRIBUTED_MATRIX", new ArrayType());
-
-    /*- Are going to do SAPT? If so, what part?  -*/
-    options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
-
     /*- Primary basis set -*/
     options.add_str("BASIS", "");
     /*- Auxiliary basis set for SCF density fitting computations. Defaults to BASIS-JKFIT. -*/
     options.add_str("DF_BASIS_SCF", "");
-
-    /*- Atomic Charge cutoff (for primary domain) -*/
-    options.add_double("CHARGE_CUTOFF",0.05);
-    /*- Extended domain radius, Angstrom -*/
-    options.add_double("R_EXT",3.0);
-    /*- Iterations per full Pipek-Mizey Localization -*/
-    options.add_int("LOCAL_ITER",1);
     /*- What algorithm to use for the SCF computation -*/
-    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF PSEUDOSPECTRAL POISSON L_DF CD 1C_CD");
-    /*- Do run in parallel? -*/
-    options.add_bool("PARALLEL", false);
-
-    /*- Primary basis set -*/
-    options.add_str("BASIS","");
-
+    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF");
+    /*- SO orthogonalization: symmetric or canonical? -*/
+    options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
+    /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
+    options.add_double("S_MIN_EIGENVALUE",1E-7);
+    /*- Minimum absolute value below which TEI are neglected.
+    See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("INTS_TOLERANCE", 0.0);
     /*- The type of guess orbitals -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
+
+    // => Convergence Control/Stabilization <= //
+
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
-
+    /*- Convergence criterion for SCF energy. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGENCE", 1e-8);
+    /*- Convergence criterion for SCF density. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGENCE", 1e-8);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
         value around 20 (which corresponds to 20\% of the previous iteration's
@@ -786,45 +774,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         It is recommended to leave damping on until convergence, which is the default.
         See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
-
-    /*- Do perturb the Hamiltonian? -*/
-    options.add_bool("PERTURB_H", false);
-    /*- Size of the perturbation -*/
-    options.add_double("PERTURB_MAGNITUDE", 0.0);
-    /*- The operator used to perturb the Hamiltonian, if requested -*/
-    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
-    /*- An ExternalPotential (built by Python or NULL) -*/
-    options.add("EXTERN", new PythonDataType());
-
-    /*- The storage scheme for the three index tensors in density fitting -*/
-    options.add_str("DF_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");
-    /*- Do save restart information for RI SCF? -*/
-    options.add_bool("DF_SCF_SAVE",false);
-    /*- Do try to restart? -*/
-    options.add_bool("DF_SCF_RESTART",false);
-    /*- Do find the raw fitting metric condition number? -*/
-    options.add_bool("FIND_RAW_J_COND",false);
-    /*- Max J basis condition number to be allowed -*/
-    options.add_double("DF_MAX_COND",1E8);
-    /*- SCF Fitting Type -*/
-    options.add_str("DF_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
-    /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
-    options.add_int("DF_INTS_NUM_THREADS",0);
-    /*- IO caching for CP corrections, etc -*/
-    options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
-
-    /*- SO orthogonalization: symmetric or canonical? -*/
-    options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
-    /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
-    options.add_double("S_MIN_EIGENVALUE",1E-7);
-
-    /*- The iteration to start MOM on (or 0 for no MOM) -*/
-    options.add_int("MOM_START", 0);
-    /*- The absolute indices of orbitals to excite from in MOM (+/- for alpha/beta) -*/
-    options.add("MOM_OCC", new ArrayType());
-    /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
-    options.add("MOM_VIR", new ArrayType());
-
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("DIIS_START", 1);
     /*- Minimum number of error vectors stored for DIIS extrapolation -*/
@@ -833,28 +782,61 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_MAX_VECS", 10);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
-    /*- Convergence criterion for SCF energy. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("D_CONVERGENCE", 1e-8);
-    /*- Minimum absolute value below which TEI are neglected.
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("INTS_TOLERANCE", 0.0);
-    /*- Maximum number of rows to read/write in each DF-SCF operation -*/
-    options.add_int("ROWS_PER_READ", 0);
+    /*- The iteration to start MOM on (or 0 for no MOM) -*/
+    options.add_int("MOM_START", 0);
+    /*- The absolute indices of orbitals to excite from in MOM (+/- for alpha/beta) -*/
+    options.add("MOM_OCC", new ArrayType());
+    /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
+    options.add("MOM_VIR", new ArrayType());
 
-    /*- The amount of SAD information to print to the output -*/
+    // => Environmental Effects <= //
+
+    /*- Perturb the Hamiltonian? -*/
+    options.add_bool("PERTURB_H", false);
+    /*- Size of the perturbation -*/
+    options.add_double("PERTURB_MAGNITUDE", 0.0);
+    /*- The operator used to perturb the Hamiltonian, if requested -*/
+    options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
+    /*- An ExternalPotential (built by Python or NULL/None) -*/
+    options.add("EXTERN", new PythonDataType());
+
+    // => Parallel Runtime <= //
+
+    /*- The dimension sizes of the processor grid !expert -*/
+    options.add("PROCESS_GRID", new ArrayType());
+    /*- The tile size for the distributed matrices !expert -*/
+    options.add_int("TILE_SZ", 512);
+    /*- The dimension sizes of the distributed matrix !expert -*/
+    options.add("DISTRIBUTED_MATRIX", new ArrayType());
+    /*- Do run in parallel? !expert -*/
+    options.add_bool("PARALLEL", false);
+
+    // => Misc. <== //
+
+    /*- Are going to do SAPT? If so, what part? !expert -*/
+    options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
+
+    // => DFSCF Algorithm <= //
+    
+    /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
+    options.add_int("DF_INTS_NUM_THREADS",0);
+    /*- IO caching for CP corrections, etc !expert -*/
+    options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
+
+    // => SAD Guess Algorithm <= //
+
+    /*- The amount of SAD information to print to the output !expert -*/
     options.add_int("SAD_PRINT", 0);
-    /*- Convergence criterion for SCF energy in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for SCF energy in SAD Guess. See the note at the beginning of Section \ref{keywords}. !expert -*/
     options.add_double("SAD_E_CONVERGENCE", 1E-5);
-    /*- Convergence criterion for SCF density in SAD Guess. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for SCF density in SAD Guess. See the note at the beginning of Section \ref{keywords}. !expert -*/
     options.add_double("SAD_D_CONVERGENCE", 1E-5);
-    /*- Maximum number of SAD guess iterations -*/
+    /*- Maximum number of SAD guess iterations !expert -*/
     options.add_int("SAD_MAXITER", 50);
-    /*- SAD Guess F-mix Iteration Start -*/
+    /*- SAD Guess F-mix Iteration Start !expert -*/
     options.add_int("SAD_F_MIX_START", 50);
     /*- SAD Guess Cholesky Cutoff (for eliminating redundancies).
-    See the note at the beginning of Section \ref{keywords}. -*/
+    See the note at the beginning of Section \ref{keywords}. !expert -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
   }
   if (name == "MP2"|| options.read_globals()) {
