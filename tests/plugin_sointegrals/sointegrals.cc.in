@@ -3,6 +3,7 @@
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
 #include <libmints/mints.h>
+#include <libmints/sointegral_twobody.h>
 #include <libpsio/psio.h>
 
 INIT_PLUGIN

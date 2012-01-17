@@ -4,7 +4,11 @@
 #include <libmints/mints.h>
 #include "psifiles.h"
 
-#define INDEX2(i,j) ((i) > (j) ? (i)*((i)+1)/2 + (j) : (j)*((j)+1)/2 + (i))
+#ifdef INDEX2
+#   undef INDEX2
+#   define INDEX2(i,j) ((i) > (j) ? (i)*((i)+1)/2 + (j) : (j)*((j)+1)/2 + (i))
+#endif
+
 namespace psi{
 
 void IntegralTransform::setup_tpdm_buffer(const dpdbuf4 *D)

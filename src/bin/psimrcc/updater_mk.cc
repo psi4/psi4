@@ -34,7 +34,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
     // Setup the Tikhonow omega parameter
     double omega = 0;
     int    tikhonow_max   = options_.get_int("TIKHONOW_MAX");
-    double tikhonow_omega = static_cast<double>(options_.get_int("TIKHONOW_OMEGA")) /  1000.0;
+    double tikhonow_omega = options_.get_double("TIKHONOW_OMEGA");
     double small_cutoff   = static_cast<double>(options_.get_int("SMALL_CUTOFF"))   / 10000.0;
 
     if(tikhonow_max == 0){  // Tikhonow always turned on
@@ -129,7 +129,7 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
         }
 
         // Update t1 for reference i
-        if(not options_.get_bool("NOSINGLES")){
+        if(not options_.get_bool("NO_SINGLES")){
             blas->solve("t1_delta[o][v]{" + i_str + "}  =   t1_eqns[o][v]{" + i_str + "} / d'1[o][v]{" + i_str + "} - t1[o][v]{" + i_str + "}");
             blas->solve("t1_delta[O][V]{" + i_str + "}  =   t1_eqns[O][V]{" + i_str + "} / d'1[O][V]{" + i_str + "} - t1[O][V]{" + i_str + "}");
 
@@ -280,8 +280,8 @@ void MkUpdater::update(int cycle,Hamiltonian* heff)
         blas->solve("t2_delta[oO][vV]{" + i_str + "} = t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "} - t2[oO][vV]{" + i_str + "}");
         blas->solve("t2_delta[OO][VV]{" + i_str + "} = t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "} - t2[OO][VV]{" + i_str + "}");
 
-        std::string damp = to_string(double(options_.get_int("DAMPING_FACTOR"))/1000.0);
-        std::string one_minus_damp = to_string(1.0-double(options_.get_int("DAMPING_FACTOR"))/1000.0);
+        std::string damp = to_string(options_.get_double("DAMPING_PERCENTAGE")/100.0);
+        std::string one_minus_damp = to_string(1.0-options_.get_double("DAMPING_PERCENTAGE")/100.0);
         blas->solve("t2[oo][vv]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oo][vv]{" + i_str + "} / d'2[oo][vv]{" + i_str + "}");
         blas->solve("t2[oO][vV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[oO][vV]{" + i_str + "} / d'2[oO][vV]{" + i_str + "}");
         blas->solve("t2[OO][VV]{" + i_str + "} = " + one_minus_damp + " t2_eqns[OO][VV]{" + i_str + "} / d'2[OO][VV]{" + i_str + "}");

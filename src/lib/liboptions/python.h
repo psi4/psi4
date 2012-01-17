@@ -1,7 +1,6 @@
 #ifndef _psi_src_lib_liboptions_python_h
 #define _psi_src_lib_liboptions_python_h
 
-#include "liboptions.h"
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
 

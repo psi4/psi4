@@ -6,6 +6,7 @@
 #include <libmints/mints.h>
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
+#include <libqt/qt.h>
 
 namespace psi { namespace findif {
 
@@ -27,20 +28,20 @@ class VIBRATION {
   double km;    // force constant
   double *lx;   // normal mode in mass-weighted cartesians
   double cm;    // harmonic frequency in wavenumbers
-  
+
   public:
     friend PsiReturnType fd_freq_0(Options &options, const boost::python::list& energies, int irrep);
     friend PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradients, int irrep);
     friend bool ascending(const VIBRATION *, const VIBRATION *);
     friend void print_vibrations(std::vector<VIBRATION *> modes);
-  
+
     VIBRATION(int irrep_in, double km_in, double *lx_in) { irrep = irrep_in; km = km_in; lx = lx_in; }
     ~VIBRATION() { free(lx); }
 };
 
 // function to print vibrations
 void print_vibrations(std::vector<VIBRATION *> modes);
-  
+
 // to order vibrations
 bool ascending(const VIBRATION *vib1, const VIBRATION *vib2);
 

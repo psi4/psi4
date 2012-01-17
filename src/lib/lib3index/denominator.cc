@@ -1,9 +1,9 @@
-#include "3index.h"
-
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include "3index.h"
 
 #include <sstream>
 #include <fstream>
@@ -64,7 +64,7 @@ boost::shared_ptr<Denominator> Denominator::buildDenominator(const std::string& 
     } else if (algorithm == "CHOLESKY") {
         d = new CholeskyDenominator(eps_occ, eps_vir, delta);
     } else {
-        throw PSIEXCEPTION("Denominator: algorithm is not LAPLACE or CHOLESKY"); 
+        throw PSIEXCEPTION("Denominator: algorithm is not LAPLACE or CHOLESKY");
     }
 
     return boost::shared_ptr<Denominator>(d);
@@ -351,7 +351,7 @@ void CholeskyDenominator::decompose()
     int nspan = nocc * nvir;
 
     double* diagonal = new double[nspan];
-    
+
     for (int i = 0; i < nocc; i++) {
         for (int a = 0; a < nvir; a++) {
             diagonal[i*nvir + a] = 1.0 / (2.0 * (eps_virp[a] - eps_occp[i]));
@@ -364,19 +364,19 @@ void CholeskyDenominator::decompose()
     int Q = -1;
     nvector_ = 0;
     double max_err;
-    while (nvector_ < nspan) {  
+    while (nvector_ < nspan) {
 
         max_err = diagonal[0];
-        int max_index = 0;     
-        
+        int max_index = 0;
+
         for (int ia = 0; ia < nspan; ia++) {
             if (max_err <= diagonal[ia]) {
                 max_index = ia;
                 max_err = diagonal[ia];
             }
         }
-        
-        if (fabs(max_err) < delta_) 
+
+        if (fabs(max_err) < delta_)
             break;
 
         int j = max_index / nvir;
@@ -386,16 +386,16 @@ void CholeskyDenominator::decompose()
         nvector_++;
         L.push_back(new double[nspan]);
 
-        ::memset(static_cast<void*>(L[Q]), '\0', nspan*sizeof(double)); 
+        ::memset(static_cast<void*>(L[Q]), '\0', nspan*sizeof(double));
 
         // Find the diagonal
         double LL = sqrt(max_err);
- 
+
         // Update the vector
         for (int i = 0; i < nocc; i++) {
             for (int a = 0; a < nvir; a++) {
                 L[Q][i*nvir + a] = 1.0 / (eps_virp[a] + eps_virp[b] -
-                    eps_occp[i] - eps_occp[j]); 
+                    eps_occp[i] - eps_occp[j]);
             }
         }
 
@@ -456,8 +456,8 @@ SAPTDenominator::~SAPTDenominator()
 {
 }
 boost::shared_ptr<SAPTDenominator> SAPTDenominator::buildDenominator(const std::string& algorithm,
-    boost::shared_ptr<Vector> eps_occA, boost::shared_ptr<Vector> eps_virA, 
-    boost::shared_ptr<Vector> eps_occB, boost::shared_ptr<Vector> eps_virB, 
+    boost::shared_ptr<Vector> eps_occA, boost::shared_ptr<Vector> eps_virA,
+    boost::shared_ptr<Vector> eps_occB, boost::shared_ptr<Vector> eps_virB,
     double delta, bool debug)
 {
     SAPTDenominator* d;
@@ -466,7 +466,7 @@ boost::shared_ptr<SAPTDenominator> SAPTDenominator::buildDenominator(const std::
     } else if (algorithm == "CHOLESKY") {
         d = new SAPTCholeskyDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug);
     } else {
-        throw PSIEXCEPTION("Denominator: algorithm is not LAPLACE or CHOLESKY"); 
+        throw PSIEXCEPTION("Denominator: algorithm is not LAPLACE or CHOLESKY");
     }
 
     return boost::shared_ptr<SAPTDenominator>(d);
@@ -610,13 +610,13 @@ void SAPTLaplaceDenominator::decompose()
 
     nvector_ = k + 1;
 
-		// A bit hacky, but OK
+                // A bit hacky, but OK
     int exponent = (int) floor(log(R_availp[r])/log(10.0));
     int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));
-		if (mantissa == 10) {
-			  exponent++;
+                if (mantissa == 10) {
+                          exponent++;
         mantissa = 1;
-		}
+                }
 
     std::stringstream st;
     st << setfill('0');
@@ -796,17 +796,17 @@ void SAPTCholeskyDenominator::decompose()
     int noccB = eps_occB_->dimpi()[0];
     int nvirB = eps_virB_->dimpi()[0];
 
-    double* eps_occAp = eps_occA_->pointer(); 
-    double* eps_occBp = eps_occB_->pointer(); 
-    double* eps_virAp = eps_virA_->pointer(); 
-    double* eps_virBp = eps_virB_->pointer(); 
+    double* eps_occAp = eps_occA_->pointer();
+    double* eps_occBp = eps_occB_->pointer();
+    double* eps_virAp = eps_virA_->pointer();
+    double* eps_virBp = eps_virB_->pointer();
 
     // Build the schur complement
     boost::shared_ptr<Vector> schurA(new Vector("Diagonal Complement A", noccA * nvirA));
     boost::shared_ptr<Vector> schurB(new Vector("Diagonal Complement B", noccB * nvirB));
     double* schurAp = schurA->pointer();
     double* schurBp = schurB->pointer();
-    
+
     for (int i = 0; i < noccA; i++) {
         for (int a = 0; a < nvirA; a++) {
             schurAp[i * nvirA + a] = 1.0 / (2.0 * (eps_virAp[a] - eps_occAp[i]));
@@ -822,13 +822,13 @@ void SAPTCholeskyDenominator::decompose()
     std::vector<double*> denA;
     std::vector<double*> denB;
 
-    std::vector<std::pair<bool,int> > w_order; 
+    std::vector<std::pair<bool,int> > w_order;
 
     nvector_ = 0;
-    int Q = -1;   
+    int Q = -1;
 
     double max_err = 0.0;
- 
+
     while (nvector_ < noccA * nvirA + noccB * nvirB) {
         Q++;
         nvector_++;
@@ -858,10 +858,10 @@ void SAPTCholeskyDenominator::decompose()
         }
 
         bool onB = w_order[Q].first;
-        int Q_global = w_order[Q].second; 
+        int Q_global = w_order[Q].second;
         int i_global = Q_global / (onB ? nvirB : nvirA);
         int a_global = Q_global % (onB ? nvirB : nvirA);
-        
+
         // Build row
         denA.push_back(new double[noccA * nvirA]);
         denB.push_back(new double[noccB * nvirB]);
@@ -874,7 +874,7 @@ void SAPTCholeskyDenominator::decompose()
                 for (int a = 0; a < nvirA; a++) {
                     denA[Q][i * nvirA + a] = 1.0 / (eps_virAp[a_global] - eps_occAp[i_global] + eps_virAp[a] - eps_occAp[i]);
                 }
-            }    
+            }
 
             for (int i = 0; i < noccB; i++) {
                 for (int a = 0; a < nvirB; a++) {
@@ -884,8 +884,8 @@ void SAPTCholeskyDenominator::decompose()
 
             for (int P = 0; P < Q; P++) {
                 L_PQ.push_back(denA[P][Q_global]);
-            }    
-    
+            }
+
         } else {
             L_QQ = sqrt(schurBp[Q_global]);
 
@@ -893,18 +893,18 @@ void SAPTCholeskyDenominator::decompose()
                 for (int a = 0; a < nvirA; a++) {
                     denA[Q][i * nvirA + a] = 1.0 / (eps_virBp[a_global] - eps_occBp[i_global] + eps_virAp[a] - eps_occAp[i]);
                 }
-            }    
+            }
 
             for (int i = 0; i < noccB; i++) {
                 for (int a = 0; a < nvirB; a++) {
                     denB[Q][i * nvirB + a] = 1.0 / (eps_virBp[a_global] - eps_occBp[i_global] + eps_virBp[a] - eps_occBp[i]);
                 }
-            }    
-    
+            }
+
             for (int P = 0; P < Q; P++) {
                 L_PQ.push_back(denB[P][Q_global]);
-            }    
-        } 
+            }
+        }
 
         for (int P = 0; P < Q; P++) {
             C_DAXPY(noccA * nvirA, -L_PQ[P], denA[P], 1, denA[Q], 1);
@@ -918,9 +918,9 @@ void SAPTCholeskyDenominator::decompose()
             bool PonB = w_order[P].first;
             int  Pind = w_order[P].second;
             if (!PonB) {
-                denA[Q][Pind] = 0.0;    
+                denA[Q][Pind] = 0.0;
             } else {
-                denB[Q][Pind] = 0.0;    
+                denB[Q][Pind] = 0.0;
             }
         }
 
@@ -933,19 +933,19 @@ void SAPTCholeskyDenominator::decompose()
         // Update schur complement diagonal
         for (int ia = 0; ia < noccA * nvirA; ia++) {
             schurAp[ia] -= denA[Q][ia] * denA[Q][ia];
-        }       
- 
+        }
+
         for (int ia = 0; ia < noccB * nvirB; ia++) {
             schurBp[ia] -= denB[Q][ia] * denB[Q][ia];
-        }       
- 
+        }
+
         for (int P = 0; P <= Q; P++) {
             bool PonB = w_order[P].first;
             int  Pind = w_order[P].second;
             if (!PonB) {
-                schurAp[Pind] = 0.0;    
+                schurAp[Pind] = 0.0;
             } else {
-                schurBp[Pind] = 0.0;    
+                schurBp[Pind] = 0.0;
             }
         }
 
@@ -964,23 +964,23 @@ void SAPTCholeskyDenominator::decompose()
         max_err = sqrt(maxA * maxB);
 
         if (max_err < delta_) {
-            break;    
+            break;
         }
-    } 
+    }
 
     // Copy Cholesky vectors into permanent matrices
     denominatorA_ = SharedMatrix(new Matrix("Denominator A", nvector_, noccA * nvirA));
     denominatorB_ = SharedMatrix(new Matrix("Denominator B", nvector_, noccB * nvirB));
-    double** denAp = denominatorA_->pointer();    
-    double** denBp = denominatorB_->pointer();    
+    double** denAp = denominatorA_->pointer();
+    double** denBp = denominatorB_->pointer();
 
     for (int P = 0; P < nvector_; P++) {
-        ::memcpy(static_cast<void*>(denAp[P]), static_cast<void*>(denA[P]), noccA * nvirA * sizeof(double)); 
-        ::memcpy(static_cast<void*>(denBp[P]), static_cast<void*>(denB[P]), noccB * nvirB * sizeof(double)); 
+        ::memcpy(static_cast<void*>(denAp[P]), static_cast<void*>(denA[P]), noccA * nvirA * sizeof(double));
+        ::memcpy(static_cast<void*>(denBp[P]), static_cast<void*>(denB[P]), noccB * nvirB * sizeof(double));
 
         delete[] denA[P];
         delete[] denB[P];
-    } 
+    }
 
     if (debug_) {
         fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n");
