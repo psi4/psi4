@@ -283,11 +283,11 @@ def run_eom_cc_gradient(name, **kwargs):
     PsiMod.set_global_option('WFN', 'EOM_CCSD')
     PsiMod.set_global_option('ZETA', 'FALSE')
     PsiMod.cclambda()
-    PsiMod.set_global_option('CALC_XI', 'TRUE')
+    PsiMod.set_global_option('XI', 'TRUE')
     PsiMod.ccdensity()
     PsiMod.set_global_option('ZETA', 'TRUE')
     PsiMod.cclambda()
-    PsiMod.set_global_option('CALC_XI', 'FALSE')
+    PsiMod.set_global_option('XI', 'FALSE')
     PsiMod.ccdensity()
     PsiMod.deriv()
 
@@ -316,9 +316,9 @@ def run_detci(name, **kwargs):
         maxnvect = (level+1)/2 + (level+1)%2
         PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
-           PsiMod.set_global_option('SAVE_MPN2', 2)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
         else:
-           PsiMod.set_global_option('SAVE_MPN2', 1)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'mp'):
         PsiMod.set_global_option('WFN', 'DETCI')
         PsiMod.set_global_option('MPN', 'TRUE')
@@ -327,9 +327,9 @@ def run_detci(name, **kwargs):
         maxnvect = (level+1)/2 + (level+1)%2
         PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
-           PsiMod.set_global_option('SAVE_MPN2', 2)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
         else:
-           PsiMod.set_global_option('SAVE_MPN2', 1)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
 	    PsiMod.set_global_option('WFN', 'DETCI')
 	    PsiMod.set_global_option('FCI', 'TRUE')
@@ -364,8 +364,8 @@ def run_detci(name, **kwargs):
         PsiMod.revoke_global_option_changed('MPN')
         PsiMod.set_global_option('MAX_NUM_VECS', 12)
         PsiMod.revoke_global_option_changed('MAX_NUM_VECS')
-        PsiMod.set_global_option('SAVE_MPN2', 0)
-        PsiMod.revoke_global_option_changed('SAVE_MPN2')
+        PsiMod.set_global_option('MPN_ORDER_SAVE', 0)
+        PsiMod.revoke_global_option_changed('MPN_ORDER_SAVE')
         PsiMod.set_global_option('FCI', 'FALSE')
         PsiMod.revoke_global_option_changed('FCI')
         PsiMod.set_global_option('EX_LEVEL', 2)

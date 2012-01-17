@@ -32,7 +32,7 @@ set globals {
 }
 
 set detci {
-  nos_write true
+  nat_orbs_write true
 }
 
 set transqt2 {
@@ -73,7 +73,7 @@ set globals {
 
 set detci {
   maxiter 25
-  nos_write false
+  nat_orbs_write false
 
   # This keyword is at the heart of the "split-virtual" CISD[TQ].
   # If electrons are in RAS 4, do not allow the excitation to go beyond
