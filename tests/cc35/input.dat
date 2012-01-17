@@ -1,4 +1,7 @@
 # H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+
+memory 250 mb
+
 molecule h2o {
  units bohr
  1 2

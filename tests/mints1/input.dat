@@ -1,6 +1,8 @@
 #! Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but
 #! serves as an example of the many ways to specify geometries in Psi4.
 
+memory 250 mb
+
 # DinftyH Symmetry (D2h Abelian)
 molecule C2H2 {
    C 0 0  r1

@@ -1,5 +1,7 @@
 # ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in 3B1 CH2.
 
+memory 250 mb
+
 molecule ch2 {
   0 3
   c

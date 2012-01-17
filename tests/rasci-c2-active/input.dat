@@ -2,6 +2,8 @@
 #! specifying the active space, either with the ACTIVE keyword, or
 #! with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
 
+memory 250 mb
+
 refnuc   =  15.2403047712  #TEST
 refscf   = -75.37898763394901  #TEST
 refci    = -75.5556153485391    #TEST

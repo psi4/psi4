@@ -2,6 +2,8 @@
 #! using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables
 #! that are updated during the potential energy surface scan.
 
+memory 250 mb
+
 refENuc = [ 9.785886586224326, 9.780670853323890, 8.807297927601891,     #TEST
             8.802603767991497, 8.006634479638080, 8.002367061810450 ]    #TEST
 

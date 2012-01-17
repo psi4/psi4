@@ -1,5 +1,7 @@
 #! RASCI/6-31G** H2O Energy Point
 
+memory 250 mb
+
 refnuc   =   8.8046872909987 #TEST
 refscf   = -76.017296571842  #TEST
 refci    = -76.0296830210809 #TEST

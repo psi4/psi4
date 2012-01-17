@@ -1,5 +1,7 @@
 #! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
+memory 250 mb
+
 refnuc   =   4.919538563221   #TEST
 refscf   = -25.943614320921   #TEST
 refci1   = -26.0272269234496  #TEST

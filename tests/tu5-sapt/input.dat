@@ -1,6 +1,8 @@
 #! Example SAPT computation for ethene*ethine (i.e., ethylene*acetylene),
 #! test case 16 from the S22 database
 
+memory 250 mb
+
 molecule dimer {
 0 1
 C   0.000000  -0.667578  -2.124659

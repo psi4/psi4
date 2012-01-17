@@ -1,5 +1,7 @@
 #! SCF STO-3G finite-difference tests
 
+memory 250 mb
+
 molecule h2o {
   symmetry c1
   O

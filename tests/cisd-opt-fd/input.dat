@@ -1,5 +1,7 @@
 #! H2O CISD/6-31G** Optimize Geometry by Energies
 
+memory 250 mb
+
 refnuc   =   9.1938886868  #TEST
 refscf   = -76.0231440654  #TEST
 refci    = -76.2231165692  #TEST

@@ -1,5 +1,7 @@
 #! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
+memory 250 mb
+
 refnuc   =  135.0921284884196   #TEST
 refscf   = -205.422369155359    #TEST
 refccsd  =   -0.345263564418438 #TEST

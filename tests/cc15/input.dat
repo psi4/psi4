@@ -1,5 +1,7 @@
 #! RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
 
+memory 250 mb
+
 molecule h2o {
     o
     h 1 0.97

@@ -1,5 +1,7 @@
 #! RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
+memory 250 mb
+
 molecule h2o {
   0 1
   H

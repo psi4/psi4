@@ -1,5 +1,7 @@
 #! 6-31G** H2O Test CISD Energy Point
 
+memory 250 mb
+
 refnuc   =   8.8046872910  #TEST
 refscf   = -76.0172965718  #TEST
 refci    = -76.21984746    #TEST

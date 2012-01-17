@@ -1,5 +1,7 @@
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
 
+memory 250 mb
+
 nucenergy =   8.801466202085710  #TEST
 refenergy = -76.05098621944234   #TEST
 

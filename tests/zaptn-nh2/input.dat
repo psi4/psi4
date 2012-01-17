@@ -1,5 +1,7 @@
 #! ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
 
+memory 250 mb
+
 # The following values are taken from PSI3 #TEST
 refnuc   =   7.6466919885 #TEST
 refscf   = -55.5301768259 #TEST

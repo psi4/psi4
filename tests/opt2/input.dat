@@ -1,5 +1,7 @@
 #! SCF DZ allene geometry optimzation, with Cartesian input
 
+memory 250 mb
+
 nucenergy =   59.2532646680161                                                                 #TEST
 refenergy = -115.8302823663                                                                    #TEST
 

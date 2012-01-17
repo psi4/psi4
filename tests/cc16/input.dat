@@ -1,5 +1,7 @@
 #! UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
 
+memory 250 mb
+
 molecule ch2 {
     0 3
     c

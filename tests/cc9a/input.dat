@@ -1,6 +1,8 @@
 #! ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical, 
 #! with Z-matrix input.
 
+memory 250 mb
+
 molecule CN {
   0 2
   C

@@ -1,5 +1,7 @@
 E11 = -74.9493412744 #TEST
 
+memory 250 mb
+
 molecule h2o {
 0 1
 O

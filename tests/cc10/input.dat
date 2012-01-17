@@ -1,5 +1,7 @@
 #! ROHF-CCSD cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical
 
+memory 250 mb
+
 molecule CN {
   0 2
   C

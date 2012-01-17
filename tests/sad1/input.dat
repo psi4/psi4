@@ -3,6 +3,8 @@
 #! specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The
 #! test is first performed in C2v symmetry, and then in C1.
 
+memory 250 mb
+
 Nref  =   8.841020805217546  #TEST
 E1ref = -75.973425           #TEST
 Eref  = -76.01678948412534   #TEST

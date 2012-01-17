@@ -1,5 +1,7 @@
 #! CCSD/6-31G** H2O vibrational frequencies via gradients
 
+memory 250 mb
+
 molecule h2o {
   0 1
   O    0.0000000000    0.0000000000   -0.1249068318

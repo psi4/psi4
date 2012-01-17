@@ -3,6 +3,8 @@
 #! Four-virtual integrals are handled in the MO Basis.
 #! The reference DCFT energy is taken from the JCP 133 174122 (2010) paper
 
+memory 250 mb
+
 refscf      = -128.48877555174076 #TEST
 refmp2      = -128.67634273661755 #TEST
 refdcftscf  = -128.29060244088066 #TEST

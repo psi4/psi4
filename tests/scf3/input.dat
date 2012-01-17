@@ -1,6 +1,8 @@
 #! UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations
 #! are specified explicitly.
 
+memory 250 mb
+
 nucenergy =   6.648419426607498 #TEST
 refenergy = -38.91591817686461  #TEST
 

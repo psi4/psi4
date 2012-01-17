@@ -1,5 +1,7 @@
 #! SCF DZ finite difference frequencies by energies for C4NH4
 
+memory 250 mb
+
 molecule c4nh4 {
   units angstrom
   -1 1
