@@ -196,7 +196,6 @@ set globals {
 
 frequencies('scf', irrep=4)
 fd_freqs = PsiMod.reference_wavefunction().frequencies()
-clean()
 
 compare_vectors(b2_freqs, fd_freqs, 3, "B2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
 del fd_freqs

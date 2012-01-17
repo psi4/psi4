@@ -14,5 +14,3 @@ set {
 }
 
 energy('adc')
-
-clean()

@@ -28,6 +28,3 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");     
 compare_values(refmp2, get_variable("MP2 ENERGY"), 8, "MP2 Energy");                   #TEST
 compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy");                #TEST
 compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy");     #TEST
-
-clean()
-

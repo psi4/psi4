@@ -20,5 +20,3 @@ thisenergy = energy('scf',cast_up='3-21G')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
-
-clean()

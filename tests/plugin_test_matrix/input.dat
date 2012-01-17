@@ -13,6 +13,3 @@ set {
 }
 
 plugin("plugin_test_matrix.so")
-
-clean()
-

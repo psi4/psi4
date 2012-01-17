@@ -115,6 +115,3 @@ compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
 set dft_functional wB97X 
 V44 = energy('scf')
 compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
-
-clean()
-

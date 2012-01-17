@@ -36,5 +36,3 @@ compare_values(refscf,   get_variable("SCF total energy"),              9, "SCF 
 compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")            #TEST
 compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")             #TEST
 compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")                 #TEST
-
-clean()

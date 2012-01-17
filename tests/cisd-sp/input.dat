@@ -43,6 +43,3 @@ compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "[2] Nuclear repulsion
 compare_values(refscf, get_variable("SCF total energy"), 9, "[2] SCF energy") #TEST
 compare_values(refci, thisenergy, 7, "[2] CISD energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "[2] CISD correlation energy") #TEST
-
-clean()
-

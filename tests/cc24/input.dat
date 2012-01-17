@@ -28,6 +28,3 @@ gradient('eom-ccsd', dertype=0)
 findif_grad = PsiMod.get_gradient()
 
 compare_matrices(analytic_grad, findif_grad, 6, "UHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-7") #TEST
-
-
-clean()

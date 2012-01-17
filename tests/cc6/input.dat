@@ -23,6 +23,3 @@ set {
 }
 
 energy('ccsd(t)')
-
-clean()
-

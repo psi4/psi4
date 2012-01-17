@@ -14,5 +14,3 @@ set {
 }
 
 energy('eom-cc3')
-clean()
-

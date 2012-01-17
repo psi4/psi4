@@ -30,9 +30,6 @@ compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contri
 compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
 
 #Here's a demonstration of how to print an manipulate the files used by Psi
-psioh = PsiMod.IOManager.shared_object()
-psioh.print_out()
+psi4_io.print_out()
 PsiMod.IO.change_file_namespace(32, 'bh', 'cool')
-psioh.print_out()
-
-clean()
+psi4_io.print_out()
