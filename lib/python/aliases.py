@@ -97,7 +97,7 @@ def run_plugin_omega(name, **kwargs):
 
     PsiMod.set_global_option('dft_functional', 'wB97')
     PsiMod.set_global_option('dft_order_spherical', 25) 
-    PsiMod.set_global_option('dft_n_radial', 35) 
+    PsiMod.set_global_option('dft_num_radial', 35) 
     PsiMod.set_global_option('omega_procedure', 'ip')
     PsiMod.set_global_option('maxiter', 50)
     PsiMod.set_global_option('d_convergence', 5)

@@ -3,9 +3,11 @@ srcdir = @srcdir@
 all: default
 default: boost.compiled
 
+install:
+
 boost.compiled:
 	rm -f boost.compiled
 	tar zxf $(srcdir)/boost_1_48_0.tar.gz
-	(cd boost_1_48_0 && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread && ./b2 install && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
+	(cd boost_1_48_0 && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
 	touch boost.compiled
 
