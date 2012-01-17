@@ -1,5 +1,7 @@
 #! 6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 
+memory 250 mb
+
 molecule h2o {
     o
     h 1 0.97

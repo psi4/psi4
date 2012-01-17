@@ -1,4 +1,7 @@
 #! DFT Functional Test
+
+memory 250 mb
+
 E11 = -74.9493412744 #TEST
 E12 = -75.3196957567 #TEST
 E13 = -75.3185459160 #TEST

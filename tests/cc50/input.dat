@@ -1,3 +1,5 @@
+memory 250 mb
+
 molecule ch {
   0 2
   C

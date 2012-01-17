@@ -1,6 +1,8 @@
 #! Database calculation, so no molecule section in input file. Portions of the full
 #! databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
+memory 250 mb
+
 refS22AmadSAPT0 = 2.105857738420                                                            #TEST
 refS22BmadSAPT0 = 2.063857730160                                                            #TEST
 refNBCmadDFMP2  = 0.117344794875                                                            #TEST

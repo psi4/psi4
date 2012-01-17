@@ -2,6 +2,8 @@
 #! matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition.
 #! These operations are performed on vectors and matrices provided from the Psi library.
 
+memory 250 mb
+
 # Example of matrix multiplication
 print '\n  ==> Matrix Multiplication <== \n\n'
 

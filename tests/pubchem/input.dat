@@ -1,5 +1,7 @@
 #! RHF STO-3G Benzene optimization using PubChem to obtain geometry
 
+memory 250 mb
+
 # Query PubChem using benzene.
 #   This will match 20 compounds in the PubChem database
 #   results is an array containing the 20 compounds

@@ -1,5 +1,7 @@
 #! 6-31G H2O Test FCI Energy Point
 
+memory 250 mb
+
 refnuc   =   9.1622538847319 #TEST
 refscf   = -75.983675617214  #TEST
 refci    = -76.1209179506153 #TEST

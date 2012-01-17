@@ -1,6 +1,8 @@
 #! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
 #! After the computation, the checkpoint file is renamed, using the PSIO handler.
 
+memory 250 mb
+
 refnuc   =   2.645886245000000 #TEST
 refscf   = -25.103546873615137 #TEST
 refccsd  =  -0.100265803802460 #TEST

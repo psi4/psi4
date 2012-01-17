@@ -1,4 +1,7 @@
 #! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
+
+memory 250 mb
+
 ref_energies  = [ -74.9662882088, -74.9655166969, -74.9666778163, -74.9651347844] #TEST
 ref_3pt = 0.672391071                                                             #TEST
 ref_5pt = 0.672391756                                                             #TEST

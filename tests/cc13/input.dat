@@ -1,5 +1,7 @@
 #! UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
+memory 250 mb
+
 refnuc   =   6.07006654183091   #TEST
 refscf   = -38.92658702693478   #TEST
 refccsd  =  -0.11533612150975   #TEST

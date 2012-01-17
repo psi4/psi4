@@ -3,6 +3,8 @@
 #! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
 #! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
+memory 250 mb
+
 refENuc   = [ 268.617198719, 13.021347294, 258.850961053, 13.021347294 ]        #TEST
 refESCF   = [ -303.206257089, -75.320406517, -303.204999752, -75.320406516 ]    #TEST
 refDipY   = [ 17.7759803747, 2.277054585, 21.684622688, 2.277054585 ]           #TEST

@@ -3,6 +3,8 @@
 #! mixing up the sequence is aspirational at present.
 #! Also aspirational is using the intended types of gradients.
 
+memory 250 mb
+
 ref_DB_E = 0.016075135344  #TEST
 ref_DB_CBS_E = 0.034877478903  #TEST
 ref_CBS_E = -1.148830624581  #TEST

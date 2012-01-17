@@ -1,5 +1,7 @@
 #! Optimize H2O HF/cc-pVDZ
 
+memory 250 mb
+
 nucenergy = 9.300472711622458 #TEST
 refenergy = -76.0270534721367 #TEST
 
