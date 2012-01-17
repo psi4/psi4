@@ -2,6 +2,8 @@
 #! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
 #! lowered to account for the different basis sets.
 
+memory 250 mb
+
 
 molecule bz {
     X
@@ -120,5 +122,3 @@ set d_convergence 11
  
 scfenergy = energy('scf')
 
-
-clean()

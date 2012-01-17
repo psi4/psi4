@@ -1,3 +1,5 @@
+memory 250 mb
+
 #! Test individual integral objects for correctness.
 print_stdout(' Case Study Test of Integrals')
 
@@ -81,6 +83,3 @@ Pi = mints.so_nabla()
 
 
 
-
-# There shouldn't be anything to clean
-clean()

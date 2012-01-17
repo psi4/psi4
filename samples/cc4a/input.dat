@@ -1,6 +1,8 @@
 #! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
 #! This version tests the FROZEN_DOCC option explicitly
 
+memory 250 mb
+
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -18,6 +20,3 @@ set {
 
 energy('ccsd(t)')
 
-
-
-clean()
