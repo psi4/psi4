@@ -413,8 +413,8 @@ namespace psi{ namespace dcft{
   double
   DCFTSolver::update_scf_density(bool damp)
   {
-      int dampingFactor = options_.get_int("DAMPING_FACTOR");
-      double newFraction = damp ? 1.0 : 1.0 - dampingFactor/1000.0;
+      double dampingFactor = options_.get_double("DAMPING_PERCENTAGE");
+      double newFraction = damp ? 1.0 : 1.0 - dampingFactor/100.0;
       size_t nElements = 0;
       double sumOfSquares = 0.0;
       Matrix old(kappa_a_);
