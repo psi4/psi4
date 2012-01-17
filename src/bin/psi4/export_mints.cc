@@ -259,10 +259,10 @@ void export_mints()
             def("transpose", &SymmetryOperation::transpose);
 
     class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup").
-            def(init<const char*>()).
-            def("symbol", &PointGroup::symbol).
+            def(init<const std::string&>()).
+            def("symbol", &PointGroup::symbol);
             //def("origin", &PointGroup::origin).
-            def("set_symbol", &PointGroup::set_symbol);
+//            def("set_symbol", &PointGroup::set_symbol);
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix &);
 

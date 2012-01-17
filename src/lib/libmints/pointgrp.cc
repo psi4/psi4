@@ -62,53 +62,50 @@ using namespace psi;
 ////////////////////////////////////////////////////////////////////////
 
 PointGroup::PointGroup()
-    : symb(0)
 {
     set_symbol("c1");
     frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
-PointGroup::PointGroup(const char *s)
-    : symb(0)
+PointGroup::PointGroup(const std::string& s)
 {
     set_symbol(s);
     frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
-PointGroup::PointGroup(const char *s, SymmetryOperation& so)
-    : symb(0)
+PointGroup::PointGroup(const std::string& s, SymmetryOperation& so)
 {
     set_symbol(s);
     frame = so;
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
-PointGroup::PointGroup(const char *s, SymmetryOperation& so,
+PointGroup::PointGroup(const std::string& s, SymmetryOperation& so,
                        const Vector3& origin)
-    : symb(0)
 {
+    fprintf(outfile, "in PointGroup: %s\n", s.c_str());
+    so.print(outfile);
+    fprintf(outfile, "origin: %lf %lf %lf\n", origin[0], origin[1], origin[2]);
+
     set_symbol(s);
     frame = so;
     origin_ = origin;
 }
 
 PointGroup::PointGroup(const PointGroup& pg)
-    : symb(0)
 {
     *this = pg;
 }
 
 PointGroup::PointGroup(const boost::shared_ptr<PointGroup>& pg)
-    : symb(0)
 {
     *this = *pg.get();
 }
 
 PointGroup::~PointGroup()
 {
-    if (symb) { delete[] symb; symb=0; }
 }
 
 PointGroup&
@@ -121,14 +118,10 @@ PointGroup::operator=(const PointGroup& pg)
 }
 
 void
-PointGroup::set_symbol(const char *sym)
+PointGroup::set_symbol(const std::string& sym)
 {
-    if (sym) {
-        if (symb) delete[] symb;
-        int len;
-        symb = new char[(len=strlen(sym))+1];
-                for (int i=0; i<len; i++) symb[i] = (char) tolower(sym[i]);
-        symb[len] = '\0';
+    if (sym.length()) {
+        symb = sym;
     } else {
         set_symbol("c1");
     }
@@ -144,7 +137,8 @@ PointGroup::char_table() const
 int
 PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
 {
-    if (strcmp(symb,grp->symb)) return 0;
+    if (symb != grp->symb)
+        return 0;
 
     for (int i=0; i < 3; i++) {
         for (int j=0; j < 3; j++) {
@@ -230,7 +224,7 @@ const char* PointGroup::bits_to_basic_name(unsigned char bits)
 void
 PointGroup::print(FILE *out) const
 {
-    fprintf(outfile, "PointGroup: %s\n", symb);
+    fprintf(outfile, "PointGroup: %s\n", symb.c_str());
 }
 
 /////////////////////////////////////////////////////////////////////////////

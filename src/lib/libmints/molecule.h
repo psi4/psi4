@@ -122,10 +122,6 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
-    /// Old previous symmetry frame (so one can fix to it, if desired)
-    Matrix *old_symmetry_frame_;
-    /// Old com displacement vector (so one can fix to it, if desired)
-    Vector3 *old_com_vector_;
 
 public:
     Molecule();
@@ -370,7 +366,7 @@ public:
     /// Uses the point group object obtain by calling point_group()
     void form_symmetry_information(double tol=1.0e-8);
     /// Returns the symmetry label
-    const char *sym_label();
+    const std::string& sym_label();
     /// Returns the irrep labels
     char **irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }

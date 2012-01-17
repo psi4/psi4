@@ -391,7 +391,7 @@ class CharacterTable {
     IrreducibleRepresentation *gamma_;   //< an array of irreps
     SymmetryOperation *symop;            //< the matrices describing sym ops
     int *_inv;                           //< index of the inverse symop
-    char *symb;                          //< the Schoenflies symbol for the pg
+    std::string symb;                    //< the Schoenflies symbol for the pg
     unsigned short bits_;                //< Bitwise representation of the symmetry operations
 
     /// this determines what type of point group we're dealing with
@@ -408,15 +408,17 @@ class CharacterTable {
     void i();
     void ih();
 
+    void common_init();
+
   public:
     CharacterTable();
     /** This constructor takes the Schoenflies symbol of a point group as
         input. */
-    CharacterTable(const char*);
+    CharacterTable(const std::string&);
     /** This is like the above, but it also takes a reference to a
         SymmetryOperation which is the frame of reference.  All symmetry
         operations are transformed to this frame of reference. */
-    CharacterTable(const char*,const SymmetryOperation&);
+    CharacterTable(const std::string&, const SymmetryOperation&);
 
     CharacterTable(const CharacterTable&);
     ~CharacterTable();
@@ -428,7 +430,7 @@ class CharacterTable {
     /// Returns the order of the point group
     int order() const { return g; }
     /// Returns the Schoenflies symbol for the point group
-    const char * symbol() const { return symb; }
+    const std::string& symbol() const { return symb; }
     /// Returns the i'th irrep.
     IrreducibleRepresentation& gamma(int i) { return gamma_[i]; }
     /// Returns the i'th symmetry operation.
@@ -477,7 +479,7 @@ class CharacterTable {
       return -1;
     }
 
-    unsigned char bits() const { return bits_; }
+    unsigned char bits();
 
     /// This prints the irrep to the given file, or stdout if none is given.
      void print(FILE *out=outfile) const;
@@ -494,22 +496,21 @@ class CharacterTable {
  the origin to zero.  */
 class PointGroup {
   private:
-    char *symb;
+    std::string symb;
     SymmetryOperation frame;
     Vector3 origin_;
-    unsigned char bits_;
 
   public:
     PointGroup();
     /** This constructor takes a string containing the Schoenflies symbol
         of the point group as its only argument. */
-    PointGroup(const char*);
+    PointGroup(const std::string&);
     /** Like the above, but this constructor also takes a frame of reference
         as an argument. */
-    PointGroup(const char*,SymmetryOperation&);
+    PointGroup(const std::string&,SymmetryOperation&);
     /** Like the above, but this constructor also takes a point of origin
         as an argument. */
-    PointGroup(const char*,SymmetryOperation&,const Vector3&);
+    PointGroup(const std::string&,SymmetryOperation&,const Vector3&);
     /** The PointGroup KeyVal constructor looks for three keywords:
        symmetry, symmetry_frame, and origin. symmetry is a string
        containing the Schoenflies symbol of the point group.  origin is an
@@ -553,18 +554,13 @@ class PointGroup {
 
     PointGroup& operator=(const PointGroup&);
 
-    /// Set the bit representation of this group
-    void set_bits(unsigned char bits) { bits_ = bits; }
-    /// Get the bit representation of this group
-    unsigned char bits() const { return bits_; }
-
     /// Returns 1 if the point groups are equivalent, 0 otherwise.
     int equiv(const boost::shared_ptr<PointGroup> &, double tol = 1.0e-6) const;
 
     /// Returns the CharacterTable for this point group.
     CharacterTable char_table() const;
     /// Returns the Schoenflies symbol for this point group.
-    const char * symbol() const { return symb; }
+    std::string symbol() const { return symb; }
     /// Returns the frame of reference for this point group.
     SymmetryOperation& symm_frame() { return frame; }
     /// A const version of the above
@@ -574,7 +570,7 @@ class PointGroup {
     const Vector3& origin() const { return origin_; }
 
     /// Sets (or resets) the Schoenflies symbol.
-    void set_symbol(const char*);
+    void set_symbol(const std::string&);
 
     static const char* bits_to_full_name(unsigned char bits);
     static const char* bits_to_basic_name(unsigned char bits);
