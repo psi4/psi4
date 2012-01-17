@@ -214,7 +214,6 @@ sub determine_keyword_type_and_default
          $Keyword = $2;
          $Default = $3;
      }elsif(/add\(\s*\"(\w*)\"\,\s*new\s+(\w+)\(\)/){
-         print "Yo";
          # This is a custom DataType thingy
          $Keyword = $1;
          if($2 eq "ArrayType"){
