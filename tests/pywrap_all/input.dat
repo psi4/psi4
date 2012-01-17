@@ -65,6 +65,3 @@ compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEV
 # alias(cbs(energy()))
 sherrillgroup_gold_standard()
 compare_values(ref_CDS_CBS_E_0, get_variable("CBS TOTAL ENERGY"), 6, '[9] Aliased wrapper calling cbs')  #TEST
-
-clean()
-

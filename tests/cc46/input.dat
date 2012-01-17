@@ -15,6 +15,3 @@ set {
 }
 
 energy('eom-cc2')
-
-clean()
-

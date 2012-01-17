@@ -59,6 +59,3 @@ compare_values(Nref, h2o.nuclear_repulsion_energy(), 9, "C2v SAD Nuclear Repulsi
 #compare_values(E1ref, E1,    1, "C2v SAD Iteration 1 Energy")                                  #TEST
 compare_values(Eref, E_c1, 9, "C1  SAD Iteration N Energy")                                    #TEST
 compare_values(Eref, E,    9, "C2v SAD Iteration N Energy")                                    #TEST
-
-clean()
-

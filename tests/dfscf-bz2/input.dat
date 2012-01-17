@@ -54,6 +54,3 @@ thisenergy = energy('scf')
 
 compare_values(refnuc, bz2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
-
-clean()
-
