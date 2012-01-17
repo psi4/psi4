@@ -21,7 +21,7 @@ void SCF::initial_guess()
   double** saved_MOs = chkpt_->rd_scf();
   if(saved_MOs != NULL){
     free(saved_MOs);
-    if(options_.get_bool("READ_MOS"))
+    if(options_.get_bool("MO_READ"))
       read_MOs = true;
   }
   if(read_MOs){

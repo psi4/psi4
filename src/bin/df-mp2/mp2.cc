@@ -49,8 +49,8 @@ void DFMP2::common_init()
     energies_["Same-Spin Energy"] = 0.0;
     energies_["Reference Energy"] = reference_wavefunction_->reference_energy();
 
-    sss_ = options_.get_double("SCALE_SS");
-    oss_ = options_.get_double("SCALE_OS");
+    sss_ = options_.get_double("MP2_SS_SCALE");
+    oss_ = options_.get_double("MP2_OS_SCALE");
 
     if (options_.get_str("DF_BASIS_MP2") == "") {
         molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_MP2");

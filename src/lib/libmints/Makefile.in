@@ -10,8 +10,6 @@ PSITARGET = $(top_objdir)/lib/libPSI_mints.a
 
 CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL)
 
-CXXINC += $(PYTHON_INCLUDE)
-
 TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
 

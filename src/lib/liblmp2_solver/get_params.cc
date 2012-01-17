@@ -44,15 +44,13 @@ void LMP2::params() {
     econv_ = options_.get_double("E_CONVERGENCE");
     std::cout << "e_conv = " << iconv << std::endl;
 
-    iconv = options_.get_int("SCREENING");
-    escreen_ = 1.0*pow(10, (double) -iconv);
+    escreen_ = options_.get_double("INTS_TOLERANCE");
 
     screen_int_ = options_.get_bool("SCREEN_INTS");
 
     rmsconv_ = options_.get_double("R_CONVERGENCE");
 
-    fs = options_.get_int("FSKIP");
-    fskip_ = 1.0*pow(10.0,(double) -fs);
+    fskip_ = options_.get_double("FOCK_TOLERANCE");
 
     diis_ = options_.get_bool("DIIS");
 
@@ -69,15 +67,13 @@ void LMP2::params() {
     max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
 
     cutoff_ = options_.get_double("LOCAL_CUTOFF");
-    neglect_dp_ = options_.get_bool("NEGLECT_DP");
-    dp_cutoff_ = options_.get_double("DISTANT_PAIR");
+    neglect_dp_ = options_.get_bool("NEGLECT_DISTANT_PAIR");
+    dp_cutoff_ = options_.get_double("DISTANT_PAIR_CUTOFF");
 
-//    tol = options_.get_double("INTS_TOLERANCE");
+//    scs_scale_os = options_.get_double("MP2_OS_SCALE");
+//    scs_scale_ss = options_.get_double("MP2_SS_SCALE");
 
-//    scs_scale_os = options_.get_double("SCALE_OS");
-//    scs_scale_ss = options_.get_double("SCALE_SS");
-
-    only_print_domains_ = options_.get_bool("DOMAIN_PRINT");
+    only_print_domains_ = options_.get_bool("DOMAIN_PRINT_EXIT");
 
     print_params();
 
@@ -105,7 +101,7 @@ void LMP2::print_params() const {
         fprintf(outfile, "  DIIS \t\t\t= %s\n", diis_ ? "Yes" : "No");
         if (diis_) {
             fprintf(outfile, "  DIIS Start \t\t= %d\n", diis_start_);
-            fprintf(outfile, "  Max DIIS Matricies \t= %d\n", max_diis_vectors_);
+            fprintf(outfile, "  Max DIIS Matrices \t= %d\n", max_diis_vectors_);
         }
         fprintf(outfile, "\n  ===================================\n");
     }

@@ -71,9 +71,9 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
   
     conv_     = options_.get_double("NEWTON_CONVERGENCE");
     norm_tol_ = options_.get_double("NORM_TOLERANCE");
-    pole_max_ = options_.get_int("POLE_MAX");
-    sem_max_  = options_.get_int("SEM_MAX");
-    num_amps_ = options_.get_int("NUM_AMPS");
+    pole_max_ = options_.get_int("POLE_MAXITER");
+    sem_max_  = options_.get_int("SEM_MAXITER");
+    num_amps_ = options_.get_int("NUM_AMPS_PRINT");
 
   if(options_["STATES_PER_IRREP"].size() > 0){
         int i = options_["STATES_PER_IRREP"].size();

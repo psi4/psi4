@@ -91,7 +91,7 @@ void get_eom_params(Options &options)
   eom_params.eval_tol_SS = options.get_double("SS_E_CONVERGENCE");
   eom_params.amps_to_print = options.get_int("NUM_AMPS_PRINT");
   eom_params.schmidt_add_residual_tol = options.get_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE");
-  eom_params.skip_diagSS = options["SKIP_DIAGSS"].to_integer();
+  eom_params.skip_diagSS = options["SS_SKIP_DIAG"].to_integer();
   eom_params.restart_eom_cc3 = options["RESTART_EOM_CC3"].to_integer();
   eom_params.max_iter_SS = 500;
   eom_params.guess = options.get_str("EOM_GUESS");

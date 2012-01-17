@@ -579,7 +579,11 @@ bool OPT_DATA::previous_step_report(void) const {
 void OPT_DATA::increase_trust_radius(void) const {
   // don't let step_limit get larger than 1.0 au
   std::string module = "OPTKING";
+#if defined(OPTKING_PACKAGE_PSI)
+  std::string key = "INTRAFRAG_STEP_LIMIT";
+#elif defined(OPTKING_PACKAGE_QCHEM)
   std::string key = "INTRAFRAGMENT_STEP_LIMIT";
+#endif
   double max = Opt_params.intrafragment_step_limit_max;
   if (Opt_params.intrafragment_step_limit != max) {
     double new_val = Opt_params.intrafragment_step_limit * 2;
@@ -595,7 +599,11 @@ void OPT_DATA::increase_trust_radius(void) const {
 
 void OPT_DATA::decrease_trust_radius(void) const {
   std::string module = "OPTKING";
+#if defined(OPTKING_PACKAGE_PSI)
+  std::string key = "INTRAFRAG_STEP_LIMIT";
+#elif defined(OPTKING_PACKAGE_QCHEM)
   std::string key = "INTRAFRAGMENT_STEP_LIMIT";
+#endif
   double min = Opt_params.intrafragment_step_limit_min;
   if (Opt_params.intrafragment_step_limit != min) {
     double new_val = Opt_params.intrafragment_step_limit / 4;
