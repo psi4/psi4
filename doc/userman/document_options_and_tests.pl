@@ -214,12 +214,15 @@ sub determine_keyword_type_and_default
          $Keyword = $2;
          $Default = $3;
      }elsif(/add\(\s*\"(\w*)\"\,\s*new\s+(\w+)\(\)/){
+         print "Yo";
          # This is a custom DataType thingy
          $Keyword = $1;
          if($2 eq "ArrayType"){
              $Type = "array";
          }elsif($2 eq "MapType"){
              $Type = "map";
+         }elsif($2 eq "PythonDataType"){
+             $Type = "python";
          }else{
              print $_;
              die "\nUnrecognized type: $2\n";
@@ -240,6 +243,7 @@ sub determine_keyword_type_and_default
  }elsif($Type eq "double"){
  }elsif($Type eq "array"){
  }elsif($Type eq "map"){
+ }elsif($Type eq "python"){
  }else{
      print $_;
      die "\nUnrecognized type: $Type\n";
