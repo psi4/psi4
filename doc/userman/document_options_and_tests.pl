@@ -81,7 +81,7 @@ sub print_hash
      push(@temp, $Module);
      printf OUT "\n\\subsection{%s}\n",$Module;
      if (exists $ModuleDescriptions{$Module} and $print_description){
-         printf OUT "\n{\\large $ModuleDescriptions{$Module}}\\\\\n";
+         printf OUT "\n{\\normalsize $ModuleDescriptions{$Module}}\\\\\n";
          # Insert an empty table entry as a spacer
          printf OUT '\\begin{tabular*}{\\textwidth}[tb]{c}';
          printf OUT "\n\t  \\\\ \n";
