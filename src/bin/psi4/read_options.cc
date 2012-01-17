@@ -1627,7 +1627,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("MP2_OS_SCALE", 6.0/5.0);
     /*- SS Scale  -*/
     options.add_double("MP2_SS_SCALE", 1.0/3.0);
-    /*- \% of memory for DF-MP2 three-index buffers  -*/
+    /*- \% of memory for DF-MP2 three-index buffers -*/
     options.add_double("DFMP2_MEM_FACTOR", 0.9);
     /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
@@ -1964,17 +1964,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     //options.add_int("MEMORY", 256);
     //options.add_str("REFERENCE", "UHF", "UHF");
     
-    /*- 
-    See the note at the beginning of Section \ref{keywords}. -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE",1e-8);
-    /*-
-    See the note at the beginning of Section \ref{keywords}. -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE",1e-5);
-    /*-
-    See the note at the beginning of Section \ref{keywords}. -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("RMS_MOGRAD_CONVERGENCE",1e-5);
-    /*- 
-    See the note at the beginning of Section \ref{keywords}. -*/
+    /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("MAX_MOGRAD_CONVERGENCE",1e-4);
     /*- -*/
     options.add_int("CC_MAXITER",50);
