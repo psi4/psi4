@@ -180,7 +180,7 @@ void PseudospectralHF::form_J_DF_RHF()
 
     // TODO use larger blocks than this, DGEMM will be inefficient, even on 1 thread
     #pragma omp parallel for firstprivate(allocated) private(thread) schedule(guided) num_threads(nthread)
-    for (unsigned long int PQ = 0; PQ < npairs; PQ++) {
+    for (long int PQ = 0; PQ < npairs; PQ++) {
         if (!allocated) {
             #ifdef _OMP
                 thread = omp_get_thread_num();
@@ -256,7 +256,7 @@ void PseudospectralHF::form_J_DF_RHF()
 
     // TODO use larger blocks than this, DGEMM will be inefficient, even on 1 thread
     #pragma omp parallel for firstprivate(allocated) private(thread) schedule(guided) num_threads(nthread)
-    for (unsigned long int PQ = 0; PQ < npairs; PQ++) {
+    for (long int PQ = 0; PQ < npairs; PQ++) {
         if (!allocated) {
             #ifdef _OMP
                 thread = omp_get_thread_num();
@@ -348,7 +348,7 @@ void PseudospectralHF::form_K_PS_RHF()
     double** Qp = Q->pointer();
 
     #pragma omp parallel for schedule(guided) num_threads(nthread)
-    for (unsigned long int P = 0L; P < P_; P++) {
+    for (long int P = 0L; P < P_; P++) {
 
         int thread = 0;
         #ifdef _OMP
