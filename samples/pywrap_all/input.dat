@@ -3,6 +3,8 @@
 #! mixing up the sequence is aspirational at present.
 #! Also aspirational is using the intended types of gradients.
 
+memory 250 mb
+
 
 molecule h2 {
     H
@@ -45,6 +47,3 @@ db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current
 
 # alias(cbs(energy()))
 sherrillgroup_gold_standard()
-
-clean()
-

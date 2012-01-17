@@ -1,5 +1,7 @@
 #! SCF cc-pVDZ geometry optimzation, with Z-matrix input
 
+memory 250 mb
+
 # These values are from a tightly converged QChem run
 
 molecule h2o {
@@ -21,5 +23,3 @@ set globals {
 
 thisenergy = optimize('scf')
 
-
-clean()

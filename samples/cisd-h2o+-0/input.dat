@@ -1,5 +1,7 @@
 #! 6-31G** H2O+ Test CISD Energy Point
 
+memory 250 mb
+
 
 molecule h2o {
     1 2
@@ -16,7 +18,4 @@ set globals {
 }
 
 thisenergy = energy('cisd')
-
-
-clean()
 

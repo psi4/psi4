@@ -2,6 +2,8 @@
 #! using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables
 #! that are updated during the potential energy surface scan.
 
+memory 250 mb
+
 
 
 molecule h2o {
@@ -29,5 +31,3 @@ for R in Rvals:
 
 
         count = count + 1
-
-clean()

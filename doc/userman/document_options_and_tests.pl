@@ -42,8 +42,9 @@ while(<DRIVER>){
     my $Expert;
     # If we find a /*- it means the comment block has started, but we
     # don't know if it's a multi-line comment, let's find out
-    $ModuleDescriptions{$CurrentModule} = get_description($_) if(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule);
-    if(/\/\*-/ and $CurrentModule){
+    if(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
+        $ModuleDescriptions{$CurrentModule} = get_description($_);
+    }elsif(/\/\*-/ and $CurrentModule){
         ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
         # process @@ as math mode subscript in tex

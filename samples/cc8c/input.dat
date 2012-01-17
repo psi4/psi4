@@ -1,6 +1,8 @@
 #! ROHF-CCSD cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the 
 #! CN radical, with Cartesian input.
 
+memory 250 mb
+
 molecule CN {
   units bohr
   0 2
@@ -24,5 +26,3 @@ set globals {
 energy('ccsd')
 
 
-
-clean()

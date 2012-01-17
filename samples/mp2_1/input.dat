@@ -1,5 +1,7 @@
 #! All-electron MP2 6-31G** geometry optimization of water
 
+memory 250 mb
+
 
 molecule h2o {
   O
@@ -16,5 +18,3 @@ set globals {
 
 optimized_energy = optimize('mp2')
 
-
-clean()
