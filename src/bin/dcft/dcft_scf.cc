@@ -413,8 +413,8 @@ namespace psi{ namespace dcft{
   double
   DCFTSolver::update_scf_density(bool damp)
   {
-      int dampingFactor = options_.get_int("DAMPING_FACTOR");
-      double newFraction = damp ? 1.0 : 1.0 - dampingFactor/1000.0;
+      double dampingFactor = options_.get_double("DAMPING_PERCENTAGE");
+      double newFraction = damp ? 1.0 : 1.0 - dampingFactor/100.0;
       size_t nElements = 0;
       double sumOfSquares = 0.0;
       Matrix old(kappa_a_);
@@ -479,7 +479,6 @@ namespace psi{ namespace dcft{
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
                   Da[muNu] = kappa_a_->get(h, mu, nu);
                   Db[muNu] = kappa_b_->get(h, mu, nu);
-//                  Ta[muNu] = a_tau_[h][mu][nu];
                   Ta[muNu] = a_tau_->get(h,mu,nu);
                   Tb[muNu] = b_tau_->get(h,mu,nu);
               }
@@ -497,9 +496,6 @@ namespace psi{ namespace dcft{
     dpdbuf4 tau1_AO_aa, tau2_AO_aa;
     dpdbuf4 tau1_AO_ab, tau2_AO_ab;
     dpdbuf4 tau1_AO_bb, tau2_AO_bb;
-    dpdfile2 s_aa_1, s_aa_2, tau;
-    dpdfile2 s_bb_1, s_bb_2;
-
 
     bool buildTensors = (options_.get_str("AO_BASIS") == "DISK");
 
@@ -562,15 +558,6 @@ namespace psi{ namespace dcft{
                 ID("[n,n]"), ID("[O,O]"), 0, "tau2AO <nn|OO>");
         dpd_buf4_scm(&tau2_AO_aa, 0.0);
 
-        // And now the same thing for the X intermediate terms...
-        dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
-        dpd_file2_scm(&s_aa_1, 0.0);
-        dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-        file2_transform(&s_aa_1, &tau, avir_c_, true);
-        dpd_file2_init(&s_aa_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
-        dpd_file2_scm(&s_aa_2, 0.0);
-        dpd_file2_close(&tau);
-
 
         /********** BB ***********/
         dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -595,15 +582,6 @@ namespace psi{ namespace dcft{
         dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
                 ID("[n,n]"), ID("[o,o]"), 0, "tau2AO <nn|oo>");
         dpd_buf4_scm(&tau2_AO_bb, 0.0);
-
-        // And now the same thing for the X intermediate terms...
-        dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
-        dpd_file2_scm(&s_bb_1, 0.0);
-        dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-        file2_transform(&s_bb_1, &tau, bvir_c_, true);
-        dpd_file2_init(&s_bb_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
-        dpd_file2_scm(&s_bb_2, 0.0);
-        dpd_file2_close(&tau);
 
 
         /********** AB ***********/
@@ -633,14 +611,6 @@ namespace psi{ namespace dcft{
 
 
         // Now put stuff in memory
-        dpd_file2_mat_init(&s_aa_1);
-        dpd_file2_mat_init(&s_aa_2);
-        dpd_file2_mat_rd(&s_aa_1);
-        dpd_file2_mat_rd(&s_aa_2);
-        dpd_file2_mat_init(&s_bb_1);
-        dpd_file2_mat_init(&s_bb_2);
-        dpd_file2_mat_rd(&s_bb_1);
-        dpd_file2_mat_rd(&s_bb_2);
         for(int h = 0; h < nirrep_; ++h){
             dpd_buf4_mat_irrep_init(&tau1_AO_aa, h);
             dpd_buf4_mat_irrep_rd(&tau1_AO_aa, h);
@@ -669,8 +639,8 @@ namespace psi{ namespace dcft{
             s = (int) lblptr[labelIndex++];
             value = (double) valptr[index];
             if(buildTensors){
-                AO_contribute(&tau1_AO_aa, &tau2_AO_aa, p, q, r, s, value, &s_aa_1, &s_bb_1, &s_aa_2);
-                AO_contribute(&tau1_AO_bb, &tau2_AO_bb, p, q, r, s, value, &s_bb_1, &s_aa_1, &s_bb_2);
+                AO_contribute(&tau1_AO_aa, &tau2_AO_aa, p, q, r, s, value);
+                AO_contribute(&tau1_AO_bb, &tau2_AO_bb, p, q, r, s, value);
                 AO_contribute(&tau1_AO_ab, &tau2_AO_ab, p, q, r, s, value);
                 ++counter;
             }
@@ -961,10 +931,6 @@ namespace psi{ namespace dcft{
         dpd_buf4_close(&tau2_AO_aa);
         dpd_buf4_close(&tau2_AO_bb);
         dpd_buf4_close(&tau2_AO_ab);
-        dpd_file2_mat_wrt(&s_aa_2);
-        dpd_file2_mat_wrt(&s_bb_2);
-        dpd_file2_mat_close(&s_aa_2);
-        dpd_file2_mat_close(&s_bb_2);
 
         /********** AA ***********/
         dpd_buf4_init(&tau2_AO_aa, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,O]"),
@@ -981,15 +947,6 @@ namespace psi{ namespace dcft{
         dpd_buf4_close(&tau2_AO_aa);
         dpd_buf4_close(&tau_temp);
 
-        // And now the same thing for the X intermediate terms...
-        dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "s(add)A <V|V>");
-        dpd_file2_scm(&tau, 0.0);
-        file2_transform(&s_aa_2, &tau, avir_c_, false);
-        dpd_file2_close(&s_aa_1);
-        dpd_file2_close(&s_aa_2);
-        dpd_file2_close(&tau);
-
-
         /********** BB ***********/
         dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
                ID("[n,n]"), ID("[o,o]"), 0, "tau2AO <nn|oo>");
@@ -1004,15 +961,6 @@ namespace psi{ namespace dcft{
                 pq_row_start, cd_row_start, false, 0.5, 0.0);
         dpd_buf4_close(&tau2_AO_bb);
         dpd_buf4_close(&tau_temp);
-
-        // And now the same thing for the X intermediate terms...
-        dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "s(add)B <v|v>");
-        dpd_file2_scm(&tau, 0.0);
-        file2_transform(&s_bb_2, &tau, bvir_c_, false);
-        dpd_file2_close(&s_bb_1);
-        dpd_file2_close(&s_bb_2);
-        dpd_file2_close(&tau);
-
 
         /********** AB ***********/
         dpd_buf4_init(&tau2_AO_ab, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,o]"),
@@ -1075,6 +1023,139 @@ namespace psi{ namespace dcft{
     delete [] Gb;
 }
 
+  /*
+  * Updates the Fock operator every lambda iteration using new Tau
+  */
+  void
+  DCFTSolver::update_fock()
+  {
+      dpdfile2 Gtau, F;
+
+      moFa_->copy(F0a_);
+      moFb_->copy(F0b_);
+
+      // Copy MO basis GTau to the memory
+
+      psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+      // Alpha occupied
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < naoccpi_[h]; ++i){
+              for(int j = 0 ; j < naoccpi_[h]; ++j){
+                  moG_tau_a_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Alpha virtual
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < navirpi_[h]; ++i){
+              for(int j = 0; j < navirpi_[h]; ++j){
+                  moG_tau_a_->set(h, naoccpi_[h] + i, naoccpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Beta occupied
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < nboccpi_[h]; ++i){
+              for(int j = 0 ; j < nboccpi_[h]; ++j){
+                  moG_tau_b_->set(h, frzcpi_[h] + i, frzcpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Beta virtual
+      dpd_file2_init(&Gtau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
+      dpd_file2_mat_init(&Gtau);
+      dpd_file2_mat_rd(&Gtau);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0; i < nbvirpi_[h]; ++i){
+              for(int j = 0; j < nbvirpi_[h]; ++j){
+                  moG_tau_b_->set(h, nboccpi_[h] + i, nboccpi_[h] + j, Gtau.matrix[h][i][j]);
+              }
+          }
+      }
+      dpd_file2_mat_close(&Gtau);
+      dpd_file2_close(&Gtau);
+
+      // Add the GTau contribution to the Fock operator
+      moFa_->add(moG_tau_a_);
+      moFb_->add(moG_tau_b_);
+
+      // Write the MO basis Fock operator to the DPD file
+
+      //Alpha Occupied
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < naoccpi_[h]; ++i){
+              for(int j = 0 ; j < naoccpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFa_->get(h, i, j);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      //Alpha Virtual
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < navirpi_[h]; ++i){
+              for(int j = 0 ; j < navirpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      //Beta Occupied
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < nboccpi_[h]; ++i){
+              for(int j = 0 ; j < nboccpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFb_->get(h, i, j);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      //Beta Virtual
+      dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
+      dpd_file2_mat_init(&F);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < nbvirpi_[h]; ++i){
+              for(int j = 0 ; j < nbvirpi_[h]; ++j){
+                  F.matrix[h][i][j] = moFb_->get(h, i + nboccpi_[h], j + nboccpi_[h]);
+              }
+          }
+      }
+      dpd_file2_mat_wrt(&F);
+      dpd_file2_close(&F);
+
+      psio_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+  }
+
 
   /**
   * Builds the AO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G and X intermediates
@@ -1096,167 +1177,167 @@ namespace psi{ namespace dcft{
       dpdbuf4 tau1_AO_aa, tau2_AO_aa;
       dpdbuf4 tau1_AO_ab, tau2_AO_ab;
       dpdbuf4 tau1_AO_bb, tau2_AO_bb;
-      dpdfile2 s_aa_1, s_aa_2, tau;
-      dpdfile2 s_bb_1, s_bb_2;
+      dpdfile2 s_aa_1, s_aa_2, s_aa_3, s_aa_4, tau;
+      dpdfile2 s_bb_1, s_bb_2, s_bb_3, s_bb_4;
 
+      counter = 0;
 
-      bool buildTensors = (options_.get_str("AO_BASIS") == "DISK");
+      //Build the offset arrays needed for the DGEMM in half_transform
+      pq_row_start = init_int_matrix(nirrep_, nirrep_);
+      CD_row_start = init_int_matrix(nirrep_, nirrep_);
+      cd_row_start = init_int_matrix(nirrep_, nirrep_);
+      Cd_row_start = init_int_matrix(nirrep_, nirrep_);
+      for(h = 0; h < nirrep_; ++h){
+          for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
+              Gd = Gc ^ h;
+              pq_row_start[h][Gc] = offset;
+              offset += nsopi_[Gc] * nsopi_[Gd];
+          }
+          for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
+              Gd = Gc ^ h;
+              CD_row_start[h][Gc] = offset;
+              offset += navirpi_[Gc] * navirpi_[Gd];
+          }
+          for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
+              Gd = Gc ^ h;
+              Cd_row_start[h][Gc] = offset;
+              offset += navirpi_[Gc] * nbvirpi_[Gd];
+          }
+          for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
+              Gd = Gc ^ h;
+              cd_row_start[h][Gc] = offset;
+              offset += nbvirpi_[Gc] * nbvirpi_[Gd];
+          }
+      }
 
+      dpd_set_default(_ints->get_dpd_id());
 
-      if(buildTensors){
+      /********** AA ***********/
+      dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                    ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+      dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
+                    ID("[O,O]"), ID("[n,n]"), 0, "tau1AO <OO|nn>");
+      dpd_buf4_scm(&tau1_AO_aa, 0.0);
+      half_transform(&tau1_AO_aa, &lambda, avir_c_, avir_c_, navirpi_, navirpi_,
+                     pq_row_start, CD_row_start, true, 1.0, 0.0);
+      dpd_buf4_close(&lambda);
+      dpd_buf4_close(&tau1_AO_aa);
 
-          counter = 0;
+      // Now sort for better memory access patterns
+      dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
+                    ID("[O,O]"), ID("[n,n]"), 1, "tau1AO <OO|nn>");
+      dpd_buf4_sort(&tau1_AO_aa, PSIF_DCFT_DPD, rspq, ID("[n,n]"), ID("[O,O]"), "tau1AO <nn|OO>");
 
-          //Build the offset arrays needed for the DGEMM in half_transform
-          pq_row_start = init_int_matrix(nirrep_, nirrep_);
-          CD_row_start = init_int_matrix(nirrep_, nirrep_);
-          cd_row_start = init_int_matrix(nirrep_, nirrep_);
-          Cd_row_start = init_int_matrix(nirrep_, nirrep_);
-          for(h = 0; h < nirrep_; ++h){
-              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
-                  Gd = Gc ^ h;
-                  pq_row_start[h][Gc] = offset;
-                  offset += nsopi_[Gc] * nsopi_[Gd];
-              }
-              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
-                  Gd = Gc ^ h;
-                  CD_row_start[h][Gc] = offset;
-                  offset += navirpi_[Gc] * navirpi_[Gd];
-              }
-              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
-                  Gd = Gc ^ h;
-                  Cd_row_start[h][Gc] = offset;
-                  offset += navirpi_[Gc] * nbvirpi_[Gd];
-              }
-              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
-                  Gd = Gc ^ h;
-                  cd_row_start[h][Gc] = offset;
-                  offset += nbvirpi_[Gc] * nbvirpi_[Gd];
+      dpd_buf4_close(&tau1_AO_aa);
+
+      // Now reopen the two AO dpd_buf4's
+      dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,O]"),
+                    ID("[n,n]"), ID("[O,O]"), 0, "tau1AO <nn|OO>");
+      dpd_buf4_init(&tau2_AO_aa, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,O]"),
+                    ID("[n,n]"), ID("[O,O]"), 0, "tau2AO <nn|OO>");
+      dpd_buf4_scm(&tau2_AO_aa, 0.0);
+
+      /********** BB ***********/
+      dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                    ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+      dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
+                    ID("[o,o]"), ID("[n,n]"), 0, "tau1AO <oo|nn>");
+      dpd_buf4_scm(&tau1_AO_bb, 0.0);
+      half_transform(&tau1_AO_bb, &lambda, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_,
+                     pq_row_start, cd_row_start, true, 1.0, 0.0);
+      dpd_buf4_close(&lambda);
+      dpd_buf4_close(&tau1_AO_bb);
+
+      // Now sort for better memory access patterns
+      dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
+                    ID("[o,o]"), ID("[n,n]"), 1, "tau1AO <oo|nn>");
+      dpd_buf4_sort(&tau1_AO_bb, PSIF_DCFT_DPD, rspq, ID("[n,n]"), ID("[o,o]"), "tau1AO <nn|oo>");
+      dpd_buf4_close(&tau1_AO_bb);
+
+      // Now reopen the two AO dpd_buf4's
+      dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
+                    ID("[n,n]"), ID("[o,o]"), 0, "tau1AO <nn|oo>");
+      dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
+                    ID("[n,n]"), ID("[o,o]"), 0, "tau2AO <nn|oo>");
+      dpd_buf4_scm(&tau2_AO_bb, 0.0);
+
+      /********** AB ***********/
+      dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                    ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+      dpd_buf4_init(&tau1_AO_ab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[n,n]"),
+                    ID("[O,o]"), ID("[n,n]"), 0, "tau1AO <Oo|nn>");
+      dpd_buf4_scm(&tau1_AO_ab, 0.0);
+      half_transform(&tau1_AO_ab, &lambda, avir_c_, bvir_c_, navirpi_, nbvirpi_,
+                     pq_row_start, Cd_row_start, true, 1.0, 0.0);
+      dpd_buf4_close(&lambda);
+      dpd_buf4_close(&tau1_AO_ab);
+
+      // Now sort for better memory access patterns
+      dpd_buf4_init(&tau1_AO_ab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[n,n]"),
+                    ID("[O,o]"), ID("[n,n]"), 0, "tau1AO <Oo|nn>");
+      dpd_buf4_sort(&tau1_AO_ab, PSIF_DCFT_DPD, rspq, ID("[n,n]"), ID("[O,o]"), "tau1AO <nn|Oo>");
+      dpd_buf4_close(&tau1_AO_ab);
+
+      // Reopen the two AO dpd_buf4's
+      dpd_buf4_init(&tau1_AO_ab, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,o]"),
+                    ID("[n,n]"), ID("[O,o]"), 0, "tau1AO <nn|Oo>");
+      dpd_buf4_init(&tau2_AO_ab, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,o]"),
+                    ID("[n,n]"), ID("[O,o]"), 0, "tau2AO <nn|Oo>");
+      dpd_buf4_scm(&tau2_AO_ab, 0.0);
+
+      // Preparing Tau for the GTau terms
+      // This is where the SO-basis Tau will be
+      dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
+      dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
+
+      // Write SO-basis Tau to disk
+      dpd_file2_mat_init(&s_aa_1);
+      dpd_file2_mat_init(&s_bb_1);
+      for(int h = 0; h < nirrep_; ++h){
+          for(int i = 0 ; i < nsopi_[h]; ++i){
+              for(int j = 0 ; j < nsopi_[h]; ++j){
+                  s_aa_1.matrix[h][i][j] = a_tau_->get(h, i, j);
+                  s_bb_1.matrix[h][i][j] = b_tau_->get(h, i, j);
               }
           }
+      }
+      dpd_file2_mat_wrt(&s_aa_1);
+      dpd_file2_mat_wrt(&s_bb_1);
+      dpd_file2_close(&s_aa_1);
+      dpd_file2_close(&s_bb_1);
 
-          dpd_set_default(_ints->get_dpd_id());
+      // Reopen the arrays
+      dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
+      dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
 
-          /********** AA ***********/
-          dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
-          dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
-                  ID("[O,O]"), ID("[n,n]"), 0, "tau1AO <OO|nn>");
-          dpd_buf4_scm(&tau1_AO_aa, 0.0);
-          half_transform(&tau1_AO_aa, &lambda, avir_c_, avir_c_, navirpi_, navirpi_,
-                  pq_row_start, CD_row_start, true, 1.0, 0.0);
-          dpd_buf4_close(&lambda);
-          dpd_buf4_close(&tau1_AO_aa);
+      // This is where GTau contribution will be placed
+      dpd_file2_init(&s_aa_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
+      dpd_file2_init(&s_bb_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
+      dpd_file2_scm(&s_aa_2, 0.0);
+      dpd_file2_scm(&s_bb_2, 0.0);
 
-          // Now sort for better memory access patterns
-          dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
-                  ID("[O,O]"), ID("[n,n]"), 1, "tau1AO <OO|nn>");
-          dpd_buf4_sort(&tau1_AO_aa, PSIF_DCFT_DPD, rspq, ID("[n,n]"), ID("[O,O]"), "tau1AO <nn|OO>");
+      // Now put stuff in memory
+      dpd_file2_mat_init(&s_aa_1);
+      dpd_file2_mat_init(&s_aa_2);
+      dpd_file2_mat_rd(&s_aa_1);
+      dpd_file2_mat_rd(&s_aa_2);
+      dpd_file2_mat_init(&s_bb_1);
+      dpd_file2_mat_init(&s_bb_2);
+      dpd_file2_mat_rd(&s_bb_1);
+      dpd_file2_mat_rd(&s_bb_2);
 
-          dpd_buf4_close(&tau1_AO_aa);
+      for(int h = 0; h < nirrep_; ++h){
+          dpd_buf4_mat_irrep_init(&tau1_AO_aa, h);
+          dpd_buf4_mat_irrep_rd(&tau1_AO_aa, h);
+          dpd_buf4_mat_irrep_init(&tau2_AO_aa, h);
 
-          // Now reopen the two AO dpd_buf4's
-          dpd_buf4_init(&tau1_AO_aa, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,O]"),
-                  ID("[n,n]"), ID("[O,O]"), 0, "tau1AO <nn|OO>");
-          dpd_buf4_init(&tau2_AO_aa, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,O]"),
-                  ID("[n,n]"), ID("[O,O]"), 0, "tau2AO <nn|OO>");
-          dpd_buf4_scm(&tau2_AO_aa, 0.0);
+          dpd_buf4_mat_irrep_init(&tau1_AO_bb, h);
+          dpd_buf4_mat_irrep_rd(&tau1_AO_bb, h);
+          dpd_buf4_mat_irrep_init(&tau2_AO_bb, h);
 
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
-          dpd_file2_scm(&s_aa_1, 0.0);
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-          file2_transform(&s_aa_1, &tau, avir_c_, true);
-          dpd_file2_init(&s_aa_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
-          dpd_file2_scm(&s_aa_2, 0.0);
-          dpd_file2_close(&tau);
-
-
-
-          /********** BB ***********/
-          dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
-          dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
-                  ID("[o,o]"), ID("[n,n]"), 0, "tau1AO <oo|nn>");
-          dpd_buf4_scm(&tau1_AO_bb, 0.0);
-          half_transform(&tau1_AO_bb, &lambda, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_,
-                  pq_row_start, cd_row_start, true, 1.0, 0.0);
-          dpd_buf4_close(&lambda);
-          dpd_buf4_close(&tau1_AO_bb);
-
-          // Now sort for better memory access patterns
-          dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
-                  ID("[o,o]"), ID("[n,n]"), 1, "tau1AO <oo|nn>");
-          dpd_buf4_sort(&tau1_AO_bb, PSIF_DCFT_DPD, rspq, ID("[n,n]"), ID("[o,o]"), "tau1AO <nn|oo>");
-          dpd_buf4_close(&tau1_AO_bb);
-
-          // Now reopen the two AO dpd_buf4's
-          dpd_buf4_init(&tau1_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
-                  ID("[n,n]"), ID("[o,o]"), 0, "tau1AO <nn|oo>");
-          dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
-                  ID("[n,n]"), ID("[o,o]"), 0, "tau2AO <nn|oo>");
-          dpd_buf4_scm(&tau2_AO_bb, 0.0);
-
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
-          dpd_file2_scm(&s_bb_1, 0.0);
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-          file2_transform(&s_bb_1, &tau, bvir_c_, true);
-          dpd_file2_init(&s_bb_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
-          dpd_file2_scm(&s_bb_2, 0.0);
-          dpd_file2_close(&tau);
-
-
-
-          /********** AB ***********/
-          dpd_buf4_init(&lambda, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-          dpd_buf4_init(&tau1_AO_ab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[n,n]"),
-                  ID("[O,o]"), ID("[n,n]"), 0, "tau1AO <Oo|nn>");
-          dpd_buf4_scm(&tau1_AO_ab, 0.0);
-          half_transform(&tau1_AO_ab, &lambda, avir_c_, bvir_c_, navirpi_, nbvirpi_,
-                  pq_row_start, Cd_row_start, true, 1.0, 0.0);
-          dpd_buf4_close(&lambda);
-          dpd_buf4_close(&tau1_AO_ab);
-
-          // Now sort for better memory access patterns
-          dpd_buf4_init(&tau1_AO_ab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[n,n]"),
-                  ID("[O,o]"), ID("[n,n]"), 0, "tau1AO <Oo|nn>");
-          dpd_buf4_sort(&tau1_AO_ab, PSIF_DCFT_DPD, rspq, ID("[n,n]"), ID("[O,o]"), "tau1AO <nn|Oo>");
-          dpd_buf4_close(&tau1_AO_ab);
-
-          // Reopen the two AO dpd_buf4's
-          dpd_buf4_init(&tau1_AO_ab, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,o]"),
-                  ID("[n,n]"), ID("[O,o]"), 0, "tau1AO <nn|Oo>");
-          dpd_buf4_init(&tau2_AO_ab, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,o]"),
-                  ID("[n,n]"), ID("[O,o]"), 0, "tau2AO <nn|Oo>");
-          dpd_buf4_scm(&tau2_AO_ab, 0.0);
-
-
-
-          // Now put stuff in memory
-          dpd_file2_mat_init(&s_aa_1);
-          dpd_file2_mat_init(&s_aa_2);
-          dpd_file2_mat_rd(&s_aa_1);
-          dpd_file2_mat_rd(&s_aa_2);
-          dpd_file2_mat_init(&s_bb_1);
-          dpd_file2_mat_init(&s_bb_2);
-          dpd_file2_mat_rd(&s_bb_1);
-          dpd_file2_mat_rd(&s_bb_2);
-          for(int h = 0; h < nirrep_; ++h){
-              dpd_buf4_mat_irrep_init(&tau1_AO_aa, h);
-              dpd_buf4_mat_irrep_rd(&tau1_AO_aa, h);
-              dpd_buf4_mat_irrep_init(&tau2_AO_aa, h);
-
-              dpd_buf4_mat_irrep_init(&tau1_AO_bb, h);
-              dpd_buf4_mat_irrep_rd(&tau1_AO_bb, h);
-              dpd_buf4_mat_irrep_init(&tau2_AO_bb, h);
-
-              dpd_buf4_mat_irrep_init(&tau1_AO_ab, h);
-              dpd_buf4_mat_irrep_rd(&tau1_AO_ab, h);
-              dpd_buf4_mat_irrep_init(&tau2_AO_ab, h);
-
-          }
+          dpd_buf4_mat_irrep_init(&tau1_AO_ab, h);
+          dpd_buf4_mat_irrep_rd(&tau1_AO_ab, h);
+          dpd_buf4_mat_irrep_init(&tau2_AO_ab, h);
 
       }
 
@@ -1270,119 +1351,126 @@ namespace psi{ namespace dcft{
               r = (int) lblptr[labelIndex++];
               s = (int) lblptr[labelIndex++];
               value = (double) valptr[index];
-              if(buildTensors){
-                  AO_contribute(&tau1_AO_aa, &tau2_AO_aa, p, q, r, s, value, &s_aa_1, &s_bb_1, &s_aa_2);
-                  AO_contribute(&tau1_AO_bb, &tau2_AO_bb, p, q, r, s, value, &s_bb_1, &s_aa_1, &s_bb_2);
-                  AO_contribute(&tau1_AO_ab, &tau2_AO_ab, p, q, r, s, value);
-                  ++counter;
-              }
+              AO_contribute(&tau1_AO_aa, &tau2_AO_aa, p, q, r, s, value, &s_aa_1, &s_bb_1, &s_aa_2);
+              AO_contribute(&tau1_AO_bb, &tau2_AO_bb, p, q, r, s, value, &s_bb_1, &s_aa_1, &s_bb_2);
+              AO_contribute(&tau1_AO_ab, &tau2_AO_ab, p, q, r, s, value);
+              ++counter;
 
           } /* end loop through current buffer */
           if(!lastBuffer) iwl->fetch();
       }while(!lastBuffer);
       iwl->set_keep_flag(1);
       delete iwl;
-      if(buildTensors){
-          if(print_ > 1){
-              fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
-          }
-          for(int h = 0; h < nirrep_; ++h){
-              dpd_buf4_mat_irrep_wrt(&tau2_AO_aa, h);
-              dpd_buf4_mat_irrep_close(&tau1_AO_aa, h);
-              dpd_buf4_mat_irrep_close(&tau2_AO_aa, h);
-
-              dpd_buf4_mat_irrep_wrt(&tau2_AO_bb, h);
-              dpd_buf4_mat_irrep_close(&tau1_AO_bb, h);
-              dpd_buf4_mat_irrep_close(&tau2_AO_bb, h);
-
-              dpd_buf4_mat_irrep_wrt(&tau2_AO_ab, h);
-              dpd_buf4_mat_irrep_close(&tau1_AO_ab, h);
-              dpd_buf4_mat_irrep_close(&tau2_AO_ab, h);
-          }
-
-          dpd_buf4_close(&tau1_AO_aa);
-          dpd_buf4_close(&tau1_AO_bb);
-          dpd_buf4_close(&tau1_AO_ab);
-          dpd_buf4_close(&tau2_AO_aa);
-          dpd_buf4_close(&tau2_AO_bb);
-          dpd_buf4_close(&tau2_AO_ab);
-          dpd_file2_mat_wrt(&s_aa_2);
-          dpd_file2_mat_wrt(&s_bb_2);
-          dpd_file2_mat_close(&s_aa_2);
-          dpd_file2_mat_close(&s_bb_2);
-
-
-          /********** AA ***********/
-          dpd_buf4_init(&tau2_AO_aa, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,O]"),
-                  ID("[n,n]"), ID("[O,O]"), 0, "tau2AO <nn|OO>");
-          dpd_buf4_sort(&tau2_AO_aa, PSIF_DCFT_DPD, rspq, ID("[O,O]"), ID("[n,n]"), "tau2AO <OO|nn>");
-          dpd_buf4_close(&tau2_AO_aa);
-          dpd_buf4_init(&tau2_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
-                  ID("[O,O]"), ID("[n,n]"), 0, "tau2AO <OO|nn>");
-          dpd_buf4_init(&tau_temp, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "tau(temp) <OO|VV>");
-          dpd_buf4_scm(&tau_temp, 0.0);
-          half_transform(&tau2_AO_aa, &tau_temp, avir_c_, avir_c_, navirpi_, navirpi_,
-                  pq_row_start, CD_row_start, false, 1.0, 0.0);
-          dpd_buf4_close(&tau2_AO_aa);
-          dpd_buf4_close(&tau_temp);
-
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "s(add)A <V|V>");
-          dpd_file2_scm(&tau, 0.0);
-          file2_transform(&s_aa_2, &tau, avir_c_, false);
-          dpd_file2_close(&s_aa_1);
-          dpd_file2_close(&s_aa_2);
-          dpd_file2_close(&tau);
-
-
-          /********** BB ***********/
-          dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
-                  ID("[n,n]"), ID("[o,o]"), 0, "tau2AO <nn|oo>");
-          dpd_buf4_sort(&tau2_AO_bb, PSIF_DCFT_DPD, rspq, ID("[o,o]"), ID("[n,n]"), "tau2AO <oo|nn>");
-          dpd_buf4_close(&tau2_AO_bb);
-          dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
-                  ID("[o,o]"), ID("[n,n]"), 0, "tau2AO <oo|nn>");
-          dpd_buf4_init(&tau_temp, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "tau(temp) <oo|vv>");
-          dpd_buf4_scm(&tau_temp, 0.0);
-          half_transform(&tau2_AO_bb, &tau_temp, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_,
-                  pq_row_start, cd_row_start, false, 1.0, 0.0);
-          dpd_buf4_close(&tau2_AO_bb);
-          dpd_buf4_close(&tau_temp);
-
-          // And now the same thing for the X intermediate terms...
-          dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "s(add)B <v|v>");
-          dpd_file2_scm(&tau, 0.0);
-          file2_transform(&s_bb_2, &tau, bvir_c_, false);
-          dpd_file2_close(&s_bb_1);
-          dpd_file2_close(&s_bb_2);
-          dpd_file2_close(&tau);
-
-
-          /********** AB ***********/
-          dpd_buf4_init(&tau2_AO_ab, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,o]"),
-                  ID("[n,n]"), ID("[O,o]"), 0, "tau2AO <nn|Oo>");
-          dpd_buf4_sort(&tau2_AO_ab, PSIF_DCFT_DPD, rspq, ID("[O,o]"), ID("[n,n]"), "tau2AO <Oo|nn>");
-          dpd_buf4_close(&tau2_AO_ab);
-          dpd_buf4_init(&tau2_AO_ab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[n,n]"),
-                  ID("[O,o]"), ID("[n,n]"), 0, "tau2AO <Oo|nn>");
-          dpd_buf4_init(&tau_temp, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "tau(temp) <Oo|Vv>");
-          dpd_buf4_scm(&tau_temp, 0.0);
-          half_transform(&tau2_AO_ab, &tau_temp, avir_c_, bvir_c_, navirpi_, nbvirpi_,
-                  pq_row_start, Cd_row_start, false, 1.0, 0.0);
-          dpd_buf4_close(&tau2_AO_ab);
-          dpd_buf4_close(&tau_temp);
-
-
-          free_int_matrix(pq_row_start);
-          free_int_matrix(CD_row_start);
-          free_int_matrix(cd_row_start);
-          free_int_matrix(Cd_row_start);
-
-
+      if(print_ > 1){
+          fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
       }
+      for(int h = 0; h < nirrep_; ++h){
+          dpd_buf4_mat_irrep_wrt(&tau2_AO_aa, h);
+          dpd_buf4_mat_irrep_close(&tau1_AO_aa, h);
+          dpd_buf4_mat_irrep_close(&tau2_AO_aa, h);
+
+          dpd_buf4_mat_irrep_wrt(&tau2_AO_bb, h);
+          dpd_buf4_mat_irrep_close(&tau1_AO_bb, h);
+          dpd_buf4_mat_irrep_close(&tau2_AO_bb, h);
+
+          dpd_buf4_mat_irrep_wrt(&tau2_AO_ab, h);
+          dpd_buf4_mat_irrep_close(&tau1_AO_ab, h);
+          dpd_buf4_mat_irrep_close(&tau2_AO_ab, h);
+      }
+
+      dpd_buf4_close(&tau1_AO_aa);
+      dpd_buf4_close(&tau1_AO_bb);
+      dpd_buf4_close(&tau1_AO_ab);
+      dpd_buf4_close(&tau2_AO_aa);
+      dpd_buf4_close(&tau2_AO_bb);
+      dpd_buf4_close(&tau2_AO_ab);
+      dpd_file2_mat_wrt(&s_aa_2);
+      dpd_file2_mat_wrt(&s_bb_2);
+      dpd_file2_mat_close(&s_aa_2);
+      dpd_file2_mat_close(&s_bb_2);
+
+
+      /********** AA ***********/
+      dpd_buf4_init(&tau2_AO_aa, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,O]"),
+                    ID("[n,n]"), ID("[O,O]"), 0, "tau2AO <nn|OO>");
+      dpd_buf4_sort(&tau2_AO_aa, PSIF_DCFT_DPD, rspq, ID("[O,O]"), ID("[n,n]"), "tau2AO <OO|nn>");
+      dpd_buf4_close(&tau2_AO_aa);
+      dpd_buf4_init(&tau2_AO_aa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[n,n]"),
+                    ID("[O,O]"), ID("[n,n]"), 0, "tau2AO <OO|nn>");
+      dpd_buf4_init(&tau_temp, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                    ID("[O,O]"), ID("[V,V]"), 0, "tau(temp) <OO|VV>");
+      dpd_buf4_scm(&tau_temp, 0.0);
+      half_transform(&tau2_AO_aa, &tau_temp, avir_c_, avir_c_, navirpi_, navirpi_,
+                     pq_row_start, CD_row_start, false, 0.5, 0.0);
+      dpd_buf4_close(&tau2_AO_aa);
+      dpd_buf4_close(&tau_temp);
+
+
+      /********** BB ***********/
+      dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[o,o]"),
+                    ID("[n,n]"), ID("[o,o]"), 0, "tau2AO <nn|oo>");
+      dpd_buf4_sort(&tau2_AO_bb, PSIF_DCFT_DPD, rspq, ID("[o,o]"), ID("[n,n]"), "tau2AO <oo|nn>");
+      dpd_buf4_close(&tau2_AO_bb);
+      dpd_buf4_init(&tau2_AO_bb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[n,n]"),
+                    ID("[o,o]"), ID("[n,n]"), 0, "tau2AO <oo|nn>");
+      dpd_buf4_init(&tau_temp, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                    ID("[o,o]"), ID("[v,v]"), 0, "tau(temp) <oo|vv>");
+      dpd_buf4_scm(&tau_temp, 0.0);
+      half_transform(&tau2_AO_bb, &tau_temp, bvir_c_, bvir_c_, nbvirpi_, nbvirpi_,
+                     pq_row_start, cd_row_start, false, 0.5, 0.0);
+      dpd_buf4_close(&tau2_AO_bb);
+      dpd_buf4_close(&tau_temp);
+
+
+      /********** AB ***********/
+      dpd_buf4_init(&tau2_AO_ab, PSIF_DCFT_DPD, 0, ID("[n,n]"), ID("[O,o]"),
+                    ID("[n,n]"), ID("[O,o]"), 0, "tau2AO <nn|Oo>");
+      dpd_buf4_sort(&tau2_AO_ab, PSIF_DCFT_DPD, rspq, ID("[O,o]"), ID("[n,n]"), "tau2AO <Oo|nn>");
+      dpd_buf4_close(&tau2_AO_ab);
+      dpd_buf4_init(&tau2_AO_ab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[n,n]"),
+                    ID("[O,o]"), ID("[n,n]"), 0, "tau2AO <Oo|nn>");
+      dpd_buf4_init(&tau_temp, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                    ID("[O,o]"), ID("[V,v]"), 0, "tau(temp) <Oo|Vv>");
+      dpd_buf4_scm(&tau_temp, 0.0);
+      half_transform(&tau2_AO_ab, &tau_temp, avir_c_, bvir_c_, navirpi_, nbvirpi_,
+                     pq_row_start, Cd_row_start, false, 1.0, 0.0);
+      dpd_buf4_close(&tau2_AO_ab);
+      dpd_buf4_close(&tau_temp);
+
+      // Transform the GTau contribution from MO to SO basis for the future use in the Fock operator
+      // Alpha occupied
+      dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "GTau <O|O>");
+      dpd_file2_scm(&tau, 0.0);
+      file2_transform(&s_aa_2, &tau, aocc_c_, false);
+      dpd_file2_close(&tau);
+
+      // Alpha virtual
+      dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "GTau <V|V>");
+      dpd_file2_scm(&tau, 0.0);
+      file2_transform(&s_aa_2, &tau, avir_c_, false);
+      dpd_file2_close(&tau);
+
+      // Beta occupied
+      dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "GTau <o|o>");
+      dpd_file2_scm(&tau, 0.0);
+      file2_transform(&s_bb_2, &tau, bocc_c_, false);
+      dpd_file2_close(&tau);
+
+      // Beta virtual
+      dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "GTau <v|v>");
+      dpd_file2_scm(&tau, 0.0);
+      file2_transform(&s_bb_2, &tau, bvir_c_, false);
+      dpd_file2_close(&tau);
+
+      dpd_file2_close(&s_aa_1);
+      dpd_file2_close(&s_aa_2);
+      dpd_file2_close(&s_bb_1);
+      dpd_file2_close(&s_bb_2);
+
+      free_int_matrix(pq_row_start);
+      free_int_matrix(CD_row_start);
+      free_int_matrix(cd_row_start);
+      free_int_matrix(Cd_row_start);
 
   }
 

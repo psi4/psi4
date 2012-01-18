@@ -2,6 +2,8 @@
 #! simultaneous update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
+memory 250 mb
+
 refnuc      =  0.66147156125000 #TEST
 refscf      = -5.71032245823757 #TEST
 refmp2      = -5.76128209224412 #TEST
@@ -17,7 +19,7 @@ set globals {
     r_convergence 11
     reference   uhf
     ao_basis    disk
-    algorithm   simultaneous
+    algorithm   twostep
     basis       6-31G**
 }
 
@@ -26,8 +28,10 @@ energy('dcft')
 compare_values(refnuc, he2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy"); #TEST
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");            #TEST
 compare_values(refmp2, get_variable("MP2 ENERGY"), 8, "MP2 Energy");                   #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy");                #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy");     #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (two-step)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (two-step)");     #TEST
 
-clean()
-
+set algorithm simultaneous
+energy('dcft')
+compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (simultaneous)");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (simultaneous)");     #TEST

@@ -2,6 +2,8 @@
 #! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
 #! lowered to account for the different basis sets.
 
+memory 250 mb
+
 refnuc =  204.01997295842617 #TEST
 refscf = -228.95763006847639 #TEST
 
@@ -125,5 +127,3 @@ scfenergy = energy('scf')
 compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                        #TEST
 compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
 compare_values(refscf, scfenergy, 10, "SCF Energy")                                   #TEST
-
-clean()

@@ -1,5 +1,7 @@
 #! H2O CISD/6-31G** Optimize Geometry by Energies
 
+memory 250 mb
+
 
 molecule h2o {
     O
@@ -14,7 +16,4 @@ set globals {
 }
 
 thisenergy = optimize('cisd', dertype = 0)
-
-
-clean()
 

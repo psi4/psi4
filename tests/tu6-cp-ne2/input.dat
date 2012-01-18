@@ -1,5 +1,7 @@
 #! Example potential energy surface scan and CP-correction for Ne2
 
+memory 250 mb
+
 molecule dimer {
   Ne
 --

@@ -1,5 +1,7 @@
 #! ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
 
+memory 250 mb
+
 # The following values are taken from PSI3 #TEST
 refnuc   =   7.6466919885 #TEST
 refscf   = -55.5301768259 #TEST
@@ -29,6 +31,3 @@ compare_values(refnuc, nh2.nuclear_repulsion_energy(), 9, "Nuclear repulsion ene
 compare_values(refscf, get_variable("SCF total energy"),     7, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "ZAPT(25) energy") #TEST
 compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25) correlation energy") #TEST
-
-clean()
-

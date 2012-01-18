@@ -42,8 +42,9 @@ while(<DRIVER>){
     my $Expert;
     # If we find a /*- it means the comment block has started, but we
     # don't know if it's a multi-line comment, let's find out
-    $ModuleDescriptions{$CurrentModule} = get_description($_) if(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule);
-    if(/\/\*-/ and $CurrentModule){
+    if(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
+        $ModuleDescriptions{$CurrentModule} = get_description($_);
+    }elsif(/\/\*-/ and $CurrentModule){
         ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
         # process @@ as math mode subscript in tex
@@ -80,7 +81,7 @@ sub print_hash
      push(@temp, $Module);
      printf OUT "\n\\subsection{%s}\n",$Module;
      if (exists $ModuleDescriptions{$Module} and $print_description){
-         printf OUT "\n{\\large $ModuleDescriptions{$Module}}\\\\\n";
+         printf OUT "\n{\\normalsize $ModuleDescriptions{$Module}}\\\\\n";
          # Insert an empty table entry as a spacer
          printf OUT '\\begin{tabular*}{\\textwidth}[tb]{c}';
          printf OUT "\n\t  \\\\ \n";
@@ -220,6 +221,8 @@ sub determine_keyword_type_and_default
              $Type = "array";
          }elsif($2 eq "MapType"){
              $Type = "map";
+         }elsif($2 eq "PythonDataType"){
+             $Type = "python";
          }else{
              print $_;
              die "\nUnrecognized type: $2\n";
@@ -240,6 +243,7 @@ sub determine_keyword_type_and_default
  }elsif($Type eq "double"){
  }elsif($Type eq "array"){
  }elsif($Type eq "map"){
+ }elsif($Type eq "python"){
  }else{
      print $_;
      die "\nUnrecognized type: $Type\n";
