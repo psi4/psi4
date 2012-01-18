@@ -287,11 +287,11 @@ Back to our SAPT example, we have found that for basic-level SAPT
 computations (i.e., SAPT0), a good error cancellation is found
 \cite{Hohenstein:2012:WIREs} with the jun-cc-pVDZ basis (this is the
 usual aug-cc-pVDZ basis, but without diffuse functions on hydrogen and
-without diffuse $d$ functions on heavy atoms).\cite{Papajak:2011:10} So,
+without diffuse $d$ functions on heavy atoms) \cite{Papajak:2011:10}. So,
 we'll use that as our standard basis set.  The SAPT code is designed to
 use density fitting techniques, because they introduce minimal errors
-but they provide much faster computations.\cite{Hohenstein:2010:184111,
-Hohenstein:2010:014101} Since we're using density fitting for the SAPT,
+but they provide much faster computations \cite{Hohenstein:2010:184111,
+Hohenstein:2010:014101}. Since we're using density fitting for the SAPT,
 we might as well also use it for the Hartree-Fock computations that are
 performed as part of the SAPT.  We can specify that with the keyword
 {\tt scf\_type DF}.
@@ -313,7 +313,7 @@ computation, and then use these results to perform the SAPT analysis.  The
 various energy components are printed at the end of the output, in addition
 to the total SAPT0 interaction energy.  An explanation of the various
 energy components can be found in the review by Jeziorski, Moszynski, and
-Szalewicz,\cite{Jeziorski:1994:1887}  and this is discussed in more detail
+Szalewicz \cite{Jeziorski:1994:1887}, and this is discussed in more detail
 in the SAPT section later in this manual.  For now, we'll note that most of
 the SAPT energy components are negative; this means those are attractive
 contributions (the zero of energy in a SAPT computation is defined as
@@ -444,7 +444,8 @@ Psithon function {\tt cp()} does it all for us, automatically.
 
 And that's it!  The only remaining part of the example input is a little
 table of the different R values and the CP-corrected CCSD(T) energies,
-converted to units of kcal mol$^{-1}$ by multiplying by 627.5095.  Notice
+converted from atomic units (hartree) to kcal mol$^{-1}$ by multiplying by 
+627.5095.  Notice
 the loop over {\tt R} to create the table looks just like the loop over
 {\tt R} to run the different computations, and the CP-corrected energies 
 {\tt ecp[R]} are accessed the same way they were stored.  The {\tt print}
