@@ -123,6 +123,10 @@ protected:
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
 
+    /// Reinterpret the coord entries or not
+    /// Default is true, except for findif
+    bool reinterpret_coordentries_;
+
 public:
     Molecule();
     /// Copy constructor.
@@ -239,6 +243,9 @@ public:
     int atom_at_position1(double *, double tol = 0.05) const;
     int atom_at_position2(Vector3&, double tol = 0.05) const;
     /// @}
+
+    /// Do we reinterpret coordentries during a call to update_geometry?
+    void set_reinterpret_coordentry(bool rc);
 
     /// Returns the geometry in a Matrix
     Matrix geometry() const;

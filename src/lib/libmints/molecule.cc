@@ -156,7 +156,8 @@ Molecule::Molecule():
     equiv_(0),
     multiplicity_specified_(false),
     charge_specified_(false),
-    atom_to_unique_(0)
+    atom_to_unique_(0),
+    reinterpret_coordentries_(true)
 {
 }
 
@@ -188,6 +189,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     geometry_variables_      = other.geometry_variables_;
     charge_specified_        = other.charge_specified_;
     multiplicity_specified_  = other.multiplicity_specified_;
+    reinterpret_coordentries_= other.reinterpret_coordentries_;
 
     // These are symmetry related variables, and are filled in by the following funtions
     pg_             = boost::shared_ptr<PointGroup>();
@@ -213,6 +215,11 @@ Molecule& Molecule::operator=(const Molecule& other)
 Molecule::Molecule(const Molecule& other)
 {
     *this = other;
+}
+
+void Molecule::set_reinterpret_coordentry(bool rc)
+{
+    reinterpret_coordentries_ = rc;
 }
 
 /// Addition
@@ -952,24 +959,26 @@ void Molecule::update_geometry()
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
-    atoms_.clear();
-    EntryVectorIter iter;
-    for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
-        (*iter)->invalidate();
-    }
-    molecular_charge_ = 0;
-    multiplicity_    = 1;
-    for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-        if(fragment_types_[fragment] == Absent)
-            continue;
-        if(fragment_types_[fragment] == Real) {
-            molecular_charge_ += fragment_charges_[fragment];
-            multiplicity_    += fragment_multiplicities_[fragment] - 1;
+    if (reinterpret_coordentries_) {
+        atoms_.clear();
+        EntryVectorIter iter;
+        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
+            (*iter)->invalidate();
         }
-        for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
-            full_atoms_[atom]->compute();
-            full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-            if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+        molecular_charge_ = 0;
+        multiplicity_    = 1;
+        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+            if(fragment_types_[fragment] == Absent)
+                continue;
+            if(fragment_types_[fragment] == Real) {
+                molecular_charge_ += fragment_charges_[fragment];
+                multiplicity_    += fragment_multiplicities_[fragment] - 1;
+            }
+            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+                full_atoms_[atom]->compute();
+                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
+                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+            }
         }
     }
 
