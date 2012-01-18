@@ -978,17 +978,11 @@ void Molecule::update_geometry()
     if (fix_orientation_ == false) {
         // Now we need to rotate the geometry to its symmetry frame
         // to align the axes correctly for the point group
-        Matrix R(3,3);
-        // We actually ask for the highest point group here so that we can align
+        // symmetry_frame looks for the highest point group so that we can align
         // the molecule according to its actual symmetry, rather than the symmetry
         // the the user might have provided.
-        SymmetryOperation frame = find_highest_point_group()->symm_frame();
-        for(int i = 0; i < 3; ++i){
-            for(int j = 0; j < 3; ++j){
-                R.set(i, j, frame(i,j));
-            }
-        }
-        rotate_full(R);
+        SharedMatrix frame = symmetry_frame();
+        rotate_full(*frame.get());
     }
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
@@ -1494,9 +1488,10 @@ int Molecule::max_nequivalent() const
     return max;
 }
 
-boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
+boost::shared_ptr<Matrix> Molecule::symmetry_frame()
 {
     int i, j;
+    double tol = 1.0e-6;
 
     Vector3 com = center_of_mass();
 
@@ -1540,7 +1535,7 @@ boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) con
         }
     }
     else {
-        // loop through pairs of atoms to find c2 axis candidates
+        // loop through pairs of atoms o find c2 axis candidates
         for (i=0; i<natom(); ++i) {
             Vector3 A = xyz(i) - com;
             double AdotA = A.dot(A);
@@ -1557,12 +1552,12 @@ boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) con
                 if (is_axis(com, axis, 2, tol)) {
                     have_c2axis = true;
                     c2axis = axis;
-                    goto found_c2axis;
+                    goto symmframe_found_c2axis;
                 }
             }
         }
     }
-found_c2axis:
+symmframe_found_c2axis:
 
     AxisName c2like = ZAxis;
     if (have_c2axis) {
@@ -1605,13 +1600,13 @@ found_c2axis:
                     if (is_axis(com, axis, 2, tol)) {
                         have_c2axisperp = true;
                         c2axisperp = axis;
-                        goto found_c2axisperp;
+                        goto symmframe_found_c2axisperp;
                     }
                 }
             }
         }
     }
-found_c2axisperp:
+symmframe_found_c2axisperp:
 
     AxisName c2perplike;
     if (have_c2axisperp) {
@@ -1680,14 +1675,14 @@ found_c2axisperp:
                     if (is_plane(com, perp, tol)) {
                         have_sigmav = true;
                         sigmav = perp;
-                        goto found_sigmav;
+                        goto symmframe_found_sigmav;
                     }
                 }
             }
         }
     }
 
-found_sigmav:
+symmframe_found_sigmav:
     if (have_sigmav) {
         // try to make the sign of the oop vec correspond to one of
         // the world axes
@@ -1769,24 +1764,6 @@ found_sigma:
         }
     }
 
-    //    fprintf(outfile, "find point group:\n");
-    //    fprintf(outfile, "  linear          = %s\n", linear          ? "true" : "false");
-    //    fprintf(outfile, "  planar          = %s\n", planar          ? "true" : "false");
-    //    fprintf(outfile, "  have_inversion  = %s\n", have_inversion  ? "true" : "false");
-    //    fprintf(outfile, "  have_c2axis     = %s\n", have_c2axis     ? "true" : "false");
-    //    fprintf(outfile, "  have_c2axisperp = %s\n", have_c2axisperp ? "true" : "false");
-    //    fprintf(outfile, "  have_sigmav     = %s\n", have_sigmav     ? "true" : "false");
-    //    fprintf(outfile, "  have_sigma      = %s\n", have_sigma      ? "true" : "false");
-
-    //    if (have_c2axis)
-    //        fprintf(outfile, "  c2axis          = %s\n", c2axis.to_string().c_str());
-    //    if (have_c2axisperp)
-    //        fprintf(outfile, "  c2axisperp      = %s\n", c2axisperp.to_string().c_str());
-    //    if (have_sigmav)
-    //        fprintf(outfile, "  sigmav          = %s\n", sigmav.to_string().c_str());
-    //    if (have_sigma)
-    //        fprintf(outfile, "  sigma           = %s\n", sigma.to_string().c_str());
-
     // Find the three axes for the symmetry frame
     Vector3 xaxis = worldxaxis;
     Vector3 yaxis;
@@ -1811,70 +1788,69 @@ found_sigma:
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
 
-    //    fprintf(outfile, "  X: %s\n", xaxis.to_string().c_str());
-    //    fprintf(outfile, "  Y: %s\n", yaxis.to_string().c_str());
-    //    fprintf(outfile, "  Z: %s\n", zaxis.to_string().c_str());
-
-    SymmetryOperation frame;
-    Vector3 origin;
+    SharedMatrix frame(new Matrix(3, 3));
     for (i=0; i<3; ++i) {
-        frame(i,0) = xaxis[i];
-        frame(i,1) = yaxis[i];
-        frame(i,2) = zaxis[i];
-        origin[i] = com[i];
+        frame->set(0, i,0, xaxis[i]);
+        frame->set(0, i,1, yaxis[i]);
+        frame->set(0, i,2, zaxis[i]);
     }
 
-    //    fprintf(outfile, "frame:\n");
-    //    frame.print(outfile);
-    //    fprintf(outfile, "origin: %s\n", origin.to_string().c_str());
+    return frame;
+}
 
+boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) const
+{
     unsigned char pg_bits = 0;
-    if (c2axis[0] == 1.0)
-        pg_bits |= SymmOps::C2_x;
-    if (c2axis[1] == 1.0)
-        pg_bits |= SymmOps::C2_y;
-    if (c2axis[2] == 1.0)
-        pg_bits |= SymmOps::C2_z;
-    if (have_inversion)
-        pg_bits |= SymmOps::i;
 
-    boost::shared_ptr<PointGroup> pg;
-    if (have_inversion) {
-        if (have_c2axis) {
-            if (have_sigmav) {
-                pg = boost::shared_ptr<PointGroup>(new PointGroup("d2h", frame, origin));
+    unsigned char symm_bit[] = {
+        SymmOps::C2_z, SymmOps::C2_y, SymmOps::C2_x,
+        SymmOps::i, SymmOps::Sigma_xy, SymmOps::Sigma_xz, SymmOps::Sigma_yz
+    };
+
+    typedef void (SymmetryOperation::*symm_func)();
+
+    symm_func ptrs[] = {
+        &SymmetryOperation::c2_z, &SymmetryOperation::c2_y, &SymmetryOperation::c2_x,
+        &SymmetryOperation::i, &SymmetryOperation::sigma_xy, &SymmetryOperation::sigma_xz,
+        &SymmetryOperation::sigma_yz
+    };
+
+    SymmetryOperation symop;
+
+    int matching_atom = -1;
+    // Only needs to detect the 8 symmetry operations
+    for (int g=0; g<7; ++g) {
+
+        symm_func local_ptr = ptrs[g];
+
+        // Call the function pointer
+        (symop.*local_ptr)();
+
+        bool found = true;
+
+        for (int i=0; i<natom(); ++i) {
+            Vector3 op(symop(0,0), symop(1,1), symop(2,2));
+            Vector3 pos = xyz(i) * op;
+
+            if ((matching_atom = atom_at_position2(pos, 0.0000001)) >= 0) {
+                if (atoms_[i]->is_equivalent_to(atoms_[matching_atom]) == false) {
+                    found = false;
+                    break;
+                }
             }
             else {
-                pg = boost::shared_ptr<PointGroup>(new PointGroup("c2h", frame, origin));
+                found = false;
+                break;
             }
         }
-        else {
-            pg = boost::shared_ptr<PointGroup>(new PointGroup("ci", frame, origin));
+
+        if (found) {
+            fprintf(outfile, "found: %d\n", symm_bit[g]);
+            pg_bits |= symm_bit[g];
         }
     }
-    else {
-        if (have_c2axis) {
-            if (have_sigmav) {
-                pg = boost::shared_ptr<PointGroup>(new PointGroup("c2v", frame, origin));
-            }
-            else {
-                if (have_c2axisperp) {
-                    pg = boost::shared_ptr<PointGroup>(new PointGroup("d2", frame, origin));
-                }
-                else {
-                    pg = boost::shared_ptr<PointGroup>(new PointGroup("c2", frame, origin));
-                }
-            }
-        }
-        else {
-            if (have_sigma) {
-                pg = boost::shared_ptr<PointGroup>(new PointGroup("cs", frame, origin));
-            }
-            else {
-                pg = boost::shared_ptr<PointGroup>(new PointGroup("c1", frame, origin));
-            }
-        }
-    }
+
+    boost::shared_ptr<PointGroup> pg = boost::shared_ptr<PointGroup>(new PointGroup(pg_bits));
 
     return pg;
 }
@@ -1898,7 +1874,7 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
             // Make sure user is subgroup of pg
             CorrelationTable corrtable(pg, user);
 
-            // If we make it here, the user specified is good.
+            // If we make it here, what the user specified is good.
             pg = user;
         }
     }
@@ -2101,9 +2077,9 @@ void Molecule::form_symmetry_information(double tol)
     }
 }
 
-const std::string& Molecule::sym_label()
+std::string Molecule::sym_label()
 {
-    if (pg_==NULL) set_point_group(find_point_group());
+    if (!pg_) set_point_group(find_point_group());
     return pg_->symbol();
 }
 

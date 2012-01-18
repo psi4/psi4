@@ -437,7 +437,7 @@ void HF::print_header()
     molecule_->print();
 
     if (Communicator::world->me() == 0) {
-        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol());
+        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
         fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
         fprintf(outfile, "  Charge       = %d\n", charge_);

@@ -19,7 +19,7 @@
 #include <libqt/qt.h>
 #include <vector>
 
-#define DebugPrint 1
+//#define DebugPrint 1
 
 #ifndef DebugPrint
 #   define DebugPrint 0

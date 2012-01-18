@@ -64,33 +64,41 @@ using namespace psi;
 PointGroup::PointGroup()
 {
     set_symbol("c1");
-    frame(0,0) = frame(1,1) = frame(2,2) = 1;
+//    frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
 PointGroup::PointGroup(const std::string& s)
 {
+    throw PSIEXCEPTION("Does not work");
     set_symbol(s);
-    frame(0,0) = frame(1,1) = frame(2,2) = 1;
+//    frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
-PointGroup::PointGroup(const std::string& s, SymmetryOperation& so)
-{
-    set_symbol(s);
-    frame = so;
-    origin_[0] = origin_[1] = origin_[2] =0;
-}
-
-PointGroup::PointGroup(const std::string& s, SymmetryOperation& so,
+PointGroup::PointGroup(const std::string& s,
                        const Vector3& origin)
 {
+    throw PSIEXCEPTION("Does not work");
+
     fprintf(outfile, "in PointGroup: %s\n", s.c_str());
-    so.print(outfile);
     fprintf(outfile, "origin: %lf %lf %lf\n", origin[0], origin[1], origin[2]);
 
     set_symbol(s);
-    frame = so;
+    origin_ = origin;
+}
+
+PointGroup::PointGroup(unsigned char bits)
+    : bits_(bits)
+{
+    set_symbol(bits_to_basic_name(bits));
+    origin_[0] = origin_[1] = origin_[2] =0;
+}
+
+PointGroup::PointGroup(unsigned char bits, const Vector3 & origin)
+    : bits_(bits)
+{
+    set_symbol(bits_to_basic_name(bits));
     origin_ = origin;
 }
 
@@ -112,7 +120,6 @@ PointGroup&
 PointGroup::operator=(const PointGroup& pg)
 {
     set_symbol(pg.symb);
-    frame = pg.frame;
     origin_ = pg.origin_;
     return *this;
 }
@@ -130,7 +137,7 @@ PointGroup::set_symbol(const std::string& sym)
 CharacterTable
 PointGroup::char_table() const
 {
-    CharacterTable ret(symb,frame);
+    CharacterTable ret(bits_);
     return ret;
 }
 
@@ -140,13 +147,49 @@ PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
     if (symb != grp->symb)
         return 0;
 
-    for (int i=0; i < 3; i++) {
-        for (int j=0; j < 3; j++) {
-            if (fabs(frame(i,j) - grp->frame(i,j)) > tol) return 0;
-        }
-    }
-
     return 1;
+}
+
+bool PointGroup::full_name_to_bits(const std::string& pg, unsigned char &bits)
+{
+    bool retvalue = true;
+
+    if (pg == "C1")
+        bits = PointGroups::C1;
+    else if (pg == "Ci")
+        bits = PointGroups::Ci;
+    else if (pg == "C2(x)")
+        bits = PointGroups::C2X;
+    else if (pg == "C2(y)")
+        bits = PointGroups::C2Y;
+    else if (pg == "C2(z)")
+        bits = PointGroups::C2Z;
+    else if (pg == "Cs(x)")
+        bits = PointGroups::CsX;
+    else if (pg == "Cs(y)")
+        bits = PointGroups::CsY;
+    else if (pg == "Cs(z)")
+        bits = PointGroups::CsZ;
+    else if (pg == "D2")
+        bits = PointGroups::D2;
+    else if (pg == "C2v(X)")
+        bits = PointGroups::C2vX;
+    else if (pg == "C2v(Y)")
+        bits = PointGroups::C2vY;
+    else if (pg == "C2v(Z)")
+        bits = PointGroups::C2vZ;
+    else if (pg == "C2h(X)")
+        bits = PointGroups::C2hX;
+    else if (pg == "C2h(Y)")
+        bits = PointGroups::C2hY;
+    else if (pg == "C2h(Z)")
+        bits = PointGroups::C2hZ;
+    else if (pg == "D2h")
+        bits = PointGroups::D2h;
+    else
+        retvalue = false;
+
+    return retvalue;
 }
 
 const char* PointGroup::bits_to_full_name(unsigned char bits)
@@ -185,6 +228,7 @@ const char* PointGroup::bits_to_full_name(unsigned char bits)
     case PointGroups::D2h:
         return "D2h";
     default:
+        fprintf(stderr, "Unrecognized point group bits: %d\n", bits);
         throw PSIEXCEPTION("Unrecognized point group bits");
     }
 }
@@ -217,6 +261,7 @@ const char* PointGroup::bits_to_basic_name(unsigned char bits)
     case PointGroups::D2h:
         return "d2h";
     default:
+        fprintf(stderr, "Unrecognized point group bits: %d\n", bits);
         throw PSIEXCEPTION("Unrecognized point group bits");
     }
 }

@@ -249,7 +249,8 @@ void export_mints()
             def("unit", &SymmetryOperation::unit).
             def("E", &SymmetryOperation::E).
             def("i", &SymmetryOperation::i).
-            def("sigma_h", &SymmetryOperation::sigma_h).
+            def("sigma_xy", &SymmetryOperation::sigma_xy).
+            def("sigma_yz", &SymmetryOperation::sigma_yz).
             def("sigma_xz", &SymmetryOperation::sigma_xz).
             //        def("sigma_yz", &SymmetryOperation::sigma_yz).
             def("rotate_n", intFunction(&SymmetryOperation::rotation)).

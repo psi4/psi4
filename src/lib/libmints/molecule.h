@@ -360,13 +360,16 @@ public:
     void reset_point_group(const std::string& pgname);
     /// Find highest molecular point group
     boost::shared_ptr<PointGroup> find_highest_point_group(double tol=1.0e-8) const;
+    /// Determine symmetry reference frame. If noreorient is set, this is the rotation matrix
+    /// applied to the geometry in update_geometry.
+    boost::shared_ptr<Matrix> symmetry_frame();
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information
     /// Uses the point group object obtain by calling point_group()
     void form_symmetry_information(double tol=1.0e-8);
     /// Returns the symmetry label
-    const std::string& sym_label();
+    std::string sym_label();
     /// Returns the irrep labels
     char **irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }
