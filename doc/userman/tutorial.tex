@@ -54,7 +54,7 @@ instructions).
 This very simple input is sufficient to run the requested information.
 Notice that we didn't tell the program some otherwise useful information
 like the charge on the molecule (0, it's neutral), the spin multiplicity
-(0 for a closed-shell molecule with all electrons paired), or the reference
+(1 for a closed-shell molecule with all electrons paired), or the reference
 wavefunction to use (restricted Hartree-Fock, or RHF, is usually
 appropriate for a closed-shell molecule).  The program correctly guessed
 all of these options for us.  We can change the default behavior through
@@ -64,13 +64,13 @@ Let's consider what we would do for an open-shell molecule, where
 not all electrons are paired.  For example, let's run a computation
 on methylene (CH$_2$), whose ground electronic state has two unpaired
 electrons (triplet electronic state, or a spin multiplicity $2S+1 = 3$).
-In this case, the default spin multiplicity (0) is not correct, so we
+In this case, the default spin multiplicity (1) is not correct, so we
 need to tell the program the true value (3).  Like many programs, \PSIfour\
 can get the charge and multiplicity as the first two integers in the
 Z-matrix.  Note the line with ``0 3'' at the beginning of the molecule
 specification below.  In this example we will also specify the bond length
 and bond angle as variables ({\tt R} and {\tt A}), whose values are given
-after a blank line at the end of the Z-matrix specification.
+at the end of the Z-matrix specification.
 
 \begin{Snippet}
 # Here's a sample UHF/6-31G** CH2 computation
