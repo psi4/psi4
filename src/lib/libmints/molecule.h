@@ -122,10 +122,10 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
-    /// Old previous symmetry frame (so one can fix to it, if desired)
-    Matrix *old_symmetry_frame_;
-    /// Old com displacement vector (so one can fix to it, if desired)
-    Vector3 *old_com_vector_;
+
+    /// Reinterpret the coord entries or not
+    /// Default is true, except for findif
+    bool reinterpret_coordentries_;
 
 public:
     Molecule();
@@ -243,6 +243,9 @@ public:
     int atom_at_position1(double *, double tol = 0.05) const;
     int atom_at_position2(Vector3&, double tol = 0.05) const;
     /// @}
+
+    /// Do we reinterpret coordentries during a call to update_geometry?
+    void set_reinterpret_coordentry(bool rc);
 
     /// Returns the geometry in a Matrix
     Matrix geometry() const;
@@ -364,13 +367,16 @@ public:
     void reset_point_group(const std::string& pgname);
     /// Find highest molecular point group
     boost::shared_ptr<PointGroup> find_highest_point_group(double tol=1.0e-8) const;
+    /// Determine symmetry reference frame. If noreorient is set, this is the rotation matrix
+    /// applied to the geometry in update_geometry.
+    boost::shared_ptr<Matrix> symmetry_frame();
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information
     /// Uses the point group object obtain by calling point_group()
     void form_symmetry_information(double tol=1.0e-8);
     /// Returns the symmetry label
-    const char *sym_label();
+    std::string sym_label();
     /// Returns the irrep labels
     char **irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }

@@ -126,7 +126,7 @@ def gradient(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.' 
+        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
             % (lowername, dertype))
 
     # Make sure the molecule the user provided is the active one
@@ -230,26 +230,26 @@ def gradient(name, **kwargs):
                 # Print information to output.dat
                 PsiMod.print_out("\n")
                 banner("Loading displacement %d of %d" % (n+1, ndisp))
-    
+
                 # Print information to the screen
                 print "    displacement %d" % (n+1)
-    
+
                 # Load in displacement into the active molecule
                 PsiMod.get_active_molecule().set_geometry(displacement)
-    
+
                 ## Wrap any positional arguments into kwargs (for intercalls among wrappers)
                 #if not('name' in kwargs) and name:
                 #    kwargs['name'] = lowername
-    
+
                 # Perform the energy calculation
                 #E = func(lowername, **kwargs)
                 func(lowername, **kwargs)
                 E = PsiMod.get_variable("CURRENT ENERGY")
                 #E = func(**kwargs)
-    
+
                 # Save the energy
                 energies.append(E)
-    
+
             # S/R: Write each displaced geometry to an input file
             elif re.match('sow', opt_mode.lower()):
                 PsiMod.get_active_molecule().set_geometry(displacement)
@@ -298,13 +298,13 @@ def gradient(name, **kwargs):
                     freagent.close()
                 energies.append(E)
 
-        # S/R: Quit sow after writing files 
+        # S/R: Quit sow after writing files
         if re.match('sow', opt_mode.lower()):
             return 0.0
 
         if re.match('reap', opt_mode.lower()):
             PsiMod.set_variable('CURRENT ENERGY', energies[-1])
-        
+
         # Obtain the gradient
         PsiMod.fd_1_0(energies)
 
@@ -380,7 +380,7 @@ def optimize(name, **kwargs):
 def parse_arbitrary_order(name):
     namelower = name.lower()
 
-    if re.match(r'^[a-z]+\d+$', namelower):       
+    if re.match(r'^[a-z]+\d+$', namelower):
         decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
         namestump = decompose.group(1)
         namelevel = int(decompose.group(2))
@@ -415,7 +415,7 @@ def frequencies(name, **kwargs):
     if (kwargs.has_key('irrep')):
         irrep = kwargs['irrep'] - 1 # externally, A1 irrep is 1; internally 0
     else:
-      irrep = -1; # -1 implies do all irreps 
+      irrep = -1; # -1 implies do all irreps
 
     # By default, set func to the energy function
     func = energy
@@ -438,6 +438,11 @@ def frequencies(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_1(irrep)
+
+        PsiMod.get_active_molecule().fix_orientation(True)
+        PsiMod.get_active_molecule().fix_com(True)
+        PsiMod.get_active_molecule().reinterpret_coordentry(False)
+
         ndisp = len(displacements)
 
         #print displacements to output.dat
@@ -456,10 +461,6 @@ def frequencies(name, **kwargs):
             print "    displacement %d" % (n+1)
 
             # Load in displacement into the active molecule
-            if (n == 0) :
-              PsiMod.get_active_molecule().fix_orientation(1)
-              PsiMod.get_active_molecule().fix_com(1)
-
             PsiMod.get_active_molecule().set_geometry(displacement)
 
             # Perform the gradient calculation
@@ -476,6 +477,12 @@ def frequencies(name, **kwargs):
 
         print " Computation complete."
 
+        # TODO: These need to be restored to the user specified setting
+        PsiMod.get_active_molecule().fix_orientation(False)
+        PsiMod.get_active_molecule().fix_com(False)
+        # But not this one, it always goes back to True
+        PsiMod.get_active_molecule().reinterpret_coordentry(True)
+
     else: # Assume energy points
         # If not, perform finite difference of energies
         info = "Performing finite difference calculations"
@@ -483,6 +490,9 @@ def frequencies(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
+        PsiMod.get_active_molecule().fix_orientation(True)
+        PsiMod.get_active_molecule().fix_com(True)
+        PsiMod.get_active_molecule().reinterpret_coordentry(False)
 
         ndisp = len(displacements)
 
@@ -513,6 +523,12 @@ def frequencies(name, **kwargs):
         PsiMod.fd_freq_0(energies, irrep)
 
         print " Computation complete."
+
+        # TODO: These need to be restored to the user specified setting
+        PsiMod.get_active_molecule().fix_orientation(False)
+        PsiMod.get_active_molecule().fix_com(False)
+        # But not this one, it always goes back to True
+        PsiMod.get_active_molecule().reinterpret_coordentry(True)
 
         # The last item in the list is the reference energy, return it
         return energies[-1]
