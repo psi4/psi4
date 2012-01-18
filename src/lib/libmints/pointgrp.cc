@@ -49,6 +49,8 @@
  *      June, 1993
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include <cstdlib>
 #include <cstring>
 #include <ctype.h>
@@ -64,27 +66,23 @@ using namespace psi;
 PointGroup::PointGroup()
 {
     set_symbol("c1");
-//    frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
 PointGroup::PointGroup(const std::string& s)
 {
-    throw PSIEXCEPTION("Does not work");
-    set_symbol(s);
-//    frame(0,0) = frame(1,1) = frame(2,2) = 1;
+    if (full_name_to_bits(s, bits_) == false)
+        throw PSIEXCEPTION("PointGroup: Unknown point group name provided.");
+    set_symbol(bits_to_basic_name(bits_));
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
 PointGroup::PointGroup(const std::string& s,
                        const Vector3& origin)
 {
-    throw PSIEXCEPTION("Does not work");
-
-    fprintf(outfile, "in PointGroup: %s\n", s.c_str());
-    fprintf(outfile, "origin: %lf %lf %lf\n", origin[0], origin[1], origin[2]);
-
-    set_symbol(s);
+    if (full_name_to_bits(s, bits_) == false)
+        throw PSIEXCEPTION("PointGroup: Unknown point group name provided.");
+    set_symbol(bits_to_basic_name(bits_));
     origin_ = origin;
 }
 
@@ -154,38 +152,49 @@ bool PointGroup::full_name_to_bits(const std::string& pg, unsigned char &bits)
 {
     bool retvalue = true;
 
-    if (pg == "C1")
+    if (boost::iequals(pg, "C1"))
         bits = PointGroups::C1;
-    else if (pg == "Ci")
+    else if (boost::iequals(pg, "Ci"))
         bits = PointGroups::Ci;
-    else if (pg == "C2(x)")
+    else if (boost::iequals(pg, "C2(x)") || boost::iequals(pg, "C2x") || boost::iequals(pg, "C2_x"))
         bits = PointGroups::C2X;
-    else if (pg == "C2(y)")
+    else if (boost::iequals(pg, "C2(y)") || boost::iequals(pg, "C2y") || boost::iequals(pg, "C2_y"))
         bits = PointGroups::C2Y;
-    else if (pg == "C2(z)")
+    else if (boost::iequals(pg, "C2(z)") || boost::iequals(pg, "C2z") || boost::iequals(pg, "C2_z"))
         bits = PointGroups::C2Z;
-    else if (pg == "Cs(x)")
+    else if (boost::iequals(pg, "Cs(x)") || boost::iequals(pg, "Csx") || boost::iequals(pg, "Cs_x"))
         bits = PointGroups::CsX;
-    else if (pg == "Cs(y)")
+    else if (boost::iequals(pg, "Cs(y)") || boost::iequals(pg, "Csy") || boost::iequals(pg, "Cs_y"))
         bits = PointGroups::CsY;
-    else if (pg == "Cs(z)")
+    else if (boost::iequals(pg, "Cs(z)") || boost::iequals(pg, "Csz") || boost::iequals(pg, "Cs_z"))
         bits = PointGroups::CsZ;
-    else if (pg == "D2")
+    else if (boost::iequals(pg, "D2"))
         bits = PointGroups::D2;
-    else if (pg == "C2v(X)")
+    else if (boost::iequals(pg, "C2v(X)") || boost::iequals(pg, "C2vx") || boost::iequals(pg, "C2v_x"))
         bits = PointGroups::C2vX;
-    else if (pg == "C2v(Y)")
+    else if (boost::iequals(pg, "C2v(Y)") || boost::iequals(pg, "C2vy") || boost::iequals(pg, "C2v_y"))
         bits = PointGroups::C2vY;
-    else if (pg == "C2v(Z)")
+    else if (boost::iequals(pg, "C2v(Z)") || boost::iequals(pg, "C2vz") || boost::iequals(pg, "C2v_z"))
         bits = PointGroups::C2vZ;
-    else if (pg == "C2h(X)")
+    else if (boost::iequals(pg, "C2h(X)") || boost::iequals(pg, "C2hx") || boost::iequals(pg, "C2h_x"))
         bits = PointGroups::C2hX;
-    else if (pg == "C2h(Y)")
+    else if (boost::iequals(pg, "C2h(Y)") || boost::iequals(pg, "C2hy") || boost::iequals(pg, "C2h_y"))
         bits = PointGroups::C2hY;
-    else if (pg == "C2h(Z)")
+    else if (boost::iequals(pg, "C2h(Z)") || boost::iequals(pg, "C2hz") || boost::iequals(pg, "C2h_z"))
         bits = PointGroups::C2hZ;
-    else if (pg == "D2h")
+    else if (boost::iequals(pg, "D2h"))
         bits = PointGroups::D2h;
+
+    // Ok, the user gave us Cs, C2v, C2h, C2, but no directionality
+    else if (boost::iequals(pg, "Cs"))
+        bits = PointGroups::CsZ;
+    else if (boost::iequals(pg, "C2v"))
+        bits = PointGroups::C2vZ;
+    else if (boost::iequals(pg, "C2h"))
+        bits = PointGroups::C2hZ;
+    else if (boost::iequals(pg, "C2"))
+        bits = PointGroups::C2Z;
+
     else
         retvalue = false;
 

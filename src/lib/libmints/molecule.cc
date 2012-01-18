@@ -7,6 +7,8 @@
 #include <cmath>
 #include <cstdio>
 #include <fstream>
+#include <locale>
+#include <iostream>
 #include <algorithm>
 #include <vector>
 #include <string>
@@ -42,6 +44,27 @@ using namespace boost;
 
 namespace {
 const double dzero = 0.0;
+
+// templated version of my_equal so it could work with both char and wchar_t
+template<typename charT>
+struct my_equal {
+    my_equal( const std::locale& loc ) : loc_(loc) {}
+    bool operator()(charT ch1, charT ch2) {
+        return std::toupper(ch1, loc_) == std::toupper(ch2, loc_);
+    }
+private:
+    const std::locale& loc_;
+};
+
+// find substring (case insensitive)
+template<typename T>
+int ci_find_substr( const T& str1, const T& str2, const std::locale& loc = std::locale() )
+{
+    T::const_iterator it = std::search( str1.begin(), str1.end(),
+        str2.begin(), str2.end(), my_equal<T::value_type>(loc) );
+    if ( it != str1.end() ) return it - str1.begin();
+    else return -1; // not found
+}
 }
 
 // the third parameter of from_string() should be
@@ -1802,16 +1825,26 @@ boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) con
 {
     unsigned char pg_bits = 0;
 
-    unsigned char symm_bit[] = {
-        SymmOps::C2_z, SymmOps::C2_y, SymmOps::C2_x,
-        SymmOps::i, SymmOps::Sigma_xy, SymmOps::Sigma_xz, SymmOps::Sigma_yz
-    };
-
     typedef void (SymmetryOperation::*symm_func)();
 
+    // The order of the next 2 arrays MUST match!
+    unsigned char symm_bit[] = {
+        SymmOps::C2_z,
+        SymmOps::C2_y,
+        SymmOps::C2_x,
+        SymmOps::i,
+        SymmOps::Sigma_xy,
+        SymmOps::Sigma_xz,
+        SymmOps::Sigma_yz
+    };
+
     symm_func ptrs[] = {
-        &SymmetryOperation::c2_z, &SymmetryOperation::c2_y, &SymmetryOperation::c2_x,
-        &SymmetryOperation::i, &SymmetryOperation::sigma_xy, &SymmetryOperation::sigma_xz,
+        &SymmetryOperation::c2_z,
+        &SymmetryOperation::c2_y,
+        &SymmetryOperation::c2_x,
+        &SymmetryOperation::i,
+        &SymmetryOperation::sigma_xy,
+        &SymmetryOperation::sigma_xz,
         &SymmetryOperation::sigma_yz
     };
 
@@ -1832,7 +1865,7 @@ boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) con
             Vector3 op(symop(0,0), symop(1,1), symop(2,2));
             Vector3 pos = xyz(i) * op;
 
-            if ((matching_atom = atom_at_position2(pos, 0.0000001)) >= 0) {
+            if ((matching_atom = atom_at_position2(pos, tol)) >= 0) {
                 if (atoms_[i]->is_equivalent_to(atoms_[matching_atom]) == false) {
                     found = false;
                     break;
@@ -1845,7 +1878,6 @@ boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) con
         }
 
         if (found) {
-            fprintf(outfile, "found: %d\n", symm_bit[g]);
             pg_bits |= symm_bit[g];
         }
     }
@@ -1865,9 +1897,19 @@ void Molecule::reset_point_group(const std::string& pgname)
 boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 {
     boost::shared_ptr<PointGroup> pg = find_highest_point_group(tol);
+    const std::string user = symmetry_from_input();
 
-    if (!symmetry_from_input().empty()) {
-        // If they're not the same
+    if (!user.empty()) {
+        // Need to handle the cases that the user only provides C2, C2v, C2h, Cs.
+        // These point groups need directionality.
+
+        int end = user.length() - 1;
+
+        // Did the user provide directionality? If they did, the last letter would be x, y, or z
+        if (user[end] == 'X' || user[end] == 'x' || user[end] == 'Y' || user[end] == 'y' || user[end] == 'Z' || user[end] == 'z') {
+            // Directionality given, assume the user is smart enough to know what they're doing.
+        }
+
         if (symmetry_from_input() != pg->symbol()) {
             boost::shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
 

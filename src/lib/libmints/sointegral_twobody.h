@@ -241,8 +241,6 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     // Get the atomic stablizer (the first symmetry operation that maps the atom
     // onto itself.
 
-    dcd_ = boost::shared_ptr<DCD>(new DCD(64));
-
     // These 3 sections are not shell specific so we can just use petite1_
     const unsigned short istablizer = petite1_->stablizer(iatom);
     const unsigned short jstablizer = petite1_->stablizer(jatom);
