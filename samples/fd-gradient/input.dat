@@ -1,4 +1,7 @@
 #! SCF STO-3G finite-difference tests
+
+memory 250 mb
+
 molecule h2o {
   symmetry c1
   O
@@ -44,7 +47,4 @@ fd_grad = PsiMod.reference_wavefunction().gradient()
 set findif { points 5 }
 gradient('scf', dertype=0)
 fd_grad = PsiMod.reference_wavefunction().gradient() 
-
-
-clean()
 

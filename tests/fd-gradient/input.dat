@@ -1,4 +1,7 @@
 #! SCF STO-3G finite-difference tests
+
+memory 250 mb
+
 molecule h2o {
   symmetry c1
   O
@@ -49,6 +52,3 @@ gradient('scf', dertype=0)
 fd_grad = PsiMod.reference_wavefunction().gradient() 
 
 compare_matrices(fd_grad, anal_grad, 8, "5-point finite-difference vs. analytic gradient to 10^-8 (C2v)") #TEST
-
-clean()
-

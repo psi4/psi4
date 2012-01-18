@@ -16,6 +16,9 @@ cc13:         UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradie
 cc13a:        UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
 
+cc14:         ROHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+
+
 cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
 
 
@@ -25,7 +28,22 @@ cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <a
 cc17:         Single point energies of multiple excited states with EOM-CCSD
 
 
-cc2:          6-31G** H2O Test CCSD energy, with Z-Matrix input
+cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
+
+
+cc24:         Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
+
+
+cc25:         Single point gradient of 1-2B2 state of H2O+ with EOM-CCSD
+
+
+cc26:         Single point gradient of 2-1A1 state of H2O with EOM-CCSD
+
+
+cc27:         Single point gradient of 1-1B2 state of H2O with EOM-CCSD
+
+
+cc3:          CCSD/6-31G** H2O vibrational frequencies via gradients
 
 
 cc34:         RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
@@ -268,7 +286,7 @@ scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 scf11-freq-from-energies:  Test frequencies by finite differences of energies for planar C4NH4 TS
 
 
-scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis. This compuation runs in C1 symmetry, which is currently required for RI-SCF.
+scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
 
 
 scf3:         UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.

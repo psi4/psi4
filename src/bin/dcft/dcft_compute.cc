@@ -57,6 +57,11 @@ DCFTSolver::compute_energy()
         dpd_buf4_close(&Lbb);
         old_ca_->copy(Ca_);
         old_cb_->copy(Cb_);
+        // Save F0 = H + G * Kappa for the Fock intermediate update in lambda iterations
+        F0a_->copy(Fa_);
+        F0b_->copy(Fb_);
+        F0a_->transform(Ca_);
+        F0b_->transform(Cb_);
         // Just so the correct value is printed in the first macro iteration
         scf_convergence_ = compute_scf_error_vector();
         // Start macro-iterations
@@ -69,8 +74,14 @@ DCFTSolver::compute_energy()
             // Start density cumulant (lambda) iterations
             while((!lambdaDone || !energyConverged) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                 std::string diisString;
-                // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
-                build_tensors();
+                if (options_.get_str("AO_BASIS") == "DISK") {
+                    // Builds new Tau and transforms it to SO basis
+                    build_tau();
+                    // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
+                    build_tensors();
+                    // Update Fock operator for the F intermediate
+                    update_fock();
+                }
                 // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
                 build_intermediates();
                 // Compute the residuals for density cumulant equations
@@ -146,6 +157,11 @@ DCFTSolver::compute_energy()
                 Fb_->copy(so_h_);
                 // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
                 process_so_ints();
+                // Save F0 = H + G * Kappa for the Fock intermediate update in lambda iterations
+                F0a_->copy(Fa_);
+                F0b_->copy(Fb_);
+                F0a_->transform(Ca_);
+                F0b_->transform(Cb_);
                 // Save old SCF energy
                 old_total_energy_ = new_total_energy_;
                 // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
@@ -368,17 +384,17 @@ DCFTSolver::compute_energy()
     Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
     Process::environment.globals["DCFT TAU SQUARED CORRECTION"] = energy_tau_squared_;
 
-    if(!options_.get_bool("RELAX_ORBITALS")){
+    if(!options_.get_bool("MO_RELAX")){
         fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
     }
 
     print_opdm();
 
-    if(options_.get_bool("COMPUTE_TPDM")) dump_density();
+    if(options_.get_bool("TPDM")) dump_density();
     mulliken_charges();
     check_n_representability();
 
-    if(!options_.get_bool("RELAX_ORBITALS") && options_.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("MO_RELAX") && options_.get_bool("IGNORE_TAU")){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         /*
          * Comout the CEPA-0 correlation energy

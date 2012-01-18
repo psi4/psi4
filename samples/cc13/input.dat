@@ -1,5 +1,7 @@
 #! UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
+memory 250 mb
+
 
 molecule ch2 {
   0 3
@@ -20,9 +22,4 @@ set globals {
 }
 
 optimize('CCSD')
-
-
-clean()
-
-
 

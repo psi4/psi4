@@ -3,6 +3,8 @@
 #! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
 #! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
+memory 250 mb
+
 
 molecule dimer {
 0 1

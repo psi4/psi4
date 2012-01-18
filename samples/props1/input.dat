@@ -1,5 +1,8 @@
 #! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
+memory 250 mb
+
+
 molecule h2o {
 0 1
 O
@@ -57,5 +60,3 @@ print "5 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_5point, dm_z_
 
 compare_values(ref_3pt, dm_z_3point, 8, "Z dipole, using 3 point formula")
 compare_values(ref_5pt, dm_z_5point, 8, "Z dipole, using 5 point formula")
-
-clean()

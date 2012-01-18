@@ -1,5 +1,7 @@
 #! Database calculation with psi4-generated input. Should not be used as a model
 #! input file but as a canary to avoid breaking database/input parser dependencies.
+
+memory 250 mb
  
 
 # This is a psi4 input file auto-generated from the database() wrapper.
@@ -87,5 +89,3 @@ PsiMod.print_variables()
 PsiMod.print_out('\nDATABASE RESULT: computation 80955 for reagent BASIC-ch4-reagent yields electronic energy %20.12f\n' % (electronic_energy))
 PsiMod.set_variable('NATOM', molecule.natom())
 
-
-clean()

@@ -1,5 +1,7 @@
 #! RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
+memory 250 mb
+
 molecule h2o {
   0 1
   H
@@ -16,8 +18,4 @@ set {
 energy('eom-cc2')
 
 
-compare_values(scf_0, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy")
-compare_values(cc2_0, get_variable("CC2 TOTAL ENERGY"), 7, "CC2 energy")
-
-clean()
 

@@ -1,6 +1,8 @@
 #! RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
 #! both, omega = (589 355 nm)
 
+memory 250 mb
+
 molecule smo {
   0 1
 # structure from Pederson et al., CPL, submitted
@@ -21,10 +23,7 @@ set {
   freeze_core true
   property rotation
   gauge both
-  omega [589, 355]
-  omega_units nm
+  omega [589, 355, nm]
 }
 
 response('cc2')
-clean()
-

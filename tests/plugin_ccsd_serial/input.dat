@@ -25,10 +25,7 @@ set {
 #  e(ccsd)    = -0.214295324941422
 #  e(ccsd(t)) = -0.003243936319252
 
-psioh = PsiMod.IOManager.shared_object()
-psioh.set_default_path('/lustre/medusa/deprince/')
+psi4_io.set_default_path('/lustre/medusa/deprince/')
 scf_energy = scf()
 transqt()
 plugin('./plugin_ccsd_serial.so')
-
-clean()

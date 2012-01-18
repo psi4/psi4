@@ -1,5 +1,7 @@
 #! 6-31G** H2O Test CISD Energy Point
 
+memory 250 mb
+
 
 molecule h2o {
     O
@@ -9,12 +11,9 @@ molecule h2o {
 
 set globals {
   basis 6-31G**
-  hd_ave hd_kave
+  hd_avg hd_kave
   icore 2
 }
 
 thisenergy = energy('cisd')
-
-
-clean()
 

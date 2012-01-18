@@ -1,5 +1,7 @@
 #! Frequencies for H2O HF/cc-pVDZ at optimized geometry
 
+memory 250 mb
+
 molecule h2o {
   O 
   H 1 0.9463
@@ -10,7 +12,4 @@ set basis cc-pVDZ
 frequencies('scf')
 
 
-
-
-clean()
 
