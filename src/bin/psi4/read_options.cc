@@ -1185,7 +1185,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "STABLE"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs wavefunction stability analysis, and is only called when specifically requested 
-         by the user-*
+         by the user-*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
     /*- -*/
