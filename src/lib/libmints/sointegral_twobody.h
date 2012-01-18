@@ -19,7 +19,11 @@
 #include <libqt/qt.h>
 #include <vector>
 
-#define DebugPrint 0
+//#define DebugPrint 1
+
+#ifndef DebugPrint
+#   define DebugPrint 0
+#endif
 
 #if DebugPrint
 #define dprintf(...) fprintf(outfile, __VA_ARGS__)
@@ -188,6 +192,8 @@ public:
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBodySOIntFunctor& body)
 {
+    dprintf("uish %d, ujsh %d, uksh %d, ulsh %d\n", uish, ujsh, uksh, ulsh);
+
     int thread = Communicator::world->thread_id(pthread_self());
 
     mints_timer_on("TwoBodySOInt::compute_shell overall");
@@ -265,6 +271,10 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     int si = petite1_->unique_shell_map(uish, 0);
     const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
+
+    dprintf("dcd %d", petite1_->group());
+    dprintf("istab %d, jstab %d, kstab %d, lstab %d, ijstab %d, klstab %d\n", istabdense, jstabdense, kstabdense, lstabdense, ijstablizer, klstablizer);
+    dprintf("R_size %d, S_size %d, T_size %d\n", R_size, S_size, T_size);
 
     for (int ij=1; ij <= R_size; ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
@@ -381,6 +391,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                                     mints_timer_off("ltr");
                                     mints_timer_on("transform");
 
+                                    dprintf("lambda_T %d, lcoef %lf, aobuff %lf\n", lambda_T, lcoef, aobuff[laooff]);
                                     buffer_[thread][lsooff] += lambda_T * lcoef * aobuff[laooff];
 
                                     mints_timer_off("transform");
