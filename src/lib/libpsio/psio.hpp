@@ -82,6 +82,13 @@ public:
             * \return the appropriate full path
             */
     std::string get_file_path(int fileno);
+
+    /**
+      * Returns the default path.
+      * \return the default path.
+      */
+    std::string get_default_path() { return default_path_; }
+
     /**
      * Write a string to a temporary file.  The scratch file is opened and closed by this function.
      * @param full_path The fill path to the scratch file
