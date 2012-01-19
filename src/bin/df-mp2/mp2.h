@@ -46,6 +46,8 @@ protected:
     virtual void form_singles();
     // Apply the fitting and transposition to a given disk entry Aia tensor
     virtual void apply_fitting(SharedMatrix Jm12, unsigned int file, unsigned long int naux, unsigned long int nia);
+    // Form the inverse square root of the fitting metric, or read it off disk
+    virtual SharedMatrix form_inverse_metric();
 
 public:
     DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
