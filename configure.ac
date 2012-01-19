@@ -949,6 +949,7 @@ AC_CONFIG_FILES([
           src/bin/scf/Makefile
           src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
+          src/bin/mrcc/Makefile
           src/bin/df-mp2/Makefile
           src/bin/sapt/Makefile
           src/bin/mints/Makefile

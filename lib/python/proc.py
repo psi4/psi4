@@ -1,6 +1,7 @@
 import PsiMod
 import shutil
 import os
+import subprocess
 import re
 import input
 from molecule import *
@@ -300,10 +301,10 @@ def run_adc(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
       molecule = kwargs.pop('molecule')
-  
+
     if not molecule:
         raise ValueNotSet("no molecule found")
-  
+
     PsiMod.scf()
 
     return PsiMod.adc()
@@ -331,17 +332,17 @@ def run_detci(name, **kwargs):
         else:
            PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('FCI', 'TRUE')
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LEVEL', 2)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LEVEL', 3)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LEVEL', 4)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
         PsiMod.set_global_option('WFN', 'DETCI')
         level = kwargs['level']
@@ -525,7 +526,7 @@ def run_sapt(name, **kwargs):
         monomerA.set_name("monomerA")
         monomerB = molecule.extract_subsets(2,1)
         monomerB.set_name("monomerB")
-    elif (sapt_basis == "monomer"): 
+    elif (sapt_basis == "monomer"):
         molecule.update_geometry()
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name("monomerA")
@@ -696,3 +697,60 @@ def run_sapt_ct(name, **kwargs):
 
     return CT
 
+def run_mrcc(name, **kwargs):
+
+    run_scf(name, **kwargs)
+
+    level = abs(kwargs['level'])
+    pertcc = kwargs['level'] < 0
+
+    # Save current directory location
+    current_directory = os.getcwd()
+
+    # Need to move to the scratch directory, perferrably into a separate directory in that location
+    psi_io = PsiMod.IOManager.shared_object()
+    os.chdir(psi_io.get_default_path())
+
+    # Make new directory specifically for mrcc
+    mrcc_tmpdir = "mrcc_" + str(os.getpid())
+    os.mkdir(mrcc_tmpdir)
+    os.chdir(mrcc_tmpdir)
+
+    # Generate integrals file and input file (dumps files to the current directory)
+    PsiMod.mrcc(level, pertcc)
+
+    # Close output file
+    PsiMod.close_outfile()
+
+    # Call dmrcc, directing all screen output to the output file
+    try:
+        retcode = subprocess.call("dmrcc", shell=True)
+        if retcode < 0:
+            print >>sys.stderr, "MRCC was terminated by signal", -retcode
+            exit(1)
+        elif retcode > 0:
+            print >>sys.stderr, "MRCC errored", retcode
+            exit(1)
+
+    except OSError, e:
+        print >>sys.stderr, "Execution failed:", e
+        exit(1)
+
+    # Scan iface file and grab the file energy.
+    energy = 0.0
+
+    # Delete mrcc tempdir
+    #os.chdir("..")
+    #try:
+        #shutil.rmtree(mrcc_tmpdir)
+    #except OSerror, e:
+        #print >>sys.stderr, "Unable to remove MRCC temporary directory", e
+        #exit(1)
+
+    # Revert to previous current directory location
+    os.chdir(current_directory)
+
+    # Reopen output file
+    PsiMod.reopen_outfile()
+
+    return energy
