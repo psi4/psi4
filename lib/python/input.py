@@ -165,8 +165,32 @@ def process_basis_block(matchobj):
     result   = "%stemppsioman = PsiMod.IOManager.shared_object()" % spacing
     result  += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
     basislabel = re.compile(r'\s*\[([-*\(\)\w]+)\]\s*')
-    basisstring = ""
+
+    # Start by looking for assign lines, and remove them
+    label_re  = re.compile(r'^\s*assign\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
+    symbol_re = re.compile(r'^\s*assign\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
+    all_re    = re.compile(r'^\s*assign\s*([-*\(\)\w]+)\s*(\w+)?\s*$')
+    leftover_lines = []
     for line in command_lines:
+        basistype = "BASIS"
+        if(label_re.match(line)):
+            m = label_re.match(line)
+            if m.group(3): basistype = m.group(3).upper()
+            result += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+        elif(symbol_re.match(line)):
+            m = symbol_re.match(line)
+            if m.group(3): basistype = m.group(3).upper()
+            result += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+        elif(all_re.match(line)):
+            m = all_re.match(line)
+            if m.group(2): basistype = m.group(2).upper()
+            result += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
+        else:
+            leftover_lines.append(line)
+
+    # Now look for regular basis set definitions
+    basisstring = ""
+    for line in leftover_lines:
         # Ignore blank/empty lines
         if (not line or line.isspace()):
             continue
