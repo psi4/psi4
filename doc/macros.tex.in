@@ -39,6 +39,7 @@
 \newcommand{\PSIgeom}{\module{geom}\xspace}
 \newcommand{\PSIoeprop}{\module{oeprop}\xspace}
 \newcommand{\PSIstable}{\module{stable}\xspace}
+\newcommand{\PSIsapt}{\module{sapt}\xspace}
 
 %
 % Psi Library

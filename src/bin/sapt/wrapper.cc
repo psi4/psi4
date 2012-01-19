@@ -5,7 +5,7 @@
 #include <libsapt_solver/sapt2.h>
 #include <libsapt_solver/sapt2p.h>
 #include <libsapt_solver/sapt2p3.h>
-#include <libsapt_solver/sapt_dft.h>
+//#include <libsapt_solver/sapt_dft.h>
 #include "wrapper.h"
 
 namespace psi { namespace sapt {
@@ -31,9 +31,9 @@ PsiReturnType sapt(Options & options)
   } else if (options.get_str("SAPT_LEVEL") == "SAPT2+3") {
     SAPT2p3 sapt(options, psio, chkpt);
     sapt.compute_energy();
-  } else if (options.get_str("SAPT_LEVEL") == "MP2C") {
-    MP2C sapt(options, psio, chkpt);
-    sapt.compute_energy();
+//  } else if (options.get_str("SAPT_LEVEL") == "MP2C") {
+//    MP2C sapt(options, psio, chkpt);
+//    sapt.compute_energy();
   } else {
     throw PSIEXCEPTION("Unrecognized SAPT type");
   }

@@ -596,7 +596,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) analysis
         to quantitatively analyze noncovalent interactions. -*/
     /*- The level of theory for SAPT -*/
-    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3 MP2C");
+    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
 //    /*- The ubiquitous debug flag -*/
 //    options.add_int("DEBUG",0);
 //    /*- The amount of information to print to the output file -*/
@@ -639,10 +639,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
     /*- Denominator algorithm for PT methods -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- Number of Omega points for Casimir-Polder -*/
-    options.add_int("OMEGA_POINTS",8);
-    /*- Omega (atomic wavenumbers) to center Casimir-Polder on -*/
-    options.add_double("OMEGA_CENTER", 0.4);
     /*- The scale factor used for opposite-spin pairs in SCS computations -*/
     options.add_double("SAPT_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations-*/
