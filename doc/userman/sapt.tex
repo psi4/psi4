@@ -49,7 +49,7 @@ E_{SAPT2+(3)} = E_{SAPT2+} + E_{ind,resp}^{(30)} + E_{exch-ind,resp}^{(30)}
 + E_{exch-disp}^{(30)} + E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)}
 \end{equation}
 A thorough analysis of the performance of these truncations of SAPT can be
-found in a review by Hohenstein and Sherrill.\cite{Hohenstein:SAPTwires}
+found in a review by Hohenstein and Sherrill.\cite{Hohenstein:2012:WIREs}
 
 The \PSIsapt\ module relies entirely on the density-fitting approximation
 of the two-electron integrals. The factorization of the SAPT energy
@@ -64,6 +64,7 @@ improves efficiency.
 The following is the simplest possible input that will perform all
 available SAPT computations (normally, you would pick one of these methods).
 \begin{Snippet}
+
 molecule water_dimer {
      0 1
      O  -1.551007  -0.114520   0.000000
@@ -81,13 +82,14 @@ molecule water_dimer {
 }
 
 set globals {
-    basis         cc-pvdz
+    basis         aug-cc-pvdz
 }
 
 energy('sapt0')
 energy('sapt2')
 energy('sapt2+')
 energy('sapt2+3')
+
 \end{Snippet}
 The \PSIsapt\ module uses the standard \PSIfour\ partitioning of the dimer
 into monomers. Additionally, the \texttt{NO\_REORIENT} flag must be included
@@ -101,10 +103,11 @@ To exploit the efficiency of the density-fitted SAPT implementation in
 \PSIfour, the SCF computations should also be performed with density-fitted
 (DF) integrals.
 \begin{Snippet}
+
 set globals {
-    basis         cc-pvdz
-    ri_basis_scf  cc-pvdz-jkfit
-    ri_basis_sapt cc-pvdz-ri
+    basis         aug-cc-pvdz
+    df_basis_scf  aug-cc-pvdz-jkfit
+    df_basis_sapt aug-cc-pvdz-ri
     guess         sad
     scf_type      df
 }
@@ -112,6 +115,7 @@ set globals {
 set sapt {
     print         1
 }
+
 \end{Snippet}
 These options will perform the SAPT computation with DF-HF and a 
 superposition-of-atomic-densities guess. This is the preferred method of 
@@ -143,7 +147,7 @@ orbitals. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{RI\_BASIS\_SAPT} & The fitting basis to use for all
+         \texttt{DF\_BASIS\_SAPT} & The fitting basis to use for all
 two-electron integrals in the SAPT computation. \PSIfour\ will attempt to
 pick a reasonable fitting basis if one is not provided. \\
 \end{tabular*}
@@ -152,7 +156,7 @@ pick a reasonable fitting basis if one is not provided. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{RI\_BASIS\_ELST} & Optionally, a different fitting basis
+         \texttt{DF\_BASIS\_ELST} & Optionally, a different fitting basis
 can be used for the $E_{elst}^{(10)}$ and $E_{exch}^{(10)}$ terms. This may
 be important if heavier elements are involved. \\
 \end{tabular*}
@@ -242,7 +246,7 @@ going to use the induction energy. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{SCHWARZ\_CUTOFF} & All three-index DF integrals and those
+         \texttt{INTEGRAL\_CUTOFF} & All three-index DF integrals and those
 contributing to four-index integrals that fall below this Schwarz bound
 will be neglected. The default is very conservative, however, there isn't much
 to gain from loosening it. \\
@@ -331,7 +335,7 @@ orbitals. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{RI\_BASIS\_SAPT} & The fitting basis to use for all
+         \texttt{DF\_BASIS\_SAPT} & The fitting basis to use for all
 two-electron integrals in the SAPT computation. \PSIfour\ will attempt to
 pick a reasonable fitting basis if one is not provided. \\
 \end{tabular*}
@@ -380,7 +384,7 @@ option is activated. \\
 {\bf Advanced Higher-order SAPT Keywords} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{SCHWARZ\_CUTOFF} & All three-index DF integrals and those
+         \texttt{INTEGRAL\_CUTOFF} & All three-index DF integrals and those
 contributing to four-index integrals that fall below this Schwarz bound
 will be neglected. The default is very conservative, however, there is
 nothing to gain from loosening it in the case of higher-order SAPT. \\
@@ -461,15 +465,143 @@ computational savings. \\
 It is possible to obtain the stabilization energy of a complex due to
 charge-transfer effects from a SAPT computation. The charge-transfer energy 
 can be computed with the \PSIsapt\ module as described by Stone
-and Misquitta.\ref{Misquitta:2009:201}
+and Misquitta.\cite{Misquitta:2009:201}
 
 Charge-transfer energies can be obtained from the following calls to the
 energy function.
 \begin{Snippet}
+
 energy('sapt0-ct')
 energy('sapt2-ct')
 energy('sapt2+-ct')
 energy('sapt2+3-ct')
+
 \end{Snippet}
 
+A SAPT charge-transfer analysis will perform 5 HF computations: the dimer
+in the dimer basis, monomer A in the dimer basis, monomer B in the dimer
+basis, monomer A in the monomer A basis, and monomer B in the monomer B
+basis. Next, it performs two SAPT computations, one in the dimer basis and
+one in the monomer basis. Finally, it will print a summary of the
+charge-transfer results:
+\begin{Snippet}
 
+  SAPT Charge Transfer Analysis
+-----------------------------------------------------------------------------
+  SAPT Induction (Dimer Basis)         -2.0970 mH       -1.3159 kcal mol^-1
+  SAPT Induction (Monomer Basis)       -1.1396 mH       -0.7151 kcal mol^-1
+  SAPT Charge Transfer                 -0.9574 mH       -0.6008 kcal mol^-1
+
+\end{Snippet}
+These results are for the water dimer geometry shown above computed with 
+SAPT0/aug-cc-pVDZ. 
+
+\subsubsection{Interpreting SAPT Results}
+
+We will examine the results of a SAPT2+3/aug-cc-pVDZ computation on the
+water dimer. This computation can be performed with the following 
+input:
+\begin{Snippet}
+
+molecule water_dimer {
+     0 1
+     O  -1.551007  -0.114520   0.000000
+     H  -1.934259   0.762503   0.000000
+     H  -0.599677   0.040712   0.000000
+     --
+     0 1
+     O   1.350625   0.111469   0.000000
+     H   1.680398  -0.373741  -0.758561
+     H   1.680398  -0.373741   0.758561
+     units angstrom
+     no_reorient
+     symmetry c1
+}
+
+set globals {
+    basis          aug-cc-pvdz
+    guess          sad
+    scf_type       df
+}
+
+set sapt {
+    print          1
+    nat_orbs       true
+    freeze_core    true
+    do_third_order true
+}
+
+energy('sapt2+3')
+
+\end{Snippet}
+To reiterate some of the options mentioned above: the \texttt{NAT\_ORBS} 
+option will compute MP2 natural orbitals and use them in the evaluation of
+the triples correction to dispersion, the \texttt{DO\_THIRD\_ORDER} option
+will evaluate the additional third-order corrections that distinguish SAPT2+3
+from SAPT2+(3). This SAPT2+3/aug-cc-pVDZ computation produces the following 
+results:
+\begin{Snippet}
+
+  SAPT Results  
+--------------------------------------------------------------------------
+  Electrostatics            -13.06429805 mH      -8.19797114 kcal mol^-1
+    Elst10,r                -13.37543274 mH      -8.39321111 kcal mol^-1
+    Elst12,r                  0.04490253 mH       0.02817676 kcal mol^-1
+    Elst13,r                  0.26623216 mH       0.16706321 kcal mol^-1
+
+  Exchange                   13.41793548 mH       8.41988199 kcal mol^-1
+    Exch10                   11.21823471 mH       7.03954885 kcal mol^-1
+    Exch10(S^2)              11.13803867 mH       6.98922508 kcal mol^-1
+    Exch11(S^2)               0.04558910 mH       0.02860760 kcal mol^-1
+    Exch12(S^2)               2.15411167 mH       1.35172554 kcal mol^-1
+
+  Induction                  -3.91333155 mH      -2.45565272 kcal mol^-1
+    Ind20,r                  -4.57531220 mH      -2.87105187 kcal mol^-1
+    Ind30,r                  -4.91715479 mH      -3.08556135 kcal mol^-1
+    Ind22                    -0.83761074 mH      -0.52560870 kcal mol^-1
+    Exch-Ind20,r              2.47828867 mH       1.55514969 kcal mol^-1
+    Exch-Ind30,r              4.33916816 mH       2.72286924 kcal mol^-1
+    Exch-Ind22                0.45370482 mH       0.28470409 kcal mol^-1
+    delta HF,r (2)           -1.43240211 mH      -0.89884593 kcal mol^-1
+    delta HF,r (3)           -0.85441547 mH      -0.53615383 kcal mol^-1
+
+  Dispersion                 -3.62061213 mH      -2.27196851 kcal mol^-1
+    Disp20                   -3.54292109 mH      -2.22321664 kcal mol^-1
+    Disp30                    0.05959981 mH       0.03739945 kcal mol^-1
+    Disp21                    0.11216179 mH       0.07038259 kcal mol^-1
+    Disp22 (SDQ)             -0.17924270 mH      -0.11247650 kcal mol^-1
+    Disp22 (T)               -0.47692549 mH      -0.29927528 kcal mol^-1
+    Est. Disp22 (T)          -0.54385253 mH      -0.34127263 kcal mol^-1
+    Exch-Disp20               0.64545652 mH       0.40503010 kcal mol^-1
+    Exch-Disp30              -0.01823411 mH      -0.01144207 kcal mol^-1
+    Ind-Disp30               -0.91816995 mH      -0.57616037 kcal mol^-1
+    Exch-Ind-Disp30           0.76459013 mH       0.47978757 kcal mol^-1
+
+  Total HF                   -5.68662366 mH      -3.56841037 kcal mol^-1
+  Total SAPT0                -8.58408823 mH      -5.38659691 kcal mol^-1
+  Total SAPT2                -6.72339084 mH      -4.21899163 kcal mol^-1
+  Total SAPT2+               -7.26739725 mH      -4.56036082 kcal mol^-1
+  Total SAPT2+(3)            -6.94156528 mH      -4.35589816 kcal mol^-1
+  Total SAPT2+3              -7.11337921 mH      -4.46371303 kcal mol^-1
+
+\end{Snippet}
+At the bottom of this output are the total SAPT energies (defined above),
+they are composed of subsets of the individual terms printed above. The
+individual terms are grouped according to the component of the interaction
+to which they contribute. The total component energies ({\em i.e.}
+electrostatics, exchange, induction, and dispersion) represent what we
+regard as the best estimate available at a given level of SAPT computed
+from a subset of the terms of that grouping. The groupings shown above are
+not unique and are certainly not rigorously defined. We regard the groupings 
+used in \PSIfour\/ as a ``chemist's grouping'' as opposed to a more
+mathematically based grouping, which would group all exchange terms ({\em
+i.e.} $E_{exch-ind,resp}^{(20)}$, $E_{exch-disp}^{(20)}$, {\em etc.}) in
+the exchange component. A final note is that both \texttt{Disp22(T)}
+and \texttt{Est.Disp22(T)} results appear if MP2 natural orbitals are 
+used to evaluate the triples correction to dispersion. The \texttt{Disp22(T)} 
+result is the triples correction as computed in the truncated NO basis;  
+\texttt{Est.Disp22(T)} is a scaled result that attempts to recover
+the effect of the truncated virtual space. The \texttt{Est.Disp22(T)}
+value used in the SAPT energy and dispersion component (see E.~G.
+Hohenstein and C.~D. Sherrill, {\em J. Chem. Phys.}, {\bf 133}, 104107 
+(2010) for details).
