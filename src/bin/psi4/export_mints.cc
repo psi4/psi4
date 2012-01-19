@@ -271,6 +271,7 @@ void export_mints()
             def("set_geometry", matrix_set_geometry(&Molecule::set_geometry)).
             def("set_name", &Molecule::set_name).
             def("name", &Molecule::name).
+            def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry).
             def("fix_orientation", &Molecule::set_orientation_fixed).
             def("fix_com", &Molecule::set_com_fixed).
             def("init_with_checkpoint", &Molecule::init_with_chkpt).

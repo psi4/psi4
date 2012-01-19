@@ -3,8 +3,8 @@
 \subsubsection{Introduction}
 
 Self-Consistent-Field (SCF) theory forms the cornerstone of ab initio quantum
-chemistry. SCF is specialized to either conventional Hartree-Fock (HF) molecular
-orbital theory or the alternative generalized Kohn-Sham Density Functional
+chemistry. Here SCF refers both to conventional Hartree-Fock (HF) molecular
+orbital theory and also to generalized Kohn-Sham Density Functional
 Theory (KS-DFT). \PSIfour contains a mature code for several common HF
 references, and a pilot (very shortly to be optimized) implementation of most
 flavors of KS-DFT.
@@ -358,13 +358,13 @@ full SCF in a 3-21G basis and then performing a cast-up, at a fraction of the
 cost.  However, SAD and \texttt{DOCC}/\texttt{SOCC} arrays do not play very well
 at the moment. 
 \item Do not specify the \texttt{DOCC} or \texttt{SOCC} arrays unless you are
-really sure/the system is behaving really squirrely on you. This also helps with
-the above point.
-\item For wall time, \texttt{DF} beats \texttt{OUT\_OF\_CORE}/\texttt{PK} beats
+really sure you have these correct, or the system is behaving unusually. 
+This also helps with the above point.
+\item For wall time, \texttt{DF} beats \texttt{OUT\_OF\_CORE}, and 
+\texttt{PK} beats
 \texttt{DIRECT}. Use \texttt{DF} unless you need absolute accuracy or do not
 have a -JKFIT auxiliary set for your primary basis/atom type. Then use
-\texttt{OUT\_OF\_CORE} unless you run out of disk space, in which case you will
-probably not be running \PSIfour anymore.  
+\texttt{OUT\_OF\_CORE} unless you run out of disk space.
 \item For very large systems, you may need to relax \texttt{E\_CONVERGENCE} and
 \texttt{D\_CONVERGENCE}, as the error is extensive in the size of the system.
 $1.0\textsc{E}-7$ is usually sufficient.  
