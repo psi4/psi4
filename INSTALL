@@ -24,7 +24,8 @@ I. Compilation Prerequisites:
    * POSIX threads (Pthreads) library (optional)
    * Python interpreter (2.4 or higher)
    * Python developer libraries corresponding to your interpreter.
-   * A version of MPI is currently required; MPICH2 is recommended.
+   * A version of MPI is required to compile distributed-parallel PSI; 
+     MPICH2 is recommended.
      (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
      seems to fix it.)
    * GNU utilities: (see http://www.gnu.org)
@@ -127,9 +128,9 @@ Step 1: Configuration
 
 A. General Information about Configuration
 
-First, we recommend that you choose for the top-level $PSI4 source
-directory something other than /usr/local/psi; your $HOME directory or
-/usr/local/src/psi4 are convenient choices.  Next, in the top-level $PSI4
+First, we recommend that you choose for the top-level psi4 source
+directory something other than /usr/local/psi; $HOME/psi4 or
+/usr/local/src/psi4 are convenient choices.  Next, in the top-level psi4
 source directory you've chosen, first run autoconf to generate the configure
 script from configure.ac.  It is best to keep the source code separate
 from the compilation area, so you must first choose a subdirectory for
@@ -227,8 +228,8 @@ the configure script:
    * --with-cxx=compiler --- Use this option to specify a C++ compiler.
    One should use compilers that generate reentrant code, if possible.
    The default search order for compilers is: xlC_r (AIX only), g++, c++,
-   icpc, cxx.  At the moment, MPI is required and you need to use
-   mpicxx (where this has been added to your PATH).
+   icpc, cxx.  For distributed-parallel compilation, MPI is required and 
+   you need to use mpicxx (where this has been added to your PATH).
 
    * --with-fc=compiler --- Use this option to specify a Fortran-77 compiler,
    which is used to determine linking coventions for BLAS and LAPACK libraries
@@ -595,8 +596,7 @@ meaning that Intel is always playing catch-up to new features in g++. This
 means the two are often incompatible, leading to trouble if one wants to use
 icpc to compile PSI4 (or anything else...). Your best bet in general is to not
 upgrade Linux too fast, and always keep the very latest Intel compilers
-around. However, if you see an incompatibility, some of the points below might
-help. 
+around.
 
 * Missing symbols like "do_fio" or "e_wsfe"
 
