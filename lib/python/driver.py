@@ -90,9 +90,11 @@ def gradient(name, **kwargs):
     #    3. If user provides a custom 'func' use that
 
     # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
+    lowername, level, uppername = parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
+    if uppername:
+        kwargs['fullname'] = uppername   # For mrccsd(t) this will be CCSD(T)
 
     # 1. set the default to that of the provided name
     if (procedures['gradient'].has_key(lowername)):
@@ -406,8 +408,7 @@ def parse_arbitrary_order(name):
             return "mrcc", ind, fullname.upper()
 
         except ValueError:
-            print "Unknown method: %s" % namelower
-            sys.exit(0)
+            raise ValidationError('MRCC method \'%s\' invalid.' % (namelower))
 
     elif re.match(r'^[a-z]+\d+$', namelower):
         decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
