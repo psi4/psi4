@@ -167,6 +167,39 @@ void DFMP2::form_singles()
         fprintf(outfile, "  Beta  singles energy = %24.16E\n\n", E_singles_b);
     }
 }
+SharedMatrix DFMP2::form_inverse_metric()
+{
+    int naux = ribasis_->nbf();
+
+    // Load inverse metric from the SCF three-index integral file if it exists
+    if (options_.get_str("DF_INTS_IO") == "LOAD") {
+
+        SharedMatrix Jm12(new Matrix("SO Basis Fitting Inverse (Eig)", naux, naux));
+        fprintf(outfile,"\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ); fflush(outfile);
+        psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
+        psio_->read_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
+        psio_->close(PSIF_DFSCF_BJ, 1);
+
+        return Jm12;
+
+    } else {
+
+        // Form the inverse metric manually
+        boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true)); 
+        metric->form_eig_inverse(1.0E-10);
+        SharedMatrix Jm12 = metric->get_metric();    
+    
+        // Save inverse metric to the SCF three-index integral file if it exists
+        if (options_.get_str("DF_INTS_IO") == "SAVE") {
+            fprintf(outfile,"\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ); fflush(outfile);
+            psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
+            psio_->write_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
+            psio_->close(PSIF_DFSCF_BJ, 1);
+        }
+
+        return Jm12;
+    }
+}
 void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI nia)
 {
     // Memory constraints
@@ -457,10 +490,7 @@ void RDFMP2::form_Aia()
 }
 void RDFMP2::form_Qia()
 {
-    boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true)); 
-    metric->form_eig_inverse(1.0E-10);
-    SharedMatrix Jm12 = metric->get_metric();    
-    
+    SharedMatrix Jm12 = form_inverse_metric();
     apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_->colspi()[0] * (ULI) Cavir_->colspi()[0]);  
 }
 void RDFMP2::form_energy()
@@ -812,10 +842,7 @@ void UDFMP2::form_Aia()
 }
 void UDFMP2::form_Qia()
 {
-    boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true)); 
-    metric->form_eig_inverse(1.0E-10);
-    SharedMatrix Jm12 = metric->get_metric();    
-    
+    SharedMatrix Jm12 = form_inverse_metric(); 
     apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_a_->colspi()[0] * (ULI) Cavir_a_->colspi()[0]);  
     apply_fitting(Jm12, PSIF_DFMP2_QIA, ribasis_->nbf(), Caocc_b_->colspi()[0] * (ULI) Cavir_b_->colspi()[0]);  
 }
