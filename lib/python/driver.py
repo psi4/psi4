@@ -69,9 +69,11 @@ def energy(name, **kwargs):
     molecule.update_geometry()
 
     # Allow specification of methods to arbitrary order
-    lowername, level = parse_arbitrary_order(lowername)
+    lowername, level, uppername = parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
+    if uppername:
+        kwargs['fullname'] = uppername   # For mrccsd(t) this will be CCSD(T)
 
     try:
         return procedures['energy'][lowername](lowername,**kwargs)
@@ -387,19 +389,21 @@ def parse_arbitrary_order(name):
         orders = [ "sd", "sdt", "sdtq", "sdtqp", "stdqph" ]
         fullcc = ccorder.group(1)
 
+        fullname = "CC" + fullcc
         parenfound = False
         if ccorder.group(2):
             parenfound = True
             parencc = ccorder.group(2)
             parenorder = parencc[1]
             fullcc = fullcc + parenorder
+            fullname = fullname + parencc
 
         try:
             ind = orders.index(fullcc) + 2 # to account for SD being first
             if parenfound == True:
                 ind = -ind
 
-            return "mrcc", ind
+            return "mrcc", ind, fullname.upper()
 
         except ValueError:
             print "Unknown method: %s" % namelower
@@ -413,14 +417,14 @@ def parse_arbitrary_order(name):
         if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
             # Let 'mp2' pass through as itself
             if (namestump == 'mp') and (namelevel == 2):
-                return namelower, None
+                return namelower, None, None
             # Otherwise return method and order
             else:
-                return namestump, namelevel
+                return namestump, namelevel, None
         else:
-            return namelower, None
+            return namelower, None, None
     else:
-        return namelower, None
+        return namelower, None, None
 
 def frequencies(name, **kwargs):
     lowername = name.lower()
@@ -561,7 +565,3 @@ def frequencies(name, **kwargs):
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
     frequencies(name, **kwargs)
-
-if __name__ == "__main__":
-    result = parse_arbitrary_order("mrccsd")
-    print result
