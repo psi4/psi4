@@ -2,6 +2,7 @@
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
 #include <libmints/mints.h>
+#include <libmints/view.h>
 #include <libpsio/psio.hpp>
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
@@ -109,17 +110,20 @@ PsiReturnType mrcc(int level, bool pertcc)
     dpd_buf4_close(&K);
     _default_psio_lib_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    // Load in the MO OEI
-    Matrix moH(PSIF_MO_OEI, mopi, mopi);
-    moH.load(_default_psio_lib_, PSIF_OEI);
+    // Load in frozen core operator, in the event of FREEZE_CORE = FALSE this is the MO OEI
+    SharedMatrix moH(new Matrix(PSIF_MO_FZC, wave->nmopi(), wave->nmopi()));
+    moH->load(_default_psio_lib_, PSIF_OEI);
+
+    View vmoH(moH, mopi, mopi, wave->frzcpi(), wave->frzcpi());
+    moH = vmoH();
 
     // Walk through moH and save the non-zero values
     int offset = 0;
     for (int h=0; h<nirrep; ++h) {
         for (int m=0; m<mopi[h]; ++m) {
             for (int n=0; n<=m; ++n) {
-                if (fabs(moH[h][m][n]) > 1.0e-12) {
-                    fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", moH[h][m][n], m+offset+1, n+offset+1, 0, 0);
+                if (fabs(moH->get(h, m, n)) > 1.0e-12) {
+                    fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", moH->get(h, m, n), m+offset+1, n+offset+1, 0, 0);
                 }
             }
         }
@@ -128,7 +132,7 @@ PsiReturnType mrcc(int level, bool pertcc)
 
     // Print nuclear repulsion energy.
     // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
-    fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
+    fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
     fclose(fort55);
 
     fprintf(outfile, "done.\n  Generating fort.56 input file...");
