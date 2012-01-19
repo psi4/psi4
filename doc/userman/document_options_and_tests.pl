@@ -397,9 +397,9 @@ while(<PHYSCONST>){
     my $Var     = $1;
     my $Val     = $2;
     my $Comment = $3;
-    printf PYOUT "%-25s = %-20s #%-40s\n", $Var, $Val, $Comment;
+    printf PYOUT "psi%-25s = %-20s #%-40s\n", $Var, $Val, $Comment;
     $Var =~ s/_/\\_/g; # Make things TeX-friendly
-    printf TEXOUT "%-25s & %-20s & %-40s\\\\\n", $Var, $Val, $Comment;
+    printf TEXOUT "psi%-25s & %-20s & %-40s\\\\\n", $Var, $Val, $Comment;
 }
 close PHYSCONST;
 close PYOUT;
