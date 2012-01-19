@@ -1,5 +1,7 @@
 #! Single point energies of multiple excited states with EOM-CCSD
 
+memory 250 mb
+
 
 molecule h2o {
   O
@@ -14,4 +16,3 @@ set {
 
 energy('eom-ccsd')
 
-clean()

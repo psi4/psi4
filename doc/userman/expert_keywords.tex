@@ -4,6 +4,8 @@
 \subsection{CCDENSITY}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 AEL & Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -11,13 +13,17 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CONNECT\_XI & Do require $\bar{H}$ and $R$ to be connected?  \\ 
+	 XI\_CONNECT & Do require $\bar{H}$ and $R$ to be connected?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -27,6 +33,8 @@
 \subsection{CCENERGY}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 FORCE\_RESTART & Do restart the coupled-cluster iterations even if MO phases are screwed up?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -45,6 +53,8 @@
 \subsection{CCEOM}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 EXCITATION\_RANGE & The depth into the occupied and valence spaces from which one-electron excitations are seeded into the Davidson guess to the CIS (the default of 2 includes all single excitations between HOMO-1, HOMO, LUMO, and LUMO+1). This CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic excited states in the EOM-CC calculation  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 2\\
@@ -63,6 +73,8 @@
 \subsection{CCHBAR}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
@@ -72,6 +84,8 @@
 \subsection{CCLAMBDA}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 JOBTYPE & Type of job being performed  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} No Default\\
@@ -79,6 +93,8 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
@@ -88,6 +104,8 @@
 \subsection{CCRESPONSE}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
@@ -97,6 +115,8 @@
 \subsection{CCSORT}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} No Default\\
@@ -106,6 +126,8 @@
 \subsection{CCTRIPLES}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
@@ -126,6 +148,8 @@
 \subsection{CLAG}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} NONE\\
@@ -135,6 +159,8 @@
 \subsection{DETCI}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 BENDAZZOLI & Do use some routines based on the papers of Bendazzoli et al. to calculate sigma? Seems to be slower and not worthwhile; may disappear eventually. Works only for full CI and I don't remember if I could see how their clever scheme might be extended to RAS in general.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -142,6 +168,8 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 NUM\_INIT\_VECS & The number of initial vectors to use in the CI iterative procedure. Defaults to the number of roots.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
@@ -149,6 +177,8 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 FILTER\_GUESS\_DET2 & Array specifying the absolute alpha string number and beta string number for the second determinant in the filter procedure. (See FILTER\_GUESS).  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -156,83 +186,44 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 FOLLOW\_VECTOR & In following a particular root (see ROOT keyword), sometimes the root number changes. To follow a root of a particular character, one can specify a list of determinants and their coefficients, and the code will follow the root with the closest overlap. The user specifies arrays containing the absolute alpha string indices (A\_i below), absolute beta indices (B\_i below), and CI coefficients (C\_i below) to form the desired vector. FOLLOW\_VECTOR\_ALPHAS specifies the alpha string indices. The format is FOLLOW\_VECTOR = [ [[A\_1, B\_1], C\_1], [[A\_2, B\_2], C\_2], ...].  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RAS3 & An array giving the number of orbitals per irrep for RAS3  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WIGNER & Do use Wigner formulas in the Empn series?  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FILTER\_ZERO\_DET & If present, the code will try to filter out a particular determinant by setting its CI coefficient to zero. FILTER\_ZERO\_DET = (alphastr betastr) specifies the absolute alpha and beta string numbers of the target determinant. This could be useful for trying to exclude states that have a nonzero CI coefficient for the given determinant. However, this option was experimental and may not be effective.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 HD\_AVE & How to average H diag energies over spin coupling sets. HD\_EXACT uses the exact diagonal energies which results in expansion vectors which break spin symmetry. HD\_KAVE averages the diagonal energies over a spin-coupling set yielding spin pure expansion vectors. ORB\_ENER employs the sum of orbital energy approximation giving spin pure expansion vectors but usually doubles the number of Davidson iterations. EVANGELISTI uses the sums and differences of orbital energies with the SCF reference energy to produce spin pure expansion vectors. LEININGER approximation which subtracts the one-electron contribution from the orbital energies, multiplies by 0.5, and adds the one-electron contribution back in, producing spin pure expansion vectors and developed by Matt Leininger and works as well as EVANGELISTI.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} EVANGELISTI\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MIXED4 & Do allow `mixed' excitations involving RAS IV into the CI space. Useful to specify a split-virtual CISD[TQ] computation. If FALSE, then if there are any electrons in RAS IV, then the number of holes in RAS I cannot exceed the given excitation level EX\_LEVEL.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 OPDM\_KE & Do compute the kinetic energy contribution from the correlated part of the one-particle density matrix?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MPN\_SCHMIDT & Do employ an orthonormal vector space rather than storing the kth order wavefunction?  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RAS4 & An array giving the number of orbitals per irrep for RAS4  \\ 
+	 RAS3 & An array giving the number of orbitals per irrep for RAS3  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_FIX\_EXTERNAL & Do fix amplitudes involving RAS I or RAS IV? Useful in mixed MP2-CC methods.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CC\_FIX\_EXTERNAL\_MIN & Number of external indices before amplitude gets fixed by CC\_FIX\_EXTERNAL. Experimental.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FCI\_STRINGS & Do store strings specifically for FCI? (Defaults to TRUE for FCI.)  \\ 
+	 FILTER\_GUESS & Do invoke the FILTER\_GUESS options that are used to filter out some trial vectors which may not have the appropriate phase convention between two determinants? This is useful to remove, e.g., delta states when a sigma state is desired. The user inputs two determinants (by giving the absolute alpha string number and beta string number for each), and also the desired phase between these two determinants for guesses which are to be kept. FILTER\_GUESS = TRUE turns on the filtering routine. Requires additional keywords FILTER\_GUESS\_DET1, FILTER\_GUESS\_DET2, and FILTER\_GUESS\_SIGN.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -240,23 +231,11 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 NO\_DFILE & Do use the last vector space in the BVEC file to write scratch DVEC rather than using a separate DVEC file? (Only possible if NUM\_ROOTS = 1.)  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAVE\_MPN2 & If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if available from WIGNER=true); if 2, save the MP(2n-2) energy (if available from WIGNER=true).  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REF\_SYM & Irrep for CI vectors; -1 = find automatically. This option allows the user to look for CI vectors of a different irrep than the reference. This probably only makes sense for Full CI, and it would probably not work with unit vector guesses. Numbering starts from zero for the totally-symmetric irrep.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} -1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -269,14 +248,162 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FILTER\_GUESS & Do invoke the FILTER\_GUESS options that are used to filter out some trial vectors which may not have the appropriate phase convention between two determinants? This is useful to remove, e.g., delta states when a sigma state is desired. The user inputs two determinants (by giving the absolute alpha string number and beta string number for each), and also the desired phase between these two determinants for guesses which are to be kept. FILTER\_GUESS = TRUE turns on the filtering routine. Requires additional keywords FILTER\_GUESS\_DET1, FILTER\_GUESS\_DET2, and FILTER\_GUESS\_SIGN.  \\ 
+	 CC\_VARIATIONAL & Do use variational energy expression in CC computation? Experimental.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MPN\_WIGNER & Do use Wigner formulas in the Empn series?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_MACRO & CC\_MACRO = [ [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], ... ] Optional additional restrictions on allowed exictations in coupled-cluster computations, based on macroconfiguration selection. For each sub-array, [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], eliminate cluster amplitudes in which: [the excitation level (holes in I + II) is equal to ex\_lvl] AND [there are more than max\_holes\_I holes in RAS I, there are more than max\_parts\_IV particles in RAS IV, OR there are more than max\_I+IV quasiparticles in RAS I + RAS IV].  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_UPDATE\_EPS & Do update T amplitudes with orbital eigenvalues? (Usually would do this). Not doing this is experimental.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H0\_BLOCK\_COUPLING\_SIZE & Parameters which specifies the size of the coupling block within the generalized davidson preconditioner.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 EX\_ALLOW & An array of length EX\_LEVEL specifying whether each excitation type (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed). Used to specify non-standard CI spaces such as CIST.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SIGMA\_OVERLAP & Do print the sigma overlap matrix? Not generally useful.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MIXED & Do allow `mixed' RAS II/RAS III excitations into the CI space? If FALSE, then if there are any electrons in RAS III, then the number of holes in RAS I cannot exceed the given excitation level EX\_LEVEL.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 REPL\_OTF & Do string replacements on the fly in DETCI? Can save a gigantic amount of memory (especially for truncated CI's) but is somewhat flaky and hasn't been tested for a while. It may work only works for certain classes of RAS calculations. The current code is very slow with this option turned on.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SF\_RESTRICT & Do eliminate determinants not valid for spin-complete spin-flip CI's? [see J. S. Sears et al, J. Chem. Phys. 118, 9084-9094 (2003)]  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 HD\_AVG & How to average H diag energies over spin coupling sets. HD\_EXACT uses the exact diagonal energies which results in expansion vectors which break spin symmetry. HD\_KAVE averages the diagonal energies over a spin-coupling set yielding spin pure expansion vectors. ORB\_ENER employs the sum of orbital energy approximation giving spin pure expansion vectors but usually doubles the number of Davidson iterations. EVANGELISTI uses the sums and differences of orbital energies with the SCF reference energy to produce spin pure expansion vectors. LEININGER approximation which subtracts the one-electron contribution from the orbital energies, multiplies by 0.5, and adds the one-electron contribution back in, producing spin pure expansion vectors and developed by Matt Leininger and works as well as EVANGELISTI.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} EVANGELISTI\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MIXED4 & Do allow `mixed' excitations involving RAS IV into the CI space. Useful to specify a split-virtual CISD[TQ] computation. If FALSE, then if there are any electrons in RAS IV, then the number of holes in RAS I cannot exceed the given excitation level EX\_LEVEL.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_FIX\_EXTERNAL & Do fix amplitudes involving RAS I or RAS IV? Useful in mixed MP2-CC methods.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FCI\_STRINGS & Do store strings specifically for FCI? (Defaults to TRUE for FCI.)  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FILTER\_ZERO\_DET & If present, the code will try to filter out a particular determinant by setting its CI coefficient to zero. FILTER\_ZERO\_DET = (alphastr betastr) specifies the absolute alpha and beta string numbers of the target determinant. This could be useful for trying to exclude states that have a nonzero CI coefficient for the given determinant. However, this option was experimental and may not be effective.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MPN\_SCHMIDT & Do employ an orthonormal vector space rather than storing the kth order wavefunction?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RAS4 & An array giving the number of orbitals per irrep for RAS4  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 PERTURB\_MAGNITUDE & $z$ in $H = H_0 + z H_1$  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} 1.0\\
@@ -284,37 +411,29 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 R4S & Do restrict strings with $e-$ in RAS IV? Useful to reduce the number of strings required if MIXED4=true, as in a split-virutal CISD[TQ] computation. If more than one electron is in RAS IV, then the holes in RAS I cannot exceed the number of particles in RAS III + RAS IV (i.e., EX\_LEVEL), or else the string is discarded.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_MACRO & CC\_MACRO = [ [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], ... ] Optional additional restrictions on allowed exictations in coupled-cluster computations, based on macroconfiguration selection. For each sub-array, [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], eliminate cluster amplitudes in which: [the excitation level (holes in I + II) is equal to ex\_lvl] AND [there are more than max\_holes\_I holes in RAS I, there are more than max\_parts\_IV particles in RAS IV, OR there are more than max\_I+IV quasiparticles in RAS I + RAS IV].  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_MIXED & Do ignore block if num holes in RAS I and II is > cc\_ex\_lvl and if any indices correspond to RAS I or IV (i.e., include only all-active higher excitations)?  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 EX\_ALLOW & An array of length EX\_LEVEL specifying whether each excitation type (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed). Used to specify non-standard CI spaces such as CIST.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 H0\_BLOCK\_COUPLING & Do use coupling block in preconditioner?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_MIXED & Do ignore block if num holes in RAS I and II is > cc\_ex\_lvl and if any indices correspond to RAS I or IV (i.e., include only all-active higher excitations)?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -327,42 +446,36 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RAS1 & An array giving the number of orbitals per irrep for RAS1  \\ 
+	 FILTER\_GUESS\_DET1 & Array specifying the absolute alpha string number and beta string number for the first determinant in the filter procedure. (See FILTER\_GUESS).  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_VARIATIONAL & Do use variational energy expression in CC computation? Experimental.  \\ 
+	 RAS1 & An array giving the number of orbitals per irrep for RAS1  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 HD\_OTF & Do compute the diagonal elements of the Hamiltonian matrix on-the-fly? Otherwise, a diagonal element vector is written to a separate file on disk.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_UPDATE\_EPS & Do update T amplitudes with orbital eigenvalues? (Usually would do this). Not doing this is experimental.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FILTER\_GUESS\_DET1 & Array specifying the absolute alpha string number and beta string number for the first determinant in the filter procedure. (See FILTER\_GUESS).  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H0\_BLOCK\_COUPLING\_SIZE & Parameters which specifies the size of the coupling block within the generalized davidson preconditioner.  \\ 
+	 MPN\_ORDER\_SAVE & If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if available from MPN\_WIGNER=true); if 2, save the MP(2n-2) energy (if available from MPN\_WIGNER=true).  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
@@ -370,34 +483,26 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 H0\_GUESS\_SIZE & size of H0 block for initial guess  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 400\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RAS2 & An array giving the number of orbitals per irrep for RAS2  \\ 
+	 REFERENCE\_SYM & Irrep for CI vectors; -1 = find automatically. This option allows the user to look for CI vectors of a different irrep than the reference. This probably only makes sense for Full CI, and it would probably not work with unit vector guesses. Numbering starts from zero for the totally-symmetric irrep.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SF\_RESTRICT & Do eliminate determinants not valid for spin-complete spin-flip CI's? [see J. S. Sears et al, J. Chem. Phys. 118, 9084-9094 (2003)]  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SIGMA\_OVERLAP & Do print the sigma overlap matrix? Not generally useful.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} integer &  {\bf Default:} -1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 FILTER\_GUESS\_SIGN & The required phase (1 or -1) between the two determinants specified by FILTER\_GUESS\_DET1 and FILTER\_GUESS\_DET2  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
@@ -405,29 +510,39 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 H0\_BLOCKSIZE & This parameter specifies the size of the H0 block of the Hamiltonian which is solved exactly. The n determinants with the lowest SCF energy are selected, and a submatrix of the Hamiltonian is formed using these determinants. This submatrix is used to accelerate convergence of the CI iterations in the BOLSEN and MITRUSHENKOV iteration schemes, and also to find a good starting guess for the SEM method if GUESS\_VECTOR = H0\_BLOCK. Defaults to 400. Note that the program may change the given size for Ms=0 cases (Ms0 = TRUE) if it determines that the H0 block includes only one member of a pair of determinants related by time reversal symmetry. For very small block sizes, this could conceivably eliminate the entire H0 block; the program should print warnings if this occurs.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 400\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MIXED & Do allow `mixed' RAS II/RAS III excitations into the CI space? If FALSE, then if there are any electrons in RAS III, then the number of holes in RAS I cannot exceed the given excitation level EX\_LEVEL.  \\ 
+	 RAS2 & An array giving the number of orbitals per irrep for RAS2  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
+
+\subsection{DFMP2}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REPL\_OTF & Do string replacements on the fly in DETCI? Can save a gigantic amount of memory (especially for truncated CI's) but is somewhat flaky and hasn't been tested for a while. It may work only works for certain classes of RAS calculations. The current code is very slow with this option turned on.  \\ 
+	 MADMP2\_SLEEP & A helpful option, used only in debugging the MADNESS version  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 
 \subsection{LMP2}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} LMP2\\
@@ -437,20 +552,17 @@
 \subsection{MCSCF}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 ROTATE\_MO\_ANGLE & For orbital rotations after convergence, the angle (in degrees) by which to rotate.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 ROTATE\_MO\_Q & For orbital rotations after convergence, number of the second orbital (1-based) to rotate.  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 ROTATE\_MO\_IRREP & For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
@@ -458,15 +570,28 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 ROTATE\_MO\_P & For orbital rotations after convergence, number of the first orbital (1-based) to rotate.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 ROTATE\_MO\_Q & For orbital rotations after convergence, number of the second orbital (1-based) to rotate.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
 	 & & \\
 \end{tabular*}
 
 \subsection{MP2}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 JOBTYPE & Type of job being performed  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SP\\
@@ -484,28 +609,27 @@
 
 \subsection{PSIMRCC}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DEBUG & Amount of debugging output to produce  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PERTURB\_CBS\_COUPLING & Do include the terms that couple different reference determinants in perturbative CBS correction computations?  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 PERTURB\_CBS & Do compute the perturbative corrections for basis set incompleteness?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PERTURB\_CBS\_COUPLING & Do include the terms that couple different reference determinants in perturbative CBS correction computations?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 TIKHONOW\_TRIPLES & Do use Tikhonow regularization in (T) computations?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -513,6 +637,45 @@
 \end{tabular*}
 
 \subsection{SCF}
+\subsubsection{DFSCF Algorithm }
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DF\_INTS\_IO & IO caching for CP corrections, etc  \\ 
+
+	  & {\bf Possible Values:} NONE, SAVE, LOAD \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\subsubsection{Environmental Effects }
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DISTRIBUTED\_MATRIX & The dimension sizes of the distributed matrix  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PARALLEL & Do run in parallel?  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 TILE\_SZ & The tile size for the distributed matrices  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 512\\
+	 & & \\
+\end{tabular*}
+\subsubsection{General Wavefunction Info }
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
 
@@ -522,10 +685,86 @@
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
 	 & & \\
 \end{tabular*}
+\subsubsection{Misc. }
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAPT & Are going to do SAPT? If so, what part?  \\ 
+
+	  & {\bf Possible Values:} FALSE, 2-DIMER, 2-MONOMER\_A, 2-MONOMER\_B, 3-TRIMER, 3-DIMER\_AB, 3-DIMER\_BC, 3-DIMER\_AC, 3-MONOMER\_A, 3-MONOMER\_B, 3-MONOMER\_C \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} FALSE\\
+	 & & \\
+\end{tabular*}
+\subsubsection{SAD Guess Algorithm }
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_CHOL\_TOLERANCE & SAD Guess Cholesky Cutoff (for eliminating redundancies). See the note at the beginning of Section \ref{keywords}.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} 1e-7\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_D\_CONVERGENCE & Convergence criterion for SCF density in SAD Guess. See the note at the beginning of Section \ref{keywords}.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} 1e-5\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_E\_CONVERGENCE & Convergence criterion for SCF energy in SAD Guess. See the note at the beginning of Section \ref{keywords}.  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} 1e-5\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_F\_MIX\_START & SAD Guess F-mix Iteration Start  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 50\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_MAXITER & Maximum number of SAD guess iterations  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 50\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_PRINT & The amount of SAD information to print to the output  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
 
 \subsection{TRANSQT}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 RAS1 & An array giving the number of orbitals per irrep for RAS1  \\ 
+
+	  & {\bf Possible Values:}  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RAS3 & An array giving the number of orbitals per irrep for RAS3  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -533,13 +772,8 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 RAS4 & An array giving the number of orbitals per irrep for RAS4  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RAS2 & An array giving the number of orbitals per irrep for RAS2  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -547,13 +781,17 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} CCSD\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RAS3 & An array giving the number of orbitals per irrep for RAS3  \\ 
+	 RAS2 & An array giving the number of orbitals per irrep for RAS2  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -563,6 +801,8 @@
 \subsection{TRANSQT2}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN & Wavefunction type  \\ 
+
+	  & {\bf Possible Values:}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} No Default\\

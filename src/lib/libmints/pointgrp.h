@@ -150,7 +150,7 @@ class SymmetryOperation {
     void i() { zero(); d[0][0] = d[1][1] = d[2][2] = -1.0; bits_ = SymmOps::i; }
 
     /// Set equal to reflection in xy plane
-    void sigma_h() { unit(); d[2][2] = -1.0; bits_ = SymmOps::Sigma_xy; }
+    void sigma_xy() { unit(); d[2][2] = -1.0; bits_ = SymmOps::Sigma_xy; }
 
     /// Set equal to reflection in xz plane
     void sigma_xz() { unit(); d[1][1] = -1.0; bits_ = SymmOps::Sigma_xz; }
@@ -165,8 +165,11 @@ class SymmetryOperation {
     /// Set equal to C2 about the x axis
     void c2_x() { i(); d[0][0] = 1.0; bits_ = SymmOps::C2_x; }
 
-    /// Set equal to C2 about the x axis
+    /// Set equal to C2 about the y axis
     void c2_y() { i(); d[1][1] = 1.0; bits_ = SymmOps::C2_y; }
+
+    /// Set equal to C2 about the z axis
+    void c2_z() { i(); d[2][2] = 1.0; bits_ = SymmOps::C2_z; }
 
     void transpose();
 
@@ -247,8 +250,11 @@ class SymRep {
     /// Set equal to C2 about the x axis
     void c2_x();
 
-    /// Set equal to C2 about the x axis
+    /// Set equal to C2 about the y axis
     void c2_y();
+
+    /// Set equal to C2 about the z axis
+    void c2_z();
 
     /// print the matrix
     // void print(std::ostream& =ExEnv::out0()) const;
@@ -362,61 +368,27 @@ class IrreducibleRepresentation {
  character.  Thus symop has 6 elements rather than the 3 you'll find in
  most published character tables. */
 class CharacterTable {
-  public:
-    enum pgroups {
-        C1,
-        CS,
-        CI,
-        CN,
-        CNV,
-        CNH,
-        DN,
-        DND,
-        DNH,
-        SN,
-        T,
-        TH,
-        TD,
-        O,
-        OH,
-        I,
-        IH
-    };
-
-  private:
-    int g;                               //< the order of the point group
     int nt;                              //< order of the princ rot axis
-    pgroups pg;                          //< the class of the point group
+    PointGroups::Groups pg;              //< the class of the point group
     int nirrep_;                         //< the number of irreps in this pg
     IrreducibleRepresentation *gamma_;   //< an array of irreps
     SymmetryOperation *symop;            //< the matrices describing sym ops
     int *_inv;                           //< index of the inverse symop
-    char *symb;                          //< the Schoenflies symbol for the pg
-    unsigned short bits_;                //< Bitwise representation of the symmetry operations
+    std::string symb;                    //< the Schoenflies symbol for the pg
+    unsigned char bits_;                 //< Bitwise representation of the symmetry operations
 
-    /// this determines what type of point group we're dealing with
-    int parse_symbol();
     /// this fills in the irrep and symop arrays.
     int make_table();
-
-    // these create the character tables for the cubic groups
-    void t();
-    void th();
-    void td();
-    void o();
-    void oh();
-    void i();
-    void ih();
+    void common_init();
 
   public:
     CharacterTable();
     /** This constructor takes the Schoenflies symbol of a point group as
         input. */
-    CharacterTable(const char*);
-    /** This is like the above, but it also takes a reference to a
-        SymmetryOperation which is the frame of reference.  All symmetry
-        operations are transformed to this frame of reference. */
-    CharacterTable(const char*,const SymmetryOperation&);
+    CharacterTable(const std::string&);
+    /** This constructor takes the bitswise representation of a point group as
+        input. */
+    CharacterTable(unsigned char);
 
     CharacterTable(const CharacterTable&);
     ~CharacterTable();
@@ -426,9 +398,9 @@ class CharacterTable {
     /// Returns the number of irreps.
     int nirrep() const { return nirrep_; }
     /// Returns the order of the point group
-    int order() const { return g; }
+    int order() const { return nirrep_; }
     /// Returns the Schoenflies symbol for the point group
-    const char * symbol() const { return symb; }
+    const std::string& symbol() const { return symb; }
     /// Returns the i'th irrep.
     IrreducibleRepresentation& gamma(int i) { return gamma_[i]; }
     /// Returns the i'th symmetry operation.
@@ -438,8 +410,6 @@ class CharacterTable {
         This function returns 1 if the point group has a complex
         representation, 0 otherwise. */
     int complex() const {
-      if (pg==CN || pg==SN || pg==CNH || pg==T || pg==TH)
-        return 1;
       return 0;
     }
 
@@ -477,7 +447,7 @@ class CharacterTable {
       return -1;
     }
 
-    unsigned char bits() const { return bits_; }
+    unsigned char bits();
 
     /// This prints the irrep to the given file, or stdout if none is given.
      void print(FILE *out=outfile) const;
@@ -494,22 +464,26 @@ class CharacterTable {
  the origin to zero.  */
 class PointGroup {
   private:
-    char *symb;
-    SymmetryOperation frame;
+    std::string symb;
     Vector3 origin_;
     unsigned char bits_;
 
   public:
     PointGroup();
+
+    // These 2 constructors do not work right now.
     /** This constructor takes a string containing the Schoenflies symbol
         of the point group as its only argument. */
-    PointGroup(const char*);
-    /** Like the above, but this constructor also takes a frame of reference
-        as an argument. */
-    PointGroup(const char*,SymmetryOperation&);
+    PointGroup(const std::string&);
     /** Like the above, but this constructor also takes a point of origin
         as an argument. */
-    PointGroup(const char*,SymmetryOperation&,const Vector3&);
+    PointGroup(const std::string&,const Vector3&);
+
+    /** Using the bitwise representation constructor the point group object. */
+    PointGroup(unsigned char bits);
+    /** Using the bitwise representation constructor the point group object. */
+    PointGroup(unsigned char bits, const Vector3&);
+
     /** The PointGroup KeyVal constructor looks for three keywords:
        symmetry, symmetry_frame, and origin. symmetry is a string
        containing the Schoenflies symbol of the point group.  origin is an
@@ -553,31 +527,24 @@ class PointGroup {
 
     PointGroup& operator=(const PointGroup&);
 
-    /// Set the bit representation of this group
-    void set_bits(unsigned char bits) { bits_ = bits; }
-    /// Get the bit representation of this group
-    unsigned char bits() const { return bits_; }
-
     /// Returns 1 if the point groups are equivalent, 0 otherwise.
     int equiv(const boost::shared_ptr<PointGroup> &, double tol = 1.0e-6) const;
 
     /// Returns the CharacterTable for this point group.
     CharacterTable char_table() const;
     /// Returns the Schoenflies symbol for this point group.
-    const char * symbol() const { return symb; }
+    std::string symbol() const { return symb; }
     /// Returns the frame of reference for this point group.
-    SymmetryOperation& symm_frame() { return frame; }
-    /// A const version of the above
-    const SymmetryOperation& symm_frame() const { return frame; }
     /// Returns the origin of the symmetry frame.
     Vector3& origin() { return origin_; }
     const Vector3& origin() const { return origin_; }
 
     /// Sets (or resets) the Schoenflies symbol.
-    void set_symbol(const char*);
+    void set_symbol(const std::string&);
 
     static const char* bits_to_full_name(unsigned char bits);
     static const char* bits_to_basic_name(unsigned char bits);
+    static bool full_name_to_bits(const std::string& pg, unsigned char& bits);
 
     // void save_data_state(StateOut& so);
 

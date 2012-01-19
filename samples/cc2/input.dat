@@ -1,5 +1,6 @@
-#! 6-31G** H2O Test CCSD energy, with Z-Matrix input
+#! 6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 
+memory 250 mb
 
 molecule h2o {
     o
@@ -8,7 +9,6 @@ molecule h2o {
 }
 
 set globals {
-  reference rhf
   basis 6-31G**
 
   r_convergence 10
@@ -16,7 +16,6 @@ set globals {
   d_convergence 10
 }
 
-energy('ccsd')
+optimize('ccsd', dertype=0)
 
 
-clean()

@@ -1,5 +1,7 @@
 #! RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion
 
+memory 250 mb
+
 
 molecule C4NH4 {
   -1 1
@@ -28,5 +30,3 @@ set globals {
 
 energy('ccsd(t)')
 
-
-clean()

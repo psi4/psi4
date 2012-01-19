@@ -30,10 +30,15 @@ my %ModuleDescriptions;
 my %Expert;
 open(DRIVER, $DriverFile) or die "\nI can't read the PSI driver file\n";
 
+my $CurrentSubsection = "";
+
 # Start looping over the driver file
 while(<DRIVER>){
     # Look for the name of the module for which options are being added
-    $CurrentModule = $1 if(/name\s*\=\=\s*\"(\w+)\"/);
+    if(/name\s*\=\=\s*\"(\w+)\"/){
+        $CurrentModule = $1;
+        $CurrentSubsection = "";
+    }
     my $CommentString;
     my $Type;
     my $Default;
@@ -42,23 +47,26 @@ while(<DRIVER>){
     my $Expert;
     # If we find a /*- it means the comment block has started, but we
     # don't know if it's a multi-line comment, let's find out
-    $ModuleDescriptions{$CurrentModule} = get_description($_) if(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule);
-    if(/\/\*-/ and $CurrentModule){
+    if(/\/\*-\s*SUBSECTION\s+(.*)-\*\// and $CurrentModule){
+        $CurrentSubsection = $1;
+    }elsif(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
+        $ModuleDescriptions{$CurrentModule} = get_description($_);
+    }elsif(/\/\*-/ and $CurrentModule){
         ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
         # process @@ as math mode subscript in tex
         $CommentString =~ s/@@/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
-            $Expert{$CurrentModule}{$Keyword}{"Type"}    = $Type;
-            $Expert{$CurrentModule}{$Keyword}{"Default"} = $Default;
-            $Expert{$CurrentModule}{$Keyword}{"Comment"} = $CommentString;
-            $Expert{$CurrentModule}{$Keyword}{"Possibilities"} = $Possibilities;
+            $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Type"}    = $Type;
+            $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Default"} = $Default;
+            $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Comment"} = $CommentString;
+            $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Possibilities"} = $Possibilities;
         }else{
-            $Keywords{$CurrentModule}{$Keyword}{"Type"}    = $Type;
-            $Keywords{$CurrentModule}{$Keyword}{"Default"} = $Default;
-            $Keywords{$CurrentModule}{$Keyword}{"Comment"} = $CommentString;
-            $Keywords{$CurrentModule}{$Keyword}{"Possibilities"} = $Possibilities;
+            $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Type"}    = $Type;
+            $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Default"} = $Default;
+            $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Comment"} = $CommentString;
+            $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Possibilities"} = $Possibilities;
         }
     }
 }
@@ -80,25 +88,30 @@ sub print_hash
      push(@temp, $Module);
      printf OUT "\n\\subsection{%s}\n",$Module;
      if (exists $ModuleDescriptions{$Module} and $print_description){
-         printf OUT "\n{\\large $ModuleDescriptions{$Module}}\\\\\n";
+         printf OUT "\n{\\normalsize $ModuleDescriptions{$Module}}\\\\\n";
          # Insert an empty table entry as a spacer
          printf OUT '\\begin{tabular*}{\\textwidth}[tb]{c}';
          printf OUT "\n\t  \\\\ \n";
          print OUT "\\end{tabular*}\n";
      }
-     foreach my $Keyword (sort {$a gt $b} keys %{$hash{$Module}}){
-         printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
-         printf OUT "\n\t %s & %s \\\\ \n", $Keyword, $hash{$Module}{$Keyword}{"Comment"};
-         my $Options = $hash{$Module}{$Keyword}{"Possibilities"};
-         if($Options =~ /\w+/){
-              my @Options = split(/ +/,$Options);
-              printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
+     foreach my $Subsection (sort {$a gt $b} keys %{$hash{$Module}}){
+         if($Subsection){
+             print OUT "\\subsubsection{$Subsection}\n";
          }
-         print OUT "\\end{tabular*}\n";
-         printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
-         printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", 
-                     $hash{$Module}{$Keyword}{"Type"}, $hash{$Module}{$Keyword}{"Default"}; 
-         print OUT "\\end{tabular*}\n";
+         my %SectionHash = %{$hash{$Module}{$Subsection}};
+         foreach my $Keyword (sort {$a gt $b} keys %SectionHash){
+             my %KeyHash = %{$SectionHash{$Keyword}};
+             printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
+             printf OUT "\n\t %s & %s \\\\ \n", $Keyword, exists $KeyHash{"Comment"} ? $KeyHash{"Comment"} : "";
+             if(exists $KeyHash{"Possibilities"}){
+                  my @Options = split(/ +/, $KeyHash{"Possibilities"});
+                  printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
+             }
+             print OUT "\\end{tabular*}\n";
+             printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
+             printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", $KeyHash{"Type"}, $KeyHash{"Default"};
+             print OUT "\\end{tabular*}\n";
+         }
      }
  }
  print OUT "}\n";
@@ -203,7 +216,7 @@ sub determine_keyword_type_and_default
          $Default = lc ($2);
          if ($Default eq "1") { $Default = "true"; }
          if ($Default eq "0") { $Default = "false"; }
-     }elsif(/add_double\(\s*\"(.*)\"\s*,\s*(?:\")?([\/.-\w]+)(?:\")?/){
+     }elsif(/add_double\(\s*\"(.*)\"\s*,\s*(?:\")?([-\/.\w]+)(?:\")?/){
          # This is a double with a default
          $Type = "bool";
          $Keyword = $1;
@@ -356,11 +369,13 @@ foreach my $Module (@PSIMODULES) {
         }
     }
     # Remove duplicate env variables, sort into alphabetical order, and print to tex file
-    my %hash = map { $_, 1 } @EnvVariables;
-    @EnvVariables = sort(keys %hash);
-    foreach my $vari (@EnvVariables) { 
+    my %EnvHash;
+    foreach my $EnvVar (@EnvVariables){
+         $EnvHash{$EnvVar} = 1 if $EnvVar;
+    }
+    foreach my $Var (sort keys %EnvHash) {
         printf TEXOUT '\\begin{tabular*}{\\textwidth}[tb]{p{1.0\\textwidth}}';
-        printf TEXOUT "\n\t %s \\\\ \n", $vari;
+        printf TEXOUT "\n\t %s \\\\ \n", $Var;
         print TEXOUT "\\end{tabular*}\n";
     }
 }

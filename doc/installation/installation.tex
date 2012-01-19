@@ -3,7 +3,7 @@
 %
 
 \documentclass[12pt]{article}
-\usepackage{html}
+\usepackage{hyperref}
 \usepackage{fancyvrb}
 \usepackage{xspace}
 \setlength{\textheight}{9in}
@@ -31,7 +31,8 @@
 \vspace{2.0in}
 {\bf {\Large Installation Manual for the \PSIfour\ Program Package}} \\
 \vspace{0.5in}
-T.\ Daniel Crawford,$^a$ C.\ David Sherrill,$^b$ and Edward F.\ Valeev$^{a}$ 
+T.\ Daniel Crawford$^a$, C.\ David Sherrill$^b$, and
+Edward F.\ Valeev$^a$
 \\ \  \\
 {\em $^a$Department of Chemistry, Virginia Tech, Blacksburg, 
 Virginia 24061-0001} \\
@@ -52,87 +53,251 @@ Created on: \today
 
 The following external software packages are needed to complile \PSIfour:
 \begin{itemize}
-\item C, C++, and FORTRAN77 compilers. The FORTRAN77 compiler is only
-  used to determine the symbol-naming convention of and some system
-  routines for the BLAS and LAPACK libraries on some architectures. It
-  is optional in a few cases (e.g. Mac OS X systems).
+\item C++ Compiler
+\item F77 compiler (the F95 compiler, gfortran, with gcc-4.X will work);
+  this is only used to determine the symbol-naming
+  convention of and some system routines for the BLAS and LAPACK libraries
+  on a few architectures.  It is optional in a few cases (e.g. Mac OS X
+  systems)
 \item A well-optimized basic linear algebra subroutine (BLAS) library
   for vital matrix-matrix and matrix-vector multiplication
   routines. (See recommendations below.)
-\item The linear algebra package (LAPACK).  \PSIfour\ makes use of
-  LAPACK's eigenvalue/eigenvector and matrix inversion routines.  (See
-  recommendations below)
+\item The linear algebra package (LAPACK) (see recommendations below)
 \item POSIX threads (Pthreads) library
 \item Perl interpreter (version 5.005 or higher)
 \item Python interpreter (2.4 or higher, but not version 3.x; 
       needed for input files)
 \item Python developer libraries corresponding to your interpreter
-\item A version of MPI is currently required; MPICH2 is recommended.
+\item A version of MPI is required to compile distributed-parallel PSI; 
+  MPICH2 is recommended.
   (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
   seems to fix it.)
 \item Various GNU utilies: \htmladdnormallink{{\tt
 www.gnu.org}}{http://www.gnu.org}
 \begin{itemize}
+\item {\tt make}
 \item {\tt autoconf (version 2.52 or higher)}
 \item {\tt aclocal}
-\item {\tt make}
-\item {\tt flex}
-\item {\tt bison}
 \item {\tt fileutils} (esp.\ {\tt install})
 \end{itemize}
 \item For documentation only:
 \begin{itemize}
 \item {\tt LaTeX}
-\item {\tt LaTeX2html} (v0.99.1 or 1.62, including the patch supplied in
-psi3/misc)
+%\item {\tt LaTeX2html} (v0.99.1 or 1.62, including the patch supplied in
+%psi3/misc)
+\end{itemize}
+\item To make a distributed-parallel version with MADNESS, you may also
+need 
+\begin{itemize}
+\item libtool (called by autoreconf)
 \end{itemize}
 \end{itemize}
+
+   To check to see if you have the Python developer libraries installed look
+   for the Python config program. If you Python interpreter is named `python'
+   look for the config program `python-config', likewise if your interpreter
+   is named `python2.6' your config program is named `python2.6-config'. If
+   you cannot find the config program the developer libraries will not be
+   detected and the PSI4 configure script will fail.
+
+   For Ubuntu users, you will need the following packages installed:
+   gfortran [for linking to BLAS/LAPACK], g++, autoconf, python-dev
+
+   For Fedora users, the python development library is called python-devel
 
 \section{Brief Summary of Configuration, Compilation, and Installation}
 
-A good directory for the \PSIfour\ source code is /usr/local/src/psi3.
-The directory should {\em not} be named {\tt /usr/local/psi}, as that is
-the default installation directory unless changed by the {\tt --prefix}
-directive (see below).  It should also not have any periods in the path,
-e.g., {\tt /usr/local/psi3.2}, because of a bug in {\tt dvips} which will
-cause the compilation of documentation to fail.
+This section outlines the main steps of configuring, compiling, and
+installing PSI.  More detail is given below.
 
-The following series of steps will configure and build the \PSIfour\
-package and install the executables in /usr/local/psi/bin:
+\subsection{Autoconf}
+\subsubsection{In the top-level psi4 directory, run autoconf:}
+\begin{enumerate}
+\item {\tt autoconf}
+\end{enumerate}
+
+\subsubsection{Distributed-parallel compilation}
+
+Not recommended at this time except by developers.  Shared-memory
+parallelization is already enabled by default in the standard
+compilation.
+
+Distributed-parallel versions of PSI4 require {\tt madness}. If you select
+mpicxx as the compiler, the distributed-parallel version (including
+{\tt madness}) will compile. For distributed-parallel compilation, you must
+run the following command in the {\tt madness} directory, otherwise the PSI4
+configure script will fail (autoreconf is provided by package autoconf,
+but it calls another program provided by libtool, so that package must
+also be installed):
 
 \begin{enumerate}
-\item {\tt cd \$PSI4} (your top-level \PSIfour\ source directory)
-\item {\tt aclocal}
-\item {\tt autoconf}
-\item {\tt mkdir objdir}
-\item {\tt cd objdir}
-\item {\tt ../configure --with-cxx=mpicxx} 
-  (may need some of the options below, esp.~if
-  {\tt blas} or {\tt lapack} are in non-standard locations). 
-\item {\tt make}
-\item {\tt make tests} (optional, but recommended)
-\item {\tt make install}
-\item {\tt make doc} (optional)
+\item {\tt cd madness}
+\item {\tt autoreconf}
+\item {\tt cd ..}
+\end{enumerate}
+
+\subsection{Configuration and Compilation}
+
+Make an object directory in which you can compile the code
+\begin{enumerate}
+\item {\tt mkdir obj}
 \end{enumerate}
 
 \noindent
+Next, you need to configure the code, make it, and run the tests.
+
+\noindent
+Either
+
+\begin{enumerate}
+\item {\tt cd obj}
+\item run ../configure with one of the options below
+\item {\tt make}
+\item {\tt make tests}
+\item {\tt make install} (if tests pass)
+\item {\tt make doc} (optional)
+\item do user configuration, see below
+\end{enumerate}
+
+\noindent
+or, if you want to save your configuration options for a future compilation,
+then in the top-level psi4 directory,
+\begin{enumerate}
+\item create a file like ``do-configure'' with your configuration options,
+      e.g., as below
+\item {\tt chmod u+x do-configure}
+\item {\tt cd obj}
+\item {\tt ../do-configure}
+\item {\tt make}
+\item {\tt make tests}
+\item {\tt make install} (if tests pass)
+\item {\tt make doc} (optional)
+\item do user configuration, see below
+\end{enumerate}
+
+That's it!  The details about configuration are given below.  If something
+goes wrong, see below about common compilation problems.
+
+\section{Detailed Installation Instructions}
+
+This section provides a more detailed explanation of the procedure for
+compiling and installing the PSI4 package.
+
+\subsection{Configuration}
+
+\subsubsection{General Information about Configuration}
+
+First, we recommend that you choose for the top-level {\tt \$PSI4} source
+directory something other than {\tt /usr/local/psi}; {\tt \$HOME/psi4}
+or {\tt /usr/local/src/psi4} are convenient choices.  Next, in the
+top-level {\tt \$PSI4} source directory you've chosen, first run autoconf
+to generate the {\tt configure} script from {\tt configure.ac}.  It is
+best to keep the source code separate from the compilation area, so you
+must first choose a subdirectory for compilation of the codes.  A simple
+option is {\tt \$PSI4/objdir}, which should work for most environments.
+However, if you need executables for several architectures, you should
+choose more meaningful subdirectory names.
+
+{\em The compilation directory will be referred to as \$objdir for the
+   remainder of these instructions.
+}
+
+In \$objdir, run the configure script found in the PSI4 top-level
+source directory.  This script will scan your system to locate
+certain libraries, header files, etc. needed for complete compilation.
+The script accepts a number of options, all of which are listed above.
+The most important of these is the {\tt --prefix} option, which selects
+the installation directory for the executables, the libraries, header
+files, basis set data, and other administrative files.  The default
+{\tt --prefix} is {\tt /usr/local/psi}.
+
+Besides {\tt --prefix}, PSI often needs a few additional options for
+the configure script.  To make it reasy to recompile later (especially
+if you're a developer), it can be convenient (but not necessary) to
+to put the configure options in a small executable file, so you can
+re-do the configuration later very easily. Let us assume that we will
+be putting the configure options in a file named {\tt do-configure},
+in the top-level psi4 directory (we'll keep it up there instead of down
+in the compilation directory {\tt \$objdir}, so that if we delete the
+compilation directory later, we'll still have the {\tt do-configure}
+file). In the following examples, we have sometimes split the configure
+options over multiple lines for readability. However, they should all
+be on the same line in the do-configure script.
+
+{\em Note: The configure options below are for the most common
+architectures and compilers. The developers would appreciate it if you
+would share any special configuration options that might be needed for
+less commonly encountered situations.  }
+
+For g++, if you have BLAS and LAPACK in standard locations (like {\tt
+/usr/lib64}), configuration is very easy. Pick one of the following
+scenarios, and place the text given in the {\tt psi4/do-configure} file
+(all on one long line). Replace the text after prefix with whatever
+directory you want to use for your installation directory.
+
+\noindent
+{\bf g++, optimized} \\
+{\tt ../configure --prefix=/usr/local/psi4}
+
+\noindent
+{\bf g++, for debugging} \\
+{\tt ../configure --prefix=/usr/local/psi4 --without-opt --with-debug}
+
+\pagebreak
+
+\noindent
+{\bf Intel compiler with MKL math library} \\
+{\tt ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc
+--with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div'
+--with-incdirs=-mkl}
+
+\noindent
+{\bf Compiling for Mac} \\
+To get the compilers needed, it's easiest to install XCode. However, XCode
+does not provide a Fortran compiler. Although Fortran compilers are not needed
+to compile Psi, a broken one can prevent Psi from configuring properly. Do not
+download the latest version of GFortran from the HPC website; this is unlikely
+to be compatible with your version of GCC. Instead, you should run {\tt gcc
+-v} to find out what version of GCC you're using, and then download the
+corresponding GFortran from  here. If you configure Psi on a Mac without any
+Fortran compiler it will set itself up correctly, so this is only necessary if
+you want a Fortran compiler for other purposes. You can configure Psi by
+adding something like
+\begin{quotation}
+\noindent
+{\tt ../configure --with-plugins}
+\end{quotation}
+to the do-configure script. If you want to use the new LLVM compilers that
+ship with XCode 4 (they compile quicker than GCC), use
+\begin{quotation}
+\noindent
+{\tt ../configure --with-plugins --with-cxx=llvm-g++}
+\end{quotation}
+
+If you still happen to encouter an error like:
+\begin{quotation}
+\noindent
+{\tt checking Fortran symbols... giving up} \\
+{\tt configure: error: could not determine fortran symbol names} 
+\end{quotation}
+adding the following tag to your configure may help:
+\begin{quotation}
+{\tt --with-f77symbol=lcu}
+\end{quotation}
+
+\subsubsection{List of Specific Configuration Options}
+
 You may need to make use of one or more of the following options to
 the {\tt configure} script:
 \begin{itemize}
 \item {\tt -}{\tt -prefix=directory} --- Use this option if you wish to
   install the \PSIfour\ package somewhere other than the default
-  directory, {\tt /usr/local/psi}.  This directory will contain
-  subdirectories with the final installed binaries, libraries, 
-  documentation, and shared data files.
-\item {\tt -}{\tt -with-cc=compiler} --- Use this option to specify a
-  C compiler.  One should use compilers that generate reentrant code,
-  if possible.  The default search order for compilers is: {\tt cc\_r} (AIX
-  only), {\tt gcc}, {\tt icc}, {\tt cc}.
+  directory, {\tt /usr/local/psi}. 
 \item {\tt -}{\tt -with-cxx=compiler} --- Use this option to specify a
   C++ compiler.  One should use compilers that generate reentrant
   code, if possible. The default search order for compilers is: {\tt xlC\_r}
   (AIX only), {\tt g++}, {\tt c++}, {\tt icpc}, {\tt cxx}.
-  At the moment, MPI is required and you need to use
+  For distributed-parallel compilation, MPI is required and you need to use
   mpicxx (where this has been added to your PATH).
 \item {\tt -}{\tt -with-fc=compiler} --- Use this option to specify a
   Fortran-77 compiler, which is used to determine linking coventions
@@ -212,39 +377,36 @@ the {\tt configure} script:
 \item {\tt -}{\tt --with-strict=yes} -- Turns on strict compiler warnings.
 \end{itemize}
 
-\section{Detailed Installation Instructions}
+\noindent
+{\bf Python Interpreter:} \\
+   Usually Python will be detected automatically.  If this fails, or if
+   you have multiple versions installed and want to specify a particular
+   one, set the {\tt PYTHON} environmental variable to the full path name
+   of the Python interpreter you want to use.  This defaults to the
+   {\tt `python'} in your path. For example, if you want to use
+   {\tt `python2.6'} located in /usr/bin set the environmental variable to be:
 
-This section provides detailed instructions for compiling and
-installing the \PSIfour\ package.  
+\begin{quotation}
+\noindent
+      {\tt PYTHON=/usr/bin/python2.6}
+\end{quotation}
 
-\subsection{Step 1: Configuration}
+   Please note if set the variable the config program must be present with
+   a similar name. For instance, in the above example the following must
+   exist:
 
-First, we recommend that you choose for the top-level {\tt \$PSI4}
-source directory something other than {\tt /usr/local/psi}; your {\tt
-  \$HOME} directory or {\tt /usr/local/src/psi4} are convenient
-choices.  Next, in the top-level {\tt \$PSI4} source directory you've
-chosen, first run {\tt autoconf} to generate the configure script from
-{\tt configure.ac}.  It is best to keep the source code separate from
-the compilation area, so you must choose a subdirectory for
-compilation of the codes.  A simple option is {\tt \$PSI4/objdir},
-which should work for most environments.  However, if you need
-executables for several architectures, choose more meaningful
-subdirectory names.
+\begin{quotation}
+\noindent
+      {\tt /usr/bin/python2.6-config}
+\end{quotation}
 
-$\bullet$ The compilation directory will be referred to as {\tt \$objdir}
-for the remainder of these instructions.
+   You either set the environmental variable before you call configure, or
+   tell configure about it:
 
-In {\tt \$objdir}, run the configure script found in the {\tt \$PSI4}
-top-level source directory.  This script will scan your system to locate
-certain libraries, header files, etc. needed for complete compilation.
-The script accepts a number of options, all of which are listed above.
-The most important of these is the {\tt --prefix} option, which selects the
-installation directory for the executables, the libraries, header files,
-basis set data, and other administrative files.  The default {\tt -}{\tt -prefix}
-is {\tt /usr/local/psi}.
-
-$\bullet$ The configure script's {\tt -}{\tt -prefix} directory will be referred
-to as {\tt \$prefix} for the remainder of these instructions.
+\begin{quotation}
+\noindent
+      {\tt ./configure PYTHON=/usr/bin/python2.6}
+\end{quotation}
 
 \subsection{Step 2: Compilation}
 
@@ -286,17 +448,45 @@ disk space by running {\tt make clean} in {\tt \$objdir}.
 
 After the \PSIfour\ package has been successfullly installed, the user will
 need to add the installation directory into their path.  If the package
-has been installed in the default location {\tt /usr/local/psi3}, then
+has been installed in the default location {\tt /usr/local/psi}, then
 in C shell, the user should add something like the following to 
 their {\tt .cshrc} file:
-\begin{verbatim}
-setenv PSI /usr/local/psi3
-set path = ($path $PSI/bin)
-setenv MANPATH $PSI/doc/man:$MANPATH
-\end{verbatim}
-The final line will enable the use of the \PSIfour\ man pages.
-\begin{verbatim}
-\end{verbatim}
+\begin{quotation}
+\noindent
+{\tt setenv PSI /usr/local/psi} \\
+{\tt set path = (\$path \$PSI/bin)}
+\end{quotation}
+
+Next, you need to create a file {\tt .psi4rc} in each user's home
+directory.  A sample file is provided in the PSI4 source ({\tt
+psi4/samples/example\_psi4rc\_file}).  This file tells the PSI4 I/O
+manager how to handle scratch files.
+
+Copy this file to each user's home directory
+
+\begin{quotation}
+{\tt cp psi4/samples/example\_psi4rc\_file \$HOME/.psi4rc}
+\end{quotation}
+
+Now edit this file.  Replace the path in the following line
+
+\begin{quotation}
+{\tt psioh.set\_default\_path('/scratch/parrish/')}
+\end{quotation}
+with a path to a fast scratch disk for which the user has write access.  Note:
+This should NOT be an NFS-mounted volume, as writes to a remote disk over the
+network can be very slow and can tie up the network and negatively impact
+other users.  If the local /tmp volume is large enough, it might be used.
+However, a dedicated scratch volume (using RAID0 striping for speed) is
+recommended.
+
+For developers: during compilation and testing, PSI4 finds its
+basis sets, grids, etc., in {\tt psi4/lib}.  After installation,
+PSI4 will look in {\tt \$prefix/share/psi}.  If you want to specify a
+non-standard location for this information, you can do this by setting
+the environmental variable {\tt \$PSI4DATADIR} to the directory containg
+the basis, grids, etc., subdirectories.
+
 
 \section{Recommendations for BLAS and LAPACK Libraries}
 
@@ -329,8 +519,8 @@ http://math-atlas.sourceforge.net/}).  These work well on nearly
   identified at least one case in which the Goto libraries yielded faulty
   DGEMM call.  On Mac OS X systems, however, the {\tt vecLib} package that
   comes with Xcode works well. Note also that we have encountered problems
-with the  version 10 of Intel's MKL, particularly for very large coupled
-cluster  calculations.
+  with version 10 of Intel's MKL, particularly for very large coupled
+  cluster calculations.
 
 \item PSI4 does not require a Fortran compiler, unless the resident
   BLAS and LAPACK libraries require Fortran-based system libraries.
@@ -466,10 +656,7 @@ cluster  calculations.
 
 \item Linux on x86 and x86\_64:
   \begin{itemize}
-   \item {\tt gcc} compiler: versions 3.2, 3.3, 3.4, 4.0, and 4.1 have been tested.
-   \item Intel compilers: versions 9.0 and 11.0 have been tested. We do not 
-   recommend using version 8.1.
-   \item Portland Group compilers: version 6.0-5 has been tested.
+   \item Intel compilers: We had trouble with icpc 12.0.x.  Use 12.1 or later.
    \item Some versions of RedHat/Fedora Core RPM packages for the 
    BLAS and LAPACK libraries fail to make all the required symlinks.  
    For example, you may have {\tt /usr/lib/libblas.so.3.1.0} but not
@@ -477,69 +664,64 @@ cluster  calculations.
    {\tt ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so}.  You
    may need to do something similar for lapack.
   \end{itemize}
+\end{itemize}
 
-\item Linux on Itanium2 (IA64):
-  \begin{itemize}
-   \item Intel compiler versions 9.0 and 10.0 have been tested and work.
-   Version 8.1 does not work.  
-   \item {\tt gcc} compilers work.
-  \end{itemize}
+\section{Common Problems with PSI Compilation}
+\begin{itemize}
 
-\item Mac OS 10.$x$:
+\item Compilation dies in the integrals code when compiling with the {\tt -j} 
+flag
 
-  \begin{itemize}
-  \item The compilation requires a developer's toolkit (Xcode) from
-    {\tt apple.com}.  Note that a fortran compiler is not needed for
-    PSI 3.4 on Mac OS X systems.
+You can compile PSI with the {\tt -j} flag to compile with multiple
+threads (e.g., {\tt -j2}). The integrals code is not safe for this and
+will die. This is not a problem, just type 'make' again, and compilation
+will resume. Once the integrals are compiled, this shouldn't be a
+problem again.
 
-  \item The {\tt libcompat.a} library is no longer needed as of 1/24/2008.
+\item {\tt No rule to make target foo.h, needed by bar.d. Stop}
 
-  \item For apple systems, the latest configure script assumes that the
-  {\tt vecLib} will be used for the optimized BLAS and LAPACK
-  libraries, unless the user indicates otherwise using the {\tt -}{\tt
-    -with-blas} and {\tt -}{\tt -with-lapack} flags to configure.  If
-  you encounter difficulty with configure, you may have success
-  explicitly indicating the vecLib using:
+This commonly happens after pulling updates from the repository. It happens
+when a library header file is removed or renamed by the update, but there are
+still old dependency files in the object directory, which think that they
+still need to know about that header. There's a simple remedy, just run
+\begin{quotation}
+\noindent
+{\tt  make DODEPEND=no dclean} 
+\end{quotation}
+in the object directory
 
-      {\tt -}{\tt -with-blas='-altivec -framework vecLib'} {\tt -}{\tt
-        -with-lapack=' '}
+\item Make gets stuck in an infinite loop
 
-  \item Pre Mac OS 10.4: Certain PSI4 codes require significant
-      stackspace for compilation.  Increase your shell's stacksize
-      limit before running {\tt make}.  For csh, for example, this is
-      done using ``unlimit stacksize.''  [NB: This limit appears to have
-      been lifted starting with Mac OS 10.3.X (Panther).]
+This means that the makefiles have not been properly updated. Running
+\begin{quotation}
+\noindent 
+{\tt autoconf}
+\end{quotation}
+in the top-level Psi directory, followed by
+\begin{quotation}
+\noindent
+{\tt ./config.status --recheck} \\
+{\tt ./config.status} 
+\end{quotation}
+in the object directory should fix it. This procedure will need to be run
+whenever an update changes the directory structure.
 
-  \end{itemize}
+\item Incompatible g++/icpc
 
-\item AIX in a 64-bit environment:
+The Intel compilers require an installed set of C++ headers. Unfortunately,
+the GNU compilers tend to be more cutting-edge than the Intel compilers,
+meaning that Intel is always playing catch-up to new features in g++. This
+means the two are often incompatible, leading to trouble if one wants to use
+icpc to compile PSI4 (or anything else...). Your best bet in general is to not
+upgrade Linux too fast, and always keep the very latest Intel compilers
+around.
 
-We do not presently support the use of XL compilers on AIX systems.  We 
-have tested gcc-4.1.1 under AIX 5.3, and we recommend use of the 
-configure flag: {\tt -}{\tt -with-aix64}.
+\item Missing symbols like {\tt do\_fio} or {\tt e\_wsfe}
 
-
-\item SGI IRIX 6.$x$:
-  \begin{itemize}
-   \item MIPSpro C++ compilers prior to version 7.4 require a command-line flag
-   '{\tt -LANG:std}' in order to compile \PSIfour\ properly.
-
-   \item Use command-line flag '{\tt -64}' in order to produce 64-bit
-\PSIfour\ executables with
-   MIPSpro compilers. The following is an example of appropriate configure options:
-   \begin{verbatim}
-  --with-cc='cc -64' --with-cxx='CC -64 -LANG:std' --with-fc='f77 -64'
-   \end{verbatim}
-
-   \item Under IRIX configure will attempt to detect automatically and use
-   the optimized SGI Scientific Computing Software Library (SCSL).
-  \end{itemize}
-
-\item Compaq Alpha/OSF 5.1: default shell ({\tt /bin/sh})
-is not POSIX-compliant which causes some \PSIfour\ makefiles
-to fail. Set environmental variable {\tt BIN\_SH} to {\tt xpg4}.
+See section on BLAS above.
 
 \end{itemize}
+
 
 
 \end{document}
