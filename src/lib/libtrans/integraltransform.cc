@@ -73,6 +73,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
     openpi_  = wfn->soccpi();
     frzcpi_  = wfn->frzcpi();
     frzvpi_  = wfn->frzvpi();
+    frozen_core_energy_ = 0.0;
 
     common_moinfo_initialize();
 
@@ -148,6 +149,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     openpi_  = Dimension(nirreps_); // This is the restricted constructor, there are no unpaired electrons
     frzcpi_  = c->colspi();
     frzvpi_  = v->colspi();
+    frozen_core_energy_ = 0.0;
 
     // Need to smash together the C's only for them to be ripped apart elsewhere.
     std::vector<SharedMatrix > Cs;
