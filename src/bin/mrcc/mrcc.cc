@@ -16,8 +16,8 @@ namespace psi{ namespace mrcc {
 
 PsiReturnType mrcc(int level, bool pertcc)
 {
-    fprintf(outfile, " MRCC input file generator.\n");
-    fprintf(outfile, "   Will generate fort.55 and fort.56 files.\n");
+    fprintf(outfile, "\n  MRCC input file generator.\n");
+    fprintf(outfile, "   Will generate fort.55 and fort.56 files.\n\n");
 
     boost::shared_ptr<Wavefunction> wave     = Process::environment.reference_wavefunction();
     boost::shared_ptr<Molecule>     molecule = wave->molecule();
@@ -51,8 +51,7 @@ PsiReturnType mrcc(int level, bool pertcc)
     // Need to figure out this. I think it means closed shell
     fprintf(fort55, " 150000\n");
 
-    // For now, we'll just transform for closed shells and generate all integrals.  For more elaborate use of the
-    // LibTrans object, check out the plugin_mp2 example in the test suite.
+    fprintf(outfile, "    Beginning integral transformation.\n");
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
     IntegralTransform ints(wave, spaces, IntegralTransform::Restricted);
@@ -60,6 +59,7 @@ PsiReturnType mrcc(int level, bool pertcc)
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
 
+    fprintf(outfile, "    Transformation complete.\n\n");
     fprintf(outfile, "  Generating fort.55 integral file...");
 
     /*

@@ -704,6 +704,8 @@ def run_mrcc(name, **kwargs):
     level = abs(kwargs['level'])
     pertcc = kwargs['level'] < 0
 
+    fullname = kwargs['fullname']
+
     # Save current directory location
     current_directory = os.getcwd()
 
@@ -716,7 +718,7 @@ def run_mrcc(name, **kwargs):
     os.mkdir(mrcc_tmpdir)
     os.chdir(mrcc_tmpdir)
 
-    # Generate integrals file and input file (dumps files to the current directory)
+    # Generate integrals and input file (dumps files to the current directory)
     PsiMod.mrcc(level, pertcc)
 
     # Close output file
@@ -730,22 +732,27 @@ def run_mrcc(name, **kwargs):
             exit(1)
         elif retcode > 0:
             print >>sys.stderr, "MRCC errored", retcode
-            exit(1)
+            #exit(1)
 
     except OSError, e:
         print >>sys.stderr, "Execution failed:", e
-        exit(1)
+        #exit(1)
 
     # Scan iface file and grab the file energy.
-    energy = 0.0
+    e = 0.0
+    for line in file("iface"):
+        if fullname in line:
+            fields = line.split()
+            e = float(fields[5])
+            print "%20.14f" % e
 
     # Delete mrcc tempdir
-    #os.chdir("..")
-    #try:
-        #shutil.rmtree(mrcc_tmpdir)
-    #except OSerror, e:
-        #print >>sys.stderr, "Unable to remove MRCC temporary directory", e
-        #exit(1)
+    os.chdir("..")
+    try:
+        shutil.rmtree(mrcc_tmpdir)
+    except OSerror, e:
+        print >>sys.stderr, "Unable to remove MRCC temporary directory", e
+        exit(1)
 
     # Revert to previous current directory location
     os.chdir(current_directory)
@@ -753,4 +760,4 @@ def run_mrcc(name, **kwargs):
     # Reopen output file
     PsiMod.reopen_outfile()
 
-    return energy
+    return e
