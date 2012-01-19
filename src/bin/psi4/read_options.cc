@@ -706,7 +706,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and Density Functional Theory) computations.
           These are the starting points for most computations, so this code is called in most cases. -*/
 
-    // => General Wavefunction Info <= //
+    /*- SUBSECTION General Wavefunction Info -*/
 
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF", "SCF");
@@ -728,7 +728,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The type of guess orbitals -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
 
-    // => Convergence Control/Stabilization <= //
+    /*- SUBSECTION Convergence Control/Stabilization -*/
 
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
@@ -761,7 +761,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
     options.add("MOM_VIR", new ArrayType());
 
-    // => Environmental Effects <= //
+    /*- SUBSECTION Environmental Effects -*/
 
     /*- Perturb the Hamiltonian? -*/
     options.add_bool("PERTURB_H", false);
@@ -772,7 +772,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
-    // => Parallel Runtime <= //
+    /*- SUBESCTION Parallel Runtime -*/
 
     /*- The dimension sizes of the processor grid !expert -*/
     options.add("PROCESS_GRID", new ArrayType());
@@ -783,19 +783,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do run in parallel? !expert -*/
     options.add_bool("PARALLEL", false);
 
-    // => Misc. <== //
+    /*- SUBSECTION Misc. -*/
 
     /*- Are going to do SAPT? If so, what part? !expert -*/
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
-    // => DFSCF Algorithm <= //
+    /*- SUBSECTION DFSCF Algorithm -*/
     
     /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
     options.add_int("DF_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc !expert -*/
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
 
-    // => SAD Guess Algorithm <= //
+    /*- SUBSECTION SAD Guess Algorithm -*/
 
     /*- The amount of SAD information to print to the output !expert -*/
     options.add_int("SAD_PRINT", 0);
@@ -811,37 +811,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     See the note at the beginning of Section \ref{keywords}. !expert -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
 
-    // => DFT <= //
+    /*- SUBSECTION DFT */
 
-    /*- The DFT grid specification, such as SG1. Only applies to DFT computations. -*/
+    /*- The DFT grid specification, such as SG1. -*/
     options.add_str("DFT_GRID_NAME","","SG1");
-    /*- Maximum order of spherical grids. Only applies to DFT computations. -*/
+    /*- Maximum order of spherical grids. -*/
     options.add_int("DFT_ORDER_SPHERICAL", 15);
-    /*- Number of radial points. Only applies to DFT computations. -*/
+    /*- Number of radial points. -*/
     options.add_int("DFT_NUM_RADIAL", 99);
-    /*- Spherical Scheme. Only applies to DFT computations. -*/
+    /*- Spherical Scheme. -*/
     options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
-    /*- Radial Scheme. Only applies to DFT computations. -*/
+    /*- Radial Scheme. -*/
     options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
-    /*- Nuclear Scheme. Only applies to DFT computations. -*/
+    /*- Nuclear Scheme. -*/
     options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
-    /*- Pruning Scheme. Only applies to DFT computations. -*/
+    /*- Pruning Scheme. -*/
     options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
-    /*- Factor for effective BS radius in radial grid. Only applies to DFT computations. -*/
+    /*- Factor for effective BS radius in radial grid. -*/
     options.add_double("DFT_BS_RADIUS_ALPHA",1.0);
-    /*- Spread alpha for logarithmic pruning. Only applies to DFT computations. -*/
+    /*- Spread alpha for logarithmic pruning. -*/
     options.add_double("DFT_PRUNING_ALPHA",1.0);
-    /*- The number of grid points per evaluation block. Only applies to DFT computations. -*/
+    /*- The number of grid points per evaluation block. -*/
     options.add_int("DFT_MAX_POINTS",5000);
-    /*- The number of grid points per evaluation block. Only applies to DFT computations. -*/
+    /*- The number of grid points per evaluation block. -*/
     options.add_int("DFT_MIN_POINTS",0);
-    /*- The boxing scheme for DFT. Only applies to DFT computations. -*/
+    /*- The boxing scheme for DFT. -*/
     options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
-    /*- DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. Only applies to DFT computations. -*/
+    /*- DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("DFT_BASIS_TOLERANCE", 0.0);
-    /*- The DFT combined functional name (for now). Only applies to DFT computations. -*/
+    /*- The DFT combined functional name (for now). -*/
     options.add_str("DFT_FUNCTIONAL", "");
-    /*- The DFT Range-separation parameter (only used if changed by the user). Only applies to DFT computations. -*/
+    /*- The DFT Range-separation parameter (only used if changed by the user). -*/
     options.add_double("DFT_OMEGA", 0.0);
   }
   if (name == "MP2"|| options.read_globals()) {
@@ -1656,6 +1656,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE", 0.0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("DF_INTS_NUM_THREADS", 0);
+    /*- IO caching for CP corrections, etc !expert -*/
+    options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
   }
   if(name == "DFCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted coupled cluster computations. -*/
