@@ -1656,6 +1656,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE", 0.0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("DF_INTS_NUM_THREADS", 0);
+    /*- IO caching for CP corrections, etc !expert -*/
+    options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
   }
   if(name == "DFCC"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs density-fitted coupled cluster computations. -*/
