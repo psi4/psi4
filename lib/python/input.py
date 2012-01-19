@@ -209,40 +209,6 @@ def process_basis_block(matchobj):
         result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
     return result
 
-def process_basis_assign_block(matchobj):
-    spacing       = str(matchobj.group(1))
-    basistype     = str(matchobj.group(2)).upper()
-    block         = str(matchobj.group(3)).upper()
-    command_lines = re.split('\n', block)
-    label_re      = re.compile(r'^\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*$')
-    symbol_re     = re.compile(r'^\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*$')
-    number_re     = re.compile(r'^\s*(\d+)\s+([-*\(\)\w]+)\s*$')
-    all_re        = re.compile(r'^\s*([-*\(\)\w]+)\s*$')
-    command = ""
-    if(not basistype or basistype.isspace()):
-        basistype = "BASIS"
-    for line in command_lines:
-        if (not line or line.isspace()):
-            continue
-    #void set_basis_all_atoms(const std::string& name, const std::string& type="BASIS");
-    #void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
-    #void set_basis_by_number(int number, const std::string& name, const std::string& type="BASIS");
-    #void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
-        if(label_re.match(line)):
-            m = label_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-        elif(symbol_re.match(line)):
-            m = symbol_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-        elif(number_re.match(line)):
-            m = number_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_by_number(%s,\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-        elif(all_re.match(line)):
-            m = all_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
-        else:
-            bad_option_syntax(line)
-    return command
 
 def process_external_command(matchobj):
 
@@ -507,10 +473,6 @@ def process_input(raw_input):
     # Process "basis file ... "
     basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(basis_file,process_basis_file,temp)
-
-    # Process "basis assign (name) { ... }"
-    basis_assign_block = re.compile(r'(\s*?)basis\s+assign\s*(\w*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(basis_assign_block,process_basis_assign_block,temp)
 
     # Process "basis name { ... }"
     basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
