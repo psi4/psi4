@@ -59,12 +59,12 @@ void SAPT2p::disp22t()
     double scale = e_disp20_/e_no_disp20_;
     e_disp220t *= scale;
     e_disp202t *= scale;
-    e_disp22t_ = e_disp220t + e_disp202t;
+    e_est_disp22t_ = e_disp220t + e_disp202t;
 
     if (print_) {
       fprintf(outfile,"\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
       fprintf(outfile,"    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
-      fprintf(outfile,"    Est. Disp22 (T)     = %18.12lf H\n",e_disp22t_);
+      fprintf(outfile,"    Est. Disp22 (T)     = %18.12lf H\n",e_est_disp22t_);
       fflush(outfile);
     }
   }

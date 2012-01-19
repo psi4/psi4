@@ -229,10 +229,10 @@ int psi_start(int argc, char *argv[])
     }
 
     // Initialize Yeti's env
-  yetiEnv.init(Communicator::world->me(), ofname.c_str());
+    yetiEnv.init(Communicator::world->me(), ofname.c_str());
     // This seems a bit daft, but it's necessary to make sure the compiler doesn't
     // nuke it in the mistaken belief that it's unused; plugins may use it.
-  yeti::Env::out0() << "";
+    yeti::Env::out0() << "";
 
     /* if prefix still NULL - check input file */
     if (fprefix.empty()) {

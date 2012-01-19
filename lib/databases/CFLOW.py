@@ -2,24 +2,64 @@ import re
 import input
 
 # <<< CFLOW Database Module >>>
-# Geometries and Reference energies from.
+# Geometries and Reference interaction energies from the following articles:
+#   Polyene geometries from Marshall et al. JCTC 6 3681 (2010).
+#   Polyene reference interaction energies from Sherrill group by ccsd(t**)-f12b/heavy-aug-cc-pvdz.
+#   Acene geometries (except benzene) from Sherrill group by df-mp2/cc-pvtz c.2011.
+#   Benzene geometry from NBC10 database and citations therein.
+#   Acene reference interaction energies (incl. benzene dimer) from Sherrill group by ccsd(t**)-f12b/aug-cc-pvdz.
+#   Buckybowl (Pulay-labeled) geometries from Sherrill group by PBE1PBE/6-31G*, 
+#     following Pulay's instructions in Janowski et al. CPL 512 155 (2011).
+#   Buckybowl (Pulay-labeled) reference interaction energies from Janowski et al. CPL 512 155 (2011).
+#   Buckyware (Grimme-labeled) geometries from Grimme PCCP 12 7091 (2010).
+#   Buckyware (Grimme-labeled) reference interaction energies from Grimme PCCP 12 7091 (2010) by B97-D2/TZVP.
+#   Collection into CFLOW by Parrish et al. XXX XXX XXXXXX (2012).
 dbse = 'CFLOW'
 
 # <<< Database Members >>>
-HRXN = ['2Ae2Ae-3.8', '4Ae4Ae-3.8', '6Ae6Ae-3.8', '8Ae8Ae-3.8', '10Ae10Ae-3.8', '12Ae12Ae-3.8', 
-        'BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.9', 
-        'BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84', 'BkybowlBkybowl-3.94', 
-        'BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]
-HRXN_SM = []
-HRXN_LG = []
-Alkenes = ['2Ae2Ae-3.8', '4Ae4Ae-3.8', '6Ae6Ae-3.8', '8Ae8Ae-3.8', '10Ae10Ae-3.8', '12Ae12Ae-3.8',]
-Arenes = ['BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.9',]
-Pulay = ['BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84', 'BkybowlBkybowl-3.94',]
-Grimme = ['BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]
-Dimers = ['2Ae2Ae-3.8', '4Ae4Ae-3.8', '6Ae6Ae-3.8', '8Ae8Ae-3.8', '10Ae10Ae-3.8', '12Ae12Ae-3.8',
-          'BzBz_S-3.9', '2Bz2Bz_S-3.8', '3Bz3Bz_S-3.7', 
-          'BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84', 'BkybowlBkybowl-3.94',
-          'BkybowlBkybowl-3.63', ]
+HRXN_SM = ['2Ae2Ae-3.8', 'BzBz_S-3.9']
+HRXN_LG = ['C70Bkycatch']
+Polyenes = []  #DOC equilibrium for linear polyene dimers for 2 through 16 monomer carbons
+Polyenes = ['2Ae2Ae-3.8', '4Ae4Ae-3.8', '6Ae6Ae-3.8', '8Ae8Ae-3.8', '10Ae10Ae-3.8', '12Ae12Ae-3.8', '14Ae14Ae-3.8', '16Ae16Ae-3.8',]
+Arenes = []  #DOC equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
+Arenes = ['BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.5',]
+Pulay = []  #DOC 5-point dissociation curve for bowl-in-bowl corannulene dimer
+Pulay = ['BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.73', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84',]
+Grimme60 = ['BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]  #DOC Grimme corannulene dimer, C60@buckybowl, and C60@buckycatcher
+Grimme70 = ['C70Bkycatch', 'C70Bkycatch_W', 'C70Bkycatch_T', ]  #DOC Grimme C70@buckycatcher at three orientations
+
+cBzBz = []  #DOC 5-point dissociation curve for benzene dimer
+dist = [3.7,3.8,3.9,4.0,4.1]
+for d in dist: cBzBz.append('BzBz_S-' + str(d))
+c2BzBz = []  #DOC 5-point dissociation curve for napthalene-benzene complex
+dist = [3.3,3.4,3.5,3.6,3.7]
+for d in dist: c2BzBz.append('2BzBz_S-' + str(d))
+c2Bz2Bz = []  #DOC 5-point dissociation curve for napthalene dimer 
+dist = [3.6,3.7,3.8,3.9,4.0]
+for d in dist: c2Bz2Bz.append('2Bz2Bz_S-' + str(d))
+c3Bz2Bz = []  #DOC 5-point dissociation curve for anthracene-napthalene complex
+dist = [3.3,3.4,3.5,3.6,3.7]
+for d in dist: c3Bz2Bz.append('3Bz2Bz_S-' + str(d))
+c3Bz3Bz = []  #DOC 5-point dissociation curve for anthracene dimer 
+dist = [3.5,3.6,3.7,3.8,3.9]
+for d in dist: c3Bz3Bz.append('3Bz3Bz_S-' + str(d))
+c4Bz3Bz = []  #DOC 5-point dissociation curve for tetracene-anthracene complex
+dist = [3.3,3.4,3.5,3.6,3.7]
+for d in dist: c4Bz3Bz.append('4Bz3Bz_S-' + str(d))
+temp = [cBzBz, c2BzBz, c2Bz2Bz, c3Bz2Bz, c3Bz3Bz, c4Bz3Bz]
+cArenes = sum(temp, [])  #DOC 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
+
+temp = [Polyenes, Arenes, 'BkybowlBkybowl-3.73', Grimme60, 'C70Bkycatch',]
+HRXN_EQ = sum(temp, [])
+
+temp = [Polyenes, Arenes, Pulay, Grimme60]
+Paper = sum(temp, [])  #DOC linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+
+temp = [Polyenes, cArenes, Pulay, Grimme60]
+cPaper = sum(temp, [])  #DOC linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+
+temp = [Polyenes, cArenes, Pulay, Grimme60, Grimme70]
+HRXN = sum(temp, [])
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -28,189 +68,444 @@ ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
 ACTV_SA = {}  # order of active reagents for non-supermolecular calculations
 for rxn in HRXN:
 
-   if (rxn in Dimers):
-      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -2 }
+   if rxn in Polyenes:  # homomonomer, CP-symmetric, w/o db monomer reuse
+      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'            % (dbse, rxn) : +1,
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) : -2,
+                                        '%s-%s-monoA-unCP'       % (dbse, rxn) : -2 }
 
-      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn) ]
 
-      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) ]
+      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) ]
 
-      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) ]
+      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-unCP'       % (dbse, rxn) ]
 
-   else:
-      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+   elif (rxn in cBzBz) or (rxn in c2Bz2Bz) or (rxn in c3Bz3Bz):  # homomonomer, CP-symmetric, w/ db monomer reuse
+      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'            % (dbse, rxn) : +1,
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) : -2,
+                                        '%s-Bz-mono-unCP'        % (dbse)      : -2,
+                                        '%s-2Bz-mono-unCP'       % (dbse)      : -2,
+                                        '%s-3Bz-mono-unCP'       % (dbse)      : -2 }
 
-      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn) ]
 
-      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn),
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) ]
+      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) ]
 
-      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn),
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) ]
+      if rxn in cBzBz:
+         ACTV['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-Bz-mono-unCP'        % (dbse) ]
+      elif rxn in c2Bz2Bz:
+         ACTV['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-2Bz-mono-unCP'       % (dbse) ]
+      elif rxn in c3Bz3Bz:
+         ACTV['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-3Bz-mono-unCP'       % (dbse) ]
+
+   elif (rxn in c2BzBz) or (rxn in c3Bz2Bz) or (rxn in c4Bz3Bz):  # heteromonomer, w/ db monomer reuse
+      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'            % (dbse, rxn) : +1,
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) : -1,
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) : -1,
+                                        '%s-Bz-mono-unCP'        % (dbse)      : -1,
+                                        '%s-2Bz-mono-unCP'       % (dbse)      : -1,
+                                        '%s-3Bz-mono-unCP'       % (dbse)      : -1,
+                                        '%s-4Bz-mono-unCP'       % (dbse)      : -1 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn) ]
+
+      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-CP'         % (dbse, rxn),
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) ]
+
+      if rxn in c2BzBz:
+         ACTV['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-2Bz-mono-unCP'       % (dbse),
+                                        '%s-Bz-mono-unCP'        % (dbse) ]
+      elif rxn in c3Bz2Bz:
+         ACTV['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-3Bz-mono-unCP'       % (dbse),
+                                        '%s-2Bz-mono-unCP'       % (dbse) ]
+      elif rxn in c4Bz3Bz:
+         ACTV['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-4Bz-mono-unCP'       % (dbse),
+                                        '%s-3Bz-mono-unCP'       % (dbse) ]
+
+   elif rxn in Pulay:  # homomonomer, not-CP-symmetric, w/ db monomer reuse
+      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'            % (dbse, rxn) : +1,
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) : -1,
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) : -1,
+                                        '%s-Bkybowl_P-mono-unCP' % (dbse)      : -2 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn) ]
+
+      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-CP'         % (dbse, rxn),
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) ]
+
+      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-Bkybowl_P-mono-unCP' % (dbse) ]
+
+   elif rxn is 'BkybowlBkybowl-3.63':  # homomonomer, not-CP-symmetric, w/o db monomer reuse
+      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'            % (dbse, rxn) : +1,
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) : -1,
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) : -1,
+                                        '%s-%s-monoA-unCP'       % (dbse, rxn) : -2 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn) ]
+
+      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-CP'         % (dbse, rxn),
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) ]
+
+      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-unCP'       % (dbse, rxn) ]
+
+   elif (rxn in Grimme60) or (rxn in Grimme70):  # heteromonomer, w/o db monomer reuse
+      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'            % (dbse, rxn) : +1,
+                                        '%s-%s-monoA-CP'         % (dbse, rxn) : -1,
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) : -1,
+                                        '%s-%s-monoA-unCP'       % (dbse, rxn) : -1,
+                                        '%s-%s-monoB-unCP'       % (dbse, rxn) : -1 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn) ]
+
+      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-CP'         % (dbse, rxn),
+                                        '%s-%s-monoB-CP'         % (dbse, rxn) ]
+
+      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'            % (dbse, rxn),
+                                        '%s-%s-monoA-unCP'       % (dbse, rxn),
+                                        '%s-%s-monoB-unCP'       % (dbse, rxn) ]
 
 # <<< Reference Values [kcal/mol] >>>
 BIND = {}
-BIND['%s-%s'            % (dbse, '2Ae2Ae-3.8'            )] =    0.000
-BIND['%s-%s'            % (dbse, '4Ae4Ae-3.8'            )] =    0.000
-BIND['%s-%s'            % (dbse, '6Ae6Ae-3.8'            )] =    0.000
-BIND['%s-%s'            % (dbse, '8Ae8Ae-3.8'            )] =    0.000
-BIND['%s-%s'            % (dbse, '10Ae10Ae-3.8'          )] =    0.000
-BIND['%s-%s'            % (dbse, '12Ae12Ae-3.8'          )] =    0.000
-BIND['%s-%s'            % (dbse, 'BzBz_S-3.9'            )] =    0.000
-BIND['%s-%s'            % (dbse, '2BzBz_S-3.5'           )] =    0.000
-BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.8'          )] =    0.000
-BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.5'          )] =    0.000
-BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.7'          )] =    0.000
-BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.9'          )] =    0.000
-BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.54'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.64'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.74'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.84'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.94'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.63'   )] =    0.000
-BIND['%s-%s'            % (dbse, 'C60Bkybowl'            )] =    0.000
-BIND['%s-%s'            % (dbse, 'C60Bkycatch'           )] =    0.000
+# Polyenes
+BIND['%s-%s'            % (dbse, '2Ae2Ae-3.8'            )] =    0.266
+BIND['%s-%s'            % (dbse, '4Ae4Ae-3.8'            )] =   -0.373
+BIND['%s-%s'            % (dbse, '6Ae6Ae-3.8'            )] =   -1.078
+BIND['%s-%s'            % (dbse, '8Ae8Ae-3.8'            )] =   -1.796
+BIND['%s-%s'            % (dbse, '10Ae10Ae-3.8'          )] =   -2.519
+BIND['%s-%s'            % (dbse, '12Ae12Ae-3.8'          )] =    0.000  # may exist, check with MSM
+BIND['%s-%s'            % (dbse, '14Ae14Ae-3.8'          )] =    0.000
+BIND['%s-%s'            % (dbse, '16Ae16Ae-3.8'          )] =    0.000
+# Arenes
+BIND['%s-%s'            % (dbse, 'BzBz_S-3.7'            )] =   -1.623
+BIND['%s-%s'            % (dbse, 'BzBz_S-3.8'            )] =   -1.765
+BIND['%s-%s'            % (dbse, 'BzBz_S-3.9'            )] =   -1.793  # BzBz minimum
+BIND['%s-%s'            % (dbse, 'BzBz_S-4.0'            )] =   -1.746
+BIND['%s-%s'            % (dbse, 'BzBz_S-4.1'            )] =   -1.651
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.3'           )] =    0.000
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.4'           )] =    0.000
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.5'           )] =    0.000  # 2BzBz unconfirmed minimum
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.6'           )] =    0.000
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.7'           )] =    0.000
+BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.6'          )] =    0.000
+BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.7'          )] =   -4.314
+BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.8'          )] =   -4.384  # 2Bz2Bz minimum
+BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.9'          )] =   -4.283
+BIND['%s-%s'            % (dbse, '2Bz2Bz_S-4.0'          )] =    0.000
+BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.3'          )] =    0.000
+BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.4'          )] =   -7.607
+BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.5'          )] =   -7.802  # 3Bz2Bz minimum
+BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.6'          )] =   -7.680
+BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.7'          )] =    0.000
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.5'          )] =    0.000
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.6'          )] =    0.000
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.7'          )] =    0.000  # 3Bz3Bz unconfirmed minimum
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.8'          )] =    0.000
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.9'          )] =    0.000
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.3'          )] =    0.000
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.4'          )] =    0.000
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.5'          )] =    0.000  # 4Bz3Bz unconfirmed minimum
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.6'          )] =    0.000
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.7'          )] =    0.000
+# Pulay Buckyware
+BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.54'   )] =  -14.8
+BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.64'   )] =  -15.4
+BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.73'   )] =  -15.6  # bootstrapped, Pulay does not report
+BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.74'   )] =  -15.4
+BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.84'   )] =  -15.0
+# Grimme Buckyware
+BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.63'   )] =  -17.0
+BIND['%s-%s'            % (dbse, 'C60Bkybowl'            )] =  -19.5
+BIND['%s-%s'            % (dbse, 'C60Bkycatch'           )] =  -43.1
+BIND['%s-%s'            % (dbse, 'C70Bkycatch'           )] =  -45.1
+BIND['%s-%s'            % (dbse, 'C70Bkycatch_W'         )] =  -44.0
+BIND['%s-%s'            % (dbse, 'C70Bkycatch_T'         )] =  -40.3
 
 # <<< Comment Lines >>>
 TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)$')
 
-TAGL['%s-%s'            % (dbse, '10Ae10Ae-3.8'          )] = """Decene (C10H12) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-dimer'      % (dbse, '10Ae10Ae-3.8'          )] = """Dimer from Decene (C10H12) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '10Ae10Ae-3.8'          )] = """Monomer A from Decene (C10H12) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '10Ae10Ae-3.8'          )] = """Monomer B from Decene (C10H12) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '10Ae10Ae-3.8'          )] = """Monomer A from Decene (C10H12) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '10Ae10Ae-3.8'          )] = """Monomer B from Decene (C10H12) Dimer, stacked at 3.8 A """
-TAGL['%s-%s'            % (dbse, '12Ae12Ae-3.8'          )] = """Dodecene (C12H14) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-dimer'      % (dbse, '12Ae12Ae-3.8'          )] = """Dimer from Dodecene (C12H14) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '12Ae12Ae-3.8'          )] = """Monomer A from Dodecene (C12H14) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '12Ae12Ae-3.8'          )] = """Monomer B from Dodecene (C12H14) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '12Ae12Ae-3.8'          )] = """Monomer A from Dodecene (C12H14) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '12Ae12Ae-3.8'          )] = """Monomer B from Dodecene (C12H14) Dimer, stacked at 3.8 A """
-TAGL['%s-%s'            % (dbse, '2Ae2Ae-3.8'            )] = """Ethene (C2H4) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-dimer'      % (dbse, '2Ae2Ae-3.8'            )] = """Dimer from Ethene (C2H4) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '2Ae2Ae-3.8'            )] = """Monomer A from Ethene (C2H4) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '2Ae2Ae-3.8'            )] = """Monomer B from Ethene (C2H4) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '2Ae2Ae-3.8'            )] = """Monomer A from Ethene (C2H4) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '2Ae2Ae-3.8'            )] = """Monomer B from Ethene (C2H4) Dimer, stacked at 3.8 A """
-TAGL['%s-%s'            % (dbse, '2Bz2Bz_S-3.8'          )] = """Napthalene Dimer, stacked at 3.8 A """
-TAGL['%s-%s-dimer'      % (dbse, '2Bz2Bz_S-3.8'          )] = """Dimer from Napthalene Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '2Bz2Bz_S-3.8'          )] = """Monomer A from Napthalene Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '2Bz2Bz_S-3.8'          )] = """Monomer B from Napthalene Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '2Bz2Bz_S-3.8'          )] = """Monomer A from Napthalene Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '2Bz2Bz_S-3.8'          )] = """Monomer B from Napthalene Dimer, stacked at 3.8 A """
-TAGL['%s-%s'            % (dbse, '2BzBz_S-3.5'           )] = """Napthalene-Benzene Complex, stacked at 3.5 A, NOT YET COMPLETELY CERTIAN THIS IS CORRECT SCANNING MIN """
-TAGL['%s-%s-dimer'      % (dbse, '2BzBz_S-3.5'           )] = """Dimer from Napthalene-Benzene Complex, stacked at 3.5 A, NOT YET COMPLETELY CERTIAN THIS IS CORRECT SCANNING MIN """
-TAGL['%s-%s-monoA-CP'   % (dbse, '2BzBz_S-3.5'           )] = """Monomer A from Napthalene-Benzene Complex, stacked at 3.5 A, NOT YET COMPLETELY CERTIAN THIS IS CORRECT SCANNING MIN """
-TAGL['%s-%s-monoB-CP'   % (dbse, '2BzBz_S-3.5'           )] = """Monomer B from Napthalene-Benzene Complex, stacked at 3.5 A, NOT YET COMPLETELY CERTIAN THIS IS CORRECT SCANNING MIN """
-TAGL['%s-%s-monoA-unCP' % (dbse, '2BzBz_S-3.5'           )] = """Monomer A from Napthalene-Benzene Complex, stacked at 3.5 A, NOT YET COMPLETELY CERTIAN THIS IS CORRECT SCANNING MIN """
-TAGL['%s-%s-monoB-unCP' % (dbse, '2BzBz_S-3.5'           )] = """Monomer B from Napthalene-Benzene Complex, stacked at 3.5 A, NOT YET COMPLETELY CERTIAN THIS IS CORRECT SCANNING MIN """
-TAGL['%s-%s'            % (dbse, '3Bz2Bz_S-3.5'          )] = """Anthracene-Napthalene Complex, stacked at 3.5 A """
-TAGL['%s-%s-dimer'      % (dbse, '3Bz2Bz_S-3.5'          )] = """Dimer from Anthracene-Napthalene Complex, stacked at 3.5 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '3Bz2Bz_S-3.5'          )] = """Monomer A from Anthracene-Napthalene Complex, stacked at 3.5 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '3Bz2Bz_S-3.5'          )] = """Monomer B from Anthracene-Napthalene Complex, stacked at 3.5 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '3Bz2Bz_S-3.5'          )] = """Monomer A from Anthracene-Napthalene Complex, stacked at 3.5 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '3Bz2Bz_S-3.5'          )] = """Monomer B from Anthracene-Napthalene Complex, stacked at 3.5 A """
-TAGL['%s-%s'            % (dbse, '3Bz3Bz_S-3.7'          )] = """Anthracene Dimer, stacked at 3.7 A, NOT YET ABSOLUTETLY CERTAIN THIS IS SCANNING MIN """
-TAGL['%s-%s-dimer'      % (dbse, '3Bz3Bz_S-3.7'          )] = """Dimer from Anthracene Dimer, stacked at 3.7 A, NOT YET ABSOLUTETLY CERTAIN THIS IS SCANNING MIN """
-TAGL['%s-%s-monoA-CP'   % (dbse, '3Bz3Bz_S-3.7'          )] = """Monomer A from Anthracene Dimer, stacked at 3.7 A, NOT YET ABSOLUTETLY CERTAIN THIS IS SCANNING MIN """
-TAGL['%s-%s-monoB-CP'   % (dbse, '3Bz3Bz_S-3.7'          )] = """Monomer B from Anthracene Dimer, stacked at 3.7 A, NOT YET ABSOLUTETLY CERTAIN THIS IS SCANNING MIN """
-TAGL['%s-%s-monoA-unCP' % (dbse, '3Bz3Bz_S-3.7'          )] = """Monomer A from Anthracene Dimer, stacked at 3.7 A, NOT YET ABSOLUTETLY CERTAIN THIS IS SCANNING MIN """
-TAGL['%s-%s-monoB-unCP' % (dbse, '3Bz3Bz_S-3.7'          )] = """Monomer B from Anthracene Dimer, stacked at 3.7 A, NOT YET ABSOLUTETLY CERTAIN THIS IS SCANNING MIN """
-TAGL['%s-%s'            % (dbse, '4Ae4Ae-3.8'            )] = """Butene (C4H6) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-dimer'      % (dbse, '4Ae4Ae-3.8'            )] = """Dimer from Butene (C4H6) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '4Ae4Ae-3.8'            )] = """Monomer A from Butene (C4H6) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '4Ae4Ae-3.8'            )] = """Monomer B from Butene (C4H6) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '4Ae4Ae-3.8'            )] = """Monomer A from Butene (C4H6) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '4Ae4Ae-3.8'            )] = """Monomer B from Butene (C4H6) Dimer, stacked at 3.8 A """
-TAGL['%s-%s'            % (dbse, '4Bz3Bz_S-3.9'          )] = """Naphthacene-Anthracene Complex, stacked at 3.9 A, PLACEHOLDER GEOMETRY """
-TAGL['%s-%s-dimer'      % (dbse, '4Bz3Bz_S-3.9'          )] = """Dimer from Naphthacene-Anthracene Complex, stacked at 3.9 A, PLACEHOLDER GEOMETRY """
-TAGL['%s-%s-monoA-CP'   % (dbse, '4Bz3Bz_S-3.9'          )] = """Monomer A from Naphthacene-Anthracene Complex, stacked at 3.9 A, PLACEHOLDER GEOMETRY """
-TAGL['%s-%s-monoB-CP'   % (dbse, '4Bz3Bz_S-3.9'          )] = """Monomer B from Naphthacene-Anthracene Complex, stacked at 3.9 A, PLACEHOLDER GEOMETRY """
-TAGL['%s-%s-monoA-unCP' % (dbse, '4Bz3Bz_S-3.9'          )] = """Monomer A from Naphthacene-Anthracene Complex, stacked at 3.9 A, PLACEHOLDER GEOMETRY """
-TAGL['%s-%s-monoB-unCP' % (dbse, '4Bz3Bz_S-3.9'          )] = """Monomer B from Naphthacene-Anthracene Complex, stacked at 3.9 A, PLACEHOLDER GEOMETRY """
-TAGL['%s-%s'            % (dbse, '6Ae6Ae-3.8'            )] = """Hexene (C6H8) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-dimer'      % (dbse, '6Ae6Ae-3.8'            )] = """Dimer from Hexene (C6H8) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '6Ae6Ae-3.8'            )] = """Monomer A from Hexene (C6H8) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '6Ae6Ae-3.8'            )] = """Monomer B from Hexene (C6H8) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '6Ae6Ae-3.8'            )] = """Monomer A from Hexene (C6H8) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '6Ae6Ae-3.8'            )] = """Monomer B from Hexene (C6H8) Dimer, stacked at 3.8 A """
-TAGL['%s-%s'            % (dbse, '8Ae8Ae-3.8'            )] = """Octene (C8H10) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-dimer'      % (dbse, '8Ae8Ae-3.8'            )] = """Dimer from Octene (C8H10) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, '8Ae8Ae-3.8'            )] = """Monomer A from Octene (C8H10) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, '8Ae8Ae-3.8'            )] = """Monomer B from Octene (C8H10) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, '8Ae8Ae-3.8'            )] = """Monomer A from Octene (C8H10) Dimer, stacked at 3.8 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, '8Ae8Ae-3.8'            )] = """Monomer B from Octene (C8H10) Dimer, stacked at 3.8 A """
-TAGL['%s-%s'            % (dbse, 'BkybowlBkybowl-3.54'   )] = """Corannulene Dimer, stacked at 3.54 A, Pulay geometry """
-TAGL['%s-%s-dimer'      % (dbse, 'BkybowlBkybowl-3.54'   )] = """Dimer from Corannulene Dimer, stacked at 3.54 A, Pulay geometry """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'BkybowlBkybowl-3.54'   )] = """Monomer A from Corannulene Dimer, stacked at 3.54 A, Pulay geometry """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'BkybowlBkybowl-3.54'   )] = """Monomer B from Corannulene Dimer, stacked at 3.54 A, Pulay geometry """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'BkybowlBkybowl-3.54'   )] = """Monomer A from Corannulene Dimer, stacked at 3.54 A, Pulay geometry """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'BkybowlBkybowl-3.54'   )] = """Monomer B from Corannulene Dimer, stacked at 3.54 A, Pulay geometry """
+# Polyenes
+TAGL['%s-%s'            % (dbse,  '2Ae2Ae-3.8'  )] = 'Ethene (C2H4) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '2Ae2Ae-3.8'  )] = 'Ethene (C2H4) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '2Ae2Ae-3.8'  )] = 'Ethene from Ethene (C2H4) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '2Ae2Ae-3.8'  )] = 'Ethene from Ethene (C2H4) Dimer, stacked at 3.8 A'
+TAGL['%s-%s'            % (dbse,  '4Ae4Ae-3.8'  )] = 'Butadiene (C4H6) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '4Ae4Ae-3.8'  )] = 'Butadiene (C4H6) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '4Ae4Ae-3.8'  )] = 'Butadiene from Butadiene (C4H6) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '4Ae4Ae-3.8'  )] = 'Butadiene from Butadiene (C4H6) Dimer, stacked at 3.8 A'
+TAGL['%s-%s'            % (dbse,  '6Ae6Ae-3.8'  )] = 'Hexatriene (C6H8) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '6Ae6Ae-3.8'  )] = 'Hexatriene (C6H8) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '6Ae6Ae-3.8'  )] = 'Hexatriene from Hexatriene (C6H8) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '6Ae6Ae-3.8'  )] = 'Hexatriene from Hexatriene (C6H8) Dimer, stacked at 3.8 A'
+TAGL['%s-%s'            % (dbse,  '8Ae8Ae-3.8'  )] = 'Octatetraene (C8H10) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '8Ae8Ae-3.8'  )] = 'Octatetraene (C8H10) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '8Ae8Ae-3.8'  )] = 'Octatetraene from Octatetraene (C8H10) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '8Ae8Ae-3.8'  )] = 'Octatetraene from Octatetraene (C8H10) Dimer, stacked at 3.8 A'
+TAGL['%s-%s'            % (dbse,  '10Ae10Ae-3.8')] = 'Decapentaene (C10H12) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '10Ae10Ae-3.8')] = 'Decapentaene (C10H12) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '10Ae10Ae-3.8')] = 'Decapentaene from Decapentaene (C10H12) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '10Ae10Ae-3.8')] = 'Decapentaene from Decapentaene (C10H12) Dimer, stacked at 3.8 A'
+TAGL['%s-%s'            % (dbse,  '12Ae12Ae-3.8')] = 'Dodecahexaene (C12H14) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '12Ae12Ae-3.8')] = 'Dodecahexaene (C12H14) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '12Ae12Ae-3.8')] = 'Dodecahexaene from Dodecahexaene (C12H14) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '12Ae12Ae-3.8')] = 'Dodecahexaene from Dodecahexaene (C12H14) Dimer, stacked at 3.8 A'
+TAGL['%s-%s'            % (dbse,  '14Ae14Ae-3.8')] = 'Tetradecaheptaene (C14H16) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '14Ae14Ae-3.8')] = 'Tetradecaheptaene (C14H16) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '14Ae14Ae-3.8')] = 'Tetradecaheptaene from Tetradecaheptaene (C14H16) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '14Ae14Ae-3.8')] = 'Tetradecaheptaene from Tetradecaheptaene (C14H16) Dimer, stacked at 3.8 A'
+TAGL['%s-%s'            % (dbse,  '16Ae16Ae-3.8')] = 'Hexadecaoctaene (C16H18) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-dimer'      % (dbse,  '16Ae16Ae-3.8')] = 'Hexadecaoctaene (C16H18) Dimer, stacked at 3.8 A' 
+TAGL['%s-%s-monoA-CP'   % (dbse,  '16Ae16Ae-3.8')] = 'Hexadecaoctaene from Hexadecaoctaene (C16H18) Dimer, stacked at 3.8 A'
+TAGL['%s-%s-monoA-unCP' % (dbse,  '16Ae16Ae-3.8')] = 'Hexadecaoctaene from Hexadecaoctaene (C16H18) Dimer, stacked at 3.8 A'
+
+# Arenes
+for item in cBzBz:
+   distance = rxnpattern.match(item)
+   TAGL['%s-%s'          % (dbse, item)] = 'Benzene Dimer, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Benzene Dimer, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Benzene Dimer, stacked at %s A' % (distance.group(2))
+
+for item in c2BzBz:
+   distance = rxnpattern.match(item)
+   TAGL['%s-%s'          % (dbse, item)] = 'Napthalene-Benzene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Napthalene-Benzene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Napthalene from Napthalene-Benzene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Benzene from Napthalene-Benzene Complex, stacked at %s A' % (distance.group(2))
+
+for item in c2Bz2Bz:
+   distance = rxnpattern.match(item)
+   TAGL['%s-%s'          % (dbse, item)] = 'Napthalene Dimer, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Napthalene Dimer, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Napthalene from Napthalene Dimer, stacked at %s A' % (distance.group(2))
+
+for item in c3Bz2Bz:
+   distance = rxnpattern.match(item)
+   TAGL['%s-%s'          % (dbse, item)] = 'Anthracene-Napthalene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Anthracene-Napthalene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Anthracene from Anthracene-Napthalene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Napthalene from Anthracene-Napthalene Complex, stacked at %s A' % (distance.group(2))
+
+for item in c3Bz3Bz:
+   distance = rxnpattern.match(item)
+   TAGL['%s-%s'          % (dbse, item)] = 'Anthracene Dimer, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Anthracene Dimer, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Anthracene from Anthracene Dimer, stacked at %s A' % (distance.group(2))
+
+for item in c4Bz3Bz:  # DON'T YET HAVE GEOMETRY FOR 4Bz
+   distance = rxnpattern.match(item)
+   TAGL['%s-%s'          % (dbse, item)] = 'Tetracene-Anthracene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Tetracene-Anthracene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Tetracene from Tetracene-Anthracene Complex, stacked at %s A' % (distance.group(2))
+   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Anthracene from Tetracene-Anthracene Complex, stacked at %s A' % (distance.group(2))
+
+# Pulay Buckyware
+for item in Pulay:
+   distance = rxnpattern.match(item)
+   TAGL['%s-%s'          % (dbse, item)] = 'Corannulene Dimer, stacked at %s A, Pulay geometry' % (distance.group(2))
+   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Corannulene Dimer, stacked at %s A, Pulay geometry' % (distance.group(2))
+   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Corannulene from Corannulene Dimer, stacked at %s A, Pulay geometry' % (distance.group(2))
+   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Corannulene from Corannulene Dimer, stacked at %s A, Pulay geometry' % (distance.group(2))
+
+# Grimme Buckyware
 TAGL['%s-%s'            % (dbse, 'BkybowlBkybowl-3.63'   )] = """Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
-TAGL['%s-%s-dimer'      % (dbse, 'BkybowlBkybowl-3.63'   )] = """Dimer from Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'BkybowlBkybowl-3.63'   )] = """Monomer A from Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'BkybowlBkybowl-3.63'   )] = """Monomer B from Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'BkybowlBkybowl-3.63'   )] = """Monomer A from Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'BkybowlBkybowl-3.63'   )] = """Monomer B from Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
-TAGL['%s-%s'            % (dbse, 'BkybowlBkybowl-3.64'   )] = """Corannulene Dimer, stacked at 3.64 A, Pulay geometry """
-TAGL['%s-%s-dimer'      % (dbse, 'BkybowlBkybowl-3.64'   )] = """Dimer from Corannulene Dimer, stacked at 3.64 A, Pulay geometry """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'BkybowlBkybowl-3.64'   )] = """Monomer A from Corannulene Dimer, stacked at 3.64 A, Pulay geometry """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'BkybowlBkybowl-3.64'   )] = """Monomer B from Corannulene Dimer, stacked at 3.64 A, Pulay geometry """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'BkybowlBkybowl-3.64'   )] = """Monomer A from Corannulene Dimer, stacked at 3.64 A, Pulay geometry """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'BkybowlBkybowl-3.64'   )] = """Monomer B from Corannulene Dimer, stacked at 3.64 A, Pulay geometry """
-TAGL['%s-%s'            % (dbse, 'BkybowlBkybowl-3.74'   )] = """Corannulene Dimer, stacked at 3.74 A, Pulay geometry """
-TAGL['%s-%s-dimer'      % (dbse, 'BkybowlBkybowl-3.74'   )] = """Dimer from Corannulene Dimer, stacked at 3.74 A, Pulay geometry """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'BkybowlBkybowl-3.74'   )] = """Monomer A from Corannulene Dimer, stacked at 3.74 A, Pulay geometry """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'BkybowlBkybowl-3.74'   )] = """Monomer B from Corannulene Dimer, stacked at 3.74 A, Pulay geometry """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'BkybowlBkybowl-3.74'   )] = """Monomer A from Corannulene Dimer, stacked at 3.74 A, Pulay geometry """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'BkybowlBkybowl-3.74'   )] = """Monomer B from Corannulene Dimer, stacked at 3.74 A, Pulay geometry """
-TAGL['%s-%s'            % (dbse, 'BkybowlBkybowl-3.84'   )] = """Corannulene Dimer, stacked at 3.84 A, Pulay geometry """
-TAGL['%s-%s-dimer'      % (dbse, 'BkybowlBkybowl-3.84'   )] = """Dimer from Corannulene Dimer, stacked at 3.84 A, Pulay geometry """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'BkybowlBkybowl-3.84'   )] = """Monomer A from Corannulene Dimer, stacked at 3.84 A, Pulay geometry """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'BkybowlBkybowl-3.84'   )] = """Monomer B from Corannulene Dimer, stacked at 3.84 A, Pulay geometry """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'BkybowlBkybowl-3.84'   )] = """Monomer A from Corannulene Dimer, stacked at 3.84 A, Pulay geometry """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'BkybowlBkybowl-3.84'   )] = """Monomer B from Corannulene Dimer, stacked at 3.84 A, Pulay geometry """
-TAGL['%s-%s'            % (dbse, 'BkybowlBkybowl-3.94'   )] = """Corannulene Dimer, stacked at 3.94 A, Pulay geometry """
-TAGL['%s-%s-dimer'      % (dbse, 'BkybowlBkybowl-3.94'   )] = """Dimer from Corannulene Dimer, stacked at 3.94 A, Pulay geometry """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'BkybowlBkybowl-3.94'   )] = """Monomer A from Corannulene Dimer, stacked at 3.94 A, Pulay geometry """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'BkybowlBkybowl-3.94'   )] = """Monomer B from Corannulene Dimer, stacked at 3.94 A, Pulay geometry """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'BkybowlBkybowl-3.94'   )] = """Monomer A from Corannulene Dimer, stacked at 3.94 A, Pulay geometry """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'BkybowlBkybowl-3.94'   )] = """Monomer B from Corannulene Dimer, stacked at 3.94 A, Pulay geometry """
-TAGL['%s-%s'            % (dbse, 'BzBz_S-3.9'            )] = """Benzene Dimer, stacked at 3.9 A """
-TAGL['%s-%s-dimer'      % (dbse, 'BzBz_S-3.9'            )] = """Dimer from Benzene Dimer, stacked at 3.9 A """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'BzBz_S-3.9'            )] = """Monomer A from Benzene Dimer, stacked at 3.9 A """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'BzBz_S-3.9'            )] = """Monomer B from Benzene Dimer, stacked at 3.9 A """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'BzBz_S-3.9'            )] = """Monomer A from Benzene Dimer, stacked at 3.9 A """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'BzBz_S-3.9'            )] = """Monomer B from Benzene Dimer, stacked at 3.9 A """
+TAGL['%s-%s-dimer'      % (dbse, 'BkybowlBkybowl-3.63'   )] = """Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
+TAGL['%s-%s-monoA-CP'   % (dbse, 'BkybowlBkybowl-3.63'   )] = """Corannulene from Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
+TAGL['%s-%s-monoB-CP'   % (dbse, 'BkybowlBkybowl-3.63'   )] = """Corannulene from Corannulene Dimer, stacked at ~3.63 A, Grimme geometry """
+TAGL['%s-%s-monoA-unCP' % (dbse, 'BkybowlBkybowl-3.63'   )] = """Corannulene, Grimme geometry """
+
 TAGL['%s-%s'            % (dbse, 'C60Bkybowl'            )] = """C60 @ Corannulene Buckybowl """
-TAGL['%s-%s-dimer'      % (dbse, 'C60Bkybowl'            )] = """Dimer from C60 @ Corannulene Buckybowl """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'C60Bkybowl'            )] = """Monomer A from C60 @ Corannulene Buckybowl """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'C60Bkybowl'            )] = """Monomer B from C60 @ Corannulene Buckybowl """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'C60Bkybowl'            )] = """Monomer A from C60 @ Corannulene Buckybowl """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'C60Bkybowl'            )] = """Monomer B from C60 @ Corannulene Buckybowl """
+TAGL['%s-%s-dimer'      % (dbse, 'C60Bkybowl'            )] = """C60 @ Corannulene Buckybowl """
+TAGL['%s-%s-monoA-CP'   % (dbse, 'C60Bkybowl'            )] = """Buckyball from C60 @ Corannulene Buckybowl """
+TAGL['%s-%s-monoB-CP'   % (dbse, 'C60Bkybowl'            )] = """Corannulene from C60 @ Corannulene Buckybowl """
+TAGL['%s-%s-monoA-unCP' % (dbse, 'C60Bkybowl'            )] = """Buckyball from C60 @ Corannulene Buckybowl """
+TAGL['%s-%s-monoB-unCP' % (dbse, 'C60Bkybowl'            )] = """Corannulene from C60 @ Corannulene Buckybowl """
+
 TAGL['%s-%s'            % (dbse, 'C60Bkycatch'           )] = """C60 @ C60H28 Buckycatcher """
-TAGL['%s-%s-dimer'      % (dbse, 'C60Bkycatch'           )] = """Dimer from C60 @ C60H28 Buckycatcher """
-TAGL['%s-%s-monoA-CP'   % (dbse, 'C60Bkycatch'           )] = """Monomer A from C60 @ C60H28 Buckycatcher """
-TAGL['%s-%s-monoB-CP'   % (dbse, 'C60Bkycatch'           )] = """Monomer B from C60 @ C60H28 Buckycatcher """
-TAGL['%s-%s-monoA-unCP' % (dbse, 'C60Bkycatch'           )] = """Monomer A from C60 @ C60H28 Buckycatcher """
-TAGL['%s-%s-monoB-unCP' % (dbse, 'C60Bkycatch'           )] = """Monomer B from C60 @ C60H28 Buckycatcher """
+TAGL['%s-%s-dimer'      % (dbse, 'C60Bkycatch'           )] = """C60 @ C60H28 Buckycatcher """
+TAGL['%s-%s-monoA-CP'   % (dbse, 'C60Bkycatch'           )] = """Buckyball from C60 @ C60H28 Buckycatcher """
+TAGL['%s-%s-monoB-CP'   % (dbse, 'C60Bkycatch'           )] = """Buckycatcher from C60 @ C60H28 Buckycatcher """
+TAGL['%s-%s-monoA-unCP' % (dbse, 'C60Bkycatch'           )] = """Buckyball from C60 @ C60H28 Buckycatcher """
+TAGL['%s-%s-monoB-unCP' % (dbse, 'C60Bkycatch'           )] = """Buckycatcher from C60 @ C60H28 Buckycatcher """
+
+TAGL['%s-%s'            % (dbse, 'C70Bkycatch'           )] = """C70 @ C60H28 Buckycatcher, ball tilted out of maw (min) """
+TAGL['%s-%s-dimer'      % (dbse, 'C70Bkycatch'           )] = """C70 @ C60H28 Buckycatcher, ball tilted out of maw (min) """
+TAGL['%s-%s-monoA-CP'   % (dbse, 'C70Bkycatch'           )] = """Buckyball from C70 @ C60H28 Buckycatcher, ball tilted out of maw (min) """
+TAGL['%s-%s-monoB-CP'   % (dbse, 'C70Bkycatch'           )] = """Buckycatcher from C70 @ C60H28 Buckycatcher, ball tilted out of maw (min) """
+TAGL['%s-%s-monoA-unCP' % (dbse, 'C70Bkycatch'           )] = """Buckyball from C70 @ C60H28 Buckycatcher, ball tilted out of maw (min) """
+TAGL['%s-%s-monoB-unCP' % (dbse, 'C70Bkycatch'           )] = """Buckycatcher from C70 @ C60H28 Buckycatcher, ball tilted out of maw (min) """
+
+TAGL['%s-%s'            % (dbse, 'C70Bkycatch_W'         )] = """C70 @ C60H28 Buckycatcher, ball wide in maw """
+TAGL['%s-%s-dimer'      % (dbse, 'C70Bkycatch_W'         )] = """C70 @ C60H28 Buckycatcher, ball wide in maw """
+TAGL['%s-%s-monoA-CP'   % (dbse, 'C70Bkycatch_W'         )] = """Buckyball from C70 @ C60H28 Buckycatcher, ball wide in maw """
+TAGL['%s-%s-monoB-CP'   % (dbse, 'C70Bkycatch_W'         )] = """Buckycatcher from C70 @ C60H28 Buckycatcher, ball wide in maw """
+TAGL['%s-%s-monoA-unCP' % (dbse, 'C70Bkycatch_W'         )] = """Buckyball from C70 @ C60H28 Buckycatcher, ball wide in maw """
+TAGL['%s-%s-monoB-unCP' % (dbse, 'C70Bkycatch_W'         )] = """Buckycatcher from C70 @ C60H28 Buckycatcher, ball wide in maw """
+
+TAGL['%s-%s'            % (dbse, 'C70Bkycatch_T'         )] = """C70 @ C60H28 Buckycatcher, ball tall along maw """
+TAGL['%s-%s-dimer'      % (dbse, 'C70Bkycatch_T'         )] = """C70 @ C60H28 Buckycatcher, ball tall along maw """
+TAGL['%s-%s-monoA-CP'   % (dbse, 'C70Bkycatch_T'         )] = """Buckyball from C70 @ C60H28 Buckycatcher, ball tall along maw """
+TAGL['%s-%s-monoB-CP'   % (dbse, 'C70Bkycatch_T'         )] = """Buckycatcher from C70 @ C60H28 Buckycatcher, ball tall along maw """
+TAGL['%s-%s-monoA-unCP' % (dbse, 'C70Bkycatch_T'         )] = """Buckyball from C70 @ C60H28 Buckycatcher, ball tall along maw """
+TAGL['%s-%s-monoB-unCP' % (dbse, 'C70Bkycatch_T'         )] = """Buckycatcher from C70 @ C60H28 Buckycatcher, ball tall along maw """
+
+# Shared monomers
+TAGL['%s-Bz-mono-unCP'  % (dbse)] = 'Benzene'
+TAGL['%s-2Bz-mono-unCP' % (dbse)] = 'Napthalene'
+TAGL['%s-3Bz-mono-unCP' % (dbse)] = 'Anthracene'
+TAGL['%s-4Bz-mono-unCP'  % (dbse)] = 'Tetracene'
+TAGL['%s-Bkybowl_P-mono-unCP'  % (dbse)] = 'Corannulene, Pulay geometry'
 
 # <<< Molecule Specifications >>>
 monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
 monoB_unCP = 'monoB = dimer.extract_subsets(2)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
 monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
 monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
+
+CFLOW_2Ae2Ae_3p8 = input.process_input("""
+molecule dimer {
+0 1
+C        0.00000000     0.00000000     1.08000000
+H        0.00000000     0.93530700     1.62000000
+H        0.00000000    -0.93530700     1.62000000
+C        0.00000000     0.00000000    -0.25197000
+H        0.00000000     0.94916400    -0.79997000
+H        0.00000000    -0.94916400    -0.79997000
+--
+0 1
+C        3.80000000     0.00000000     1.08000000
+H        3.80000000     0.93530700     1.62000000
+H        3.80000000    -0.93530700     1.62000000
+C        3.80000000     0.00000000    -0.25197000
+H        3.80000000     0.94916400    -0.79997000
+H        3.80000000    -0.94916400    -0.79997000
+units angstrom
+}
+""")
+
+CFLOW_4Ae4Ae_3p8 = input.process_input("""
+molecule dimer {
+0 1
+C        0.00000000     0.00000000     1.08000000
+H        0.00000000     0.93530700     1.62000000
+H        0.00000000    -0.93530700     1.62000000
+C        0.00000000     0.00000000    -0.25197000
+H        0.00000000     0.94916400    -0.79997000
+C        0.00000000    -1.32588500    -1.01747000
+H        0.00000000    -2.27504800    -0.46947000
+C        0.00000000    -1.32588500    -2.34944000
+H        0.00000000    -2.27504800    -2.89744000
+H        0.00000000    -0.37672100    -2.89744000
+--
+0 1
+C        3.80000000     0.00000000     1.08000000
+H        3.80000000     0.93530700     1.62000000
+H        3.80000000    -0.93530700     1.62000000
+C        3.80000000     0.00000000    -0.25197000
+H        3.80000000     0.94916400    -0.79997000
+C        3.80000000    -1.32588500    -1.01747000
+H        3.80000000    -2.27504800    -0.46947000
+C        3.80000000    -1.32588500    -2.34944000
+H        3.80000000    -2.27504800    -2.89744000
+H        3.80000000    -0.37672100    -2.89744000
+units angstrom
+}
+""")
+
+CFLOW_6Ae6Ae_3p8 = input.process_input("""
+molecule dimer {
+0 1
+C        0.00000000     0.00000000     1.08000000
+H        0.00000000    -0.93530700     1.62000000
+C        0.00000000     0.00000000    -0.25197000
+H        0.00000000     0.94916400    -0.79997000
+C        0.00000000    -1.32588500    -1.01747000
+H        0.00000000    -2.27504800    -0.46947000
+C        0.00000000    -1.32588500    -2.34944000
+H        0.00000000    -2.27504800    -2.89744000
+H        0.00000000    -0.37672100    -2.89744000
+C        0.00000000     1.32588500     1.84550000
+H        0.00000000     2.27504800     1.29750000
+C        0.00000000     1.32588500     3.17747000
+H        0.00000000     2.27504800     3.72547000
+H        0.00000000     0.37672100     3.72547000
+--
+0 1
+C        3.80000000     0.00000000     1.08000000
+H        3.80000000    -0.93530700     1.62000000
+C        3.80000000     0.00000000    -0.25197000
+H        3.80000000     0.94916400    -0.79997000
+C        3.80000000    -1.32588500    -1.01747000
+H        3.80000000    -2.27504800    -0.46947000
+C        3.80000000    -1.32588500    -2.34944000
+H        3.80000000    -2.27504800    -2.89744000
+H        3.80000000    -0.37672100    -2.89744000
+C        3.80000000     1.32588500     1.84550000
+H        3.80000000     2.27504800     1.29750000
+C        3.80000000     1.32588500     3.17747000
+H        3.80000000     2.27504800     3.72547000
+H        3.80000000     0.37672100     3.72547000
+units angstrom
+}
+""")
+
+CFLOW_8Ae8Ae_3p8 = input.process_input("""
+molecule dimer {
+0 1
+C        0.00000000     0.00000000     1.08000000
+H        0.00000000    -0.93530700     1.62000000
+C        0.00000000     0.00000000    -0.25197000
+H        0.00000000     0.94916400    -0.79997000
+C        0.00000000    -1.32588500    -1.01747000
+H        0.00000000    -2.27504800    -0.46947000
+C        0.00000000    -1.32588500    -2.34944000
+H        0.00000000    -2.27504800    -2.89744000
+H        0.00000000    -0.37672100    -2.89744000
+C        0.00000000     1.32588500     1.84550000
+H        0.00000000     2.27504800     1.29750000
+C        0.00000000     1.32588500     3.17747000
+H        0.00000000     0.37672100     3.72547000
+C        0.00000000     2.65176900     3.94297100
+H        0.00000000     3.60093300     3.39497000
+C        0.00000000     2.65176900     5.27494100
+H        0.00000000     3.60093300     5.82294100
+H        0.00000000     1.70260600     5.82294100
+--
+0 1
+C        3.80000000     0.00000000     1.08000000
+H        3.80000000    -0.93530700     1.62000000
+C        3.80000000     0.00000000    -0.25197000
+H        3.80000000     0.94916400    -0.79997000
+C        3.80000000    -1.32588500    -1.01747000
+H        3.80000000    -2.27504800    -0.46947000
+C        3.80000000    -1.32588500    -2.34944000
+H        3.80000000    -2.27504800    -2.89744000
+H        3.80000000    -0.37672100    -2.89744000
+C        3.80000000     1.32588500     1.84550000
+H        3.80000000     2.27504800     1.29750000
+C        3.80000000     1.32588500     3.17747000
+H        3.80000000     0.37672100     3.72547000
+C        3.80000000     2.65176900     3.94297100
+H        3.80000000     3.60093300     3.39497000
+C        3.80000000     2.65176900     5.27494100
+H        3.80000000     3.60093300     5.82294100
+H        3.80000000     1.70260600     5.82294100
+units angstrom
+}
+""")
 
 CFLOW_10Ae10Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -326,23 +621,220 @@ units angstrom
 }
 """)
 
-CFLOW_2Ae2Ae_3p8 = input.process_input("""
+CFLOW_14Ae14Ae_3p8 = input.process_input("""
 molecule dimer {
 0 1
 C        0.00000000     0.00000000     1.08000000
-H        0.00000000     0.93530700     1.62000000
 H        0.00000000    -0.93530700     1.62000000
 C        0.00000000     0.00000000    -0.25197000
 H        0.00000000     0.94916400    -0.79997000
-H        0.00000000    -0.94916400    -0.79997000
+C        0.00000000    -1.32588500    -1.01747000
+H        0.00000000    -2.27504800    -0.46947000
+C        0.00000000    -1.32588500    -2.34944000
+H        0.00000000    -0.37672100    -2.89744000
+C        0.00000000     1.32588500     1.84550000
+H        0.00000000     2.27504800     1.29750000
+C        0.00000000     1.32588500     3.17747000
+H        0.00000000     0.37672100     3.72547000
+C        0.00000000     2.65176900     3.94297100
+H        0.00000000     3.60093300     3.39497000
+C        0.00000000     2.65176900     5.27494100
+H        0.00000000     1.70260600     5.82294100
+C        0.00000000    -2.65176900    -3.11494100
+H        0.00000000    -3.60093300    -2.56694000
+C        0.00000000    -2.65176900    -4.44691100
+H        0.00000000    -3.60093300    -4.99491100
+H        0.00000000    -1.70260600    -4.99491100
+C        0.00000000     3.97765400     6.04044100
+H        0.00000000     4.92681800     5.49244100
+C        0.00000000     3.97765400     7.37241100
+H        0.00000000     3.02849000     7.92041100
+C        0.00000000     5.30353900     8.13791100
+H        0.00000000     6.25270300     7.58991100
+C        0.00000000     5.30353900     9.46988100
+H        0.00000000     6.25270300    10.01788100
+H        0.00000000     4.35437500    10.01788100
 --
 0 1
 C        3.80000000     0.00000000     1.08000000
-H        3.80000000     0.93530700     1.62000000
 H        3.80000000    -0.93530700     1.62000000
 C        3.80000000     0.00000000    -0.25197000
 H        3.80000000     0.94916400    -0.79997000
-H        3.80000000    -0.94916400    -0.79997000
+C        3.80000000    -1.32588500    -1.01747000
+H        3.80000000    -2.27504800    -0.46947000
+C        3.80000000    -1.32588500    -2.34944000
+H        3.80000000    -0.37672100    -2.89744000
+C        3.80000000     1.32588500     1.84550000
+H        3.80000000     2.27504800     1.29750000
+C        3.80000000     1.32588500     3.17747000
+H        3.80000000     0.37672100     3.72547000
+C        3.80000000     2.65176900     3.94297100
+H        3.80000000     3.60093300     3.39497000
+C        3.80000000     2.65176900     5.27494100
+H        3.80000000     1.70260600     5.82294100
+C        3.80000000    -2.65176900    -3.11494100
+H        3.80000000    -3.60093300    -2.56694000
+C        3.80000000    -2.65176900    -4.44691100
+H        3.80000000    -3.60093300    -4.99491100
+H        3.80000000    -1.70260600    -4.99491100
+C        3.80000000     3.97765400     6.04044100
+H        3.80000000     4.92681800     5.49244100
+C        3.80000000     3.97765400     7.37241100
+H        3.80000000     3.02849000     7.92041100
+C        3.80000000     5.30353900     8.13791100
+H        3.80000000     6.25270300     7.58991100
+C        3.80000000     5.30353900     9.46988100
+H        3.80000000     6.25270300    10.01788100
+H        3.80000000     4.35437500    10.01788100
+units angstrom
+}
+""")
+
+CFLOW_16Ae16Ae_3p8 = input.process_input("""
+molecule dimer {
+0 1
+C        0.00000000     0.00000000     1.08000000
+H        0.00000000    -0.93530700     1.62000000
+C        0.00000000     0.00000000    -0.25197000
+H        0.00000000     0.94916400    -0.79997000
+C        0.00000000    -1.32588500    -1.01747000
+H        0.00000000    -2.27504800    -0.46947000
+C        0.00000000    -1.32588500    -2.34944000
+H        0.00000000    -0.37672100    -2.89744000
+C        0.00000000     1.32588500     1.84550000
+H        0.00000000     2.27504800     1.29750000
+C        0.00000000     1.32588500     3.17747000
+H        0.00000000     0.37672100     3.72547000
+C        0.00000000     2.65176900     3.94297100
+H        0.00000000     3.60093300     3.39497000
+C        0.00000000     2.65176900     5.27494100
+H        0.00000000     1.70260600     5.82294100
+C        0.00000000    -2.65176900    -3.11494100
+H        0.00000000    -3.60093300    -2.56694000
+C        0.00000000    -2.65176900    -4.44691100
+H        0.00000000    -1.70260600    -4.99491100
+C        0.00000000     3.97765400     6.04044100
+H        0.00000000     4.92681800     5.49244100
+C        0.00000000     3.97765400     7.37241100
+H        0.00000000     3.02849000     7.92041100
+C        0.00000000     5.30353900     8.13791100
+H        0.00000000     6.25270300     7.58991100
+C        0.00000000     5.30353900     9.46988100
+H        0.00000000     6.25270300    10.01788100
+H        0.00000000     4.35437500    10.01788100
+C        0.00000000    -3.97765400    -5.21241100
+H        0.00000000    -4.92681800    -4.66441100
+C        0.00000000    -3.97765400    -6.54438100
+H        0.00000000    -4.92681800    -7.09238100
+H        0.00000000    -3.02849000    -7.09238100
+--
+0 1
+C        3.80000000     0.00000000     1.08000000
+H        3.80000000    -0.93530700     1.62000000
+C        3.80000000     0.00000000    -0.25197000
+H        3.80000000     0.94916400    -0.79997000
+C        3.80000000    -1.32588500    -1.01747000
+H        3.80000000    -2.27504800    -0.46947000
+C        3.80000000    -1.32588500    -2.34944000
+H        3.80000000    -0.37672100    -2.89744000
+C        3.80000000     1.32588500     1.84550000
+H        3.80000000     2.27504800     1.29750000
+C        3.80000000     1.32588500     3.17747000
+H        3.80000000     0.37672100     3.72547000
+C        3.80000000     2.65176900     3.94297100
+H        3.80000000     3.60093300     3.39497000
+C        3.80000000     2.65176900     5.27494100
+H        3.80000000     1.70260600     5.82294100
+C        3.80000000    -2.65176900    -3.11494100
+H        3.80000000    -3.60093300    -2.56694000
+C        3.80000000    -2.65176900    -4.44691100
+H        3.80000000    -1.70260600    -4.99491100
+C        3.80000000     3.97765400     6.04044100
+H        3.80000000     4.92681800     5.49244100
+C        3.80000000     3.97765400     7.37241100
+H        3.80000000     3.02849000     7.92041100
+C        3.80000000     5.30353900     8.13791100
+H        3.80000000     6.25270300     7.58991100
+C        3.80000000     5.30353900     9.46988100
+H        3.80000000     6.25270300    10.01788100
+H        3.80000000     4.35437500    10.01788100
+C        3.80000000    -3.97765400    -5.21241100
+H        3.80000000    -4.92681800    -4.66441100
+C        3.80000000    -3.97765400    -6.54438100
+H        3.80000000    -4.92681800    -7.09238100
+H        3.80000000    -3.02849000    -7.09238100
+units angstrom
+}
+""")
+
+CFLOW_BzBz_S_3p9 = input.process_input("""
+molecule dimer {
+0 1
+C        1.00000000     0.00000000    -0.39150000
+C        1.00000000     1.20507400     0.30425000
+C        1.00000000     1.20507400     1.69575000
+C        1.00000000     0.00000000     2.39150000
+C        1.00000000    -1.20507400     1.69575000
+C        1.00000000    -1.20507400     0.30425000
+H        1.00000000     0.00000000    -1.47150000
+H        1.00000000     2.14038200    -0.23575000
+H        1.00000000     2.14038200     2.23575000
+H        1.00000000     0.00000000     3.47150000
+H        1.00000000    -2.14038200     2.23575000
+H        1.00000000    -2.14038200    -0.23575000
+--
+0 1
+C        4.90000000     0.00000000    -0.39150000
+C        4.90000000    -1.20507400     0.30425000
+C        4.90000000    -1.20507400     1.69575000
+C        4.90000000     0.00000000     2.39150000
+C        4.90000000     1.20507400     1.69575000
+C        4.90000000     1.20507400     0.30425000
+H        4.90000000     0.00000000    -1.47150000
+H        4.90000000    -2.14038200    -0.23575000
+H        4.90000000    -2.14038200     2.23575000
+H        4.90000000     0.00000000     3.47150000
+H        4.90000000     2.14038200     2.23575000
+H        4.90000000     2.14038200    -0.23575000
+units angstrom
+}
+""")
+
+CFLOW_2BzBz_S_3p5 = input.process_input("""
+molecule dimer {
+0 1
+C       -2.41591300    -0.70276500     0.00000000
+C       -1.23100600    -1.39300200     0.00000000
+C        0.00000000    -0.71089400     0.00000000
+C        0.00000000     0.71089400     0.00000000
+C       -1.23100600     1.39300200     0.00000000
+C       -2.41591300     0.70276500     0.00000000
+C        1.23100600    -1.39300200     0.00000000
+C        1.23100600     1.39300200     0.00000000
+C        2.41591300     0.70276500     0.00000000
+C        2.41591300    -0.70276500     0.00000000
+H        1.22889800    -2.47183700     0.00000000
+H       -3.35016300    -1.23782500     0.00000000
+H       -1.22889800    -2.47183700     0.00000000
+H       -1.22889800     2.47183700     0.00000000
+H       -3.35016300     1.23782500     0.00000000
+H        1.22889800     2.47183700     0.00000000
+H        3.35016300     1.23782500     0.00000000
+H        3.35016300    -1.23782500     0.00000000
+--
+0 1
+C        0.00000000    -1.39150000     3.50000000
+C        1.20507400    -0.69575000     3.50000000
+C        1.20507400     0.69575000     3.50000000
+C        0.00000000     1.39150000     3.50000000
+C       -1.20507400     0.69575000     3.50000000
+C       -1.20507400    -0.69575000     3.50000000
+H        0.00000000    -2.47150000     3.50000000
+H        2.14038200    -1.23575000     3.50000000
+H        2.14038200     1.23575000     3.50000000
+H        0.00000000     2.47150000     3.50000000
+H       -2.14038200     1.23575000     3.50000000
+H       -2.14038200    -1.23575000     3.50000000
 units angstrom
 }
 """)
@@ -388,45 +880,6 @@ H       -3.35016300     1.23782500     3.80000000
 H        1.22889800     2.47183700     3.80000000
 H        3.35016300     1.23782500     3.80000000
 H        3.35016300    -1.23782500     3.80000000
-units angstrom
-}
-""")
-
-CFLOW_2BzBz_S_3p5 = input.process_input("""
-molecule dimer {
-0 1
-C       -2.41591300    -0.70276500     0.00000000
-C       -1.23100600    -1.39300200     0.00000000
-C        0.00000000    -0.71089400     0.00000000
-C        0.00000000     0.71089400     0.00000000
-C       -1.23100600     1.39300200     0.00000000
-C       -2.41591300     0.70276500     0.00000000
-C        1.23100600    -1.39300200     0.00000000
-C        1.23100600     1.39300200     0.00000000
-C        2.41591300     0.70276500     0.00000000
-C        2.41591300    -0.70276500     0.00000000
-H        1.22889800    -2.47183700     0.00000000
-H       -3.35016300    -1.23782500     0.00000000
-H       -1.22889800    -2.47183700     0.00000000
-H       -1.22889800     2.47183700     0.00000000
-H       -3.35016300     1.23782500     0.00000000
-H        1.22889800     2.47183700     0.00000000
-H        3.35016300     1.23782500     0.00000000
-H        3.35016300    -1.23782500     0.00000000
---
-0 1
-C        0.00000000    -1.39150000     3.50000000
-C        1.20507400    -0.69575000     3.50000000
-C        1.20507400     0.69575000     3.50000000
-C        0.00000000     1.39150000     3.50000000
-C       -1.20507400     0.69575000     3.50000000
-C       -1.20507400    -0.69575000     3.50000000
-H        0.00000000    -2.47150000     3.50000000
-H        2.14038200    -1.23575000     3.50000000
-H        2.14038200     1.23575000     3.50000000
-H        0.00000000     2.47150000     3.50000000
-H       -2.14038200     1.23575000     3.50000000
-H       -2.14038200    -1.23575000     3.50000000
 units angstrom
 }
 """)
@@ -539,36 +992,7 @@ units angstrom
 }
 """)
 
-CFLOW_4Ae4Ae_3p8 = input.process_input("""
-molecule dimer {
-0 1
-C        0.00000000     0.00000000     1.08000000
-H        0.00000000     0.93530700     1.62000000
-H        0.00000000    -0.93530700     1.62000000
-C        0.00000000     0.00000000    -0.25197000
-H        0.00000000     0.94916400    -0.79997000
-C        0.00000000    -1.32588500    -1.01747000
-H        0.00000000    -2.27504800    -0.46947000
-C        0.00000000    -1.32588500    -2.34944000
-H        0.00000000    -2.27504800    -2.89744000
-H        0.00000000    -0.37672100    -2.89744000
---
-0 1
-C        3.80000000     0.00000000     1.08000000
-H        3.80000000     0.93530700     1.62000000
-H        3.80000000    -0.93530700     1.62000000
-C        3.80000000     0.00000000    -0.25197000
-H        3.80000000     0.94916400    -0.79997000
-C        3.80000000    -1.32588500    -1.01747000
-H        3.80000000    -2.27504800    -0.46947000
-C        3.80000000    -1.32588500    -2.34944000
-H        3.80000000    -2.27504800    -2.89744000
-H        3.80000000    -0.37672100    -2.89744000
-units angstrom
-}
-""")
-
-CFLOW_4Bz3Bz_S_3p9 = input.process_input("""
+CFLOW_4Bz3Bz_S_3p5 = input.process_input("""
 molecule dimer {
 0 1
 C        0.69575000    -1.20507400     0.00000000
@@ -603,112 +1027,30 @@ H       -1.23575000     9.37082600     0.00000000
 H        1.23575000     9.37082600     0.00000000
 --
 0 1
-C       -3.63206100    -0.70629600     3.90000000
-C       -2.45292600    -1.39698600     3.90000000
-C       -1.21398000    -0.71604800     3.90000000
-C       -1.21398000     0.71604800     3.90000000
-C       -2.45292600     1.39698600     3.90000000
-C       -3.63206100     0.70629600     3.90000000
-C        0.00000000    -1.39478500     3.90000000
-C        0.00000000     1.39478500     3.90000000
-C        1.21398000     0.71604800     3.90000000
-C        1.21398000    -0.71604800     3.90000000
-C        2.45292600    -1.39698600     3.90000000
-H        2.45137100    -2.47594200     3.90000000
-C        3.63206100    -0.70629600     3.90000000
-C        3.63206100     0.70629600     3.90000000
-C        2.45292600     1.39698600     3.90000000
-H        0.00000000    -2.47562800     3.90000000
-H       -4.56737900    -1.23960400     3.90000000
-H       -2.45137100    -2.47594200     3.90000000
-H       -2.45137100     2.47594200     3.90000000
-H       -4.56737900     1.23960400     3.90000000
-H        0.00000000     2.47562800     3.90000000
-H        4.56737900    -1.23960400     3.90000000
-H        4.56737900     1.23960400     3.90000000
-H        2.45137100     2.47594200     3.90000000
-units angstrom
-}
-""")
-
-CFLOW_6Ae6Ae_3p8 = input.process_input("""
-molecule dimer {
-0 1
-C        0.00000000     0.00000000     1.08000000
-H        0.00000000    -0.93530700     1.62000000
-C        0.00000000     0.00000000    -0.25197000
-H        0.00000000     0.94916400    -0.79997000
-C        0.00000000    -1.32588500    -1.01747000
-H        0.00000000    -2.27504800    -0.46947000
-C        0.00000000    -1.32588500    -2.34944000
-H        0.00000000    -2.27504800    -2.89744000
-H        0.00000000    -0.37672100    -2.89744000
-C        0.00000000     1.32588500     1.84550000
-H        0.00000000     2.27504800     1.29750000
-C        0.00000000     1.32588500     3.17747000
-H        0.00000000     2.27504800     3.72547000
-H        0.00000000     0.37672100     3.72547000
---
-0 1
-C        3.80000000     0.00000000     1.08000000
-H        3.80000000    -0.93530700     1.62000000
-C        3.80000000     0.00000000    -0.25197000
-H        3.80000000     0.94916400    -0.79997000
-C        3.80000000    -1.32588500    -1.01747000
-H        3.80000000    -2.27504800    -0.46947000
-C        3.80000000    -1.32588500    -2.34944000
-H        3.80000000    -2.27504800    -2.89744000
-H        3.80000000    -0.37672100    -2.89744000
-C        3.80000000     1.32588500     1.84550000
-H        3.80000000     2.27504800     1.29750000
-C        3.80000000     1.32588500     3.17747000
-H        3.80000000     2.27504800     3.72547000
-H        3.80000000     0.37672100     3.72547000
-units angstrom
-}
-""")
-
-CFLOW_8Ae8Ae_3p8 = input.process_input("""
-molecule dimer {
-0 1
-C        0.00000000     0.00000000     1.08000000
-H        0.00000000    -0.93530700     1.62000000
-C        0.00000000     0.00000000    -0.25197000
-H        0.00000000     0.94916400    -0.79997000
-C        0.00000000    -1.32588500    -1.01747000
-H        0.00000000    -2.27504800    -0.46947000
-C        0.00000000    -1.32588500    -2.34944000
-H        0.00000000    -2.27504800    -2.89744000
-H        0.00000000    -0.37672100    -2.89744000
-C        0.00000000     1.32588500     1.84550000
-H        0.00000000     2.27504800     1.29750000
-C        0.00000000     1.32588500     3.17747000
-H        0.00000000     0.37672100     3.72547000
-C        0.00000000     2.65176900     3.94297100
-H        0.00000000     3.60093300     3.39497000
-C        0.00000000     2.65176900     5.27494100
-H        0.00000000     3.60093300     5.82294100
-H        0.00000000     1.70260600     5.82294100
---
-0 1
-C        3.80000000     0.00000000     1.08000000
-H        3.80000000    -0.93530700     1.62000000
-C        3.80000000     0.00000000    -0.25197000
-H        3.80000000     0.94916400    -0.79997000
-C        3.80000000    -1.32588500    -1.01747000
-H        3.80000000    -2.27504800    -0.46947000
-C        3.80000000    -1.32588500    -2.34944000
-H        3.80000000    -2.27504800    -2.89744000
-H        3.80000000    -0.37672100    -2.89744000
-C        3.80000000     1.32588500     1.84550000
-H        3.80000000     2.27504800     1.29750000
-C        3.80000000     1.32588500     3.17747000
-H        3.80000000     0.37672100     3.72547000
-C        3.80000000     2.65176900     3.94297100
-H        3.80000000     3.60093300     3.39497000
-C        3.80000000     2.65176900     5.27494100
-H        3.80000000     3.60093300     5.82294100
-H        3.80000000     1.70260600     5.82294100
+C       -3.63206100    -0.70629600     3.50000000
+C       -2.45292600    -1.39698600     3.50000000
+C       -1.21398000    -0.71604800     3.50000000
+C       -1.21398000     0.71604800     3.50000000
+C       -2.45292600     1.39698600     3.50000000
+C       -3.63206100     0.70629600     3.50000000
+C        0.00000000    -1.39478500     3.50000000
+C        0.00000000     1.39478500     3.50000000
+C        1.21398000     0.71604800     3.50000000
+C        1.21398000    -0.71604800     3.50000000
+C        2.45292600    -1.39698600     3.50000000
+H        2.45137100    -2.47594200     3.50000000
+C        3.63206100    -0.70629600     3.50000000
+C        3.63206100     0.70629600     3.50000000
+C        2.45292600     1.39698600     3.50000000
+H        0.00000000    -2.47562800     3.50000000
+H       -4.56737900    -1.23960400     3.50000000
+H       -2.45137100    -2.47594200     3.50000000
+H       -2.45137100     2.47594200     3.50000000
+H       -4.56737900     1.23960400     3.50000000
+H        0.00000000     2.47562800     3.50000000
+H        4.56737900    -1.23960400     3.50000000
+H        4.56737900     1.23960400     3.50000000
+H        2.45137100     2.47594200     3.50000000
 units angstrom
 }
 """)
@@ -716,68 +1058,344 @@ units angstrom
 CFLOW_BkybowlBkybowl_3p54 = input.process_input("""
 molecule dimer {
 0 1
-C        0.70622800     0.97212500     2.41862700
-C       -0.70622800     0.97212500     2.41862700
-C       -1.14280400    -0.37137200     2.41849100
-C        0.00000000    -1.20165400     2.41827400
-C        1.14280400    -0.37137200     2.41849100
-C        1.45779000     2.00650700     1.89581300
-C       -1.45779000     2.00650700     1.89581300
-C       -2.35873800    -0.76639200     1.89565100
-C        0.00000000    -2.48003500     1.89534800
-C        2.35873800    -0.76639200     1.89565100
-C        0.69261800     3.17924500     1.54846400
-C       -0.69261800     3.17924500     1.54846400
-C       -2.80958100     1.64120300     1.54875100
-C       -3.23765700     0.32374300     1.54864100
-C       -2.42918200    -2.16498400     1.54865300
-C       -1.30841500    -2.97916300     1.54840200
-C        1.30841500    -2.97916300     1.54840200
-C        2.42918200    -2.16498400     1.54865300
-C        3.23765700     0.32374300     1.54864100
-C        2.80958100     1.64120300     1.54875100
-H        1.20851300     4.06642600     1.18749100
-H       -1.20851300     4.06642600     1.18749100
-H       -3.49401500     2.40602700     1.18800700
-H       -4.24094400     0.10730100     1.18793900
-H       -3.36816400    -2.57958300     1.18817300
-H       -1.41248600    -4.00023700     1.18769900
-H        1.41248600    -4.00023700     1.18769900
-H        3.36816400    -2.57958300     1.18817300
-H        4.24094400     0.10730100     1.18793900
-H        3.49401500     2.40602700     1.18800700
+C        0.70622800     0.97211978     0.61694803
+C       -0.70622800     0.97211978     0.61694803
+C       -1.14280400    -0.37137722     0.61681203
+C        0.00000000    -1.20165922     0.61659503
+C        1.14280400    -0.37137722     0.61681203
+C        1.45779000     2.00650178     0.09413403
+C       -1.45779000     2.00650178     0.09413403
+C       -2.35873800    -0.76639722     0.09397203
+C        0.00000000    -2.48004022     0.09366903
+C        2.35873800    -0.76639722     0.09397203
+C        0.69261800     3.17923978    -0.25321497
+C       -0.69261800     3.17923978    -0.25321497
+C       -2.80958100     1.64119778    -0.25292797
+C       -3.23765700     0.32373778    -0.25303797
+C       -2.42918200    -2.16498922    -0.25302597
+C       -1.30841500    -2.97916822    -0.25327697
+C        1.30841500    -2.97916822    -0.25327697
+C        2.42918200    -2.16498922    -0.25302597
+C        3.23765700     0.32373778    -0.25303797
+C        2.80958100     1.64119778    -0.25292797
+H        1.20851300     4.06642078    -0.61418797
+H       -1.20851300     4.06642078    -0.61418797
+H       -3.49401500     2.40602178    -0.61367197
+H       -4.24094400     0.10729578    -0.61373997
+H       -3.36816400    -2.57958822    -0.61350597
+H       -1.41248600    -4.00024222    -0.61397997
+H        1.41248600    -4.00024222    -0.61397997
+H        3.36816400    -2.57958822    -0.61350597
+H        4.24094400     0.10729578    -0.61373997
+H        3.49401500     2.40602178    -0.61367197
 --
 0 1
-C        0.70622800     0.97212500     5.95862700
-C       -0.70622800     0.97212500     5.95862700
-C       -1.14280400    -0.37137200     5.95849100
-C        0.00000000    -1.20165400     5.95827400
-C        1.14280400    -0.37137200     5.95849100
-C        1.45779000     2.00650700     5.43581300
-C       -1.45779000     2.00650700     5.43581300
-C       -2.35873800    -0.76639200     5.43565100
-C        0.00000000    -2.48003500     5.43534800
-C        2.35873800    -0.76639200     5.43565100
-C        0.69261800     3.17924500     5.08846400
-C       -0.69261800     3.17924500     5.08846400
-C       -2.80958100     1.64120300     5.08875100
-C       -3.23765700     0.32374300     5.08864100
-C       -2.42918200    -2.16498400     5.08865300
-C       -1.30841500    -2.97916300     5.08840200
-C        1.30841500    -2.97916300     5.08840200
-C        2.42918200    -2.16498400     5.08865300
-C        3.23765700     0.32374300     5.08864100
-C        2.80958100     1.64120300     5.08875100
-H        1.20851300     4.06642600     4.72749100
-H       -1.20851300     4.06642600     4.72749100
-H       -3.49401500     2.40602700     4.72800700
-H       -4.24094400     0.10730100     4.72793900
-H       -3.36816400    -2.57958300     4.72817300
-H       -1.41248600    -4.00023700     4.72769900
-H        1.41248600    -4.00023700     4.72769900
-H        3.36816400    -2.57958300     4.72817300
-H        4.24094400     0.10730100     4.72793900
-H        3.49401500     2.40602700     4.72800700
+C        0.70622800     0.97211978     4.15694803
+C       -0.70622800     0.97211978     4.15694803
+C       -1.14280400    -0.37137722     4.15681203
+C        0.00000000    -1.20165922     4.15659503
+C        1.14280400    -0.37137722     4.15681203
+C        1.45779000     2.00650178     3.63413403
+C       -1.45779000     2.00650178     3.63413403
+C       -2.35873800    -0.76639722     3.63397203
+C        0.00000000    -2.48004022     3.63366903
+C        2.35873800    -0.76639722     3.63397203
+C        0.69261800     3.17923978     3.28678503
+C       -0.69261800     3.17923978     3.28678503
+C       -2.80958100     1.64119778     3.28707203
+C       -3.23765700     0.32373778     3.28696203
+C       -2.42918200    -2.16498922     3.28697403
+C       -1.30841500    -2.97916822     3.28672303
+C        1.30841500    -2.97916822     3.28672303
+C        2.42918200    -2.16498922     3.28697403
+C        3.23765700     0.32373778     3.28696203
+C        2.80958100     1.64119778     3.28707203
+H        1.20851300     4.06642078     2.92581203
+H       -1.20851300     4.06642078     2.92581203
+H       -3.49401500     2.40602178     2.92632803
+H       -4.24094400     0.10729578     2.92626003
+H       -3.36816400    -2.57958822     2.92649403
+H       -1.41248600    -4.00024222     2.92602003
+H        1.41248600    -4.00024222     2.92602003
+H        3.36816400    -2.57958822     2.92649403
+H        4.24094400     0.10729578     2.92626003
+H        3.49401500     2.40602178     2.92632803
+units angstrom
+}
+""")
+
+CFLOW_BkybowlBkybowl_3p64 = input.process_input("""
+molecule dimer {
+0 1
+C        0.70622800     0.97211978     0.61694803
+C       -0.70622800     0.97211978     0.61694803
+C       -1.14280400    -0.37137722     0.61681203
+C        0.00000000    -1.20165922     0.61659503
+C        1.14280400    -0.37137722     0.61681203
+C        1.45779000     2.00650178     0.09413403
+C       -1.45779000     2.00650178     0.09413403
+C       -2.35873800    -0.76639722     0.09397203
+C        0.00000000    -2.48004022     0.09366903
+C        2.35873800    -0.76639722     0.09397203
+C        0.69261800     3.17923978    -0.25321497
+C       -0.69261800     3.17923978    -0.25321497
+C       -2.80958100     1.64119778    -0.25292797
+C       -3.23765700     0.32373778    -0.25303797
+C       -2.42918200    -2.16498922    -0.25302597
+C       -1.30841500    -2.97916822    -0.25327697
+C        1.30841500    -2.97916822    -0.25327697
+C        2.42918200    -2.16498922    -0.25302597
+C        3.23765700     0.32373778    -0.25303797
+C        2.80958100     1.64119778    -0.25292797
+H        1.20851300     4.06642078    -0.61418797
+H       -1.20851300     4.06642078    -0.61418797
+H       -3.49401500     2.40602178    -0.61367197
+H       -4.24094400     0.10729578    -0.61373997
+H       -3.36816400    -2.57958822    -0.61350597
+H       -1.41248600    -4.00024222    -0.61397997
+H        1.41248600    -4.00024222    -0.61397997
+H        3.36816400    -2.57958822    -0.61350597
+H        4.24094400     0.10729578    -0.61373997
+H        3.49401500     2.40602178    -0.61367197
+--
+0 1
+C        0.70622800     0.97211978     4.25694803
+C       -0.70622800     0.97211978     4.25694803
+C       -1.14280400    -0.37137722     4.25681203
+C        0.00000000    -1.20165922     4.25659503
+C        1.14280400    -0.37137722     4.25681203
+C        1.45779000     2.00650178     3.73413403
+C       -1.45779000     2.00650178     3.73413403
+C       -2.35873800    -0.76639722     3.73397203
+C        0.00000000    -2.48004022     3.73366903
+C        2.35873800    -0.76639722     3.73397203
+C        0.69261800     3.17923978     3.38678503
+C       -0.69261800     3.17923978     3.38678503
+C       -2.80958100     1.64119778     3.38707203
+C       -3.23765700     0.32373778     3.38696203
+C       -2.42918200    -2.16498922     3.38697403
+C       -1.30841500    -2.97916822     3.38672303
+C        1.30841500    -2.97916822     3.38672303
+C        2.42918200    -2.16498922     3.38697403
+C        3.23765700     0.32373778     3.38696203
+C        2.80958100     1.64119778     3.38707203
+H        1.20851300     4.06642078     3.02581203
+H       -1.20851300     4.06642078     3.02581203
+H       -3.49401500     2.40602178     3.02632803
+H       -4.24094400     0.10729578     3.02626003
+H       -3.36816400    -2.57958822     3.02649403
+H       -1.41248600    -4.00024222     3.02602003
+H        1.41248600    -4.00024222     3.02602003
+H        3.36816400    -2.57958822     3.02649403
+H        4.24094400     0.10729578     3.02626003
+H        3.49401500     2.40602178     3.02632803
+units angstrom
+}
+""")
+
+CFLOW_BkybowlBkybowl_3p73 = input.process_input("""
+molecule dimer {
+0 1
+C        0.70622800     0.97211978     0.61694803
+C       -0.70622800     0.97211978     0.61694803
+C       -1.14280400    -0.37137722     0.61681203
+C        0.00000000    -1.20165922     0.61659503
+C        1.14280400    -0.37137722     0.61681203
+C        1.45779000     2.00650178     0.09413403
+C       -1.45779000     2.00650178     0.09413403
+C       -2.35873800    -0.76639722     0.09397203
+C        0.00000000    -2.48004022     0.09366903
+C        2.35873800    -0.76639722     0.09397203
+C        0.69261800     3.17923978    -0.25321497
+C       -0.69261800     3.17923978    -0.25321497
+C       -2.80958100     1.64119778    -0.25292797
+C       -3.23765700     0.32373778    -0.25303797
+C       -2.42918200    -2.16498922    -0.25302597
+C       -1.30841500    -2.97916822    -0.25327697
+C        1.30841500    -2.97916822    -0.25327697
+C        2.42918200    -2.16498922    -0.25302597
+C        3.23765700     0.32373778    -0.25303797
+C        2.80958100     1.64119778    -0.25292797
+H        1.20851300     4.06642078    -0.61418797
+H       -1.20851300     4.06642078    -0.61418797
+H       -3.49401500     2.40602178    -0.61367197
+H       -4.24094400     0.10729578    -0.61373997
+H       -3.36816400    -2.57958822    -0.61350597
+H       -1.41248600    -4.00024222    -0.61397997
+H        1.41248600    -4.00024222    -0.61397997
+H        3.36816400    -2.57958822    -0.61350597
+H        4.24094400     0.10729578    -0.61373997
+H        3.49401500     2.40602178    -0.61367197
+--
+0 1
+C        0.70622800     0.97211978     4.34694803
+C       -0.70622800     0.97211978     4.34694803
+C       -1.14280400    -0.37137722     4.34681203
+C        0.00000000    -1.20165922     4.34659503
+C        1.14280400    -0.37137722     4.34681203
+C        1.45779000     2.00650178     3.82413403
+C       -1.45779000     2.00650178     3.82413403
+C       -2.35873800    -0.76639722     3.82397203
+C        0.00000000    -2.48004022     3.82366903
+C        2.35873800    -0.76639722     3.82397203
+C        0.69261800     3.17923978     3.47678503
+C       -0.69261800     3.17923978     3.47678503
+C       -2.80958100     1.64119778     3.47707203
+C       -3.23765700     0.32373778     3.47696203
+C       -2.42918200    -2.16498922     3.47697403
+C       -1.30841500    -2.97916822     3.47672303
+C        1.30841500    -2.97916822     3.47672303
+C        2.42918200    -2.16498922     3.47697403
+C        3.23765700     0.32373778     3.47696203
+C        2.80958100     1.64119778     3.47707203
+H        1.20851300     4.06642078     3.11581203
+H       -1.20851300     4.06642078     3.11581203
+H       -3.49401500     2.40602178     3.11632803
+H       -4.24094400     0.10729578     3.11626003
+H       -3.36816400    -2.57958822     3.11649403
+H       -1.41248600    -4.00024222     3.11602003
+H        1.41248600    -4.00024222     3.11602003
+H        3.36816400    -2.57958822     3.11649403
+H        4.24094400     0.10729578     3.11626003
+H        3.49401500     2.40602178     3.11632803
+units angstrom
+}
+""")
+
+CFLOW_BkybowlBkybowl_3p74 = input.process_input("""
+molecule dimer {
+0 1
+C        0.70622800     0.97211978     0.61694803
+C       -0.70622800     0.97211978     0.61694803
+C       -1.14280400    -0.37137722     0.61681203
+C        0.00000000    -1.20165922     0.61659503
+C        1.14280400    -0.37137722     0.61681203
+C        1.45779000     2.00650178     0.09413403
+C       -1.45779000     2.00650178     0.09413403
+C       -2.35873800    -0.76639722     0.09397203
+C        0.00000000    -2.48004022     0.09366903
+C        2.35873800    -0.76639722     0.09397203
+C        0.69261800     3.17923978    -0.25321497
+C       -0.69261800     3.17923978    -0.25321497
+C       -2.80958100     1.64119778    -0.25292797
+C       -3.23765700     0.32373778    -0.25303797
+C       -2.42918200    -2.16498922    -0.25302597
+C       -1.30841500    -2.97916822    -0.25327697
+C        1.30841500    -2.97916822    -0.25327697
+C        2.42918200    -2.16498922    -0.25302597
+C        3.23765700     0.32373778    -0.25303797
+C        2.80958100     1.64119778    -0.25292797
+H        1.20851300     4.06642078    -0.61418797
+H       -1.20851300     4.06642078    -0.61418797
+H       -3.49401500     2.40602178    -0.61367197
+H       -4.24094400     0.10729578    -0.61373997
+H       -3.36816400    -2.57958822    -0.61350597
+H       -1.41248600    -4.00024222    -0.61397997
+H        1.41248600    -4.00024222    -0.61397997
+H        3.36816400    -2.57958822    -0.61350597
+H        4.24094400     0.10729578    -0.61373997
+H        3.49401500     2.40602178    -0.61367197
+--
+0 1
+C        0.70622800     0.97211978     4.35694803
+C       -0.70622800     0.97211978     4.35694803
+C       -1.14280400    -0.37137722     4.35681203
+C        0.00000000    -1.20165922     4.35659503
+C        1.14280400    -0.37137722     4.35681203
+C        1.45779000     2.00650178     3.83413403
+C       -1.45779000     2.00650178     3.83413403
+C       -2.35873800    -0.76639722     3.83397203
+C        0.00000000    -2.48004022     3.83366903
+C        2.35873800    -0.76639722     3.83397203
+C        0.69261800     3.17923978     3.48678503
+C       -0.69261800     3.17923978     3.48678503
+C       -2.80958100     1.64119778     3.48707203
+C       -3.23765700     0.32373778     3.48696203
+C       -2.42918200    -2.16498922     3.48697403
+C       -1.30841500    -2.97916822     3.48672303
+C        1.30841500    -2.97916822     3.48672303
+C        2.42918200    -2.16498922     3.48697403
+C        3.23765700     0.32373778     3.48696203
+C        2.80958100     1.64119778     3.48707203
+H        1.20851300     4.06642078     3.12581203
+H       -1.20851300     4.06642078     3.12581203
+H       -3.49401500     2.40602178     3.12632803
+H       -4.24094400     0.10729578     3.12626003
+H       -3.36816400    -2.57958822     3.12649403
+H       -1.41248600    -4.00024222     3.12602003
+H        1.41248600    -4.00024222     3.12602003
+H        3.36816400    -2.57958822     3.12649403
+H        4.24094400     0.10729578     3.12626003
+H        3.49401500     2.40602178     3.12632803
+units angstrom
+}
+""")
+
+CFLOW_BkybowlBkybowl_3p84 = input.process_input("""
+molecule dimer {
+0 1
+C        0.70622800     0.97211978     0.61694803
+C       -0.70622800     0.97211978     0.61694803
+C       -1.14280400    -0.37137722     0.61681203
+C        0.00000000    -1.20165922     0.61659503
+C        1.14280400    -0.37137722     0.61681203
+C        1.45779000     2.00650178     0.09413403
+C       -1.45779000     2.00650178     0.09413403
+C       -2.35873800    -0.76639722     0.09397203
+C        0.00000000    -2.48004022     0.09366903
+C        2.35873800    -0.76639722     0.09397203
+C        0.69261800     3.17923978    -0.25321497
+C       -0.69261800     3.17923978    -0.25321497
+C       -2.80958100     1.64119778    -0.25292797
+C       -3.23765700     0.32373778    -0.25303797
+C       -2.42918200    -2.16498922    -0.25302597
+C       -1.30841500    -2.97916822    -0.25327697
+C        1.30841500    -2.97916822    -0.25327697
+C        2.42918200    -2.16498922    -0.25302597
+C        3.23765700     0.32373778    -0.25303797
+C        2.80958100     1.64119778    -0.25292797
+H        1.20851300     4.06642078    -0.61418797
+H       -1.20851300     4.06642078    -0.61418797
+H       -3.49401500     2.40602178    -0.61367197
+H       -4.24094400     0.10729578    -0.61373997
+H       -3.36816400    -2.57958822    -0.61350597
+H       -1.41248600    -4.00024222    -0.61397997
+H        1.41248600    -4.00024222    -0.61397997
+H        3.36816400    -2.57958822    -0.61350597
+H        4.24094400     0.10729578    -0.61373997
+H        3.49401500     2.40602178    -0.61367197
+--
+0 1
+C        0.70622800     0.97211978     4.45694803
+C       -0.70622800     0.97211978     4.45694803
+C       -1.14280400    -0.37137722     4.45681203
+C        0.00000000    -1.20165922     4.45659503
+C        1.14280400    -0.37137722     4.45681203
+C        1.45779000     2.00650178     3.93413403
+C       -1.45779000     2.00650178     3.93413403
+C       -2.35873800    -0.76639722     3.93397203
+C        0.00000000    -2.48004022     3.93366903
+C        2.35873800    -0.76639722     3.93397203
+C        0.69261800     3.17923978     3.58678503
+C       -0.69261800     3.17923978     3.58678503
+C       -2.80958100     1.64119778     3.58707203
+C       -3.23765700     0.32373778     3.58696203
+C       -2.42918200    -2.16498922     3.58697403
+C       -1.30841500    -2.97916822     3.58672303
+C        1.30841500    -2.97916822     3.58672303
+C        2.42918200    -2.16498922     3.58697403
+C        3.23765700     0.32373778     3.58696203
+C        2.80958100     1.64119778     3.58707203
+H        1.20851300     4.06642078     3.22581203
+H       -1.20851300     4.06642078     3.22581203
+H       -3.49401500     2.40602178     3.22632803
+H       -4.24094400     0.10729578     3.22626003
+H       -3.36816400    -2.57958822     3.22649403
+H       -1.41248600    -4.00024222     3.22602003
+H        1.41248600    -4.00024222     3.22602003
+H        3.36816400    -2.57958822     3.22649403
+H        4.24094400     0.10729578     3.22626003
+H        3.49401500     2.40602178     3.22632803
 units angstrom
 }
 """)
@@ -847,315 +1465,6 @@ H        1.39516400    -3.99004500    -2.48428500
 H        3.36362900    -2.55987100    -2.48428500
 H        4.22588700     0.09388800    -2.48428500
 H        3.47400100     2.40795700    -2.48428500
-units angstrom
-}
-""")
-
-CFLOW_BkybowlBkybowl_3p64 = input.process_input("""
-molecule dimer {
-0 1
-C        0.70622800     0.97212500     2.41862700
-C       -0.70622800     0.97212500     2.41862700
-C       -1.14280400    -0.37137200     2.41849100
-C        0.00000000    -1.20165400     2.41827400
-C        1.14280400    -0.37137200     2.41849100
-C        1.45779000     2.00650700     1.89581300
-C       -1.45779000     2.00650700     1.89581300
-C       -2.35873800    -0.76639200     1.89565100
-C        0.00000000    -2.48003500     1.89534800
-C        2.35873800    -0.76639200     1.89565100
-C        0.69261800     3.17924500     1.54846400
-C       -0.69261800     3.17924500     1.54846400
-C       -2.80958100     1.64120300     1.54875100
-C       -3.23765700     0.32374300     1.54864100
-C       -2.42918200    -2.16498400     1.54865300
-C       -1.30841500    -2.97916300     1.54840200
-C        1.30841500    -2.97916300     1.54840200
-C        2.42918200    -2.16498400     1.54865300
-C        3.23765700     0.32374300     1.54864100
-C        2.80958100     1.64120300     1.54875100
-H        1.20851300     4.06642600     1.18749100
-H       -1.20851300     4.06642600     1.18749100
-H       -3.49401500     2.40602700     1.18800700
-H       -4.24094400     0.10730100     1.18793900
-H       -3.36816400    -2.57958300     1.18817300
-H       -1.41248600    -4.00023700     1.18769900
-H        1.41248600    -4.00023700     1.18769900
-H        3.36816400    -2.57958300     1.18817300
-H        4.24094400     0.10730100     1.18793900
-H        3.49401500     2.40602700     1.18800700
---
-0 1
-C        0.70622800     0.97212500     6.05862700
-C       -0.70622800     0.97212500     6.05862700
-C       -1.14280400    -0.37137200     6.05849100
-C        0.00000000    -1.20165400     6.05827400
-C        1.14280400    -0.37137200     6.05849100
-C        1.45779000     2.00650700     5.53581300
-C       -1.45779000     2.00650700     5.53581300
-C       -2.35873800    -0.76639200     5.53565100
-C        0.00000000    -2.48003500     5.53534800
-C        2.35873800    -0.76639200     5.53565100
-C        0.69261800     3.17924500     5.18846400
-C       -0.69261800     3.17924500     5.18846400
-C       -2.80958100     1.64120300     5.18875100
-C       -3.23765700     0.32374300     5.18864100
-C       -2.42918200    -2.16498400     5.18865300
-C       -1.30841500    -2.97916300     5.18840200
-C        1.30841500    -2.97916300     5.18840200
-C        2.42918200    -2.16498400     5.18865300
-C        3.23765700     0.32374300     5.18864100
-C        2.80958100     1.64120300     5.18875100
-H        1.20851300     4.06642600     4.82749100
-H       -1.20851300     4.06642600     4.82749100
-H       -3.49401500     2.40602700     4.82800700
-H       -4.24094400     0.10730100     4.82793900
-H       -3.36816400    -2.57958300     4.82817300
-H       -1.41248600    -4.00023700     4.82769900
-H        1.41248600    -4.00023700     4.82769900
-H        3.36816400    -2.57958300     4.82817300
-H        4.24094400     0.10730100     4.82793900
-H        3.49401500     2.40602700     4.82800700
-units angstrom
-}
-""")
-
-CFLOW_BkybowlBkybowl_3p74 = input.process_input("""
-molecule dimer {
-0 1
-C        0.70622800     0.97212500     2.41862700
-C       -0.70622800     0.97212500     2.41862700
-C       -1.14280400    -0.37137200     2.41849100
-C        0.00000000    -1.20165400     2.41827400
-C        1.14280400    -0.37137200     2.41849100
-C        1.45779000     2.00650700     1.89581300
-C       -1.45779000     2.00650700     1.89581300
-C       -2.35873800    -0.76639200     1.89565100
-C        0.00000000    -2.48003500     1.89534800
-C        2.35873800    -0.76639200     1.89565100
-C        0.69261800     3.17924500     1.54846400
-C       -0.69261800     3.17924500     1.54846400
-C       -2.80958100     1.64120300     1.54875100
-C       -3.23765700     0.32374300     1.54864100
-C       -2.42918200    -2.16498400     1.54865300
-C       -1.30841500    -2.97916300     1.54840200
-C        1.30841500    -2.97916300     1.54840200
-C        2.42918200    -2.16498400     1.54865300
-C        3.23765700     0.32374300     1.54864100
-C        2.80958100     1.64120300     1.54875100
-H        1.20851300     4.06642600     1.18749100
-H       -1.20851300     4.06642600     1.18749100
-H       -3.49401500     2.40602700     1.18800700
-H       -4.24094400     0.10730100     1.18793900
-H       -3.36816400    -2.57958300     1.18817300
-H       -1.41248600    -4.00023700     1.18769900
-H        1.41248600    -4.00023700     1.18769900
-H        3.36816400    -2.57958300     1.18817300
-H        4.24094400     0.10730100     1.18793900
-H        3.49401500     2.40602700     1.18800700
---
-0 1
-C        0.70622800     0.97212500     6.15862700
-C       -0.70622800     0.97212500     6.15862700
-C       -1.14280400    -0.37137200     6.15849100
-C        0.00000000    -1.20165400     6.15827400
-C        1.14280400    -0.37137200     6.15849100
-C        1.45779000     2.00650700     5.63581300
-C       -1.45779000     2.00650700     5.63581300
-C       -2.35873800    -0.76639200     5.63565100
-C        0.00000000    -2.48003500     5.63534800
-C        2.35873800    -0.76639200     5.63565100
-C        0.69261800     3.17924500     5.28846400
-C       -0.69261800     3.17924500     5.28846400
-C       -2.80958100     1.64120300     5.28875100
-C       -3.23765700     0.32374300     5.28864100
-C       -2.42918200    -2.16498400     5.28865300
-C       -1.30841500    -2.97916300     5.28840200
-C        1.30841500    -2.97916300     5.28840200
-C        2.42918200    -2.16498400     5.28865300
-C        3.23765700     0.32374300     5.28864100
-C        2.80958100     1.64120300     5.28875100
-H        1.20851300     4.06642600     4.92749100
-H       -1.20851300     4.06642600     4.92749100
-H       -3.49401500     2.40602700     4.92800700
-H       -4.24094400     0.10730100     4.92793900
-H       -3.36816400    -2.57958300     4.92817300
-H       -1.41248600    -4.00023700     4.92769900
-H        1.41248600    -4.00023700     4.92769900
-H        3.36816400    -2.57958300     4.92817300
-H        4.24094400     0.10730100     4.92793900
-H        3.49401500     2.40602700     4.92800700
-units angstrom
-}
-""")
-
-CFLOW_BkybowlBkybowl_3p84 = input.process_input("""
-molecule dimer {
-0 1
-C        0.70622800     0.97212500     2.41862700
-C       -0.70622800     0.97212500     2.41862700
-C       -1.14280400    -0.37137200     2.41849100
-C        0.00000000    -1.20165400     2.41827400
-C        1.14280400    -0.37137200     2.41849100
-C        1.45779000     2.00650700     1.89581300
-C       -1.45779000     2.00650700     1.89581300
-C       -2.35873800    -0.76639200     1.89565100
-C        0.00000000    -2.48003500     1.89534800
-C        2.35873800    -0.76639200     1.89565100
-C        0.69261800     3.17924500     1.54846400
-C       -0.69261800     3.17924500     1.54846400
-C       -2.80958100     1.64120300     1.54875100
-C       -3.23765700     0.32374300     1.54864100
-C       -2.42918200    -2.16498400     1.54865300
-C       -1.30841500    -2.97916300     1.54840200
-C        1.30841500    -2.97916300     1.54840200
-C        2.42918200    -2.16498400     1.54865300
-C        3.23765700     0.32374300     1.54864100
-C        2.80958100     1.64120300     1.54875100
-H        1.20851300     4.06642600     1.18749100
-H       -1.20851300     4.06642600     1.18749100
-H       -3.49401500     2.40602700     1.18800700
-H       -4.24094400     0.10730100     1.18793900
-H       -3.36816400    -2.57958300     1.18817300
-H       -1.41248600    -4.00023700     1.18769900
-H        1.41248600    -4.00023700     1.18769900
-H        3.36816400    -2.57958300     1.18817300
-H        4.24094400     0.10730100     1.18793900
-H        3.49401500     2.40602700     1.18800700
---
-0 1
-C        0.70622800     0.97212500     6.25862700
-C       -0.70622800     0.97212500     6.25862700
-C       -1.14280400    -0.37137200     6.25849100
-C        0.00000000    -1.20165400     6.25827400
-C        1.14280400    -0.37137200     6.25849100
-C        1.45779000     2.00650700     5.73581300
-C       -1.45779000     2.00650700     5.73581300
-C       -2.35873800    -0.76639200     5.73565100
-C        0.00000000    -2.48003500     5.73534800
-C        2.35873800    -0.76639200     5.73565100
-C        0.69261800     3.17924500     5.38846400
-C       -0.69261800     3.17924500     5.38846400
-C       -2.80958100     1.64120300     5.38875100
-C       -3.23765700     0.32374300     5.38864100
-C       -2.42918200    -2.16498400     5.38865300
-C       -1.30841500    -2.97916300     5.38840200
-C        1.30841500    -2.97916300     5.38840200
-C        2.42918200    -2.16498400     5.38865300
-C        3.23765700     0.32374300     5.38864100
-C        2.80958100     1.64120300     5.38875100
-H        1.20851300     4.06642600     5.02749100
-H       -1.20851300     4.06642600     5.02749100
-H       -3.49401500     2.40602700     5.02800700
-H       -4.24094400     0.10730100     5.02793900
-H       -3.36816400    -2.57958300     5.02817300
-H       -1.41248600    -4.00023700     5.02769900
-H        1.41248600    -4.00023700     5.02769900
-H        3.36816400    -2.57958300     5.02817300
-H        4.24094400     0.10730100     5.02793900
-H        3.49401500     2.40602700     5.02800700
-units angstrom
-}
-""")
-
-CFLOW_BkybowlBkybowl_3p94 = input.process_input("""
-molecule dimer {
-0 1
-C        0.70622800     0.97212500     2.41862700
-C       -0.70622800     0.97212500     2.41862700
-C       -1.14280400    -0.37137200     2.41849100
-C        0.00000000    -1.20165400     2.41827400
-C        1.14280400    -0.37137200     2.41849100
-C        1.45779000     2.00650700     1.89581300
-C       -1.45779000     2.00650700     1.89581300
-C       -2.35873800    -0.76639200     1.89565100
-C        0.00000000    -2.48003500     1.89534800
-C        2.35873800    -0.76639200     1.89565100
-C        0.69261800     3.17924500     1.54846400
-C       -0.69261800     3.17924500     1.54846400
-C       -2.80958100     1.64120300     1.54875100
-C       -3.23765700     0.32374300     1.54864100
-C       -2.42918200    -2.16498400     1.54865300
-C       -1.30841500    -2.97916300     1.54840200
-C        1.30841500    -2.97916300     1.54840200
-C        2.42918200    -2.16498400     1.54865300
-C        3.23765700     0.32374300     1.54864100
-C        2.80958100     1.64120300     1.54875100
-H        1.20851300     4.06642600     1.18749100
-H       -1.20851300     4.06642600     1.18749100
-H       -3.49401500     2.40602700     1.18800700
-H       -4.24094400     0.10730100     1.18793900
-H       -3.36816400    -2.57958300     1.18817300
-H       -1.41248600    -4.00023700     1.18769900
-H        1.41248600    -4.00023700     1.18769900
-H        3.36816400    -2.57958300     1.18817300
-H        4.24094400     0.10730100     1.18793900
-H        3.49401500     2.40602700     1.18800700
---
-0 1
-C        0.70622800     0.97212500     6.35862700
-C       -0.70622800     0.97212500     6.35862700
-C       -1.14280400    -0.37137200     6.35849100
-C        0.00000000    -1.20165400     6.35827400
-C        1.14280400    -0.37137200     6.35849100
-C        1.45779000     2.00650700     5.83581300
-C       -1.45779000     2.00650700     5.83581300
-C       -2.35873800    -0.76639200     5.83565100
-C        0.00000000    -2.48003500     5.83534800
-C        2.35873800    -0.76639200     5.83565100
-C        0.69261800     3.17924500     5.48846400
-C       -0.69261800     3.17924500     5.48846400
-C       -2.80958100     1.64120300     5.48875100
-C       -3.23765700     0.32374300     5.48864100
-C       -2.42918200    -2.16498400     5.48865300
-C       -1.30841500    -2.97916300     5.48840200
-C        1.30841500    -2.97916300     5.48840200
-C        2.42918200    -2.16498400     5.48865300
-C        3.23765700     0.32374300     5.48864100
-C        2.80958100     1.64120300     5.48875100
-H        1.20851300     4.06642600     5.12749100
-H       -1.20851300     4.06642600     5.12749100
-H       -3.49401500     2.40602700     5.12800700
-H       -4.24094400     0.10730100     5.12793900
-H       -3.36816400    -2.57958300     5.12817300
-H       -1.41248600    -4.00023700     5.12769900
-H        1.41248600    -4.00023700     5.12769900
-H        3.36816400    -2.57958300     5.12817300
-H        4.24094400     0.10730100     5.12793900
-H        3.49401500     2.40602700     5.12800700
-units angstrom
-}
-""")
-
-CFLOW_BzBz_S_3p9 = input.process_input("""
-molecule dimer {
-0 1
-C        1.00000000     0.00000000    -0.39150000
-C        1.00000000     1.20507400     0.30425000
-C        1.00000000     1.20507400     1.69575000
-C        1.00000000     0.00000000     2.39150000
-C        1.00000000    -1.20507400     1.69575000
-C        1.00000000    -1.20507400     0.30425000
-H        1.00000000     0.00000000    -1.47150000
-H        1.00000000     2.14038200    -0.23575000
-H        1.00000000     2.14038200     2.23575000
-H        1.00000000     0.00000000     3.47150000
-H        1.00000000    -2.14038200     2.23575000
-H        1.00000000    -2.14038200    -0.23575000
---
-0 1
-C        4.90000000     0.00000000    -0.39150000
-C        4.90000000    -1.20507400     0.30425000
-C        4.90000000    -1.20507400     1.69575000
-C        4.90000000     0.00000000     2.39150000
-C        4.90000000     1.20507400     1.69575000
-C        4.90000000     1.20507400     0.30425000
-H        4.90000000     0.00000000    -1.47150000
-H        4.90000000    -2.14038200    -0.23575000
-H        4.90000000    -2.14038200     2.23575000
-H        4.90000000     0.00000000     3.47150000
-H        4.90000000     2.14038200     2.23575000
-H        4.90000000     2.14038200    -0.23575000
 units angstrom
 }
 """)
@@ -1416,11 +1725,662 @@ units angstrom
 }
 """)
 
+CFLOW_C70Bkycatch = input.process_input("""
+molecule dimer {
+0 1
+C        5.06797524     2.29936385    -2.08110191
+C        5.89897484     1.17307146    -2.09318976
+C        6.52371734     0.72403427    -0.86283944
+C        6.52298902    -0.72680450    -0.86336685
+C        4.82422217     3.00948035    -0.84308331
+C        6.29135276     1.41952156     0.32994032
+C        3.82179516     2.29178550    -2.81832071
+C        5.51176916    -0.00025391    -2.85399954
+C        5.89789027    -1.17446402    -2.09399943
+C        4.30966839     0.00055758    -3.57145104
+C        6.29011693    -1.42294291     0.32897281
+C        5.42470772     2.57891710     0.33895272
+C        6.04330495     0.69484063     1.55837520
+C        5.06591606    -2.30004878    -2.08272685
+C        6.04268024    -0.69882915     1.55788732
+C        5.42243943    -2.58156480     0.33712048
+C        3.44832217     3.45034855    -0.82960580
+C        3.44988130     1.16508719    -3.55024381
+C        2.82895255     3.00645603    -2.04921429
+C        4.66725174     2.57712839     1.57044432
+C        5.04939546     1.41310607     2.32396359
+C        5.04810979    -1.41672651     2.32293081
+C        4.66493768    -2.57988475     1.56857265
+C        4.82158603    -3.01082984    -0.84519530
+C        2.70895392     3.53703254     0.38071126
+C        3.34127529     3.08846007     1.62819035
+C        4.11489123     0.73371052     3.15446026
+C        4.11426399    -0.73708517     3.15391512
+C        3.33853737    -3.09005761     1.62599817
+C        3.44526480    -3.45051077    -0.83202815
+C        1.29743241     3.43959955     0.26310748
+C        1.45628772     2.63991265    -2.08630639
+C        2.51079522     2.57621272     2.66402205
+C        2.89265937     1.41354883     3.41790352
+C        2.89143447    -1.41605179     3.41687270
+C        2.50851935    -2.57780057     2.66217162
+C        2.70579418    -3.53723914     0.37821857
+C        0.47621507     2.99837080     1.36291378
+C        0.68026831     2.99610084    -0.95227396
+C        1.07080918     2.57550069     2.54650265
+C        1.68679031     0.69590182     3.76914407
+C        1.68618267    -0.69763588     3.76869291
+C        1.06855188    -2.57584146     2.54471320
+C        1.29437200    -3.43841716     0.26065200
+C        3.44875717    -1.16320657    -3.55093615
+C        3.81970105    -2.29077144    -2.81984491
+C        2.07403888     0.72077706    -3.53734415
+C        2.82623686    -3.00516973    -2.05131774
+C        1.06126875     1.45650863    -2.86129493
+C       -0.66398842     2.29137013     0.83100892
+C       -0.52458179     2.28389863    -0.60577871
+C        0.54934101     1.42069400     3.24361876
+C        0.54804539    -1.42107867     3.24264168
+C        0.47356131    -2.99721728     1.36075992
+C        0.67755844    -2.99355415    -0.95440564
+C        2.07336548    -0.71768277    -3.53775270
+C        1.45390244    -2.63728192    -2.08814605
+C       -0.08290894     0.72105199    -2.44133621
+C       -1.17309582     1.17226915     1.49464872
+C       -0.90371109     1.16363667    -1.33779056
+C       -0.55193239     0.72570549     2.72677805
+C       -0.55261549    -0.72475925     2.72626074
+C       -0.66605016    -2.28888993     0.82939921
+C       -0.52671052    -2.28057480    -0.60744776
+C        1.05992553    -1.45297180    -2.86232717
+C       -0.08361305    -0.71677179    -2.44188719
+C       -1.56544918     0.00170157     0.73502846
+C       -1.43501618     0.00209330    -0.65904002
+C       -1.17423771    -1.16979831     1.49380312
+C       -0.90486484    -1.15945883    -1.33867218
+--
+0 1
+C       -7.40282719     1.38705903     1.93015402
+C       -6.43174906     0.70562386     1.17413928
+C       -6.43169916    -0.70519539     1.17414003
+C       -7.40275226    -1.38668799     1.93010957
+C       -8.36853495    -0.69871005     2.66530912
+C       -8.36854539     0.69898155     2.66534829
+C       -5.41310213    -1.51929680     0.45760552
+C       -4.63963081    -2.41637306     1.19827021
+C       -3.76921098    -3.34625432     0.60970038
+C       -3.65259791    -3.34732804    -0.83951400
+C       -4.41678917    -2.41707422    -1.56061829
+C       -5.29898154    -1.51959482    -0.95426824
+C       -2.95693866    -4.25760533     1.42700325
+C       -2.29489905    -5.23998494     0.71681149
+C       -2.18285711    -5.24315227    -0.70653413
+C       -2.72335425    -4.26251856    -1.51561186
+C       -1.01136268    -5.95754614    -1.04754748
+C       -0.39541059    -6.38900992     0.15230329
+C       -1.18900026    -5.94920422     1.23961635
+C        0.97082709    -6.61482652     0.25949369
+C        1.68544147    -6.58301855    -0.99923794
+C        1.08011363    -6.16437233    -2.18021740
+C       -0.30058099    -5.73208286    -2.22175342
+C       -0.96196950    -4.85841411    -3.16063317
+C       -2.11638769    -4.15390053    -2.82007590
+C        1.48320537    -6.57021747     1.61327170
+C        0.70222080    -6.14405426     2.68364968
+C       -0.66956541    -5.71632990     2.50843723
+C       -1.47037063    -4.83949666     3.32828362
+C       -2.56009673    -4.14107688     2.80945524
+C       -6.18868895    -0.70522471    -1.82559182
+C       -6.18871027     0.70572034    -1.82568751
+C       -7.02482020     1.38698780    -2.72890173
+C       -7.85837343     0.69895754    -3.61121594
+C       -7.85834760    -0.69864423    -3.61118479
+C       -7.02479039    -1.38654286    -2.72878356
+C       -5.41326416     1.51980330     0.45755526
+C       -4.63983861     2.41692463     1.19824812
+C       -3.76918675     3.34660343     0.60971790
+C       -3.65271120     3.34788783    -0.83950039
+C       -4.41687746     2.41759136    -1.56060983
+C       -5.29914943     1.52015400    -0.95430570
+C       -2.72349367     4.26305124    -1.51555493
+C       -2.18267268     5.24349468    -0.70643704
+C       -2.29462293     5.24020773     0.71693380
+C       -2.95682526     4.25784536     1.42703012
+C       -1.18831948     5.94886912     1.23975344
+C       -0.39462729     6.38839689     0.15241625
+C       -1.01086572     5.95737367    -1.04748000
+C       -2.11652987     4.15418557    -2.82002585
+C       -0.96188010     4.85826802    -3.16061178
+C       -0.30024170     5.73169669    -2.22174698
+C        1.08064619     6.16338327    -2.18029293
+C        1.68631879     6.58125160    -0.99924975
+C        0.97177546     6.61324897     0.25952133
+C       -2.56006900     4.14111534     2.80948951
+C       -1.46994597     4.83887788     3.32828060
+C       -0.66884844     5.71552491     2.50850096
+C        0.70325213     6.14213626     2.68356052
+C        1.48445470     6.56764025     1.61310560
+H       -0.49452211    -4.65119484    -4.12204019
+H       -2.49757409    -3.42346957    -3.53080365
+H       -3.04852812    -3.40829515     3.44863134
+H       -1.15740450    -4.62511667     4.34901029
+H        1.17531918    -6.03336827     3.65833201
+H        2.53722607    -6.77805717     1.79170491
+H        2.75414559    -6.79110843    -1.01131275
+H        1.69862775    -6.06129033    -3.07045038
+H        1.69910712     6.06009438    -3.07053950
+H        2.75515604     6.78864211    -1.01132691
+H        2.53880160     6.77412731     1.79128346
+H        1.17630534     6.03075868     3.65815555
+H       -1.15699754     4.62430526     4.34897406
+H       -3.04877949     3.40852960     3.44852522
+H       -2.49798014     3.42386231    -3.53074179
+H       -0.49467880     4.65101420    -4.12213549
+H       -4.74557626    -2.41475495     2.28076588
+H       -4.34825009    -2.41602943    -2.64608584
+H       -4.74578607     2.41525372     2.28075286
+H       -4.34814581     2.41640118    -2.64605832
+H       -7.01680686    -2.47454834    -2.72375389
+H       -8.50349987    -1.25092834    -4.29157316
+H       -8.50354436     1.25115748    -4.29165732
+H       -7.01688631     2.47502594    -2.72393185
+H       -7.39376967    -2.47475553     1.92672947
+H       -9.11566516    -1.25081347     3.23202192
+H       -9.11570303     1.25103930     3.23207489
+H       -7.39394496     2.47512523     1.92680562
+units angstrom
+}
+""")
+
+CFLOW_C70Bkycatch_W = input.process_input("""
+molecule dimer {
+0 1
+C       -0.10781880     0.97213108    -3.21727958
+C       -1.21658377     0.56016424    -3.96683662
+C       -1.60606545    -0.83787885    -3.96741791
+C       -3.05611231    -0.89980546    -3.96799581
+C        0.65010364     0.01133024    -2.44125693
+C       -0.87042029    -1.76232215    -3.21687823
+C       -0.17483466     2.18523992    -2.43423388
+C       -2.42611638     1.36142648    -3.96715163
+C       -3.56286502     0.45940653    -3.96775979
+C       -2.47717727     2.54247415    -3.21712483
+C       -3.71077366    -1.88615205    -3.21929949
+C        0.27185059    -1.32865763    -2.43948761
+C       -1.55443287    -2.76896301    -2.43596133
+C       -4.70364950     0.77724639    -3.21974474
+C       -2.94476283    -2.83530034    -2.44063531
+C       -4.88527646    -1.55093347    -2.44217657
+C        1.06632329     0.64189367    -1.20764345
+C       -1.33314390     2.95519242    -2.43574521
+C        0.55300326     1.98241819    -1.20441129
+C        0.29411633    -2.07660796    -1.20435385
+C       -0.83059707    -2.96525534    -1.20379370
+C       -3.65303149    -3.09845992    -1.20815628
+C       -4.85208388    -2.30494433    -1.20895454
+C       -5.37162429    -0.24481259    -2.44208222
+C        1.19298611    -0.09810670     0.00000000
+C        0.78781226    -1.50971043     0.00000000
+C       -1.49412360    -3.31477774     0.00000000
+C       -2.96060313    -3.38359060     0.00000000
+C       -5.38776660    -1.77934819     0.00000000
+C       -5.83952228     0.34709243    -1.20894189
+C        1.06632329     0.64189367     1.20764345
+C        0.16294800     2.62299453     0.00000000
+C        0.29411633    -2.07660796     1.20435385
+C       -0.83059707    -2.96525534     1.20379370
+C       -3.65303149    -3.09845992     1.20815628
+C       -4.85208388    -2.30494433     1.20895454
+C       -5.89999088    -0.40081285     0.00000000
+C        0.65010364     0.01133024     2.44125693
+C        0.55300326     1.98241819     1.20441129
+C        0.27185059    -1.32865763     2.43948761
+C       -1.55443287    -2.76896301     2.43596133
+C       -2.94476283    -2.83530034     2.44063531
+C       -4.88527646    -1.55093347     2.44217657
+C       -5.83952228     0.34709243     1.20894189
+C       -3.65660274     2.86379503    -2.44085073
+C       -4.74846628     1.99799634    -2.44246228
+C       -1.80286672     3.54408474    -1.20473355
+C       -5.45436091     1.73254453    -1.20900272
+C       -1.06021136     3.43587667     0.00000000
+C       -0.10781880     0.97213108     3.21727958
+C       -0.17483466     2.18523992     2.43423388
+C       -0.87042029    -1.76232215     3.21687823
+C       -3.71077366    -1.88615205     3.21929949
+C       -5.37162429    -0.24481259     2.44208222
+C       -5.45436091     1.73254453     1.20900272
+C       -3.23828899     3.49132855    -1.20795017
+C       -5.12070802     2.40486528     0.00000000
+C       -1.80286672     3.54408474     1.20473355
+C       -1.21658377     0.56016424     3.96683662
+C       -1.33314390     2.95519242     2.43574521
+C       -1.60606545    -0.83787885     3.96741791
+C       -3.05611231    -0.89980546     3.96799581
+C       -4.70364950     0.77724639     3.21974474
+C       -4.74846628     1.99799634     2.44246228
+C       -3.96933186     3.31952121     0.00000000
+C       -3.23828899     3.49132855     1.20795017
+C       -2.42611638     1.36142648     3.96715163
+C       -2.47717727     2.54247415     3.21712483
+C       -3.56286502     0.45940653     3.96775979
+C       -3.65660274     2.86379503     2.44085073
+--
+0 1
+C        6.90570687    -1.79603453     2.33940689
+C        6.04083719    -1.06338601     1.50569884
+C        6.12246354     0.34506609     1.50601979
+C        7.06625335     0.97211755     2.34017719
+C        7.92605173     0.23321429     3.15311790
+C        7.84520480    -1.16204218     3.15271259
+C        5.21867846     1.21718207     0.70841335
+C        4.45562120     2.17276874     1.38379919
+C        3.71001944     3.16414605     0.72780887
+C        3.71001944     3.16414605    -0.72780887
+C        4.45562120     2.17276874    -1.38379919
+C        5.21867846     1.21718207    -0.70841335
+C        2.92506029     4.15311218     1.47954890
+C        2.39597164     5.17208365     0.71316580
+C        2.39597164     5.17208365    -0.71316580
+C        2.92506029     4.15311218    -1.47954890
+C        1.31510289     5.97185277    -1.14615986
+C        0.64187080     6.45566387     0.00000000
+C        1.31510289     5.97185277     1.14615986
+C       -0.70357855     6.80011635     0.00000000
+C       -1.31136033     6.82425074    -1.31439107
+C       -0.64503868     6.35873108    -2.44656282
+C        0.69450315     5.81377382    -2.37982472
+C        1.37566404     4.90527922    -3.26985567
+C        2.43718833     4.10925224    -2.83661911
+C       -1.31136033     6.82425074     1.31439107
+C       -0.64503868     6.35873108     2.44656282
+C        0.69450315     5.81377382     2.37982472
+C        1.37566404     4.90527922     3.26985567
+C        2.43718833     4.10925224     2.83661911
+C        6.12246354     0.34506609    -1.50601979
+C        6.04083719    -1.06338601    -1.50569884
+C        6.90570687    -1.79603453    -2.33940689
+C        7.84520480    -1.16204218    -3.15271259
+C        7.92605173     0.23321429    -3.15311790
+C        7.06625335     0.97211755    -2.34017719
+C        5.04147517    -1.82425591     0.70843700
+C        4.17151913    -2.68356989     1.38393595
+C        3.31296095    -3.57829123     0.72728601
+C        3.31296095    -3.57829123    -0.72728601
+C        4.17151913    -2.68356989    -1.38393595
+C        5.04147517    -1.82425591    -0.70843700
+C        2.40407610    -4.45524164    -1.47787004
+C        1.75156130    -5.40255934    -0.71382632
+C        1.75156130    -5.40255934     0.71382632
+C        2.40407610    -4.45524164     1.47787004
+C        0.57815418    -6.05993979     1.14701113
+C       -0.15064668    -6.45653706     0.00000000
+C        0.57815418    -6.05993979    -1.14701113
+C        1.91731357    -4.33365482    -2.83061445
+C        0.76170346    -4.98432977    -3.26336797
+C       -0.02237763    -5.80907271    -2.37620974
+C       -1.42354491    -6.16582790    -2.44250520
+C       -2.14239143    -6.54130620    -1.31101719
+C       -1.53106269    -6.60924580     0.00000000
+C        1.91731357    -4.33365482     2.83061445
+C        0.76170346    -4.98432977     3.26336797
+C       -0.02237763    -5.80907271     2.37620974
+C       -1.42354491    -6.16582790     2.44250520
+C       -2.14239143    -6.54130620     1.31101719
+H        0.98822457     4.74441198    -4.27449004
+H        2.82463078     3.35979862    -3.52388738
+H        2.82463078     3.35979862     3.52388738
+H        0.98822457     4.74441198     4.27449004
+H       -1.19454305     6.31196301     3.38564845
+H       -2.35403703     7.12194754     1.41556147
+H       -2.35403703     7.12194754    -1.41556147
+H       -1.19454305     6.31196301    -3.38564845
+H       -1.96346759    -6.03668769    -3.37907240
+H       -3.21666968    -6.69178093    -1.40715986
+H       -3.21666968    -6.69178093     1.40715986
+H       -1.96346759    -6.03668769     3.37907240
+H        0.39006180    -4.76624715     4.26315989
+H        2.39353638    -3.63284792     3.51302759
+H        2.39353638    -3.63284792    -3.51302759
+H        0.39006180    -4.76624715    -4.26315989
+H        4.47498141     2.17041498     2.47122669
+H        4.47498141     2.17041498    -2.47122669
+H        4.19101455    -2.68369728     2.47137160
+H        4.19101455    -2.68369728    -2.47137160
+H        7.12160205     2.05874398    -2.33571188
+H        8.65439980     0.74410823    -3.77974819
+H        8.50950791    -1.75406635    -3.77909453
+H        6.83476091    -2.88178047    -2.33438053
+H        7.12160205     2.05874398     2.33571188
+H        8.65439980     0.74410823     3.77974819
+H        8.50950791    -1.75406635     3.77909453
+H        6.83476091    -2.88178047     2.33438053
+units angstrom
+}
+""")
+
+CFLOW_C70Bkycatch_T = input.process_input("""
+molecule dimer {
+0 1
+C        0.57719530     1.41260349     3.20966236
+C        1.52957617     0.71536970     3.95340794
+C        1.52341728    -0.72993399     3.95278030
+C        2.89812010    -1.18585626     3.96075656
+C       -0.40966062     0.69680662     2.43743626
+C        0.56534991    -1.41818467     3.20852920
+C        0.96313082     2.57233822     2.43862832
+C        2.90834840     1.15899686     3.96106572
+C        3.75619807    -0.01716596     3.96474958
+C        3.27934042     2.28567333     3.21938256
+C        3.25916887    -2.31580260     3.21924696
+C       -0.41541659    -0.69367716     2.43698313
+C        0.94062341    -2.58149910     2.43801192
+C        4.94177554    -0.02241586     3.21939933
+C        2.26197530    -3.02218407     2.44150203
+C        4.47981288    -2.31203140     2.44172906
+C       -0.64549333     1.41693343     1.20789974
+C        2.28846728     3.00091312     2.44177690
+C        0.20426813     2.57766514     1.20847235
+C       -0.65792380    -1.41181580     1.20773964
+C        0.18139487    -2.58022583     1.20826884
+C        2.87125346    -3.46599697     1.20827994
+C        4.24124564    -3.02792521     1.20854561
+C        5.30512139    -1.18828847     2.44235511
+C       -0.97096884     0.73981891     0.00000000
+C       -0.97752486    -0.73186485     0.00000000
+C        0.72707542    -3.09635659     0.00000000
+C        2.12500277    -3.55575480     0.00000000
+C        4.89941243    -2.66744630     0.00000000
+C        5.91523627    -0.74577536     1.20873695
+C       -0.64549333     1.41693343    -1.20789974
+C        0.75449827     3.08875686     0.00000000
+C       -0.65792380    -1.41181580    -1.20773964
+C        0.18139487    -2.58022583    -1.20826884
+C        2.87125346    -3.46599697    -1.20827994
+C        4.24124564    -3.02792521    -1.20854561
+C        5.76932895    -1.48168053     0.00000000
+C       -0.40966062     0.69680662    -2.43743626
+C        0.20426813     2.57766514    -1.20847235
+C       -0.41541659    -0.69367716    -2.43698313
+C        0.94062341    -2.58149910    -2.43801192
+C        2.26197530    -3.02218407    -2.44150203
+C        4.47981288    -2.31203140    -2.44172906
+C        5.91523627    -0.74577536    -1.20873695
+C        4.49983898     2.27104449     2.44175703
+C        5.31528705     1.14018198     2.44231634
+C        2.90165291     3.43917289     1.20837050
+C        5.92147887     0.69230566     1.20870813
+C        2.15639371     3.53564498     0.00000000
+C        0.57719530     1.41260349    -3.20966236
+C        0.96313082     2.57233822    -2.43862832
+C        0.56534991    -1.41818467    -3.20852920
+C        3.25916887    -2.31580260    -3.21924696
+C        5.30512139    -1.18828847    -2.44235511
+C        5.92147887     0.69230566    -1.20870813
+C        4.26761240     2.98899299     1.20857391
+C        5.78202789     1.42944850     0.00000000
+C        2.90165291     3.43917289    -1.20837050
+C        1.52957617     0.71536970    -3.95340794
+C        2.28846728     3.00091312    -2.44177690
+C        1.52341728    -0.72993399    -3.95278030
+C        2.89812010    -1.18585626    -3.96075656
+C        4.94177554    -0.02241586    -3.21939933
+C        5.31528705     1.14018198    -2.44231634
+C        4.92256137     2.62278876     0.00000000
+C        4.26761240     2.98899299    -1.20857391
+C        2.90834840     1.15899686    -3.96106572
+C        3.27934042     2.28567333    -3.21938256
+C        3.75619807    -0.01716596    -3.96474958
+C        4.49983898     2.27104449    -2.44175703
+--
+0 1
+C       -7.01793526    -2.37728744     1.38614650
+C       -6.12012591    -1.53409251     0.70549270
+C       -6.12012591    -1.53409251    -0.70549270
+C       -7.01793526    -2.37728744    -1.38614650
+C       -7.91089615    -3.19956318    -0.69879261
+C       -7.91089615    -3.19956318     0.69879261
+C       -5.17785030    -0.72507011    -1.52494216
+C       -4.36310761    -1.38976568    -2.44588892
+C       -3.58623860    -0.72151453    -3.40367410
+C       -3.59438859     0.73310546    -3.39294709
+C       -4.38580987     1.37882607    -2.43207640
+C       -5.19248222     0.69146053    -1.52133143
+C       -2.77995584    -1.45863485    -4.38745582
+C       -2.27829826    -0.68396421    -5.41450897
+C       -2.28301127     0.74246168    -5.40109696
+C       -2.79157438     1.49415240    -4.36080444
+C       -1.22676695     1.18724256    -6.22627270
+C       -0.56838807     0.04798403    -6.74806679
+C       -1.21969845    -1.10560660    -6.24901765
+C        0.76549781     0.05610751    -7.13269927
+C        1.37244130     1.37142255    -7.15434080
+C        0.72312375     2.49439362    -6.64612635
+C       -0.59779416     2.41625096    -6.05930820
+C       -1.23911789     3.28483581    -5.10153284
+C       -2.28619584     2.84276337    -4.29021637
+C        1.38053185    -1.25455913    -7.18122242
+C        0.73814235    -2.39159678    -6.69582606
+C       -0.58313594    -2.33375989    -6.10739626
+C       -1.21814452    -3.22513820    -5.16663408
+C       -2.26621218    -2.80533066    -4.34473493
+C       -6.15717387     1.47619172    -0.70500458
+C       -6.15717387     1.47619172     0.70500458
+C       -7.07613186     2.29522026     1.38658909
+C       -7.99050720     3.09342876     0.69883936
+C       -7.99050720     3.09342876    -0.69883936
+C       -7.07613186     2.29522026    -1.38658909
+C       -5.17785030    -0.72507011     1.52494216
+C       -4.36310761    -1.38976568     2.44588892
+C       -3.58623860    -0.72151453     3.40367410
+C       -3.59438859     0.73310546     3.39294709
+C       -4.38580987     1.37882607     2.43207640
+C       -5.19248222     0.69146053     1.52133143
+C       -2.79157438     1.49415240     4.36080444
+C       -2.28301127     0.74246168     5.40109696
+C       -2.27829826    -0.68396421     5.41450897
+C       -2.77995584    -1.45863485     4.38745582
+C       -1.21969845    -1.10560660     6.24901765
+C       -0.56838807     0.04798403     6.74806679
+C       -1.22676695     1.18724256     6.22627270
+C       -2.28619584     2.84276337     4.29021637
+C       -1.23911789     3.28483581     5.10153284
+C       -0.59779416     2.41625096     6.05930820
+C        0.72312375     2.49439362     6.64612635
+C        1.37244130     1.37142255     7.15434080
+C        0.76549781     0.05610751     7.13269927
+C       -2.26621218    -2.80533066     4.34473493
+C       -1.21814452    -3.22513820     5.16663408
+C       -0.58313594    -2.33375989     6.10739626
+C        0.73814235    -2.39159678     6.69582606
+C        1.38053185    -1.25455913     7.18122242
+H       -0.83403138     4.27994472    -4.92401873
+H       -2.64820499     3.51289365    -3.51289465
+H       -2.62254343    -3.49306260    -3.58034486
+H       -0.80715384    -4.22124181    -5.00955636
+H        1.29624156    -3.32649408    -6.66589095
+H        2.41398078    -1.34747453    -7.51215834
+H        2.40524642     1.47731570    -7.48334724
+H        1.27533175     3.43197205    -6.59722947
+H        1.27533175     3.43197205     6.59722947
+H        2.40524642     1.47731570     7.48334724
+H        2.41398078    -1.34747453     7.51215834
+H        1.29624156    -3.32649408     6.66589095
+H       -0.80715384    -4.22124181     5.00955636
+H       -2.62254343    -3.49306260     3.58034486
+H       -2.64820499     3.51289365     3.51289465
+H       -0.83403138     4.27994472     4.92401873
+H       -4.37587012    -2.47734670    -2.45283752
+H       -4.41722929     2.46606700    -2.42897203
+H       -4.37587012    -2.47734670     2.45283752
+H       -4.41722929     2.46606700     2.42897203
+H       -7.06812939     2.29040531    -2.47459918
+H       -8.69824914     3.70841580    -1.25116110
+H       -8.69824914     3.70841580     1.25116110
+H       -7.06812939     2.29040531     2.47459918
+H       -7.01096558    -2.37180000    -2.47413143
+H       -8.60234201    -3.83259883    -1.25136916
+H       -8.60234201    -3.83259883     1.25136916
+H       -7.01096558    -2.37180000     2.47413143
+units angstrom
+}
+""")
+
+CFLOW_Benzene_monomer = input.process_input("""
+molecule monomer {
+0 1
+C        0.00000000    -1.39150000     0.00000000
+C        1.20507400    -0.69575000     0.00000000
+C        1.20507400     0.69575000     0.00000000
+C        0.00000000     1.39150000     0.00000000
+C       -1.20507400     0.69575000     0.00000000
+C       -1.20507400    -0.69575000     0.00000000
+H        0.00000000    -2.47150000     0.00000000
+H        2.14038200    -1.23575000     0.00000000
+H        2.14038200     1.23575000     0.00000000
+H        0.00000000     2.47150000     0.00000000
+H       -2.14038200     1.23575000     0.00000000
+H       -2.14038200    -1.23575000     0.00000000
+units angstrom
+}
+""")
+
+CFLOW_Napthalene_monomer = input.process_input("""
+molecule monomer {
+0 1
+C       -2.41591300    -0.70276500     0.00000000
+C       -1.23100600    -1.39300200     0.00000000
+C        0.00000000    -0.71089400     0.00000000
+C        0.00000000     0.71089400     0.00000000
+C       -1.23100600     1.39300200     0.00000000
+C       -2.41591300     0.70276500     0.00000000
+C        1.23100600    -1.39300200     0.00000000
+C        1.23100600     1.39300200     0.00000000
+C        2.41591300     0.70276500     0.00000000
+C        2.41591300    -0.70276500     0.00000000
+H        1.22889800    -2.47183700     0.00000000
+H       -3.35016300    -1.23782500     0.00000000
+H       -1.22889800    -2.47183700     0.00000000
+H       -1.22889800     2.47183700     0.00000000
+H       -3.35016300     1.23782500     0.00000000
+H        1.22889800     2.47183700     0.00000000
+H        3.35016300     1.23782500     0.00000000
+H        3.35016300    -1.23782500     0.00000000
+units angstrom
+}
+""")
+
+CFLOW_Anthracene_monomer = input.process_input("""
+molecule monomer {
+0 1
+C       -3.63206100    -0.70629600     0.00000000
+C       -2.45292600    -1.39698600     0.00000000
+C       -1.21398000    -0.71604800     0.00000000
+C       -1.21398000     0.71604800     0.00000000
+C       -2.45292600     1.39698600     0.00000000
+C       -3.63206100     0.70629600     0.00000000
+C        0.00000000    -1.39478500     0.00000000
+C        0.00000000     1.39478500     0.00000000
+C        1.21398000     0.71604800     0.00000000
+C        1.21398000    -0.71604800     0.00000000
+C        2.45292600    -1.39698600     0.00000000
+H        2.45137100    -2.47594200     0.00000000
+C        3.63206100    -0.70629600     0.00000000
+C        3.63206100     0.70629600     0.00000000
+C        2.45292600     1.39698600     0.00000000
+H        0.00000000    -2.47562800     0.00000000
+H       -4.56737900    -1.23960400     0.00000000
+H       -2.45137100    -2.47594200     0.00000000
+H       -2.45137100     2.47594200     0.00000000
+H       -4.56737900     1.23960400     0.00000000
+H        0.00000000     2.47562800     0.00000000
+H        4.56737900    -1.23960400     0.00000000
+H        4.56737900     1.23960400     0.00000000
+H        2.45137100     2.47594200     0.00000000
+units angstrom
+}
+""")
+
+# 4Bz geometry NOT finalized
+CFLOW_Tetracene_monomer = input.process_input("""
+molecule monomer {
+0 1
+C        0.69575000    -1.20507400     0.00000000
+C       -0.69575000    -1.20507400     0.00000000
+C        1.39150000     0.00000000     0.00000000
+C       -1.39150000     0.00000000     0.00000000
+C       -0.69575000     1.20507400     0.00000000
+C        0.69575000     1.20507400     0.00000000
+C        1.39150000     2.41014800     0.00000000
+C       -1.39150000     2.41014800     0.00000000
+C       -0.69575000     3.61522200     0.00000000
+C        0.69575000     3.61522200     0.00000000
+C        1.39150000     4.82029600     0.00000000
+C       -1.39150000     4.82029600     0.00000000
+C       -0.69575000     6.02537000     0.00000000
+C        0.69575000     6.02537000     0.00000000
+C        1.39150000     7.23044400     0.00000000
+C       -1.39150000     7.23044400     0.00000000
+C       -0.69575000     8.43551800     0.00000000
+C        0.69575000     8.43551800     0.00000000
+H        1.23575000    -2.14038200     0.00000000
+H       -1.23575000    -2.14038200     0.00000000
+H        2.47150000     0.00000000     0.00000000
+H       -2.47150000     0.00000000     0.00000000
+H        2.47150000     2.41014800     0.00000000
+H       -2.47150000     2.41014800     0.00000000
+H        2.47150000     4.82029600     0.00000000
+H       -2.47150000     4.82029600     0.00000000
+H        2.47150000     7.23044400     0.00000000
+H       -2.47150000     7.23044400     0.00000000
+H       -1.23575000     9.37082600     0.00000000
+H        1.23575000     9.37082600     0.00000000
+units angstrom
+}
+""")
+
+CFLOW_Bkybowl_Pulay_monomer = input.process_input("""
+molecule monomer {
+0 1
+C        0.70622800     0.97211978     0.61694803
+C       -0.70622800     0.97211978     0.61694803
+C       -1.14280400    -0.37137722     0.61681203
+C        0.00000000    -1.20165922     0.61659503
+C        1.14280400    -0.37137722     0.61681203
+C        1.45779000     2.00650178     0.09413403
+C       -1.45779000     2.00650178     0.09413403
+C       -2.35873800    -0.76639722     0.09397203
+C        0.00000000    -2.48004022     0.09366903
+C        2.35873800    -0.76639722     0.09397203
+C        0.69261800     3.17923978    -0.25321497
+C       -0.69261800     3.17923978    -0.25321497
+C       -2.80958100     1.64119778    -0.25292797
+C       -3.23765700     0.32373778    -0.25303797
+C       -2.42918200    -2.16498922    -0.25302597
+C       -1.30841500    -2.97916822    -0.25327697
+C        1.30841500    -2.97916822    -0.25327697
+C        2.42918200    -2.16498922    -0.25302597
+C        3.23765700     0.32373778    -0.25303797
+C        2.80958100     1.64119778    -0.25292797
+H        1.20851300     4.06642078    -0.61418797
+H       -1.20851300     4.06642078    -0.61418797
+H       -3.49401500     2.40602178    -0.61367197
+H       -4.24094400     0.10729578    -0.61373997
+H       -3.36816400    -2.57958822    -0.61350597
+H       -1.41248600    -4.00024222    -0.61397997
+H        1.41248600    -4.00024222    -0.61397997
+H        3.36816400    -2.57958822    -0.61350597
+H        4.24094400     0.10729578    -0.61373997
+H        3.49401500     2.40602178    -0.61367197
+units angstrom
+}
+""")
+
 # <<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
 
-   if rxn is 'C60Bkybowl' or rxn is 'C60Bkycatch':
+   if (rxn is 'C60Bkybowl') or (rxn is 'C60Bkycatch') or (rxn in Grimme70):
       GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn ))
       GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn )) + monoA_CP
       GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn )) + monoB_CP
@@ -1434,4 +2394,11 @@ for rxn in HRXN:
       GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_CP
       GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoA_unCP
       GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_unCP
+
+
+GEOS['%s-Bz-mono-unCP'         % (dbse)] = eval('%s_Benzene_monomer'        % (dbse))
+GEOS['%s-2Bz-mono-unCP'        % (dbse)] = eval('%s_Napthalene_monomer'     % (dbse))
+GEOS['%s-3Bz-mono-unCP'        % (dbse)] = eval('%s_Anthracene_monomer'     % (dbse))
+GEOS['%s-4Bz-mono-unCP'        % (dbse)] = eval('%s_Tetracene_monomer'      % (dbse))
+GEOS['%s-Bkybowl_P-mono-unCP'  % (dbse)] = eval('%s_Bkybowl_Pulay_monomer'  % (dbse))
 
