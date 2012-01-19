@@ -28,6 +28,7 @@ procedures = {
             'ccsd(t)'       : run_ccenergy,
             'cc2'           : run_ccenergy,
             'cc3'           : run_ccenergy,
+            'mrcc'          : run_mrcc,      # interface to Kallay's MRCC program
             'bccd'          : run_bccd,
             'bccd(t)'       : run_bccd_t,
             'eom-ccsd'      : run_eom_cc,
@@ -380,7 +381,31 @@ def optimize(name, **kwargs):
 def parse_arbitrary_order(name):
     namelower = name.lower()
 
-    if re.match(r'^[a-z]+\d+$', namelower):
+    if re.match(r'^mrcc(\w+)(\(\w\))?', namelower):
+        ccorder = re.match(r'^mrcc(\w+)(\(\w\))?', namelower)
+
+        orders = [ "sd", "sdt", "sdtq", "sdtqp", "stdqph" ]
+        fullcc = ccorder.group(1)
+
+        parenfound = False
+        if ccorder.group(2):
+            parenfound = True
+            parencc = ccorder.group(2)
+            parenorder = parencc[1]
+            fullcc = fullcc + parenorder
+
+        try:
+            ind = orders.index(fullcc) + 2 # to account for SD being first
+            if parenfound == True:
+                ind = -ind
+
+            return "mrcc", ind
+
+        except ValueError:
+            print "Unknown method: %s" % namelower
+            sys.exit(0)
+
+    elif re.match(r'^[a-z]+\d+$', namelower):
         decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
         namestump = decompose.group(1)
         namelevel = int(decompose.group(2))
@@ -537,3 +562,6 @@ def frequencies(name, **kwargs):
 def hessian(name, **kwargs):
     frequencies(name, **kwargs)
 
+if __name__ == "__main__":
+    result = parse_arbitrary_order("mrccsd")
+    print result
