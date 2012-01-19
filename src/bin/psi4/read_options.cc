@@ -649,7 +649,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAPT_SS_SCALE", 1.0/3.0);
   }
   if(name == "DCFT"|| options.read_globals()) {
-//      ip_cwk_add(":DCFT");
+      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory computations -*/
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEVEL", 2);
       /*- The shift applied to the denominator -*/
@@ -697,44 +697,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("LOCK_OCC", true);
   }
   if (name == "MINTS"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Called at the beginning of SCF computations, whenever disk-based molecular
+          integrals are required -*/
       /*- Primary basis set -*/
       options.add_str("BASIS","");
   }
-  if (name == "DFT" || options.read_globals()) {
-    /*- The DFT grid specification, such as SG1 -*/
-    options.add_str("DFT_GRID_NAME","","SG1");
-    /*- Maximum order of spherical grids -*/
-    options.add_int("DFT_ORDER_SPHERICAL", 15);
-    /*- Number of radial points -*/
-    options.add_int("DFT_NUM_RADIAL", 99);
-    /*- Spherical Scheme -*/
-    options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
-    /*- Radial Scheme -*/
-    options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
-    /*- Nuclear Scheme -*/
-    options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
-    /*- Pruning Scheme -*/
-    options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
-    /*- Factor for effective BS radius in radial grid -*/
-    options.add_double("DFT_BS_RADIUS_ALPHA",1.0);
-    /*- Spread alpha for logarithmic pruning -*/
-    options.add_double("DFT_PRUNING_ALPHA",1.0);
-    /*- The number of grid points per evaluation block -*/
-    options.add_int("DFT_MAX_POINTS",5000);
-    /*- The number of grid points per evaluation block -*/
-    options.add_int("DFT_MIN_POINTS",0);
-    /*- The boxing scheme for DFT -*/
-    options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
-    /*- DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("DFT_BASIS_TOLERANCE", 0.0);
-    /*- The DFT combined functional name (for now) -*/
-    options.add_str("DFT_FUNCTIONAL", "");
-    /*- The DFT Range-separation parameter (only used if changed by the user) -*/
-    options.add_double("DFT_OMEGA", 0.0);
-  }
   if (name == "SCF"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and Density Functional Theory) computations.
+          These are the starting points for most computations, so this code is called in most cases. -*/
 
-    // => General Wavefunction Info <= //
+    /*- SUBSECTION General Wavefunction Info -*/
 
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF", "SCF");
@@ -756,7 +728,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The type of guess orbitals -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
 
-    // => Convergence Control/Stabilization <= //
+    /*- SUBSECTION Convergence Control/Stabilization -*/
 
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
@@ -789,7 +761,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
     options.add("MOM_VIR", new ArrayType());
 
-    // => Environmental Effects <= //
+    /*- SUBSECTION Environmental Effects -*/
 
     /*- Perturb the Hamiltonian? -*/
     options.add_bool("PERTURB_H", false);
@@ -800,7 +772,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
-    // => Parallel Runtime <= //
+    /*- SUBESCTION Parallel Runtime -*/
 
     /*- The dimension sizes of the processor grid !expert -*/
     options.add("PROCESS_GRID", new ArrayType());
@@ -811,19 +783,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do run in parallel? !expert -*/
     options.add_bool("PARALLEL", false);
 
-    // => Misc. <== //
+    /*- SUBSECTION Misc. -*/
 
     /*- Are going to do SAPT? If so, what part? !expert -*/
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
-    // => DFSCF Algorithm <= //
+    /*- SUBSECTION DFSCF Algorithm -*/
     
     /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
     options.add_int("DF_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc !expert -*/
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
 
-    // => SAD Guess Algorithm <= //
+    /*- SUBSECTION SAD Guess Algorithm -*/
 
     /*- The amount of SAD information to print to the output !expert -*/
     options.add_int("SAD_PRINT", 0);
@@ -838,8 +810,44 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- SAD Guess Cholesky Cutoff (for eliminating redundancies).
     See the note at the beginning of Section \ref{keywords}. !expert -*/
     options.add_double("SAD_CHOL_TOLERANCE", 1E-7);
+
+    /*- SUBSECTION DFT */
+
+    /*- The DFT grid specification, such as SG1. -*/
+    options.add_str("DFT_GRID_NAME","","SG1");
+    /*- Maximum order of spherical grids. -*/
+    options.add_int("DFT_ORDER_SPHERICAL", 15);
+    /*- Number of radial points. -*/
+    options.add_int("DFT_NUM_RADIAL", 99);
+    /*- Spherical Scheme. -*/
+    options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
+    /*- Radial Scheme. -*/
+    options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
+    /*- Nuclear Scheme. -*/
+    options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
+    /*- Pruning Scheme. -*/
+    options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
+    /*- Factor for effective BS radius in radial grid. -*/
+    options.add_double("DFT_BS_RADIUS_ALPHA",1.0);
+    /*- Spread alpha for logarithmic pruning. -*/
+    options.add_double("DFT_PRUNING_ALPHA",1.0);
+    /*- The number of grid points per evaluation block. -*/
+    options.add_int("DFT_MAX_POINTS",5000);
+    /*- The number of grid points per evaluation block. -*/
+    options.add_int("DFT_MIN_POINTS",0);
+    /*- The boxing scheme for DFT. -*/
+    options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
+    /*- DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("DFT_BASIS_TOLERANCE", 0.0);
+    /*- The DFT combined functional name (for now). -*/
+    options.add_str("DFT_FUNCTIONAL", "");
+    /*- The DFT Range-separation parameter (only used if changed by the user). -*/
+    options.add_double("DFT_OMEGA", 0.0);
   }
   if (name == "MP2"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
+          compute RHF/ROHF/UHF energies, and RHF gradient/property computations.  However, given the small errors introduced,
+          we recommend using the new density fitted MP2 codes instead, which are much more efficient. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "MP2", "MP2");
     /*- Reference wavefunction type -*/
@@ -865,6 +873,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Performs transformations of integrals into the molecular orbital (MO) basis.  This 
+          module is currently used by the (non-density fitted) MP2 and coupled cluster codes, but is being phased
+          out. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "");
     /*- Reference wavefunction type -*/
@@ -885,6 +896,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION The predecessor to Transqt2.  Currently used by the configuration interaction codes, but
+          is being phased out. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "CCSD");
     /*- Reference wavefunction type -*/
@@ -1016,6 +1029,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "CCSORT"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Sorts integrals for efficiency, and is called before (non density-fitted) MP2 and 
+          coupled cluster computations. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "");
     /*- Reference wavefunction type -*/
@@ -1063,6 +1078,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Computes the triples component of CCSD(T) energies (and gradients, if necessary). -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- Reference wavefunction type -*/
@@ -1073,6 +1089,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Computes the coupled cluster density matrices, and is called whenever CC properties and/or
+         gradients are required. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- Reference wavefunction type -*/
@@ -1106,6 +1124,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ZETA",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties
+         or gradients are requested. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","SCF");
     /*- Convergence criterion for wavefunction (change) in CC lambda-amplitude equations.
@@ -1155,6 +1175,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ZETA",false);
   }
   if(name == "CLAG"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Solves for the CI Lagrangian, and is called whenver CI properties or gradients are requested. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","NONE");
     /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
@@ -1163,6 +1184,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FOLLOW_ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Performs wavefunction stability analysis, and is only called when specifically requested 
+         by the user-*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
     /*- -*/
@@ -1178,6 +1201,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE",0.5);
   }
   if(name == "ADC" || options.read_globals()) {
+     /*- MODULEDESCRIPTION Performs Algebraic-Diagrammatic Construction (ADC) propagator computations for excited states. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "");
     /*- How to cache quantities within the DPD library -*/
@@ -1204,6 +1228,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("NUM_AMPS_PRINT", 5);
   }
   if(name == "CCHBAR"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Assembles the coupled cluster effective Hamiltonian, and is called whenever CC
+         properties and/or gradients are required. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- -*/
@@ -1216,6 +1242,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("WABEI_LOWDISK", false);
   }
   if(name == "CCEOM"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Performes equation-of-motion (EOM) coupled cluster excited state computations. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
     /*- Reference wavefunction type -*/
@@ -1314,6 +1341,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Performs coupled cluster response property computations. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- Reference wavefunction type -*/
@@ -1361,6 +1389,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("OMEGA",new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
+     /*- MODULEDESCRIPTION Performs SCF linear response computations. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
     /*- -*/
@@ -1369,6 +1398,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY","POLARIZABILITY");
   }
   if(name == "MCSCF"|| options.read_globals()) {
+     /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF, and more general MCSCF computations, and is called
+         as the starting point for multireference coupled cluster computations. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
     /*- Level shift to aid convergence -*/
@@ -1421,6 +1452,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
   if(name == "CCENERGY"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Computes coupled cluster energies, and is called as part of any coupled cluster computation. -*/
+
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- Reference wavefunction type -*/
@@ -1515,6 +1548,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEMICANONICAL", true);
   }
   if(name == "CIS"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations, but is currently unused in
+        Psi4. -*/
+
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
     /*- Reference wavefunction type -*/
@@ -1546,6 +1582,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DOMAIN_PRINT", 0);
   }
   if(name == "LMP2"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions -*/
+
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "LMP2");
     /*- Reference wavefunction type -*/
@@ -1599,7 +1637,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DOMAIN_PRINT_EXIT", 0);
    }
   if(name == "DFMP2"|| options.read_globals()) {
-    /*- -*/
+    /*- MODULEDESCRIPTION Performs density-fitted MP2 computations for RHF/UHF/ROHF reference wavefunctions. -*/
+
+    /*- A helpful option, used only in debugging the MADNESS version !expert-*/
     options.add_int("MADMP2_SLEEP", 0);
     /*- Primary basis set -*/
     options.add_str("BASIS","NONE");
@@ -1620,6 +1660,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
   }
   if(name == "DFCC"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs density-fitted coupled cluster computations. -*/
+
     /*- Type of wavefunction -*/
     options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
     /*- Primary basis set -*/
@@ -1762,6 +1804,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs multireference coupled cluster computations.  This theory should be used only by
+        advanced users with a good working knowledge of multireference techniques. -*/
+
     /*- The multiplicity, $M@@S(M@@S+1)$, of the target state.  Must be specified if different from the reference $M@@s$. -*/
       options.add_int("CORR_MULTP",1);
     /*- The molecular charge of the target state -*/
@@ -1857,6 +1902,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NO_SINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs geometry optimizations and vibrational frequency analyses. -*/
+
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
@@ -1939,12 +1986,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CONSECUTIVE_BACKSTEPS", 1);
   }
   if(name == "FINDIF"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements
+        for geometry optimizations and vibrational frequency analyses, where the required analytical derivatives are not
+        available. -*/
+
       /*- Number of points for finite-differences (3 or 5) -*/
       options.add_int("POINTS", 3); // Can we error check integers?
       /*- Displacement size in au for finite-differences. -*/
       options.add_double("DISP_SIZE", 0.005);
   }
   if (name == "OMP2"|| options.read_globals()) {
+    /*- MODULEDESCRIPTION Performs quadritically convergence orbital-optimized MP2 computations. -*/
+        
     //options.add_int("MEMORY", 256);
     //options.add_str("REFERENCE", "UHF", "UHF");
     

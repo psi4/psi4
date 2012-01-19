@@ -58,13 +58,13 @@ using namespace psi;
 ////////////////////////////////////////////////////////////////////////
 
 CharacterTable::CharacterTable()
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
       bits_(0)
 {
 }
 
 CharacterTable::CharacterTable(const CharacterTable& ct)
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
       bits_(0)
 {
     *this = ct;
@@ -72,22 +72,18 @@ CharacterTable::CharacterTable(const CharacterTable& ct)
 
 CharacterTable::~CharacterTable()
 {
-    if (symb) delete[] symb; symb=0;
     if (gamma_) delete[] gamma_; gamma_=0;
     if (symop) delete[] symop; symop=0;
     if (_inv) delete[] _inv; _inv=0;
-    g=nt=nirrep_=0;
+    nt=nirrep_=0;
 }
 
 CharacterTable&
 CharacterTable::operator=(const CharacterTable& ct)
 {
-    g=ct.g; nt=ct.nt; pg=ct.pg; nirrep_=ct.nirrep_;
+    nt=ct.nt; pg=ct.pg; nirrep_=ct.nirrep_;
 
-    if (symb)
-        delete[] symb;
-
-    symb = strdup(ct.symb);
+    symb = ct.symb;
 
     if (gamma_) delete[] gamma_; gamma_=0;
     if (ct.gamma_) {
@@ -103,8 +99,8 @@ CharacterTable::operator=(const CharacterTable& ct)
     symop=0;
 
     if (ct.symop) {
-        symop = new SymmetryOperation[g];
-        for (int i=0; i < g; i++) {
+        symop = new SymmetryOperation[nirrep_];
+        for (int i=0; i < nirrep_; i++) {
             symop[i] = ct.symop[i];
         }
     }
@@ -114,8 +110,8 @@ CharacterTable::operator=(const CharacterTable& ct)
     _inv=0;
 
     if (ct._inv) {
-        _inv = new int[g];
-        memcpy(_inv,ct._inv,sizeof(int)*g);
+        _inv = new int[nirrep_];
+        memcpy(_inv,ct._inv,sizeof(int)* nirrep_);
     }
 
     return *this;
@@ -123,222 +119,63 @@ CharacterTable::operator=(const CharacterTable& ct)
 
 void CharacterTable::print(FILE *out) const
 {
-    if (!g || !nirrep_) return;
+    if (!nirrep_) return;
 
     int i;
 
-    fprintf(out, "  point group %s\n\n", symb);
+    fprintf(out, "  point group %s\n\n", symb.c_str());
 
     for (i=0; i < nirrep_; i++)
         gamma_[i].print(out);
 
     fprintf(out, "\n  symmetry operation matrices:\n\n");
-    for (i=0; i < g; i++)
+    for (i=0; i < nirrep_; i++)
         symop[i].print(out);
 
     fprintf(out, "\n  inverse symmetry operation matrices:\n\n");
-    for (i=0; i < g; i++)
+    for (i=0; i < nirrep_; i++)
         symop[inverse(i)].print(out);
 }
 
-CharacterTable::CharacterTable(const char *cpg, const SymmetryOperation& frame)
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
-      bits_(0)
+void CharacterTable::common_init()
 {
     // first parse the point group symbol, this will give us the order of the
     // point group(g), the type of point group (pg), the order of the principle
     // rotation axis (nt), and the number of irreps (nirrep_)
 
-    if (!cpg) {
+    if (!symb.length()) {
         // ExEnv::errn() << "CharacterTable::CharacterTable: null point group" << endl;
         // exit(1);
         throw PSIEXCEPTION("CharacterTable::CharacterTable: null point group");
     }
 
-    symb = new char[strlen(cpg)+1];
-    size_t i;
-    for (i=0; i < strlen(cpg); i++) symb[i] = tolower(cpg[i]);
-    symb[i] = '\0';
-
-    if (parse_symbol() < 0) {
-        throw PSIEXCEPTION("CharacterTable::CharacterTable: invalid point group");
-    }
-
     if (make_table() < 0) {
         throw PSIEXCEPTION("CharacterTable::CharacterTable: could not make table");
     }
-
-    int ig;
-    for (ig=0; ig < g; ig++)
-        symop[ig] = symop[ig].transform(frame);
 }
 
-CharacterTable::CharacterTable(const char *cpg)
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+CharacterTable::CharacterTable(const std::string& cpg)
+    : nt(0), pg(PointGroups::C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(cpg),
       bits_(0)
 {
-    // first parse the point group symbol, this will give us the order of the
-    // point group(g), the type of point group (pg), the order of the principle
-    // rotation axis (nt), and the number of irreps (nirrep_)
-
-    if (!cpg) {
-        // ExEnv::errn() << "CharacterTable::CharacterTable: null point group" << endl;
-        // exit(1);
-        throw PSIEXCEPTION("CharacterTable::CharacterTable: null point group");
+    // Check the symbol coming in
+    if (!PointGroup::full_name_to_bits(cpg, bits_)) {
+        fprintf(stderr, "CharacterTable: Invalid point group name: %s\n", cpg.c_str());
+        throw PSIEXCEPTION("CharacterTable: Invalid point group name provided.");
     }
-
-    symb = new char[strlen(cpg)+1];
-    size_t i;
-    for (i=0; i < strlen(cpg); i++) symb[i] = tolower(cpg[i]);
-    symb[i] = '\0';
-
-    if (parse_symbol() < 0) {
-        // ExEnv::errn() << "CharacterTable::CharacterTable: invalid point group "
-        //     << cpg << endl;
-        // exit(1);
-        throw PSIEXCEPTION("CharacterTable::CharacterTable: invalid point group");
-    }
-
-    if (make_table() < 0) {
-        // ExEnv::errn() << "CharacterTable::CharacterTable: could not make table" << endl;
-        // exit(1);
-        throw PSIEXCEPTION("CharacterTable::CharacterTable: could not make table");
-    }
+    common_init();
 }
 
-int CharacterTable::parse_symbol()
+CharacterTable::CharacterTable(unsigned char bits)
+    : bits_(bits)
 {
-    // default to C1 symmetry
-    g=1; pg=C1; nt=1; nirrep_=1;
+    symb = PointGroup::bits_to_basic_name(bits);
+    common_init();
+}
 
-    if (!symb) return 0;
-
-    if (!strcmp(symb,"c1")) return 0;
-
-    if (!strcmp(symb,"ci")) {
-        g = 2; pg = CI; nirrep_ = 2; nt = 2;
-        return 0;
-    }
-
-    if(!strcmp(symb,"cs")) {
-        g = 2; pg = CS; nirrep_ = 2; nt = 0;
-        return 0;
-    }
-
-    if (symb[0] == 'c') {
-        int nab,ne;
-
-        if (symb[1] == '\0') return -1;
-
-        nt = atoi(&symb[1]);
-        ne = (nt%2) ? nt/2 : nt/2-1;
-        nab = (nt%2) ? 1 : 2;
-
-        char *vhd = &symb[1];
-        while (*vhd && isdigit(*vhd))
-            vhd++;
-
-        if (*vhd) {
-            if (*vhd == 'v') {
-                g  = 2*nt; pg = CNV; nirrep_ = 2*nab + ne;
-            } else if (*vhd == 'h') {
-                g  = 2*nt; pg = CNH; nirrep_ = 2*(nab+ne);
-            } else {
-                return -1;
-            }
-        } else {
-            g = nt; pg = CN; nirrep_ = nab+ne;
-        }
-
-        return 0;
-    }
-
-    if (symb[0] == 'd') {
-        int nab,ne;
-
-        if (symb[1] == '\0') return -1;
-
-        nt = atoi(&symb[1]);
-        ne = (nt%2) ? nt/2 : nt/2-1;
-        nab = (nt%2) ? 1 : 2;
-
-        char *vhd = &symb[1];
-        while (*vhd && isdigit(*vhd))
-            vhd++;
-
-        if (*vhd) {
-            if (*vhd == 'd') {
-                g = 4*nt; pg = DND; nirrep_ = nt+3;
-            } else if (*vhd == 'h') {
-                g = 4*nt; pg = DNH; nirrep_ = 4*nab + 2*ne;
-            } else {
-                return -1;
-            }
-        } else {
-            g = 2*nt; pg = DN; nirrep_ = 2*nab + ne;
-        }
-
-        return 0;
-    }
-
-    if (symb[0] == 's') {
-        if (symb[1] == '\0') return -1;
-
-        nt = atoi(&symb[1]);
-
-        // only S2n groups make sense
-        if (nt%2) return -1;
-
-        g = nt; pg = SN; nirrep_ = nt/2+1;
-
-        return 0;
-    }
-
-    if (symb[0] == 't') {
-        if (symb[1] != '\0') {
-            if (symb[1] == 'd') {
-                g = 24; pg = TD; nirrep_ = 5;
-            } else if(symb[1] == 'h') {
-                g = 24; pg = TH; nirrep_ = 6;
-            } else {
-                return -1;
-            }
-        } else {
-            g = 12; pg = T; nirrep_ = 3;
-        }
-
-        return 0;
-    }
-
-    if (symb[0] == 'o') {
-        if (symb[1] != '\0') {
-            if (symb[1] == 'h') {
-                pg = OH; g = 48; nirrep_ = 10;
-            } else {
-                return -1;
-            }
-        } else {
-            g = 24; pg = O; nirrep_ = 5;
-        }
-
-        return 0;
-    }
-
-    if (symb[0] == 'i') {
-        if (symb[1] != '\0') {
-            if (symb[1] == 'h') {
-                g = 120; pg = IH; nirrep_ = 10;
-            } else {
-                return -1;
-            }
-        } else {
-            g = 60; pg = I; nirrep_ = 5;
-        }
-
-        return 0;
-    }
-
-    return -1;
+unsigned char CharacterTable::bits()
+{
+    return bits_;
 }
 
 /////////////////////////////////////////////////////////////////////////////

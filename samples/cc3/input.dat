@@ -1,0 +1,22 @@
+#! CCSD/6-31G** H2O vibrational frequencies via gradients
+
+memory 250 mb
+
+molecule h2o {
+  0 1
+  O    0.0000000000    0.0000000000   -0.1249068318
+  H    0.0000000000    1.4309636584    0.9911810316
+  H    0.0000000000   -1.4309636584    0.9911810316
+  units bohr
+}
+
+set globals {
+  basis 6-31G**
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+frequencies('ccsd', dertype=0)
+
+

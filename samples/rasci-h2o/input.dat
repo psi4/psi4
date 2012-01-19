@@ -1,5 +1,7 @@
 #! RASCI/6-31G** H2O Energy Point
 
+memory 250 mb
+
 
 molecule h2o {
     O
@@ -17,7 +19,4 @@ set globals {
 }
 
 thisenergy = energy('detci')
-
-
-clean()
 

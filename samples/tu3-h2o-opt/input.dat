@@ -1,5 +1,7 @@
 #! Optimize H2O HF/cc-pVDZ
 
+memory 250 mb
+
 
 molecule h2o {
   O 
@@ -9,7 +11,4 @@ molecule h2o {
 
 set basis cc-pVDZ
 optimize('scf')
-
-
-clean()
 
