@@ -94,16 +94,16 @@ sub print_hash
          printf OUT "\n\t  \\\\ \n";
          print OUT "\\end{tabular*}\n";
      }
-     foreach my $Subsection (sort {$a gt $b} keys %{$hash{$Module}}){
+     foreach my $Subsection (sort {$a cmp $b} keys %{$hash{$Module}}){
          if($Subsection){
              print OUT "\\subsubsection{$Subsection}\n";
          }
          my %SectionHash = %{$hash{$Module}{$Subsection}};
-         foreach my $Keyword (sort {$a gt $b} keys %SectionHash){
+         foreach my $Keyword (sort {$a cmp $b} keys %SectionHash){
              my %KeyHash = %{$SectionHash{$Keyword}};
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
              printf OUT "\n\t %s & %s \\\\ \n", $Keyword, exists $KeyHash{"Comment"} ? $KeyHash{"Comment"} : "";
-             if(exists $KeyHash{"Possibilities"}){
+             if($KeyHash{"Possibilities"}){
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
                   printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
              }
@@ -218,7 +218,7 @@ sub determine_keyword_type_and_default
          if ($Default eq "0") { $Default = "false"; }
      }elsif(/add_double\(\s*\"(.*)\"\s*,\s*(?:\")?([-\/.\w]+)(?:\")?/){
          # This is a double with a default
-         $Type = "bool";
+         $Type = "double";
          $Keyword = $1;
          $Default = lc ($2);
      }elsif(/add_(\w+)\(\s*\"(\w+)\"\s*\,\s*(?:\")?([-\w]+)(?:\")?/){
