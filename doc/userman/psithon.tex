@@ -98,7 +98,7 @@ messy) flag will prevent files being deleted at the end of the run:
 psi4 -m
 \end{verbatim}
 
-\subsection{Molecule Specification}
+\subsection{Molecule Specification} \label{sec:MoleculeSpecification}
 \PSIfour has a very flexible input parser that allows the user to provide
 geometries as Cartesian coordinates, Z-matrix variables, or a combination of
 both. The use of fixed values and variables are supported for both. For
@@ -155,7 +155,7 @@ examples of geometry specification, see the {\tt mints1} input file in the sampl
 folder. It is also possible to mix Cartesian and Z-matrix geometry
 specifications, as demonstrated in the {\tt mints4} sample input file.
 
-\subsection{Multiple Molecules}
+\subsubsection{Multiple Molecules}
 
 To facilitate more elaborate computations, it is possible to provide a name for
 each molecule, and tell \PSIfour which one should be used in a given
@@ -208,22 +208,76 @@ Note that whenever the molecule is changed, the basis set must be specified
 again. The following section provides more details about the job control
 keywords used in the above examples.
 
-\subsection{Additional Keywords}
+\subsubsection{Additional Keywords}
 
 In addition to specifying the geometry, additional information can be provided
 in the {\tt molecule} block. If two integers are encountered on any line of the
 {\tt molecule} block, they are interpreted as the molecular charge and multiplicity
-($2\times M_s + 1$), respectively. The symmetry can be specified by a line reading 
+($2\times M_s + 1$), respectively.  The symmetry can be specified by a line reading 
 \texttt{symmetry \slshape symbol}, where \texttt{\slshape symbol} is
 the Sch\"onflies symbol of the (Abelian) point group to use for the
-computation. This need not be specified, as the molecular symmetry is
-automatically detected by \PSIfour.  Certain computations require that the
-molecule is not reoriented; this can be achieved by adding either
-{\tt no\_reorient} or {\tt noreorient}. By default, \AA ngstr\"om units are used;
-this is changed by adding a line that reads \texttt{units \slshape spec}, where
-\texttt{\slshape spec} is one of {\tt ang}, {\tt angstrom}, {\tt bohr}, {\tt au}, or
-{\tt a.u.} \hspace{2 mm}.
+computation; see section \ref{sec:Symmetry} for more details. This need not be
+specified, as the molecular symmetry is automatically detected by \PSIfour.
+Certain computations require that the molecule is not reoriented; this can be
+achieved by adding either {\tt no\_reorient} or {\tt noreorient}. By default,
+\AA ngstr\"om units are used; this is changed by adding a line that reads
+\texttt{units \slshape spec}, where \texttt{\slshape spec} is one of {\tt ang},
+{\tt angstrom}, {\tt a.u.}, {\tt au}, or {\tt bohr}.
 
+\subsection{Symmetry} \label{sec:Symmetry}
+
+For efficiency, \PSIfour can utilize the largest Abelian subgroup of the full
+point group of the molecule.  Concomitantly a number of quantities, such as
+{\tt SOCC} and {\tt DOCC}, are arrays whose entries pertain to irreducible
+representations (irreps) of the molecular point group.  Ordering of irreps
+follows the convention used in Cotton's {\it Chemical Applications of Group
+Theory}, as detailed in Table \ref{tab:IrrepOrdering}.  We refer to this
+convention as ``Cotton Ordering'' hereafter.
+\begin{table}[h]
+   \begin{center}
+   \caption{The ordering of irreducible representations (irreps) used in \PSIfour.}
+   \label{tab:IrrepOrdering}
+   \begin{tabular}{llllllllllll}
+   \hline
+   \hline
+   \multicolumn{3}{c}{Point Group} &&  \multicolumn{8}{c}{Irrep Order} \\
+   \hline
+   &\pg{C}{1}  && & \pg{A}{}  \\
+   &\pg{C}{i}  && & \pg{A}{g} & \pg{A}{u}  \\
+   &\pg{C}{2}  && & \pg{A}{}  & \pg{B}{}   \\
+   &\pg{C}{s}  && & \pg{A'}{} & \pg{A''}{} \\
+   &\pg{D}{2}  && & \pg{A}{}  & \pg{B}{1}  & \pg{B}{2}  & \pg{B}{3} \\
+   &\pg{C}{2v} && & \pg{A}{1} & \pg{A}{2}  & \pg{B}{1}  & \pg{B}{2} \\
+   &\pg{C}{2h} && & \pg{A}{g} & \pg{B}{g}  & \pg{A}{u}  & \pg{B}{u} \\
+   &\pg{D}{2h} && & \pg{A}{g} & \pg{B}{1g} & \pg{B}{2g} & \pg{B}{3g} & \pg{A}{u} & \pg{B}{1u} & \pg{B}{2u} & \pg{B}{3u}\\
+   \hline
+   \hline
+   \end{tabular}
+   \end{center}
+\end{table}
+
+For example, water (\pg{C}{2v} symmetry) has 3 doubly occupied \pg{A}{1}
+orbitals, as well as 1 each of \pg{B}{1} and \pg{B}{2} symmetry; the
+corresponding {\tt DOCC} array is therefore:
+\begin{verbatim}
+  DOCC = [3, 0, 1, 1]
+\end{verbatim}
+
+Although \PSIfour will detect the symmetry automatically, and use the largest
+possible Abelian subgroup, the user might want to run in a lower point group.
+To do this the {\tt symmetry} keyword can be used when inputting the molecule
+(see section \ref{sec:MoleculeSpecification}).  In most cases the standard
+Sch\"onflies symbol (one of c1, c2, ci, cs, d2, c2h, c2v, d2h) will suffice.
+For certain computations, the user might want to specify which particular
+subgroup is to be used by appending a unique axis specifier.  For example when
+running a computation on a molecule with \pg{D}{2h} symmetry in \pg{C}{2v}, the
+\pg{C}{2} axis can be chosen as either the $x$, the $y$, or the $z$; these can
+be specified by requesing the symmetry as c2vx, c2vy, or c2vz, respectively.
+Likewise the c2x, c2y, c2z, c2hx, c2hy, and c2hz labels are valid.  For
+\pg{C}{s} symmetry the labels csx, csy, and csz request the $yz$, $xz$, and
+$xy$ planes be used as the mirror plane, respecively.  If no unique axis is
+specified, \PSIfour will choose an appropriate subgroup.
+ 
 \subsection{Non-Covalently Bonded Molecule Fragments}
 
 \PSIfour has an extensive range of tools for treating non-covalent
@@ -390,10 +444,10 @@ specification is advantageous, for example, when selectivily omitting diffuse
 functions to make computations more tractable.
 
 In the above example the basis sets have been assigned asymmetrically, reducing
-the effective symmetry from $D_{\textrm{6h}}$ to $C_{\textrm{2v}}$; \PSIfour
-will detect this automatically and run in the appropriate point group.  The
-same syntax can be used to specify basis sets other than that used to define
-orbitals.  For example, 
+the effective symmetry from \pg{D}{6h} to \pg{C}{2v}; \PSIfour will detect this
+automatically and run in the appropriate point group.  The same syntax can be
+used to specify basis sets other than that used to define orbitals.  For
+example, 
 
 \begin{Snippet}
 set df_basis_mp2 cc-pvdz-ri
