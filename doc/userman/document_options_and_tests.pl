@@ -399,6 +399,8 @@ while(<PHYSCONST>){
     my $Comment = $3;
     printf PYOUT "psi%-25s = %-20s #%-40s\n", $Var, $Val, $Comment;
     $Var =~ s/_/\\_/g; # Make things TeX-friendly
+    $Comment =~ s/_/\\_/g; # Make things TeX-friendly
+    $Comment =~ s/@@/_/g;  # process @@ as math mode subscript in tex
     printf TEXOUT "psi%-25s & %-20s & %-40s\\\\\n", $Var, $Val, $Comment;
 }
 close PHYSCONST;
