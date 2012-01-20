@@ -757,6 +757,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
     options.add("MOM_VIR", new ArrayType());
 
+    /*- SUBSECTION Fractional Occupation UHF/UKS -*/
+
+    /*- The iteration to start fractionally occupying orbitals (or 0 for no fractional occupation) -*/ 
+    options.add_int("FRAC_START", 0);
+    /*- The absolute indices of occupied orbitals to fractionally occupy (+/- for alpha/beta) -*/
+    options.add("FRAC_OCC", new ArrayType());
+    /*- The occupations of the orbital indices specified above (0.0 >= occ >= 1.0) -*/
+    options.add("FRAC_VAL", new ArrayType());
+    /*- Do use DIIS extrapolation to accelerate convergence in frac? -*/
+    options.add_bool("FRAC_DIIS", true);
+
     /*- SUBSECTION Environmental Effects -*/
 
     /*- Perturb the Hamiltonian? -*/
