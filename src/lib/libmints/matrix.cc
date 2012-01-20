@@ -2405,9 +2405,6 @@ void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
         if (sizer > 0)
             psio->read_entry(fileno, name_.c_str(), (char*)lower, sizeof(double)*ioff[sizer]);
 
-        fprintf(outfile, "Read in lower triangle:\n");
-        print_array(lower, nrow(), outfile);
-
         set(lower);
         delete[] lower;
     }

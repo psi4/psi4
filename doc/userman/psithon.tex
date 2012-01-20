@@ -10,20 +10,41 @@ this section we will describe the essential features of the Psithon language.
 samples subdirectory of the top-level \PSIfour source directory, and should
 serve as useful examples.
 
-\subsection{Scratch Files, Default Variables and the \psirc File}
+\subsection{Scratch Files, Default Variables and the \psirc File} \label{sec:Psirc}
 For convenience, the Python interpreter will execute the contents of the
 \psirc file in the current user's home area (if present) before performing any
 tasks in the input file.  This allows frequently used python variables to be
 automatically defined in all input files.  For example, if we repeatedly make
-use the Hartree to kcal mol$^{-1}$ conversion, the following line can be placed
-in the \psirc file:
-
+use of the universal gravitational constant, the following line could be placed
+in the \psirc file
 \begin{verbatim}
-to_kcal = 627.51
+UGC = 6.67384E-11 # m^3 / kg^-1 s^-2
 \end{verbatim}
+which would make the variable {\tt UGC} available in all \PSIfour input files.
+For convenience, the physical constants used within the \PSIfour code are also
+automatically loaded as Psithon variables (before \psirc is loaded, so that
+\psirc values can be overridden by the user); table \ref{tab:physconst} shows
+these variables.
+\begin{table}[h!]
+    \caption{The physical constants used within \PSIfour, and automatically
+             made available within all \PSIfour input files.}
+    \label{tab:physconst}
+    \setlength{\tabcolsep}{1pt}
+    \small
+    \begin{tabular}{lll}
+        \hline
+        \hline
+        Name & Value & Description \\
+        \hline
+        \input{physconst}
+        \hline
+        \hline
+    \end{tabular}
+\end{table}
+The ``psi\_'' prefix is to prevent clashes with user-defined variables in
+\PSIfour input files.
 
-The Python variable {\tt to\_kcal} is then available for use in all \PSIfour
-input files.  Another important use of the \psirc file is to control the
+Another important use of the \psirc file is to control the
 handling of scratch files.  \PSIfour has a number of utilities that manage
 input and output (I/O) of quantities to and from the hard disk.  Most
 quantities, such as molecular integrals, are intermediates that are not of
@@ -210,10 +231,10 @@ example, the following specifies
 intermolecular forces, including counterpoise corrections and symmetry adapted
 perturbation theory methods. These require the definition of which fragments
 are interacting within the complex. \PSIfour provides a very simple mechanism
-for doing so; simply define the complex’s geometry using the standard
+for doing so; simply define the complex's geometry using the standard
 Cartesian, Z-matrix, or mixture thereof, specifications and then place two
 dashes between nonbonded fragements. For example, to study the interaction
-energy of ethane and ethyne molecules, we could use the following molecule
+energy of ethane and ethyne molecules, we can use the following molecule
 block:
 \begin{Snippet}
 molecule{
@@ -297,8 +318,11 @@ set{
   docc = [3, 0, 1, 1]
 }
 \end{Snippet}
-Any of the above keywords specifications can be scoped to individual modules,
-by adding the name of the module after the {\tt set} keyword. Ommiting the module
+List / matrix inputs may span multiple lines, as long as the opening ``['' is
+on the same line as the name of the keyword.
+
+Any of the above keyword specifications can be scoped to individual modules,
+by adding the name of the module after the {\tt set} keyword. Omitting the module
 name, or using the name ``global'' or ``globals'' will result in the keyword being
 applied to all modules. For example, in the following input
 \begin{Snippet}
@@ -338,6 +362,63 @@ set charge 1 # A cation
 set multp 3  # A triplet electronic state
 \end{Snippet}
 
+\subsection{Assigning Basis Sets}
+While the above syntax will suffice for specifying basis sets in most cases,
+the user may need to assign basis sets to specific atoms.  To achieve this, a
+{\tt basis} block can be used.  We use a snippet from the {\tt mints2} sample
+input file, which performs a benzene SCF computation, to demonstrate this
+feature.
+
+\begin{Snippet}
+basis {
+   assign DZ
+   assign C 3-21G
+   assign H1 sto-3g
+   assign C1 sto-3g
+}
+\end{Snippet}
+
+The first line in this block assigns the DZ basis set to all atoms.  The next
+line then assigns 3-21G to all carbon atoms, leaving the hydrogens with the DZ
+basis set.  On the third line, the hydrogen atoms which have been specifically
+labelled as H1 aregiven the STO-3G basis set, leaving the unlabelled hydrogen
+atoms with the DZ basis set.  Likewise, the fourth line assigns the STO-3G
+basis set to just the carbon atoms labelled C1.  This bizzare example was
+constructed to demonstrate the syntax, but the flexibility of the basis set
+specification is advantageous, for example, when selectivily omitting diffuse
+functions to make computations more tractable.
+
+In the above example the basis sets have been assigned asymmetrically, reducing
+the effective symmetry from $D_{\textrm{6h}}$ to $C_{\textrm{2v}}$; \PSIfour
+will detect this automatically and run in the appropriate point group.  The
+same syntax can be used to specify basis sets other than that used to define
+orbitals.  For example, 
+
+\begin{Snippet}
+set df_basis_mp2 cc-pvdz-ri
+
+ or
+
+basis {
+   assign cc-pVDZ-RI df_basis_mp2
+}
+\end{Snippet}
+are both equivalent ways to set the auxiliary basis set for density fitted MP2
+computations.  To assign the aug-cc-pVDZ-RI to carbon atoms, the following
+command is used:
+\begin{Snippet}
+basis {
+   assign C aug-cc-pVDZ-RI df_basis_mp2
+}
+\end{Snippet}
+
+When Dunning's correlation consistent basis sets (cc-pV$X$Z), and core-valence
+and diffuse variants thereof, are being used the SCF and DF-MP2 codes will
+chose the appropriate auxilliary basis set automatically, unless instructed
+otherwise by setting theauxiliary basis set in the input.  Finally, we note
+that the {\tt basis} block may also be used for defining basis sets, as
+detailed in section \ref{sec:BasisSetSpecification}.
+
 \subsection{Memory Specification}
 By default, \PSIfour assumes that 256 Mb of memory are available. While this is
 enough for many computations, many of the algorithms will perform better if
@@ -355,6 +436,8 @@ memory 2000 Mb
 
 memory 2000000 Kb
 \end{Snippet}
+One convenient way to override the \PSIfour default memory is to place a memory
+command in the \psirc file, as detailed in section \ref{sec:Psirc}.
 
 \subsection{Return Values and \PSI Variables}
 

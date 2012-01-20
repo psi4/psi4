@@ -1936,11 +1936,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       principal axes or fixed linear combinations of atoms. -*/
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do only generate the internal coordinates and then stop? -*/
-      options.add_bool("INTCOS_PRINT_EXIT", false);
+      options.add_bool("INTCOS_GENERATE_EXIT", false);
       /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} -*/
-      options.add_str("INTRAFRAG_H", "FISCHER", "FISCHER SCHLEGEL LINDH SIMPLE");
+      options.add_str("INTRAFRAG_HESS", "FISCHER", "FISCHER SCHLEGEL LINDH SIMPLE");
       /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
-      options.add_str("INTERFRAG_H", "DEFAULT", "DEFAULT FISCHER_LIKE");
+      options.add_str("INTERFRAG_HESS", "DEFAULT", "DEFAULT FISCHER_LIKE");
       /*- Do freeze all fragments rigid? -*/
       options.add_bool("FREEZE_INTRAFRAG", false);
       /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
@@ -1951,17 +1951,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       the convergence criteria. -*/
       options.add_bool("FINAL_GEOM_WRITE", false);
       /*- Hessian update scheme -*/
-      options.add_str("H_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
+      options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
       /*- Number of previous steps to use in Hessian update, 0 uses all -*/
-      options.add_int("H_UPDATE_USE_LAST", 6);
+      options.add_int("HESS_UPDATE_USE_LAST", 6);
       /*- Do limit the magnitude of changes caused by the Hessian update? -*/
-      options.add_bool("H_UPDATE_LIMIT", true);
+      options.add_bool("HESS_UPDATE_LIMIT", true);
+      /*- If HESS_UPDATE_LIMIT is true, changes to the Hessian from the update are limited to the larger of
+          (HESS_UPDATE_LIMIT_SCALE)*(the previous value) and HESS_UPDATE_LIMIT_MAX (in au). -*/
+      options.add_double("HESS_UPDATE_LIMIT_MAX", 1.00);
       /*- If the above is true, changes to the Hessian from the update are limited to the larger of
-          (H_update_limit_scale)*(the previous value) and H_update_limit_max (in au). -*/
-      options.add_double("H_UPDATE_LIMIT_MAX", 1.00);
-      /*- If the above is true, changes to the Hessian from the update are limited to the larger of
-          (H_update_limit_scale)*(the previous value) and H_update_limit_max (in au). -*/
-      options.add_double("H_UPDATE_LIMIT_SCALE", 0.50);
+          (HESS_UPDATE_LIMIT_SCALE)*(the previous value) and HESS_UPDATE_LIMIT_MAX (in au). -*/
+      options.add_double("HESS_UPDATE_LIMIT_SCALE", 0.50);
       /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments? Otherwise, use $R@@{AB}$. -*/
       options.add_bool("INTERFRAG_DIST_INV", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
@@ -1984,7 +1984,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Do test derivative B matrix? -*/
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Do read Cartesian Hessian? -*/
-      options.add_bool("CART_H_READ", false);
+      options.add_bool("CART_HESS_READ", false);
       /*- IRC step size in bohr(amu)$^{1/2}$ -*/
       options.add_double("IRC_STEP_SIZE", 0.2);
       /*- IRC mapping direction -*/
