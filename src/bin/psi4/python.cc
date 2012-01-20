@@ -70,6 +70,7 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
     namespace adc        { PsiReturnType adc(Options&);       }
+    namespace mrcc       { PsiReturnType mrcc(int level, bool pertcc); }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -86,6 +87,30 @@ namespace psi {
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
+}
+
+void py_close_outfile()
+{
+    if (outfile != stdout) {
+        fclose(outfile);
+        outfile = NULL;
+    }
+}
+
+void py_reopen_outfile()
+{
+    if (outfile_name == "stdout")
+        outfile = stdout;
+    else {
+        outfile = fopen(outfile_name.c_str(), "a");
+        if (outfile == NULL)
+            throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
+    }
+}
+
+std::string py_get_outfile_name()
+{
+    return outfile_name;
 }
 
 void py_psi_prepare_options_for_module(std::string const & name)
@@ -935,6 +960,10 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Returns the location where the Psi4 source is located.
     def("psi_top_srcdir", py_psi_top_srcdir);
 
+    def("close_outfile", py_close_outfile);
+    def("reopen_outfile", py_reopen_outfile);
+    def("outfile_name", py_get_outfile_name);
+
     // modules
     def("mints", py_psi_mints);
     def("deriv", py_psi_deriv);
@@ -950,6 +979,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("lmp2", py_psi_lmp2);
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
+    def("mrcc", mrcc::mrcc);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);

@@ -86,17 +86,17 @@ void set_params(void)
 
 // Whether to only generate the internal coordinates and then stop {true, false}
 //  Opt_params.generate_intcos_only;
-    Opt_params.generate_intcos_only = options.get_bool("INTCOS_PRINT_EXIT");
+    Opt_params.generate_intcos_only = options.get_bool("INTCOS_GENERATE_EXIT");
 
 // What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, LINDH}
-    s = options.get_str("INTRAFRAG_H");
+    s = options.get_str("INTRAFRAG_HESS");
     if (s == "FISCHER")       Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
     else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
     else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
     else if (s == "SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
-    s = options.get_str("INTERFRAG_H");
+    s = options.get_str("INTERFRAG_HESS");
     if (s == "DEFAULT")           Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
     else if (s == "FISCHER_LIKE") Opt_params.interfragment_H = OPT_PARAMS::FISCHER_LIKE;
 
@@ -114,7 +114,7 @@ void set_params(void)
     Opt_params.write_final_step_geometry = options.get_bool("FINAL_GEOM_WRITE");
 
 // Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL}
-    s = options.get_str("H_UPDATE");
+    s = options.get_str("HESS_UPDATE");
     if (s == "NONE")        Opt_params.H_update = OPT_PARAMS::NONE;
     else if (s == "BFGS")   Opt_params.H_update = OPT_PARAMS::BFGS;
     else if (s == "MS")     Opt_params.H_update = OPT_PARAMS::MS;
@@ -123,18 +123,18 @@ void set_params(void)
 
 //  How many previous steps' data to use in Hessian update; 0=use them all ; {integer}
 //  Opt_params.H_update_use_last = 6;
-    Opt_params.H_update_use_last = options.get_int("H_UPDATE_USE_LAST");
+    Opt_params.H_update_use_last = options.get_int("HESS_UPDATE_USE_LAST");
 
 // Whether to limit the magnitutde of changes caused by the Hessian update {true, false}
 //  Opt_params.H_update_limit = true;
-    Opt_params.H_update_limit = options.get_bool("H_UPDATE_LIMIT");
+    Opt_params.H_update_limit = options.get_bool("HESS_UPDATE_LIMIT");
 
 // If the above is true, changes to the Hessian from the update are limited to the larger of
 // (H_update_limit_scale)*(the previous value) and H_update_limit_max (in au).
 //  Opt_params.H_update_limit_scale = 0.50;
 //  Opt_params.H_update_limit_max  = 1.0;
-    Opt_params.H_update_limit_scale = options.get_double("H_UPDATE_LIMIT_SCALE");
-    Opt_params.H_update_limit_max = options.get_double("H_UPDATE_LIMIT_MAX");
+    Opt_params.H_update_limit_scale = options.get_double("HESS_UPDATE_LIMIT_SCALE");
+    Opt_params.H_update_limit_max = options.get_double("HESS_UPDATE_LIMIT_MAX");
 
 // Whether to use 1/R(AB) for stretching coordinate between fragments (or just R(AB))
 //  Opt_params.interfragment_distance_inverse = false;
@@ -170,10 +170,10 @@ void set_params(void)
 
 // Read cartesian Hessian.  Make reading the default for IRC.
     if ((Opt_params.opt_type == OPT_PARAMS::IRC) &&
-        (options["CART_H_READ"].has_changed() == 0))
+        (options["CART_HESS_READ"].has_changed() == 0))
       Opt_params.read_cartesian_H = true;
     else
-      Opt_params.read_cartesian_H = options.get_bool("CART_H_READ");
+      Opt_params.read_cartesian_H = options.get_bool("CART_HESS_READ");
 
 // only treating "dummy fragments"
     // These are not found in psi4/read_options.cc
