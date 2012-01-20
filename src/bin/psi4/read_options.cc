@@ -192,7 +192,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of important determinants to print -*/
     options.add_int("NUM_DETS_PRINT",20);
 
-    /*- Number of important CC amplitudes per excitation level to print. 
+    /*- Number of important CC amplitudes per excitation level to print.
     CC analog to NUM_DETS_PRINT -*/
     options.add_int("NUM_AMPS_PRINT",10);
 
@@ -658,7 +658,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("MAXITER", 40);
       /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
       options.add_bool("TPDM", 0);
-      /*- Convergence criterion for the SCF density (RMS error). 
+      /*- Convergence criterion for the SCF density (RMS error).
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("SCF_D_CONVERGENCE", 1e-8);
       /*- Convergence criterion for residuals (RMS error) in density cummulant equations.
@@ -759,7 +759,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION Fractional Occupation UHF/UKS -*/
 
-    /*- The iteration to start fractionally occupying orbitals (or 0 for no fractional occupation) -*/ 
+    /*- The iteration to start fractionally occupying orbitals (or 0 for no fractional occupation) -*/
     options.add_int("FRAC_START", 0);
     /*- The absolute indices of occupied orbitals to fractionally occupy (+/- for alpha/beta) -*/
     options.add("FRAC_OCC", new ArrayType());
@@ -796,7 +796,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
     /*- SUBSECTION DFSCF Algorithm -*/
-    
+
     /*- Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
     options.add_int("DF_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc !expert -*/
@@ -880,7 +880,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   // Options of this module not standardized since it's bound for deletion
   if(name == "TRANSQT2"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Performs transformations of integrals into the molecular orbital (MO) basis.  This 
+      /*- MODULEDESCRIPTION Performs transformations of integrals into the molecular orbital (MO) basis.  This
           module is currently used by the (non-density fitted) MP2 and coupled cluster codes, but is being phased
           out. -*/
     /*- Wavefunction type !expert -*/
@@ -1036,7 +1036,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "CCSORT"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Sorts integrals for efficiency, and is called before (non density-fitted) MP2 and 
+      /*- MODULEDESCRIPTION Sorts integrals for efficiency, and is called before (non density-fitted) MP2 and
           coupled cluster computations. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "");
@@ -1191,7 +1191,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FOLLOW_ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Performs wavefunction stability analysis, and is only called when specifically requested 
+     /*- MODULEDESCRIPTION Performs wavefunction stability analysis, and is only called when specifically requested
          by the user-*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
@@ -1512,8 +1512,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     J. Broughton and P. Pulay, J. Comp. Chem. 14, 736-740 (1993) and C. Hampel
     and H.-J. Werner, J. Chem. Phys. 104, 6286-6297 (1996). -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
-    /*- Type of local-CCSD scheme to be simulated. WERNER selects the method 
-    developed by H.-J. Werner and co-workers, and AOBASIS selects the method 
+    /*- Type of local-CCSD scheme to be simulated. WERNER selects the method
+    developed by H.-J. Werner and co-workers, and AOBASIS selects the method
     developed by G.E. Scuseria and co-workers (currently inoperative). -*/
     options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
     /*- Desired treatment of "weak pairs" in the local-CCSD method. A value of
@@ -1676,10 +1676,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum absolute value below which integrals are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
-    /*- Convergence criterion for CC energy. 
+    /*- Convergence criterion for CC energy.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for cluster amplitudes (RMS change). 
+    /*- Convergence criterion for cluster amplitudes (RMS change).
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE", 1e-8);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
@@ -1818,7 +1818,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("CORR_MULTP",1);
     /*- The molecular charge of the target state -*/
       options.add_int("CORR_CHARGE",0);
-    /*- The amount (percentage) of damping to apply to the amplitude updates. 
+    /*- The amount (percentage) of damping to apply to the amplitude updates.
         0 will result in a full update, 100 will completely stall the update. A
         value around 20 (which corresponds to 20\% of the amplitudes from the
         previous iteration being mixed into the current iteration)
@@ -1842,7 +1842,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_START",2);
     /*- The shift to apply to the denominators, {\it c.f.} Taube and Bartlett, JCP, 130, 144112 (2009) -*/
     options.add_double("TIKHONOW_OMEGA",0.0);  // Omega = TIKHONOW_OMEGA / 1000
-    /*- The cycle after which Tikhonow regularization is stopped. 
+    /*- The cycle after which Tikhonow regularization is stopped.
     Set to zero to allow regularization in all iterations -*/
     options.add_int("TIKHONOW_MAX",5);
     /*- Do use DIIS extrapolation to accelerate convergence for iterative triples excitations? -*/
@@ -1947,7 +1947,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("ADD_AUXILIARY_BONDS", false);
       /*- Do save and print the geometry from the last projected step at the end
       of a geometry optimization? Otherwise (and by default), save and print
-      the previous geometry at which was computed the gradient that satisfied 
+      the previous geometry at which was computed the gradient that satisfied
       the convergence criteria. -*/
       options.add_bool("FINAL_GEOM_WRITE", false);
       /*- Hessian update scheme -*/
@@ -2003,11 +2003,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DISP_SIZE", 0.005);
   }
   if (name == "OMP2"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs quadritically convergence orbital-optimized MP2 computations. -*/
-        
+    /*- MODULEDESCRIPTION Performs quadratically convergence orbital-optimized MP2 computations. -*/
+
     //options.add_int("MEMORY", 256);
     //options.add_str("REFERENCE", "UHF", "UHF");
-    
+
     /*- See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE",1e-8);
     /*- See the note at the beginning of Section \ref{keywords}. -*/
@@ -2026,7 +2026,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DIIS_MAX_VECS",4);
     /*- -*/
     options.add_int("CUTOFF",14);
-    
+
     /*- -*/
     options.add_double("MO_STEP_MAX",0.5);
     /*- -*/
@@ -2043,21 +2043,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("ORTH_TYPE","MGS","GS MGS");
     //options.add_str("STABILITY","FALSE","TRUE FALSE");
-    /*- Do ? -*/ 
+    /*- Do ? -*/
     options.add_bool("NAT_ORBS",false);
     /*- -*/
-    options.add_str("OPT_METHOD","DIIS","SD DIIS");    
+    options.add_str("OPT_METHOD","DIIS","SD DIIS");
     /*- -*/
-    options.add_str("HESS_TYPE","NONE","NONE");    
-    /*- Do ? -*/ 
-    options.add_bool("OMP2_ORBS_PRINT",false);  
-    /*- Do ? -*/ 
-    options.add_bool("DO_SCS",false); 
-    /*- Do ? -*/ 
-    options.add_bool("DO_SOS",false); 
+    options.add_str("HESS_TYPE","NONE","NONE");
+    /*- Do ? -*/
+    options.add_bool("OMP2_ORBS_PRINT",false);
+    /*- Do ? -*/
+    options.add_bool("DO_SCS",false);
+    /*- Do ? -*/
+    options.add_bool("DO_SOS",false);
     /*- Do write coefficient matrices to psi files? -*/
-    options.add_bool("MO_WRITE",false);   
-    /*- Do read coefficient matrices from psi files? -*/ 
+    options.add_bool("MO_WRITE",false);
+    /*- Do read coefficient matrices from psi files? -*/
     options.add_bool("MO_READ",false);
   }
   return true;
