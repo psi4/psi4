@@ -103,7 +103,7 @@ sub print_hash
              my %KeyHash = %{$SectionHash{$Keyword}};
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
              printf OUT "\n\t %s & %s \\\\ \n", $Keyword, exists $KeyHash{"Comment"} ? $KeyHash{"Comment"} : "";
-             if(exists $KeyHash{"Possibilities"}){
+             if($KeyHash{"Possibilities"}){
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
                   printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
              }
