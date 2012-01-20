@@ -1310,7 +1310,6 @@ std::string Molecule::save_string_xyz() const
     std::stringstream ss;
 
     if (Communicator::world->me() == 0) {
-
         sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
         ss << buffer;
 
@@ -1319,9 +1318,8 @@ std::string Molecule::save_string_xyz() const
             sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
             ss << buffer;
         }
-
-        return ss.str();
     }
+    return ss.str();
 }
 
 Matrix* Molecule::inertia_tensor() const
