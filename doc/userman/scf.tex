@@ -250,7 +250,7 @@ closed-shell orbitals, as required by the density-fitted exchange routines
 be invoked by the \optionname{GUESS} option. A more involved alternative to these
 approaches is to converge the SCF in a small basis and then project the
 resultant occupied molecular orbitals up into a larger basis. This can be done
-automatically by placing a \pyoptionname{cast\_up =} \pyoptionval{\qq \textit{SMALL\_BASIS\_NAME}\qq} modifier in
+automatically by placing a \pyoptionname{cast\_up =} \pyoptionval{\qq{\textit{SMALL\_BASIS\_NAME}}} modifier in
 the \texttt{energy()} procedure call. We recommend the 3-21G basis for the small
 basis due to its efficient mix of flexibility and compactness. An example of
 performing an RHF solution of water by SAD guessing in a 3-21G basis and then
