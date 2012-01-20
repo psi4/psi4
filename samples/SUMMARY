@@ -292,7 +292,7 @@ scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI
 scf3:         UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.
 
 
-scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan.
+scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan, and then the same procedure is performed using polar coordinates, converted to Cartesian coordinates.
 
 
 scf5:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
