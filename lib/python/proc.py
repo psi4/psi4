@@ -733,7 +733,7 @@ def run_mrcc(name, **kwargs):
 
     # Call dmrcc, directing all screen output to the output file
     try:
-        if PsiMod.outfile_name == "stdout":
+        if PsiMod.outfile_name() == "stdout":
             retcode = subprocess.call("dmrcc", shell=True)
         else:
             retcode = subprocess.call("dmrcc >> " + current_directory + "/" + PsiMod.outfile_name(), shell=True)
