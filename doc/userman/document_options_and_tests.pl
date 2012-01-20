@@ -101,8 +101,9 @@ sub print_hash
          my %SectionHash = %{$hash{$Module}{$Subsection}};
          foreach my $Keyword (sort {$a cmp $b} keys %SectionHash){
              my %KeyHash = %{$SectionHash{$Keyword}};
-             printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
-             printf OUT "\n\t %s & %s \\\\ \n", $Keyword, exists $KeyHash{"Comment"} ? $KeyHash{"Comment"} : "";
+             printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.05\\textwidth}p{0.95\\textwidth}}';
+             printf OUT "\n\t %s\\\\ \n", $Keyword;
+             printf OUT "\n\t & %s \\\\ \n", $KeyHash{"Comment"};
              if($KeyHash{"Possibilities"}){
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
                   printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
@@ -399,6 +400,8 @@ while(<PHYSCONST>){
     my $Comment = $3;
     printf PYOUT "psi%-25s = %-20s #%-40s\n", $Var, $Val, $Comment;
     $Var =~ s/_/\\_/g; # Make things TeX-friendly
+    $Comment =~ s/_/\\_/g; # Make things TeX-friendly
+    $Comment =~ s/@@/_/g;  # process @@ as math mode subscript in tex
     printf TEXOUT "psi%-25s & %-20s & %-40s\\\\\n", $Var, $Val, $Comment;
 }
 close PHYSCONST;

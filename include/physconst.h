@@ -29,8 +29,8 @@
 #define _twopi 6.2831853071795862320E0
 #define _h 6.6260755E-34                    /*- The Planck constant (Js) -*/
 #define _c 2.99792458E8                     /*- Speed of light (ms$^{-1}$) -*/
-#define _kb 1.380658E-23                    /*- The Boltzmann constant (JK$^{-1}$ -*/
-#define _R 8.314510                         /*- Universal gas constant (JK$^{-1}$mol$^{-1}$ -*/
+#define _kb 1.380658E-23                    /*- The Boltzmann constant (JK$^{-1}$) -*/
+#define _R 8.314510                         /*- Universal gas constant (JK$^{-1}$mol$^{-1}$) -*/
 #define _bohr2angstroms 0.529177249         /*- Bohr to Angstroms conversion factor -*/
 #define _bohr2m 0.529177249E-10             /*- Bohr to meters conversion factor -*/
 #define _bohr2cm 0.529177249E-8             /*- Bohr to centimeters conversion factor -*/

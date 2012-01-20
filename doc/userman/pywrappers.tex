@@ -32,20 +32,38 @@ correction to the correlation energy, and a second delta correction.
 Each is activated by a stage\_wfn keyword and is only allowed if all
 preceding stages are already active.
 
-At present, \optionname{BASIS} option in the global and
+At present, the \optionname{BASIS} keyword in the global and
 local options sections are not considered by this wrapper.
 
-\begin{align*}
-E_{total}^{\text{CBS}} = \;
-    & \mathcal{F}_{\pyoptionname{SCF\_SCHEME}} \left(E_{total,\; \text{SCF}}^{\pyoptionname{SCF\_BASIS}}\right) \; + \\
-    & \mathcal{F}_{\pyoptionname{CORL\_SCHEME}} \left(E_{corl,\; \pyoptionname{CORL\_WFN}}^{\pyoptionname{CORL\_BASIS}}\right) \; + \\
-    & \left. \delta_{\pyoptionname{DELTA\_WFN\_LESSER}}^{\pyoptionname{DELTA\_WFN}} \; +
-        \qquad \right \} \mathcal{F}_{\pyoptionname{DELTA\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA\_WFN}}^{\pyoptionname{DELTA\_BASIS}}\right) -
-        \mathcal{F}_{\pyoptionname{DELTA\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA\_WFN\_LESSER}}^{\pyoptionname{DELTA\_BASIS}}\right) \\
-    & \left. \delta_{\pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_WFN}}
-        \qquad \right \} \mathcal{F}_{\pyoptionname{DELTA2\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA2\_WFN}}^{\pyoptionname{DELTA2\_BASIS}}\right) -
+%\begin{align*}
+%E_{total}^{\text{CBS}} = \;
+%    & \mathcal{F}_{\pyoptionname{SCF\_SCHEME}} \left(E_{total,\; \text{SCF}}^{\pyoptionname{SCF\_BASIS}}\right) \; + \\
+%    & \mathcal{F}_{\pyoptionname{CORL\_SCHEME}} \left(E_{corl,\; \pyoptionname{CORL\_WFN}}^{\pyoptionname{CORL\_BASIS}}\right) \; + \\
+%    & \left. \delta_{\pyoptionname{DELTA\_WFN\_LESSER}}^{\pyoptionname{DELTA\_WFN}} \; +
+%        \qquad \right \} \mathcal{F}_{\pyoptionname{DELTA\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA\_WFN}}^{\pyoptionname{DELTA\_BASIS}}\right) -
+%        \mathcal{F}_{\pyoptionname{DELTA\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA\_WFN\_LESSER}}^{\pyoptionname{DELTA\_BASIS}}\right) \\
+%    & \left. \delta_{\pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_WFN}}
+%        \qquad \right \} \mathcal{F}_{\pyoptionname{DELTA2\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA2\_WFN}}^{\pyoptionname{DELTA2\_BASIS}}\right) -
+%        \mathcal{F}_{\pyoptionname{DELTA2\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_BASIS}}\right)
+%\end{align*}
+
+\begin{equation*}
+E_{total}^{\text{CBS}} = \mathcal{F}_{\pyoptionname{SCF\_SCHEME}} \left(E_{total,\; \text{SCF}}^{\pyoptionname{SCF\_BASIS}}\right) \; +
+    \mathcal{F}_{\pyoptionname{CORL\_SCHEME}} \left(E_{corl,\; \pyoptionname{CORL\_WFN}}^{\pyoptionname{CORL\_BASIS}}\right) \; +
+    \delta_{\pyoptionname{DELTA\_WFN\_LESSER}}^{\pyoptionname{DELTA\_WFN}} \; +
+    \delta_{\pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_WFN}}
+\end{equation*}
+Here, $\mathcal{F}$ is an energy or energy extrapolation scheme, and the following also hold.
+\begin{equation*}
+    \delta_{\pyoptionname{DELTA\_WFN\_LESSER}}^{\pyoptionname{DELTA\_WFN}} \; =
+        \mathcal{F}_{\pyoptionname{DELTA\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA\_WFN}}^{\pyoptionname{DELTA\_BASIS}}\right) -
+        \mathcal{F}_{\pyoptionname{DELTA\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA\_WFN\_LESSER}}^{\pyoptionname{DELTA\_BASIS}}\right)
+\end{equation*}
+\begin{equation*}
+    \delta_{\pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_WFN}} \; =
+        \mathcal{F}_{\pyoptionname{DELTA2\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA2\_WFN}}^{\pyoptionname{DELTA2\_BASIS}}\right) -
         \mathcal{F}_{\pyoptionname{DELTA2\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_BASIS}}\right)
-\end{align*}
+\end{equation*}
 
 \hiddensubsubsection{Required Arguments}
 
@@ -53,7 +71,7 @@ All wrappers require an (optionally) unnamed first argument \pyoptionname{name}
 that specifies the quantum chemical method. This isn't exactly suitable for \texttt{cbs()},
 which deals with multiple levels of theory through the \pyoptionname{stage\_wfn} keywords
 below, so this first argument can be used in place of \pyoptionname{CORL\_WFN} for
-correlated calculations or with value \pyoptionval{\qq{scf}} otherwise. Specifying
+correlated calculations or with value \pyoptionval{\qq{scf}\qq} otherwise. Specifying
 \pyoptionname{CORL\_WFN} outright renders the first argument defunct. To run the
 \texttt{cbs()} wrapper, at a minimum, the SCF basis (for a SCF wavefunction) or the wavefunction
 and basis (for a correlated wavefunction) must be specified.
@@ -76,16 +94,16 @@ Default values for keywords are indicated by italics.
 The presence of a \pyoptionname{stage\_wfn} keyword is the indicator to incorporate (and check for
 \pyoptionname{stage\_basis} and \pyoptionname{stage\_scheme} keywords) and compute that stage in defining the CBS energy.
 \begin{itemize}
-\item[] \pyoptionname{CORL\_WFN} = \pyoptionval{\qq{mp2}} \textbar\; \pyoptionval{\qq{ccsd(t)}} \textbar\; etc. \\
+\item[] \pyoptionname{CORL\_WFN} = \pyoptionval{\qq{mp2}\qq} \textbar\; \pyoptionval{\qq{ccsd(t)\qq}} \textbar\; etc. \\
 Indicates the energy method for which the correlation energy is to be obtained. Can also be specified with \pyoptionname{name}
 or as the unlabeled first argument to the wrapper.
-\item[] \pyoptionname{DELTA\_WFN} = \pyoptionval{\qq{ccsd}} \textbar\; \pyoptionval{\qq{ccsd(t)}} \textbar\; etc. \\
+\item[] \pyoptionname{DELTA\_WFN} = \pyoptionval{\qq{ccsd}\qq} \textbar\; \pyoptionval{\qq{ccsd(t)}\qq} \textbar\; etc. \\
 Indicates the (superior) energy method for which a delta correction to the correlation energy is to be obtained.
-\item[] \pyoptionname{DELTA\_WFN\_LESSER} = \textit{\pyoptionval{\qq{mp2}}} \textbar\; \pyoptionval{\qq{ccsd}} \textbar\; etc. \\
+\item[] \pyoptionname{DELTA\_WFN\_LESSER} = \textit{\pyoptionval{\qq{mp2}\qq}} \textbar\; \pyoptionval{\qq{ccsd}\qq} \textbar\; etc. \\
 Indicates the inferior energy method for which a delta correction to the correlation energy is to be obtained.
-\item[] \pyoptionname{DELTA2\_WFN} = \pyoptionval{\qq{ccsd}} \textbar\; \pyoptionval{\qq{ccsd(t)}} \textbar\; etc. \\
+\item[] \pyoptionname{DELTA2\_WFN} = \pyoptionval{\qq{ccsd}\qq} \textbar\; \pyoptionval{\qq{ccsd(t)\qq}} \textbar\; etc. \\
 Indicates the (superior) energy method for which a second delta correction to the correlation energy is to be obtained.
-\item[] \pyoptionname{DELTA2\_WFN\_LESSER} = \textit{\pyoptionval{\qq{mp2}}} \textbar\; \pyoptionval{\qq{ccsd}} \textbar\; etc. \\
+\item[] \pyoptionname{DELTA2\_WFN\_LESSER} = \textit{\pyoptionval{\qq{mp2}\qq}} \textbar\; \pyoptionval{\qq{ccsd}\qq} \textbar\; etc. \\
 Indicates the inferior energy method for which a second delta correction to the correlation energy is to be obtained.
 \end{itemize}
 
@@ -93,13 +111,13 @@ Indicates the inferior energy method for which a second delta correction to the 
 
 Currently, the basis sets set in set globals have no influence in a \texttt{cbs()} calculation.
 \begin{itemize}
-\item[] \textbf{\pyoptionname{SCF\_BASIS}} = \textit{\pyoptionname{CORL\_BASIS}} \textbar\; \pyoptionval{\qq{cc-pV[TQ]Z}} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}} \textbar\; \pyoptionval{\qq{6-31G}} \textbar\; etc. \\
+\item[] \textbf{\pyoptionname{SCF\_BASIS}} = \textit{\pyoptionname{CORL\_BASIS}} \textbar\; \pyoptionval{\qq{cc-pV[TQ]Z}\qq} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}\qq} \textbar\; \pyoptionval{\qq{6-31G}\qq} \textbar\; etc. \\
 Indicates the sequence of basis sets employed for the reference energy. If any correlation method is specified, \pyoptionname{scf\_basis} can default to \pyoptionname{corl\_basis}.
-\item[] \pyoptionname{CORL\_BASIS} = \pyoptionval{\qq{cc-pV[TQ]Z}} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}} \textbar\; \pyoptionval{\qq{6-31G}} \textbar\; etc. \\
+\item[] \pyoptionname{CORL\_BASIS} = \pyoptionval{\qq{cc-pV[TQ]Z}\qq} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}\qq} \textbar\; \pyoptionval{\qq{6-31G}\qq} \textbar\; etc. \\
 Indicates the sequence of basis sets employed for the correlation energy.
-\item[] \pyoptionname{DELTA\_BASIS} = \pyoptionval{\qq{cc-pV[TQ]Z}} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}} \textbar\; \pyoptionval{\qq{6-31G}} \textbar\; etc. \\
+\item[] \pyoptionname{DELTA\_BASIS} = \pyoptionval{\qq{cc-pV[TQ]Z}\qq} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}\qq} \textbar\; \pyoptionval{\qq{6-31G}\qq} \textbar\; etc. \\
 Indicates the sequence of basis sets employed for the delta correction to the correlation energy.
-\item[] \pyoptionname{DELTA2\_BASIS} = \pyoptionval{\qq{cc-pV[TQ]Z}} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}} \textbar\; \pyoptionval{\qq{6-31G}} \textbar\; etc. \\
+\item[] \pyoptionname{DELTA2\_BASIS} = \pyoptionval{\qq{cc-pV[TQ]Z}\qq} \textbar\; \pyoptionval{\qq{jun-cc-pv[tq5]z}\qq} \textbar\; \pyoptionval{\qq{6-31G}\qq} \textbar\; etc. \\
 Indicates the sequence of basis sets employed for second delta correction to the correlation energy.
 \end{itemize}
 
@@ -108,15 +126,15 @@ Indicates the sequence of basis sets employed for second delta correction to the
 Transformations of the energy through basis set extrapolation for each stage of the CBS definition.
 A complaint is generated if number of basis sets in \pyoptionname{stage\_basis} does not exactly satisfy
 requirements of \pyoptionname{stage\_scheme}.
-An exception is the default, \pyoptionval{\qq{highest\_1}}, which uses the best basis set available.
+An exception is the default, \pyoptionval{\qq{highest\_1}\qq}, which uses the best basis set available.
 \begin{itemize}
-\item[] \pyoptionname{SCF\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}}} \textbar\; \pyoptionval{\qq{scf\_xtpl\_helgaker\_3}} \\
+\item[] \pyoptionname{SCF\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}\qq}} \textbar\; \pyoptionval{\qq{scf\_xtpl\_helgaker\_3}\qq} \\
 Indicates the basis set extrapolation scheme to be applied to the reference energy.
-\item[] \pyoptionname{CORL\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}}} \textbar\; \pyoptionval{\qq{corl\_xtpl\_helgaker\_2}} \\
+\item[] \pyoptionname{CORL\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}\qq}} \textbar\; \pyoptionval{\qq{corl\_xtpl\_helgaker\_2}\qq} \\
 Indicates the basis set extrapolation scheme to be applied to the correlation energy.
-\item[] \pyoptionname{DELTA\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}}} \textbar\; \pyoptionval{\qq{corl\_xtpl\_helgaker\_2}} \\
+\item[] \pyoptionname{DELTA\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}\qq}} \textbar\; \pyoptionval{\qq{corl\_xtpl\_helgaker\_2}\qq} \\
 Indicates the basis set extrapolation scheme to be applied to the delta correction to the correlation energy.
-\item[] \pyoptionname{DELTA2\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}}} \textbar\; \pyoptionval{\qq{corl\_xtpl\_helgaker\_2}} \\
+\item[] \pyoptionname{DELTA2\_SCHEME} = \textit{\pyoptionval{\qq{highest\_1}\qq}} \textbar\; \pyoptionval{\qq{corl\_xtpl\_helgaker\_2}\qq} \\
 Indicates the basis set extrapolation scheme to be applied to the second delta correction to the correlation energy.
 \end{itemize}
 \end{itemize}
@@ -125,13 +143,17 @@ Indicates the basis set extrapolation scheme to be applied to the second delta c
 
 \begin{Snippet}
 # DT-zeta extrapolated mp2 correlation energy atop a T-zeta reference
-cbs('mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2)
+cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
 
-# a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
-cbs('mp2',corl_basis='aug-cc-pv[tq]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='aug-cc-pv[dt]z',delta_scheme=corl_xtpl_helgaker_2)
+# a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated
+#   mp2 correlation energy atop a Q-zeta reference
+cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, \
+    delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
 
 # cbs() coupled with database()
-database('mp2','BASIC',subset=['h2o','nh3'],symm='on',func=cbs,corl_basis='cc-pV[tq]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='sto-3g')
+database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, \
+    corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, \
+    delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
 \end{Snippet}
 
@@ -141,7 +163,7 @@ At the beginning of a \texttt{cbs()} job is printed a listing of the individual 
 calculations which will be performed. The output snippet below is from the second example
 job above. It shows first each model chemistries
 needed to compute the aggregate model chemistry requested through \texttt{cbs()}. Then,
-since, for example, an \texttt{energy(\qq{ccsd(t)})} yields CCSD(T), CCSD, MP2, and SCF
+since, for example, an \texttt{energy(\qq{ccsd(t)}\qq)} yields CCSD(T), CCSD, MP2, and SCF
 energy values, the wrapper condenses this task into the second list of minimum number of
 calculations which will actually be run.
 
@@ -169,44 +191,44 @@ to get the total cbs energy. Finally, in the CBS section, are listed the results
 of the cbs procedure. The stage energies of this section sum outright to the total cbs energy.
 
 \begin{Snippet}
-   ==> Components <==
+ ==> Components <==
 
-  ---------------------------------------------------------------------------------------------------------
-                          Method / Basis                      Rqd       Energy [H]   Variable
-  ---------------------------------------------------------------------------------------------------------
-                             scf / aug-cc-pvqz                  *      -1.11916375   SCF TOTAL ENERGY
-                             mp2 / aug-cc-pvqz                  *      -0.03407997   MP2 CORRELATION ENERGY
-                             scf / aug-cc-pvdz                         -1.11662884   SCF TOTAL ENERGY
-                             mp2 / aug-cc-pvdz                  *      -0.02881480   MP2 CORRELATION ENERGY
-                         ccsd(t) / aug-cc-pvdz                  *      -0.03893812   CCSD(T) CORRELATION ENERGY
-                            ccsd / aug-cc-pvdz                         -0.03893812   CCSD CORRELATION ENERGY
-                             scf / aug-cc-pvtz                         -1.11881134   SCF TOTAL ENERGY
-                             mp2 / aug-cc-pvtz                  *      -0.03288936   MP2 CORRELATION ENERGY
-                         ccsd(t) / aug-cc-pvtz                  *      -0.04201004   CCSD(T) CORRELATION ENERGY
-                            ccsd / aug-cc-pvtz                         -0.04201004   CCSD CORRELATION ENERGY
-  ---------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+                  Method / Basis            Rqd   Energy [H]   Variable
+-------------------------------------------------------------------------------------
+                     scf / aug-cc-pvqz        *  -1.11916375   SCF TOTAL ENERGY
+                     mp2 / aug-cc-pvqz        *  -0.03407997   MP2 CORRELATION ENERGY
+                     scf / aug-cc-pvdz           -1.11662884   SCF TOTAL ENERGY
+                     mp2 / aug-cc-pvdz        *  -0.02881480   MP2 CORRELATION ENERGY
+                 ccsd(t) / aug-cc-pvdz        *  -0.03893812   CCSD(T) CORRELATION ENERGY
+                    ccsd / aug-cc-pvdz           -0.03893812   CCSD CORRELATION ENERGY
+                     scf / aug-cc-pvtz           -1.11881134   SCF TOTAL ENERGY
+                     mp2 / aug-cc-pvtz        *  -0.03288936   MP2 CORRELATION ENERGY
+                 ccsd(t) / aug-cc-pvtz        *  -0.04201004   CCSD(T) CORRELATION ENERGY
+                    ccsd / aug-cc-pvtz           -0.04201004   CCSD CORRELATION ENERGY
+-------------------------------------------------------------------------------------
 
-   ==> Stages <==
+ ==> Stages <==
 
-  ---------------------------------------------------------------------------------------------------------
-      Stage               Method / Basis                       Wt       Energy [H]   Scheme
-  ---------------------------------------------------------------------------------------------------------
-        scf                  scf / aug-cc-pvqz                  1      -1.11916375   highest_1
-       corl                  mp2 / aug-cc-pv[tq]z               1      -0.03494879   corl_xtpl_helgaker_2
-      delta              ccsd(t) / aug-cc-pv[dt]z               1      -0.04330347   corl_xtpl_helgaker_2
-      delta                  mp2 / aug-cc-pv[dt]z              -1      -0.03460497   corl_xtpl_helgaker_2
-  ---------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+    Stage         Method / Basis             Wt   Energy [H]   Scheme
+-------------------------------------------------------------------------------------
+      scf            scf / aug-cc-pvqz        1  -1.11916375   highest_1
+     corl            mp2 / aug-cc-pv[tq]z     1  -0.03494879   corl_xtpl_helgaker_2
+    delta        ccsd(t) / aug-cc-pv[dt]z     1  -0.04330347   corl_xtpl_helgaker_2
+    delta            mp2 / aug-cc-pv[dt]z    -1  -0.03460497   corl_xtpl_helgaker_2
+-------------------------------------------------------------------------------------
 
-   ==> CBS <==
+ ==> CBS <==
 
-  ---------------------------------------------------------------------------------------------------------
-      Stage               Method / Basis                                Energy [H]   Scheme
-  ---------------------------------------------------------------------------------------------------------
-        scf                  scf / aug-cc-pvqz                         -1.11916375   highest_1
-       corl                  mp2 / aug-cc-pv[tq]z                      -0.03494879   corl_xtpl_helgaker_2
-      delta        ccsd(t) - mp2 / aug-cc-pv[dt]z                      -0.00869851   corl_xtpl_helgaker_2
-      total                  CBS                                       -1.16281105
-  ---------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------
+    Stage         Method / Basis                  Energy [H]   Scheme
+-------------------------------------------------------------------------------------
+      scf            scf / aug-cc-pvqz           -1.11916375   highest_1
+     corl            mp2 / aug-cc-pv[tq]z        -0.03494879   corl_xtpl_helgaker_2
+    delta  ccsd(t) - mp2 / aug-cc-pv[dt]z        -0.00869851   corl_xtpl_helgaker_2
+    total            CBS                         -1.16281105
+-------------------------------------------------------------------------------------
 \end{Snippet}
 
 \hiddensubsubsection{Extrapolation Schemes}

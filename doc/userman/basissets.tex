@@ -256,7 +256,7 @@ There are three routes by which a basis set in G94 format can be introduced to \
 \item Install new basis set file into \PSIfour basis library.
 
 Copy the basis set definitions for all elements into a blank file. Exclamation points denote comments.
-As the first line of the file, add the word \optionval{spherical} or \optionval{cartesian} to indicate
+As the first line of the file, add the word \texttt{spherical} or \texttt{cartesian} to indicate
 whether the basis set will run in (5D/7F) or (6D/10F).
 Name the file with the name of the basis set and a \texttt{.gbs} extension, after applying the following transformations.
 \begin{itemize}
@@ -273,7 +273,7 @@ Copy the new basis set file into \texttt{\$PSIDATADIR/basis}.
 
 Copy the basis set definitions for all elements into a blank file. Exclamation points denote comments.
 As the first line of the file, add the basis set name in brackets.
-As the second line of the file, add the word \optionval{spherical} or \optionval{cartesian} to indicate
+As the second line of the file, add the word \texttt{spherical} or \texttt{cartesian} to indicate
 whether the basis set will run in (5D/7F) or (6D/10F). 
 The combination of [ basis name ], \optionname{PUREAM} value, and element basis set specifications 
 forms a section, like the one shown below.
@@ -306,7 +306,7 @@ SP   3   1.00
 
 Construct for a basis set a section like the one above that includes [ basis name ], \optionname{PUREAM}
 value, and element basis set specifications. Hash signs denote comments.
-Copy the section into a \PSIfour input file and surround it with the command \texttt{basis \{\}}, 
+Copy the section into a \PSIfour input file and surround it with the command \texttt{basis \{\dots\}}, 
 as shown below.
 Multiple basis sets can be specified by adding additional sections within the surrounding brackets.
 \begin{Snippet}

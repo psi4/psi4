@@ -217,6 +217,18 @@ mp2_1:        All-electron MP2 6-31G** geometry optimization of water
 mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
 
 
+mrcc1:        CCSDT cc-pVDZ energy for the H2O molecule using MRCC
+
+
+mrcc2:        CCSDT(Q) cc-pVDZ energy for the H2O molecule using MRCC. This example builds up from CCSD. First CCSD, then CCSDT, finally CCSDT(Q).
+
+
+mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using MRCC.
+
+
+mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
+
+
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
 
 
