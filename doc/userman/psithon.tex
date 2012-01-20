@@ -30,13 +30,13 @@ quantities, such as molecular integrals, are intermediates that are not of
 interest to the user and can be deleted after the computation finishes, but
 pertinent details of computations are also written to a checkpoint file and
 might be useful in subsequent computations.  All files are sequentially
-numbered, and are written to /tmp and deleted at the end of the computation,
+numbered and are written to /tmp, then deleted at the end of the computation,
 unless otherwise instructed by the user.
 
 A Python callable handle to the \PSIfour I/O management routines is available,
 and is called {\tt psi4\_io}.  To instruct the I/O manager to send all files to
 another location, say /scratch/user, add the following command to the \psirc
-file (note the trailing "/"):
+file (note the trailing ``/''):
 
 \begin{verbatim}
 psi4_io.set_default_path('/scratch/user/')
@@ -130,7 +130,7 @@ molecule{
 Blank lines are ignored and, unlike regular Python syntax, indentation within
 the {\tt molecule} block does not matter, although the {\tt molecule} keyword itself must
 be aligned within the input according to standard Python syntax. For more
-examples of geometry specification, see the mints1 input file in the samples
+examples of geometry specification, see the {\tt mints1} input file in the samples
 folder. It is also possible to mix Cartesian and Z-matrix geometry
 specifications, as demonstrated in the {\tt mints4} sample input file.
 
@@ -178,7 +178,7 @@ set basis cc-pvdz
 set reference rhf
 energy('scf')
 
-activate{h}
+activate(h)
 set basis cc-pvdz
 set reference uhf
 energy('scf')
@@ -192,17 +192,16 @@ keywords used in the above examples.
 In addition to specifying the geometry, additional information can be provided
 in the {\tt molecule} block. If two integers are encountered on any line of the
 {\tt molecule} block, they are interpreted as the molecular charge and multiplicity
-($2\times M_s + 1$), respectively; these values can also be specified using the
-{\tt set} keywords in the input, as described in the next section. The symmetry can
-be specified by a line reading ``symmetry {\it symbol}'', where {\it symbol} is
+($2\times M_s + 1$), respectively. The symmetry can be specified by a line reading 
+\texttt{symmetry \slshape symbol}, where \texttt{\slshape symbol} is
 the Sch\"onflies symbol of the (Abelian) point group to use for the
 computation. This need not be specified, as the molecular symmetry is
 automatically detected by \PSIfour.  Certain computations require that the
 molecule is not reoriented; this can be achieved by adding either
-``no\_reorient'' or ``noreorient''. By default, \AA ngstr\"om units are used;
-this is changed by adding a line that reads ``units {\it spec}'', where {\it
-spec} is one of ``ang'', ``angstrom'', ``bohr'', ``au'', or ``a.u.''. As an
-example, the following specifies
+{\tt no\_reorient} or {\tt noreorient}. By default, \AA ngstr\"om units are used;
+this is changed by adding a line that reads \texttt{units \slshape spec}, where
+\texttt{\slshape spec} is one of {\tt ang}, {\tt angstrom}, {\tt bohr}, {\tt au}, or
+{\tt a.u.} \hspace{2 mm}.
 
 \subsection{Non-Covalently Bonded Molecule Fragments}
 
@@ -210,7 +209,7 @@ example, the following specifies
 intermolecular forces, including counterpoise corrections and symmetry adapted
 perturbation theory methods. These require the definition of which fragments
 are interacting within the complex. \PSIfour provides a very simple mechanism
-for doing so; simply define the complex’s geometry using the standard
+for doing so; simply define the complex's geometry using the standard
 Cartesian, Z-matrix, or mixture thereof, specifications and then place two
 dashes between nonbonded fragements. For example, to study the interaction
 energy of ethane and ethyne molecules, we could use the following molecule
@@ -234,18 +233,18 @@ molecule{
 \end{Snippet}
 In this case, the charge and multiplicity of each interacting fragment is
 explicitly specified. If the charge and multiplicity are specified for the
-first fragement, it is assumed to be the same for all fragments. When
+first fragment, it is assumed to be the same for all fragments. When
 considering interacting fragments, the overall charge is simply the sum of all
-fragement charges, and any unpaired electrons are assumed to be coupled to
+fragment charges, and any unpaired electrons are assumed to be coupled to
 yield the highest possible $M_s$ value.
 
 \subsection{Job Control}
 \PSIfour comprises a number of modules, written in C++, that each perform
 specific tasks and are callable directly from the Python front end. Each module
-recognizes specific keywords in the input file, detailed in chapter B, which
-control its function. The keywords can be made global, or scoped to apply to
+recognizes specific options in the input file, detailed in Appendix \label{keywords}, which
+control its function. The options can be made global, or scoped to apply to
 certain specific modules. The following examples demonstrate some of the ways
-that global variables can be specified:
+that global options can be specified:
 \begin{Snippet}
 set globals basis cc-pVDZ
 
@@ -291,15 +290,15 @@ set{
 }
 \end{Snippet}
 For arguments that require an array input, standard Python list syntax should
-be used, viz:
+be used, viz.:
 \begin{Snippet}
 set{
   docc = [3, 0, 1, 1]
 }
 \end{Snippet}
 Any of the above keywords specifications can be scoped to individual modules,
-by adding the name of the module after the {\tt set} keyword. Ommiting the module
-name, or using the name ``global'' or ``globals'' will result in the keyword being
+by adding the name of the module after the {\tt set} keyword. Omitting the module
+name, or using the name {\tt global} or {\tt globals} will result in the option being
 applied to all modules. For example, in the following input
 \begin{Snippet}
 molecule{
@@ -317,10 +316,10 @@ set scf print 1
 energy('ccsd')
 \end{Snippet}
 the basis set is set to cc-pVDZ throughout, the SCF code will have a print
-level of 1 and the ccenergy code, which performs coupled cluster computations,
+level of 1 and the \PSIccenergy code, which performs coupled cluster computations,
 will use a print level of 3. In this example a full CCSD computation is
-performed by running the SCF code first, and then the coupled cluster modules;
-the energy Python helper function ensures that this is performed correctly.
+performed by running the SCF code first, then the coupled cluster modules;
+the {\tt energy()} Python helper function ensures that this is performed correctly.
 Note that the Python interpreter executes commands in the order they appear in
 the input file, so if the last four commands in the above example were to read
 \begin{Snippet}
@@ -329,19 +328,21 @@ energy('ccsd')
 set ccenergy print 3
 set scf print 1
 \end{Snippet}
-the commands that set the print level would be inneffective, as they would be
-processed after the CCSD computation completes. In addition to specifying
-charge and multiplicity in the {\tt molecule} block, they can be set through {\tt set}
-commands:
-\begin{Snippet}
-set charge 1 # A cation
-set multp 3  # A triplet electronic state
-\end{Snippet}
+the commands that set the print level would be ineffective, as they would be
+processed after the CCSD computation completes. 
+
+%In addition to specifying
+%charge and multiplicity in the {\tt molecule} block, they can be set through {\tt set}
+%commands:
+%\begin{Snippet}
+%set charge 1 # A cation
+%set multp 3  # A triplet electronic state
+%\end{Snippet}
 
 \subsection{Memory Specification}
 By default, \PSIfour assumes that 256 Mb of memory are available. While this is
 enough for many computations, many of the algorithms will perform better if
-more is available. To specify memory, the memory should be used. The following
+more is available. To specify memory, the {\tt memory} keyword should be used. The following
 lines are all equivalent methods for specifying that 2 Gb of RAM is available
 to \PSIfour:
 \begin{Snippet}
@@ -383,16 +384,16 @@ h_energy = energy('scf')
 D_e = 627.51*(2*h_energy - h2_energy)
 print"De=%f"%D_e
 \end{Snippet}
-The {\tt energy} function returns the final result of the computation, which we
+The {\tt energy()} function returns the final result of the computation, which we
 assign to a Python variable. The two energies are then converted to a
-dissociation energy, and printed to the output file, using standard Python
+dissociation energy and printed to the output file using standard Python
 notation. Sometimes there are multiple quantities of interest; these can be
-accessed through the {\tt get\_variable} function. For example, after performing a
+accessed through the {\tt get\_variable()} function. For example, after performing a
 density fitted MP2 computation, both the spin component scaled energy and the
 unscaled MP2 energy are made available:
 \begin{Snippet}
-e_mp2=get_variable('DF-MP2ENERGY')
-e_scs_mp2=get_variable('SCS-DF-MP2ENERGY')
+e_mp2=get_variable('DF-MP2 TOTAL ENERGY')
+e_scs_mp2=get_variable('SCS-DF-MP2 TOTAL ENERGY')
 \end{Snippet}
 Refer to Appendix \ref{variableslist} for a listing of the variables set by each module.
 
@@ -424,21 +425,21 @@ Rvals=[0.9,1.0,1.1]
 Avals=range(102,106,2)
 
 set basis cc-pvdz
-set scf e_converge=11
-forR in Rvals:
+set scf e_convergence=11
+for R in Rvals:
     h2o.R = R
     for A in Avals:
         h2o.A = A
-        scf()
+        energy('scf')
 \end{Snippet}
-The declarations of Rvals and Avals are both completely standard Python syntax.
-Having named our molecule ``h2o'' we can then set the values of R and A within
+The declarations of {\tt Rvals} and {\tt Avals} are both completely standard Python syntax.
+Having named our molecule {\tt h2o} we can then set the values of {\tt R} and {\tt A} within
 the loops. Note that we do not need the dollar sign to access the Python
 variable in this example; that is required only when using Python variables
 with the {\tt set} keyword.
 
 \subsection{Tables of Results}
-The results of computations can be compactly tabulated with the Table Psithon
+The results of computations can be compactly tabulated with the {\tt Table()} Psithon
 function. For example, in the following potential energy surface scan for water
 \begin{Snippet}
 molecule h2o {
@@ -459,9 +460,9 @@ for R in Rvals:
     for A in Avals:
         h2o.A = A
         energy('dfmp2')
-        escf = get_variable('SCF ENERGY')
-        edfmp2 = get_variable('DF-MP2 ENERGY')
-        escsmp2 = get_variable('SCS-DF-MP2 ENERGY')
+        escf = get_variable('SCF TOTAL ENERGY')
+        edfmp2 = get_variable('DF-MP2 TOTAL ENERGY')
+        escsmp2 = get_variable('SCS-DF-MP2 TOTAL ENERGY')
         table[R][A] = [escf, escsmp2, edfmp2]
 
 print table

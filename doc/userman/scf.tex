@@ -3,8 +3,8 @@
 \subsubsection{Introduction}
 
 Self-Consistent-Field (SCF) theory forms the cornerstone of ab initio quantum
-chemistry. Here SCF refers both to conventional Hartree-Fock (HF) molecular
-orbital theory and also to generalized Kohn-Sham Density Functional
+chemistry. Here SCF refers both to conventional Hartree--Fock (HF) molecular
+orbital theory and also to generalized Kohn--Sham Density Functional
 Theory (KS-DFT). \PSIfour contains a mature code for several common HF
 references, and a pilot (very shortly to be optimized) implementation of most
 flavors of KS-DFT.
@@ -74,15 +74,15 @@ which is guaranteed to return a spin eigenfunction.
   
 \subsubsection{Background}
 
-In Hartree-Fock, the goal is to produce an optimized set of occupied molecular
+In Hartree--Fock, the goal is to produce an optimized set of occupied molecular
 orbitals which describe the action of the electrons according to a one-particle
 Hamiltonian encapsulating electron-nuclear attraction, electronic kinetic
 energy, and mean-field electron-electron repulsion, all under the requirement of
-wavefunction antisymmetry. Molecular properties obtained by Hartree-Fock theory
+wavefunction antisymmetry. Molecular properties obtained by Hartree--Fock theory
 are generally at least qualitatively correct, although they can be
 quantitatively poor in many instances. If, as is usually the case, higher
 accuracy is desired, the occupied and virtual molecular orbitals are used as a
-starting point for the myriad of post-Hartree-Fock methods, all of which attempt
+starting point for the myriad of post-Hartree--Fock methods, all of which attempt
 to recover the exact correlations due to electron-electron repulsion.  
 
 DFT is an alternative approach which attempts to directly compute all
@@ -100,14 +100,14 @@ energy functional is minimized. In practice, the exact energy functional is
 unknown (and would be as complex as Full Configuration Interaction if it were
 known), however many good approximations exists. A major problem with
 density-based DFT is that approximations to the kinetic energy functional are
-notoriously poor. This is usually overcome by the Kohn-Sham approach, which
+notoriously poor. This is usually overcome by the Kohn--Sham approach, which
 obtains most of the kinetic energy from a set of non-interacting orbitals
 constructed from the density. Within this approach, the kinetic energy,
 nuclear attraction energy, and mean-field Coulomb repulsion are treated in the
-same way as in Hartree-Fock, and the remaining exchange, correlation, and
+same way as in Hartree--Fock, and the remaining exchange, correlation, and
 residual kinetic energy terms are treated via an approximate functional,
 typically built from some semi-local model of the exchange and Coulomb holes. In
-the generalized Kohn-Sham approach, the orbitals used to construct the
+the generalized Kohn--Sham approach, the orbitals used to construct the
 non-interacting kinetic energy are also used to produce an orbital-dependent
 contribution to the exchange energy, either by adding a static fraction of the
 non-interacting exact exchange (the adiabatic connection or ``hybrid''
@@ -120,15 +120,15 @@ approach).
 
 \PSIfour solves the SCF equations in a basis of Gaussian functions using an
 iterative procedure. These equations attempt to determine the occupied molecular
-orbitals, and thereby ground state density, which minimize the Hartree-Fock or
+orbitals, and thereby ground state density, which minimize the Hartree--Fock or
 KS-DFT energy within the user-specified spin specialization and electronic
-configuration. Within Hartree-Fock, the allowed spin-specializations are
-Restricted-Hartree-Fock (RHF), Unrestricted-Hartree-Fock (UHF),
-Restricted-Open-Shell-Hartree-Fock (ROHF), and
-Constrained-Unrestricted-Hartree-Fock (CUHF). Within KS-DFT, the allowed
-spin-specializations are Restricted-Kohn-Sham (RKS) and Unrestricted-Kohn-Sham
-(UKS). Restricted-Open-Shell-Kohn-Sham (ROKS) and
-Constrained-Unrestricted-Kohn-Sham (CUKS) are not implemented, as they always
+configuration. Within Hartree--Fock, the allowed spin-specializations are
+Restricted-Hartree--Fock (RHF), Unrestricted-Hartree--Fock (UHF),
+Restricted-Open-Shell-Hartree--Fock (ROHF), and
+Constrained-Unrestricted-Hartree--Fock (CUHF). Within KS-DFT, the allowed
+spin-specializations are Restricted-Kohn--Sham (RKS) and Unrestricted-Kohn--Sham
+(UKS). Restricted-Open-Shell-Kohn--Sham (ROKS) and
+Constrained-Unrestricted-Kohn--Sham (CUKS) are not implemented, as they always
 predict a ground state with positive definite spin density, which is not
 physical. Spin specialization is specified by the \texttt{REFERENCE} option,
 which defaults to \texttt{RHF}.  Electronic configuration is specified by the
@@ -221,7 +221,7 @@ irreps.
 
 \subsubsection{Initial Guess/Convergence Stabilization}
 
-In each step of the SCF procedure, a new Fock or Kohn-Sham potential is built
+In each step of the SCF procedure, a new Fock or Kohn--Sham potential is built
 according to the previous density, following which the potential is diagonalized
 to produce new molecular orbitals, from which a new density is computed. This
 procedure is continued until either convergence is reached or a preset maximum
