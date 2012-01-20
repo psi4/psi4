@@ -699,16 +699,17 @@ def run_sapt_ct(name, **kwargs):
 
 def run_mrcc(name, **kwargs):
 
-    #if PsiMod.get_option('FREEZE_CORE') != "FALSE":
-    #    print "PSI4's MRCC interface currently cannot handle frozen core calculations."
-    #    exit(1)
-
+    # TODO: Check to see if we really need to run the SCF code.
     run_scf(name, **kwargs)
 
+    # The parse_arbitrary_order method provides us the following information
     level = abs(kwargs['level'])
     pertcc = kwargs['level'] < 0
-
     fullname = kwargs['fullname']
+
+    keep = False
+    if (kwargs.has_key('keep')):
+        keep = kwargs['keep']
 
     # Save current directory location
     current_directory = os.getcwd()
@@ -719,24 +720,39 @@ def run_mrcc(name, **kwargs):
 
     # Make new directory specifically for mrcc
     mrcc_tmpdir = "mrcc_" + str(os.getpid())
-    os.mkdir(mrcc_tmpdir)
+    if kwargs.has_key('path'):
+        mrcc_tmpdir = kwargs['path']
+
+    # Check to see if directory already exists, if not, create.
+    if os.path.exists(mrcc_tmpdir) == False:
+        os.mkdir(mrcc_tmpdir)
+
+    # Move into the new directory
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
     PsiMod.mrcc(level, pertcc)
 
+    # Load the fort.56 file
+    # and dump a copy into the outfile
+    PsiMod.print_out("===== Begin fort.56 input for MRCC ======\n")
+    PsiMod.print_out(open('fort.56', 'r').read())
+    PsiMod.print_out("===== End   fort.56 input for MRCC ======\n")
+
     # Close output file
     PsiMod.close_outfile()
 
-    # Modify the environment, to stop PGI compiled binary warning of FORTRAN STOP
+    # Modify the environment:
+    #    PGI Fortan prints warning to screen if STOP is used
     os.environ['NO_STOP_MESSAGE'] = "1"
 
     # Call dmrcc, directing all screen output to the output file
     try:
-        if PsiMod.outfile_name == "stdout":
+        if PsiMod.outfile_name() == "stdout":
             retcode = subprocess.call("dmrcc", shell=True)
         else:
             retcode = subprocess.call("dmrcc >> " + current_directory + "/" + PsiMod.outfile_name(), shell=True)
+
         if retcode < 0:
             print >>sys.stderr, "MRCC was terminated by signal", -retcode
             exit(1)
@@ -758,10 +774,16 @@ def run_mrcc(name, **kwargs):
     PsiMod.set_variable("CURRENT ENERGY", e)
     PsiMod.set_variable(fullname + " ENERGY", e)
 
+    # Load the iface file
+    iface = open('iface', 'r')
+    iface_contents = iface.read()
+
     # Delete mrcc tempdir
     os.chdir("..")
     try:
-        shutil.rmtree(mrcc_tmpdir)
+        # Delete unless we're told not to
+        if (keep == False or kwargs.has_key('path') == False):
+            shutil.rmtree(mrcc_tmpdir)
     except OSerror, e:
         print >>sys.stderr, "Unable to remove MRCC temporary directory", e
         exit(1)
@@ -771,5 +793,16 @@ def run_mrcc(name, **kwargs):
 
     # Reopen output file
     PsiMod.reopen_outfile()
+
+    # If we're told to keep the files or the user provided a path, do nothing.
+    if (keep != False or kwargs.has_key('path')):
+        PsiMod.print_out("\nMRCC scratch files have been kept.\n")
+        PsiMod.print_out("They can be found in " + mrcc_tmpdir)
+
+    # Dump iface contents to output
+    PsiMod.print_out("\n")
+    banner("Full results from MRCC")
+    PsiMod.print_out("\n")
+    PsiMod.print_out(iface_contents)
 
     return e

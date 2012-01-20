@@ -217,6 +217,18 @@ mp2_1:        All-electron MP2 6-31G** geometry optimization of water
 mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
 
 
+mrcc1:        CCSDT cc-pVDZ energy for the H2O molecule using MRCC
+
+
+mrcc2:        CCSDT(Q) cc-pVDZ energy for the H2O molecule using MRCC. This example builds up from CCSD. First CCSD, then CCSDT, finally CCSDT(Q).
+
+
+mrcc3:        CCSD(T) cc-pVDZ geometry optimization for the H2O molecule using MRCC.
+
+
+mrcc4:        CCSDT cc-pVDZ optimization and frequencies for the H2O molecule using MRCC
+
+
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
 
 
@@ -292,7 +304,7 @@ scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI
 scf3:         UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.
 
 
-scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan.
+scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan, and then the same procedure is performed using polar coordinates, converted to Cartesian coordinates.
 
 
 scf5:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
