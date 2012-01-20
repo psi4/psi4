@@ -699,6 +699,10 @@ def run_sapt_ct(name, **kwargs):
 
 def run_mrcc(name, **kwargs):
 
+    #if PsiMod.get_option('FREEZE_CORE') != "FALSE":
+    #    print "PSI4's MRCC interface currently cannot handle frozen core calculations."
+    #    exit(1)
+
     run_scf(name, **kwargs)
 
     level = abs(kwargs['level'])
@@ -724,19 +728,25 @@ def run_mrcc(name, **kwargs):
     # Close output file
     PsiMod.close_outfile()
 
+    # Modify the environment, to stop PGI compiled binary warning of FORTRAN STOP
+    os.environ['NO_STOP_MESSAGE'] = "1"
+
     # Call dmrcc, directing all screen output to the output file
     try:
-        retcode = subprocess.call("dmrcc", shell=True)
+        if PsiMod.outfile_name == "stdout":
+            retcode = subprocess.call("dmrcc", shell=True)
+        else:
+            retcode = subprocess.call("dmrcc >> " + current_directory + "/" + PsiMod.outfile_name(), shell=True)
         if retcode < 0:
             print >>sys.stderr, "MRCC was terminated by signal", -retcode
             exit(1)
         elif retcode > 0:
             print >>sys.stderr, "MRCC errored", retcode
-            #exit(1)
+            exit(1)
 
     except OSError, e:
         print >>sys.stderr, "Execution failed:", e
-        #exit(1)
+        exit(1)
 
     # Scan iface file and grab the file energy.
     e = 0.0
@@ -744,7 +754,9 @@ def run_mrcc(name, **kwargs):
         if fullname in line:
             fields = line.split()
             e = float(fields[5])
-            print "%20.14f" % e
+
+    PsiMod.set_variable("CURRENT ENERGY", e)
+    PsiMod.set_variable(fullname + " ENERGY", e)
 
     # Delete mrcc tempdir
     os.chdir("..")
