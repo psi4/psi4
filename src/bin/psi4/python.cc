@@ -70,7 +70,7 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
     namespace adc        { PsiReturnType adc(Options&);       }
-    namespace mrcc       { PsiReturnType mrcc(int level, bool pertcc); }
+    namespace mrcc       { PsiReturnType mrcc(Options&, int level, bool pertcc); }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -187,6 +187,12 @@ double py_psi_mcscf()
     }
     else
         return 0.0;
+}
+
+PsiReturnType py_psi_mrcc(int level, bool pertcc)
+{
+    py_psi_prepare_options_for_module("MRCC");
+    return mrcc::mrcc(Process::environment.options, level, pertcc);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
@@ -979,7 +985,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("lmp2", py_psi_lmp2);
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
-    def("mrcc", mrcc::mrcc);
+    def("mrcc", py_psi_mrcc);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
