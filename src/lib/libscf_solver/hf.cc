@@ -622,7 +622,7 @@ void HF::form_Shalf()
     // ==> CANONICAL ORTHOGONALIZATION <== //
 
     // Decide symmetric or canonical
-    double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
+    double S_cutoff = options_.get_double("S_TOLERANCE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
         if (print_ && (Communicator::world->me() == 0))

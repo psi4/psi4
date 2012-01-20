@@ -716,8 +716,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF");
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
-    /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
-    options.add_double("S_MIN_EIGENVALUE",1E-7);
+    /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies.
+        See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("S_TOLERANCE ",1E-7);
     /*- Minimum absolute value below which TEI are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE", 0.0);

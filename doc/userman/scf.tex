@@ -158,7 +158,7 @@ combinations of AO basis functions may be discarded, the number of
 canonical-orthogonalized OSOs and MOs may be slightly smaller than the number of
 AOs. In \PSIfour, symmetric orthogonalization is used by default, unless the
 smallest overlap eigenvalue falls below the user-supplied double option
-\optionname{S\_MIN\_EIGENVALUE}, which defaults to 1.0\e{-7}. If the smallest
+\optionname{S\_TOLERANCE}, which defaults to 1.0\e{-7}. If the smallest
 eigenvalue is below this cutoff, canonical orthogonalization is forced, and all
 eigenvectors corresponding to eigenvalues below the cutoff are eliminated.
 Use of canonical orthogonalization can be forced by setting the
@@ -181,7 +181,7 @@ symmetry c2 # Two irreps is easier to comprehend
 }
 
 set {
-s_min_eigenvalue 0.0001 # Set an unreasonably tight 
+s_tolerance 0.0001      # Set an unreasonably tight 
                         # tolerance to force canonical
 basis aug-cc-pv5z       # This diffuse basis will have 
                         # small-ish eigenvalues for even H2O
