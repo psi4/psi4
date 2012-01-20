@@ -1310,7 +1310,6 @@ std::string Molecule::save_string_xyz() const
     std::stringstream ss;
 
     if (Communicator::world->me() == 0) {
-
         sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
         ss << buffer;
 
@@ -1319,9 +1318,8 @@ std::string Molecule::save_string_xyz() const
             sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
             ss << buffer;
         }
-
-        return ss.str();
     }
+    return ss.str();
 }
 
 Matrix* Molecule::inertia_tensor() const
@@ -2297,13 +2295,14 @@ CoordValue* Molecule::get_coord_value(const std::string &str)
     }
     else {
         // Register this as variable, whether it's defined or not
-        all_variables_.push_back(str);
         // Make sure this special case is in the map
         if(str == "TDA") geometry_variables_[str] = 360.0*atan(sqrt(2))/M_PI;
         if(str[0] == '-'){
             // This is negative; ignore the leading '-' and return minus the value
+            all_variables_.push_back(str.substr(1, str.size() - 1));
             return new VariableValue(str.substr(1, str.size() - 1), geometry_variables_, true);
         }else{
+            all_variables_.push_back(str);
             // This is positive; return the value using the string as-is
             return new VariableValue(str, geometry_variables_);
         }
