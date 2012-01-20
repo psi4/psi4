@@ -108,6 +108,11 @@ void py_reopen_outfile()
     }
 }
 
+std::string py_get_outfile_name()
+{
+    return outfile_name;
+}
+
 void py_psi_prepare_options_for_module(std::string const & name)
 {
     // Tell the options object which module is about to run
@@ -957,6 +962,7 @@ BOOST_PYTHON_MODULE(PsiMod)
 
     def("close_outfile", py_close_outfile);
     def("reopen_outfile", py_reopen_outfile);
+    def("outfile_name", py_get_outfile_name);
 
     // modules
     def("mints", py_psi_mints);

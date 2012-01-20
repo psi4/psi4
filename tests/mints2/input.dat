@@ -74,49 +74,48 @@ basis  {
    assign C my3-21G
    # The two atoms labelled H1 get a STO-3G basis two
    assign H1 sto-3g
-   # Atoms 6 and 8 (Carbons 3 and 5) get a STO-3G basis, too
+   # Carbons 3 and 5 get a STO-3G basis, too
    assign C1 sto-3g
-   #assign 8 sto-3g
    # With all these in place, the symmetry is lowered to C2v automatically
    # The commands are applied in order i.e., adding a line like
    # assign cc-pvtz
    # here would override all of the above and assign cc-pvtz to all atoms
 
 #
-# Now we define the basis sets
+# Now we define the basis sets.  N.B. Indentation does not matter; it just looks prettier.
 #
-[my3-21G] #This is really the standard 3-21G basis, but with a different name
-cartesian
-****
-H     0
-S   2   1.00
-      5.4471780              0.1562850
-      0.8245470              0.9046910
-S   1   1.00
-      0.1831920              1.0000000
-****
-C     0
-S   3   1.00
-    172.2560000              0.0617669
-     25.9109000              0.3587940
-      5.5333500              0.7007130
-SP   2   1.00
-      3.6649800             -0.3958970              0.2364600
-      0.7705450              1.2158400              0.8606190
-SP   1   1.00
-      0.1958570              1.0000000              1.0000000
-****
-[DZ]
-spherical
-****
-H     0 
-S   3   1.00
-     19.2406000              0.0328280        
-      2.8992000              0.2312080        
-      0.6534000              0.8172380        
-S   1   1.00
-      0.1776000              1.0000000        
-****
+    [my3-21G] #This is really the standard 3-21G basis, but with a different name
+    cartesian
+    ****
+    H     0
+    S   2   1.00
+          5.4471780              0.1562850
+          0.8245470              0.9046910
+    S   1   1.00
+          0.1831920              1.0000000
+    ****
+    C     0
+    S   3   1.00
+        172.2560000              0.0617669
+         25.9109000              0.3587940
+          5.5333500              0.7007130
+    SP   2   1.00
+          3.6649800             -0.3958970              0.2364600
+          0.7705450              1.2158400              0.8606190
+    SP   1   1.00
+          0.1958570              1.0000000              1.0000000
+    ****
+    [DZ]
+    spherical
+    ****
+    H     0 
+    S   3   1.00
+         19.2406000              0.0328280        
+          2.8992000              0.2312080        
+          0.6534000              0.8172380        
+    S   1   1.00
+          0.1776000              1.0000000        
+    ****
 }
 
  

@@ -65,6 +65,8 @@ void HF::MOM_start()
     if (!options_["MOM_OCC"].size()) return;      
    
     // If we're here, its an exciting MOM
+    fprintf(outfile, "\n");
+    print_orbitals(); 
     fprintf(outfile, "\n  ==> MOM Excited-State Iterations <==\n\n");
     
     // Reset iterations and DIIS (will automagically restart)
