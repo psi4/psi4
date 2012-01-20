@@ -137,9 +137,19 @@ PsiReturnType mrcc(int level, bool pertcc)
 
     fprintf(outfile, "done.\n  Generating fort.56 input file...");
 
+    // Determine energy convergence to pass to MRCC
+    double user_e = fabs(Process::environment.options.get_double("E_CONVERGENCE"));
+    int e_conv = 0;
+    while (1) {
+        user_e *= 10.0;
+        e_conv++;
+        if (user_e > 0.0)
+            break;
+    }
+
     FILE* fort56 = fopen("fort.56", "w");
-    fprintf(fort56, "%6d     1     0     0%7d      0     0      1     0     1     1     1     0      0      0     8     0     0    0.00    0%6lu\n",
-            level, pertcc ? 3 : 1, Process::environment.get_memory() / 1000 / 1000);
+    fprintf(fort56, "%6d     1     0     0%7d      0     0      1     0     1     1     1     0      0      0%6d     0     0    0.00    0%6lu\n",
+            level, pertcc ? 3 : 1, e_conv, Process::environment.get_memory() / 1000 / 1000);
     fprintf(fort56, "ex.lev,nsing,ntrip, rest, CC/CI,  dens,conver, symm, diag,   CS,spatial, HF,ndoub, nacto, nactv,  tol,maxex, sacc,   freq,dboc,  mem\n");
 
     const Dimension& active_docc = docc - wave->frzcpi();

@@ -19,7 +19,7 @@ $(TARGET_DVI): $(TEX) $(SUBTEX) $(OTFTEX)
 	echo $(srcdir)
 	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
 	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
-	$(LATEX) $<; $(BIBTEX) $(MAN); $(LATEX) $<; $(LATEX) $<
+	$(LATEX) $< && $(BIBTEX) $(MAN) && $(LATEX) $< && $(LATEX) $<
 
 $(TARGET_PS): $(DVI)
 	$(DVIPS) -o $@ $<

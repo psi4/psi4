@@ -2060,6 +2060,55 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do read coefficient matrices from psi files? -*/
     options.add_bool("MO_READ",false);
   }
+  if (name == "MRCC"|| options.read_globals()) {
+      /*- MODULEDESCRIPTION Interface to MRCC by Mih\'{a}ly K\'{a}llay. -*/
+
+      /*- See the note at the beginning of Section \ref{keywords}.
+          This becomes {\tt tol} (option \#16) in fort.56. -*/
+      options.add_double("E_CONVERGENCE",1e-8);
+
+      /*- Number of singlet roots. (Strictly speaking number of
+          of roots with M_s=0 and S is even.) Use this option only with
+          closed shell reference determinant, it must be zero otherwise.
+          This becomes {\tt nsing} (option \#2) in fort.56. -*/
+      options.add_int("MRCC_NUM_SINGLET_ROOTS", 1);
+
+      /*- Number of triplet roots. (Strictly speaking number of
+          of roots with M_s=0 and S is odd.) See notes at option MRCC_NUM_SINGLET_ROOTS.
+          This becomes {\tt ntrip} (option \#3) in fort.56. -*/
+      options.add_int("MRCC_NUM_TRIPLET_ROOTS", 0);
+
+      /*- The program restarts from the previously
+          calculated parameters if it is 1. In case it is 2, the program
+          executes automatically the lower-level calculations of the same
+          type consecutively (e.g., CCSD, CCSDT, and CCSDTQ if CCSDTQ is
+          requested) and restarts each calculation from the previous one
+          (rest=2 is available only for energy calculations).
+          Currently, only a value of 0 and 2 are supported.
+          This becomes {\tt rest} (option \#4) in fort.56. !expert -*/
+      options.add_int("MRCC_RESTART", 0);
+
+      /*- If more than one root is requested and calc=1, LR-CC (EOM-CC)
+          calculation is performed automatically for the excited states.
+          This overrides all automatic determination of method
+          and will only work with {\tt energy()}.
+          This becomes CC/CI (option \#5) in fort.56 !expert
+            \begin{tabular}{ccc}
+                   Value  &  Method      &  Description  \\
+             \hline
+                        1 & CC           & \\
+                        2 & CC(n-1)[n]   & \\
+                        3 & CC(n-1)(n)   &  (CC(n-1)[n] energy is also calculated) \\
+                        4 & CC(n-1)(n)_L & (CC(n-1)[n] and CC(n-1)(n) energies are also calculated) \\
+                        5 & CC(n)-1a     & \\
+                        6 & CC(n)-1b     & \\
+                        7 & CCn          & \\
+                        8 & CC(n)-3      & \\
+            \end{tabular}
+
+          -*/
+      options.add_int("MRCC_CC_METHOD", 1);
+  }
   return true;
 }
 
