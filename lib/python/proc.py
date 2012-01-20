@@ -725,6 +725,12 @@ def run_mrcc(name, **kwargs):
     # Generate integrals and input file (dumps files to the current directory)
     PsiMod.mrcc(level, pertcc)
 
+    # Load the fort.56 file
+    # and dump a copy into the outfile
+    PsiMod.print_out("===== Begin fort.56 input for MRCC ======\n")
+    PsiMod.print_out(open('fort.56', 'r').read())
+    PsiMod.print_out("===== End   fort.56 input for MRCC ======\n")
+
     # Close output file
     PsiMod.close_outfile()
 
@@ -758,6 +764,10 @@ def run_mrcc(name, **kwargs):
     PsiMod.set_variable("CURRENT ENERGY", e)
     PsiMod.set_variable(fullname + " ENERGY", e)
 
+    # Load the iface file
+    iface = open('iface', 'r')
+    iface_contents = iface.read()
+
     # Delete mrcc tempdir
     os.chdir("..")
     try:
@@ -771,5 +781,11 @@ def run_mrcc(name, **kwargs):
 
     # Reopen output file
     PsiMod.reopen_outfile()
+
+    # Dump iface contents to output
+    PsiMod.print_out("\n")
+    banner("Full results from MRCC")
+    PsiMod.print_out("\n")
+    PsiMod.print_out(iface_contents)
 
     return e
