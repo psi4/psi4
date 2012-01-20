@@ -66,10 +66,12 @@
 % Psi Keywords
 %
 \def\keyword#1{{\tt #1}}
-\def\optionname#1{{\MakeUppercase{\underline{\tt #1}}}}
-\def\optionval#1{{\MakeUppercase{\tt #1}}}
-\def\pyoptionname#1{{\MakeUppercase{\underline{\textsf {#1}}}}}
-\def\pyoptionval#1{{\MakeUppercase{\textsf {#1}}}}
+\def\optionname#1{{\MakeUppercase{{\tt #1}}}}
+\def\optionval#1{{\MakeUppercase{\textbf{\underline{\tt #1}}}}}
+\def\pyoptionname#1{\textbf{\MakeLowercase{{\textsf {#1}}}}}
+\def\pyoptionval#1{{\MakeLowercase{{\textsf {#1}}}}}
+\def\qq{\textquotesingle}
+\providecommand{\e}[1]{\ensuremath{\times 10^{#1}}}
 
 %
 % Psi C and Fortran Language elements

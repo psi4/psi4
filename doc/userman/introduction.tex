@@ -15,7 +15,7 @@ running calculations.  Section \ref{tutorial} provides a brief tutorial to
 help new users get started.  Section \ref{input} offers further details
 into the structure of \PSIfour\ input files and a discussion of some of
 the most important options.  Later sections deal with the different types
-of computations which can be done using \PSIfour\ (e.g., Hartree-Fock,
+of computations which can be done using \PSIfour\ (e.g., Hartree--Fock,
 MP2, coupled-cluster) and general procedures such as geometry optimization
 and vibrational frequency analysis.  The appendix includes a complete
 description of all possible input keywords for each module,
@@ -129,7 +129,7 @@ The latest version of the \PSIfour\ program package may be obtained at
 source code is available as a gzipped tar archive (named, for example, {\tt
 psi4.X.tar.gz}), and binaries may be available for certain architectures.
 For detailed installation and testing instructions, please refer to the
-installation instructions at the \PSIfour\ website above, or the file {\tt
+installation instructions at the \PSIfour\ website above or to the file {\tt
 psi4/INSTALL} distributed with the package.
 
 \subsubsection{Scratch File Configuration}
@@ -144,7 +144,7 @@ By default, PSI4 will write temporary files to \file{/tmp}, but this
 directory is often not large enough for typical computations.  Therefore,
 you need to (a) make sure there is a sufficiently large directory on a
 locally-attached disk drive (100GB--1TB or more, depending on the size of
-the molecules to be studied), and (b) tell \PSIfour\ the path to this
+the molecules to be studied) and (b) tell \PSIfour\ the path to this
 directory.  The \PSIfour\ installation instructions explain how to set up a
 resource file, \psirc, for each user providing this information.
 
@@ -152,7 +152,7 @@ resource file, \psirc, for each user providing this information.
 \subsection{Supported Architectures}
 The majority of \PSIfour\ was developed on Mac and Linux machines.  In
 principle, it should work on any Unix system; however, we have not tested
-extensively on sytems other than Mac and Linux.  There is not a Windows
+extensively on systems other than Mac and Linux.  There is not a Windows
 version of \PSIfour.
 
 \PSIfour\ has been successfully compiled using Intel, GCC, and Clang
@@ -207,13 +207,13 @@ release.}
 Geometry optimization (currently restricted to true minima on the potential
 energy surface) can be performed using either analytic gradients
 or energy points.  Likewise, vibrational frequencies can be 
-computed using analytic second derivatives, by finite
-differences of analytic gradients, or finite differences of energies.
+computed by analytic second derivatives, by finite
+differences of analytic gradients, or by finite differences of energies.
 \PSIfour\ can also compute an extensive list of one-electron properties.
 
 \subsection{Technical Support} The \PSIfour\ package is
 distributed for free and without any guarantee of reliability,
-accuracy, suitability for any particular purpose.  No obligation
+accuracy, or suitability for any particular purpose.  No obligation
 to provide technical support is expressed or implied.  As time
 allows, the developers will attempt to answer inquiries directed to
 \htmladdnormallink{{\tt crawdad@vt.edu}}{mailto:crawdad@vt.edu}.
