@@ -2061,11 +2061,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_READ",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Interface to MRCC by Mih\'{a}ly K\'{a}llay. -*/
+      /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\'{a}ly K\'{a}llay. -*/
 
       /*- See the note at the beginning of Section \ref{keywords}.
           This becomes {\tt tol} (option \#16) in fort.56. -*/
       options.add_double("E_CONVERGENCE",1e-8);
+
+      /*- Minimum absolute value below which integrals are neglected.
+      See the note at the beginning of Section \ref{keywords}. -*/
+      options.add_double("INTS_TOLERANCE",1.0E-12);
+
+      /*- Maximum excitation level. This is used ONLY if it is explicity set by the user.
+        Single-reference case: all excitations up to this level are
+        included, e.g., 2 for CCSD, 3 for CCSDT, 4 for CCSDTQ, etc.
+        This becomes {\tt ex.lev} (option \#1) in fort.56. -*/
+      options.add_int("MRCC_LEVEL", 2);
 
       /*- Number of singlet roots. (Strictly speaking number of
           of roots with M_s=0 and S is even.) Use this option only with
@@ -2092,7 +2102,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           calculation is performed automatically for the excited states.
           This overrides all automatic determination of method
           and will only work with {\tt energy()}.
-          This becomes CC/CI (option \#5) in fort.56 !expert
+          This becomes CC/CI (option \#5) in fort.56
             \begin{tabular}{ccc}
                    Value  &  Method      &  Description  \\
              \hline
@@ -2105,9 +2115,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
                         7 & CCn          & \\
                         8 & CC(n)-3      & \\
             \end{tabular}
-
+            !expert
           -*/
-      options.add_int("MRCC_CC_METHOD", 1);
+      options.add_int("MRCC_METHOD", 1);
   }
   return true;
 }
