@@ -26,7 +26,7 @@ automatically loaded as Psithon variables (before \psirc is loaded, so that
 \psirc values can be overridden by the user); table \ref{tab:physconst} shows
 these variables.
 \begin{table}[h!]
-    \caption{The physical constants used within \PSIfour, and automatically
+    \caption{The physical constants used within \PSIfour, which are automatically
              made available within all \PSIfour input files.}
     \label{tab:physconst}
     \setlength{\tabcolsep}{1pt}
@@ -262,10 +262,10 @@ yield the highest possible $M_s$ value.
 \subsection{Job Control}
 \PSIfour comprises a number of modules, written in C++, that each perform
 specific tasks and are callable directly from the Python front end. Each module
-recognizes specific options in the input file, detailed in Appendix \label{keywords}, which
-control its function. The options can be made global, or scoped to apply to
+recognizes specific keywords in the input file, detailed in Appendix \label{keywords}, which
+control its function. The keywords can be made global, or scoped to apply to
 certain specific modules. The following examples demonstrate some of the ways
-that global options can be specified:
+that global keywords can be specified:
 \begin{Snippet}
 set globals basis cc-pVDZ
 
@@ -322,7 +322,7 @@ on the same line as the name of the keyword.
 
 Any of the above keyword specifications can be scoped to individual modules,
 by adding the name of the module after the {\tt set} keyword. Omitting the module
-name, or using the name {\tt global} or {\tt globals} will result in the option being
+name, or using the name {\tt global} or {\tt globals} will result in the keyword being
 applied to all modules. For example, in the following input
 \begin{Snippet}
 molecule{
@@ -478,7 +478,15 @@ unscaled MP2 energy are made available:
 e_mp2=get_variable('DF-MP2 TOTAL ENERGY')
 e_scs_mp2=get_variable('SCS-DF-MP2 TOTAL ENERGY')
 \end{Snippet}
-Refer to Appendix \ref{variableslist} for a listing of the variables set by each module.
+
+Each module and the Python driver set \PSI variables over the course of a calculation.
+The values for all can be printed in the output file with the input file command
+\texttt{print\_variables()} . Note that \PSI variables accumulate over a \PSIfour
+instance are not cleared by \texttt{clean()}. So if you run in a single input file
+a sto-3g FCI followed by a aug-cc-pVQZ SCF followed by a \texttt{print\_variables()}
+command, the last will include both SCF TOTAL ENERGY and FCI TOTAL ENERGY. Don't get 
+excited that you got a high-quality calculation cheaply. Refer to Appendix 
+\ref{variableslist} for a listing of the variables set by each module.
 
 \subsection{Loops}
 Python provides many control structures, which can be used within \PSIfour
