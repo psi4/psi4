@@ -2,11 +2,11 @@
 
 \subsubsection{Introduction}
 
-Self-Consistent-Field (SCF) theory forms the cornerstone of ab initio quantum
-chemistry. Here SCF refers both to conventional Hartree-Fock (HF) molecular
-orbital theory and also to generalized Kohn-Sham Density Functional
+Self-Consistent-Field (SCF) theory forms the cornerstone of \textit{ab initio} quantum
+chemistry. Here SCF refers both to conventional Hartree--Fock (HF) molecular
+orbital theory and also to generalized Kohn--Sham Density Functional
 Theory (KS-DFT). \PSIfour contains a mature code for several common HF
-references, and a pilot (very shortly to be optimized) implementation of most
+references and a pilot (very shortly to be optimized) implementation of most
 flavors of KS-DFT.
 
 An illustrative example of using the SCF module is as follows:
@@ -28,7 +28,7 @@ energy('scf')
 \end{Snippet}
 
 This will run a UHF computation for triplet molecular oxygen (the ground state)
-using a PK algorithm for the Electron Repulsion Integrals (ERI), and starting
+using a PK algorithm for the Electron Repulsion Integrals (ERI) and starting
 from a Superposition of Atomic Densities (SAD) guess. After printing all manner
 of titles, geometries, sizings, and algorithm choices, the SCF finally reaches
 the iterations:
@@ -48,10 +48,10 @@ the iterations:
    @UHF iter  10:  -149.62730740326231   -1.70530e-13   2.19128e-08 DIIS
 \end{Snippet}
 The algorithm takes 10 true iterations to converge the energy and density to the
-default of $1.0\mathrm{E}-8$, plus the trivial iteration due to the SAD guess.
+default of 1.0\e{-8}, plus the trivial iteration due to the SAD guess.
 The energy on the zero-th iteration is not variational due to the improper
 idempotence properties of the SAD guess, but the first true iteration is within
-$2.0\mathrm{E}-4$ relative error of the final answer, highlighting the
+2.0\e{-4} relative error of the final answer, highlighting the
 efficiency of the SAD guess. The energy and density then converge smoothly,
 assisted by Pulay's Direct Inversion of the Iterative Subspace (DIIS), which is
 activated by default. DIIS from a high-quality guess is usually sufficient to
@@ -62,27 +62,27 @@ below.
 After the iterations are completed, a number of one-electron properties are
 printed, and some bookkeeping is performed to set up possible correlated
 computations. Additional one-electron properties are available by increasing the
-\texttt{PRINT} keyword. Also printed are the occupied and virtual orbital
+\optionname{PRINT} option. Also printed are the occupied and virtual orbital
 energies, which are useful in elucidating the stability and reactivity of the
 system. Finally, for UHF/UKS references, the $S^2$ diagnostic is printed, as the
 UHF/UKS ansatz does not constrain the wavefunction to be an eigenfunction of the
 $\hat S^2$ operator. In this case, the output shows that the current UHF
-wavefunction actually has an expectation value of $<S^2> = 2.03319$, which does
+wavefunction actually has an expectation value of $\langle S^2\rangle = 2.03319$, which does
 not equal the expected eigenvalue of $2$.  If this metric rises significantly
 above a few hundredths, it may be necessary to switch to an ROHF reference,
 which is guaranteed to return a spin eigenfunction. 
   
 \subsubsection{Background}
 
-In Hartree-Fock, the goal is to produce an optimized set of occupied molecular
+In Hartree--Fock, the goal is to produce an optimized set of occupied molecular
 orbitals which describe the action of the electrons according to a one-particle
 Hamiltonian encapsulating electron-nuclear attraction, electronic kinetic
 energy, and mean-field electron-electron repulsion, all under the requirement of
-wavefunction antisymmetry. Molecular properties obtained by Hartree-Fock theory
+wavefunction antisymmetry. Molecular properties obtained by Hartree--Fock theory
 are generally at least qualitatively correct, although they can be
 quantitatively poor in many instances. If, as is usually the case, higher
 accuracy is desired, the occupied and virtual molecular orbitals are used as a
-starting point for the myriad of post-Hartree-Fock methods, all of which attempt
+starting point for the myriad of post-Hartree--Fock methods, all of which attempt
 to recover the exact correlations due to electron-electron repulsion.  
 
 DFT is an alternative approach which attempts to directly compute all
@@ -98,20 +98,20 @@ input density corresponds to the ground state density. This allows for a
 self-consistent computational procedure in which the density is varied until the
 energy functional is minimized. In practice, the exact energy functional is
 unknown (and would be as complex as Full Configuration Interaction if it were
-known), however many good approximations exists. A major problem with
+known), however many good approximations exist. A major problem with
 density-based DFT is that approximations to the kinetic energy functional are
-notoriously poor. This is usually overcome by the Kohn-Sham approach, which
+notoriously poor. This is usually overcome by the Kohn--Sham approach, which
 obtains most of the kinetic energy from a set of non-interacting orbitals
 constructed from the density. Within this approach, the kinetic energy,
 nuclear attraction energy, and mean-field Coulomb repulsion are treated in the
-same way as in Hartree-Fock, and the remaining exchange, correlation, and
+same way as in Hartree--Fock, and the remaining exchange, correlation, and
 residual kinetic energy terms are treated via an approximate functional,
 typically built from some semi-local model of the exchange and Coulomb holes. In
-the generalized Kohn-Sham approach, the orbitals used to construct the
+the generalized Kohn--Sham approach, the orbitals used to construct the
 non-interacting kinetic energy are also used to produce an orbital-dependent
 contribution to the exchange energy, either by adding a static fraction of the
 non-interacting exact exchange (the adiabatic connection or ``hybrid''
-approach), or by partitioning the exchange hole into short range components to
+approach), or by partitioning the exchange hole into short range components be to
 treated by the local exchange functional, and long range components to be
 treated by the long-range noninteracting exact exchange (the range-separated
 approach).
@@ -120,21 +120,21 @@ approach).
 
 \PSIfour solves the SCF equations in a basis of Gaussian functions using an
 iterative procedure. These equations attempt to determine the occupied molecular
-orbitals, and thereby ground state density, which minimize the Hartree-Fock or
+orbitals, and thereby ground state density, which minimize the Hartree--Fock or
 KS-DFT energy within the user-specified spin specialization and electronic
-configuration. Within Hartree-Fock, the allowed spin-specializations are
-Restricted-Hartree-Fock (RHF), Unrestricted-Hartree-Fock (UHF),
-Restricted-Open-Shell-Hartree-Fock (ROHF), and
-Constrained-Unrestricted-Hartree-Fock (CUHF). Within KS-DFT, the allowed
-spin-specializations are Restricted-Kohn-Sham (RKS) and Unrestricted-Kohn-Sham
-(UKS). Restricted-Open-Shell-Kohn-Sham (ROKS) and
-Constrained-Unrestricted-Kohn-Sham (CUKS) are not implemented, as they always
+configuration. Within Hartree--Fock, the allowed spin-specializations are
+Restricted-Hartree--Fock (RHF), Unrestricted-Hartree--Fock (UHF),
+Restricted-Open-Shell-Hartree--Fock (ROHF), and
+Constrained-Unrestricted-Hartree--Fock (CUHF). Within KS-DFT, the allowed
+spin-specializations are Restricted-Kohn--Sham (RKS) and Unrestricted-Kohn--Sham
+(UKS). Restricted-Open-Shell-Kohn--Sham (ROKS) and
+Constrained-Unrestricted-Kohn--Sham (CUKS) are not implemented, as they always
 predict a ground state with positive definite spin density, which is not
-physical. Spin specialization is specified by the \texttt{REFERENCE} option,
-which defaults to \texttt{RHF}.  Electronic configuration is specified by the
+physical. Spin specialization is specified by the \optionname{REFERENCE} option,
+which defaults to \optionval{RHF}.  Electronic configuration is specified by the
 charge/multiplicity field in the molecular geometry input.  If spatial symmetry
 is used, the assignment of occupied orbitals to irreps may be specified by the
-\texttt{DOCC} and \texttt{SOCC} integer arrays. If these arrays are not
+\optionname{DOCC} and \optionname{SOCC} integer arrays. If these arrays are not
 specified by the user, the program will assign occupation to irreps according to
 the lowest orbital energies at each SCF iteration (Aufbau ordering).  
 
@@ -158,11 +158,11 @@ combinations of AO basis functions may be discarded, the number of
 canonical-orthogonalized OSOs and MOs may be slightly smaller than the number of
 AOs. In \PSIfour, symmetric orthogonalization is used by default, unless the
 smallest overlap eigenvalue falls below the user-supplied double option
-\texttt{S\_MIN\_EIGENVALUE}, which defaults to $10^{-7}$. If the smallest
+\optionname{S\_MIN\_EIGENVALUE}, which defaults to 1.0\e{-7}. If the smallest
 eigenvalue is below this cutoff, canonical orthogonalization is forced, and all
 eigenvectors corresponding to eigenvalues below the cutoff are eliminated.
 Use of canonical orthogonalization can be forced by setting the
-\texttt{S\_ORTHOGONALIZATION} option to \texttt{CANONICAL}. Note that in
+\optionname{S\_ORTHOGONALIZATION} option to \optionval{CANONICAL}. Note that in
 practice, the MOs and OSOs are built separately within each irrep from the
 symmetry-adapted combinations of AOs known as Unique Symmetry Orbitals (USOs).
 For canonical orthogonalization, this implies that the number of MOs and OSOs
@@ -187,7 +187,7 @@ basis aug-cc-pv5z       # This diffuse basis will have
                         # small-ish eigenvalues for even H2O
 }
 
-energy(`scf')
+energy('scf')
 
 Output:
 
@@ -221,15 +221,15 @@ irreps.
 
 \subsubsection{Initial Guess/Convergence Stabilization}
 
-In each step of the SCF procedure, a new Fock or Kohn-Sham potential is built
+In each step of the SCF procedure, a new Fock or Kohn--Sham potential is built
 according to the previous density, following which the potential is diagonalized
 to produce new molecular orbitals, from which a new density is computed. This
 procedure is continued until either convergence is reached or a preset maximum
 number of iterations is exceeded. Convergence is determined by both change in
 energy and root-mean-square change in density matrix values, which must be below
-the user-specified $\mathtt{E\_CONVERGENCE}$ and
-$\mathtt{D\_CONVERGENCE}$, respectively. The maximum number of iterations is
-specified by the \texttt{MAXITER} option. It should be noted that SCF is a
+the user-specified $\optionname{E\_CONVERGENCE}$ and
+$\optionname{D\_CONVERGENCE}$, respectively. The maximum number of iterations is
+specified by the \optionname{MAXITER} option. It should be noted that SCF is a
 chaotic process, and, as such, often requires careful selection of initial
 orbitals and damping during iterations to ensure convergence. This is
 particularly likely for large systems, metallic systems, multireference systems,
@@ -246,12 +246,12 @@ resultant first-iteration energy is generally less than a fraction of a percent
 off of the converged value. The SAD guess also produces fractionally occupied
 closed-shell orbitals, as required by the density-fitted exchange routines
 (discussed below). For open-shell systems, the Generalized Wolfsberg-Helmholtz
-(GWH) guess is available, and may be superior to a core guess. SAD and GWH may
-be invoked by the \texttt{GUESS} option. A more involved alternative to these
+(GWH) guess is available, and may be superior to a core guess. \optionval{SAD} and \optionval{GWH} may
+be invoked by the \optionname{GUESS} option. A more involved alternative to these
 approaches is to converge the SCF in a small basis and then project the
 resultant occupied molecular orbitals up into a larger basis. This can be done
-automatically by placing a \texttt{cast\_up = `SMALL\_BASIS\_NAME'} modifier in
-the \texttt{energy} procedure call. We recommend the 3-21G basis for the small
+automatically by placing a \pyoptionname{cast\_up =} \pyoptionval{\qq \textit{SMALL\_BASIS\_NAME}\qq} modifier in
+the \texttt{energy()} procedure call. We recommend the 3-21G basis for the small
 basis due to its efficient mix of flexibility and compactness. An example of
 performing an RHF solution of water by SAD guessing in a 3-21G basis and then
 casting up to cc-pVTZ is shown below: 
@@ -276,7 +276,7 @@ Iterative Subspace (DIIS) extrapolation and Gill's Maximum Overlap Method (MOM)
 are both implemented. DIIS uses previous iterates of the Fock Matrix together
 with an error criterion based on the orbital gradient to produce an informed
 estimate of the next Fock Matrix. DIIS is almost always necessary to converge
-the SCF procedure, and is therefore turned on by default. In rare cases, the
+the SCF procedure and is therefore turned on by default. In rare cases, the
 DIIS algorithm may need to be modified or turned off altogether, which may be
 accomplished via the options detailed below. MOM was developed to combat a
 particular class of convergence failure: occupation flipping. In some cases,
@@ -293,38 +293,38 @@ of by orbital eigenvalue, i.e., by choosing the set of new orbitals which looks
 most like some previously known ``good'' set.  The ``good'' set is typically the
 occupied orbitals from an one of the oscillating iterations with the lowest
 total energy. For an oscillating system where the lowest total energy occurs on
-iterations $N,N+2,\ldots$, invoking \texttt{MOM\_START N} can often rescue the
+iterations $N,N+2,\ldots$, invoking \optionname{MOM\_START} \optionval{N} can often rescue the
 convergence of the SCF. MOM can be used in concert with DIIS, though care should
 be taken to not turn MOM on until the oscillatory behavior begins. In some
 cases, a static mixing of Fock Matrices from adjacent iterations can quench
 oscillations. This mixing, known as ``damping'' can be activated by setting the
-\texttt{DAMPING\_PERCENTAGE} keyword to a nonzero percent. 
+\optionname{DAMPING\_PERCENTAGE} keyword to a nonzero percent. 
 
 \subsubsection{SCF ERI Algorithms}
 
 The key difficulty in the SCF procedure is treatment of the four-index ERI
 contributions to the Fock Matrix. A number of algorithms are available in
-\PSIfour for these terms. The algorithm is selected by the \texttt{SCF\_TYPE}
-keyword, which defaults to \texttt{PK}. 
+\PSIfour for these terms. The algorithm is selected by the \optionname{SCF\_TYPE}
+keyword, which defaults to \optionval{PK}. 
 
 \begin{description}
-\item[\texttt{PK:}] An in-core, presorted algorithm using exact ERIs. Quite fast
+\item[\optionval{PK}:] An in-core, presorted algorithm using exact ERIs. Quite fast
 for a zero-error algorithm if enough memory is available. Integrals are
 generated only once, symmetry is utilized to reduce number of integrals. 
-\item[\texttt{OUT\_OF\_CORE:}] An out-of-core, unsorted algorithm using exact
+\item[\optionval{OUT\_OF\_CORE}:] An out-of-core, unsorted algorithm using exact
 ERIs. Overcomes the memory bottleneck of the current PK algorithm. Integrals are
 generated only once, symmetry is utilized to reduce number of integrals. 
-\item[\texttt{DIRECT:}] An in-core repeated integral evaluation algorithm using
+\item[\optionval{DIRECT}:] An in-core repeated integral evaluation algorithm using
 exact ERIs. Symmetry is used to reduce the number of integrals, and no disk is
 used. However, integral regeneration is quite costly, implying that this
 algorithm should be used only if there is not enough disk space for the
-\texttt{OUT\_OF\_CORE} algorithm. 
-\item[\texttt{DF:}] A density-fitted algorithm designed for computations with
+\optionval{OUT\_OF\_CORE} algorithm. 
+\item[\optionval{DF}:] A density-fitted algorithm designed for computations with
 thousands of basis functions. This algorithm is highly optimized, and is
 threaded with a mixture of parallel BLAS and OpenMP. Note that this algorithm
 should use the -JKFIT series of auxiliary bases, \emph{not} the -RI or -MP2FIT
 bases. The default guess for auxiliary basis set should work for all Dunning
-bases, otherwise the \texttt{DF\_BASIS\_SCF} keyword can be used to manually
+bases, otherwise the \optionname{DF\_BASIS\_SCF} keyword can be used to manually
 specify the auxiliary basis. This algorithm is preferred unless either
 absolute accuracy is required [$\gtrsim$CCSD(T)] or a -JKFIT auxiliary basis is
 unavailable for the primary basis/atoms involved. 
@@ -332,8 +332,8 @@ unavailable for the primary basis/atoms involved.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
-sieving, set the \texttt{INTS\_TOLERANCE} keyword to your desired cutoff
-($1.0\mathrm{E}-12$ is recommended for most applications).
+sieving, set the \optionname{INTS\_TOLERANCE} keyword to your desired cutoff
+(1.0\e{-12} is recommended for most applications).
 
 \subsubsection{KS-DFT} 
 
@@ -346,28 +346,28 @@ for the DFT code.
 \subsubsection{Recomendations}
 
 The SCF code is already quite flexible and powerful, with new features being
-added weekly. We have tried as much as possible to keep the number of keywords
-to a minimum, and to allow all keywords to be used in the presence of all other
-keywords. Below are some rough words of advice about using the SCF code for
+added weekly. We have tried as much as possible to keep the number of options
+to a minimum, and to allow all options to be used in the presence of all other
+options. Below are some rough words of advice about using the SCF code for
 practical calculations:
 \begin{itemize}
-\item The SAD guess is usually your friend, even for open-shell systems (at the
+\item The \optionval{SAD} guess is usually your friend, even for open-shell systems (at the
 very least, it gets the right number of electrons, unlike some other programs).
 For instance, we have found that a simple SAD guess is often as good as doing a
 full SCF in a 3-21G basis and then performing a cast-up, at a fraction of the
-cost.  However, SAD and \texttt{DOCC}/\texttt{SOCC} arrays do not play very well
+cost.  However, SAD and \optionname{DOCC}/\optionname{SOCC} arrays do not play very well
 at the moment. 
-\item Do not specify the \texttt{DOCC} or \texttt{SOCC} arrays unless you are
+\item Do not specify the \optionname{DOCC} or \optionname{SOCC} arrays unless you are
 really sure you have these correct, or the system is behaving unusually. 
 This also helps with the above point.
-\item For wall time, \texttt{DF} beats \texttt{OUT\_OF\_CORE}, and 
-\texttt{PK} beats
-\texttt{DIRECT}. Use \texttt{DF} unless you need absolute accuracy or do not
+\item For wall time, \optionval{DF} beats \optionval{OUT\_OF\_CORE}, and 
+\optionval{PK} beats
+\optionval{DIRECT}. Use \optionval{DF} unless you need absolute accuracy or do not
 have a -JKFIT auxiliary set for your primary basis/atom type. Then use
-\texttt{OUT\_OF\_CORE} unless you run out of disk space.
-\item For very large systems, you may need to relax \texttt{E\_CONVERGENCE} and
-\texttt{D\_CONVERGENCE}, as the error is extensive in the size of the system.
-$1.0\textsc{E}-7$ is usually sufficient.  
+\optionval{OUT\_OF\_CORE} unless you run out of disk space.
+\item For very large systems, you may need to relax \optionname{E\_CONVERGENCE} and
+\optionname{D\_CONVERGENCE}, as the error is extensive in the size of the system.
+1.0\e{-7} is usually sufficient.  
 \item Don't mess with the convergence options unless convergence is a problem.
 We have optimized the parameters for efficiency over a wide array of system
 types.  

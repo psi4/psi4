@@ -382,6 +382,9 @@ def optimize(name, **kwargs):
     PsiMod.print_out("\tOptimizer: Did not converge!")
     return 0.0
 
+##  Aliases  ##
+opt = optimize
+
 def parse_arbitrary_order(name):
     namelower = name.lower()
 
