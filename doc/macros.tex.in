@@ -74,6 +74,11 @@
 \providecommand{\e}[1]{\ensuremath{\times 10^{#1}}}
 
 %
+% Math / theory
+%
+\newcommand{\pg}[2]{\ensuremath{#1_{\mathrm{#2}}}} % Convenient point group/irrep labels
+
+%
 % Psi C and Fortran Language elements
 %
 \def\celem#1{{\tt #1}}
@@ -101,6 +106,7 @@
 \addtolength{\rcwidth}{-1.0\lcwidth}
 \addtolength{\rcwidth}{-6.0\tabcolsep}
 }
+
 
 \newcommand{\funcdesc}[4]{
 \celem{#1} \\

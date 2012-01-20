@@ -45,7 +45,7 @@ a final restricted Hartree--Fock energy in a section like this:
 
   @RHF Final Energy:   -76.02665366589162
 \end{verbatim}
-By default, the energy should be converged to about 1.0E-8, so agreement
+By default, the energy should be converged to about 1.0\e{-8}, so agreement
 is only expected for about the first 8 digits after the decimal.  If the
 computation does not complete, there is probably a problem with the
 compilation or installation of the program (see the installation
@@ -272,7 +272,7 @@ set globals {
 energy('sapt0')
 \end{Snippet}
 
-Before, we have been setting options individually with commands like 
+Before, we have been setting keywords individually with commands like 
 {\tt set basis cc-pVDZ}.  Because we have a few more options now, it's
 convenient to place them together into the {\tt set globals} or {\tt set}
 block, bounded by {\tt \{\dots\}}.  This
@@ -308,7 +308,7 @@ for the SAPT procedure.
 
 To speed up the computation a little, we also tell the SAPT procedure to
 freeze the core electrons with the \optionname{freeze\_core} option.  The SAPT
-procedure is invoked with the simple call, {\tt energy(\textquotesingle sapt0\textquotesingle)}.  This
+procedure is invoked with the simple call, {\tt energy(\qq sapt0\qq)}.  This
 call knows to automatically run two monomer computations and a dimer
 computation and then use these results to perform the SAPT analysis.  The
 various energy components are printed at the end of the output, in addition
@@ -437,7 +437,7 @@ loops need to be indented, and each line in the loop has to be indented
 by the same amount.  The first line in the loop, {\tt dimer.R = R},
 sets the Z-matrix variable {\tt R} of the molecule called {\tt dimer}
 to the {\tt R} value extracted from the {\tt Rvals} array.  The next line,
-{\tt ecp[R] = cp(\textquotesingle ccsd(t)\textquotesingle)}, computes the counterpoise-corrected
+{\tt ecp[R] = cp(\qq ccsd(t)\qq)}, computes the counterpoise-corrected
 CCSD(T) energy and places it in the {\tt ecp} dictionary with {\tt R} as
 the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in

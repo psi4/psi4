@@ -7,8 +7,8 @@
  * 4) find_D is then computed with the renormalized C matrices, and everything is transparent until 1) on the next cycle
  *
  * Some executive decisions:
- *  -DIIS: Upon FRAC start, the old DIIS info is nuked. However, the iteration count is not reset, so DIIS will
- *         probably begin again immediately. Hopefully this is OK. The exception is if you set FRAC_DIIS to false,
+ *  -DIIS: Upon FRAC start, the old DIIS info is nuked, and DIIS_START is incremented by the current iteration count. 
+ *         Thus, DIIS begins again on the next iteration. The exception is if you set FRAC_DIIS to false,
  *         in which case DIIS will cease for good upon FRAC start. 
  *  -MOM:  To use MOM with FRAC, set MOM_START to either FRAC_START or FRAC_START+1 (I think I prefer the latter).
  */
@@ -59,6 +59,10 @@ void HF::frac()
         if (input_docc_ || input_socc_) 
             throw PSIEXCEPTION("Fractional Occupation SCF: Turn off DOCC/SOCC");
 
+        // Throw if the user is trying to start MOM before FRAC
+        if (options_.get_int("MOM_START") <= options_.get_int("FRAC_START") && options_.get_int("MOM_START") != 0)
+            throw PSIEXCEPTION("Fractional Occupation SCF: MOM must start after FRAC");
+
         // Throw if the use is just way too eager
         if (MOM_excited_) 
             throw PSIEXCEPTION("Fractional Occupation SCF: Don't try an excited-state MOM");
@@ -73,8 +77,15 @@ void HF::frac()
             
             // Throw if user requests frac occ above nalpha/nbeta 
             int max_i = (i > 0 ? nalpha_: nbeta_);
-            if (abs(i) > max_i)
-                throw PSIEXCEPTION("Fractional Occupation SCF: FRAC_OCC indices may not exceed occupied electrons"); 
+            if (abs(i) > max_i + 1)
+                throw PSIEXCEPTION("Fractional Occupation SCF: FRAC_OCC indices may not exceed occupied electrons by more than one."); 
+            else if(abs(i) == max_i + 1) {
+                if (i > 0)
+                    nalpha_++;
+                else 
+                    nbeta_++;
+            }
+
             // Throw if the user is insane
             if (val < 0.0)
                 throw PSIEXCEPTION("Fractional Occupation SCF: PSI4 is not configured for positrons. Please annihilate and start again");             
@@ -90,6 +101,7 @@ void HF::frac()
             diis_manager_->delete_diis_file();
             diis_manager_.reset();
             initialized_diis_manager_ = false;
+            diis_start_ += iteration_ + 1;
         }
 
         // Turn yonder DIIS off if requested

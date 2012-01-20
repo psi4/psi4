@@ -12,9 +12,9 @@ bra- and ket- of the $(ov|ov)$-type Electron Repulsion Integrals (ERIs)
 appearing in MP2 are cast onto a linear-scaling auxiliary basis by least-squares
 fitting.  Substitution of the DF factorization into the MP2 equations results in
 a formal scaling and prefactor reduction of MP2, and further speed gains are
-possible due heavy utilization of matrix-multiplication kernels and minimal
+possible due to heavy utilization of matrix-multiplication kernels and minimal
 storage requirements in a DF approach. The method has been found to be quite
-robust and accurate, and should be preferred unless extreme accuracy is required
+robust and accurate, and it should be preferred unless extreme accuracy is required
 or a fitting basis is not defined for the primary basis and atom type
 encountered. In particular, we have found excellent efficiency and tractability
 gains when using DFMP2 in concert with a DFSCF reference.  An efficient,
@@ -37,13 +37,13 @@ set freeze_core True
 energy('dfmp2')
 \end{Snippet}
 
-The \texttt{energy} call executes the predefined DFMP2 procedure, first calling
+The \texttt{energy()} call executes the predefined DFMP2 procedure, first calling
 the SCF module with a default RHF reference and DF algorithm for the
 two-electron integrals. When the orbitals are converged, the DFMP2 module is
 launched, which forms the density-fitted $(Q|ov)$ integrals and then builds the
 full $(ov|ov)$ tensor in blocks, evaluating the contributions to the MP2 energy
-as it goes. An RHF-MP2 wavefunction is selected automatically due to the RHF
-reference. In this example, we freeze the core, both for efficiency, and
+as it goes. A RHF-MP2 wavefunction is selected automatically due to the RHF
+reference. In this example, we freeze the core, both for efficiency and
 because split-valence bases like cc-pVDZ do not contain core correlation
 functions. The result looks something like:
 \begin{verbatim}
@@ -74,18 +74,18 @@ The theory, breakdown of results, and common keywords used in DFMP2 are presente
 M\o{}ller--Plesset Theory (MPn) or Many-Body Perturbation Theory (MBPT) through second order has the spin-orbital formula:
 \begin{equation}
 E_{\mathrm{total}}^{(2)}  = E_{\mathrm{Reference}} - \frac{f_{ia}
-f_{ia}}{\epsilon_a - \epsilon_i} - \frac{1}{4} \frac{<ij||ab>^2}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}
+f_{ia}}{\epsilon_a - \epsilon_i} - \frac{1}{4} \frac{\langle ij||ab\rangle^2}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}
 \end{equation}
 Here $i$ and $j$ are occupied spin orbitals, $a$ and $b$ are virtual spin
 orbitals, $f_{ia}$ are the $ov$ Fock Matrix elements, $\epsilon$ are the orbital
-eigenvalues, and $<ij||ab>$ are the antisymmetrized physicist's ERIs. For
+eigenvalues, and $\langle ij||ab\rangle$ are the antisymmetrized physicist's ERIs. For
 converged RHF and UHF references, the singles correction,
 \begin{equation}
 E_{\mathrm{MBPT}}^{(1)} = - \frac{f_{ia} f_{ia}}{\epsilon_a - \epsilon_i},
 \end{equation}
-is zero due to the Bruillion Condition, and the first contribution to the perturbation series is at the second order:
+is zero due to the Brillouin Condition, and the first contribution to the perturbation series is at the second order:
 \begin{equation}
-E_{\mathrm{MBPT}}^{(2)}  = - \frac{1}{4} \frac{<ij|ab>^2}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}.
+E_{\mathrm{MBPT}}^{(2)}  = - \frac{1}{4} \frac{\langle ij|ab\rangle^2}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}.
 \end{equation}
 
 In the DFMP2 module, the first-order contribution, or ``singles energy'' is
