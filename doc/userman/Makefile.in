@@ -11,7 +11,7 @@ SUBTEX = \
 additional-docs.tex cc.tex detcas.tex detci.tex input.tex \
 introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
 psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex \
-psithon.tex basissets.tex pywrappers.tex dfmp2.tex sapt.tex
+psithon.tex basissets.tex pywrappers.tex dfmp2.tex sapt.tex adc.tex
 
 OTFTEX = \
 tests_descriptions.tex keywords.tex expert_keywords.tex options.tex psi4bases.tex variables_list.tex physconst.tex
