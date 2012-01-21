@@ -24,6 +24,7 @@
 \newcommand{\PSIcints}{\module{cints}\xspace}
 \newcommand{\PSIcderiv}{\module{cints --deriv1}\xspace}
 \newcommand{\PSIdetci}{\module{detci}\xspace}
+\newcommand{\PSIadc}{\module{adc}\xspace}
 \newcommand{\PSIdetcas}{\module{detcas}\xspace}
 \newcommand{\PSIdetcasman}{\module{detcasman}\xspace}
 \newcommand{\PSIclag}{\module{clag}\xspace}
