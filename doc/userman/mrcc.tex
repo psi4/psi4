@@ -23,40 +23,33 @@ energy('mrccsdt')
 
 {\tt mrccsdt} in the call to {\tt energy()} instructs \PSIfour\ to first perform an RHF calculation and then call MRCC to compute the CCSDT energy. For a CCSDT(Q) energy, simply use {\tt mrccsdt(q)} in the call to {\tt energy}.  MRCC can be used to perform geometry optimization and frequency calculations as well.
 
-At this time, \PSIfour\ is only about to automatically generate the proper input file for MRCC for all methods listed below. For other methods, you will be required to use the MRCC keywords described elsewhere in this manual.
+At this time, \PSIfour\ is only about to automatically generate the proper input file for MRCC for all methods listed in table \ref{tab:mrccauto}. For other methods, you will be required to use the MRCC keywords described elsewhere in this manual.
 
-\begin{enumerate}
-\item CCSD         
-\item CCSDT        
-\item CCSDTQ       
-\item CCSDTQP      
-\item CCSDTQPH     
-\item CCSD(T)      
-\item CCSDT(Q)     
-\item CCSDTQ(P)    
-\item CCSDTQP(H)   
-\item CCSD(T)\_L    
-\item CCSDT(Q)\_L   
-\item CCSDTQ(P)\_L  
-\item CCSDTQP(H)\_L 
-\item CCSDT-1a     
-\item CCSDTQ-1a    
-\item CCSDTQP-1a   
-\item CCSDTQPH-1a  
-\item CCSDT-1b     
-\item CCSDTQ-1b    
-\item CCSDTQP-1b   
-\item CCSDTQPH-1b  
-\item CC2          
-\item CC3          
-\item CC4          
-\item CC5          
-\item CC6          
-\item CCSDT-3      
-\item CCSDTQ-3     
-\item CCSDTQP-3    
-\item CCSDTQPH-3   
-\end{enumerate}
+\begin{table}
+\caption{Methods available for automatic interface with MRCC. $^*$Pertubative methods not available with ROHF reference.} \label{tab:mrccauto}
+\begin{center}
+\small
+\begin{tabular}{lll} \hline\hline
+CCSD        & CCSD(T)$^*$      & CCSD(T)\_L$^*$    \\
+CCSDT       & CCSDT(Q)$^*$     & CCSDT(Q)\_L$^*$   \\
+CCSDTQ      & CCSDTQ(P)$^*$    & CCSDTQ(P)\_L$^*$  \\
+CCSDTQP     & CCSDTQP(H)$^*$   & CCSDTQP(H)\_L$^*$ \\
+CCSDTQPH    &                  &                   \\
+            &                  &                   \\
+CCSDT-1a    & CCSDT-1b         & CCSDT-3           \\
+CCSDTQ-1a   & CCSDTQ-1b        & CCSDTQ-3          \\
+CCSDTQP-1a  & CCSDTQP-1b       & CCSDTQP-3         \\
+CCSDTQPH-1a & CCSDTQPH-1b      & CCSDTQPH-3        \\
+            &                  &                   \\
+CC2         &                  &                   \\
+CC3         &                  &                   \\
+CC4         &                  &                   \\
+CC5         &                  &                   \\
+CC6         &                  &                   \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{table}
 
 Frozen-core approximation is also supported in the MRCC interface. To optimize, CH$_4$ with CCSDT freezing the 1s on carbon, run:
 
