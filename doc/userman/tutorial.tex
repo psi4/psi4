@@ -33,8 +33,8 @@ energy('scf')
 
 For your convenience, this example can be found in {\tt
 psi4/samples/tu1-h2o-energy/input.dat}.  You can run it if you wish.
-Once \PSIfour\ is in your path (see the User Configuration section \ref{configuration} of the
-installation instructions), you can run this computation by typing
+Once \PSIfour\ is in your path (see the User Configuration section of
+the installation instructions), you can run this computation by typing
 \begin{verbatim}
 psi4 input.dat output.dat
 \end{verbatim}
@@ -357,7 +357,7 @@ create separate input files for each distance to be studied.  But most of
 these input files are identical, except that the interatomic distance is
 different.  Psithon lets you specify all this in a single input file,
 looping over the different distances with an array like this: {\tt
-Rvals=[2.0, 2.5, 3.0, 4.0, 5.0]}.
+Rvals=[2.5, 3.0, 4.0]}.
 
 Let's also suppose you want to do counterpoise (CP) corrected energies.
 Counterpoise correction involves computing the dimer energy and then
@@ -376,7 +376,8 @@ So, we're going to do counterpoise-corrected CCSD(T) energies for Ne$_2$ at
 a series of different interatomic distances.  And let's print out a table
 of the interatomic distances we've considered, and the CP-corrected CCSD(T)
 interaction energies (in kcal mol$^{-1}$) at each geometry.  Doing all this
-in a single input is surprisingly easy in \PSIfour.  Here's the input.
+in a single input is surprisingly easy in \PSIfour.  Here's the input
+(available as {\tt psi4/samples/tu6-cp-ne2}).
 
 \begin{Snippet}
 #! Example potential energy surface scan and CP-correction for Ne2
@@ -387,7 +388,7 @@ molecule dimer {
   Ne 1 R
 }
 
-Rvals=[2.0, 2.5, 3.0, 4.0, 5.0]
+Rvals=[2.5, 3.0, 4.0]
 
 set basis aug-cc-pVDZ
 set freeze_core True
