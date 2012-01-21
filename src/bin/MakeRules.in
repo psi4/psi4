@@ -62,11 +62,6 @@ else
 $(PSITARGET): $(BINOBJ) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`
 	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $^ $(END_EXPORT) $(FILTEREDLDLIBS)
-ifneq ($(strip $(DSYMUTIL)),)
-ifneq ($(strip $(CXXDBG)),)
-	(cd `dirname $(PSITARGET)` && $(DSYMUTIL) `basename $(PSITARGET)`)
-endif
-endif
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(DESTDIR)$(bindir)
