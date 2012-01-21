@@ -187,6 +187,9 @@ fd-freq-energy-large:  SCF DZ finite difference frequencies by energies for C4NH
 fd-gradient:  SCF STO-3G finite-difference tests
 
 
+frac:         Carbon/UHF Fractionally-Occupied SCF Test Case 
+
+
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.
 
 
