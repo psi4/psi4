@@ -9,18 +9,22 @@ multi-core machines.  An advanced parser written in Python allows the user
 input to have a very simple style for routine computations, but it can also
 automate very complex tasks with ease. 
 
-In this section, we provide an overview of
-some of the features of \PSIfour\ along with the prerequisite steps for
-running calculations.  Section \ref{tutorial} provides a brief tutorial to
-help new users get started.  Section \ref{input} offers further details
-into the structure of \PSIfour\ input files and a discussion of some of
-the most important options.  Later sections deal with the different types
-of computations which can be done using \PSIfour\ (e.g., Hartree--Fock,
-MP2, coupled-cluster) and general procedures such as geometry optimization
-and vibrational frequency analysis.  The appendix includes a complete
-description of all possible input keywords for each module,
-as well as tables of available basis sets and a listing of the sample input
-files available under {\tt psi4/samples}.
+In this section, we provide an overview of some of the features of
+\PSIfour\ along with the prerequisite steps for running calculations.
+Section \ref{tutorial} provides a brief tutorial to help new users
+get started.  Section \ref{psithon} offers further details into the
+structure of \PSIfour\ input files, and how Python can be mixed with
+quantum chemistry directives in \PSIfour.  Section \ref{pywrappers}
+provides more detail on the Python functions provided by \PSIfour
+and discusses some of the higher-level functions such as counterpoise
+correction, complete-basis-set extrapolation, and running computations
+on an entire database of molecules at a time.  Later sections deal with
+the different types of computations which can be done using \PSIfour\
+(e.g., Hartree--Fock, MP2, coupled-cluster) and general procedures
+such as geometry optimization and vibrational frequency analysis.
+The appendix includes a complete description of all possible input
+keywords for each module, as well as tables of available basis sets and
+a listing of the sample input files available under {\tt psi4/samples}.
 For the latest \PSIfour\ documentation, check \htmladdnormallink{{\tt
 www.psicode.org}} {http://www.psicode.org/}.
 
@@ -189,8 +193,8 @@ UHF/ROHF MP2          & Y & N \\
 RHF DF-MP2            & Y & N \\
 RHF ADC(2)            & Y & N \\
 %RHF MP2-R12           & Y & N \\
-RHF/ROHF CI(n)        & Y & Y \\
-RHF/ROHF RAS-CI       & Y & Y \\
+RHF/ROHF CI(n)        & Y & N \\
+RHF/ROHF RAS-CI       & Y & N \\
 RHF/ROHF MP(n)        & Y & N \\
 RHF/ROHF ZAPT(n)      & Y & N \\
 %RAS-CI DBOC           & Y & N \\
