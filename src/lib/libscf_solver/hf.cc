@@ -67,7 +67,7 @@ void HF::common_init()
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
-    integral_threshold_ = 0.0;
+    integral_threshold_ = options_.get_double("INTS_TOLERANCE");
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
@@ -622,7 +622,7 @@ void HF::form_Shalf()
     // ==> CANONICAL ORTHOGONALIZATION <== //
 
     // Decide symmetric or canonical
-    double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
+    double S_cutoff = options_.get_double("S_TOLERANCE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
         if (print_ && (Communicator::world->me() == 0))

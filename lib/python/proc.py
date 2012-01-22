@@ -581,8 +581,12 @@ def run_sapt(name, **kwargs):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2")
     elif (name.lower() == 'sapt2+'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+")
+    elif (name.lower() == 'sapt2+(3)'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", False)
     elif (name.lower() == 'sapt2+3'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", True)
     PsiMod.print_out("\n")
     banner(name.upper())
     PsiMod.print_out("\n")
@@ -662,8 +666,12 @@ def run_sapt_ct(name, **kwargs):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2")
     elif (name.lower() == 'sapt2+-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+")
+    elif (name.lower() == 'sapt2+(3)-ct'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", False)
     elif (name.lower() == 'sapt2+3-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", True)
     PsiMod.print_out("\n")
     banner('SAPT Charge Transfer')
     PsiMod.print_out("\n")

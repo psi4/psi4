@@ -1,4 +1,5 @@
 \subsection{Density-Fitted Second-Order M\o{}ller--Plesset Perturbation Theory (DFMP2)} \label{dfmp2}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 \subsubsection{Introduction}
 
@@ -83,7 +84,7 @@ converged RHF and UHF references, the singles correction,
 \begin{equation}
 E_{\mathrm{MBPT}}^{(1)} = - \frac{f_{ia} f_{ia}}{\epsilon_a - \epsilon_i},
 \end{equation}
-is zero due to the Brillouin Condition, and the first contribution to the perturbation series is at the second order:
+is zero due to the Brillioun Condition, and the first contribution to the perturbation series is at the second order:
 \begin{equation}
 E_{\mathrm{MBPT}}^{(2)}  = - \frac{1}{4} \frac{\langle ij|ab\rangle^2}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}.
 \end{equation}
@@ -97,26 +98,26 @@ to form the singles amplitudes, and then the second-order amplitudes are formed
 with the semicanonical spin orbitals via the same machinery as a UHF-MP2. Note
 that the singles energy should be very close to zero for RHF and UHF references;
 if it is not, there is a good chance your orbitals are not well converged.
-Increase the SCF \texttt{E\_CONVERGENCE} and/or \texttt{D\_CONVERGENCE} keywords
+Tighten the SCF \optionname{E-CONVERGENCE}{SCF} and/or \optionname{D-CONVERGENCE}{SCF} keywords
 and try again. 
 
 To increase the efficiency of MP2 energy evaluation, spin integration
 and simplification is carried out. This also allows for the identification of
 Same-Spin (SS) and Opposite-Spin (OS) terms for use in Grimme's Spin-Component
-Scaled (SCS) MP2. For RHF-MP2 (also seen as RMP2), the spin-free equations are
-(note that the integrals are now chemist's integrals over spatial orbitals),
+Scaled (SCS) MP2. For RHF-MP2 (also labeled as RMP2), the spin-free equations are
+(note that the integrals are now chemist's integrals over spatial orbitals)
 \begin{equation}
-E_{\mathrm{MBPT,OS}}^{(2)} = - \frac{(ia|jb)(ia|jb)}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j},
+E_{\mathrm{MBPT,OS}}^{(2)} = - \frac{(ia|jb)(ia|jb)}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}
 \end{equation}
-and, 
+and 
 \begin{equation}
 E_{\mathrm{MBPT,SS}}^{(2)} = - \frac{[(ia|jb)-(ib|ja)](ia|jb)}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}.
 \end{equation}
-For UHF-MP2 (also seen as UMP2) and the second-order contribution to ROHF-MBPT(2) using semicanonical orbitals, the spin-free equations are,
+For UHF-MP2 (also labeled as UMP2) and the second-order contribution to ROHF-MBPT(2) using semicanonical orbitals, the spin-free equations are
 \begin{equation}
-E_{\mathrm{MBPT,OS}}^{(2)} = - \frac{(ia^\alpha|jb^\beta)(ia^\alpha|jb^\beta)}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j},
+E_{\mathrm{MBPT,OS}}^{(2)} = - \frac{(ia^\alpha|jb^\beta)(ia^\alpha|jb^\beta)}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}
 \end{equation}
-and, 
+and 
 \begin{equation}
 E_{\mathrm{MBPT,SS}}^{(2)} = - \frac{1}{2}\frac{[(ia^\alpha|jb^\alpha)-(ib^\alpha|ja^\alpha)](ia^\alpha|jb^\alpha)}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}
 \end{equation}
@@ -131,19 +132,19 @@ energy.
 \subsubsection{Recommendations}
 
 All-in-all, DFMP2 should be a simple module to use, with few keywords (fully
-documented in the appendix). Some basic recommendations are included below:
+documented in the Appendix \ref{kw-DFMP2}). Some basic recommendations are included below:
 \begin{itemize}
 \item DFMP2 should be run with the $ov$-type RI or MP2FIT auxiliary basis sets,
 \emph{not} the -JKFIT basis sets. The automatic basis selector should work fine for
 all of the Dunning bases (provided the auxiliary basis exists for the atom in
-question). If it does not, use the \texttt{DF\_BASIS\_MP2} keyword to manually
+question). If it does not, use the \optionname{DF-BASIS-MP2}{DFMP2} keyword to manually
 specify the basis. 
 \item DFMP2 likes memory. At a minimum, $2Q^2$ doubles are required, where $Q$ is
 the size of the auxiliary basis set. However, there is one disk transpose of the
 $(Q|ov)$ tensor in the RHF-MP2 algorithm [two for UHF-MP2 and ROHF-MBPT(2)], so more
 memory will reduce seek times. If you notice DFMP2 using more memory than
 allowed, it is possible that the threaded three-index ERI computers are using
-too much overhead memory. Set the \texttt{DF\_INTS\_NUM\_THREADS} to a smaller
+too much overhead memory. Set the \optionname{DF-INTS-NUM-THREADS}{DFMP2} to a smaller
 number to prevent this in this section (does not affect threaded efficiency in
 the rest of the code). 
 \item DFMP2 likes disk. At a minimum, $2Qov$ doubles are required for RHF-MP2,
@@ -152,11 +153,10 @@ and $4Qov$ doubles are required for UHF-MP2.
 on threaded BLAS (such as MKL) for efficiency. The main ${\cal O}(N^5)$ step is
 done via small/medium-sized DGEMMs inside of OpenMP, so make sure to set the
 \texttt{OMP\_NESTED} environment variable to \texttt{FALSE} to prevent thread
-thrash.
+thrash (or just as well, do not define \texttt{OMP\_NESTED} at all).
 \item Freezing core is good for both efficiency and correctness purposes.
-Freezing virtuals is not recommended. Determination of frozen core/virtuals is
-handled at the SCF level, though the DFMP2 module will remind you how many
-frozen/active orbitals it is using. 
+Freezing virtuals is not recommended.The DFMP2 module will remind you how many
+frozen/active orbitals it is using in a section just below the title. 
 \item ROHF-MBPT(2) may be preferred to UHF-MP2, as the latter can suffer from
 severe spin contamination in some cases.
 \item MP2 is not suitable for systems with multireference character. The

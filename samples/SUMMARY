@@ -19,10 +19,10 @@ cc13a:        UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gra
 cc14:         ROHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
 
-cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
 
 
-cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
 
 
 cc17:         Single point energies of multiple excited states with EOM-CCSD
@@ -193,7 +193,7 @@ frac:         Carbon/UHF Fractionally-Occupied SCF Test Case
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.
 
 
-mcscf1:       ROHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.
+mcscf1:       ROHF 6-31G** energy of the $^3B@@1$ state of CH$@@2$, with Z-matrix input. The occupations are specified explicitly.
 
 
 mcscf2:       TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
@@ -259,7 +259,7 @@ props1:       RHF STO-3G dipole moment computation, performed by applying a fini
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
-psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$_2$ state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 
 pubchem:      RHF STO-3G Benzene optimization using PubChem to obtain geometry
@@ -304,7 +304,7 @@ scf11-freq-from-energies:  Test frequencies by finite differences of energies fo
 scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
 
 
-scf3:         UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.
+scf3:         UHF 6-31G** energy of the $^3B@@1$ state of CH$@@2$, with Z-matrix input. The occupations are specified explicitly.
 
 
 scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan, and then the same procedure is performed using polar coordinates, converted to Cartesian coordinates.

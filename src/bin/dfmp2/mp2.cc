@@ -314,6 +314,7 @@ void DFMP2::print_energies()
     Process::environment.globals["CURRENT ENERGY"] = energies_["Total Energy"];
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
     Process::environment.globals["DF-MP2 TOTAL ENERGY"] = energies_["Total Energy"];
+    Process::environment.globals["DF-MP2 SINGLES ENERGY"] = energies_["Singles Energy"];
     Process::environment.globals["DF-MP2 SAME-SPIN ENERGY"] = energies_["Same-Spin Energy"];
     Process::environment.globals["DF-MP2 OPPOSITE-SPIN ENERGY"] = energies_["Opposite-Spin Energy"];
     Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = energies_["Correlation Energy"];

@@ -1,4 +1,5 @@
 \subsection{Symmetry-Adapted Perturbation Theory} \label{sapt}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
@@ -45,7 +46,7 @@ E_{SAPT2+(3)} = E_{SAPT2+} + E_{elst,resp}^{(13)} + E_{disp}^{(30)}
 \end{equation}
 \begin{equation}
 \label{eqn:SAPT2+3}
-E_{SAPT2+(3)} = E_{SAPT2+} + E_{ind,resp}^{(30)} + E_{exch-ind,resp}^{(30)}
+E_{SAPT2+3} = E_{SAPT2+(3)}
 + E_{exch-disp}^{(30)} + E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)}
 \end{equation}
 A thorough analysis of the performance of these truncations of SAPT can be
@@ -88,13 +89,14 @@ set globals {
 energy('sapt0')
 energy('sapt2')
 energy('sapt2+')
+energy('sapt2+(3)')
 energy('sapt2+3')
 
 \end{Snippet}
 The \PSIsapt\ module uses the standard \PSIfour\ partitioning of the dimer
-into monomers. Additionally, the \texttt{NO\_REORIENT} flag must be included
-and the use of spatial symmetry disabled by setting the \texttt{SYMMETRY}
-option to \texttt{C1}. A final note is that the \PSIsapt\ module is only 
+into monomers. Additionally, the \texttt{no\_reorient} flag must be included
+and the use of spatial symmetry disabled by setting the \texttt{symmetry}
+option to \texttt{c1}. A final note is that the \PSIsapt\ module is only 
 capable of performing SAPT comuptations for interactions between closed-shell 
 singlets. 
 
@@ -141,7 +143,7 @@ Schaefer, {\em J. Chem. Phys.}, {\bf 135}, 174107 (2011).
 {\bf Basic SAPT0 Keywords} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{BASIS} & The basis set used to describe the monomer molecular
+         \optionname{BASIS}{SAPT} & The basis set used to describe the monomer molecular
 orbitals. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -149,7 +151,7 @@ orbitals. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DF\_BASIS\_SAPT} & The fitting basis to use for all
+         \optionname{DF-BASIS-SAPT}{SAPT} & The fitting basis to use for all
 two-electron integrals in the SAPT computation. \PSIfour\ will attempt to
 pick a reasonable fitting basis if one is not provided. \\
 \end{tabular*}
@@ -158,7 +160,7 @@ pick a reasonable fitting basis if one is not provided. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DF\_BASIS\_ELST} & Optionally, a different fitting basis
+         \optionname{DF-BASIS-ELST}{SAPT} & Optionally, a different fitting basis
 can be used for the $E_{elst}^{(10)}$ and $E_{exch}^{(10)}$ terms. This may
 be important if heavier elements are involved. \\
 \end{tabular*}
@@ -167,7 +169,7 @@ be important if heavier elements are involved. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{FREEZE\_CORE} & Sets the number of core orbitals to freeze
+         \optionname{FREEZE-CORE}{GLOBALS} & Sets the number of core orbitals to freeze
 in the evaluation of the $E_{disp}^{(20)}$ and $E_{exch-disp}^{(20)}$
 terms. It is recommended to freeze core in all SAPT computations. \\
 
@@ -179,7 +181,7 @@ terms. It is recommended to freeze core in all SAPT computations. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{D\_CONVERGE} & Convergence of the residual of the CPHF
+         \optionname{D-CONVERGENCE}{SAPT} & Convergence of the residual of the CPHF
 coefficients needed for the $E_{ind,resp}^{(20)}$ term. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -187,7 +189,7 @@ coefficients needed for the $E_{ind,resp}^{(20)}$ term. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{E\_CONVERGE} & Convergence of the energy change in the 
+         \optionname{E-CONVERGENCE}{SAPT} & Convergence of the energy change in the 
 $E_{ind,resp}^{(20)}$ term during the solution of the CPHF equations (in
 hartrees). \\
 \end{tabular*}
@@ -196,17 +198,17 @@ hartrees). \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{MAXITER} & The maximum number of CPHF iterations. \\
+         \optionname{MAXITER}{SAPT} & The maximum number of CPHF iterations. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} integer &  {\bf Default:} 50 \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{PRINT} & The print level for the \PSIsapt\ module. If
-\texttt{PRINT} is set to 0, only the header and final results are printed.
-If \texttt{PRINT} is set to 1, some intermediate quantities are also
-printed. For large SAPT computations, it is advisable to set \texttt{PRINT}
+         \optionname{PRINT}{SAPT} & The print level for the \PSIsapt\ module. If
+\optionname{PRINT}{SAPT} is set to 0, only the header and final results are printed.
+If \optionname{PRINT}{SAPT} is set to 1, some intermediate quantities are also
+printed. For large SAPT computations, it is advisable to set \optionname{PRINT}{SAPT}
 to 1 so the progess of the computation can be tracked. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -218,7 +220,7 @@ to 1 so the progess of the computation can be tracked. \\
 {\bf Advanced SAPT0 Keywords} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{AIO\_CPHF} & Do disk I/O asynchronously during the
+         \optionname{AIO-CPHF}{SAPT} & Do disk I/O asynchronously during the
 solution of the CPHF equations. This option may speed up the computation
 slightly, however use of this option will cause \PSIfour\ to spawn an
 additional thread. \\
@@ -228,7 +230,7 @@ additional thread. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{AIO\_DFINTS} & Do disk I/O asynchronously during the
+         \optionname{AIO-DF-INTS}{SAPT} & Do disk I/O asynchronously during the
 formation of the DF integrals. This option may speed up the computation 
 slightly, however use of this option will cause \PSIfour\ to spawn an 
 additional thread. \\
@@ -238,7 +240,7 @@ additional thread. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{NO\_RESPONSE} & Don't solve the CPHF equations, evaluate
+         \optionname{NO-RESPONSE}{SAPT} & Don't solve the CPHF equations, evaluate
 $E_{ind}^{(20)}$ and $E_{exch-ind}^{(20)}$ instead of their
 response-including counterparts. Only turn on this option if you are not 
 going to use the induction energy. \\
@@ -248,7 +250,7 @@ going to use the induction energy. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{INTEGRAL\_CUTOFF} & All three-index DF integrals and those
+         \optionname{INTS-TOLERANCE}{SAPT} & All three-index DF integrals and those
 contributing to four-index integrals that fall below this Schwarz bound
 will be neglected. The default is very conservative, however, there isn't much
 to gain from loosening it. \\
@@ -258,7 +260,7 @@ to gain from loosening it. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DENOMINATOR\_DELTA} & The \PSIsapt\ module uses
+         \optionname{DENOMINATOR-DELTA}{SAPT} & The \PSIsapt\ module uses
 approximate energy denominators for most of the $E_{disp}^{(20)}$ and
 $E_{exch-disp}^{(20)}$ evaluation. This option controls the maximum
 allowable error norm in the energy denominator tensor. \\
@@ -268,7 +270,7 @@ allowable error norm in the energy denominator tensor. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DENOMINATOR\_ALGORITHM} & Should the energy denominators
+         \optionname{DENOMINATOR-ALGORITHM}{SAPT} & Should the energy denominators
 be approximated with Laplace transformations or a Cholesky decomposition?
 We have found Laplace transformations to be slightly more efficient. \\
 
@@ -280,7 +282,7 @@ We have found Laplace transformations to be slightly more efficient. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{SCALE\_OS} & The \PSIsapt\ module will print a
+         \optionname{SAPT-OS-SCALE}{SAPT} & The \PSIsapt\ module will print a
 decomposition of the $E_{disp}^{(20)}$ and $E_{exch-disp}^{(20)}$ terms
 into same-spin and oppposite-spin contributions, in analogy to the SCS-MP2
 method of Stefan Grimme. This option controls the scaling of the
@@ -291,7 +293,7 @@ oppposite-spin contributions. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{SCALE\_SS} & This option controls the scaling of the
+         \optionname{SAPT-SS-SCALE}{SAPT} & This option controls the scaling of the
 same-spin contributions. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -299,10 +301,10 @@ same-spin contributions. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DEBUG} & The \texttt{DEBUG} flag will print lots of
+         \optionname{DEBUG}{GLOBALS} & The \optionname{DEBUG}{GLOBALS} flag will print lots of
 additional intermediate quantities that are not usually interesting. It 
 will also do additional work (which is not optimized for large systems). Don't
-turn on the \texttt{DEBUG} flag. \\
+turn on the \optionname{DEBUG}{GLOBALS} flag. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} integer &  {\bf Default:} 0 \\
@@ -326,29 +328,29 @@ computations on the adenine-thymine complex can be performed with an
 aug-cc-pVTZ basis in less than 64GB of memory.
 
 In addition the SAPT0 keywords listed above, the following additional
-keywords are relevant for Higher-order SAPT.
-\begin{flushleft}
-{\bf Additional SAPT Keywords for Higher-order SAPT} \\[5pt]
-\end{flushleft}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DO\_THIRD\_ORDER} & This option computes the following
-corrections: $E_{ind}^{(30)}$, $E_{ind,resp}^{(30)}$, $E_{exch-ind}^{(30)}$,
-$E_{exch-disp}^{(30)}$, $E_{ind-disp}^{(30)}$, and
-$E_{exch-ind-disp}^{(30)}$. This is only relavent when the energy computed
-is SAPT2+3; this option distinguishes SAPT2+(3) from SAPT2+3. A brief
-technical note: the evaluation of $E_{disp}^{(30)}$ will be slower if this
-option is activated. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} boolean &  {\bf Default:} FALSE \\
-         & & \\
-\end{tabular*}
+advanced keywords are relevant for Higher-order SAPT.
+%\begin{flushleft}
+%{\bf Additional SAPT Keywords for Higher-order SAPT} \\[5pt]
+%\end{flushleft}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         \optionname{DO\_THIRD\_ORDER} & This option computes the following
+%corrections: $E_{ind}^{(30)}$, $E_{ind,resp}^{(30)}$, $E_{exch-ind}^{(30)}$,
+%$E_{exch-disp}^{(30)}$, $E_{ind-disp}^{(30)}$, and
+%$E_{exch-ind-disp}^{(30)}$. This is only relavent when the energy computed
+%is SAPT2+3; this option distinguishes SAPT2+(3) from SAPT2+3. A brief
+%technical note: the evaluation of $E_{disp}^{(30)}$ will be slower if this
+%option is activated. \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} boolean &  {\bf Default:} FALSE \\
+%         & & \\
+%\end{tabular*}
 
 \begin{flushleft}
 {\bf Additional Advanced Keywords for Higher-order SAPT} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{INTEGRAL\_CUTOFF} & All three-index DF integrals and those
+         \optionname{INTS-TOLERANCE}{SAPT} & All three-index DF integrals and those
 contributing to four-index integrals that fall below this Schwarz bound
 will be neglected. The default is very conservative, however, there is
 nothing to gain from loosening it in the case of higher-order SAPT. \\
@@ -358,7 +360,7 @@ nothing to gain from loosening it in the case of higher-order SAPT. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{SAPT\_MEM\_CHECK} & This flag can be used to disable
+         \optionname{SAPT-MEM-CHECK}{SAPT} & This flag can be used to disable
 memory checking in the higher-order SAPT code; disabling it is ill advised. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -368,7 +370,7 @@ memory checking in the higher-order SAPT code; disabling it is ill advised. \\
 
 \subsubsection{MP2 Natural Orbitals}
 
-One of the unique features of the \PSIsapt\ module is it's ability to use
+One of the unique features of the \PSIsapt\ module is its ability to use
 MP2 natural orbitals (NOs) to speed up the evaluation of the triples
 contribution to disperison. By transforming to the MP2 NO basis, we can
 throw away virtual orbitals that are expected to contribute little to the
@@ -383,7 +385,7 @@ E.~G. Hohenstein and C.~D. Sherrill,
 {\bf Basic Keywords Controlling MP2 NO Approximations} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{NAT\_ORBS} & This flag activates MP2 NO approximations for
+         \optionname{NAT-ORBS}{SAPT} & This flag activates MP2 NO approximations for
 the triples correction to dispersion. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -391,10 +393,10 @@ the triples correction to dispersion. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{OCC\_CUTOFF} & All virtual orbitals with smaller
+         \optionname{OCC-TOLERANCE}{SAPT} & All virtual orbitals with smaller
 occupation numbers (eigenvalues of the MP2 one-particle density matrix)
 than this threshold will be discarded. See the above reference for a
-discussion of acceptable values for \texttt{OCC\_CUTOFF}. \\
+discussion of acceptable values for \optionname{OCC-TOLERANCE}{SAPT}. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} double &  {\bf Default:} 1.0$\times 10^{-6}$\\
@@ -405,7 +407,7 @@ discussion of acceptable values for \texttt{OCC\_CUTOFF}. \\
 {\bf Advanced Keywords Controlling MP2 NO Approximations} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{NAT\_ORBS\_T2} & This flag activates MP2 NO approximations for
+         \optionname{NAT-ORBS-T2}{SAPT} & This flag activates MP2 NO approximations for
 the $v^4$ block of two-electron integrals in the evaluation of second-order
 T2 amplitudes. At present, this approximation has not been rigorously
 tested, however, initial results are promising for both accuracy and
@@ -430,6 +432,7 @@ energy function.
 energy('sapt0-ct')
 energy('sapt2-ct')
 energy('sapt2+-ct')
+energy('sapt2+(3)-ct')
 energy('sapt2+3-ct')
 
 \end{Snippet}
@@ -484,17 +487,16 @@ set sapt {
     print          1
     nat_orbs       true
     freeze_core    true
-    do_third_order true
 }
 
 energy('sapt2+3')
 
 \end{Snippet}
-To reiterate some of the options mentioned above: the \texttt{NAT\_ORBS} 
-option will compute MP2 natural orbitals and use them in the evaluation of
-the triples correction to dispersion, the \texttt{DO\_THIRD\_ORDER} option
-will evaluate the additional third-order corrections that distinguish SAPT2+3
-from SAPT2+(3). This SAPT2+3/aug-cc-pVDZ computation produces the following 
+To reiterate some of the options mentioned above: the
+\optionname{NAT-ORBS}{SAPT} option will compute MP2 natural orbitals and use
+them in the evaluation of the triples correction to dispersion, and the
+\optionname{FREEZE-CORE}{GLOBALS} option will freeze the core throughout the SAPT
+computation. This SAPT2+3/aug-cc-pVDZ computation produces the following
 results:
 \begin{Snippet}
 
