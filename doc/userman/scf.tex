@@ -1,4 +1,5 @@
-\subsection{Self-Consistent Field (SCF)} \label{scf}
+\subsection{Self-Consistent Field (SCF)} \label{sec:scf}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 \subsubsection{Introduction}
 
@@ -62,7 +63,7 @@ below.
 After the iterations are completed, a number of one-electron properties are
 printed, and some bookkeeping is performed to set up possible correlated
 computations. Additional one-electron properties are available by increasing the
-\optionname{PRINT} option. Also printed are the occupied and virtual orbital
+\optionname{PRINT}{GLOBALS} option. Also printed are the occupied and virtual orbital
 energies, which are useful in elucidating the stability and reactivity of the
 system. Finally, for UHF/UKS references, the $S^2$ diagnostic is printed, as the
 UHF/UKS ansatz does not constrain the wavefunction to be an eigenfunction of the
@@ -130,11 +131,11 @@ spin-specializations are Restricted-Kohn--Sham (RKS) and Unrestricted-Kohn--Sham
 (UKS). Restricted-Open-Shell-Kohn--Sham (ROKS) and
 Constrained-Unrestricted-Kohn--Sham (CUKS) are not implemented, as they always
 predict a ground state with positive definite spin density, which is not
-physical. Spin specialization is specified by the \optionname{REFERENCE} option,
+physical. Spin specialization is specified by the \optionname{REFERENCE}{SCF} option,
 which defaults to \optionval{RHF}.  Electronic configuration is specified by the
 charge/multiplicity field in the molecular geometry input.  If spatial symmetry
 is used, the assignment of occupied orbitals to irreps may be specified by the
-\optionname{DOCC} and \optionname{SOCC} integer arrays. If these arrays are not
+\optionname{DOCC}{GLOBALS} and \optionname{SOCC}{GLOBALS} integer arrays. If these arrays are not
 specified by the user, the program will assign occupation to irreps according to
 the lowest orbital energies at each SCF iteration (Aufbau ordering).  
 
@@ -158,11 +159,11 @@ combinations of AO basis functions may be discarded, the number of
 canonical-orthogonalized OSOs and MOs may be slightly smaller than the number of
 AOs. In \PSIfour, symmetric orthogonalization is used by default, unless the
 smallest overlap eigenvalue falls below the user-supplied double option
-\optionname{S\_MIN\_EIGENVALUE}, which defaults to 1.0\e{-7}. If the smallest
+\optionname{S-TOLERANCE}{SCF}, which defaults to 1.0\e{-7}. If the smallest
 eigenvalue is below this cutoff, canonical orthogonalization is forced, and all
 eigenvectors corresponding to eigenvalues below the cutoff are eliminated.
 Use of canonical orthogonalization can be forced by setting the
-\optionname{S\_ORTHOGONALIZATION} option to \optionval{CANONICAL}. Note that in
+\optionname{S-ORTHOGONALIZATION}{SCF} option to \optionval{CANONICAL}. Note that in
 practice, the MOs and OSOs are built separately within each irrep from the
 symmetry-adapted combinations of AOs known as Unique Symmetry Orbitals (USOs).
 For canonical orthogonalization, this implies that the number of MOs and OSOs
@@ -181,7 +182,7 @@ symmetry c2 # Two irreps is easier to comprehend
 }
 
 set {
-s_min_eigenvalue 0.0001 # Set an unreasonably tight 
+s_tolerance 0.0001      # Set an unreasonably tight 
                         # tolerance to force canonical
 basis aug-cc-pv5z       # This diffuse basis will have 
                         # small-ish eigenvalues for even H2O
@@ -227,9 +228,9 @@ to produce new molecular orbitals, from which a new density is computed. This
 procedure is continued until either convergence is reached or a preset maximum
 number of iterations is exceeded. Convergence is determined by both change in
 energy and root-mean-square change in density matrix values, which must be below
-the user-specified $\optionname{E\_CONVERGENCE}$ and
-$\optionname{D\_CONVERGENCE}$, respectively. The maximum number of iterations is
-specified by the \optionname{MAXITER} option. It should be noted that SCF is a
+the user-specified \optionname{E-CONVERGENCE}{SCF} and
+\optionname{D-CONVERGENCE}{SCF}, respectively. The maximum number of iterations is
+specified by the \optionname{MAXITER}{SCF} option. It should be noted that SCF is a
 chaotic process, and, as such, often requires careful selection of initial
 orbitals and damping during iterations to ensure convergence. This is
 particularly likely for large systems, metallic systems, multireference systems,
@@ -247,7 +248,7 @@ off of the converged value. The SAD guess also produces fractionally occupied
 closed-shell orbitals, as required by the density-fitted exchange routines
 (discussed below). For open-shell systems, the Generalized Wolfsberg-Helmholtz
 (GWH) guess is available, and may be superior to a core guess. \optionval{SAD} and \optionval{GWH} may
-be invoked by the \optionname{GUESS} option. A more involved alternative to these
+be invoked by the \optionname{GUESS}{SCF} option. A more involved alternative to these
 approaches is to converge the SCF in a small basis and then project the
 resultant occupied molecular orbitals up into a larger basis. This can be done
 automatically by placing a \pyoptionname{cast\_up =} \pyoptionval{\qq{\textit{SMALL\_BASIS\_NAME}}} modifier in
@@ -293,18 +294,18 @@ of by orbital eigenvalue, i.e., by choosing the set of new orbitals which looks
 most like some previously known ``good'' set.  The ``good'' set is typically the
 occupied orbitals from an one of the oscillating iterations with the lowest
 total energy. For an oscillating system where the lowest total energy occurs on
-iterations $N,N+2,\ldots$, invoking \optionname{MOM\_START} \optionval{N} can often rescue the
+iterations $N,N+2,\ldots$, invoking \optionname{MOM-START}{SCF} $N$ can often rescue the
 convergence of the SCF. MOM can be used in concert with DIIS, though care should
 be taken to not turn MOM on until the oscillatory behavior begins. In some
 cases, a static mixing of Fock Matrices from adjacent iterations can quench
 oscillations. This mixing, known as ``damping'' can be activated by setting the
-\optionname{DAMPING\_PERCENTAGE} keyword to a nonzero percent. 
+\optionname{DAMPING-PERCENTAGE}{SCF} keyword to a nonzero percent. 
 
 \subsubsection{SCF ERI Algorithms}
 
 The key difficulty in the SCF procedure is treatment of the four-index ERI
 contributions to the Fock Matrix. A number of algorithms are available in
-\PSIfour for these terms. The algorithm is selected by the \optionname{SCF\_TYPE}
+\PSIfour for these terms. The algorithm is selected by the \optionname{SCF-TYPE}{SCF}
 keyword, which defaults to \optionval{PK}. 
 
 \begin{description}
@@ -324,7 +325,7 @@ thousands of basis functions. This algorithm is highly optimized, and is
 threaded with a mixture of parallel BLAS and OpenMP. Note that this algorithm
 should use the -JKFIT series of auxiliary bases, \emph{not} the -RI or -MP2FIT
 bases. The default guess for auxiliary basis set should work for all Dunning
-bases, otherwise the \optionname{DF\_BASIS\_SCF} keyword can be used to manually
+bases, otherwise the \optionname{DF-BASIS-SCF}{SCF} keyword can be used to manually
 specify the auxiliary basis. This algorithm is preferred unless either
 absolute accuracy is required [$\gtrsim$CCSD(T)] or a -JKFIT auxiliary basis is
 unavailable for the primary basis/atoms involved. 
@@ -332,7 +333,7 @@ unavailable for the primary basis/atoms involved.
 
 For some of these algorithms, Schwarz and/or density sieving can be used to
 identify negligible integral contributions in extended systems. To activate
-sieving, set the \optionname{INTS\_TOLERANCE} keyword to your desired cutoff
+sieving, set the \optionname{INTS-TOLERANCE}{SCF} keyword to your desired cutoff
 (1.0\e{-12} is recommended for most applications).
 
 \subsubsection{KS-DFT} 
@@ -346,27 +347,26 @@ for the DFT code.
 \subsubsection{Recomendations}
 
 The SCF code is already quite flexible and powerful, with new features being
-added weekly. We have tried as much as possible to keep the number of options
+added weekly. We have tried as much as possible to keep the number of options 
+(documented in Appendix \ref{kw-SCF})
 to a minimum, and to allow all options to be used in the presence of all other
 options. Below are some rough words of advice about using the SCF code for
 practical calculations:
 \begin{itemize}
-\item The \optionval{SAD} guess is usually your friend, even for open-shell systems (at the
-very least, it gets the right number of electrons, unlike some other programs).
-For instance, we have found that a simple SAD guess is often as good as doing a
-full SCF in a 3-21G basis and then performing a cast-up, at a fraction of the
-cost.  However, SAD and \optionname{DOCC}/\optionname{SOCC} arrays do not play very well
-at the moment. 
-\item Do not specify the \optionname{DOCC} or \optionname{SOCC} arrays unless you are
-really sure you have these correct, or the system is behaving unusually. 
-This also helps with the above point.
+\item For \optionname{GUESS}{SCF}, the \optionval{SAD} guess is usually your
+friend, even for open-shell systems (at the very least, it gets the right number
+of electrons, unlike some other programs). For instance, we have found that a
+simple SAD guess is often as good as doing a full SCF in a 3-21G basis and then
+performing a cast-up, at a fraction of the cost.  However, SAD and
+\optionname{DOCC}{GLOBALS}/\optionname{SOCC}{GLOBALS} arrays do not play very
+well together at the moment. 
 \item For wall time, \optionval{DF} beats \optionval{OUT\_OF\_CORE}, and 
 \optionval{PK} beats
 \optionval{DIRECT}. Use \optionval{DF} unless you need absolute accuracy or do not
 have a -JKFIT auxiliary set for your primary basis/atom type. Then use
 \optionval{OUT\_OF\_CORE} unless you run out of disk space.
-\item For very large systems, you may need to relax \optionname{E\_CONVERGENCE} and
-\optionname{D\_CONVERGENCE}, as the error is extensive in the size of the system.
+\item For very large systems, you may need to relax \optionname{E-CONVERGENCE}{SCF} and
+\optionname{D-CONVERGENCE}{SCF}, as the error is extensive in the size of the system.
 1.0\e{-7} is usually sufficient.  
 \item Don't mess with the convergence options unless convergence is a problem.
 We have optimized the parameters for efficiency over a wide array of system

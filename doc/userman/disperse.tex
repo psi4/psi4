@@ -1,15 +1,15 @@
-\section{Items to Disperse} \label{disperse}
+\section{Items to Disperse} \label{sec:disperse}
 
 Place here interesting oddities that you think should be absorbed into the manual eventually.
 
 \begin{itemize}
-\item If multiple molecules are specified in an input file, set a basis set below each since
-a set basis only attaches itself to the active (most recent) molecule.
+%\item If multiple molecules are specified in an input file, set a basis set below each since
+%a set basis only attaches itself to the active (most recent) molecule.
 \item Notate what gradient methods can only be run in $C_1$ symmetry.
-\item Environment variables accumulate over the course of a input file and are not cleared
-by clean(). So if you run a sto-3g FCI followed by a aug-cc-pVQZ SCF followed by a print\_variables()
-statement, the last will include both SCF TOTAL ENERGY and FCI TOTAL ENERGY. Don't get excited that
-you got a high-quality calculation cheaply.
+%\item Environment variables accumulate over the course of a input file and are not cleared
+%by clean(). So if you run a sto-3g FCI followed by a aug-cc-pVQZ SCF followed by a print\_variables()
+%statement, the last will include both SCF TOTAL ENERGY and FCI TOTAL ENERGY. Don't get excited that
+%you got a high-quality calculation cheaply.
 \item All boolean options may be called through 1/0, yes/no, true/false, on/off, regardless of case.
 \end{itemize}
 

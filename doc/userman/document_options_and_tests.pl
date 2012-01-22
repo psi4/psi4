@@ -73,20 +73,21 @@ while(<DRIVER>){
 close DRIVER;
 
 my @temp = ();
-print_hash(\%Keywords, "keywords.tex", 1);
+print_hash(\%Keywords, "keywords.tex", 1, "kw");
 my @PSIMODULES = @temp;
-print_hash(\%Expert, "expert_keywords.tex", 0);
+print_hash(\%Expert, "expert_keywords.tex", 0, "ekw");
 
 sub print_hash
 {
  my %hash     = %{$_[0]};
  my $filename = $_[1];
  my $print_description = $_[2];
+ my $label_string = $_[3];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
  print OUT "{\n \\footnotesize\n";
  foreach my $Module (sort {$a cmp $b} keys %hash){
      push(@temp, $Module);
-     printf OUT "\n\\subsection{%s}\n",$Module;
+     printf OUT "\n\\subsection{%s}\\label{%s-%s}\n",$Module,$label_string, $Module;
      if (exists $ModuleDescriptions{$Module} and $print_description){
          printf OUT "\n{\\normalsize $ModuleDescriptions{$Module}}\\\\\n";
          # Insert an empty table entry as a spacer
@@ -101,8 +102,10 @@ sub print_hash
          my %SectionHash = %{$hash{$Module}{$Subsection}};
          foreach my $Keyword (sort {$a cmp $b} keys %SectionHash){
              my %KeyHash = %{$SectionHash{$Keyword}};
+             my $DashedKeyword = $Keyword;
+             $DashedKeyword =~ s/\\_/-/g;
+             printf OUT "\\paragraph{%s}\\label{op-%s-%s} \n", $Keyword, $Module, $DashedKeyword;
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.05\\textwidth}p{0.95\\textwidth}}';
-             printf OUT "\n\t %s\\\\ \n", $Keyword;
              printf OUT "\n\t & %s \\\\ \n", $KeyHash{"Comment"};
              if($KeyHash{"Possibilities"}){
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
@@ -318,6 +321,7 @@ foreach my $Dir(readdir TESTS){
         $Dir_tex =~ s/_/\\_/g;
         my $Description_tex = $Description;
         $Description_tex =~ s/_/\\_/g;
+        $Description_tex =~ s/@@/_/g;
         print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
         print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
         print TEXSUMMARY "\\end{tabular*}\n";

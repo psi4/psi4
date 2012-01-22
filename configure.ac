@@ -950,12 +950,12 @@ AC_CONFIG_FILES([
           src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/mrcc/Makefile
-          src/bin/df-mp2/Makefile
+          src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
           src/bin/optking/Makefile
-          src/bin/df-cc/Makefile
+          src/bin/dfcc/Makefile
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
           src/bin/adc/Makefile

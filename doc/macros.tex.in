@@ -72,12 +72,12 @@
 \def\pyoptionname#1{\textbf{\MakeLowercase{{\textsf {#1}}}}}
 \def\pyoptionval#1{{\MakeLowercase{{\textsf {#1}}}}}
 \def\qq{\textquotesingle}
-\providecommand{\e}[1]{\ensuremath{\times 10^{#1}}}
 
 %
 % Math / theory
 %
 \newcommand{\pg}[2]{\ensuremath{#1_{\mathrm{#2}}}} % Convenient point group/irrep labels
+\providecommand{\e}[1]{\ensuremath{\times 10^{#1}}}  % 4.4\e{-8}
 
 %
 % Psi C and Fortran Language elements
