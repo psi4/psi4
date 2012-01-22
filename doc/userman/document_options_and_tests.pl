@@ -318,6 +318,7 @@ foreach my $Dir(readdir TESTS){
         $Dir_tex =~ s/_/\\_/g;
         my $Description_tex = $Description;
         $Description_tex =~ s/_/\\_/g;
+        $Description_tex =~ s/@@/_/g;
         print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
         print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
         print TEXSUMMARY "\\end{tabular*}\n";
