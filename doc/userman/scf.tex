@@ -353,15 +353,13 @@ to a minimum, and to allow all options to be used in the presence of all other
 options. Below are some rough words of advice about using the SCF code for
 practical calculations:
 \begin{itemize}
-\item For \optionname{GUESS}{SCF}, the \optionval{SAD} guess is usually your friend, even for open-shell systems (at the
-very least, it gets the right number of electrons, unlike some other programs).
-For instance, we have found that a simple SAD guess is often as good as doing a
-full SCF in a 3-21G basis and then performing a cast-up, at a fraction of the
-cost.  However, SAD and \optionname{DOCC}{GLOBALS}/\optionname{SOCC}{GLOBALS} arrays do not play very well
-at the moment. 
-\item Do not specify the \optionname{DOCC}{GLOBALS} or \optionname{SOCC}{GLOBALS} arrays unless you are
-really sure you have these correct, or the system is behaving unusually. 
-This also helps with the above point.
+\item For \optionname{GUESS}{SCF}, the \optionval{SAD} guess is usually your
+friend, even for open-shell systems (at the very least, it gets the right number
+of electrons, unlike some other programs). For instance, we have found that a
+simple SAD guess is often as good as doing a full SCF in a 3-21G basis and then
+performing a cast-up, at a fraction of the cost.  However, SAD and
+\optionname{DOCC}{GLOBALS}/\optionname{SOCC}{GLOBALS} arrays do not play very
+well together at the moment. 
 \item For wall time, \optionval{DF} beats \optionval{OUT\_OF\_CORE}, and 
 \optionval{PK} beats
 \optionval{DIRECT}. Use \optionval{DF} unless you need absolute accuracy or do not

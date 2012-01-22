@@ -10,20 +10,26 @@ but their mixtures are not, neither within a basis set (\textit{e.g.}, 6D/7F) no
 For built-in basis sets, the correct \optionval{spherical}/\optionval{cartesian} value is set internally from the orbital basis.
 
 
-\subsection{Built-in Basis Sets}
-Tables \ref{table:basisPopleOrbital} (Pople), \ref{table:basisDunningOrbital}--\ref{table:basisDunningDK} (Dunning), 
-and \ref{table:basisOther} (other) summarize the orbital basis sets available in \PSIfour. 
-These tables are arranged so that columns indicate degree of augmentation by diffuse functions 
-(generally necessary for anions, excited states, and noncovalent interactions)
-and DTQ56 indicate the X$\;=\zeta$ levels available.
-Several intermediate levels of diffuse space between the customary non-augmented and augmented versions have been
-supplied for each basis set, including heavy-augmented and Truhlar's\cite{Papajak:2011:10} calendar truncations 
-described in Table \ref{table:basisMonths}.
-Fitting bases JKFIT (Table \ref{table:basisDunningJKFIT}), RI (Table \ref{table:basisDunningMP2FIT}), and
-DUAL (Table \ref{table:basisDunningDUAL}) are available for methods incorporating density-fitting or
-dual-basis approximations.
-Citations for basis sets can be found in their definition files at psi4/lib/basis in the source.
-For basis set availability by element and the default value for keyword \optionname{PUREAM}{GLOBALS}, consult Appendix \ref{basisElement}.
+\subsection{Built-in Basis Sets} Tables \ref{table:basisPopleOrbital} (Pople),
+\ref{table:basisDunningOrbital}--\ref{table:basisDunningDK} (Dunning), and
+\ref{table:basisOther} (other) summarize the orbital basis sets available in
+\PSIfour.  These tables are arranged so that columns indicate degree of
+augmentation by diffuse functions (generally necessary for anions, excited
+states, and noncovalent interactions) and DTQ56 indicate the X$\;=\zeta$ levels
+available.  Several intermediate levels of diffuse space between the customary
+non-augmented and augmented versions have been supplied for each basis set,
+including heavy-augmented and Truhlar's\cite{Papajak:2011:10} calendar
+truncations described in Table \ref{table:basisMonths}.  Fitting bases JKFIT
+(Table \ref{table:basisDunningJKFIT}), RI (Table
+\ref{table:basisDunningMP2FIT}), and DUAL (Table \ref{table:basisDunningDUAL})
+are available for methods incorporating density-fitting or dual-basis
+approximations. JKFIT sets are appropriate for fitting $(oo|$-type products,
+such as encountered in SCF theory and the electrostatics/exchange terms of SAPT.
+RI sets are appropriate for fitting $(ov|$-type products, such as encountered in
+MP2 and most SAPT terms.  Citations for basis sets can be found in their
+definition files at psi4/lib/basis in the source.  For basis set availability by
+element and the default value for keyword \optionname{PUREAM}{GLOBALS}, consult
+Appendix \ref{basisElement}.
 
 \begin{table}[!htbp]
 \begin{footnotesize}
