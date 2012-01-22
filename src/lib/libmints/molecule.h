@@ -124,8 +124,6 @@ protected:
     std::string symmetry_from_input_;
     /// Old previous symmetry frame (so one can fix to it, if desired)
     Matrix *old_symmetry_frame_;
-    /// Old com displacement vector (so one can fix to it, if desired)
-    Vector3 *old_com_vector_;
 
 public:
     Molecule();
