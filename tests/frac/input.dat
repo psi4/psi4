@@ -2,22 +2,22 @@
 
 # References
 reference_energies = {\
-    5.500E+00 :  -3.7485432603738772E+01,\
-    5.600E+00 :  -3.7525317869582707E+01,\
-    5.700E+00 :  -3.7565998322823376E+01,\
-    5.800E+00 :  -3.7607524484618772E+01,\
-    5.900E+00 :  -3.7649953113881637E+01,\
-    6.000E+00 :  -3.7693348569486680E+01,\
-    6.100E+00 :  -3.7691822105703679E+01,\
-    6.200E+00 :  -3.7690701979752816E+01,\
-    6.300E+00 :  -3.7690062517700383E+01,\
-    6.400E+00 :  -3.7689995337775983E+01,\
-    6.500E+00 :  -3.7690612804534439E+01,\
-    6.600E+00 :  -3.7692051802097822E+01,\
-    6.700E+00 :  -3.7694478246532874E+01,\
-    6.800E+00 :  -3.7698093577101716E+01,\
-    6.900E+00 :  -3.7703145619240921E+01,\
-    7.000E+00 :  -3.7709947474609336E+01,\
+        5.500E+00 : -3.7479827870463211E+01,\
+        5.600E+00 : -3.7519777157724278E+01,\
+        5.700E+00 : -3.7560494710854691E+01,\
+        5.800E+00 : -3.7602027729245592E+01,\
+        5.900E+00 : -3.7644429418258710E+01,\
+        6.000E+00 : -3.7687760545776982E+01,\
+        6.100E+00 : -3.7686231278907123E+01,\
+        6.200E+00 : -3.7685148131020213E+01,\
+        6.300E+00 : -3.7684578391807456E+01,\
+        6.400E+00 : -3.7684604177989364E+01,\
+        6.500E+00 : -3.7685326293326320E+01,\
+        6.600E+00 : -3.7686869113983626E+01,\
+        6.700E+00 : -3.7689386736023678E+01,\
+        6.800E+00 : -3.7693070640743862E+01,\
+        6.900E+00 : -3.7698159082829569E+01,\
+        7.000E+00 : -3.7704948149321794E+01,\
 }
 
 # => Cation Computation (Doublet) <= #
@@ -31,7 +31,7 @@ symmetry c1 # C1 is best, otherwise the occupation gets squirrely
 
 # Standard SCF options (this one is DF-UHF)
 set print 2                  # Higher print level for extra properties
-set basis aug-cc-pvqz        # Primary basis
+set basis aug-cc-pvdz        # Primary basis
 set scf_type df              # SCF algorithm is DF
 set reference uhf            # Reference is UHF
 
@@ -49,7 +49,7 @@ symmetry c1 # C1 is best, otherwise the occupation gets squirrely
 
 # Standard SCF options (this one is DF-UHF)
 set print 2                  # Higher print level for extra properties
-set basis aug-cc-pvqz        # Primary basis
+set basis aug-cc-pvdz        # Primary basis
 set scf_type df              # SCF algorithm is DF
 set reference uhf            # Reference is UHF
 set d_convergence 7          # 8 digits seems unstable
@@ -68,7 +68,7 @@ symmetry c1 # C1 is best, otherwise the occupation gets squirrely
 
 # Standard SCF options (this one is DF-UHF)
 set print 2                  # Higher print level for extra properties
-set basis aug-cc-pvqz        # Primary basis
+set basis aug-cc-pvdz        # Primary basis
 set scf_type df              # SCF algorithm is DF
 set reference uhf            # Reference is UHF
 
@@ -114,7 +114,7 @@ symmetry c1 # C1 is best, otherwise the occupation gets squirrely
 
 # Standard SCF options (this one is DF-UHF)
 set print 2                  # Higher print level for extra properties
-set basis aug-cc-pvqz        # Primary basis
+set basis aug-cc-pvdz        # Primary basis
 set scf_type df              # SCF algorithm is DF
 set reference uhf            # Reference is UHF
 set d_convergence 7          # 8 digits seems unstable
