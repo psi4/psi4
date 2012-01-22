@@ -1,4 +1,4 @@
-#! Single point gradient of 2-1A1 state of H2O with EOM-CCSD
+#! Single-point gradient, analytic and via finite-differences of 2-1A1 state of H2O with EOM-CCSD
 
 molecule h2o {
   0 1
@@ -17,7 +17,7 @@ set {
 gradient('eom-ccsd')
 analytic_grad = PsiMod.get_gradient()
 
-#shows how to access elements if desired
+#Shows how to access elements if desired.
 #nirreps = analytic_grad.nirrep()
 #print "Num irreps = %d\n" % nirreps
 #symmetry = analytic_grad.symmetry()
@@ -30,13 +30,14 @@ analytic_grad = PsiMod.get_gradient()
 #      val = analytic_grad.get(irrep, row, col)
 #      print "%d %d %20.10f\n" % (row, col, val)
 
+#Use 3-pt. formula
 gradient('eom-ccsd', dertype=0)
 findif_grad = PsiMod.get_gradient()
 
 compare_matrices(analytic_grad, findif_grad, 5, "Finite-difference (3-pt.) vs. analytic gradient to 10^-5") #TEST
 
+# Use 5-pt. formula
 set findif points 5
-
 gradient('eom-ccsd', dertype=0)
 findif_grad = PsiMod.get_gradient()
 
