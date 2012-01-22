@@ -361,6 +361,7 @@ def optimize(name, **kwargs):
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print "Optimizer: Optimization complete!"
+            PsiMod.get_active_molecule().print_in_input_format()
             PsiMod.opt_clean()
             PsiMod.clean()
 
