@@ -7,8 +7,8 @@ MODULE = false
 
 MAKE_MADNESS=@HAVE_MPI@
 
-LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -lpthread
-CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
+LDLIBS += $(LAPACK) $(BLAS) -L$(BOOST_LIB) -lboost_python -lboost_regex -lboost_thread -lboost_filesystem -lboost_system -lboost_serialization -lpthread $(PYTHON_LDFLAGS)
+CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 # gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
 FILTEREDLDLIBS = $(filter-out -lgfortranbegin,$(LDLIBS))
@@ -18,13 +18,12 @@ PSILIBS = \
 -lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf  -lPSI_lmp2 -lPSI_ccenergy -lPSI_ccsort -lPSI_psimrcc\
 -lPSI_transqt2 -lPSI_cctriples -lPSI_mp2 -lPSI_scf_solver -lPSI_lmp2_solver -lPSI_dcft -lPSI_mcscf -lPSI_sapt\
 -lPSI_sapt_solver -lPSI_cchbar -lPSI_cclambda -lPSI_ccdensity -lPSI_transqt -lPSI_dfcc -lPSI_dfcc_solver \
--lPSI_ccresponse -lPSI_detci -lPSI_omp2 \
+-lPSI_ccresponse -lPSI_detci -lPSI_omp2 -lPSI_mrcc \
 -lPSI_cceom -lPSI_dist_matrix -lPSI_adc\
 -lPSI_functional -lPSI_3index -lPSI_mints_deriv -lPSI_optking -lPSI_findif\
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
 -lPSI_ciomr -lPSI_options -lPSI_moinfo -lPSI_util -lPSI_yeti -lPSI_smartptr\
--lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel \
--lboost_python -lboost_regex -lboost_thread -lboost_filesystem -lboost_system -lboost_serialization
+-lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel
 
 ifeq ($(MAKE_MADNESS),1)
   PSILIBS += $(madlibs)/world/libMADworld.a

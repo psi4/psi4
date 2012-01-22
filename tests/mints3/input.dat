@@ -1,3 +1,5 @@
+memory 250 mb
+
 #! Test individual integral objects for correctness.
 print_stdout(' Case Study Test of Integrals')
 
@@ -172,6 +174,3 @@ print_stdout("   -H2O cc-pVTZ Nabla Integrals:")                     #TEST
 compare_matrices(RefX, Pi[0], 13, "SO Px")                           #TEST
 compare_matrices(RefY, Pi[1], 13, "SO Py")                           #TEST
 compare_matrices(RefZ, Pi[2], 13, "SO Pz")                           #TEST
-
-# There shouldn't be anything to clean
-clean()

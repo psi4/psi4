@@ -1,6 +1,7 @@
 import PsiMod
 import shutil
 import os
+import subprocess
 import re
 import input
 from molecule import *
@@ -283,11 +284,11 @@ def run_eom_cc_gradient(name, **kwargs):
     PsiMod.set_global_option('WFN', 'EOM_CCSD')
     PsiMod.set_global_option('ZETA', 'FALSE')
     PsiMod.cclambda()
-    PsiMod.set_global_option('CALC_XI', 'TRUE')
+    PsiMod.set_global_option('XI', 'TRUE')
     PsiMod.ccdensity()
     PsiMod.set_global_option('ZETA', 'TRUE')
     PsiMod.cclambda()
-    PsiMod.set_global_option('CALC_XI', 'FALSE')
+    PsiMod.set_global_option('XI', 'FALSE')
     PsiMod.ccdensity()
     PsiMod.deriv()
 
@@ -300,10 +301,10 @@ def run_adc(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
       molecule = kwargs.pop('molecule')
-  
+
     if not molecule:
         raise ValueNotSet("no molecule found")
-  
+
     PsiMod.scf()
 
     return PsiMod.adc()
@@ -316,9 +317,9 @@ def run_detci(name, **kwargs):
         maxnvect = (level+1)/2 + (level+1)%2
         PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
-           PsiMod.set_global_option('SAVE_MPN2', 2)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
         else:
-           PsiMod.set_global_option('SAVE_MPN2', 1)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'mp'):
         PsiMod.set_global_option('WFN', 'DETCI')
         PsiMod.set_global_option('MPN', 'TRUE')
@@ -327,21 +328,21 @@ def run_detci(name, **kwargs):
         maxnvect = (level+1)/2 + (level+1)%2
         PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
-           PsiMod.set_global_option('SAVE_MPN2', 2)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
         else:
-           PsiMod.set_global_option('SAVE_MPN2', 1)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('FCI', 'TRUE')
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LEVEL', 2)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LEVEL', 3)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LEVEL', 4)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
         PsiMod.set_global_option('WFN', 'DETCI')
         level = kwargs['level']
@@ -364,8 +365,8 @@ def run_detci(name, **kwargs):
         PsiMod.revoke_global_option_changed('MPN')
         PsiMod.set_global_option('MAX_NUM_VECS', 12)
         PsiMod.revoke_global_option_changed('MAX_NUM_VECS')
-        PsiMod.set_global_option('SAVE_MPN2', 0)
-        PsiMod.revoke_global_option_changed('SAVE_MPN2')
+        PsiMod.set_global_option('MPN_ORDER_SAVE', 0)
+        PsiMod.revoke_global_option_changed('MPN_ORDER_SAVE')
         PsiMod.set_global_option('FCI', 'FALSE')
         PsiMod.revoke_global_option_changed('FCI')
         PsiMod.set_global_option('EX_LEVEL', 2)
@@ -525,7 +526,7 @@ def run_sapt(name, **kwargs):
         monomerA.set_name("monomerA")
         monomerB = molecule.extract_subsets(2,1)
         monomerB.set_name("monomerB")
-    elif (sapt_basis == "monomer"): 
+    elif (sapt_basis == "monomer"):
         molecule.update_geometry()
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name("monomerA")
@@ -696,3 +697,120 @@ def run_sapt_ct(name, **kwargs):
 
     return CT
 
+def run_mrcc(name, **kwargs):
+
+    # TODO: Check to see if we really need to run the SCF code.
+    run_scf(name, **kwargs)
+
+    # The parse_arbitrary_order method provides us the following information
+    # We require that level be provided. level is a dictionary
+    # of settings to be passed to PsiMod.mrcc
+    if kwargs.has_key('level') == False:
+        raise ValidationError("level parameter was not provided.")
+
+    level = kwargs['level']
+
+    # Fullname is the string we need to search for in iface
+    fullname = level['fullname']
+
+    # User can provide 'keep' to the method.
+    # When provided, to not delete the MRCC scratch directory.
+    keep = False
+    if (kwargs.has_key('keep')):
+        keep = kwargs['keep']
+
+    # Save current directory location
+    current_directory = os.getcwd()
+
+    # Need to move to the scratch directory, perferrably into a separate directory in that location
+    psi_io = PsiMod.IOManager.shared_object()
+    os.chdir(psi_io.get_default_path())
+
+    # Make new directory specifically for mrcc
+    mrcc_tmpdir = "mrcc_" + str(os.getpid())
+    if kwargs.has_key('path'):
+        mrcc_tmpdir = kwargs['path']
+
+    # Check to see if directory already exists, if not, create.
+    if os.path.exists(mrcc_tmpdir) == False:
+        os.mkdir(mrcc_tmpdir)
+
+    # Move into the new directory
+    os.chdir(mrcc_tmpdir)
+
+    # Generate integrals and input file (dumps files to the current directory)
+    PsiMod.mrcc(level)
+
+    # Load the fort.56 file
+    # and dump a copy into the outfile
+    PsiMod.print_out("\n===== Begin fort.56 input for MRCC ======\n")
+    PsiMod.print_out(open('fort.56', 'r').read())
+    PsiMod.print_out("===== End   fort.56 input for MRCC ======\n")
+
+    # Close output file
+    PsiMod.close_outfile()
+
+    # Modify the environment:
+    #    PGI Fortan prints warning to screen if STOP is used
+    os.environ['NO_STOP_MESSAGE'] = "1"
+
+    # Call dmrcc, directing all screen output to the output file
+    try:
+        if PsiMod.outfile_name() == "stdout":
+            retcode = subprocess.call("dmrcc", shell=True)
+        else:
+            retcode = subprocess.call("dmrcc >> " + current_directory + "/" + PsiMod.outfile_name(), shell=True)
+
+        if retcode < 0:
+            print >>sys.stderr, "MRCC was terminated by signal", -retcode
+            exit(1)
+        elif retcode > 0:
+            print >>sys.stderr, "MRCC errored", retcode
+            exit(1)
+
+    except OSError, e:
+        print >>sys.stderr, "Execution failed:", e
+        exit(1)
+
+    # Scan iface file and grab the file energy.
+    e = 0.0
+    for line in file("iface"):
+        if fullname in line:
+            fields = line.split()
+            e = float(fields[5])
+
+    PsiMod.set_variable("CURRENT ENERGY", e)
+    PsiMod.set_variable(fullname + " ENERGY", e)
+
+    # Load the iface file
+    iface = open('iface', 'r')
+    iface_contents = iface.read()
+
+    # Delete mrcc tempdir
+    os.chdir("..")
+    try:
+        # Delete unless we're told not to
+        if (keep == False or kwargs.has_key('path') == False):
+            shutil.rmtree(mrcc_tmpdir)
+    except OSerror, e:
+        print >>sys.stderr, "Unable to remove MRCC temporary directory", e
+        exit(1)
+
+    # Revert to previous current directory location
+    os.chdir(current_directory)
+
+    # Reopen output file
+    PsiMod.reopen_outfile()
+
+    # If we're told to keep the files or the user provided a path, do nothing.
+    if (keep != False or kwargs.has_key('path')):
+        PsiMod.print_out("\nMRCC scratch files have been kept.\n")
+        PsiMod.print_out("They can be found in " + mrcc_tmpdir)
+
+    # Dump iface contents to output
+    PsiMod.print_out("\n")
+    banner("Full results from MRCC")
+    PsiMod.print_out("\n")
+    PsiMod.print_out(iface_contents)
+
+    return e

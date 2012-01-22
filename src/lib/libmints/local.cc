@@ -1,5 +1,6 @@
 #include <utility>
 #include <libciomr/libciomr.h>
+#include <libqt/qt.h>
 
 #include "mints.h"
 #include "local.h"

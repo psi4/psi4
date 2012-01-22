@@ -1,6 +1,8 @@
 #! ROHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations
 #! are specified explicitly.
 
+memory 250 mb
+
 
 molecule ch2 {
     0 3
@@ -21,5 +23,3 @@ set globals {
 
 thisenergy = energy('mcscf')
 
-
-clean()

@@ -1,7 +1,7 @@
-#include <libmints/mints.h>
-
-#include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
+#include <boost/python/list.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <cstdio>
@@ -9,6 +9,7 @@
 #include <map>
 #include <iomanip>
 
+#include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
@@ -70,6 +71,7 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
     namespace adc        { PsiReturnType adc(Options&);       }
+    namespace mrcc       { PsiReturnType mrcc(Options&, const boost::python::dict&); }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -86,6 +88,30 @@ namespace psi {
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
+}
+
+void py_close_outfile()
+{
+    if (outfile != stdout) {
+        fclose(outfile);
+        outfile = NULL;
+    }
+}
+
+void py_reopen_outfile()
+{
+    if (outfile_name == "stdout")
+        outfile = stdout;
+    else {
+        outfile = fopen(outfile_name.c_str(), "a");
+        if (outfile == NULL)
+            throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
+    }
+}
+
+std::string py_get_outfile_name()
+{
+    return outfile_name;
 }
 
 void py_psi_prepare_options_for_module(std::string const & name)
@@ -162,6 +188,12 @@ double py_psi_mcscf()
     }
     else
         return 0.0;
+}
+
+PsiReturnType py_psi_mrcc(const boost::python::dict& level)
+{
+    py_psi_prepare_options_for_module("MRCC");
+    return mrcc::mrcc(Process::environment.options, level);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
@@ -551,6 +583,13 @@ bool py_psi_set_global_option_double(std::string const & key, double value)
     return true;
 }
 
+bool py_psi_set_global_option_python(std::string const & key, boost::python::object& obj)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_global_python(nonconst_key, obj);
+    return true;
+}
+
 bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -613,7 +652,7 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
     return true;
 }
 
-void py_psi_set_option_python(const string& key, boost::python::object& obj)
+void py_psi_set_local_option_python(const string& key, boost::python::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -746,16 +785,6 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
-void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
-{
-    Process::environment.set_potential(potential);
-}
-
-boost::shared_ptr<ExternalPotential> py_psi_get_active_potential()
-{
-    return Process::environment.potential();
-}
-
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -876,8 +905,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
-    def("set_active_potential", py_psi_set_active_potential);
-    def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("get_gradient", py_psi_get_gradient);
     def("set_gradient", py_psi_set_gradient);
@@ -904,7 +931,9 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
-    def("set_option_python", py_psi_set_option_python);
+    def("set_global_option_python", py_psi_set_global_option_python);
+    def("set_local_option_python", py_psi_set_local_option_python);
+
     def("get_global_option_list", py_psi_get_global_option_list);
 
     // Get the option; letting liboptions decide whether to use global or local
@@ -938,6 +967,10 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Returns the location where the Psi4 source is located.
     def("psi_top_srcdir", py_psi_top_srcdir);
 
+    def("close_outfile", py_close_outfile);
+    def("reopen_outfile", py_reopen_outfile);
+    def("outfile_name", py_get_outfile_name);
+
     // modules
     def("mints", py_psi_mints);
     def("deriv", py_psi_deriv);
@@ -953,6 +986,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("lmp2", py_psi_lmp2);
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
+    def("mrcc", py_psi_mrcc);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);

@@ -98,7 +98,6 @@ void get_params(Options &options)
   params.abcd = options.get_str("ABCD");
   params.local = options.get_bool("LOCAL");
   local.cutoff = options.get_double("LOCAL_CUTOFF");
-  params.local_mos = options.get_bool("LOCAL_MOS");
   local.method = options.get_str("LOCAL_METHOD");
   local.weakp = options.get_str("LOCAL_WEAKP");
 
@@ -128,17 +127,17 @@ void get_params(Options &options)
   params.scsn = options.get_bool("SCSN_MP2");
   params.scs = options.get_bool("SCS_MP2");
   params.scscc = options.get_bool("SCS_CCSD");
-  params.scsmp2_scale_os = options.get_double("MP2_SCALE_OS");
-  params.scsmp2_scale_ss = options.get_double("MP2_SCALE_SS");
+  params.scsmp2_scale_os = options.get_double("MP2_OS_SCALE");
+  params.scsmp2_scale_ss = options.get_double("MP2_SS_SCALE");
   /* see paper by T. Takatani*/
-  params.scscc_scale_os = options.get_double("CC_SCALE_OS");
-  params.scscc_scale_ss = options.get_double("CC_SCALE_SS");
+  params.scscc_scale_os = options.get_double("CC_OS_SCALE");
+  params.scscc_scale_ss = options.get_double("CC_SS_SCALE");
 
-  if (options["MP2_SCALE_OS"].has_changed() || options["MP2_SCALE_SS"].has_changed()) {
+  if (options["MP2_OS_SCALE"].has_changed() || options["MP2_SS_SCALE"].has_changed()) {
     params.scs = 1;
     }
 
-  if (options["CC_SCALE_OS"].has_changed() || options["CC_SCALE_SS"].has_changed()) {
+  if (options["CC_OS_SCALE"].has_changed() || options["CC_SS_SCALE"].has_changed()) {
     params.scscc = 1;
     }
 
@@ -194,16 +193,16 @@ void get_params(Options &options)
   fprintf(outfile, "\tSCSN-MP2        =     %s\n", (params.scsn == 1) ? "True" : "False");
   fprintf(outfile, "\tSCS-CCSD        =     %s\n", (params.scscc == 1) ? "True" : "False");
   if (params.scs) {
-    fprintf(outfile, "\tSCS_MP2_SCALE_OS =     %.2f\n",params.scsmp2_scale_os);
-    fprintf(outfile, "\tSCS_MP2_SCALE_SS =     %.2f\n",params.scsmp2_scale_ss);
+    fprintf(outfile, "\tSCS_MP2_OS_SCALE =     %.2f\n",params.scsmp2_scale_os);
+    fprintf(outfile, "\tSCS_MP2_SS_SCALE =     %.2f\n",params.scsmp2_scale_ss);
   }
   if (params.scsn) {
-    fprintf(outfile, "\tSCSN_MP2_SCALE_OS =     %.2f\n",0.0);
-    fprintf(outfile, "\tSCSN_MP2_SCALE_SS =     %.2f\n",1.76);
+    fprintf(outfile, "\tSCSN_MP2_OS_SCALE =     %.2f\n",0.0);
+    fprintf(outfile, "\tSCSN_MP2_SS_SCALE =     %.2f\n",1.76);
   }
   if (params.scscc) {
-    fprintf(outfile, "\tCC_SCALE_OS     =     %.2f\n",params.scscc_scale_os);
-    fprintf(outfile, "\tCC_SCALE_SS     =     %.2f\n",params.scscc_scale_ss);
+    fprintf(outfile, "\tCC_OS_SCALE     =     %.2f\n",params.scscc_scale_os);
+    fprintf(outfile, "\tCC_SS_SCALE     =     %.2f\n",params.scscc_scale_ss);
   }
 
   fprintf(outfile, "\n");

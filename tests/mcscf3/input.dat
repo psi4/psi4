@@ -1,5 +1,7 @@
 #! RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.
 
+memory 250 mb
+
 refnuc =   9.329422200614    #TEST
 refscf = -76.023615019463    #TEST
 
@@ -20,5 +22,3 @@ thisenergy = energy('mcscf')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 11, "Nuclear Repulsion Energy")  #TEST
 compare_values(refscf, thisenergy, 11, "SCF energy")                                    #TEST
-
-clean()

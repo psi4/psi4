@@ -1,6 +1,8 @@
 #! Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but
 #! serves as an example of the many ways to specify geometries in Psi4.
 
+memory 250 mb
+
 # DinftyH Symmetry (D2h Abelian)
 molecule C2H2 {
    C 0 0  r1
@@ -236,5 +238,3 @@ print_out("\tLi(H20)_4^+ Test...")
 Li_H2O_4_p.update_geometry()
 Li_H2O_4_p.print_out()
 compare_strings("c2", Li_H2O_4_p.schoenflies_symbol(), "Li(H20)_4^+ point group");  #TEST
-
-clean()

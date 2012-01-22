@@ -11,10 +11,11 @@ SUBTEX = \
 additional-docs.tex cc.tex detcas.tex detci.tex input.tex \
 introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
 psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex \
-psithon.tex basissets.tex pywrappers.tex
+psithon.tex basissets.tex pywrappers.tex dfmp2.tex sapt.tex adc.tex \
+mrcc.tex
 
 OTFTEX = \
-tests_descriptions.tex keywords.tex expert_keywords.tex options.tex psi4bases.tex variables_list.tex
+tests_descriptions.tex keywords.tex expert_keywords.tex options.tex psi4bases.tex variables_list.tex physconst.tex
 
 DVI = $(TEX:%.tex=%.dvi)
 PS = $(DVI:%.dvi=%.ps)
@@ -26,4 +27,10 @@ include ../MakeRules
 $(OTFTEX):
 	@srcdir@/document_options_and_tests.pl @srcdir@
 	@srcdir@/document_bases.pl @srcdir@
+
+# special rule here to do bibliography; not needed in other docs
+userman.dvi: $(TEX) $(SUBTEX) $(OTFTEX)
+	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
+	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
+	$(LATEX) $< && $(BIBTEX) $(MAN) && $(LATEX) $< && $(LATEX) $<
 

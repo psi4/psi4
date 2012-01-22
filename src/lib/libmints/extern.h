@@ -48,9 +48,10 @@ public:
     void clear();
     
     /// Compute the external potential matrix in the given basis set
-    /// C1 for now!
     SharedMatrix computePotentialMatrix(boost::shared_ptr<BasisSet> basis);
-
+    /// Compute the contribution to the nuclear repulsion energy for the given molecule
+    double computeNuclearEnergy(boost::shared_ptr<Molecule> mol);
+    
     /// Print a trace of the external potential
     void print(FILE* out = outfile) const;
 

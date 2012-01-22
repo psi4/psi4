@@ -1,5 +1,7 @@
 #! Test frequencies by finite differences of energies for planar C4NH4 TS
 
+memory 250 mb
+
 molecule c4nh4 {
 -1 1
 C    0.0000000000    0.0000000000    1.1128564449
@@ -46,6 +48,3 @@ frequencies("scf")
 # 564.095 
 # 246.363 
 # 205.806i
-
-clean()
-

@@ -1,5 +1,7 @@
 #! He2+ FCI/cc-pVDZ Transition Dipole Moment
 
+memory 250 mb
+
 
 
 molecule he2p {
@@ -20,5 +22,3 @@ num_roots 2
 
 thisenergy = energy('fci')
 
-
-clean()

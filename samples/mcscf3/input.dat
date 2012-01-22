@@ -1,5 +1,7 @@
 #! RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.
 
+memory 250 mb
+
 
 molecule h2o {
     O
@@ -16,5 +18,3 @@ set globals {
 
 thisenergy = energy('mcscf')
 
-
-clean()

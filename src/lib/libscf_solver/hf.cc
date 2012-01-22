@@ -14,6 +14,8 @@
 #include <vector>
 #include <utility>
 
+#include <libmints/mints.h>
+
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -21,13 +23,12 @@
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <liboptions/python.h>
 #include <psifiles.h>
 #include "integralfunctors.h"
 #include "pseudospectral.h"
 #include "pkintegrals.h"
 #include "df.h"
-
-#include <libmints/mints.h>
 
 #include "hf.h"
 
@@ -265,6 +266,9 @@ void HF::common_init()
     MOM_started_ = false;
     MOM_performed_ = false;
 
+    frac_enabled_ = (options_.get_int("FRAC_START") != 0);
+    frac_performed_ = false;
+
     print_header();
 }
 
@@ -356,62 +360,63 @@ void HF::find_occupation()
     // Don't mess with the occ, MOM's got it!
     if (MOM_started_) {
         MOM();
-        return;
-    }
-
-    std::vector<std::pair<double, int> > pairs_a;
-    std::vector<std::pair<double, int> > pairs_b;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs_a.push_back(make_pair(epsilon_a_->get(h, i), h));
-    }
-    for (int h=0; h<epsilon_b_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-            pairs_b.push_back(make_pair(epsilon_b_->get(h, i), h));
-    }
-    sort(pairs_a.begin(),pairs_a.end());
-    sort(pairs_b.begin(),pairs_b.end());
-
-    if(!input_docc_ && !input_socc_){
-        memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
-        for (int i=0; i<nalpha_; ++i)
-            nalphapi_[pairs_a[i].second]++;
-    }
-    if(!input_docc_ && !input_socc_){
-        memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
-        for (int i=0; i<nbeta_; ++i)
-            nbetapi_[pairs_b[i].second]++;
-    }
-
-    int old_socc[8];
-    int old_docc[8];
-    for(int h = 0; h < nirrep_; ++h){
-        old_socc[h] = soccpi_[h];
-        old_docc[h] = doccpi_[h];
-    }
-
-    for (int h = 0; h < nirrep_; ++h) {
-        soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
-        doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
-    }
-
-    bool occ_changed = false;
-    for(int h = 0; h < nirrep_; ++h){
-        if( old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]){
-            occ_changed = true;
-            break;
+    } else {
+        std::vector<std::pair<double, int> > pairs_a;
+        std::vector<std::pair<double, int> > pairs_b;
+        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+                pairs_a.push_back(make_pair(epsilon_a_->get(h, i), h));
         }
-    }
+        for (int h=0; h<epsilon_b_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
+                pairs_b.push_back(make_pair(epsilon_b_->get(h, i), h));
+        }
+        sort(pairs_a.begin(),pairs_a.end());
+        sort(pairs_b.begin(),pairs_b.end());
 
-    // If print > 2 (diagnostics), print always
-    if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
-        if (Communicator::world->me() == 0)
-            fprintf(outfile, "\tOccupation by irrep:\n");
-        print_occupation();
+        if(!input_docc_ && !input_socc_){
+            memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
+            for (int i=0; i<nalpha_; ++i)
+                nalphapi_[pairs_a[i].second]++;
+        }
+        if(!input_docc_ && !input_socc_){
+            memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
+            for (int i=0; i<nbeta_; ++i)
+                nbetapi_[pairs_b[i].second]++;
+        }
+
+        int old_socc[8];
+        int old_docc[8];
+        for(int h = 0; h < nirrep_; ++h){
+            old_socc[h] = soccpi_[h];
+            old_docc[h] = doccpi_[h];
+        }
+
+        for (int h = 0; h < nirrep_; ++h) {
+            soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
+            doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
+        }
+
+        bool occ_changed = false;
+        for(int h = 0; h < nirrep_; ++h){
+            if( old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]){
+                occ_changed = true;
+                break;
+            }
+        }
+
+        // If print > 2 (diagnostics), print always
+        if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
+            if (Communicator::world->me() == 0)
+                fprintf(outfile, "\tOccupation by irrep:\n");
+            print_occupation();
+        }
+        // Start MOM if needed (called here because we need the nocc
+        // to be decided by Aufbau ordering prior to MOM_start)
+        MOM_start();
     }
-    // Start MOM if needed (called here because we need the nocc
-    // to be decided by Aufbau ordering prior to MOM_start)
-    MOM_start();
+    // Do fractional orbital normalization here.
+    frac();
 }
 
 void HF::print_header()
@@ -436,7 +441,7 @@ void HF::print_header()
     molecule_->print();
 
     if (Communicator::world->me() == 0) {
-        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol());
+        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
         fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
         fprintf(outfile, "  Charge       = %d\n", charge_);
@@ -452,6 +457,7 @@ void HF::print_header()
             fprintf(outfile, "  Excited-state MOM enabled.\n");
         else
             fprintf(outfile, "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
+        fprintf(outfile, "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
         fprintf(outfile, "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
         fprintf(outfile, "  Energy threshold   = %3.2e\n", energy_threshold_);
         fprintf(outfile, "  Density threshold  = %3.2e\n", density_threshold_);
@@ -542,15 +548,31 @@ void HF::form_H()
         }
     }
 
-    if (options_.get_bool("EXTERN")) {
-        boost::shared_ptr<ExternalPotential> external = Process::environment.potential();
+    // If an external field exists, add it to the one-electron Hamiltonian
+    boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+    if (external) {
+        if (H_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
         if (print_) {
+            external->set_print(print_);
             external->print();
         }
         SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
         if (print_ > 3)
             Vprime->print();
         V_->add(Vprime);
+
+
+        // Extra nuclear repulsion
+        double enuc2 = external->computeNuclearEnergy(molecule_);
+        if (print_) {
+            fprintf(outfile, "  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
+            fprintf(outfile, "  Additional nuclear repulsion = %20.15f\n", enuc2);
+            fprintf(outfile, "  Total nuclear repulsion      = %20.15f\n\n", nuclearrep_ + enuc2);
+        }
+        nuclearrep_ += enuc2;
+
     }
 
     H_->copy(T_);
@@ -1270,6 +1292,10 @@ double HF::compute_energy()
             if(status != "") status += "/";
             status += "DAMP";
         }
+        if(frac_performed_){
+            if(status != "") status += "/";
+            status += "FRAC";
+        }
 
         if (Communicator::world->me() == 0) {
             fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
@@ -1297,6 +1323,9 @@ double HF::compute_energy()
         converged = test_convergency();
         // If a an excited MOM is requested but not started, don't stop yet
         if (MOM_excited_ && !MOM_started_) converged = false;
+
+        // If a fractional occupation is requested but not started, don't stop yet
+        if (frac_enabled_ && !frac_performed_) converged = false;
 
         // Call any postiteration callbacks
         call_postiteration_callbacks();

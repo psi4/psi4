@@ -1,5 +1,7 @@
 #! ROHF-CCSD cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical
 
+memory 250 mb
+
 molecule CN {
   0 2
   C
@@ -27,5 +29,3 @@ compare_values(enuc, CN.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy
 compare_values(escf, get_variable("SCF total energy"), 7, "SCF energy")               #TEST
 compare_values(eccsd, get_variable("CCSD correlation energy"), 7, "CCSD contribution")        #TEST
 compare_values(etotal, get_variable("Current energy"), 7, "Total energy")             #TEST
-
-clean()

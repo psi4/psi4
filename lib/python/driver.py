@@ -28,6 +28,7 @@ procedures = {
             'ccsd(t)'       : run_ccenergy,
             'cc2'           : run_ccenergy,
             'cc3'           : run_ccenergy,
+            'mrcc'          : run_mrcc,      # interface to Kallay's MRCC program
             'bccd'          : run_bccd,
             'bccd(t)'       : run_bccd_t,
             'eom-ccsd'      : run_eom_cc,
@@ -126,7 +127,7 @@ def gradient(name, **kwargs):
     elif (dertype == 0) and not(func is energy):
         pass
     else:
-        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.' 
+        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.'
             % (lowername, dertype))
 
     # Make sure the molecule the user provided is the active one
@@ -230,26 +231,26 @@ def gradient(name, **kwargs):
                 # Print information to output.dat
                 PsiMod.print_out("\n")
                 banner("Loading displacement %d of %d" % (n+1, ndisp))
-    
+
                 # Print information to the screen
                 print "    displacement %d" % (n+1)
-    
+
                 # Load in displacement into the active molecule
                 PsiMod.get_active_molecule().set_geometry(displacement)
-    
+
                 ## Wrap any positional arguments into kwargs (for intercalls among wrappers)
                 #if not('name' in kwargs) and name:
                 #    kwargs['name'] = lowername
-    
+
                 # Perform the energy calculation
                 #E = func(lowername, **kwargs)
                 func(lowername, **kwargs)
                 E = PsiMod.get_variable("CURRENT ENERGY")
                 #E = func(**kwargs)
-    
+
                 # Save the energy
                 energies.append(E)
-    
+
             # S/R: Write each displaced geometry to an input file
             elif re.match('sow', opt_mode.lower()):
                 PsiMod.get_active_molecule().set_geometry(displacement)
@@ -298,13 +299,13 @@ def gradient(name, **kwargs):
                     freagent.close()
                 energies.append(E)
 
-        # S/R: Quit sow after writing files 
+        # S/R: Quit sow after writing files
         if re.match('sow', opt_mode.lower()):
             return 0.0
 
         if re.match('reap', opt_mode.lower()):
             PsiMod.set_variable('CURRENT ENERGY', energies[-1])
-        
+
         # Obtain the gradient
         PsiMod.fd_1_0(energies)
 
@@ -377,10 +378,58 @@ def optimize(name, **kwargs):
     PsiMod.print_out("\tOptimizer: Did not converge!")
     return 0.0
 
+##  Aliases  ##
+opt = optimize
+
 def parse_arbitrary_order(name):
     namelower = name.lower()
 
-    if re.match(r'^[a-z]+\d+$', namelower):       
+    # matches 'mrccsdt(q)'
+    if namelower.startswith('mrcc'):
+        # grabs 'sdt(q)'
+        ccfullname = namelower[4:]
+
+        # A negative order indicates perturbative method
+        methods = {
+            "sd"          : { "method" : 1, "order" :  2, "fullname" : "CCSD"         },
+            "sdt"         : { "method" : 1, "order" :  3, "fullname" : "CCSDT"        },
+            "sdtq"        : { "method" : 1, "order" :  4, "fullname" : "CCSDTQ"       },
+            "sdtqp"       : { "method" : 1, "order" :  5, "fullname" : "CCSDTQP"      },
+            "sdtqph"      : { "method" : 1, "order" :  6, "fullname" : "CCSDTQPH"     },
+            "sd(t)"       : { "method" : 3, "order" : -3, "fullname" : "CCSD(T)"      },
+            "sdt(q)"      : { "method" : 3, "order" : -4, "fullname" : "CCSDT(Q)"     },
+            "sdtq(p)"     : { "method" : 3, "order" : -5, "fullname" : "CCSDTQ(P)"    },
+            "sdtqp(h)"    : { "method" : 3, "order" : -6, "fullname" : "CCSDTQP(H)"   },
+            "sd(t)_l"     : { "method" : 4, "order" : -3, "fullname" : "CCSD(T)_L"    },
+            "sdt(q)_l"    : { "method" : 4, "order" : -4, "fullname" : "CCSDT(Q)_L"   },
+            "sdtq(p)_l"   : { "method" : 4, "order" : -5, "fullname" : "CCSDTQ(P)_L"  },
+            "sdtqp(h)_l"  : { "method" : 4, "order" : -6, "fullname" : "CCSDTQP(H)_L" },
+            "sdt-1a"      : { "method" : 5, "order" :  3, "fullname" : "CCSDT-1a"     },
+            "sdtq-1a"     : { "method" : 5, "order" :  4, "fullname" : "CCSDTQ-1a"    },
+            "sdtqp-1a"    : { "method" : 5, "order" :  5, "fullname" : "CCSDTQP-1a"   },
+            "sdtqph-1a"   : { "method" : 5, "order" :  6, "fullname" : "CCSDTQPH-1a"  },
+            "sdt-1b"      : { "method" : 6, "order" :  3, "fullname" : "CCSDT-1b"     },
+            "sdtq-1b"     : { "method" : 6, "order" :  4, "fullname" : "CCSDTQ-1b"    },
+            "sdtqp-1b"    : { "method" : 6, "order" :  5, "fullname" : "CCSDTQP-1b"   },
+            "sdtqph-1b"   : { "method" : 6, "order" :  6, "fullname" : "CCSDTQPH-1b"  },
+            "2"           : { "method" : 7, "order" :  2, "fullname" : "CC2"          },
+            "3"           : { "method" : 7, "order" :  3, "fullname" : "CC3"          },
+            "4"           : { "method" : 7, "order" :  4, "fullname" : "CC4"          },
+            "5"           : { "method" : 7, "order" :  5, "fullname" : "CC5"          },
+            "6"           : { "method" : 7, "order" :  6, "fullname" : "CC6"          },
+            "sdt-3"       : { "method" : 8, "order" :  3, "fullname" : "CCSDT-3"      },
+            "sdtq-3"      : { "method" : 8, "order" :  4, "fullname" : "CCSDTQ-3"     },
+            "sdtqp-3"     : { "method" : 8, "order" :  5, "fullname" : "CCSDTQP-3"    },
+            "sdtqph-3"    : { "method" : 8, "order" :  6, "fullname" : "CCSDTQPH-3"   }
+        }
+
+        # looks for 'sdt(q)' in dictionary
+        if methods.has_key(ccfullname):
+            return "mrcc", methods[ccfullname]
+        else:
+            raise ValidationError('MRCC method \'%s\' invalid.' % (namelower))
+
+    elif re.match(r'^[a-z]+\d+$', namelower):
         decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
         namestump = decompose.group(1)
         namelevel = int(decompose.group(2))
@@ -415,7 +464,7 @@ def frequencies(name, **kwargs):
     if (kwargs.has_key('irrep')):
         irrep = kwargs['irrep'] - 1 # externally, A1 irrep is 1; internally 0
     else:
-      irrep = -1; # -1 implies do all irreps 
+      irrep = -1; # -1 implies do all irreps
 
     # By default, set func to the energy function
     func = energy
@@ -438,6 +487,11 @@ def frequencies(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_1(irrep)
+
+        PsiMod.get_active_molecule().fix_orientation(True)
+        PsiMod.get_active_molecule().fix_com(True)
+        PsiMod.get_active_molecule().reinterpret_coordentry(False)
+
         ndisp = len(displacements)
 
         #print displacements to output.dat
@@ -456,10 +510,6 @@ def frequencies(name, **kwargs):
             print "    displacement %d" % (n+1)
 
             # Load in displacement into the active molecule
-            if (n == 0) :
-              PsiMod.get_active_molecule().fix_orientation(1)
-              PsiMod.get_active_molecule().fix_com(1)
-
             PsiMod.get_active_molecule().set_geometry(displacement)
 
             # Perform the gradient calculation
@@ -476,6 +526,12 @@ def frequencies(name, **kwargs):
 
         print " Computation complete."
 
+        # TODO: These need to be restored to the user specified setting
+        PsiMod.get_active_molecule().fix_orientation(False)
+        PsiMod.get_active_molecule().fix_com(False)
+        # But not this one, it always goes back to True
+        PsiMod.get_active_molecule().reinterpret_coordentry(True)
+
     else: # Assume energy points
         # If not, perform finite difference of energies
         info = "Performing finite difference calculations"
@@ -483,6 +539,9 @@ def frequencies(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
+        PsiMod.get_active_molecule().fix_orientation(True)
+        PsiMod.get_active_molecule().fix_com(True)
+        PsiMod.get_active_molecule().reinterpret_coordentry(False)
 
         ndisp = len(displacements)
 
@@ -514,10 +573,15 @@ def frequencies(name, **kwargs):
 
         print " Computation complete."
 
+        # TODO: These need to be restored to the user specified setting
+        PsiMod.get_active_molecule().fix_orientation(False)
+        PsiMod.get_active_molecule().fix_com(False)
+        # But not this one, it always goes back to True
+        PsiMod.get_active_molecule().reinterpret_coordentry(True)
+
         # The last item in the list is the reference energy, return it
         return energies[-1]
 
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
     frequencies(name, **kwargs)
-

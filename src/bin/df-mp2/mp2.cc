@@ -49,8 +49,8 @@ void DFMP2::common_init()
     energies_["Same-Spin Energy"] = 0.0;
     energies_["Reference Energy"] = reference_wavefunction_->reference_energy();
 
-    sss_ = options_.get_double("SCALE_SS");
-    oss_ = options_.get_double("SCALE_OS");
+    sss_ = options_.get_double("MP2_SS_SCALE");
+    oss_ = options_.get_double("MP2_OS_SCALE");
 
     if (options_.get_str("DF_BASIS_MP2") == "") {
         molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "DF_BASIS_MP2");
@@ -64,10 +64,18 @@ void DFMP2::common_init()
 double DFMP2::compute_energy()
 {
     print_header();
+    timer_on("DFMP2 Singles");
     form_singles();
+    timer_off("DFMP2 Singles");
+    timer_on("DFMP2 Aia");
     form_Aia();
+    timer_off("DFMP2 Aia");
+    timer_on("DFMP2 Qia");
     form_Qia();
+    timer_off("DFMP2 Qia");
+    timer_on("DFMP2 Energy");
     form_energy();
+    timer_off("DFMP2 Energy");
     print_energies();
     
     return energies_["Total Energy"]; 
@@ -167,6 +175,45 @@ void DFMP2::form_singles()
         fprintf(outfile, "  Beta  singles energy = %24.16E\n\n", E_singles_b);
     }
 }
+SharedMatrix DFMP2::form_inverse_metric()
+{
+    timer_on("DFMP2 Metric");
+    
+    int naux = ribasis_->nbf();
+
+    // Load inverse metric from the SCF three-index integral file if it exists
+    if (options_.get_str("DF_INTS_IO") == "LOAD") {
+
+        SharedMatrix Jm12(new Matrix("SO Basis Fitting Inverse (Eig)", naux, naux));
+        fprintf(outfile,"\t Will attempt to load fitting metric from file %d.\n\n", PSIF_DFSCF_BJ); fflush(outfile);
+        psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
+        psio_->read_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
+        psio_->close(PSIF_DFSCF_BJ, 1);
+
+        timer_off("DFMP2 Metric");
+    
+        return Jm12;
+
+    } else {
+
+        // Form the inverse metric manually
+        boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true)); 
+        metric->form_eig_inverse(1.0E-10);
+        SharedMatrix Jm12 = metric->get_metric();    
+    
+        // Save inverse metric to the SCF three-index integral file if it exists
+        if (options_.get_str("DF_INTS_IO") == "SAVE") {
+            fprintf(outfile,"\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ); fflush(outfile);
+            psio_->open(PSIF_DFSCF_BJ, PSIO_OPEN_OLD);
+            psio_->write_entry(PSIF_DFSCF_BJ, "DFMP2 Jm12", (char*) Jm12->pointer()[0], sizeof(double) * naux * naux);
+            psio_->close(PSIF_DFSCF_BJ, 1);
+        }
+
+        timer_off("DFMP2 Metric");
+
+        return Jm12;
+    }
+}
 void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI nia)
 {
     // Memory constraints
@@ -209,17 +256,24 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI ni
         ULI ia_stop  = ia_starts[block+1];
         ULI ncols = ia_stop - ia_start;
 
+
         // Read Aia
+        timer_on("DFMP2 Aia Read");        
         for (ULI Q = 0; Q < naux; Q++) {
             next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(Q*nia+ia_start));
             psio_->read(file,"(A|ia)",(char*)Aiap[Q],sizeof(double)*ncols,next_AIA,&next_AIA);
         }
+        timer_off("DFMP2 Aia Read");        
        
         // Apply Fitting
+        timer_on("DFMP2 (Q|A)(A|ia)");        
         C_DGEMM('T','N',ncols,naux,naux,1.0,Aiap[0],max_nia,Jp[0],naux,0.0,Qiap[0],naux);
+        timer_off("DFMP2 (Q|A)(A|ia)");        
 
         // Write Qia
+        timer_on("DFMP2 Qia Write");        
         psio_->write(file,"(Q|ia)",(char*)Qiap[0],sizeof(double)*ncols*naux,next_QIA,&next_QIA);
+        timer_off("DFMP2 Qia Write");        
 
     }
     psio_->close(file, 1);
@@ -404,8 +458,9 @@ void RDFMP2::form_Aia()
         ::memset((void*) Amnp[0], '\0', sizeof(double) * nrows * nso * nso);
 
         // Compute TEI tensor block (A|mn)
+        timer_on("DFMP2 (A|mn)");
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (ULI QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
+        for (long int QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
 
             int thread = 0;
             #ifdef _OPENMP
@@ -439,28 +494,32 @@ void RDFMP2::form_Aia()
                 }
             }
         }    
+        timer_off("DFMP2 (A|mn)");
 
         // Compute (A|mi) tensor block (A|mn) C_ni
+        timer_on("DFMP2 (A|mn)C_mi");
         C_DGEMM('N','N',nrows*(ULI)nso,naocc,nso,1.0,Amnp[0],nso,Caoccp[0],naocc,0.0,Amip[0],naocc);
+        timer_off("DFMP2 (A|mn)C_mi");
     
         // Compute (A|ia) tensor block (A|ia) = (A|mi) C_ma
+        timer_on("DFMP2 (A|mi)C_na");
         #pragma omp parallel for 
         for (int row = 0; row < nrows; row++) {
             C_DGEMM('T','N',naocc,navir,nso,1.0,Amip[row],naocc,Cavirp[0],navir,0.0,Aiap[row],navir);
         }
+        timer_off("DFMP2 (A|mi)C_na");
 
         // Stripe (A|ia) out to disk
+        timer_on("DFMP2 Aia Write");
         psio_->write(PSIF_DFMP2_AIA,"(A|ia)",(char*)Aiap[0],sizeof(double)*nrows*naocc*navir,next_AIA,&next_AIA);
+        timer_off("DFMP2 Aia Write");
     }
 
     psio_->close(PSIF_DFMP2_AIA,1);
 }
 void RDFMP2::form_Qia()
 {
-    boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true)); 
-    metric->form_eig_inverse(1.0E-10);
-    SharedMatrix Jm12 = metric->get_metric();    
-    
+    SharedMatrix Jm12 = form_inverse_metric();
     apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_->colspi()[0] * (ULI) Cavir_->colspi()[0]);  
 }
 void RDFMP2::form_energy()
@@ -528,8 +587,10 @@ void RDFMP2::form_energy()
         ULI ni     = istop - istart;
 
         // Read iaQ chunk
+        timer_on("DFMP2 Qia Read");
         next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(istart * navir * naux));
         psio_->read(PSIF_DFMP2_AIA,"(Q|ia)",(char*)Qiap[0],sizeof(double)*(ni * navir * naux),next_AIA,&next_AIA);
+        timer_off("DFMP2 Qia Read");
 
         for (int block_j = 0; block_j <= block_i; block_j++) {
 
@@ -539,15 +600,17 @@ void RDFMP2::form_energy()
             ULI nj     = jstop - jstart;
 
             // Read iaQ chunk (if unique)
+            timer_on("DFMP2 Qia Read");
             if (block_i == block_j) {
                 ::memcpy((void*) Qjbp[0], (void*) Qiap[0], sizeof(double)*(ni * navir * naux));
             } else {
                 next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(jstart * navir * naux));
                 psio_->read(PSIF_DFMP2_AIA,"(Q|ia)",(char*)Qjbp[0],sizeof(double)*(nj * navir * naux),next_AIA,&next_AIA);
             }
+            timer_off("DFMP2 Qia Read");
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss, e_os)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;
@@ -742,8 +805,9 @@ void UDFMP2::form_Aia()
         ::memset((void*) Amnp[0], '\0', sizeof(double) * nrows * nso * nso);
 
         // Compute TEI tensor block (A|mn)
+        timer_on("DFMP2 (A|mn)");
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
-        for (ULI QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
+        for (long int QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
 
             int thread = 0;
             #ifdef _OPENMP
@@ -777,34 +841,47 @@ void UDFMP2::form_Aia()
                 }
             }
         }    
+        timer_off("DFMP2 (A|mn)");
 
         // => Alpha Case <= //
 
         // Compute (A|mi) tensor block (A|mn) C_ni
+        timer_on("DFMP2 (A|mn)C_mi");
         C_DGEMM('N','N',nrows*(ULI)nso,naocc_a,nso,1.0,Amnp[0],nso,Caoccap[0],naocc_a,0.0,Amip[0],naocc);
+        timer_off("DFMP2 (A|mn)C_mi");
     
         // Compute (A|ia) tensor block (A|ia) = (A|mi) C_ma
+        timer_on("DFMP2 (A|mi)C_na");
         #pragma omp parallel for 
         for (int row = 0; row < nrows; row++) {
             C_DGEMM('T','N',naocc_a,navir_a,nso,1.0,Amip[row],naocc,Cavirap[0],navir_a,0.0,&Aiap[0][row*(ULI)naocc_a*navir_a],navir_a);
         }
+        timer_off("DFMP2 (A|mi)C_na");
 
         // Stripe (A|ia) out to disk
+        timer_on("DFMP2 Aia Write");
         psio_->write(PSIF_DFMP2_AIA,"(A|ia)",(char*)Aiap[0],sizeof(double)*nrows*naocc_a*navir_a,next_AIA,&next_AIA);
+        timer_off("DFMP2 Aia Write");
 
         // => Beta Case <= //
 
         // Compute (A|mi) tensor block (A|mn) C_ni
+        timer_on("DFMP2 (A|mn)C_mi");
         C_DGEMM('N','N',nrows*(ULI)nso,naocc_b,nso,1.0,Amnp[0],nso,Caoccbp[0],naocc_b,0.0,Amip[0],naocc);
+        timer_off("DFMP2 (A|mn)C_mi");
     
         // Compute (A|ia) tensor block (A|ia) = (A|mi) C_ma
+        timer_on("DFMP2 (A|mi)C_na");
         #pragma omp parallel for 
         for (int row = 0; row < nrows; row++) {
             C_DGEMM('T','N',naocc_b,navir_b,nso,1.0,Amip[row],naocc,Cavirbp[0],navir_b,0.0,&Aiap[0][row*(ULI)naocc_b*navir_b],navir_b);
         }
+        timer_off("DFMP2 (A|mi)C_na");
 
         // Stripe (A|ia) out to disk
+        timer_on("DFMP2 Aia Write");
         psio_->write(PSIF_DFMP2_QIA,"(A|ia)",(char*)Aiap[0],sizeof(double)*nrows*naocc_b*navir_b,next_QIA,&next_QIA);
+        timer_off("DFMP2 Aia Write");
     }
 
     psio_->close(PSIF_DFMP2_AIA,1);
@@ -812,10 +889,7 @@ void UDFMP2::form_Aia()
 }
 void UDFMP2::form_Qia()
 {
-    boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true)); 
-    metric->form_eig_inverse(1.0E-10);
-    SharedMatrix Jm12 = metric->get_metric();    
-    
+    SharedMatrix Jm12 = form_inverse_metric(); 
     apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_a_->colspi()[0] * (ULI) Cavir_a_->colspi()[0]);  
     apply_fitting(Jm12, PSIF_DFMP2_QIA, ribasis_->nbf(), Caocc_b_->colspi()[0] * (ULI) Cavir_b_->colspi()[0]);  
 }
@@ -886,8 +960,10 @@ void UDFMP2::form_energy()
         ULI ni     = istop - istart;
 
         // Read iaQ chunk
+        timer_on("DFMP2 Qia Read");
         next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(istart * navir * naux));
         psio_->read(PSIF_DFMP2_AIA,"(Q|ia)",(char*)Qiap[0],sizeof(double)*(ni * navir * naux),next_AIA,&next_AIA);
+        timer_off("DFMP2 Qia Read");
 
         for (int block_j = 0; block_j <= block_i; block_j++) {
 
@@ -897,15 +973,17 @@ void UDFMP2::form_energy()
             ULI nj     = jstop - jstart;
 
             // Read iaQ chunk (if unique)
+            timer_on("DFMP2 Qia Read");
             if (block_i == block_j) {
                 ::memcpy((void*) Qjbp[0], (void*) Qiap[0], sizeof(double)*(ni * navir * naux));
             } else {
                 next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(jstart * navir * naux));
                 psio_->read(PSIF_DFMP2_AIA,"(Q|ia)",(char*)Qjbp[0],sizeof(double)*(nj * navir * naux),next_AIA,&next_AIA);
             }
+            timer_off("DFMP2 Qia Read");
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;
@@ -1002,8 +1080,10 @@ void UDFMP2::form_energy()
         ULI ni     = istop - istart;
 
         // Read iaQ chunk
+        timer_on("DFMP2 Qia Read");
         next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(istart * navir * naux));
         psio_->read(PSIF_DFMP2_QIA,"(Q|ia)",(char*)Qiap[0],sizeof(double)*(ni * navir * naux),next_AIA,&next_AIA);
+        timer_off("DFMP2 Qia Read");
 
         for (int block_j = 0; block_j <= block_i; block_j++) {
 
@@ -1013,15 +1093,17 @@ void UDFMP2::form_energy()
             ULI nj     = jstop - jstart;
 
             // Read iaQ chunk (if unique)
+            timer_on("DFMP2 Qia Read");
             if (block_i == block_j) {
                 ::memcpy((void*) Qjbp[0], (void*) Qiap[0], sizeof(double)*(ni * navir * naux));
             } else {
                 next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(jstart * navir * naux));
                 psio_->read(PSIF_DFMP2_QIA,"(Q|ia)",(char*)Qjbp[0],sizeof(double)*(nj * navir * naux),next_AIA,&next_AIA);
             }
+            timer_off("DFMP2 Qia Read");
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;
@@ -1136,8 +1218,10 @@ void UDFMP2::form_energy()
         ULI ni     = istop - istart;
 
         // Read iaQ chunk
+        timer_on("DFMP2 Qia Read");
         next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(istart * navir_a * naux));
         psio_->read(PSIF_DFMP2_AIA,"(Q|ia)",(char*)Qiap[0],sizeof(double)*(ni * navir_a * naux),next_AIA,&next_AIA);
+        timer_off("DFMP2 Qia Read");
 
         for (int block_j = 0; block_j < i_starts_b.size() - 1; block_j++) {
 
@@ -1147,11 +1231,13 @@ void UDFMP2::form_energy()
             ULI nj     = jstop - jstart;
 
             // Read iaQ chunk
+            timer_on("DFMP2 Qia Read");
             next_QIA = psio_get_address(PSIO_ZERO,sizeof(double)*(jstart * navir_b * naux));
             psio_->read(PSIF_DFMP2_QIA,"(Q|ia)",(char*)Qjbp[0],sizeof(double)*(nj * navir_b * naux),next_QIA,&next_QIA);
+            timer_off("DFMP2 Qia Read");
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_os)
-            for (ULI ij = 0L; ij < ni * nj; ij++) {
+            for (long int ij = 0L; ij < ni * nj; ij++) {
         
                 // Sizing
                 ULI i = ij / nj + istart;

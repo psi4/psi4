@@ -9,9 +9,9 @@ tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sa
 maddness_subdirs = dfmp2_1 dfmp2_2
 
 cc_subdirs = cc1 cc2 cc4 cc4a cc5a cc8 cc8a cc8b cc8c cc9 cc9a cc10 cc11 \
-cc12 cc13 cc13a cc15 cc16 cc17 cc18 cc19 cc22 cc26 cc28 cc29 cc30 cc31 cc32 \
-cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 cc43 cc44 cc45 cc49 \
-cc50 cc51 cc52 # cc5 these should be restored when fixed
+cc12 cc13 cc13a cc15 cc16 cc17 cc18 cc19 cc22 cc24 cc25 cc26 cc27 cc28 \
+cc29 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 \
+cc43 cc44 cc45 cc49 cc50 cc51 cc52 # cc5 these should be restored when fixed
 
 rb_subdirs = 
 
@@ -33,7 +33,7 @@ opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 fd-gradient fd-freq-energ
 
 mp2_subdirs = mp2_1
 
-scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 castup1 mom props1 props2 dft1 dfscf-bz2
+scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 castup1 mom frac props1 props2 dft1 dfscf-bz2
 
 python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 

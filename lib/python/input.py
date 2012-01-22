@@ -110,7 +110,7 @@ def process_molecule_command(matchobj):
         molecule += ',"%s"' % (name)
 
     molecule += ")\n"
-    molecule += 'PsiMod.IO.set_default_namespace("%s")' % (name)
+    molecule += '%sPsiMod.IO.set_default_namespace("%s")' % (spaces,name)
 
     return molecule
 
@@ -165,8 +165,32 @@ def process_basis_block(matchobj):
     result   = "%stemppsioman = PsiMod.IOManager.shared_object()" % spacing
     result  += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
     basislabel = re.compile(r'\s*\[([-*\(\)\w]+)\]\s*')
-    basisstring = ""
+
+    # Start by looking for assign lines, and remove them
+    label_re  = re.compile(r'^\s*assign\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
+    symbol_re = re.compile(r'^\s*assign\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
+    all_re    = re.compile(r'^\s*assign\s*([-*\(\)\w]+)\s*(\w+)?\s*$')
+    leftover_lines = []
     for line in command_lines:
+        basistype = "BASIS"
+        if(label_re.match(line)):
+            m = label_re.match(line)
+            if m.group(3): basistype = m.group(3).upper()
+            result += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+        elif(symbol_re.match(line)):
+            m = symbol_re.match(line)
+            if m.group(3): basistype = m.group(3).upper()
+            result += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+        elif(all_re.match(line)):
+            m = all_re.match(line)
+            if m.group(2): basistype = m.group(2).upper()
+            result += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
+        else:
+            leftover_lines.append(line)
+
+    # Now look for regular basis set definitions
+    basisstring = ""
+    for line in leftover_lines:
         # Ignore blank/empty lines
         if (not line or line.isspace()):
             continue
@@ -185,90 +209,135 @@ def process_basis_block(matchobj):
         result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
     return result
 
-def process_basis_assign_block(matchobj):
-    spacing       = str(matchobj.group(1))
-    basistype     = str(matchobj.group(2)).upper()
-    block         = str(matchobj.group(3)).upper()
-    command_lines = re.split('\n', block)
-    label_re      = re.compile(r'^\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*$')
-    symbol_re     = re.compile(r'^\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*$')
-    number_re     = re.compile(r'^\s*(\d+)\s+([-*\(\)\w]+)\s*$')
-    all_re        = re.compile(r'^\s*([-*\(\)\w]+)\s*$')
-    command = ""
-    if(not basistype or basistype.isspace()):
-        basistype = "BASIS"
-    for line in command_lines:
-        if (not line or line.isspace()):
-            continue
-    #void set_basis_all_atoms(const std::string& name, const std::string& type="BASIS");
-    #void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
-    #void set_basis_by_number(int number, const std::string& name, const std::string& type="BASIS");
-    #void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
-        if(label_re.match(line)):
-            m = label_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-        elif(symbol_re.match(line)):
-            m = symbol_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-        elif(number_re.match(line)):
-            m = number_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_by_number(%s,\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
-        elif(all_re.match(line)):
-            m = all_re.match(line)
-            command += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
-        else:
-            bad_option_syntax(line)
-    return command
 
-def process_extern_block(matchobj):
+def process_external_command(matchobj):
 
     spacing = str(matchobj.group(1))
     name = str(matchobj.group(2))
     if (not name or name.isspace()):
-        name = "EXTERN"
+        name = "extern"
     block = str(matchobj.group(3))
     lines = re.split('\n', block)
 
-    extern = "%s%s = PsiMod.ExternalPotential()" % (spacing, name)
-    extern += '%sactivate_potential(%s)' %(spacing,name)
-    extern += '%s%s.setName("%s")' % (spacing,name,name)
-
-    addType = "None"
+    extern =  "%sqmmm = QMMM()\n" % (spacing)
 
     NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-    charge_re = re.compile(r'^\s*(charges?)\s*$', re.IGNORECASE)
-    dip_re = re.compile(r'^\s*(dipoles?)\s*$', re.IGNORECASE)
-    quad_re = re.compile(r'^\s*(quadrupoles?)\s*$', re.IGNORECASE)
-    spacer_re = re.compile(r'^\s*\*{4}\s*$')
-
-    c_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
-    d_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
-    q_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
-
+    # Comments are all removed by this point
+    # 0. Remove blank lines
+    re_blank = re.compile(r'^\s*$')
+    lines2 = []
     for line in lines:
-        if (not line or line.isspace()):
-            continue
-
-        if spacer_re.match(line):
-            continue
-        elif charge_re.match(line):
-            addType = "Charge"
-            continue
+        mobj = re_blank.match(line)
+        if (mobj):
+            pass
         else:
-            if addType == "None":
-                print "First Line of extern section must be a type of potential (charge, dipole, etc)\n"
-                bad_option_syntax(line)
+            lines2.append(line)
+    lines = lines2 
+    
+    # 1. Look for units [ang|bohr|au|a.u.] defaults to ang
+    re_units = re.compile(r'^\s*units?[\s=]+((ang)|(angstrom)|(bohr)|(au)|(a\.u\.))$\s*', re.IGNORECASE)
+    units = 'ang'
+    lines2 = []
+    for line in lines: 
+        mobj = re_units.match(line)
+        if (mobj):
+            unit = mobj.group(1)
+            if (unit == 'bohr' or unit == 'au' or unit == 'a.u.'):
+                units = 'bohr'
+            else:
+                units = 'ang'
+        else:
+            lines2.append(line)
+    lines = lines2
 
-            if addType == "Charge":
-                mobj = c_re.match(line)
-                if not mobj:
-                    bad_option_syntax(line)
-                extern += "%s%s.addCharge(%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
-                     mobj.group(2), mobj.group(3), mobj.group(4))
+    # 2. Look for basis basisname, defaults to cc-pvdz 
+    # 3. Look for df_basis_scf basisname, defaults to cc-pvdz-jkfit 
+    re_basis = re.compile(r'\s*basis[\s=]+(\S+)\s*$', re.IGNORECASE)
+    re_df_basis = re.compile(r'\s*df_basis_scf[\s=]+(\S+)\s*$', re.IGNORECASE)
+    basis = 'cc-pvdz'
+    df_basis_scf = 'cc-pvdz-jkfit'
+    lines2 = []
+    for line in lines: 
+        mobj = re_basis.match(line)
+        if (mobj):
+            basis = mobj.group(1) 
+        else:
+            mobj = re_df_basis.match(line)
+            if (mobj):
+                df_basis_scf = mobj.group(1)
+            else:
+                lines2.append(line)
+    lines = lines2
+
+    # 4. Look for charge lines Z x y z, convert according to unit convention
+    charge_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
+    lines2 = []
+    for line in lines: 
+        mobj = charge_re.match(line)
+        if (mobj):
+            if (units == 'ang'):
+                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' %(spacing,mobj.group(1),mobj.group(2),mobj.group(3),mobj.group(4))
+            if (units == 'bohr'):
+                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' %(spacing,mobj.group(1),mobj.group(2),mobj.group(3),mobj.group(4))
+        else:
+            lines2.append(line)
+    lines = lines2
+
+    # 5. Look for diffuse regions, which are XYZ molecules seperated by the usual -- lines
+    spacer_re = re.compile(r'^\s*--\s*$')
+    frags = []
+    frags.append([])
+    for line in lines:
+        mobj = spacer_re.match(line)
+        if (mobj):
+            if (len(frags[len(frags)-1])):
+                frags.append([])
+        else:
+            frags[len(frags)-1].append(line)
+
+    extern += '%sextern_mol_temp = PsiMod.get_active_molecule()\n' %(spacing)
+
+    mol_re = re.compile(r'\s*\S+\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
+    lines = []
+    for frag in frags:
+
+        if not len(frag):
+            continue
+
+        extern += '%sexternal_diffuse = geometry("""\n' % (spacing)
+        extern += '%s0 1\n' % (spacing) 
+
+        for line in frag:
+            if not mol_re.match(line):
+                lines.append(line)
+            else:
+                extern += '%s%s\n' %(spacing,line)    
+
+        extern += '%sunits %s\n' % (spacing, units) 
+        extern += '%ssymmetry c1\n' % (spacing) 
+        extern += '%sno_reorient\n' % (spacing) 
+        extern += '%sno_com\n' % (spacing) 
+        extern += '%s""")\n' % (spacing)
+        extern += "%sdiffuse = Diffuse(external_diffuse,'%s','%s')\n" % (spacing, basis, df_basis_scf)
+        extern += '%sdiffuse.fitScf()\n' % (spacing)
+        extern += '%sqmmm.addDiffuse(diffuse)\n' % (spacing)
+        extern += '\n'
+
+    extern += '%sPsiMod.set_active_molecule(extern_mol_temp)\n' %(spacing)
+
+    # 6. If there is anything left, the user messed up
+    if (len(lines)):
+        print 'Input parsing for external {}: Extra line(s) present:'
+        for line in lines:
+            print line
+            sys.exit(1)
+
+    # Return is actually an ExternalPotential, not a QMMM
+    extern += '%sqmmm.populateExtern()\n' % (spacing)
+    extern += '%s%s = qmmm.extern\n' % (spacing, name) 
 
     return extern
-
 
 def check_parentheses_and_brackets(input_string, exit_on_error):
     # This returns 1 if the string's all matched up, 0 otherwise
@@ -310,6 +379,33 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
 
     return all_matched
 
+
+def parse_multiline_array(input_list):
+    line = input_list.pop(0)
+    # Keep adding lines to the current one, until all parens match up
+    while not check_parentheses_and_brackets(line, 0):
+        thisline = input_list.pop(0).strip()
+        line += thisline
+    return "%s\n" % line
+
+
+def process_multiline_arrays(inputfile):
+    # This function takes multiline array inputs, and puts them on a single line
+    # Start by converting the input to a list, splitting at newlines
+    input_list = inputfile.split("\n")
+    set_re = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+\[.*', re.IGNORECASE)
+    newinput = ""
+    while len(input_list):
+        line = input_list[0]
+        if set_re.match(line):
+            # We've found the start of a set matrix [ .... line - hand it off for more checks
+            newinput += parse_multiline_array(input_list)
+        else:
+            # Nothing to do - just add the line to the string
+            newinput += "%s\n" % input_list.pop(0)
+    return newinput
+
+
 def process_input(raw_input):
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
@@ -334,6 +430,14 @@ def process_input(raw_input):
     blankline = re.compile(r'^\s*$')
     temp = re.sub(blankline, '', temp, re.MULTILINE)
 
+    # Look for things like
+    # set matrix [
+    #              [ 1, 2 ],
+    #              [ 3, 4 ]
+    #            ]
+    # and put them on a single line
+    temp = process_multiline_arrays(temp)
+
     # Process all "set name? { ... }"
     set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
@@ -346,6 +450,10 @@ def process_input(raw_input):
     molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
 
+    # Process "external name? { ... }"
+    external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(external, process_external_command, temp)
+    
     # Then remove repeated newlines
     multiplenewlines = re.compile(r'\n+')
     temp = re.sub(multiplenewlines, '\n', temp)
@@ -366,20 +474,13 @@ def process_input(raw_input):
     basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(basis_file,process_basis_file,temp)
 
-    # Process "basis assign (name) { ... }"
-    basis_assign_block = re.compile(r'(\s*?)basis\s+assign\s*(\w*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(basis_assign_block,process_basis_assign_block,temp)
-
     # Process "basis name { ... }"
     basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block,process_basis_block,temp)
 
-    # Process "extern name { ... }"
-    extern_block = re.compile(r'(\s*?)extern\s*(\w*?)[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(extern_block,process_extern_block,temp)
-
     # imports
     imports  = 'from PsiMod import *\n'
+    imports += 'from physconst import *\n'
     imports += 'from molecule import *\n'
     imports += 'from driver import *\n'
     imports += 'from text import *\n'
@@ -393,7 +494,7 @@ def process_input(raw_input):
     imports += 'import pickle\n'
     imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'
 
-    # psirc (a baby PSithon script that might live in ~/.psirc
+    # psirc (a baby PSIthon script that might live in ~/.psi4rc)
     psirc = ''
     homedir = os.path.expanduser('~')
     psirc_file = homedir + '/.psi4rc'

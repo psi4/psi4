@@ -1,5 +1,7 @@
 #! H2O CISD/6-31G** Optimize Geometry by Energies
 
+memory 250 mb
+
 refnuc   =   9.1938886868  #TEST
 refscf   = -76.0231440654  #TEST
 refci    = -76.2231165692  #TEST
@@ -23,6 +25,3 @@ compare_values(refnuc, h2o.nuclear_repulsion_energy(),         4, "Nuclear repul
 compare_values(refscf, get_variable("SCF total energy"),       7, "SCF energy") #TEST
 compare_values(refci, thisenergy,                              7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 6, "CI correlation energy") #TEST
-
-clean()
-

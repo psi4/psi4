@@ -65,7 +65,7 @@ SymRep::operator SymmetryOperation() const
     // abort();
       throw PSIEXCEPTION("SymRep::operator SymmetryOperation(): trying to cast to symop when n != 3");
   }
-    
+
   SymmetryOperation so;
 
   for (int i=0; i < 3; i++)
@@ -84,7 +84,7 @@ SymRep::operate(const SymRep& r) const
     // abort();
       throw PSIEXCEPTION("SymRep::operate(): dimensions don't match");
   }
-  
+
   SymRep ret(n);
 
   for (int i=0; i < n; i++) {
@@ -111,7 +111,7 @@ SymRep::transform(const SymRep& r) const
     // abort();
     throw PSIEXCEPTION("SymRep::operate(): dimensions don't match");
   }
-  
+
   SymRep ret(n), foo(n);
 
   // foo = r * d
@@ -148,7 +148,7 @@ SymRep::sigma_h()
     d[3][3] = d[4][4] = -1.0;
   }
 }
-  
+
 void
 SymRep::sigma_xz()
 {
@@ -176,7 +176,7 @@ SymRep::sigma_yz()
     d[2][2] = d[3][3] = -1.0;
   }
 }
-  
+
 void
 SymRep::rotation(int nt)
 {
@@ -198,7 +198,7 @@ SymRep::rotation(double theta)
   case 1:
     d[0][0] = 1.0;
     break;
-    
+
   case 3:
     d[0][0] = ctheta;
     d[0][1] = stheta;
@@ -213,17 +213,17 @@ SymRep::rotation(double theta)
     d[0][1] = stheta;
     d[1][0] = -stheta;
     d[1][1] = ctheta;
-    
+
     // this is ok since d is hardwired
     d[2][2] = c2theta;
     d[2][3] = -s2theta;
     d[3][2] = s2theta;
     d[3][3] = c2theta;
     break;
-    
+
   case 5:
     d[0][0] = 1.0;
-    
+
     d[1][1] = c2theta;
     d[1][2] = s2theta;
     d[2][1] = -s2theta;
@@ -240,7 +240,7 @@ SymRep::rotation(double theta)
     // abort();
     throw PSIEXCEPTION("SymRep::rotation(): n > 5");
   }
-  
+
 }
 
 void
@@ -256,7 +256,7 @@ SymRep::c2_x()
     d[0][0] = d[1][1] = d[4][4] = 1.0;
   }
 }
-  
+
 void
 SymRep::c2_y()
 {
@@ -270,17 +270,30 @@ SymRep::c2_y()
     d[0][0] = d[1][1] = d[3][3] = 1.0;
   }
 }
-  
+
+void
+SymRep::c2_z()
+{
+  i();
+
+  if (n==2 || n==3 || n==4) {
+    d[1][1] = 1.0;
+    if (n==4)
+      d[2][2] = 1.0;
+  } else if (n==5) {
+    d[0][0] = d[1][1] = d[3][3] = 1.0;
+  }
+}
 
 // void
 // SymRep::print(ostream& os) const
 // {
 //   int i;
-// 
+//
 //   os << indent;
 //   for (i=0; i < n; i++) os << scprintf("%11d",i+1);
 //   os << endl;
-//   
+//
 //   for (i=0; i < n; i++) {
 //     os << indent << scprintf("%3d ",i+1);
 //     for (int j=0; j < n; j++)

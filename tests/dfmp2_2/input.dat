@@ -2,15 +2,15 @@
 #! Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 
 # This will remove the 32 file in each iteration of the for loop 
-psioh = PsiMod.IOManager().shared_object()
-psioh.set_specific_retention(32,False)
+psi4_io.set_specific_retention(32,False)
+
+memory 250 mb
 
 refnuc  = 0.587974721111111                           #TEST 
 refscf  = [ -1.11639203481542, -1.11872757066568 ]    #TEST
 refmp2  = [ -1.14416515440344, -1.15119403817218 ]    #TEST
 
 molecule h2 {
-   symmetry c1
    0 1
    H
    H 1 0.9

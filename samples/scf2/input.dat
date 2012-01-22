@@ -1,9 +1,9 @@
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
-#! This compuation runs in C1 symmetry, which is currently required for RI-SCF.
+
+memory 250 mb
 
 
 molecule h2o {
-    symmetry c1
     O
     H 1 1.0
     H 1 1.0 2 104.5
@@ -17,5 +17,3 @@ set globals {
 
 thisenergy = energy('scf')
 
-
-clean()

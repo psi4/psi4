@@ -1,5 +1,7 @@
 #! SCF STO-3G finite-difference tests
 
+memory 250 mb
+
 molecule h2o {
   symmetry c1
   O
@@ -126,5 +128,4 @@ compare_vectors(b2_freqs, fd_freqs, 3, "B2 frequencies only (5-pt. formula)")
 
 del b2_freqs 
 del anal_freqs
-clean()
 

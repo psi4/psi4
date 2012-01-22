@@ -4,14 +4,14 @@
 subdirs = \
 transqt2 dcft ccenergy cctriples ccsort scf lmp2 mp2 mcscf\
 df-mp2 df-cc sapt cchbar cclambda ccdensity transqt mints deriv \
-optking psimrcc findif ccresponse detci cceom omp2 adc psi4
+optking psimrcc findif ccresponse detci cceom omp2 adc mrcc psi4
 
 all: default
 
 default:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making in $${dir} ...; $(MAKE) default) || exit 1; \
+            (cd $${dir} && echo ... Making in $${dir} ... && $(MAKE) default) || exit 1; \
           done
 
 install:

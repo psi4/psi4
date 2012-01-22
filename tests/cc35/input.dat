@@ -1,4 +1,7 @@
 # H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+
+memory 250 mb
+
 molecule h2o {
  units bohr
  1 2
@@ -20,5 +23,3 @@ escf = -75.629493609435926 #TEST
 ecc3 = -75.806482491739388 #TEST
 compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
 compare_values(ecc3, get_variable("CC3 TOTAL ENERGY"), 7, "CC3 energy") #TEST
-
-clean()

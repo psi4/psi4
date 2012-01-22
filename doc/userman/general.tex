@@ -1,6 +1,6 @@
-\subsection{General Keywords} \label{general}
+\subsection{General Options} \label{general}
                                                                                 
-Several keywords are relevant to many types of computations.  Those are
+Several options are relevant to many types of computations.  Those are
 described briefly here.
 
 \vspace*{0.2in}
@@ -14,17 +14,17 @@ described briefly here.
            & {\bf Type:} string &  {\bf Default:} RHF\\
          & & \\
 \end{tabular*}
-The ``reference wavefunction'' specified by the REFERENCE keyword is the
+The ``reference wavefunction'' specified by the \optionname{REFERENCE} keyword is the
 type of Hartree--Fock or Kohn--Sham wavefunction to be evaluated during
-the computation.  The reference wavefuntion may be the goal of the
-computation (if WFN = SCF), or it may serve as a reference (zeroth-order
+the computation.  The reference wavefunction may be the goal of the
+computation (for \texttt{energy(\qq scf\qq)}), or it may serve as a reference (zeroth-order
 solution) for various post-Hartree--Fock computations like CCSD(T) or MP2.
 
-\PSIfour\ may use several types of reference wavefunctions.  For
+\PSIfour\ can use several types of reference wavefunctions.  For
 closed-shell molecules, the appropriate choice is almost always restricted
 Hartree--Fock (RHF).  For open-shell molecules, one can choose either
-restricted orbitals (restricted open-shell Hartree--Fock, or ROHF), or
-unrestricted orbitals (unrestricted Hartree--Fock, or UHF).  We have also
+restricted orbitals (restricted open-shell Hartree--Fock (ROHF)), or
+unrestricted orbitals (unrestricted Hartree--Fock (UHF)).  We have also
 implemented the so-called constrained unrestricted Hartree--Fock (CUHF)
 method, which is an alternative approach to ROHF (and should give identical
 results) that may be easier to converge \cite{Tsuchimochi:2010:141102}.  Not
@@ -35,7 +35,7 @@ For Kohn--Sham density functional theory computations, the possible
 references are restricted Kohn--Sham (RKS, for closed-shell molecules)
 and unrestricted Kohn--Sham (UKS, for open-shell molecules).
 A restricted open-shell Kohn--Sham procedure is not recommended
-\cite{Handy-something} and not implemented.
+\cite{Pople:1995:303} and not implemented.
 
 \vspace*{0.2in}
 \noindent
