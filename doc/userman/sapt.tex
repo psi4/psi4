@@ -19,7 +19,7 @@ evaluated through a perturbative expansion of $V$, $W_A$, and $W_B$.
 Through first-order in $V$, electrostatic and exchange interactions are
 included; induction and dispersion first appear at second-order in $V$. For
 a complete description of SAPT, the reader is refered to the excellent
-review by Jeziorski, Moszynski, and Szalewicz.\cite{Jeziorski:1994:1887}
+review by Jeziorski, Moszynski, and Szalewicz \cite{Jeziorski:1994:1887}.
 
 Several truncations of the SAPT expansion are available in the \PSIsapt\
 module of \PSIfour. The simplest truncation of SAPT is denoted SAPT0.
@@ -49,7 +49,7 @@ E_{SAPT2+(3)} = E_{SAPT2+} + E_{ind,resp}^{(30)} + E_{exch-ind,resp}^{(30)}
 + E_{exch-disp}^{(30)} + E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)}
 \end{equation}
 A thorough analysis of the performance of these truncations of SAPT can be
-found in a review by Hohenstein and Sherrill.\cite{Hohenstein:2012:WIREs}
+found in a review by Hohenstein and Sherrill \cite{Hohenstein:2012:WIREs}.
 
 The \PSIsapt\ module relies entirely on the density-fitting approximation
 of the two-electron integrals. The factorization of the SAPT energy
@@ -125,7 +125,9 @@ running the \PSIsapt\ module.
 
 Generally speaking, SAPT0 should be applied to large systems or large data
 sets. The performance of SAPT0 relies entirely on error cancellation, which
-seems to be optimal with a truncated aug-cc-pVDZ basis, aug-cc-pVDZ$^\prime$.
+seems to be optimal with a truncated aug-cc-pVDZ basis, namely,
+jun-cc-pVDZ (which we have referred to in previous work as
+aug-cc-pVDZ$^{\prime}$).
 The \PSIsapt\ module has been used to perform SAPT0 computations with over
 200 atoms and 2800 basis functions; this code should be scalable to 4000
 basis functions. Publications resulting from the use of the SAPT0 code 
@@ -208,7 +210,7 @@ printed. For large SAPT computations, it is advisable to set \texttt{PRINT}
 to 1 so the progess of the computation can be tracked. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 1 (maybe) \\
+           & {\bf Type:} integer &  {\bf Default:} 1 \\
          & & \\
 \end{tabular*}
 
@@ -323,49 +325,11 @@ memory to hold $3o^2v^2+v^2N_{aux}$ arrays in core. With this requirement
 computations on the adenine-thymine complex can be performed with an
 aug-cc-pVTZ basis in less than 64GB of memory.
 
+In addition the SAPT0 keywords listed above, the following additional
+keywords are relevant for Higher-order SAPT.
 \begin{flushleft}
-{\bf Basic Higher-order SAPT Keywords} \\[5pt]
+{\bf Additional SAPT Keywords for Higher-order SAPT} \\[5pt]
 \end{flushleft}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{BASIS} & The basis set used to describe the monomer molecular
-orbitals. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} string &  {\bf Default:} none \\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DF\_BASIS\_SAPT} & The fitting basis to use for all
-two-electron integrals in the SAPT computation. \PSIfour\ will attempt to
-pick a reasonable fitting basis if one is not provided. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} string &  {\bf Default:} none \\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{FREEZE\_CORE} & Sets the number of core orbitals to freeze
-in the evaluation of all dispersion and intramonomer amplitudes. It is
-advisable to freeze core in all SAPT computations. \\
-
-          & {\bf Possible Values:} TRUE, FALSE, SMALL, LARGE
-\\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} string &  {\bf Default:} FALSE \\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{PRINT} & The print level for the \PSIsapt\ module. If
-\texttt{PRINT} is set to 0, only the header and final results are printed.
-If \texttt{PRINT} is set to 1, some intermediate quantities are also
-printed. For large SAPT computations, it is advisable to set \texttt{PRINT}
-to 1 so the progess of the computation can be tracked. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 1 (maybe) \\
-         & & \\
-\end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
          \texttt{DO\_THIRD\_ORDER} & This option computes the following
 corrections: $E_{ind}^{(30)}$, $E_{ind,resp}^{(30)}$, $E_{exch-ind}^{(30)}$,
@@ -381,7 +345,7 @@ option is activated. \\
 \end{tabular*}
 
 \begin{flushleft}
-{\bf Advanced Higher-order SAPT Keywords} \\[5pt]
+{\bf Additional Advanced Keywords for Higher-order SAPT} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
          \texttt{INTEGRAL\_CUTOFF} & All three-index DF integrals and those
@@ -399,14 +363,6 @@ memory checking in the higher-order SAPT code; disabling it is ill advised. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} boolean &  {\bf Default:} TRUE \\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \texttt{DEBUG} & The \texttt{DEBUG} flag will print lots of
-additional intermediate quantities that are not usually interesting. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 0 \\
          & & \\
 \end{tabular*}
 
@@ -465,7 +421,7 @@ computational savings. \\
 It is possible to obtain the stabilization energy of a complex due to
 charge-transfer effects from a SAPT computation. The charge-transfer energy 
 can be computed with the \PSIsapt\ module as described by Stone
-and Misquitta.\cite{Misquitta:2009:201}
+and Misquitta \cite{Misquitta:2009:201}.
 
 Charge-transfer energies can be obtained from the following calls to the
 energy function.

@@ -69,11 +69,9 @@ def energy(name, **kwargs):
     molecule.update_geometry()
 
     # Allow specification of methods to arbitrary order
-    lowername, level, uppername = parse_arbitrary_order(lowername)
+    lowername, level = parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
-    if uppername:
-        kwargs['fullname'] = uppername   # For mrccsd(t) this will be CCSD(T)
 
     try:
         return procedures['energy'][lowername](lowername,**kwargs)
@@ -90,11 +88,9 @@ def gradient(name, **kwargs):
     #    3. If user provides a custom 'func' use that
 
     # Allow specification of methods to arbitrary order
-    lowername, level, uppername = parse_arbitrary_order(lowername)
+    lowername, level = parse_arbitrary_order(lowername)
     if level:
         kwargs['level'] = level
-    if uppername:
-        kwargs['fullname'] = uppername   # For mrccsd(t) this will be CCSD(T)
 
     # 1. set the default to that of the provided name
     if (procedures['gradient'].has_key(lowername)):
@@ -389,29 +385,49 @@ opt = optimize
 def parse_arbitrary_order(name):
     namelower = name.lower()
 
-    if re.match(r'^mrcc(\w+)(\(\w\))?', namelower):
-        ccorder = re.match(r'^mrcc(\w+)(\(\w\))?', namelower)
+    # matches 'mrccsdt(q)'
+    if namelower.startswith('mrcc'):
+        # grabs 'sdt(q)'
+        ccfullname = namelower[4:]
 
-        orders = [ "sd", "sdt", "sdtq", "sdtqp", "stdqph" ]
-        fullcc = ccorder.group(1)
+        # A negative order indicates perturbative method
+        methods = {
+            "sd"          : { "method" : 1, "order" :  2, "fullname" : "CCSD"         },
+            "sdt"         : { "method" : 1, "order" :  3, "fullname" : "CCSDT"        },
+            "sdtq"        : { "method" : 1, "order" :  4, "fullname" : "CCSDTQ"       },
+            "sdtqp"       : { "method" : 1, "order" :  5, "fullname" : "CCSDTQP"      },
+            "sdtqph"      : { "method" : 1, "order" :  6, "fullname" : "CCSDTQPH"     },
+            "sd(t)"       : { "method" : 3, "order" : -3, "fullname" : "CCSD(T)"      },
+            "sdt(q)"      : { "method" : 3, "order" : -4, "fullname" : "CCSDT(Q)"     },
+            "sdtq(p)"     : { "method" : 3, "order" : -5, "fullname" : "CCSDTQ(P)"    },
+            "sdtqp(h)"    : { "method" : 3, "order" : -6, "fullname" : "CCSDTQP(H)"   },
+            "sd(t)_l"     : { "method" : 4, "order" : -3, "fullname" : "CCSD(T)_L"    },
+            "sdt(q)_l"    : { "method" : 4, "order" : -4, "fullname" : "CCSDT(Q)_L"   },
+            "sdtq(p)_l"   : { "method" : 4, "order" : -5, "fullname" : "CCSDTQ(P)_L"  },
+            "sdtqp(h)_l"  : { "method" : 4, "order" : -6, "fullname" : "CCSDTQP(H)_L" },
+            "sdt-1a"      : { "method" : 5, "order" :  3, "fullname" : "CCSDT-1a"     },
+            "sdtq-1a"     : { "method" : 5, "order" :  4, "fullname" : "CCSDTQ-1a"    },
+            "sdtqp-1a"    : { "method" : 5, "order" :  5, "fullname" : "CCSDTQP-1a"   },
+            "sdtqph-1a"   : { "method" : 5, "order" :  6, "fullname" : "CCSDTQPH-1a"  },
+            "sdt-1b"      : { "method" : 6, "order" :  3, "fullname" : "CCSDT-1b"     },
+            "sdtq-1b"     : { "method" : 6, "order" :  4, "fullname" : "CCSDTQ-1b"    },
+            "sdtqp-1b"    : { "method" : 6, "order" :  5, "fullname" : "CCSDTQP-1b"   },
+            "sdtqph-1b"   : { "method" : 6, "order" :  6, "fullname" : "CCSDTQPH-1b"  },
+            "2"           : { "method" : 7, "order" :  2, "fullname" : "CC2"          },
+            "3"           : { "method" : 7, "order" :  3, "fullname" : "CC3"          },
+            "4"           : { "method" : 7, "order" :  4, "fullname" : "CC4"          },
+            "5"           : { "method" : 7, "order" :  5, "fullname" : "CC5"          },
+            "6"           : { "method" : 7, "order" :  6, "fullname" : "CC6"          },
+            "sdt-3"       : { "method" : 8, "order" :  3, "fullname" : "CCSDT-3"      },
+            "sdtq-3"      : { "method" : 8, "order" :  4, "fullname" : "CCSDTQ-3"     },
+            "sdtqp-3"     : { "method" : 8, "order" :  5, "fullname" : "CCSDTQP-3"    },
+            "sdtqph-3"    : { "method" : 8, "order" :  6, "fullname" : "CCSDTQPH-3"   }
+        }
 
-        fullname = "CC" + fullcc
-        parenfound = False
-        if ccorder.group(2):
-            parenfound = True
-            parencc = ccorder.group(2)
-            parenorder = parencc[1]
-            fullcc = fullcc + parenorder
-            fullname = fullname + parencc
-
-        try:
-            ind = orders.index(fullcc) + 2 # to account for SD being first
-            if parenfound == True:
-                ind = -ind
-
-            return "mrcc", ind, fullname.upper()
-
-        except ValueError:
+        # looks for 'sdt(q)' in dictionary
+        if methods.has_key(ccfullname):
+            return "mrcc", methods[ccfullname]
+        else:
             raise ValidationError('MRCC method \'%s\' invalid.' % (namelower))
 
     elif re.match(r'^[a-z]+\d+$', namelower):
@@ -422,14 +438,14 @@ def parse_arbitrary_order(name):
         if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
             # Let 'mp2' pass through as itself
             if (namestump == 'mp') and (namelevel == 2):
-                return namelower, None, None
+                return namelower, None
             # Otherwise return method and order
             else:
-                return namestump, namelevel, None
+                return namestump, namelevel
         else:
-            return namelower, None, None
+            return namelower, None
     else:
-        return namelower, None, None
+        return namelower, None
 
 def frequencies(name, **kwargs):
     lowername = name.lower()
