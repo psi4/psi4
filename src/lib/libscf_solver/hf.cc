@@ -67,7 +67,7 @@ void HF::common_init()
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
-    integral_threshold_ = 0.0;
+    integral_threshold_ = options_.get_double("INTS_TOLERANCE");
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
