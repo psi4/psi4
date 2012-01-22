@@ -89,6 +89,7 @@ set globals {
 energy('sapt0')
 energy('sapt2')
 energy('sapt2+')
+energy('sapt2+(3)')
 energy('sapt2+3')
 
 \end{Snippet}
@@ -327,23 +328,23 @@ computations on the adenine-thymine complex can be performed with an
 aug-cc-pVTZ basis in less than 64GB of memory.
 
 In addition the SAPT0 keywords listed above, the following additional
-keywords are relevant for Higher-order SAPT.
-\begin{flushleft}
-{\bf Additional SAPT Keywords for Higher-order SAPT} \\[5pt]
-\end{flushleft}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         \optionname{DO-THIRD-ORDER}{SAPT} & This option computes the following
-corrections: $E_{ind}^{(30)}$, $E_{ind,resp}^{(30)}$, $E_{exch-ind}^{(30)}$,
-$E_{exch-disp}^{(30)}$, $E_{ind-disp}^{(30)}$, and
-$E_{exch-ind-disp}^{(30)}$. This is only relavent when the energy computed
-is SAPT2+3; this option distinguishes SAPT2+(3) from SAPT2+3. A brief
-technical note: the evaluation of $E_{disp}^{(30)}$ will be slower if this
-option is activated. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} boolean &  {\bf Default:} FALSE \\
-         & & \\
-\end{tabular*}
+advanced keywords are relevant for Higher-order SAPT.
+%\begin{flushleft}
+%{\bf Additional SAPT Keywords for Higher-order SAPT} \\[5pt]
+%\end{flushleft}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         \optionname{DO\_THIRD\_ORDER} & This option computes the following
+%corrections: $E_{ind}^{(30)}$, $E_{ind,resp}^{(30)}$, $E_{exch-ind}^{(30)}$,
+%$E_{exch-disp}^{(30)}$, $E_{ind-disp}^{(30)}$, and
+%$E_{exch-ind-disp}^{(30)}$. This is only relavent when the energy computed
+%is SAPT2+3; this option distinguishes SAPT2+(3) from SAPT2+3. A brief
+%technical note: the evaluation of $E_{disp}^{(30)}$ will be slower if this
+%option is activated. \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} boolean &  {\bf Default:} FALSE \\
+%         & & \\
+%\end{tabular*}
 
 \begin{flushleft}
 {\bf Additional Advanced Keywords for Higher-order SAPT} \\[5pt]
@@ -431,6 +432,7 @@ energy function.
 energy('sapt0-ct')
 energy('sapt2-ct')
 energy('sapt2+-ct')
+energy('sapt2+(3)-ct')
 energy('sapt2+3-ct')
 
 \end{Snippet}
