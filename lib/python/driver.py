@@ -17,10 +17,12 @@ procedures = {
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
+            'sapt2+(3)'     : run_sapt,
             'sapt2+3'       : run_sapt,
             'sapt0-ct'      : run_sapt_ct,
             'sapt2-ct'      : run_sapt_ct,
             'sapt2+-ct'     : run_sapt_ct,
+            'sapt2+(3)-ct'  : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
