@@ -613,7 +613,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("AIO_DF_INTS",false);
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
-    /*- Do compute third-order corrections? -*/
+    /*- Do compute third-order corrections? !expert -*/
     options.add_bool("DO_THIRD_ORDER",false);
     /*- Do compute natural orbitals? -*/
     options.add_bool("NAT_ORBS",false);
