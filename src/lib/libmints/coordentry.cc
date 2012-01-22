@@ -1,6 +1,8 @@
 #include <cmath>
 #include <libmints/vector3.h>
 #include <libmints/molecule.h>
+#include <sstream>
+#include <iomanip>
 #include <exception.h>
 #include "coordentry.h"
 
@@ -8,6 +10,28 @@ using namespace psi;
 
 namespace {
   double dzero = 0.0;
+}
+
+/**
+ * Takes a CoordValue object, and returns a string for printing.
+ */
+std::string variable_to_string(boost::shared_ptr<CoordValue>& val, int precision)
+{
+    std::string valstr;
+    if(val->type() == CoordValue::VariableType){
+        // A variable, print its name and the value will be printed later
+        VariableValue* pval = dynamic_cast<VariableValue*>(val.get());
+        if(pval->negated()) valstr = "-";
+        valstr += pval->name();
+    }else if(val->type() == CoordValue::NumberType){
+        // A number, print its value to the requested precision
+        std::stringstream ss;
+        ss << std::setw(precision+5) << std::setprecision(precision) << std::fixed << val->compute();
+        valstr = ss.str();
+    }else{
+        throw PSIEXCEPTION("Unknown CoordValue type in variable_to_string()");
+    }
+    return valstr;
 }
 
 double
@@ -45,6 +69,7 @@ const double& CoordEntry::Z() const
     else
         return Z_;
 }
+
 
 /**
  * Compares the charge, mass, ghost status, and basis set(s) of the current atom with those of another atom
@@ -93,6 +118,14 @@ CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double
                const std::map<std::string, std::string>& basis)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis), x_(x), y_(y), z_(z)
 {
+}
+
+void CartesianEntry::print_in_input_format()
+{
+    std::string xstr(variable_to_string(x_, 10));
+    std::string ystr(variable_to_string(y_, 10));
+    std::string zstr(variable_to_string(z_, 10));
+    fprintf(outfile, "\t%16s %16s %16s\n", xstr.c_str(), ystr.c_str(), zstr.c_str());
 }
 
 const Vector3& CartesianEntry::compute()
@@ -180,7 +213,43 @@ ZMatrixEntry::set_coordinates(double x, double y, double z)
     computed_ = true;
 }
 
-
+void ZMatrixEntry::print_in_input_format()
+{
+    if(rto_ == 0 && ato_ == 0 && dto_ == 0){
+        /*
+         * The first atom
+         */
+        fprintf(outfile, "\t%s\n", symbol_.c_str());
+    }else if(ato_ == 0 && dto_ == 0){
+        /*
+         * The second atom
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 6);
+        fprintf(outfile, "\t%s %5d %s\n", symbol_.c_str(), rto, rval.c_str());
+    }else if(dto_ == 0){
+        /*
+         * The third atom
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 6);
+        int ato = ato_->entry_number() + 1;
+        std::string aval = variable_to_string(aval_, 6);
+        fprintf(outfile, "\t%s %5d %s %5d %s\n", symbol_.c_str(), rto, rval.c_str(), ato, aval.c_str());
+    }else{
+        /*
+         * Remaining atoms
+         */
+        int rto = rto_->entry_number() + 1;
+        std::string rval = variable_to_string(rval_, 6);
+        int ato = ato_->entry_number() + 1;
+        std::string aval = variable_to_string(aval_, 6);
+        int dto = dto_->entry_number() + 1;
+        std::string dval = variable_to_string(dval_, 6);
+        fprintf(outfile, "\t%s %5d %s %5d %s %5d %s\n",
+               symbol_.c_str(), rto, rval.c_str(), ato, aval.c_str(), dto, dval.c_str());
+    }
+}
 /**
  * Computes the coordinates of the current atom's entry
  * @Return The Cartesian Coordinates, in Bohr

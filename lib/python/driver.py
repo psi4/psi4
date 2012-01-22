@@ -17,10 +17,12 @@ procedures = {
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
             'sapt2+'        : run_sapt,
+            'sapt2+(3)'     : run_sapt,
             'sapt2+3'       : run_sapt,
             'sapt0-ct'      : run_sapt_ct,
             'sapt2-ct'      : run_sapt_ct,
             'sapt2+-ct'     : run_sapt_ct,
+            'sapt2+(3)-ct'  : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
             'ccenergy'      : run_ccenergy,  # full control over ccenergy
@@ -357,6 +359,7 @@ def optimize(name, **kwargs):
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print "Optimizer: Optimization complete!"
+            PsiMod.get_active_molecule().print_in_input_format()
             PsiMod.opt_clean()
             PsiMod.clean()
 

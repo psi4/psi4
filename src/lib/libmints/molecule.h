@@ -308,6 +308,9 @@ public:
     /// Print the molecule
     void print() const;
 
+    /// Print the molecule in the same format that the user provided
+    void print_in_input_format() const;
+
     /// Print the molecule in Bohr
     void print_in_bohr() const;
 

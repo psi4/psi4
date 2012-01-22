@@ -1196,6 +1196,33 @@ void Molecule::print_in_bohr() const
     }
 }
 
+void Molecule::print_in_input_format() const
+{
+    if (Communicator::world->me() == 0) {
+        if (nallatom()) {
+            fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
+                    units_==Angstrom ? "Angstrom" : "bohr");
+            // It's only worth echoing these if the user either input some variables,
+            // or they used a Z matrix for input
+            if(full_atoms_[0]->type()==CoordEntry::ZMatrixCoord
+                    || geometry_variables_.size()){
+                for(int i = 0; i < nallatom(); ++i){
+                    full_atoms_[i]->print_in_input_format();
+                }
+                fprintf(outfile,"\n");
+                fflush(outfile);
+                if(geometry_variables_.size()){
+                    std::map<std::string, double>::const_iterator iter;
+                    for(iter = geometry_variables_.begin(); iter!=geometry_variables_.end(); ++iter){
+                        fprintf(outfile, "\t%-10s=%16.10f\n", iter->first.c_str(), iter->second);
+                    }
+                    fprintf(outfile, "\n");
+                }
+            }
+        }
+    }
+}
+
 void Molecule::print() const
 {
     if (Communicator::world->me() == 0) {

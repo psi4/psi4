@@ -310,10 +310,10 @@ keyword, which defaults to \optionval{PK}.
 \begin{description}
 \item[\optionval{PK}:] An in-core, presorted algorithm using exact ERIs. Quite fast
 for a zero-error algorithm if enough memory is available. Integrals are
-generated only once, symmetry is utilized to reduce number of integrals. 
+generated only once, and symmetry is utilized to reduce number of integrals. 
 \item[\optionval{OUT\_OF\_CORE}:] An out-of-core, unsorted algorithm using exact
 ERIs. Overcomes the memory bottleneck of the current PK algorithm. Integrals are
-generated only once, symmetry is utilized to reduce number of integrals. 
+generated only once, and symmetry is utilized to reduce number of integrals. 
 \item[\optionval{DIRECT}:] An in-core repeated integral evaluation algorithm using
 exact ERIs. Symmetry is used to reduce the number of integrals, and no disk is
 used. However, integral regeneration is quite costly, implying that this
