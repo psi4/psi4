@@ -27,7 +27,7 @@ energy('mrccsdt')
 {\tt mrccsdt} in the call to {\tt energy()} instructs \PSIfour\ to first perform an RHF calculation and then call MRCC to compute the CCSDT energy. For a CCSDT(Q) energy, simply use {\tt mrccsdt(q)} in the call to {\tt energy}.  MRCC can be used to perform geometry optimization and frequency calculations as well.
 
 At this time, \PSIfour\ is only able to automatically generate the proper
-input file for MRCC for the methods listed in table \ref{tab:mrccauto}. For other methods, you will be required to use the MRCC keywords described elsewhere in this manual.
+input file for MRCC for the methods listed in Table \ref{tab:mrccauto}. For other methods, you will be required to use the MRCC keywords described elsewhere in this manual.
 
 \begin{table}
 \caption{Methods available for automatic interface with MRCC.} 
@@ -59,7 +59,7 @@ CC6         &                  &                   \\
 \end{center}
 \end{table}
 
-Frozen-core approximation is also supported in the MRCC interface. To optimize, CH$_4$ with CCSDT freezing the 1s on carbon, run:
+Frozen-core approximation is also supported in the MRCC interface. To optimize CH$_4$ with CCSDT freezing the 1s on carbon, run:
 
 \begin{Snippet}
 molecule H2O {

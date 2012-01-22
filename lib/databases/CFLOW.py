@@ -21,8 +21,8 @@ HRXN_SM = ['2Ae2Ae-3.8', 'BzBz_S-3.9']
 HRXN_LG = ['C70Bkycatch']
 Polyenes = []  #DOC equilibrium for linear polyene dimers for 2 through 16 monomer carbons
 Polyenes = ['2Ae2Ae-3.8', '4Ae4Ae-3.8', '6Ae6Ae-3.8', '8Ae8Ae-3.8', '10Ae10Ae-3.8', '12Ae12Ae-3.8', '14Ae14Ae-3.8', '16Ae16Ae-3.8',]
-Arenes = []  #DOC equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
-Arenes = ['BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.5',]
+#Arenes = []  #DOC equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
+#Arenes = ['BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.5',]
 Pulay = []  #DOC 5-point dissociation curve for bowl-in-bowl corannulene dimer
 Pulay = ['BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.73', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84',]
 Grimme60 = ['BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]  #DOC Grimme corannulene dimer, C60@buckybowl, and C60@buckycatcher
@@ -47,18 +47,22 @@ c4Bz3Bz = []  #DOC 5-point dissociation curve for tetracene-anthracene complex
 dist = [3.3,3.4,3.5,3.6,3.7]
 for d in dist: c4Bz3Bz.append('4Bz3Bz_S-' + str(d))
 temp = [cBzBz, c2BzBz, c2Bz2Bz, c3Bz2Bz, c3Bz3Bz, c4Bz3Bz]
-cArenes = sum(temp, [])  #DOC 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
+#cArenes = sum(temp, [])  #DOC 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
 
-temp = [Polyenes, Arenes, 'BkybowlBkybowl-3.73', Grimme60, 'C70Bkycatch',]
+#temp = [Polyenes, Arenes, ['BkybowlBkybowl-3.73'], Grimme60, ['C70Bkycatch'],]
+temp = [Polyenes, ['BkybowlBkybowl-3.73'], Grimme60, ['C70Bkycatch'],]
 HRXN_EQ = sum(temp, [])
 
-temp = [Polyenes, Arenes, Pulay, Grimme60]
+#temp = [Polyenes, Arenes, Pulay, Grimme60]
+temp = [Polyenes, Pulay, Grimme60]
 Paper = sum(temp, [])  #DOC linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
 
-temp = [Polyenes, cArenes, Pulay, Grimme60]
+#temp = [Polyenes, cArenes, Pulay, Grimme60]
+temp = [Polyenes, Pulay, Grimme60]
 cPaper = sum(temp, [])  #DOC linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
 
-temp = [Polyenes, cArenes, Pulay, Grimme60, Grimme70]
+#temp = [Polyenes, cArenes, Pulay, Grimme60, Grimme70]
+temp = [Polyenes, Pulay, Grimme60, Grimme70]
 HRXN = sum(temp, [])
 
 # <<< Chemical Systems Involved >>>

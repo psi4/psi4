@@ -46,7 +46,7 @@ E_{SAPT2+(3)} = E_{SAPT2+} + E_{elst,resp}^{(13)} + E_{disp}^{(30)}
 \end{equation}
 \begin{equation}
 \label{eqn:SAPT2+3}
-E_{SAPT2+(3)} = E_{SAPT2+} + E_{ind,resp}^{(30)} + E_{exch-ind,resp}^{(30)}
+E_{SAPT2+3} = E_{SAPT2+(3)}
 + E_{exch-disp}^{(30)} + E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)}
 \end{equation}
 A thorough analysis of the performance of these truncations of SAPT can be
@@ -370,7 +370,7 @@ memory checking in the higher-order SAPT code; disabling it is ill advised. \\
 
 \subsubsection{MP2 Natural Orbitals}
 
-One of the unique features of the \PSIsapt\ module is it's ability to use
+One of the unique features of the \PSIsapt\ module is its ability to use
 MP2 natural orbitals (NOs) to speed up the evaluation of the triples
 contribution to disperison. By transforming to the MP2 NO basis, we can
 throw away virtual orbitals that are expected to contribute little to the
@@ -495,7 +495,7 @@ energy('sapt2+3')
 To reiterate some of the options mentioned above: the
 \optionname{NAT-ORBS}{SAPT} option will compute MP2 natural orbitals and use
 them in the evaluation of the triples correction to dispersion, and the
-\optionname{FREEZE-CORE}{SAPT} option will freeze the core throughout the SAPT
+\optionname{FREEZE-CORE}{GLOBALS} option will freeze the core throughout the SAPT
 computation. This SAPT2+3/aug-cc-pVDZ computation produces the following
 results:
 \begin{Snippet}
