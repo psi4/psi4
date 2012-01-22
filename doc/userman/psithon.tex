@@ -21,10 +21,11 @@ in the \psirc file
 UGC = 6.67384E-11 # m^3 / kg^-1 s^-2
 \end{verbatim}
 which would make the variable {\tt UGC} available in all \PSIfour input files.
-For convenience, the physical constants used within the \PSIfour code are also
-automatically loaded as Psithon variables (before \psirc is loaded, so that
-\psirc values can be overridden by the user); table \ref{tab:physconst} shows
-these variables.
+For convenience, the physical constants used within the \PSIfour code (which
+are obtained from the 3rd edition of the IUPAC Green
+book\cite{Cohen:GreenBook:2008}) are also automatically loaded as Psithon
+variables (before \psirc is loaded, so that \psirc values can be overridden by
+the user); table \ref{tab:physconst} shows these variables.
 \begin{table}[h!]
     \caption{The physical constants used within \PSIfour, which are automatically
              made available within all \PSIfour input files.}
