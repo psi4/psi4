@@ -1,4 +1,4 @@
-#! RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+#! RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
 
 memory 250 mb
 

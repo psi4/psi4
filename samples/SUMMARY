@@ -16,7 +16,7 @@ dcft3:        DCFT calculation for the He dimer, with the K06 functional. This p
 cisd-h2o-clpse:  6-31G** H2O Test CISD Energy Point with subspace collapse
 
 
-mcscf1:       ROHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.
+mcscf1:       ROHF 6-31G** energy of the $^3B@@1$ state of CH$@@2$, with Z-matrix input. The occupations are specified explicitly.
 
 
 cc44:         Test case for some of the PSI4 out-of-core codes.  The code is given only 2.0 MB of memory, which is insufficient to hold either the A1 or B2 blocks of an ovvv quantity in-core, but is sufficient to hold at least two copies of an oovv quantity in-core.
@@ -100,7 +100,7 @@ tu5-sapt:     Example SAPT computation for ethene*ethine (i.e., ethylene*acetyle
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
-cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
 
 
 dcft4:        DCFT calculation for the Ne atom, with the K06 functional. This performs both two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis. The reference DCFT energy is taken from the JCP 133 174122 (2010) paper
@@ -217,10 +217,10 @@ cc14:         ROHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradi
 cisd-sp:      6-31G** H2O Test CISD Energy Point
 
 
-scf3:         UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.
+scf3:         UHF 6-31G** energy of the $^3B@@1$ state of CH$@@2$, with Z-matrix input. The occupations are specified explicitly.
 
 
-psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$_2$ state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 
 cc41:         RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = both, omega = (589 355 nm)
@@ -271,7 +271,7 @@ scf-bz2:      Benzene Dimer Out-of-Core HF/cc-pVDZ
 scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan, and then the same procedure is performed using polar coordinates, converted to Cartesian coordinates.
 
 
-cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
 
 
 cc10:         ROHF-CCSD cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical
