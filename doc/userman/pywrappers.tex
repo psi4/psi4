@@ -3,6 +3,7 @@
 \subsubsection*{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}\hspace{1em}{#1}}}
 
 \section{Python Wrappers\label{pywrappers}}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 The Python foundations of the \PSIfour driver and Psithon syntax permit
 many commonly performed post-processing procedures to be integrated into
@@ -32,7 +33,7 @@ correction to the correlation energy, and a second delta correction.
 Each is activated by a stage\_wfn keyword and is only allowed if all
 preceding stages are already active.
 
-At present, the \optionname{BASIS} keyword in the global and
+At present, the \optionname{BASIS}{MINTS} keyword in the global and
 local options sections are not considered by this wrapper.
 
 %\begin{align*}

@@ -22,6 +22,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 {
 //  options.clear();
 
+  // name == "GLOBALS" fake line to make document_options_and_tests.pl generate a GLOBALS doc section
+
   /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
 
@@ -597,10 +599,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         to quantitatively analyze noncovalent interactions. -*/
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
-//    /*- The ubiquitous debug flag -*/
-//    options.add_int("DEBUG",0);
-//    /*- The amount of information to print to the output file -*/
-//    options.add_int("PRINT",1);
     /*- Convergence criterion for energy (change) in the SAPT Ind20 term.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE",1e-10);

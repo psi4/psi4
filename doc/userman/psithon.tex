@@ -1,4 +1,5 @@
 \section{Psithon} \label{psithon}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
  
 To allow arbitrarily complex computations to be performed, \PSIfour was built
 upon the Python interpreter. However, to make the input syntax simpler, some
@@ -228,7 +229,7 @@ achieved by adding either {\tt no\_reorient} or {\tt noreorient}. By default,
 
 For efficiency, \PSIfour can utilize the largest Abelian subgroup of the full
 point group of the molecule.  Concomitantly a number of quantities, such as
-{\tt SOCC} and {\tt DOCC}, are arrays whose entries pertain to irreducible
+\optionname{SOCC}{GLOBALS} and \optionname{DOCC}{GLOBALS}, are arrays whose entries pertain to irreducible
 representations (irreps) of the molecular point group.  Ordering of irreps
 follows the convention used in Cotton's {\it Chemical Applications of Group
 Theory}, as detailed in Table \ref{tab:IrrepOrdering}.  We refer to this
@@ -258,7 +259,7 @@ convention as ``Cotton Ordering'' hereafter.
 
 For example, water (\pg{C}{2v} symmetry) has 3 doubly occupied \pg{A}{1}
 orbitals, as well as 1 each of \pg{B}{1} and \pg{B}{2} symmetry; the
-corresponding {\tt DOCC} array is therefore:
+corresponding \optionname{DOCC}{GLOBALS} array is therefore:
 \begin{verbatim}
   DOCC = [3, 0, 1, 1]
 \end{verbatim}
