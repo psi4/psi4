@@ -1,14 +1,16 @@
 #! Example potential energy surface scan and CP-correction for Ne2
 
+memory 250 mb
+
 molecule dimer {
   Ne
 --
   Ne 1 R
 }
 
-Rvals=[2.0, 2.5, 3.0, 4.0, 5.0]
+Rvals=[2.5, 3.0, 4.0]
 
-ecp_ref = {2.0:8.867977, 2.5:0.757717, 3.0:0.015685, 4.0:-0.016266, 5.0:-0.004355} #TEST
+ecp_ref = {2.5:0.757717, 3.0:0.015685, 4.0:-0.016266} #TEST
 
 set basis aug-cc-pVDZ
 set freeze_core True

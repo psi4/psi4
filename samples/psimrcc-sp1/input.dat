@@ -1,6 +1,8 @@
 #! Mk-MRCCSD single point. $^3 \Sigma ^-$O$_2$ state described using
 #! the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
+memory 250 mb
+
 
 molecule o2 {
   0 3

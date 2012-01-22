@@ -1,5 +1,7 @@
 #! SCF STO-3G geometry optimzation, with Z-matrix input, by finite-differences
 
+memory 250 mb
+
 # Same test case as scf5
 
 molecule h2o {
@@ -17,7 +19,4 @@ set globals {
 }
 
 thisenergy = optimize('scf', dertype = 0)
-
-
-clean()
 

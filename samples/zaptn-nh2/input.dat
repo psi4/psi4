@@ -1,5 +1,7 @@
 #! ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
 
+memory 250 mb
+
 
 molecule nh2 {
     0 2
@@ -18,7 +20,4 @@ set globals {
 }
 
 thisenergy = energy('zapt25')
-
-
-clean()
 

@@ -2,6 +2,8 @@
 #! specifying the active space, either with the ACTIVE keyword, or
 #! with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
 
+memory 250 mb
+
 
 molecule c2 {
   C

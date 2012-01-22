@@ -75,6 +75,7 @@ void export_mints()
             def("set", vector_setitem_1(&Vector::set)).
             def("set", vector_setitem_2(&Vector::set)).
             def("print_out", &Vector::print_out).
+            def("scale", &Vector::scale).
             def("dim", &Vector::dim).
             def("__getitem__", vector_getitem_1(&Vector::pyget)).
             def("__setitem__", vector_setitem_1(&Vector::pyset)).
@@ -248,7 +249,8 @@ void export_mints()
             def("unit", &SymmetryOperation::unit).
             def("E", &SymmetryOperation::E).
             def("i", &SymmetryOperation::i).
-            def("sigma_h", &SymmetryOperation::sigma_h).
+            def("sigma_xy", &SymmetryOperation::sigma_xy).
+            def("sigma_yz", &SymmetryOperation::sigma_yz).
             def("sigma_xz", &SymmetryOperation::sigma_xz).
             //        def("sigma_yz", &SymmetryOperation::sigma_yz).
             def("rotate_n", intFunction(&SymmetryOperation::rotation)).
@@ -258,10 +260,10 @@ void export_mints()
             def("transpose", &SymmetryOperation::transpose);
 
     class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup").
-            def(init<const char*>()).
-            def("symbol", &PointGroup::symbol).
+            def(init<const std::string&>()).
+            def("symbol", &PointGroup::symbol);
             //def("origin", &PointGroup::origin).
-            def("set_symbol", &PointGroup::set_symbol);
+//            def("set_symbol", &PointGroup::set_symbol);
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix &);
 
@@ -269,6 +271,7 @@ void export_mints()
             def("set_geometry", matrix_set_geometry(&Molecule::set_geometry)).
             def("set_name", &Molecule::set_name).
             def("name", &Molecule::name).
+            def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry).
             def("fix_orientation", &Molecule::set_orientation_fixed).
             def("fix_com", &Molecule::set_com_fixed).
             def("init_with_checkpoint", &Molecule::init_with_chkpt).

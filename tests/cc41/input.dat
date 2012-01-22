@@ -1,6 +1,8 @@
 #! RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = both, omega =
 #! (589 355 nm)
 
+memory 250 mb
+
 molecule h2o2 {
   0 1
   O
@@ -18,5 +20,3 @@ set {
 }
 
 response('cc2')
-clean()
-

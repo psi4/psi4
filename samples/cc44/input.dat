@@ -22,7 +22,3 @@ set {
 energy('eom-ccsd')
 
 
-
-clean()
-
-

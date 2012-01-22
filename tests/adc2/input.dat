@@ -1,5 +1,7 @@
-
 # Two water molecules that are distant from 1000 angstroms from each other
+
+memory 250 mb
+
 molecule h2ox2 {
    o                               0.000000    0.000000    0.118621
    h                               0.000000    0.756713   -0.474484
@@ -18,5 +20,3 @@ set globals {
 }
 
 energy('adc')
-
-clean()

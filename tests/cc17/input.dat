@@ -1,5 +1,7 @@
 #! Single point energies of multiple excited states with EOM-CCSD
 
+memory 250 mb
+
 molecule ch2 {
   0 3
   c
@@ -17,14 +19,13 @@ set {
 
 energy('eom-ccsd')
 
-escf = -38.917378694797   #TEST
-eccsd = -39.03274757226   #TEST
-eeom_ccsd = [-38.6664604477, -38.6032901417, -38.7702711146, -38.6989011688, -38.7458590086, -38.5424940735, -38.8224374840, -38.6232036004 ]  #TEST
-compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
-compare_values(eccsd, get_variable("CCSD TOTAL ENERGY"), 7, "CCSD energy") #TEST
-for root in range(1,9):                                 #TEST
- ref = eeom_ccsd[root-1]                                #TEST
- val = get_variable("CC ROOT %d TOTAL ENERGY" % root)   #TEST
- compare_values(ref, val, 7, "EOM-CCSD root %d" % root) #TEST
-
-clean()
+escf = -38.917378694797                                                        #TEST
+eccsd = -39.03274757226                                                        #TEST
+eeom_ccsd = [-38.6664604477, -38.6032901417, -38.7702711146, -38.6989011688,   #TEST
+             -38.7458590086, -38.5424940735, -38.8224374840, -38.6232036004 ]  #TEST
+compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy")        #TEST
+compare_values(eccsd, get_variable("CCSD TOTAL ENERGY"), 7, "CCSD energy")     #TEST
+for root in range(1,9):                                                        #TEST
+    ref = eeom_ccsd[root-1]                                                    #TEST
+    val = get_variable("CC ROOT %d TOTAL ENERGY" % root)                       #TEST
+    compare_values(ref, val, 7, "EOM-CCSD root %d" % root)                     #TEST

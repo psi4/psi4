@@ -9,6 +9,7 @@
 #include <libiwl/iwl.hpp>
 #include <libciomr/libciomr.h>
 #include "mints.h"
+#include "sointegral_twobody.h"
 
 #include <libqt/qt.h>
 

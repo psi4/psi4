@@ -1,5 +1,7 @@
 #! Database calculation with psi4-generated input. Should not be used as a model
 #! input file but as a canary to avoid breaking database/input parser dependencies.
+
+memory 250 mb
  
 refenergy = -40.195693876290                                                                          #TEST
 
@@ -89,5 +91,3 @@ PsiMod.print_out('\nDATABASE RESULT: computation 80955 for reagent BASIC-ch4-rea
 PsiMod.set_variable('NATOM', molecule.natom())
 
 compare_values(refenergy, electronic_energy, 5, 'Optimized reference energy for sown BASIC reagent')  #TEST
-
-clean()

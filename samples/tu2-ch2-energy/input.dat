@@ -1,5 +1,7 @@
 #! Sample UHF/6-31G** CH2 computation
 
+memory 250 mb
+
 molecule ch2 {
   0 3
   C 

@@ -1,5 +1,7 @@
 #! 6-31G** H2O Test CISD Energy Point with subspace collapse
 
+memory 250 mb
+
 
 molecule h2o {
     O
@@ -19,7 +21,4 @@ set detci {
 }
 
 thisenergy = energy('cisd')
-
-
-clean()
 
