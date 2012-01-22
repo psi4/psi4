@@ -51,11 +51,11 @@ a good working knowledge of multi-reference and RAS CI methods before
 attempting to use the program for a production-level project.  This user's
 manual will provide only an elementary introduction to the most
 important keywords.  Additional information is available in the complete
-list of keywords for \PSIdetci\ provided in the Appendix.
+list of keywords for \PSIdetci\ provided in Appendices \ref{kw-DETCI} and \ref{ekw-DETCI}.
 
 The division of the molecular orbitals into various subspaces such as
-RAS spaces, or frozen vs active orbitals, etc, needs to be clear not
-only to \PSIdetci\, but also at least to the transformation program
+RAS spaces, or frozen vs. active orbitals, etc., needs to be clear not
+only to \PSIdetci\ , but also at least to the transformation program
 (and in the case of MCSCF, to other programs as well).  Thus, orbital
 subspace keywords such as \optionname{RAS1}{DETCI}, \optionname{RAS2}{DETCI}, \optionname{RAS3}{DETCI}, 
 \optionname{FROZEN-DOCC}{GLOBALS}, \optionname{FROZEN-UOCC}{GLOBALS}, \optionname{ACTIVE}{DETCI}, etc., should be set
@@ -78,7 +78,7 @@ which the driver has built-in shortcuts, so long as the relevant options
 
 \subsubsection{Basic Keywords}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         REFERENCE & Reference wavefunction \\
+         \optionname{REFERENCE}{DETCI} & Reference wavefunction \\
 
           & {\bf Possible Values:} RHF, ROHF \\
 \end{tabular*}
@@ -87,7 +87,7 @@ which the driver has built-in shortcuts, so long as the relevant options
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         R\_CONVERGENCE & Convergence is achieved when the RMS of the error in
+         \optionname{R-CONVERGENCE}{DETCI} & Convergence is achieved when the RMS of the error in
          the CI vector is less than this value. The default is $10^{-4}$ for 
          energies and $10^{-7}$ for gradients. \\
 \end{tabular*}
@@ -96,21 +96,21 @@ which the driver has built-in shortcuts, so long as the relevant options
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         EX\_LEVEL & The CI excitation level \\
+         \optionname{EX-LEVEL}{DETCI} & The CI excitation level \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} integer &  {\bf Default:} 2\\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         FCI & Do a full CI (FCI)? \\
+         \optionname{FCI}{DETCI} & Do a full CI (FCI)? \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} boolean &  {\bf Default:} false\\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         FROZEN\_DOCC & The number of frozen (doubly) occupied orbitals
+         \optionname{FROZEN-DOCC}{GLOBALS} & The number of frozen (doubly) occupied orbitals
          per irrep \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -118,7 +118,7 @@ which the driver has built-in shortcuts, so long as the relevant options
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         FROZEN\_UOCC & The number of frozen unoccupied orbitals 
+         \optionname{FROZEN-UOCC}{GLOBALS} & The number of frozen unoccupied orbitals 
          per irrep \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -126,7 +126,7 @@ which the driver has built-in shortcuts, so long as the relevant options
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         MAXITER & Maximum number of iterations to diagonalize the
+         \optionname{MAXITER}{DETCI} & Maximum number of iterations to diagonalize the
 Hamiltonian. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -134,7 +134,7 @@ Hamiltonian. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         NUM\_ROOTS & number of CI roots to find \\
+         \optionname{NUM-ROOTS}{DETCI} & number of CI roots to find \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} integer &  {\bf Default:} 1\\
@@ -145,7 +145,7 @@ Hamiltonian. \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         ICORE & Specifies how to handle buffering of CI vectors. A value
+         \optionname{ICORE}{DETCI} & Specifies how to handle buffering of CI vectors. A value
 of 0 makes the program perform I/O one RAS subblock at a time; 1 uses
 entire CI vectors at a time; and 2 uses one irrep block at a time. Values
 of 0 or 2 cause some inefficiency in the I/O (requiring multiple reads of
@@ -157,7 +157,7 @@ the C vector when constructing H in the iterative subspace if
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         OPDM & Compute one-particle density matrix if not otherwise
+         \optionname{OPDM}{DETCI} & Compute one-particle density matrix if not otherwise
 required? \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -165,7 +165,7 @@ required? \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         TDM & Compute the transition density? Note: 
+         \optionname{TDM}{DETCI} & Compute the transition density? Note: 
          only transition densities
          between roots of the same symmetry will be evaluated.  \PSIdetci\ 
          does not compute states of different irreps within the same 
@@ -176,14 +176,14 @@ required? \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         DIPMOM & Compute the dipole moment? \\
+         \optionname{DIPMOM}{DETCI} & Compute the dipole moment? \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} boolean &  {\bf Default:} false\\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         MPN & When this option is \optionval{TRUE}, DETCI will compute 
+         \optionname{MPN}{DETCI} & When this option is \optionval{TRUE}, DETCI will compute 
          the MPn series out to kth order where k is determined
          by \optionname{MAX-NUM-VECS}{DETCI}. For open-shell systems
          (\optionname{REFERENCE}{DETCI}=\optionval{ROHF}), DETCI will compute
@@ -198,7 +198,7 @@ required? \\
 \end{tabular*}
 
 For larger computations, additional keywords may be required, as
-described in the \PSIdetci\ section of the Appendix.
+described in the \PSIdetci\ sections of the Appendices, \ref{kw-DETCI} and \ref{ekw-DETCI}.
 
 \subsubsection{Arbitrary Order Perturbation Theory}
 The \PSIdetci\ module is capable of computing energies for arbitrary
@@ -210,7 +210,7 @@ full CI) computations to obtain these results, and hence they will only
 be possible for very small systems (generally a dozen electrons or less).
 
 The simplest way to run high-order perturbation theory computations is to
-call, e.g., {\tt energy(\qq{mp10}\qq)} to invoke an MP10 computation, and
+call, e.g., {\tt energy(\qq{mp10}\qq)} to invoke an MP10 computation or
 {\tt energy(\qq{zapt25}\qq)} to invoke a ZAPT25 computation.  This will
 automatically set several additional user options to their appropriate
 values.  The program uses the Wigner $(2n+1)$ rule to obtain higher-order
