@@ -2,7 +2,7 @@
 \stepcounter{subsubsection}
 \subsubsection*{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}\hspace{1em}{#1}}}
 
-\section{Python Wrappers\label{pywrappers}}
+\section{Python Wrappers\label{sec:pywrappers}}
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 The Python foundations of the \PSIfour driver and Psithon syntax permit
@@ -17,7 +17,7 @@ in the command that calls the wrapper (formatted in this manual as
 \pyoptionname{option = } \pyoptionval{value}),
 not in the \texttt{set globals} block or with any other \texttt{set} command.
 
-\subsection{\texttt{counterpoise\_correct}\label{wrapcp}}
+\subsection{\texttt{counterpoise\_correct}\label{sec:wrapcp}}
 
 The \texttt{counterpoise\_correct()} or \texttt{cp()} wrapper computes
 counterpoise-corrected two-body interaction energies for complexes composed of
@@ -31,7 +31,7 @@ Most any argument to \texttt{energy()} can be supplied here; however, SAPT is no
 \end{itemize}
 
 
-\subsection{\texttt{database}\label{wrapdb}}
+\subsection{\texttt{database}\label{sec:wrapdb}}
 
 The \texttt{database()} or \texttt{db()} wrapper facilitates access to
 the molecule objects and reference energies of popular chemical databases.
@@ -194,7 +194,7 @@ Mean Absolute Dev                         0.0201
 \end{verbatim}
 
 
-\subsection{\texttt{complete\_basis\_set}\label{wrapcbs}}
+\subsection{\texttt{complete\_basis\_set}\label{sec:wrapcbs}}
 
 The \texttt{complete\_basis\_set()} or \texttt{cbs()} wrapper defines a
 multistage energy method from combinations of basis set extrapolations
@@ -477,7 +477,7 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 %   \end{itemize}
 
 
-\subsection{Compound Wrapper Calls}\label{wrapcompound}
+\subsection{Compound Wrapper Calls}\label{sec:wrapcompound}
 
 The wrappers below can be called in combination according to Table \ref{table:wrapintercalls}
 below, so that db(opt(cbs(energy())) is permitted while
