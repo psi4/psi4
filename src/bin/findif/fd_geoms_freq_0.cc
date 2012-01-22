@@ -55,38 +55,42 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   int Nsalc_all = salc_list.ncd();
   fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
 
+  if (freq_irrep_only >= Nirrep || freq_irrep_only < -1)
+    throw PsiException("FINDIF: Irrep value not in valid range.",__FILE__,__LINE__);
+
   // build vectors that list indices of salcs for each irrep
-  std::vector< std::vector<int> > salcs_pi; // salcs per irrep
+  std::vector< std::vector<int> > salcs_pi;
   for (int h=0; h<Nirrep; ++h)
     salcs_pi.push_back( std::vector<int>() );
   for (int i=0; i<Nsalc_all; ++i)
     salcs_pi[salc_list[i].irrep()].push_back(i);
 
-  fprintf(outfile,"\tIndex of salcs per irrep:\n");
-  for (int h=0; h<Nirrep; ++h) {
-    fprintf(outfile, "\t  Irrep %d : ", h+1);
-    for (int i=0; i<salcs_pi[h].size(); ++i)
-      fprintf(outfile," %d ", salcs_pi[h][i]);
-    fprintf(outfile, "\n");
-  }
-
-  // From now on in code, salcs_pi establishes the canonical order of SALCs and displacements
-  fprintf(outfile,"\tNumber of SALC's per irrep:\n");
-  for (int h=0; h<Nirrep; ++h)
-    fprintf(outfile,"\t  Irrep %d: %d\n", h+1, (int) salcs_pi[h].size());
-
-  // Determine number of displacements
-  std::vector<int> Ndisp_pi (Nirrep);
-
   // Now remove irreps that are not requested
-  if (freq_irrep_only >= Nirrep || freq_irrep_only < -1)
-    throw PsiException("FINDIF: Irrep value not in valid range.",__FILE__,__LINE__);
-
   if (freq_irrep_only != -1) {
     for (int h=0; h<Nirrep; ++h)
       if (h != freq_irrep_only)
         salcs_pi[h].clear();
   }
+
+  // From now on in code, salcs_pi establishes the canonical order of SALCs and displacements
+  fprintf(outfile,"\t Number of SALC's per irrep:\n");
+  for (int h=0; h<Nirrep; ++h)
+    fprintf(outfile,"\t  Irrep %d: %d\n", h+1, (int) salcs_pi[h].size());
+
+  if (options.get_int("PRINT") > 1) {
+    fprintf(outfile,"\tIndex of active salcs per irrep:\n");
+    for (int h=0; h<Nirrep; ++h) {
+      if (salcs_pi[h].size()) {
+        fprintf(outfile, "\t  Irrep %d : ", h+1);
+        for (int i=0; i<salcs_pi[h].size(); ++i)
+          fprintf(outfile," %d ", salcs_pi[h][i]);
+        fprintf(outfile, "\n");
+      }
+    }
+  }
+
+  // Determine number of displacements
+  std::vector<int> Ndisp_pi (Nirrep);
 
   // diagonal displacements for symmetric coordinates
   if (pts == 3)
@@ -119,7 +123,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   for (int h=0; h<Nirrep; ++h)
     fprintf(outfile,"\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);
 
-  if (options.get_int("PRINT") > 1)
+  if (options.get_int("PRINT") > 2)
     for (int i=0; i<salc_list.ncd(); ++i)
       salc_list[i].print();
 
@@ -128,7 +132,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   SharedMatrix ref_geom(ref_geom_temp.clone());
   ref_geom->set_name("Reference geometry");
 
-  // to be returned and converted into "matrix_vector" list in python
+  // disp_geoms will be returned and converted into "matrix_vector" list in python
   std::vector< SharedMatrix > disp_geoms;
 
   for (int h=0; h<Nirrep; ++h) { // loop over irreps

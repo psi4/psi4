@@ -51,6 +51,10 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
 void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size);
 
+// to massweight columns of a shared matrix
+void mass_weight_columns_plus_one_half(SharedMatrix B);
+
+
 template <class T>
 inline std::string to_string (const T& t)
 {
