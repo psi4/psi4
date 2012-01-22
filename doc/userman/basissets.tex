@@ -1,4 +1,5 @@
 \section{Basis Sets}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), 
 all-electron [no effective core potentials (ECPs)], of segmented contraction (not general contraction), 
@@ -9,29 +10,26 @@ but their mixtures are not, neither within a basis set (\textit{e.g.}, 6D/7F) no
 For built-in basis sets, the correct \optionval{spherical}/\optionval{cartesian} value is set internally from the orbital basis.
 
 
-\subsection{Built-in Basis Sets}
-Tables \ref{table:basisPopleOrbital} (Pople), \ref{table:basisDunningOrbital}--\ref{table:basisDunningDK} (Dunning), 
-and \ref{table:basisOther} (other) summarize the orbital basis sets available in \PSIfour. 
-These tables are arranged so that columns indicate degree of augmentation by diffuse functions 
-(generally necessary for anions, excited states, and noncovalent interactions)
-and DTQ56 indicate the X$\;=\zeta$ levels available.
-Several intermediate levels of diffuse space between the customary non-augmented and augmented versions have been
-supplied for each basis set, including heavy-augmented and Truhlar's\cite{Papajak:2011:10} calendar truncations 
-described in Table \ref{table:basisMonths}.
-Fitting bases JKFIT (Table \ref{table:basisDunningJKFIT}), RI (Table \ref{table:basisDunningMP2FIT}), and
-DUAL (Table \ref{table:basisDunningDUAL}) are available for methods incorporating density-fitting or
-dual-basis approximations.
-Citations for basis sets can be found in their definition files at psi4/lib/basis in the source.
-For basis set availability by element and the default value for keyword \optionname{PUREAM}, consult Appendix \ref{basisElement}.
-
-%C++ option name (optionname): \optionname{pueram}
-
-%C++ option value (optionval): \optionval{true}
-
-%Python keyword name (pyoptionname): \pyoptionname{cast\_up}
-
-%Python keyword value (pyoptionval): \pyoptionval{6}
-
+\subsection{Built-in Basis Sets} Tables \ref{table:basisPopleOrbital} (Pople),
+\ref{table:basisDunningOrbital}--\ref{table:basisDunningDK} (Dunning), and
+\ref{table:basisOther} (other) summarize the orbital basis sets available in
+\PSIfour.  These tables are arranged so that columns indicate degree of
+augmentation by diffuse functions (generally necessary for anions, excited
+states, and noncovalent interactions) and DTQ56 indicate the X$\;=\zeta$ levels
+available.  Several intermediate levels of diffuse space between the customary
+non-augmented and augmented versions have been supplied for each basis set,
+including heavy-augmented and Truhlar's\cite{Papajak:2011:10} calendar
+truncations described in Table \ref{table:basisMonths}.  Fitting bases JKFIT
+(Table \ref{table:basisDunningJKFIT}), RI (Table
+\ref{table:basisDunningMP2FIT}), and DUAL (Table \ref{table:basisDunningDUAL})
+are available for methods incorporating density-fitting or dual-basis
+approximations. JKFIT sets are appropriate for fitting $(oo|$-type products,
+such as encountered in SCF theory and the electrostatics/exchange terms of SAPT.
+RI sets are appropriate for fitting $(ov|$-type products, such as encountered in
+MP2 and most SAPT terms.  Citations for basis sets can be found in their
+definition files at psi4/lib/basis in the source.  For basis set availability by
+element and the default value for keyword \optionname{PUREAM}{GLOBALS}, consult
+Appendix \ref{basisElement}.
 
 \begin{table}[!htbp]
 \begin{footnotesize}
@@ -247,7 +245,7 @@ def2-QZVPP   & def2-QZVPPD &       \\
 \end{table}
 
 
-\subsection{User-Specified Basis Sets} \label{sec:BasisSetSpecification}
+\subsection{User-Defined Basis Sets} \label{sec:BasisSetSpecification}
 
 There are three routes by which a basis set in G94 format can be introduced to \PSIfour's notice.
 
@@ -275,7 +273,7 @@ Copy the basis set definitions for all elements into a blank file. Exclamation p
 As the first line of the file, add the basis set name in brackets.
 As the second line of the file, add the word \texttt{spherical} or \texttt{cartesian} to indicate
 whether the basis set will run in (5D/7F) or (6D/10F). 
-The combination of [ basis name ], \optionname{PUREAM} value, and element basis set specifications 
+The combination of [ basis name ], \optionname{PUREAM}{GLOBALS} value, and element basis set specifications 
 forms a section, like the one shown below.
 Multiple basis sets can be specified in the same file by adding additional sections to the file.
 Specify the location of the new basis set file in a \PSIfour input file with the command 
@@ -304,7 +302,7 @@ SP   3   1.00
 
 \item Include new basis set in input file.
 
-Construct for a basis set a section like the one above that includes [ basis name ], \optionname{PUREAM}
+Construct for a basis set a section like the one above that includes [ basis name ], \optionname{PUREAM}{GLOBALS}
 value, and element basis set specifications. Hash signs denote comments.
 Copy the section into a \PSIfour input file and surround it with the command \texttt{basis \{\dots\}}, 
 as shown below.
@@ -320,12 +318,9 @@ basis {
 
 \subsection{Specifying Basis Sets}
 
-The primary basis set is specified with option \optionname{BASIS}, which assigns,
+The primary basis set is specified with option \optionname{BASIS}{MINTS}, which assigns,
 for instance, aug-cc-pVDZ to all atoms of the last-defined molecule through
-\texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{\}} block.
+\texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{$\dots$\}} block.
 
 
-
-%\subsection{Calling Built-in Basis Sets}
-%\subsection{Calling Custom Basis Sets}
 

@@ -34,6 +34,13 @@
 \renewcommand{\topfraction}{.8}
 \renewcommand{\bottomfraction}{.2}
 
+\makeatletter
+\renewcommand\paragraph{\@startsection {paragraph}{4}{\z@}%
+                                   {-3.5ex \@plus -1ex \@minus -.2ex}%
+                                   {0.3ex \@plus.2ex}%
+                                   {\normalfont\footnotesize\mdseries}}
+\makeatother
+
 
 %%%%%%%%%%%%%%%%%%%%%%%
 % Start document
@@ -78,7 +85,7 @@ Report bugs to: \PSIemail \\
 \input{introduction}
 \input{tutorial}
 \input{psithon}
-\input{pywrappers}
+\input{basissets}
 \input{methods}
   \input{general}
   \input{scf}
@@ -91,7 +98,7 @@ Report bugs to: \PSIemail \\
   \input{mrcc}
 %\input{opt}
 %\input{oeprop}
-\input{basissets}
+\input{pywrappers}
 \input{additional-docs}
 %\newpage
 

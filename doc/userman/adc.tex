@@ -1,4 +1,5 @@
 \subsection{\textit{Ab initio} Polarization Propagator} \label{adc}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 The \PSIadc\ code seeks the pole structure of the polarization
 propagator, which is equivalent to the correlated excitation energy,
@@ -8,7 +9,7 @@ the diagrammatic language by Schirmer \cite{Schirmer:1982} and later,
 a sophisticated algebraic scheme was developed \cite{Trofimov:2006}
 by Trofimov et al. In general by \textit{n}-th order ADC theory, the
 excited state is treated at completely equivalent level to the M\o
-ller-Plesset perturbation expansion of the same order. Hence the ADC(2)
+ller--Plesset perturbation expansion of the same order. Hence the ADC(2)
 can be described as MP2 theory for the excited state and the relation
 to such other response theories as CC2-LR, CIS(D) and CIS(D${}_n$) has
 been addressed \cite{Haettig:2002} by H\"attig et al.  In the ADC theory,
@@ -26,7 +27,7 @@ properly accounted for in the ADC(2) model.
 
 In \PSIfour\ the quite efficient and flexible integral-transformation
 library named {\tt libtrans} is newly equipped and utilized in the
-production level DCFT code. The \PSIadc\ code is also based on the
+production level DCFT code. The \PSIadc\ code is also based on
 {\tt libtrans}, and it is also based on {\tt libdpd}, a library to
 utilize molecular symmetry in the tensorial manipulations in framework
 of the direct-product decomposition algorithm. By this feature, the Ritz
@@ -34,7 +35,7 @@ space and intermediate tensors are blocked according to the irreducible
 representations of the point group, and the excited states that belong
 to different symmetry are sought separately.
 
-In the output of \PSIadc\ , the ADC(2) results may look as follows:
+In the output of \PSIadc\, the ADC(2) results may look as follows:
 \begin{verbatim}
 ->  1 B1 state   :  0.2565095 (a.u.),  6.9799824 (eV)
     Non-iterative:  0.2565636 (a.u.),  6.9814532 (eV)
@@ -79,7 +80,7 @@ correlation (DC) correction to the excited state. In the PR-ADC(2)
 scheme, the the DC term is corrected according to the ground state
 PR-MP2 correlation, in which the correlation between the electron pairs
 is accounted for in size-consistent and unitary-invariant fashion by
-modulating the MP1 amplitude. By utilizing the PR scheme, substantial
+modulating the MP1 amplitude. By utilizing the \optionname{PR}{ADC} scheme, substantial
 resistance against quasi-degeneracy is readily granted as discussed
 in Ref.~\cite{Saitow:2012}.
 
@@ -109,7 +110,7 @@ the large D manifold is treated effectively as
 \begin{equation*}
 [\mathbf{A_{SS}^{(2)}}+\mathbf{A_{SD}^{(1)}}^{\dagger}(\omega-\mathbf{A_{DD}^{(0)}})^{-1}\mathbf{A_{DS}^{(1)}}]\mathbf{X_{S}}=\omega\mathbf{X_{S}}.
 \end{equation*}
-This form of the ADC(2) equation requires 7 - 10 iterations for
+This form of the ADC(2) equation requires 7 -- 10 iterations for
 convergence on only one root. But thanks to Newton-Raphson
 acceleration,
 \begin{equation*}
