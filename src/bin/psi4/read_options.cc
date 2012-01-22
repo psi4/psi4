@@ -599,48 +599,80 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         to quantitatively analyze noncovalent interactions. -*/
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
-    /*- Convergence criterion for energy (change) in the SAPT Ind20 term.
+    /*- Convergence criterion for energy (change) in the SAPT $E@@{ind,resp}^{(20)}$ 
+    term during solution of the CPHF equations.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE",1e-10);
-    /*- Convergence criterion for density in the SAPT Ind20 term.
+    /*- Convergence criterion for residual of the CPHF coefficients in the SAPT 
+    $E@@{ind,resp}^{(20)}$ term.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGENCE",1e-8);
-    /*- Don't solve the CPHF equations? -*/
+    /*- Don't solve the CPHF equations? Evaluate $E@@{ind}^{(20)}$ and
+    $E@@{exch-ind}^{(20)}$ instead of their response-including coupterparts.
+    Only turn on this option if the induction energy is not going to be used. -*/
     options.add_bool("NO_RESPONSE",false);
-    /*- Do use asynchronous I/O in the CPHF solver? -*/
+    /*- Do use asynchronous disk I/O in the solution of the CPHF equations? 
+    Use may speed up the computation slightly at the cost of spawning an additional thread. -*/
     options.add_bool("AIO_CPHF",false);
-    /*- Do use asynchronous I/O in the DF integral formation? -*/
+    /*- Do use asynchronous disk I/O in the formation of the DF integrals? 
+    Use may speed up the computation slightly at the cost of spawning an additional thread. -*/
     options.add_bool("AIO_DF_INTS",false);
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
     /*- Do compute third-order corrections? !expert -*/
     options.add_bool("DO_THIRD_ORDER",false);
-    /*- Do compute natural orbitals? -*/
+    /*- Do natural orbitals to speed up evaluation of the triples 
+    contribution to dispersion by truncating the virtual orbital space? 
+    Recommended true for all SAPT computations. -*/
     options.add_bool("NAT_ORBS",false);
-    /*- Do use natural orbitals for T2's? -*/
+    /*- Do use MP2 natural orbital approximations for the $v^4$ block of 
+    two-electron integrals in the evaluation of second-order T2 amplitudes?
+    This approximation is promising for accuracy and computational savings,
+    but it has not been rigorously tested. -*/
     options.add_bool("NAT_ORBS_T2",false);
-    /*- Minimum occupation below which natural orbitals are neglected.
-    See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
+    natural orbitals are discarded for evaluating the triples contribution
+    to dispersion. See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("OCC_TOLERANCE",1.0E-6);
-    /*- Minimum absolute value below which integrals are neglected.
+    /*- Minimum absolute value below which all three-index DF integrals 
+    and those contributing to four-index integrals are neglected. The 
+    default is conservative, but there isn't much to be gained from 
+    loosening it, especially for higher-order SAPT.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("INTS_TOLERANCE",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
-    /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory? -*/
+    /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory? 
+    Turning this off is ill-advised. -*/
     options.add_bool("SAPT_MEM_CHECK",true);
+    /*- Primary basis set, describes the monomer molecular orbitals -*/
+    options.add_str("BASIS", "");
     /*- Auxiliary basis set for SAPT density fitting computations. Defaults to BASIS-RI. -*/
     options.add_str("DF_BASIS_SAPT", "");
-    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting computations. Defaults to BASIS-RI. -*/
+    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting computations,
+    may be important if heavier elements are involved. Defaults to BASIS-RI. -*/
     options.add_str("DF_BASIS_ELST", "");
-    /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
+    /*- Maximum error allowed (Max error norm in Delta tensor) 
+    in the approximate energy denominators employed for most of the
+    $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ evaluation. -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
-    /*- Denominator algorithm for PT methods -*/
+    /*- Denominator algorithm for PT methods. Laplace transformations
+    are slightly more efficient. -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
+    /*- The scale factor used for opposite-spin pairs in SCS computations. SS/OS
+    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. -*/
     options.add_double("SAPT_OS_SCALE", 6.0/5.0);
-    /*- The scale factor used for same-spin pairs in SCS computations-*/
+    /*- The scale factor used for same-spin pairs in SCS computations. SS/OS
+    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. -*/
     options.add_double("SAPT_SS_SCALE", 1.0/3.0);
+    /*- The scope of core orbitals to freeze in evaluation of SAPT 
+    $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. Recommended true
+    for all SAPT computations -*/
+    options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
+    /*- The amount of information to print to the output file for the sapt
+    module. For 0, only the header and final results are printed. For 1,
+    (recommended for large calculations) some intermediate quantities are also printed. -*/
+    options.add_int("PRINT", 1);
   }
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory computations -*/
