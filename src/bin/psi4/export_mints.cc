@@ -282,6 +282,7 @@ void export_mints()
             def("multiplicity", &Molecule::multiplicity).
             def("nfragments", &Molecule::nfragments).
             def("print_out", &Molecule::print).
+            def("print_in_input_format", &Molecule::print_in_input_format).
             def("save_xyz", &Molecule::save_xyz).
             def("save_string_xyz", &Molecule::save_string_xyz).
             def("update_geometry", &Molecule::update_geometry).

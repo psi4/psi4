@@ -60,17 +60,22 @@ subspace keywords such as {\tt RAS1}, {\tt RAS2}, {\tt RAS3}, {\tt
 frozen\_docc}, {\tt frozen\_uocc}, {\tt active}, etc., should be set
 in the global section of input so they may also be read by other modules.
 
-\subsubsection{Basic Keywords}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         WFN & Wavefunction type \\
+For single-reference CI computations, the easiest way to invoke a CI
+computation with \PSIdetci\ is simply to call {\tt energy()}, {\tt
+optimize()}, etc., with the common name for that CI wavefunction, like {\tt
+energy(\qq{cisd}\qq)} for a CISD single-point energy.  The Python driver
+recognizes {\tt cisd}, {\tt cisdt}, and {\tt cisdtq}.  Higher order
+single-refernce CI wavefunctions, like those including singles through
+6-fold excitations, can be invoked using numbers, like {\tt ci6}.  A full
+CI can be specifed by {\tt fci}.  More complicated CI computations, like
+RASCI, can be performed by setting the appropriate keywords and calling the
+module generically like {\tt energy(\qq{detci}\qq)}.  The latter approach
+will also work for any of the previously-mentioned CI wavefunctions for
+which the driver has built-in shortcuts, so long as the relevant options
+(especially \optionname{EX\_LEVEL}) are set appropriately.
 
-          & {\bf Possible Values:} DETCI, CI, ZAPTN, DETCAS, CASSCF, RASSCF
-\\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} string &  {\bf Default:} DETCI\\
-         & & \\
-\end{tabular*}
+
+\subsubsection{Basic Keywords}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
          REFERENCE & Reference wavefunction \\
 
@@ -81,16 +86,16 @@ in the global section of input so they may also be read by other modules.
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         CONVERGENCE & Convergence is achieved when the RMS of the error in
-the CI vector is less than 10**(-n). The default is 4 for energies and 7
-for gradients. \\
+         R\_CONVERGENCE & Convergence is achieved when the RMS of the error in
+         the CI vector is less than this value. The default is $10^{-4}$ for 
+         energies and $10^{-7}$ for gradients. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 4\\
+           & {\bf Type:} double &  {\bf Default:} $10^{-4}$\\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         EX\_LVL & The CI excitation level \\
+         EX\_LEVEL & The CI excitation level \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} integer &  {\bf Default:} 2\\
@@ -143,8 +148,8 @@ Hamiltonian. \\
 of 0 makes the program perform I/O one RAS subblock at a time; 1 uses
 entire CI vectors at a time; and 2 uses one irrep block at a time. Values
 of 0 or 2 cause some inefficiency in the I/O (requiring multiple reads of
-the C vector when constructing H in the iterative subspace if DIAG\_METHOD
-= SEM), but require less core memory. \\
+the C vector when constructing H in the iterative subspace if 
+\optionname{DIAG\_METHOD} = \optionval{SEM}), but require less core memory. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} integer &  {\bf Default:} 1\\
@@ -159,7 +164,7 @@ required? \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         TRANSITION\_DENSITY & Compute the transition density? Note: 
+         TDM & Compute the transition density? Note: 
          only transition densities
          between roots of the same symmetry will be evaluated.  \PSIdetci\ 
          does not compute states of different irreps within the same 
@@ -177,11 +182,14 @@ required? \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         MPN & When this option is TRUE DETCI will compute the MPn series
-out to kth order where k is determined by maxnvect. For open-shell systems
-(REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series. GUESS\_VECTOR
-must be set to UNIT, HD\_OTF must be set to TRUE, and HD\_AVE must be set
-to orb\_ener; these should happen by default for MPN=TRUE. \\
+         MPN & When this option is \optionval{TRUE}, DETCI will compute 
+         the MPn series out to kth order where k is determined
+         by \optionname{MAX\_NUM\_VECS}. For open-shell systems
+         (\optionname{REFERENCE}=\optionval{ROHF}), DETCI will compute
+         the ZAPTn series. \optionname{GUESS\_VECTOR} must be set to
+         \optionval{UNIT}, \optionname{HD\_OTF} must be set to \optionval{TRUE},
+         and \optionname{HD\_AVE} must be set to \optionval{orb\_ener}; these
+         should happen by default for \optionname{MPN}=\optionval{TRUE}. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -201,39 +209,47 @@ full CI) computations to obtain these results, and hence they will only
 be possible for very small systems (generally a dozen electrons or less).
 
 The simplest way to run high-order perturbation theory computations is to
-call, e.g., {\tt energy('mp10')} to invoke an MP10 computation, and
-{\tt energy('zapt25')} to invoke a ZAPT25 computation.  This will
+call, e.g., {\tt energy(\qq{mp10}\qq)} to invoke an MP10 computation, and
+{\tt energy(\qq{zapt25}\qq)} to invoke a ZAPT25 computation.  This will
 automatically set several additional user options to their appropriate
 values.  The program uses the Wigner $(2n+1)$ rule to obtain higher-order
 energies from lower-order wavefunctions.
 
 For the interested reader, the additional user options that are
 automatically set up by the calls above are as follows.  A call like
-{\tt energy('mp10')} sets MPN = TRUE.  The program uses the Wigner
-$(2n+1)$ rule by default (WIGNER = TRUE) and figures out what order
-of wavefunction is necssary to reach the desired order in the energy.
-The program then sets MAXNVECT to the required order in the wavefunction.
-By default, the requested n{th} order energy is saved as the current energy
-to the process environment.   ZAPTN works essentially the same way for an
-ROHF reference.
+{\tt energy(\qq{mp10}\qq)} sets \optionname{mpn} = \optionval{true}.
+The program uses the Wigner $(2n+1)$ rule by default (\optionname{wigner}
+= \optionval{true}) and figures out what order of wavefunction is
+necssary to reach the desired order in the energy.  The program then
+sets \optionname{MAX\_NUM\_VECS} to the required order in the wavefunction.
+By default, the requested n{th} order energy is saved as the current
+energy to the process environment.   ZAPTN works essentially the same
+way for an ROHF reference.
 
-\subsubsection{Arbitrary Order Coupled-Cluster Theory} The
-\PSIdetci\ module is also capable of computing arbitrary-order
+\subsubsection{Arbitrary Order Coupled-Cluster Theory} 
+{\em This feature is not yet released in the Beta1 version of the code.}
+
+The \PSIdetci\ module is also capable of computing arbitrary-order
 coupled-cluster energies, using an approach similar to that of Hirata
 and Bartlett \cite{Hirata:2000:216}, or of Olsen \cite{Olsen:2000:7140}.
 Notably, the approach in \PSIdetci\ also allows arbitrary-order {\em
 active space} coupled-cluster procedures.  The general algorithm
 for doing this in \PSIdetci\ is inefficient compared to optimized
 lower-order coupled-cluster codes and should not be used for CCSD,
-where the \PSIccenergy\ module is much more efficient.  It is also very
-memory-intensive.  However, it allows for testing of, for example,
-CCSDTQ, or its active-space CCSDtq analog \cite{Piecuch:1999:6103},
-on very small systems.
+where the \PSIccenergy\ module is much more efficient.  For higher-order
+CC (like CCSDT and beyond), the code is also not as efficient as the
+MRCC code by K{\'a}llay, to which \PSIfour\ can interface (see Section
+\ref{mrcc}); however, it may allow certain truncations of the model
+space that might not be available presently in MRCC.  For very small
+systems, the code can be useful for testing of, for example, CCSDTQ or
+its active-space CCSDtq analog \cite{Piecuch:1999:6103}.
 
-To perform arbitrary-order coupled-cluster, set the \PSIdetci\ option
-CC to TRUE, and set CC\_EX\_LVL (note: not EX\_LVL) to the desired
-coupled-cluster excitation level.  Various other \PSIdetci\ options have a
-similar option for coupled-cluster, usually named beginning with CC.  The
-full list of options is given in the Appendix.
+To perform arbitrary-order coupled-cluster, set the \PSIdetci\
+option \optionname{cc} to \optionval{true}, and set
+\optionname{cc\_ex\_lvl} (note: not \optionname{ex\_lvl})
+to the desired coupled-cluster excitation level, and invoke {\tt
+energy(\qq{detci}\qq}).  Various other \PSIdetci\ options have a similar
+option for coupled-cluster, usually named beginning with CC.  The full
+list of options is given in the Appendix.
 
 
