@@ -1,5 +1,6 @@
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
+#include <boost/python/dict.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
@@ -70,7 +71,7 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
     namespace adc        { PsiReturnType adc(Options&);       }
-    namespace mrcc       { PsiReturnType mrcc(Options&, int level, bool pertcc); }
+    namespace mrcc       { PsiReturnType mrcc(Options&, const boost::python::dict&); }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -189,10 +190,10 @@ double py_psi_mcscf()
         return 0.0;
 }
 
-PsiReturnType py_psi_mrcc(int level, bool pertcc)
+PsiReturnType py_psi_mrcc(const boost::python::dict& level)
 {
     py_psi_prepare_options_for_module("MRCC");
-    return mrcc::mrcc(Process::environment.options, level, pertcc);
+    return mrcc::mrcc(Process::environment.options, level);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_1_0()

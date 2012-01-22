@@ -15,11 +15,13 @@
 default:: install
 
 # Note that LaTeX should be run three times to resolve references
+# Don't do bibtex by default, only need it for userman right now
+# and some versions of bibtex will die if run on a document with no
+# bibliography
 $(TARGET_DVI): $(TEX) $(SUBTEX) $(OTFTEX)
 	echo $(srcdir)
 	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
-	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
-	$(LATEX) $< && $(BIBTEX) $(MAN) && $(LATEX) $< && $(LATEX) $<
+	$(LATEX) $< && $(LATEX) $< && $(LATEX) $<
 
 $(TARGET_PS): $(DVI)
 	$(DVIPS) -o $@ $<
