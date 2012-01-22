@@ -496,6 +496,90 @@ memory 2000000 Kb
 One convenient way to override the \PSIfour default memory is to place a memory
 command in the \psirc file, as detailed in section \ref{sec:Psirc}.
 
+\subsection{Threading}
+
+Most new modules in \PSIfour are designed to run efficiently on SMP architectures
+via application of several thread models. The de facto standard for \PSIfour 
+involves using threaded BLAS/LAPACK (particularly Intel's excellent MKL package)
+for most tensor-like operations, OpenMP for more general operations, and Boost
+Threads for some special-case operations. Note: Using OpenMP alone is a really
+bad idea. The developers make little to no effort to explicitly parallelize
+operations which are already easily threaded by MKL or other threaded BLAS. Less
+than 20\% of the threaded code in \PSIfour uses OpenMP, the rest is handled by
+parallel DGEMM and other library routines. From this point forward, it is
+assumed that you have compiled PSI4 with OpenMP and MKL (Note that it is
+possible to use g++ or another compiler, and yet still link against MKL).
+
+Control of threading in \PSIfour can be accomplished at a variety of levels,
+ranging from global environment variables to direct control of thread count in
+the input file, to even directives specific to each model. This hierarchy is
+explained below. Note that each deeper level trumps all previous levels. 
+
+\flushleft \textbf{(1) OpenMP/MKL Environment Variables}
+
+The easiest/least visible way to thread \PSIfour is to set the standard OpenMP/MKL
+environment variables. For instance, in tcsh:
+\begin{Snippet}
+setenv OMP_NUM_THREADS 4
+setenv MKL_NUM_THREADS 4
+\end{Snippet}
+\PSIfour then detects these value via the API routines in \texttt{<omp.h>} and
+\texttt{<mkl.h>}, and runs all applicable code with 4 threads. These environment
+variables are typically defined in a \texttt{.tcshrc} or \texttt{.bashrc}.  
+
+\flushleft \textbf{(2) The -n Command Line Flag}
+
+To change the number of threads at runtime, the \texttt{-n} flag may be used. An
+example is:
+\begin{Snippet}
+psi4 -i input.dat -o output.dat -n 4 
+\end{Snippet}
+which will run on four threads.
+
+\flushleft \textbf{(3) Setting Thread Numbers in an Input}
+
+For more explicit control, the Process::environment class in \PSIfour can
+override the number of threads set by environment variables. This functionality
+is accessed via the \texttt{set\_num\_threads} Psithon function, which controls
+both MKL and OpenMP thread numbers. The number of threads may be changed
+multiple times in a \PSIfour input file. An example input for this feature is:
+
+\begin{Snippet}
+# A bit small-ish, but you get the idea
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 90.0
+}
+
+set scf {
+basis cc-pvdz
+scf_type df
+}
+
+# Run from 1 to 4 threads, for instance, to record timings
+for nthread in range(1,5):
+    set_num_threads(nthread)
+    energy('scf')
+\end{Snippet}
+
+\flushleft \textbf{(4) Method-Specific Control}
+
+Even more control is possible in certain circumstances. For instance, the
+threaded generation of AO density-fitted integrals involves a memory requirement
+proportional to the number of threads. This requirement may exceed the total
+memory of a small-memory node if all threads are involved in the generation of
+these integrals. For general DF algorithms, the user may specify:
+
+\begin{Snippet}
+set MODULE_NAME df_ints_num_threads n 
+\end{Snippet}
+
+to explicitly control the number of threads used for integral formation. Setting
+this variable to 0 (the default) uses the number of threads specified by the
+\texttt{set\_num\_threads()} Psithon method or the default environmental variables.
+
 \subsection{Return Values and \PSI Variables}
 
 To harness the power of Python, \PSIfour makes the most pertinent results of
