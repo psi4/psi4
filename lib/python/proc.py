@@ -703,10 +703,18 @@ def run_mrcc(name, **kwargs):
     run_scf(name, **kwargs)
 
     # The parse_arbitrary_order method provides us the following information
-    level = abs(kwargs['level'])
-    pertcc = kwargs['level'] < 0
-    fullname = kwargs['fullname']
+    # We require that level be provided. level is a dictionary
+    # of settings to be passed to PsiMod.mrcc
+    if kwargs.has_key('level') == False:
+        raise ValidationError("level parameter was not provided.")
 
+    level = kwargs['level']
+
+    # Fullname is the string we need to search for in iface
+    fullname = level['fullname']
+
+    # User can provide 'keep' to the method.
+    # When provided, to not delete the MRCC scratch directory.
     keep = False
     if (kwargs.has_key('keep')):
         keep = kwargs['keep']
@@ -731,11 +739,11 @@ def run_mrcc(name, **kwargs):
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
-    PsiMod.mrcc(level, pertcc)
+    PsiMod.mrcc(level)
 
     # Load the fort.56 file
     # and dump a copy into the outfile
-    PsiMod.print_out("===== Begin fort.56 input for MRCC ======\n")
+    PsiMod.print_out("\n===== Begin fort.56 input for MRCC ======\n")
     PsiMod.print_out(open('fort.56', 'r').read())
     PsiMod.print_out("===== End   fort.56 input for MRCC ======\n")
 

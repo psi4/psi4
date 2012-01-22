@@ -7,11 +7,14 @@
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>
+#include <libciomr/libciomr.h>
 #include <vector>
 
 #include <physconst.h>
 
 #include <boost/foreach.hpp>
+#include <boost/python.hpp>
+#include <boost/python/dict.hpp>
 
 namespace psi{ namespace mrcc {
 
@@ -63,10 +66,29 @@ void print_dim(const std::string& name, const Dimension& dim)
     fprintf(outfile, "]\n");
 }
 
-PsiReturnType mrcc(Options& options, int level, bool pertcc)
+PsiReturnType mrcc(Options& options, const boost::python::dict& level)
 {
-    fprintf(outfile, "\n  MRCC input file generator.\n");
-    fprintf(outfile, "   Will generate fort.55 and fort.56 files.\n\n");
+    tstart();
+
+    fprintf(outfile, "  PSI4 interface to MRCC:\n");
+
+    // Ensure the dict provided has everything we need.
+    if (!level.has_key("method") ||
+        !level.has_key("order") ||
+        !level.has_key("fullname"))
+        throw PSIEXCEPTION("MRCC interface: Provided dictionary is incomplete.");
+
+    int method  = boost::python::extract<int>(level.get("method"));
+    int exlevel = boost::python::extract<int>(level.get("order"));
+    std::string fullname = boost::python::extract<std::string>(level.get("fullname"));
+    bool pertcc = exlevel > 0 ? false : true;
+    exlevel = abs(exlevel);
+
+    fprintf(outfile, "    Generating inputs for %s.\n\n", fullname.c_str());
+
+    fprintf(outfile, "    Automatically determined settings:\n");
+    fprintf(outfile, "        method %d\n        exlevel %d\n        fullname %s\n\n",
+            method, exlevel, fullname.c_str());
 
     boost::shared_ptr<Wavefunction> wave     = Process::environment.reference_wavefunction();
     boost::shared_ptr<Molecule>     molecule = wave->molecule();
@@ -123,7 +145,7 @@ PsiReturnType mrcc(Options& options, int level, bool pertcc)
     if (options.get_str("REFERENCE") == "UHF")
         restricted = false;
 
-    if (pertcc && options.get_str("REFERENCE") == "ROHF") 
+    if (pertcc && options.get_str("REFERENCE") == "ROHF")
         throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
 
     // Create integral transformation object
@@ -253,12 +275,11 @@ PsiReturnType mrcc(Options& options, int level, bool pertcc)
     if (e_conv == 0)
         throw PSIEXCEPTION("e_conv became 0. This isn't right.");
 
-    int ccmethod = pertcc ? 3 : 1;
+    // The following two are expert options.
     if (options["MRCC_METHOD"].has_changed())
-        ccmethod = options.get_int("MRCC_METHOD");
-
+        method = options.get_int("MRCC_METHOD");
     if (options["MRCC_LEVEL"].has_changed())
-        level = options.get_int("MRCC_LEVEL");
+        exlevel = options.get_int("MRCC_LEVEL");
 
     int nsing = 1;
     int closed_shell = 1;
@@ -281,11 +302,11 @@ PsiReturnType mrcc(Options& options, int level, bool pertcc)
 
     FILE* fort56 = fopen("fort.56", "w");
     fprintf(fort56, "%6d%6d%6d%6d%6d      0     0%6d     0%6d%6d     1%6d      0      0%6d     0     0    0.00    0%6lu\n",
-            level,                                           // # 1
+            exlevel,                                         // # 1
             nsing,                                           // # 2
             options.get_int("MRCC_NUM_TRIPLET_ROOTS"),       // # 3
             options.get_int("MRCC_RESTART"),                 // # 4
-            ccmethod,                                        // # 5
+            method,                                          // # 5
             symm,                                            // # 8
             closed_shell,                                    // #10
             spatial_orbitals,                                // #11
@@ -310,8 +331,10 @@ PsiReturnType mrcc(Options& options, int level, bool pertcc)
     fprintf(fort56, "\n");
     fclose(fort56);
 
-    fprintf(outfile, "done.\n\n");
+    fprintf(outfile, "done.\n");
     fflush(outfile);
+
+    tstop();
 
     return Success;
 }
