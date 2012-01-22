@@ -84,7 +84,7 @@ converged RHF and UHF references, the singles correction,
 \begin{equation}
 E_{\mathrm{MBPT}}^{(1)} = - \frac{f_{ia} f_{ia}}{\epsilon_a - \epsilon_i},
 \end{equation}
-is zero due to the Brillouin Condition, and the first contribution to the perturbation series is at the second order:
+is zero due to the Brillioun Condition, and the first contribution to the perturbation series is at the second order:
 \begin{equation}
 E_{\mathrm{MBPT}}^{(2)}  = - \frac{1}{4} \frac{\langle ij|ab\rangle^2}{\epsilon_a + \epsilon_b - \epsilon_i - \epsilon_j}.
 \end{equation}
@@ -153,11 +153,10 @@ and $4Qov$ doubles are required for UHF-MP2.
 on threaded BLAS (such as MKL) for efficiency. The main ${\cal O}(N^5)$ step is
 done via small/medium-sized DGEMMs inside of OpenMP, so make sure to set the
 \texttt{OMP\_NESTED} environment variable to \texttt{FALSE} to prevent thread
-thrash.
+thrash (or just as well, do not define \texttt{OMP\_NESTED} at all).
 \item Freezing core is good for both efficiency and correctness purposes.
-Freezing virtuals is not recommended. Determination of frozen core/virtuals is
-handled at the SCF level, though the DFMP2 module will remind you how many
-frozen/active orbitals it is using. 
+Freezing virtuals is not recommended.The DFMP2 module will remind you how many
+frozen/active orbitals it is using in a section just below the title. 
 \item ROHF-MBPT(2) may be preferred to UHF-MP2, as the latter can suffer from
 severe spin contamination in some cases.
 \item MP2 is not suitable for systems with multireference character. The
