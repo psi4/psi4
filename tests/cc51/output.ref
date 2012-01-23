@@ -20,6 +20,8 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+memory 250 mb
+
 molecule h2o {
   0 1
 # H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
@@ -36,43 +38,19 @@ set {
 }
 
 energy('eom-cc3')
-clean()
-
 --------------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
 
-                 1            2            3
+  Memory set to 250.000 MiB by Python script.
 
-    1    0.0000000    0.0000000   -0.0090000
-    2    0.0000000   -1.5152630   -1.0588980
-    3    0.0000000    1.5152630   -1.0588980
-
-
-
-
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Fri Jan  6 11:55:20 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.1174992
-    2    0.0000000   -1.5152630   -0.9323988
-    3   -0.0000000    1.5152630   -0.9323988
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:15:04 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -108,6 +86,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -142,30 +121,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.1174992
-    2    0.0000000   -1.5152630   -0.9323988
-    3   -0.0000000    1.5152630   -0.9323988
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.1174992
-    2    0.0000000   -1.5152630   -0.9323988
-    3   -0.0000000    1.5152630   -0.9323988
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -267,18 +222,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Fri Jan  6 11:55:20 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:15:04 2012
 Module time:
-	user time   =       0.75 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.75 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Fri Jan  6 11:55:20 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:15:04 2012
 
 
 	**************************************************
@@ -298,7 +253,7 @@ Total time:
 	Reference wfn   =	RHF
 	Derivative      =	None
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -326,18 +281,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Fri Jan  6 11:55:21 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:15:05 2012
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Fri Jan  6 11:55:21 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:15:05 2012
 
 
 			**************************
@@ -352,7 +307,7 @@ Total time:
 	Wave function   =	CC3
 	Reference wfn   =	RHF
 	Derivative      =	None
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	True
@@ -412,30 +367,18 @@ Total time:
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =    -76.05443731346296
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Fri Jan  6 11:55:21 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:15:06 2012
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.13 seconds =       0.02 minutes
-	system time =       0.17 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
+Total time:
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.1174992
-    2    0.0000000   -1.5152630   -0.9323988
-    3   -0.0000000    1.5152630   -0.9323988
-
-
-
-
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Fri Jan  6 11:55:21 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:15:06 2012
 
 			**************************
 			*                        *
@@ -451,7 +394,7 @@ Geometry bf reorientation.
 	-----------------
 	Wave function   =      CC3
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-07
 	Restart         =     No
@@ -480,7 +423,7 @@ Geometry bf reorientation.
      1        -0.284194342011249    2.916e-02    0.004406    0.008041    0.008041
      2        -0.289394065199620    1.031e-02    0.005096    0.009416    0.009416
      3        -0.289651484213763    2.694e-03    0.005531    0.010486    0.010486
-     4        -0.289681268374208    7.302e-04    0.005595    0.010758    0.010758
+     4        -0.289681268374207    7.302e-04    0.005595    0.010758    0.010758
      5        -0.289694265745811    2.079e-04    0.005617    0.010893    0.010893
      6        -0.289692049533935    7.001e-05    0.005624    0.010944    0.010944
      7        -0.289692055007873    2.234e-05    0.005628    0.010968    0.010968
@@ -527,18 +470,18 @@ Geometry bf reorientation.
       * CC3 total energy           =  -76.344128919884653
 
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Fri Jan  6 11:55:49 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:15:31 2012
 Module time:
-	user time   =      20.08 seconds =       0.33 minutes
-	system time =      27.27 seconds =       0.45 minutes
-	total time  =         28 seconds =       0.47 minutes
+	user time   =      12.60 seconds =       0.21 minutes
+	system time =       7.88 seconds =       0.13 minutes
+	total time  =         25 seconds =       0.42 minutes
 Total time:
-	user time   =      21.23 seconds =       0.35 minutes
-	system time =      27.44 seconds =       0.46 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =      13.34 seconds =       0.22 minutes
+	system time =       8.16 seconds =       0.14 minutes
+	total time  =         27 seconds =       0.45 minutes
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Fri Jan  6 11:55:49 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:15:31 2012
 
 
 			**************************
@@ -557,18 +500,18 @@ Dots of (HeT1)c in names "CC3 Wxxx" in CC3_HET1
 <WMbeJ (Me,Jb) | WMbeJ (Me,Jb)> =  113.7063702427
 <WAbEi (Ie,bA) | WAbEi (Ie,bA)> =   11.5303140650
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Fri Jan  6 11:55:49 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:15:32 2012
 Module time:
 	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      21.36 seconds =       0.36 minutes
-	system time =      27.51 seconds =       0.46 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =      13.47 seconds =       0.22 minutes
+	system time =       8.27 seconds =       0.14 minutes
+	total time  =         28 seconds =       0.47 minutes
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Fri Jan  6 11:55:49 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:15:32 2012
 
 
 	**********************************************************
@@ -584,7 +527,7 @@ Total time:
 	-----------------
 	Reference wfn   =     RHF
 	Reference EOM wfn=     RHF
-	Memory (Mbytes) =  256.0
+	Memory (Mbytes) =  250.0
 	ABCD            =     NEW
 	Cache Level     =    2
 	Cache Type      =     LRU
@@ -643,7 +586,7 @@ Iter=11   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
 Iter=12   L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
                      1   0.2958541114   2.52e-09    3.56e-07      Y
 Iter=13   L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
-                     1   0.2958541114   9.91e-13    3.57e-07      Y
+                     1   0.2958541114   6.97e-13    3.56e-07      Y
 Completed EOM_CCSD
 Collapsing to only 1 vector(s).
 Copying root 1 to CC3_MISC file.
@@ -697,12 +640,17 @@ EOM CC3 R0 for root 0 =   0.00000000000
 Final Energetic Summary for Converged Roots of Irrep B1
                      Excitation Energy              Total Energy
                 (eV)     (cm^-1)     (au)             (au)
+
+	Putting into environment energy for root of R irrep 3 and root 1.
+	Putting into environment CURRENT ENERGY:              -76.0519836443
+	Putting into environment CURRENT CORRELATION ENERGY:    0.0024536691
+
 EOM State 1      7.950    64118.5   0.2921452756   -76.051983644314
 
 Largest components of excited wave function #1:
  RIA (libdpd indices) : (cscf notation)
          0 >   0      :       1b1 >    4a1 :    0.6714703693
-         0 >   1      :       1b1 >    5a1 :   -0.0981472172
+         0 >   1      :       1b1 >    5a1 :   -0.0981472173
          0 >   2      :       1b1 >    6a1 :    0.0587842823
          0 >   3      :       1b1 >    7a1 :   -0.0247616589
          0 >   4      :       1b1 >    8a1 :   -0.0246211001
@@ -715,14 +663,14 @@ Largest components of excited wave function #1:
 
 	Total # of sigma evaluations: 29
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Fri Jan  6 11:57:12 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:17:07 2012
 Module time:
-	user time   =      67.82 seconds =       1.13 minutes
-	system time =      58.64 seconds =       0.98 minutes
-	total time  =         83 seconds =       1.38 minutes
+	user time   =      57.34 seconds =       0.96 minutes
+	system time =      47.66 seconds =       0.79 minutes
+	total time  =         95 seconds =       1.58 minutes
 Total time:
-	user time   =      89.18 seconds =       1.49 minutes
-	system time =      86.15 seconds =       1.44 minutes
-	total time  =        112 seconds =       1.87 minutes
+	user time   =      70.81 seconds =       1.18 minutes
+	system time =      55.93 seconds =       0.93 minutes
+	total time  =        123 seconds =       2.05 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

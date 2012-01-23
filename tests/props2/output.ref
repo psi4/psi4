@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -22,12 +24,15 @@
 #! Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy
 #! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
 #! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
-
-refENuc   = [ 268.617198719, 13.021347294, 258.850961053, 13.021347294 ]        #TEST
-refESCF   = [ -303.206257089, -75.320406517, -303.204999752, -75.320406516 ]    #TEST
-refDipY   = [ 17.7759803747, 2.277054585, 21.684622688, 2.277054585 ]           #TEST
-refQuadYY = [ 25.4523978225, -5.511644466, 57.395497100, -5.511644466 ]         #TEST
-
+ 
+memory 250 mb
+refENuc   = [ 268.617178206587084, 13.021346299597003,  #TEST
+              258.850941286554473, 13.021346299596999 ] #TEST
+refESCF   = [ -303.20625701081264, -75.32040649154762,  #TEST
+              -303.20499967316636, -75.32040649154514 ] #TEST
+refDipY   = [ 17.7759552887,  2.2770512884, 21.6845920985,  2.2770512884 ]  #TEST
+refQuadYY = [ 25.4523671288, -5.5116358496, 57.3954213176, -5.5116358496 ]  #TEST
+ 
 molecule dimer {
 0 1
 C
@@ -62,16 +67,16 @@ Rvals = [ 4.0, 5.0 ]
 
 set globals {
     BASIS sto-3g
-    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DF_BASIS_SCF cc-pVDZ-JKFIT
     DIIS True
-    MIN_DIIS_VECTORS 5
-    MAX_DIIS_VECTORS 9
+    DIIS_MIN_VECS 5
+    DIIS_MAX_VECS 9
     MAXITER 1000
-    E_CONVERGE 11
-    D_CONVERGE 11
+    E_CONVERGENCE 11
+    D_CONVERGENCE 11
     GUESS SAD
     SCF_TYPE DF
-    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DF_BASIS_SCF cc-pVDZ-JKFIT
     REFERENCE RHF
 }
 
@@ -110,7 +115,7 @@ for R in Rvals:
     oe.add("DIPOLE")
     oe.add("QUADRUPOLE")
     oe.compute()
-
+    
     compare_values(refENuc[count], monoB.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
     compare_values(refESCF[count], eehf, 9, "Reference energy %d" % count)                           #TEST
@@ -123,17 +128,19 @@ for R in Rvals:
     count = count + 1                                                                                #TEST
 
 --------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
 Setting geometry variable R to 4.000000
 
-*** tstart() called on localhost
-*** at Sun Nov 13 20:15:51 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:54 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -178,7 +185,7 @@ Setting geometry variable R to 4.000000
 
   Running in cs symmetry.
 
-  Nuclear repulsion =  268.617198719225087
+  Nuclear repulsion =  268.617178206587084
 
   Charge       = 1
   Multiplicity = 1
@@ -191,6 +198,7 @@ Setting geometry variable R to 4.000000
   SCF Algorithm Type is DF.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is SAD.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -207,11 +215,11 @@ Setting geometry variable R to 4.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 1.8500264025E-01.
+  Minimum eigenvalue in the overlap matrix is 1.8500269953E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Initial RHF energy:     0.00000000000000
+  Initial RHF energy:  -197.10239456647236
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -242,32 +250,32 @@ Setting geometry variable R to 4.000000
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   0:  -304.68416885552898   -3.04684e+02   0.00000e+00  
-   @RHF iter   1:  -303.16146355720554    1.52271e+00   9.48016e-02  
-   @RHF iter   2:  -303.20185030016188   -4.03867e-02   7.34241e-03  
-   @RHF iter   3:  -303.20565198462924   -3.80168e-03   2.16818e-03  
-   @RHF iter   4:  -303.20615735592315   -5.05371e-04   8.20787e-04  
-   @RHF iter   5:  -303.20623913618243   -8.17803e-05   3.36944e-04 DIIS
-   @RHF iter   6:  -303.20625700765100   -1.78715e-05   2.51445e-04 DIIS
-   @RHF iter   7:  -303.20625708518884   -7.75378e-08   1.16171e-05 DIIS
-   @RHF iter   8:  -303.20625708934887   -4.16003e-09   3.04657e-06 DIIS
-   @RHF iter   9:  -303.20625708941890   -7.00311e-11   3.50214e-07 DIIS
-   @RHF iter  10:  -303.20625708942140   -2.50111e-12   6.84987e-08 DIIS
-   @RHF iter  11:  -303.20625708942208   -6.82121e-13   2.41510e-08 DIIS
-   @RHF iter  12:  -303.20625708942231   -2.27374e-13   2.08604e-08 DIIS
-   @RHF iter  13:  -303.20625708942242   -1.13687e-13   8.57744e-09 DIIS
-   @RHF iter  14:  -303.20625708942231    1.13687e-13   4.98698e-10 DIIS
-   @RHF iter  15:  -303.20625708942242   -1.13687e-13   1.40179e-10 DIIS
-   @RHF iter  16:  -303.20625708942242    0.00000e+00   2.13115e-10 DIIS
-   @RHF iter  17:  -303.20625708942219    2.27374e-13   2.84273e-11 DIIS
-   @RHF iter  18:  -303.20625708942254   -3.41061e-13   1.46429e-11 DIIS
-   @RHF iter  19:  -303.20625708942219    3.41061e-13   1.51807e-11 DIIS
-   @RHF iter  20:  -303.20625708942231   -1.13687e-13   1.09741e-11 DIIS
-   @RHF iter  21:  -303.20625708942231    0.00000e+00   3.51657e-11 DIIS
-   @RHF iter  22:  -303.20625708942231    0.00000e+00   1.00395e-10 DIIS
-   @RHF iter  23:  -303.20625708942231    0.00000e+00   4.86948e-11 DIIS
-   @RHF iter  24:  -303.20625708942231    0.00000e+00   2.06301e-11 DIIS
-   @RHF iter  25:  -303.20625708942219    1.13687e-13   1.43041e-11 DIIS
+   @RHF iter   0:  -300.82857161051749   -1.03726e+02   0.00000e+00 
+   @RHF iter   1:  -303.12793290517840   -2.29936e+00   9.25058e-02 
+   @RHF iter   2:  -303.20205732378753   -7.41244e-02   1.10870e-02 
+   @RHF iter   3:  -303.20575179954943   -3.69448e-03   2.19994e-03 
+   @RHF iter   4:  -303.20617954945379   -4.27750e-04   7.34995e-04 
+   @RHF iter   5:  -303.20624349428232   -6.39448e-05   2.99569e-04 DIIS
+   @RHF iter   6:  -303.20625692880145   -1.34345e-05   2.12416e-04 DIIS
+   @RHF iter   7:  -303.20625700467627   -7.58748e-08   1.20941e-05 DIIS
+   @RHF iter   8:  -303.20625701067019   -5.99391e-09   3.48734e-06 DIIS
+   @RHF iter   9:  -303.20625701080888   -1.38698e-10   5.46607e-07 DIIS
+   @RHF iter  10:  -303.20625701081195   -3.06954e-12   6.95108e-08 DIIS
+   @RHF iter  11:  -303.20625701081207   -1.13687e-13   2.37278e-08 DIIS
+   @RHF iter  12:  -303.20625701081229   -2.27374e-13   1.59937e-08 DIIS
+   @RHF iter  13:  -303.20625701081241   -1.13687e-13   1.13362e-08 DIIS
+   @RHF iter  14:  -303.20625701081241    0.00000e+00   5.18788e-10 DIIS
+   @RHF iter  15:  -303.20625701081229    1.13687e-13   1.50419e-10 DIIS
+   @RHF iter  16:  -303.20625701081264   -3.41061e-13   1.70774e-10 DIIS
+   @RHF iter  17:  -303.20625701081229    3.41061e-13   4.05627e-11 DIIS
+   @RHF iter  18:  -303.20625701081229    0.00000e+00   2.41687e-11 DIIS
+   @RHF iter  19:  -303.20625701081252   -2.27374e-13   2.00724e-11 DIIS
+   @RHF iter  20:  -303.20625701081229    2.27374e-13   1.81423e-11 DIIS
+   @RHF iter  21:  -303.20625701081229    0.00000e+00   1.76731e-11 DIIS
+   @RHF iter  22:  -303.20625701081218    1.13687e-13   9.17013e-11 DIIS
+   @RHF iter  23:  -303.20625701081241   -2.27374e-13   4.94319e-11 DIIS
+   @RHF iter  24:  -303.20625701081229    1.13687e-13   2.13988e-11 DIIS
+   @RHF iter  25:  -303.20625701081264   -3.41061e-13   1.34564e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -283,7 +291,7 @@ Setting geometry variable R to 4.000000
 	   9A'    -1.040704    10A'    -0.888139     5A"    -0.863988  
 	  11A'    -0.863988    12A'    -0.754290    13A'    -0.699787  
 	   6A"    -0.643866     7A"    -0.631087    14A'    -0.631087  
-	  15A'    -0.546821     8A"    -0.532754    16A'    -0.532754  
+	  15A'    -0.546821    16A'    -0.532754     8A"    -0.532754  
 	   9A"    -0.376469    17A'    -0.376469  
 
 	Virtual:                                                              
@@ -301,73 +309,63 @@ Setting geometry variable R to 4.000000
 
   Energy converged.
 
-  @RHF Final Energy:  -303.20625708942219
+  @RHF Final Energy:  -303.20625701081264
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     5.5448      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     5.5448      Z:     0.0000
-
- Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: (a.u.)
      X:    -0.0000      Y:     1.4488      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     6.9936      Z:     0.0000     Total:     6.9936
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:    17.7760      Z:     0.0000     Total:    17.7760
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Sun Nov 13 20:15:57 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:59 2012
 Module time:
-	user time   =       5.93 seconds =       0.10 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.80 seconds =       0.08 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       5.93 seconds =       0.10 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       4.80 seconds =       0.08 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     5.5448      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     5.5448      Z:     0.0000
-
- Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: (a.u.)
      X:    -0.0000      Y:     1.4488      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     6.9936      Z:     0.0000     Total:     6.9936
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:    17.7760      Z:     0.0000     Total:    17.7760
 
- Quadrupole Moment: (Debye Ang)
-    XX:   -33.2697     YY:    25.4524     ZZ:   -33.2697
-    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
+  Quadrupole Moment: (Debye Ang)
+    XX:   -33.2696     YY:    25.4524     ZZ:   -33.2696
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
- Traceless Quadrupole Moment: (Debye Ang)
+  Traceless Quadrupole Moment: (Debye Ang)
     XX:   -19.5740     YY:    39.1480     ZZ:   -19.5740
-    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
 
-*** tstart() called on localhost
-*** at Sun Nov 13 20:15:57 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:59 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -378,7 +376,7 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O         -0.000000000000    -0.055641739363     0.000000000000
+           O          0.000000000000    -0.055641739363     0.000000000000
            H          0.494974746831     0.294358260637    -0.857321409974
            H          0.494974746831     0.294358260637     0.857321409974
            H         -0.989949493661     0.294358260637     0.000000000000
@@ -392,7 +390,7 @@ Total time:
 
   Running in cs symmetry.
 
-  Nuclear repulsion =   13.021347293956934
+  Nuclear repulsion =   13.021346299597003
 
   Charge       = 1
   Multiplicity = 1
@@ -405,6 +403,7 @@ Total time:
   SCF Algorithm Type is DF.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is SAD.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -421,11 +420,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.8393384748E-01.
+  Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Initial RHF energy:     0.00000000000000
+  Initial RHF energy:   -46.05816007732729
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -456,38 +455,30 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   0:   -75.23330937890933   -7.52333e+01   0.00000e+00  
-   @RHF iter   1:   -75.29066577412804   -5.73564e-02   1.84813e-01  
-   @RHF iter   2:   -75.31667394391150   -2.60082e-02   2.67365e-02  
-   @RHF iter   3:   -75.31983949206864   -3.16555e-03   9.67507e-03  
-   @RHF iter   4:   -75.32030913509378   -4.69643e-04   3.99233e-03  
-   @RHF iter   5:   -75.32038876585092   -7.96308e-05   1.68503e-03 DIIS
-   @RHF iter   6:   -75.32040650835471   -1.77425e-05   1.30294e-03 DIIS
-   @RHF iter   7:   -75.32040651619960   -7.84489e-09   2.35880e-05 DIIS
-   @RHF iter   8:   -75.32040651627150   -7.19069e-11   2.15431e-06 DIIS
-   @RHF iter   9:   -75.32040651627395   -2.44427e-12   4.67871e-07 DIIS
-   @RHF iter  10:   -75.32040651627389    5.68434e-14   2.20213e-08 DIIS
-   @RHF iter  11:   -75.32040651627399   -9.94760e-14   4.85332e-09 DIIS
-   @RHF iter  12:   -75.32040651627396    2.84217e-14   2.25098e-09 DIIS
-   @RHF iter  13:   -75.32040651627393    2.84217e-14   2.38771e-10 DIIS
-   @RHF iter  14:   -75.32040651627392    1.42109e-14   1.53950e-10 DIIS
-   @RHF iter  15:   -75.32040651627398   -5.68434e-14   2.42278e-10 DIIS
-   @RHF iter  16:   -75.32040651627393    4.26326e-14   8.03111e-11 DIIS
-   @RHF iter  17:   -75.32040651627401   -7.10543e-14   7.01111e-11 DIIS
-   @RHF iter  18:   -75.32040651627396    4.26326e-14   3.03206e-10 DIIS
-   @RHF iter  19:   -75.32040651627398   -1.42109e-14   4.18088e-11 DIIS
-   @RHF iter  20:   -75.32040651627392    5.68434e-14   1.54009e-10 DIIS
-   @RHF iter  21:   -75.32040651627392    0.00000e+00   1.27114e-10 DIIS
-   @RHF iter  22:   -75.32040651627393   -1.42109e-14   4.08845e-11 DIIS
-   @RHF iter  23:   -75.32040651627393    0.00000e+00   3.12298e-11 DIIS
-   @RHF iter  24:   -75.32040651627396   -2.84217e-14   2.85274e-11 DIIS
-   @RHF iter  25:   -75.32040651627391    5.68434e-14   2.69911e-11 DIIS
-   @RHF iter  26:   -75.32040651627393   -2.84217e-14   2.74316e-11 DIIS
-   @RHF iter  27:   -75.32040651627393    0.00000e+00   2.53671e-11 DIIS
-   @RHF iter  28:   -75.32040651627393    0.00000e+00   1.32307e-11 DIIS
-   @RHF iter  29:   -75.32040651627392    1.42109e-14   1.23548e-11 DIIS
-   @RHF iter  30:   -75.32040651627392    0.00000e+00   1.26199e-11 DIIS
-   @RHF iter  31:   -75.32040651627395   -2.84217e-14   1.03837e-11 DIIS
+   @RHF iter   0:   -70.65811387347316   -2.46000e+01   0.00000e+00 
+   @RHF iter   1:   -75.16752797101503   -4.50941e+00   1.65170e-01 
+   @RHF iter   2:   -75.31067054637224   -1.43143e-01   7.77444e-02 
+   @RHF iter   3:   -75.31968276252529   -9.01222e-03   1.91537e-02 
+   @RHF iter   4:   -75.32034271924626   -6.59957e-04   4.96135e-03 
+   @RHF iter   5:   -75.32039895241776   -5.62332e-05   1.51183e-03 DIIS
+   @RHF iter   6:   -75.32040648663950   -7.53422e-06   7.33496e-04 DIIS
+   @RHF iter   7:   -75.32040649131483   -4.67533e-09   1.37798e-05 DIIS
+   @RHF iter   8:   -75.32040649154501   -2.30187e-10   4.25985e-06 DIIS
+   @RHF iter   9:   -75.32040649154760   -2.58638e-12   3.71761e-07 DIIS
+   @RHF iter  10:   -75.32040649154759    1.42109e-14   4.87649e-08 DIIS
+   @RHF iter  11:   -75.32040649154762   -2.84217e-14   1.18589e-08 DIIS
+   @RHF iter  12:   -75.32040649154763   -1.42109e-14   8.55749e-10 DIIS
+   @RHF iter  13:   -75.32040649154759    4.26326e-14   2.42909e-10 DIIS
+   @RHF iter  14:   -75.32040649154764   -5.68434e-14   4.91010e-10 DIIS
+   @RHF iter  15:   -75.32040649154764    0.00000e+00   5.50261e-11 DIIS
+   @RHF iter  16:   -75.32040649154760    4.26326e-14   2.49359e-11 DIIS
+   @RHF iter  17:   -75.32040649154766   -5.68434e-14   1.90327e-11 DIIS
+   @RHF iter  18:   -75.32040649154759    7.10543e-14   2.35169e-11 DIIS
+   @RHF iter  19:   -75.32040649154757    1.42109e-14   1.20454e-11 DIIS
+   @RHF iter  20:   -75.32040649154760   -2.84217e-14   1.01855e-10 DIIS
+   @RHF iter  21:   -75.32040649154764   -4.26326e-14   6.44425e-11 DIIS
+   @RHF iter  22:   -75.32040649154760    4.26326e-14   2.79552e-11 DIIS
+   @RHF iter  23:   -75.32040649154762   -1.42109e-14   2.45185e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -509,74 +500,64 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -75.32040651627395
+  @RHF Final Energy:   -75.32040649154762
 
   ==> Properties <==
-
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
- Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
- Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
- Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Sun Nov 13 20:15:57 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:39:00 2012
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       6.22 seconds =       0.10 minutes
-	system time =       0.19 seconds =       0.00 minutes
+	user time   =       4.94 seconds =       0.08 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =          6 seconds =       0.10 minutes
-
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.8276      Z:     0.0000
 
- Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
- Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
- Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
- Quadrupole Moment: (Debye Ang)
+  Quadrupole Moment: (Debye Ang)
     XX:    -2.5134     YY:    -5.5116     ZZ:    -2.5134
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
- Traceless Quadrupole Moment: (Debye Ang)
+  Traceless Quadrupole Moment: (Debye Ang)
     XX:     0.9994     YY:    -1.9989     ZZ:     0.9994
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
 Setting geometry variable R to 5.000000
 
-*** tstart() called on localhost
-*** at Sun Nov 13 20:15:57 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:39:00 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -621,7 +602,7 @@ Setting geometry variable R to 5.000000
 
   Running in cs symmetry.
 
-  Nuclear repulsion =  258.850961053404831
+  Nuclear repulsion =  258.850941286554473
 
   Charge       = 1
   Multiplicity = 1
@@ -634,6 +615,7 @@ Setting geometry variable R to 5.000000
   SCF Algorithm Type is DF.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is SAD.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -650,11 +632,11 @@ Setting geometry variable R to 5.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 1.8500264051E-01.
+  Minimum eigenvalue in the overlap matrix is 1.8500269979E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Initial RHF energy:     0.00000000000000
+  Initial RHF energy:  -197.31080727483919
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -685,37 +667,37 @@ Setting geometry variable R to 5.000000
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   0:  -304.68425227939531   -3.04684e+02   0.00000e+00  
-   @RHF iter   1:  -303.15975537265058    1.52450e+00   9.48066e-02  
-   @RHF iter   2:  -303.20057128220469   -4.08159e-02   7.41147e-03  
-   @RHF iter   3:  -303.20439323362939   -3.82195e-03   2.17379e-03  
-   @RHF iter   4:  -303.20489998770665   -5.06754e-04   8.22447e-04  
-   @RHF iter   5:  -303.20498183389407   -8.18462e-05   3.36557e-04 DIIS
-   @RHF iter   6:  -303.20499970309368   -1.78692e-05   2.53145e-04 DIIS
-   @RHF iter   7:  -303.20499974769109   -4.45974e-08   9.04231e-06 DIIS
-   @RHF iter   8:  -303.20499975177211   -4.08102e-09   2.88591e-06 DIIS
-   @RHF iter   9:  -303.20499975183941   -6.73026e-11   3.42435e-07 DIIS
-   @RHF iter  10:  -303.20499975184089   -1.47793e-12   5.68983e-08 DIIS
-   @RHF iter  11:  -303.20499975184077    1.13687e-13   8.60815e-09 DIIS
-   @RHF iter  12:  -303.20499975184123   -4.54747e-13   4.23659e-09 DIIS
-   @RHF iter  13:  -303.20499975184134   -1.13687e-13   3.33738e-09 DIIS
-   @RHF iter  14:  -303.20499975184100    3.41061e-13   6.84933e-10 DIIS
-   @RHF iter  15:  -303.20499975184100    0.00000e+00   1.95939e-10 DIIS
-   @RHF iter  16:  -303.20499975184123   -2.27374e-13   8.86019e-11 DIIS
-   @RHF iter  17:  -303.20499975184100    2.27374e-13   5.42110e-11 DIIS
-   @RHF iter  18:  -303.20499975184123   -2.27374e-13   2.85392e-11 DIIS
-   @RHF iter  19:  -303.20499975184123    0.00000e+00   2.94973e-11 DIIS
-   @RHF iter  20:  -303.20499975184100    2.27374e-13   1.75383e-10 DIIS
-   @RHF iter  21:  -303.20499975184077    2.27374e-13   1.25521e-11 DIIS
-   @RHF iter  22:  -303.20499975184100   -2.27374e-13   1.77309e-10 DIIS
-   @RHF iter  23:  -303.20499975184077    2.27374e-13   7.22568e-11 DIIS
-   @RHF iter  24:  -303.20499975184111   -3.41061e-13   2.96341e-11 DIIS
-   @RHF iter  25:  -303.20499975184100    1.13687e-13   1.83563e-11 DIIS
-   @RHF iter  26:  -303.20499975184123   -2.27374e-13   1.37753e-11 DIIS
-   @RHF iter  27:  -303.20499975184111    1.13687e-13   1.10474e-11 DIIS
-   @RHF iter  28:  -303.20499975184100    1.13687e-13   1.05539e-11 DIIS
-   @RHF iter  29:  -303.20499975184100    0.00000e+00   1.09507e-11 DIIS
-   @RHF iter  30:  -303.20499975184077    2.27374e-13   1.15436e-11 DIIS
+   @RHF iter   0:  -300.83303978002817   -1.03522e+02   0.00000e+00 
+   @RHF iter   1:  -303.12682155035958   -2.29378e+00   9.25267e-02 
+   @RHF iter   2:  -303.20086599580128   -7.40444e-02   1.10803e-02 
+   @RHF iter   3:  -303.20449728959221   -3.63129e-03   2.17088e-03 
+   @RHF iter   4:  -303.20492206872592   -4.24779e-04   7.32294e-04 
+   @RHF iter   5:  -303.20498610753765   -6.40388e-05   2.98949e-04 DIIS
+   @RHF iter   6:  -303.20499962901084   -1.35215e-05   2.14777e-04 DIIS
+   @RHF iter   7:  -303.20499966771189   -3.87010e-08   9.43868e-06 DIIS
+   @RHF iter   8:  -303.20499967302777   -5.31588e-09   3.05153e-06 DIIS
+   @RHF iter   9:  -303.20499967316454   -1.36765e-10   5.37754e-07 DIIS
+   @RHF iter  10:  -303.20499967316658   -2.04636e-12   6.07904e-08 DIIS
+   @RHF iter  11:  -303.20499967316647    1.13687e-13   9.28545e-09 DIIS
+   @RHF iter  12:  -303.20499967316636    1.13687e-13   3.70978e-09 DIIS
+   @RHF iter  13:  -303.20499967316636    0.00000e+00   3.26441e-09 DIIS
+   @RHF iter  14:  -303.20499967316647   -1.13687e-13   6.58525e-10 DIIS
+   @RHF iter  15:  -303.20499967316636    1.13687e-13   2.04127e-10 DIIS
+   @RHF iter  16:  -303.20499967316658   -2.27374e-13   8.85198e-11 DIIS
+   @RHF iter  17:  -303.20499967316636    2.27374e-13   5.71792e-11 DIIS
+   @RHF iter  18:  -303.20499967316647   -1.13687e-13   3.55448e-11 DIIS
+   @RHF iter  19:  -303.20499967316613    3.41061e-13   4.59885e-11 DIIS
+   @RHF iter  20:  -303.20499967316636   -2.27374e-13   1.99851e-10 DIIS
+   @RHF iter  21:  -303.20499967316636    0.00000e+00   1.18382e-11 DIIS
+   @RHF iter  22:  -303.20499967316658   -2.27374e-13   1.78585e-10 DIIS
+   @RHF iter  23:  -303.20499967316636    2.27374e-13   7.23853e-11 DIIS
+   @RHF iter  24:  -303.20499967316624    1.13687e-13   3.16022e-11 DIIS
+   @RHF iter  25:  -303.20499967316658   -3.41061e-13   1.96510e-11 DIIS
+   @RHF iter  26:  -303.20499967316647    1.13687e-13   1.52036e-11 DIIS
+   @RHF iter  27:  -303.20499967316681   -3.41061e-13   1.23546e-11 DIIS
+   @RHF iter  28:  -303.20499967316658    2.27374e-13   1.30466e-11 DIIS
+   @RHF iter  29:  -303.20499967316658    0.00000e+00   1.19994e-11 DIIS
+   @RHF iter  30:  -303.20499967316636    2.27374e-13   1.22874e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -727,7 +709,7 @@ Setting geometry variable R to 5.000000
 	   1A'   -20.842792     1A"   -11.116006     2A'   -11.116006  
 	   3A'   -11.115938     2A"   -11.115777     4A'   -11.115777  
 	   5A'   -11.115691     6A'    -1.738008     7A'    -1.160812  
-	   3A"    -1.042766     8A'    -1.042766     4A"    -1.032314  
+	   8A'    -1.042766     3A"    -1.042766     4A"    -1.032314  
 	   9A'    -1.032314    10A'    -0.890551     5A"    -0.848420  
 	  11A'    -0.848420    12A'    -0.738806    13A'    -0.684785  
 	   6A"    -0.628139     7A"    -0.615618    14A'    -0.615618  
@@ -736,10 +718,10 @@ Setting geometry variable R to 5.000000
 
 	Virtual:                                                              
 
-	  18A'     0.050252    10A"     0.173305    19A'     0.173305  
-	  11A"     0.207824    20A'     0.207824    21A'     0.397550  
+	  18A'     0.050251    10A"     0.173305    19A'     0.173305  
+	  20A'     0.207824    11A"     0.207824    21A'     0.397550  
 	  22A'     0.495914    12A"     0.561009    23A'     0.561009  
-	  24A'     0.609504    13A"     0.619013    25A'     0.619013  
+	  24A'     0.609503    13A"     0.619013    25A'     0.619013  
 	  26A'     0.780123    14A"     0.780123    15A"     0.782444  
 	  27A'     0.782444    16A"     0.958966    28A'     1.022689  
 
@@ -749,73 +731,63 @@ Setting geometry variable R to 5.000000
 
   Energy converged.
 
-  @RHF Final Energy:  -303.20499975184077
+  @RHF Final Energy:  -303.20499967316636
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     6.7080      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     6.7080      Z:    -0.0000
-
- Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: (a.u.)
      X:    -0.0000      Y:     1.8234      Z:     0.0000
 
- Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     8.5314      Z:    -0.0000     Total:     8.5314
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     8.5314      Z:     0.0000     Total:     8.5314
 
- Dipole Moment: (Debye)
-     X:    -0.0000      Y:    21.6846      Z:    -0.0000     Total:    21.6846
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    21.6846      Z:     0.0000     Total:    21.6846
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Sun Nov 13 20:16:03 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:39:04 2012
 Module time:
-	user time   =       6.28 seconds =       0.10 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       5.08 seconds =       0.08 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =      12.50 seconds =       0.21 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      10.02 seconds =       0.17 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =         10 seconds =       0.17 minutes
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     6.7080      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     6.7080      Z:    -0.0000
-
- Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: (a.u.)
      X:    -0.0000      Y:     1.8234      Z:     0.0000
 
- Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     8.5314      Z:    -0.0000     Total:     8.5314
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     8.5314      Z:     0.0000     Total:     8.5314
 
- Dipole Moment: (Debye)
-     X:    -0.0000      Y:    21.6846      Z:    -0.0000     Total:    21.6846
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    21.6846      Z:     0.0000     Total:    21.6846
 
- Quadrupole Moment: (Debye Ang)
-    XX:   -33.3919     YY:    57.3955     ZZ:   -33.3919
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+  Quadrupole Moment: (Debye Ang)
+    XX:   -33.3919     YY:    57.3954     ZZ:   -33.3919
+    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
 
- Traceless Quadrupole Moment: (Debye Ang)
-    XX:   -30.2625     YY:    60.5249     ZZ:   -30.2625
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:   -30.2624     YY:    60.5249     ZZ:   -30.2624
+    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
 
 
-*** tstart() called on localhost
-*** at Sun Nov 13 20:16:03 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:39:04 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -826,7 +798,7 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O         -0.000000000000    -0.055641739363     0.000000000000
+           O          0.000000000000    -0.055641739363     0.000000000000
            H          0.494974746831     0.294358260637    -0.857321409974
            H          0.494974746831     0.294358260637     0.857321409974
            H         -0.989949493661     0.294358260637     0.000000000000
@@ -840,7 +812,7 @@ Total time:
 
   Running in cs symmetry.
 
-  Nuclear repulsion =   13.021347293956921
+  Nuclear repulsion =   13.021346299596999
 
   Charge       = 1
   Multiplicity = 1
@@ -853,6 +825,7 @@ Total time:
   SCF Algorithm Type is DF.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is SAD.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -869,11 +842,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.8393384748E-01.
+  Minimum eigenvalue in the overlap matrix is 3.8393389741E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  Initial RHF energy:     0.00000000000000
+  Initial RHF energy:   -46.05816007732729
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -904,38 +877,30 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   0:   -75.23330937891382   -7.52333e+01   0.00000e+00  
-   @RHF iter   1:   -75.29066577413170   -5.73564e-02   1.84813e-01  
-   @RHF iter   2:   -75.31667394391515   -2.60082e-02   2.67365e-02  
-   @RHF iter   3:   -75.31983949207235   -3.16555e-03   9.67507e-03  
-   @RHF iter   4:   -75.32030913509747   -4.69643e-04   3.99233e-03  
-   @RHF iter   5:   -75.32038876585460   -7.96308e-05   1.68503e-03 DIIS
-   @RHF iter   6:   -75.32040650835836   -1.77425e-05   1.30294e-03 DIIS
-   @RHF iter   7:   -75.32040651620319   -7.84483e-09   2.35880e-05 DIIS
-   @RHF iter   8:   -75.32040651627516   -7.19638e-11   2.15431e-06 DIIS
-   @RHF iter   9:   -75.32040651627759   -2.43006e-12   4.67871e-07 DIIS
-   @RHF iter  10:   -75.32040651627757    1.42109e-14   2.20214e-08 DIIS
-   @RHF iter  11:   -75.32040651627764   -7.10543e-14   4.85359e-09 DIIS
-   @RHF iter  12:   -75.32040651627761    2.84217e-14   2.25097e-09 DIIS
-   @RHF iter  13:   -75.32040651627760    1.42109e-14   2.38773e-10 DIIS
-   @RHF iter  14:   -75.32040651627757    2.84217e-14   1.53950e-10 DIIS
-   @RHF iter  15:   -75.32040651627763   -5.68434e-14   2.42279e-10 DIIS
-   @RHF iter  16:   -75.32040651627764   -1.42109e-14   8.03116e-11 DIIS
-   @RHF iter  17:   -75.32040651627761    2.84217e-14   7.01107e-11 DIIS
-   @RHF iter  18:   -75.32040651627757    4.26326e-14   3.03203e-10 DIIS
-   @RHF iter  19:   -75.32040651627764   -7.10543e-14   4.18115e-11 DIIS
-   @RHF iter  20:   -75.32040651627764    0.00000e+00   1.54004e-10 DIIS
-   @RHF iter  21:   -75.32040651627759    5.68434e-14   1.27113e-10 DIIS
-   @RHF iter  22:   -75.32040651627761   -2.84217e-14   4.08848e-11 DIIS
-   @RHF iter  23:   -75.32040651627766   -4.26326e-14   3.12300e-11 DIIS
-   @RHF iter  24:   -75.32040651627760    5.68434e-14   2.85274e-11 DIIS
-   @RHF iter  25:   -75.32040651627759    1.42109e-14   2.69911e-11 DIIS
-   @RHF iter  26:   -75.32040651627757    1.42109e-14   2.74320e-11 DIIS
-   @RHF iter  27:   -75.32040651627756    1.42109e-14   2.53661e-11 DIIS
-   @RHF iter  28:   -75.32040651627761   -5.68434e-14   1.32310e-11 DIIS
-   @RHF iter  29:   -75.32040651627763   -1.42109e-14   1.23546e-11 DIIS
-   @RHF iter  30:   -75.32040651627754    8.52651e-14   1.26203e-11 DIIS
-   @RHF iter  31:   -75.32040651627761   -7.10543e-14   1.03842e-11 DIIS
+   @RHF iter   0:   -70.65811387347090   -2.46000e+01   0.00000e+00 
+   @RHF iter   1:   -75.16752797101260   -4.50941e+00   1.65170e-01 
+   @RHF iter   2:   -75.31067054636985   -1.43143e-01   7.77444e-02 
+   @RHF iter   3:   -75.31968276252289   -9.01222e-03   1.91537e-02 
+   @RHF iter   4:   -75.32034271924381   -6.59957e-04   4.96135e-03 
+   @RHF iter   5:   -75.32039895241533   -5.62332e-05   1.51183e-03 DIIS
+   @RHF iter   6:   -75.32040648663701   -7.53422e-06   7.33496e-04 DIIS
+   @RHF iter   7:   -75.32040649131237   -4.67536e-09   1.37798e-05 DIIS
+   @RHF iter   8:   -75.32040649154250   -2.30131e-10   4.25985e-06 DIIS
+   @RHF iter   9:   -75.32040649154511   -2.61480e-12   3.71760e-07 DIIS
+   @RHF iter  10:   -75.32040649154513   -1.42109e-14   4.87878e-08 DIIS
+   @RHF iter  11:   -75.32040649154519   -5.68434e-14   1.18418e-08 DIIS
+   @RHF iter  12:   -75.32040649154519    0.00000e+00   8.55350e-10 DIIS
+   @RHF iter  13:   -75.32040649154514    4.26326e-14   2.43006e-10 DIIS
+   @RHF iter  14:   -75.32040649154510    4.26326e-14   4.91323e-10 DIIS
+   @RHF iter  15:   -75.32040649154516   -5.68434e-14   5.50390e-11 DIIS
+   @RHF iter  16:   -75.32040649154517   -1.42109e-14   2.49416e-11 DIIS
+   @RHF iter  17:   -75.32040649154514    2.84217e-14   1.90421e-11 DIIS
+   @RHF iter  18:   -75.32040649154511    2.84217e-14   2.35225e-11 DIIS
+   @RHF iter  19:   -75.32040649154516   -4.26326e-14   1.19806e-11 DIIS
+   @RHF iter  20:   -75.32040649154513    2.84217e-14   1.01807e-10 DIIS
+   @RHF iter  21:   -75.32040649154516   -2.84217e-14   6.44328e-11 DIIS
+   @RHF iter  22:   -75.32040649154516    0.00000e+00   2.79640e-11 DIIS
+   @RHF iter  23:   -75.32040649154514    1.42109e-14   2.45322e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -957,60 +922,50 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -75.32040651627761
+  @RHF Final Energy:   -75.32040649154514
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.8276      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
- Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8276      Z:     0.0000
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
- Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
-
- Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
-
- Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Sun Nov 13 20:16:03 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:39:05 2012
 Module time:
-	user time   =       0.26 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      12.79 seconds =       0.21 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =      10.16 seconds =       0.17 minutes
+	system time =       0.42 seconds =       0.01 minutes
+	total time  =         11 seconds =       0.18 minutes
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.8276      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0683      Z:     0.0000
 
- Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8276      Z:     0.0000
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
 
- Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0683      Z:     0.0000
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
 
- Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.8959      Z:     0.0000     Total:     0.8959
-
- Dipole Moment: (Debye)
-     X:     0.0000      Y:     2.2771      Z:     0.0000     Total:     2.2771
-
- Quadrupole Moment: (Debye Ang)
+  Quadrupole Moment: (Debye Ang)
     XX:    -2.5134     YY:    -5.5116     ZZ:    -2.5134
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
- Traceless Quadrupole Moment: (Debye Ang)
+  Traceless Quadrupole Moment: (Debye Ang)
     XX:     0.9994     YY:    -1.9989     ZZ:     0.9994
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
