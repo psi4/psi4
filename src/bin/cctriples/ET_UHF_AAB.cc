@@ -147,6 +147,7 @@ double ET_UHF_AAB(void)
   fprintf(ijkfile, "Spin Case: AAB\n");
   fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
   fprintf(ijkfile, "\nCurrent IJK Combination:\n");
+  fflush(ijkfile);
 
   mijk = 0;
   ET_AAB = 0.0;
