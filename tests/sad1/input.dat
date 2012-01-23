@@ -5,9 +5,9 @@
 
 memory 250 mb
 
-Nref  =   8.841020805217546  #TEST
+Nref  =   8.841020130083360  #TEST
 E1ref = -75.973425           #TEST
-Eref  = -76.01678948412534   #TEST
+Eref  = -76.01678947133706   #TEST
 
 molecule h2o {
     O

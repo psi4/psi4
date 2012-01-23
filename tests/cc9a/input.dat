@@ -26,11 +26,11 @@ set {
 
 energy('ccsd(t)')
 
-enuc = 18.915271879148936     #TEST
-escf = -92.195556621382522    #TEST
-eccsd = -0.284922902819267    #TEST
-e_t = -0.014063032810188      #TEST
-etotal = -92.494542557011926  #TEST
+enuc   =  18.91527043470638   #TEST
+escf   = -92.19555660616878   #TEST
+eccsd  =  -0.28492292236582   #TEST
+e_t    =  -0.01406303578471   #TEST
+etotal = -92.49454256431926   #TEST
 
 compare_values(enuc, CN.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(escf, get_variable("SCF total energy"), 9, "SCF energy")               #TEST

@@ -24,22 +24,22 @@
 
 # References
 reference_energies = {\
-        5.500E+00 : -3.7479827870463211E+01,\
-        5.600E+00 : -3.7519777157724278E+01,\
-        5.700E+00 : -3.7560494710854691E+01,\
-        5.800E+00 : -3.7602027729245592E+01,\
-        5.900E+00 : -3.7644429418258710E+01,\
-        6.000E+00 : -3.7687760545776982E+01,\
-        6.100E+00 : -3.7686231278907123E+01,\
-        6.200E+00 : -3.7685148131020213E+01,\
-        6.300E+00 : -3.7684578391807456E+01,\
-        6.400E+00 : -3.7684604177989364E+01,\
-        6.500E+00 : -3.7685326293326320E+01,\
-        6.600E+00 : -3.7686869113983626E+01,\
-        6.700E+00 : -3.7689386736023678E+01,\
-        6.800E+00 : -3.7693070640743862E+01,\
-        6.900E+00 : -3.7698159082829569E+01,\
-        7.000E+00 : -3.7704948149321794E+01,\
+    5.500E+00 : -3.7479827870463325E+01,\
+    5.600E+00 : -3.7519777157724391E+01,\
+    5.700E+00 : -3.7560494710854833E+01,\
+    5.800E+00 : -3.7602027729245712E+01,\
+    5.900E+00 : -3.7644429418258895E+01,\
+    6.000E+00 : -3.7687760545777166E+01,\
+    6.100E+00 : -3.7686231278907293E+01,\
+    6.200E+00 : -3.7591946718659159E+01,\
+    6.300E+00 : -3.7589357487772773E+01,\
+    6.400E+00 : -3.7684604177989534E+01,\
+    6.500E+00 :  0.0000000000000000E+00,\
+    6.600E+00 : -3.7686869113983775E+01,\
+    6.700E+00 : -3.7689386736023820E+01,\
+    6.800E+00 : -3.7693070640744025E+01,\
+    6.900E+00 : -3.7698159082829754E+01,\
+    7.000E+00 : -3.7704948149321964E+01,\
 }
 
 # => Cation Computation (Doublet) <= #
@@ -174,15 +174,15 @@ for k in range(len(occs)):
 
 --------------------------------------------------------------------------
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:01 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -242,7 +242,7 @@ for k in range(len(occs)):
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -24.27194932122618
+  Initial UHF energy:   -24.27194932122620
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -292,15 +292,15 @@ for k in range(len(occs)):
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -36.80735610003839   -1.25354e+01   0.00000e+00 
-   @UHF iter   2:   -37.27635930998002   -4.69003e-01   5.49387e-02 DIIS
-   @UHF iter   3:   -37.29004200266772   -1.36827e-02   6.60005e-03 DIIS
-   @UHF iter   4:   -37.29023006662838   -1.88064e-04   6.59508e-04 DIIS
-   @UHF iter   5:   -37.29025044542067   -2.03788e-05   1.73120e-04 DIIS
-   @UHF iter   6:   -37.29025068343657   -2.38016e-07   1.94762e-05 DIIS
-   @UHF iter   7:   -37.29025068683914   -3.40257e-09   2.79688e-06 DIIS
-   @UHF iter   8:   -37.29025068689408   -5.49463e-11   3.23612e-07 DIIS
-   @UHF iter   9:   -37.29025068689411   -2.84217e-14   1.04660e-08 DIIS
+   @UHF iter   1:   -36.80735610003856   -1.25354e+01   0.00000e+00 
+   @UHF iter   2:   -37.27635930998014   -4.69003e-01   5.49387e-02 DIIS
+   @UHF iter   3:   -37.29004200266783   -1.36827e-02   6.60005e-03 DIIS
+   @UHF iter   4:   -37.29023006662848   -1.88064e-04   6.59508e-04 DIIS
+   @UHF iter   5:   -37.29025044542082   -2.03788e-05   1.73120e-04 DIIS
+   @UHF iter   6:   -37.29025068343668   -2.38016e-07   1.94762e-05 DIIS
+   @UHF iter   7:   -37.29025068683929   -3.40260e-09   2.79688e-06 DIIS
+   @UHF iter   8:   -37.29025068689422   -5.49321e-11   3.23612e-07 DIIS
+   @UHF iter   9:   -37.29025068689428   -6.39488e-14   1.04645e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -342,28 +342,28 @@ for k in range(len(occs)):
 
   Energy converged.
 
-  @UHF Final Energy:   -37.29025068689411
+  @UHF Final Energy:   -37.29025068689428
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -3.2710     YY:    -3.1855     ZZ:    -4.5263
-    XY:     0.0460     XZ:     0.3790     YZ:    -0.1651
+    XX:    -3.2506     YY:    -4.5664     ZZ:    -3.1657
+    XY:    -0.3455     XZ:     0.0044     YZ:     0.0179
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.3899     YY:     0.4754     ZZ:    -0.8654
-    XY:     0.0460     XZ:     0.3790     YZ:    -0.1651
+    XX:     0.4103     YY:    -0.9055     ZZ:     0.4952
+    XY:    -0.3455     XZ:     0.0044     YZ:     0.0179
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -378,25 +378,25 @@ for k in range(len(occs)):
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:01 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
+	user time   =       0.11 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.53 seconds =       0.01 minutes
+	user time   =       0.11 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:01 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -456,7 +456,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -506,17 +506,17 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
-   @UHF iter   8:   -37.70494803570443   -2.83450e-05   2.78318e-04 DIIS
-   @UHF iter   9:   -37.70494813308494   -9.73805e-08   2.18126e-05 DIIS
-   @UHF iter  10:   -37.70494814899233   -1.59074e-08   6.45950e-06 DIIS
-   @UHF iter  11:   -37.70494814932024   -3.27915e-10   9.24605e-07 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   8:   -37.70494803570461   -2.83450e-05   2.78318e-04 DIIS
+   @UHF iter   9:   -37.70494813308514   -9.73805e-08   2.18126e-05 DIIS
+   @UHF iter  10:   -37.70494814899251   -1.59074e-08   6.45951e-06 DIIS
+   @UHF iter  11:   -37.70494814932043   -3.27923e-10   9.24586e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -558,28 +558,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.70494814932024
+  @UHF Final Energy:   -37.70494814932043
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
     XX:   -11.7116     YY:   -11.7116     ZZ:   -11.7116
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.0000     YY:    -0.0000     ZZ:    -0.0000
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XX:    -0.0000     YY:     0.0000     ZZ:     0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -594,25 +594,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:02 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
 Module time:
-	user time   =       0.59 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       1.12 seconds =       0.02 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:02 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -672,7 +672,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -26.32996813010260
+  Initial UHF energy:   -26.32996813010262
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -722,14 +722,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -36.69365367582427   -1.03637e+01   0.00000e+00 
-   @UHF iter   2:   -37.68006774113011   -9.86414e-01   6.68351e-02 DIIS
-   @UHF iter   3:   -37.68691010556208   -6.84236e-03   3.28728e-03 DIIS
-   @UHF iter   4:   -37.68768534885299   -7.75243e-04   9.17720e-04 DIIS
-   @UHF iter   5:   -37.68775748282116   -7.21340e-05   2.72935e-04 DIIS
-   @UHF iter   6:   -37.68776051862683   -3.03581e-06   7.39018e-05 DIIS
-   @UHF iter   7:   -37.68776054562343   -2.69966e-08   6.68376e-06 DIIS
-   @UHF iter   8:   -37.68776054577698   -1.53548e-10   4.73499e-07 DIIS
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
+   @UHF iter   4:   -37.68768534885314   -7.75243e-04   9.17720e-04 DIIS
+   @UHF iter   5:   -37.68775748282130   -7.21340e-05   2.72935e-04 DIIS
+   @UHF iter   6:   -37.68776051862695   -3.03581e-06   7.39018e-05 DIIS
+   @UHF iter   7:   -37.68776054562359   -2.69966e-08   6.68376e-06 DIIS
+   @UHF iter   8:   -37.68776054577717   -1.53577e-10   4.73499e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -772,34 +772,34 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.68776054577698
+  @UHF Final Energy:   -37.68776054577717
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -5.1648     YY:    -6.7622     ZZ:    -6.7177
-    XY:    -0.4572     XZ:     0.5343     YZ:    -0.1421
+    XX:    -5.0082     YY:    -6.7709     ZZ:    -6.8655
+    XY:    -0.4601     XZ:     0.1850     YZ:    -0.0454
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     1.0501     YY:    -0.5473     ZZ:    -0.5029
-    XY:    -0.4572     XZ:     0.5343     YZ:    -0.1421
+    XX:     1.2066     YY:    -0.5560     ZZ:    -0.6506
+    XY:    -0.4601     XZ:     0.1850     YZ:    -0.0454
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     C     4.00000  2.00000  2.00000  0.00000
+       1     C     4.00000  2.00000  2.00000 -0.00000
 
-   Total alpha =  4.00000, Total beta =  2.00000, Total charge =  0.00000
+   Total alpha =  4.00000, Total beta =  2.00000, Total charge = -0.00000
 
 
   @Spin Contamination Metric:  0.00964
@@ -808,25 +808,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:03 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.70 seconds =       0.03 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:03 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -886,7 +886,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -26.32996813010260
+  Initial UHF energy:   -26.32996813010262
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -936,9 +936,9 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -36.69365367582427   -1.03637e+01   0.00000e+00 
-   @UHF iter   2:   -37.68006774113011   -9.86414e-01   6.68351e-02 DIIS
-   @UHF iter   3:   -37.68691010556208   -6.84236e-03   3.28728e-03 DIIS
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -983,13 +983,13 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   4:   -37.46831425148153    2.18596e-01   7.13286e-03 FRAC
-   @UHF iter   5:   -37.47906731931634   -1.07531e-02   3.89153e-03 MOM/FRAC
-   @UHF iter   6:   -37.47972514458823   -6.57825e-04   6.61397e-04 DIIS/MOM/FRAC
-   @UHF iter   7:   -37.47982720238198   -1.02058e-04   3.39579e-04 DIIS/MOM/FRAC
-   @UHF iter   8:   -37.47982784680975   -6.44428e-07   3.09773e-05 DIIS/MOM/FRAC
-   @UHF iter   9:   -37.47982786954253   -2.27328e-08   6.42722e-06 DIIS/MOM/FRAC
-   @UHF iter  10:   -37.47982787046321   -9.20686e-10   1.11203e-06 DIIS/MOM/FRAC
+   @UHF iter   4:   -37.46831425148166    2.18596e-01   7.13286e-03 FRAC
+   @UHF iter   5:   -37.47906731931649   -1.07531e-02   3.89153e-03 MOM/FRAC
+   @UHF iter   6:   -37.47972514458841   -6.57825e-04   6.61397e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.47982720238213   -1.02058e-04   3.39579e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.47982784680993   -6.44428e-07   3.09773e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.47982786954267   -2.27327e-08   6.42722e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.47982787046332   -9.20650e-10   1.11203e-06 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -1032,28 +1032,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.47982787046321
+  @UHF Final Energy:   -37.47982787046332
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -4.2266     YY:    -5.4262     ZZ:    -5.1140
-    XY:    -0.4231     XZ:     0.3841     YZ:     0.1362
+    XX:    -4.0893     YY:    -5.1516     ZZ:    -5.5258
+    XY:    -0.3044     XZ:     0.2022     YZ:     0.2086
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.6957     YY:    -0.5039     ZZ:    -0.1917
-    XY:    -0.4231     XZ:     0.3841     YZ:     0.1362
+    XX:     0.8329     YY:    -0.2294     ZZ:    -0.6035
+    XY:    -0.3044     XZ:     0.2022     YZ:     0.2086
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1068,25 +1068,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:04 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:51 2012
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.27 seconds =       0.04 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:04 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:51 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1146,7 +1146,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -26.32996813010260
+  Initial UHF energy:   -26.32996813010262
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1196,9 +1196,9 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -36.69365367582427   -1.03637e+01   0.00000e+00 
-   @UHF iter   2:   -37.68006774113011   -9.86414e-01   6.68351e-02 DIIS
-   @UHF iter   3:   -37.68691010556208   -6.84236e-03   3.28728e-03 DIIS
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -1243,13 +1243,13 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   4:   -37.51218847095582    1.74722e-01   5.71641e-03 FRAC
-   @UHF iter   5:   -37.51921159045862   -7.02312e-03   3.12559e-03 MOM/FRAC
-   @UHF iter   6:   -37.51968960181871   -4.78011e-04   5.75620e-04 DIIS/MOM/FRAC
-   @UHF iter   7:   -37.51977650742452   -8.69056e-05   3.22680e-04 DIIS/MOM/FRAC
-   @UHF iter   8:   -37.51977714163216   -6.34208e-07   3.04463e-05 DIIS/MOM/FRAC
-   @UHF iter   9:   -37.51977715714175   -1.55096e-08   5.28057e-06 DIIS/MOM/FRAC
-   @UHF iter  10:   -37.51977715772428   -5.82531e-10   9.50685e-07 DIIS/MOM/FRAC
+   @UHF iter   4:   -37.51218847095596    1.74722e-01   5.71641e-03 FRAC
+   @UHF iter   5:   -37.51921159045875   -7.02312e-03   3.12559e-03 MOM/FRAC
+   @UHF iter   6:   -37.51968960181888   -4.78011e-04   5.75620e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.51977650742467   -8.69056e-05   3.22680e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.51977714163230   -6.34208e-07   3.04463e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.51977715714188   -1.55096e-08   5.28057e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.51977715772439   -5.82510e-10   9.50685e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -1292,28 +1292,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.51977715772428
+  @UHF Final Energy:   -37.51977715772439
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -4.4052     YY:    -5.6810     ZZ:    -5.4361
-    XY:    -0.4250     XZ:     0.4138     YZ:     0.0689
+    XX:    -4.2654     YY:    -5.4768     ZZ:    -5.7800
+    XY:    -0.3366     XZ:     0.1953     YZ:     0.1460
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.7689     YY:    -0.5069     ZZ:    -0.2620
-    XY:    -0.4250     XZ:     0.4138     YZ:     0.0689
+    XX:     0.9087     YY:    -0.3028     ZZ:    -0.6059
+    XY:    -0.3366     XZ:     0.1953     YZ:     0.1460
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1328,25 +1328,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:05 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
 Module time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.81 seconds =       0.05 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.59 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:05 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1406,7 +1406,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -26.32996813010260
+  Initial UHF energy:   -26.32996813010262
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1456,9 +1456,9 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -36.69365367582427   -1.03637e+01   0.00000e+00 
-   @UHF iter   2:   -37.68006774113011   -9.86414e-01   6.68351e-02 DIIS
-   @UHF iter   3:   -37.68691010556208   -6.84236e-03   3.28728e-03 DIIS
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -1503,13 +1503,13 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   4:   -37.55606269043010    1.30847e-01   4.30971e-03 FRAC
-   @UHF iter   5:   -37.56012159553158   -4.05891e-03   2.35824e-03 MOM/FRAC
-   @UHF iter   6:   -37.56042914855058   -3.07553e-04   4.71938e-04 DIIS/MOM/FRAC
-   @UHF iter   7:   -37.56049413478054   -6.49862e-05   2.88921e-04 DIIS/MOM/FRAC
-   @UHF iter   8:   -37.56049469982909   -5.65049e-07   2.89538e-05 DIIS/MOM/FRAC
-   @UHF iter   9:   -37.56049471059227   -1.07632e-08   4.41773e-06 DIIS/MOM/FRAC
-   @UHF iter  10:   -37.56049471085469   -2.62418e-10   6.65039e-07 DIIS/MOM/FRAC
+   @UHF iter   4:   -37.55606269043026    1.30847e-01   4.30971e-03 FRAC
+   @UHF iter   5:   -37.56012159553173   -4.05891e-03   2.35824e-03 MOM/FRAC
+   @UHF iter   6:   -37.56042914855072   -3.07553e-04   4.71938e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.56049413478069   -6.49862e-05   2.88921e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.56049469982926   -5.65049e-07   2.89538e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.56049471059244   -1.07632e-08   4.41773e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.56049471085483   -2.62396e-10   6.65039e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -1552,7 +1552,7 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.56049471085469
+  @UHF Final Energy:   -37.56049471085483
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -1568,12 +1568,12 @@ Total time:
      X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -4.5870     YY:    -5.9399     ZZ:    -5.7563
-    XY:    -0.4290     XZ:     0.4435     YZ:     0.0068
+    XX:    -4.4441     YY:    -5.8001     ZZ:    -6.0389
+    XY:    -0.3682     XZ:     0.1898     YZ:     0.0886
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.8408     YY:    -0.5122     ZZ:    -0.3286
-    XY:    -0.4290     XZ:     0.4435     YZ:     0.0068
+    XX:     0.9836     YY:    -0.3724     ZZ:    -0.6112
+    XY:    -0.3682     XZ:     0.1898     YZ:     0.0886
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1588,25 +1588,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:06 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.34 seconds =       0.06 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       0.70 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:06 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1666,7 +1666,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -26.32996813010260
+  Initial UHF energy:   -26.32996813010262
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1716,9 +1716,9 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -36.69365367582427   -1.03637e+01   0.00000e+00 
-   @UHF iter   2:   -37.68006774113011   -9.86414e-01   6.68351e-02 DIIS
-   @UHF iter   3:   -37.68691010556208   -6.84236e-03   3.28728e-03 DIIS
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -1763,13 +1763,13 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   4:   -37.59993690990442    8.69732e-02   2.92686e-03 FRAC
-   @UHF iter   5:   -37.60182566866531   -1.88876e-03   1.58988e-03 MOM/FRAC
-   @UHF iter   6:   -37.60198780360287   -1.62135e-04   3.49438e-04 DIIS/MOM/FRAC
-   @UHF iter   7:   -37.60202733944963   -3.95358e-05   2.34040e-04 DIIS/MOM/FRAC
-   @UHF iter   8:   -37.60202772250242   -3.83053e-07   2.43655e-05 DIIS/MOM/FRAC
-   @UHF iter   9:   -37.60202772915746   -6.65504e-09   3.60504e-06 DIIS/MOM/FRAC
-   @UHF iter  10:   -37.60202772924559   -8.81357e-11   4.02017e-07 DIIS/MOM/FRAC
+   @UHF iter   4:   -37.59993690990454    8.69732e-02   2.92686e-03 FRAC
+   @UHF iter   5:   -37.60182566866547   -1.88876e-03   1.58988e-03 MOM/FRAC
+   @UHF iter   6:   -37.60198780360307   -1.62135e-04   3.49438e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.60202733944978   -3.95358e-05   2.34040e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.60202772250257   -3.83053e-07   2.43655e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.60202772915765   -6.65508e-09   3.60504e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.60202772924571   -8.80647e-11   4.02017e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -1812,28 +1812,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.60202772924559
+  @UHF Final Energy:   -37.60202772924571
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -4.7730     YY:    -6.2047     ZZ:    -6.0756
-    XY:    -0.4353     XZ:     0.4734     YZ:    -0.0496
+    XX:    -4.6264     YY:    -6.1225     ZZ:    -6.3044
+    XY:    -0.3992     XZ:     0.1861     YZ:     0.0370
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.9115     YY:    -0.5203     ZZ:    -0.3912
-    XY:    -0.4353     XZ:     0.4734     YZ:    -0.0496
+    XX:     1.0581     YY:    -0.4381     ZZ:    -0.6200
+    XY:    -0.3992     XZ:     0.1861     YZ:     0.0370
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1848,25 +1848,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:07 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
 Module time:
-	user time   =       0.53 seconds =       0.01 minutes
+	user time   =       0.11 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.87 seconds =       0.06 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       0.81 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:07 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1926,7 +1926,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -26.32996813010260
+  Initial UHF energy:   -26.32996813010262
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1976,9 +1976,9 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -36.69365367582427   -1.03637e+01   0.00000e+00 
-   @UHF iter   2:   -37.68006774113011   -9.86414e-01   6.68351e-02 DIIS
-   @UHF iter   3:   -37.68691010556208   -6.84236e-03   3.28728e-03 DIIS
+   @UHF iter   1:   -36.69365367582448   -1.03637e+01   0.00000e+00 
+   @UHF iter   2:   -37.68006774113029   -9.86414e-01   6.68351e-02 DIIS
+   @UHF iter   3:   -37.68691010556222   -6.84236e-03   3.28728e-03 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -2023,13 +2023,13 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   4:   -37.64381112937873    4.30990e-02   1.62974e-03 FRAC
-   @UHF iter   5:   -37.64435483431700   -5.43705e-04   8.23412e-04 MOM/FRAC
-   @UHF iter   6:   -37.64441297430051   -5.81400e-05   2.08917e-04 DIIS/MOM/FRAC
-   @UHF iter   7:   -37.64442927880472   -1.63045e-05   1.55243e-04 DIIS/MOM/FRAC
-   @UHF iter   8:   -37.64442941562874   -1.36824e-07   1.53350e-05 DIIS/MOM/FRAC
-   @UHF iter   9:   -37.64442941823393   -2.60519e-09   2.47988e-06 DIIS/MOM/FRAC
-   @UHF iter  10:   -37.64442941825871   -2.47837e-11   2.14430e-07 DIIS/MOM/FRAC
+   @UHF iter   4:   -37.64381112937885    4.30990e-02   1.62974e-03 FRAC
+   @UHF iter   5:   -37.64435483431716   -5.43705e-04   8.23412e-04 MOM/FRAC
+   @UHF iter   6:   -37.64441297430061   -5.81400e-05   2.08917e-04 DIIS/MOM/FRAC
+   @UHF iter   7:   -37.64442927880488   -1.63045e-05   1.55243e-04 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.64442941562893   -1.36824e-07   1.53350e-05 DIIS/MOM/FRAC
+   @UHF iter   9:   -37.64442941823411   -2.60518e-09   2.47988e-06 DIIS/MOM/FRAC
+   @UHF iter  10:   -37.64442941825889   -2.47837e-11   2.14430e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -2072,28 +2072,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.64442941825871
+  @UHF Final Energy:   -37.64442941825889
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -4.9649     YY:    -6.4778     ZZ:    -6.3955
-    XY:    -0.4445     XZ:     0.5035     YZ:    -0.0995
+    XX:    -4.8138     YY:    -6.4455     ZZ:    -6.5788
+    XY:    -0.4299     XZ:     0.1844     YZ:    -0.0080
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.9811     YY:    -0.5317     ZZ:    -0.4494
-    XY:    -0.4445     XZ:     0.5035     YZ:    -0.0995
+    XX:     1.1322     YY:    -0.4994     ZZ:    -0.6328
+    XY:    -0.4299     XZ:     0.1844     YZ:    -0.0080
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -2108,25 +2108,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:08 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
 Module time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.54 seconds =       0.08 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:08 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2186,7 +2186,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2236,13 +2236,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -2286,14 +2286,14 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.63508291696188    6.98368e-02   1.11895e-02 FRAC
-   @UHF iter   9:   -37.68285999198695   -4.77771e-02   7.51117e-03 MOM/FRAC
-   @UHF iter  10:   -37.68581307101500   -2.95308e-03   2.15532e-03 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.68618700234961   -3.73931e-04   6.47082e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.68622887523324   -4.18729e-05   2.67944e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.68623126844081   -2.39321e-06   6.61065e-05 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.68623127867832   -1.02375e-08   2.92082e-06 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.68623127890712   -2.28802e-10   6.05346e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.63508291696224    6.98368e-02   1.11895e-02 FRAC
+   @UHF iter   9:   -37.68285999198711   -4.77771e-02   7.51117e-03 MOM/FRAC
+   @UHF iter  10:   -37.68581307101524   -2.95308e-03   2.15532e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68618700234979   -3.73931e-04   6.47082e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68622887523340   -4.18729e-05   2.67944e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68623126844098   -2.39321e-06   6.61065e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68623127867853   -1.02375e-08   2.92082e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68623127890729   -2.28766e-10   6.05346e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -2335,28 +2335,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.68623127890712
+  @UHF Final Energy:   -37.68623127890729
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:    -0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -7.2421     YY:    -7.2205     ZZ:    -6.1793
-    XY:    -0.1103     XZ:     0.3410     YZ:    -0.3760
+    XX:    -6.5752     YY:    -6.7998     ZZ:    -7.2669
+    XY:     0.6449     XZ:     0.2401     YZ:     0.2019
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.3615     YY:    -0.3399     ZZ:     0.7014
-    XY:    -0.1103     XZ:     0.3410     YZ:    -0.3760
+    XX:     0.3055     YY:     0.0809     ZZ:    -0.3863
+    XY:     0.6449     XZ:     0.2401     YZ:     0.2019
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -2371,25 +2371,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:09 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
 Module time:
-	user time   =       0.63 seconds =       0.01 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.17 seconds =       0.09 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:09 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2449,7 +2449,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2499,13 +2499,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -2549,15 +2549,17 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.64284570793328    6.20740e-02   9.94599e-03 FRAC
-   @UHF iter   9:   -37.68126691679971   -3.84212e-02   6.80581e-03 MOM/FRAC
-   @UHF iter  10:   -37.68457509615855   -3.30818e-03   2.11855e-03 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.68505680103175   -4.81705e-04   6.42671e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.68514592516996   -8.91241e-05   4.00607e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.68514809078307   -2.16561e-06   6.17307e-05 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.68514813047445   -3.96914e-08   6.50131e-06 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.68514813100924   -5.34797e-10   6.66978e-07 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.68514813102021   -1.09708e-11   1.52788e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.64284570793361    6.20740e-02   9.94599e-03 FRAC
+   @UHF iter   9:   -37.68126691679988   -3.84212e-02   6.80581e-03 MOM/FRAC
+   @UHF iter  10:   -37.68457509615870   -3.30818e-03   2.11855e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68505680103194   -4.81705e-04   6.42671e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68514592517017   -8.91241e-05   4.00607e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68514809078323   -2.16561e-06   6.17307e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68514813047458   -3.96914e-08   6.50131e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68514813100938   -5.34797e-10   6.66978e-07 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68514813102041   -1.10276e-11   1.52788e-07 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.59194672578715    9.32014e-02   1.86903e-02 DIIS/MOM/FRAC
+   @UHF iter  18:   -37.59194671865916    7.12799e-09   6.22292e-10 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -2566,13 +2568,13 @@ Total time:
 
 	Alpha Occupied:                                                       
 
-	   1A    -11.282612     2A     -0.771592     3A     -0.371837  
-	   4A     -0.371837     5A      0.008388  
+	   1A    -11.282612     2A     -0.771592     4A     -0.371837  
+	   5A      0.008388     9A      0.179983  
 
 	Alpha Virtual:                                                        
 
-	   6A      0.146630     7A      0.149782     8A      0.149782  
-	   9A      0.179983    10A      0.485969    11A      0.485969  
+	   3A     -0.371837     6A      0.146630     7A      0.149782  
+	   8A      0.149782    10A      0.485969    11A      0.485969  
 	  12A      0.488847    13A      0.488847    14A      0.490370  
 	  15A      0.804295    16A      0.804295    17A      0.866950  
 	  18A      1.016324    19A      1.681311    20A      1.681311  
@@ -2599,7 +2601,7 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.68514813102021
+  @UHF Final Energy:   -37.59194671865916
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -2615,12 +2617,12 @@ Total time:
      X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -7.7243     YY:    -7.7112     ZZ:    -7.0813
-    XY:    -0.0667     XZ:     0.2063     YZ:    -0.2274
+    XX:   -14.1596     YY:   -13.1302     ZZ:   -10.7238
+    XY:    -4.2476     XZ:    -1.9949     YZ:    -0.4689
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.2187     YY:    -0.2056     ZZ:     0.4243
-    XY:    -0.0667     XZ:     0.2063     YZ:    -0.2274
+    XX:    -1.4884     YY:    -0.4590     ZZ:     1.9474
+    XY:    -4.2476     XZ:    -1.9949     YZ:    -0.4689
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -2635,25 +2637,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:11 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
 Module time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.91 seconds =       0.10 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       1.19 seconds =       0.02 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:11 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2713,7 +2715,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2763,13 +2765,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -2813,15 +2815,25 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.65060849890467    5.43112e-02   8.70266e-03 FRAC
-   @UHF iter   9:   -37.68056966189235   -2.99612e-02   6.08033e-03 MOM/FRAC
-   @UHF iter  10:   -37.68383652770370   -3.26687e-03   2.04137e-03 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.68441110857586   -5.74581e-04   6.69503e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.68457624265557   -1.65134e-04   5.68789e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.68457828392469   -2.04127e-06   6.70351e-05 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.68457838704537   -1.03121e-07   1.12798e-05 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.68457839162981   -4.58444e-09   2.38320e-06 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.68457839180746   -1.77650e-10   6.09133e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.65060849890499    5.43112e-02   8.70266e-03 FRAC
+   @UHF iter   9:   -37.68056966189255   -2.99612e-02   6.08033e-03 MOM/FRAC
+   @UHF iter  10:   -37.68383652770388   -3.26687e-03   2.04137e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68441110857601   -5.74581e-04   6.69503e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68457624265575   -1.65134e-04   5.68789e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68457828392486   -2.04127e-06   6.70351e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68457838704552   -1.03121e-07   1.12798e-05 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68457839162993   -4.58441e-09   2.38320e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68457839180764   -1.77707e-10   6.09133e-07 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.58935753698405    9.52209e-02   1.99579e-02 DIIS/MOM/FRAC
+   @UHF iter  18:   -37.58935748777869    4.92054e-08   4.37853e-09 DIIS/MOM/FRAC
+   @UHF iter  19:   -37.58935777489931   -2.87121e-07   1.45200e-03 DIIS/MOM/FRAC
+   @UHF iter  20:   -37.58935748762617    2.87273e-07   7.27195e-04 DIIS/MOM/FRAC
+   @UHF iter  21:   -37.58935748773557   -1.09402e-10   3.61991e-04 DIIS/MOM/FRAC
+   @UHF iter  22:   -37.58935748776452   -2.89546e-11   1.79352e-04 DIIS/MOM/FRAC
+   @UHF iter  23:   -37.58935748777071   -6.18883e-12   8.64750e-05 DIIS/MOM/FRAC
+   @UHF iter  24:   -37.58935748777490   -4.19220e-12   3.75720e-05 DIIS/MOM/FRAC
+   @UHF iter  25:   -37.58935748777414    7.67386e-13   1.14029e-05 DIIS/MOM/FRAC
+   @UHF iter  26:   -37.58935748777277    1.36424e-12   1.28379e-06 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -2830,13 +2842,13 @@ Total time:
 
 	Alpha Occupied:                                                       
 
-	   1A    -11.246854     2A     -0.741500     3A     -0.337442  
-	   4A     -0.337442     5A      0.002871  
+	   1A    -11.246854     2A     -0.741500     4A     -0.337442  
+	   5A      0.002871     9A      0.195731  
 
 	Alpha Virtual:                                                        
 
-	   6A      0.165855     7A      0.167477     8A      0.167477  
-	   9A      0.195731    10A      0.510449    11A      0.510449  
+	   3A     -0.337442     6A      0.165855     7A      0.167477  
+	   8A      0.167477    10A      0.510449    11A      0.510449  
 	  12A      0.512527    13A      0.512527    14A      0.513685  
 	  15A      0.834363    16A      0.834363    17A      0.892827  
 	  18A      1.045628    19A      1.713714    20A      1.713714  
@@ -2863,28 +2875,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.68457839180746
+  @UHF Final Energy:   -37.58935748777277
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -8.1870     YY:    -8.1811     ZZ:    -7.9006
-    XY:    -0.0297     XZ:     0.0919     YZ:    -0.1013
+    XX:   -15.6528     YY:   -14.3999     ZZ:   -11.6327
+    XY:    -4.8976     XZ:    -2.2189     YZ:    -0.6496
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.0974     YY:    -0.0916     ZZ:     0.1889
-    XY:    -0.0297     XZ:     0.0919     YZ:    -0.1013
+    XX:    -1.7577     YY:    -0.5047     ZZ:     2.2624
+    XY:    -4.8976     XZ:    -2.2189     YZ:    -0.6496
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -2899,25 +2911,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:12 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:52 2012
 Module time:
-	user time   =       0.61 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       6.52 seconds =       0.11 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       1.34 seconds =       0.02 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:12 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:52 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2977,7 +2989,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3027,13 +3039,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -3077,15 +3089,15 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.65837128987606    4.65484e-02   7.45951e-03 FRAC
-   @UHF iter   9:   -37.68080873815032   -2.24374e-02   5.33083e-03 MOM/FRAC
-   @UHF iter  10:   -37.68374209453575   -2.93336e-03   1.90466e-03 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.68435542646758   -6.13332e-04   6.85570e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.68460104616344   -2.45620e-04   7.35741e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.68460408557080   -3.03941e-06   9.47129e-05 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.68460417057614   -8.50053e-08   1.01098e-05 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.68460417741868   -6.84253e-09   3.00787e-06 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.68460417798936   -5.70687e-10   1.18566e-06 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.65837128987636    4.65484e-02   7.45951e-03 FRAC
+   @UHF iter   9:   -37.68080873815052   -2.24374e-02   5.33083e-03 MOM/FRAC
+   @UHF iter  10:   -37.68374209453592   -2.93336e-03   1.90466e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68435542646773   -6.13332e-04   6.85570e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68460104616362   -2.45620e-04   7.35741e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68460408557095   -3.03941e-06   9.47129e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68460417057632   -8.50054e-08   1.01098e-05 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68460417741883   -6.84251e-09   3.00787e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68460417798953   -5.70708e-10   1.18566e-06 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -3127,7 +3139,7 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.68460417798936
+  @UHF Final Energy:   -37.68460417798953
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -3143,12 +3155,12 @@ Total time:
      X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -8.6337     YY:    -8.6338     ZZ:    -8.6352
-    XY:     0.0002     XZ:    -0.0005     YZ:     0.0005
+    XX:    -8.6347     YY:    -8.6343     ZZ:    -8.6337
+    XY:    -0.0009     XZ:    -0.0003     YZ:    -0.0003
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.0005     YY:     0.0005     ZZ:    -0.0010
-    XY:     0.0002     XZ:    -0.0005     YZ:     0.0005
+    XX:    -0.0004     YY:    -0.0001     ZZ:     0.0005
+    XY:    -0.0009     XZ:    -0.0003     YZ:    -0.0003
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -3163,25 +3175,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:13 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
 Module time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       7.10 seconds =       0.12 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       1.47 seconds =       0.02 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:13 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3241,7 +3253,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3291,13 +3303,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -3341,111 +3353,127 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.66613408084746    3.87856e-02   6.21666e-03 FRAC
-   @UHF iter   9:   -37.68202989142371   -1.58958e-02   4.55270e-03 MOM/FRAC
-   @UHF iter  10:   -37.68443740305364   -2.40751e-03   1.70875e-03 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.68502241162561   -5.85009e-04   6.73914e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.68532148438123   -2.99073e-04   8.62275e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.68532624990526   -4.76552e-06   1.26393e-04 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.68532629034608   -4.04408e-08   6.96078e-06 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.68532629292349   -2.57741e-09   1.69561e-06 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.68532629332632   -4.02828e-10   1.01929e-06 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.66613408084774    3.87856e-02   6.21666e-03 FRAC
+   @UHF iter   9:   -37.68202989142387   -1.58958e-02   4.55270e-03 MOM/FRAC
+   @UHF iter  10:   -37.68443740305383   -2.40751e-03   1.70875e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68502241162582   -5.85009e-04   6.73914e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.58143764829546    1.03585e-01   2.43293e-02 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.58182915384839   -3.91506e-04   3.23863e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.57922619569582    2.60296e-03   2.12668e-04 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.57929876255670   -7.25669e-05   5.93601e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.57927952869943    1.92339e-05   1.65429e-05 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.57977623941171   -4.96711e-04   8.28315e-05 DIIS/MOM/FRAC
+   @UHF iter  18:   -37.57978185573590   -5.61632e-06   1.40069e-04 DIIS/MOM/FRAC
+   @UHF iter  19:   -37.57987452499422   -9.26693e-05   6.95919e-05 DIIS/MOM/FRAC
+   @UHF iter  20:   -37.58009764865776   -2.23124e-04   1.91035e-05 DIIS/MOM/FRAC
+   @UHF iter  21:   -37.57972701595529    3.70633e-04   3.77717e-05 DIIS/MOM/FRAC
+   @UHF iter  22:   -37.57760803949794    2.11898e-03   1.71745e-04 DIIS/MOM/FRAC
+   @UHF iter  23:   -37.57803801069476   -4.29971e-04   3.31571e-05 DIIS/MOM/FRAC
+   @UHF iter  24:   -37.57842149030489   -3.83480e-04   3.33228e-05 DIIS/MOM/FRAC
+   @UHF iter  25:   -37.57852920349740   -1.07713e-04   6.06414e-05 DIIS/MOM/FRAC
+   @UHF iter  26:   -37.57859363667330   -6.44332e-05   1.93941e-04 DIIS/MOM/FRAC
+   @UHF iter  27:   -37.57863429131720   -4.06546e-05   2.39054e-04 DIIS/MOM/FRAC
+   @UHF iter  28:   -37.57860310448558    3.11868e-05   1.90198e-04 DIIS/MOM/FRAC
+   @UHF iter  29:   -37.57860407156540   -9.67080e-07   1.92423e-04 DIIS/MOM/FRAC
+   @UHF iter  30:   -37.57860380517248    2.66393e-07   1.92884e-04 DIIS/MOM/FRAC
+   @UHF iter  31:   -37.57860406364065   -2.58468e-07   1.93687e-04 DIIS/MOM/FRAC
+   @UHF iter  32:   -37.57860405853803    5.10261e-09   1.94205e-04 DIIS/MOM/FRAC
+   @UHF iter  33:   -37.57860413421831   -7.56803e-08   1.94716e-04 DIIS/MOM/FRAC
+   @UHF iter  34:   -37.57860417138748   -3.71692e-08   1.95124e-04 DIIS/MOM/FRAC
+   @UHF iter  35:   -37.57860420900498   -3.76175e-08   1.95482e-04 DIIS/MOM/FRAC
+   @UHF iter  36:   -37.57860424350831   -3.45033e-08   1.95781e-04 DIIS/MOM/FRAC
+   @UHF iter  37:   -37.57860426664667   -2.31384e-08   1.96035e-04 DIIS/MOM/FRAC
+   @UHF iter  38:   -37.57860429338485   -2.67382e-08   1.96248e-04 DIIS/MOM/FRAC
+   @UHF iter  39:   -37.57860430810852   -1.47237e-08   1.96427e-04 DIIS/MOM/FRAC
+   @UHF iter  40:   -37.57860432844112   -2.03326e-08   1.96578e-04 DIIS/MOM/FRAC
+   @UHF iter  41:   -37.57860433745775   -9.01664e-09   1.96704e-04 DIIS/MOM/FRAC
+   @UHF iter  42:   -37.57860435296934   -1.55116e-08   1.96810e-04 DIIS/MOM/FRAC
+   @UHF iter  43:   -37.57860435801047   -5.04113e-09   1.96898e-04 DIIS/MOM/FRAC
+   @UHF iter  44:   -37.57860437020292   -1.21925e-08   1.96972e-04 DIIS/MOM/FRAC
+   @UHF iter  45:   -37.57860437255313   -2.35021e-09   1.97034e-04 DIIS/MOM/FRAC
+   @UHF iter  46:   -37.57860438219186   -9.63873e-09   1.97086e-04 DIIS/MOM/FRAC
+   @UHF iter  47:   -37.57860438253619   -3.44329e-10   1.97129e-04 DIIS/MOM/FRAC
+   @UHF iter  48:   -37.57860439056331   -8.02711e-09   1.97165e-04 DIIS/MOM/FRAC
+   @UHF iter  49:   -37.57860438959410    9.69202e-10   1.97194e-04 DIIS/MOM/FRAC
+   @UHF iter  50:   -37.57860439639767   -6.80356e-09   1.97219e-04 DIIS/MOM/FRAC
+   @UHF iter  51:   -37.57860439435524    2.04243e-09   1.97240e-04 DIIS/MOM/FRAC
+   @UHF iter  52:   -37.57860440035660   -6.00136e-09   1.97257e-04 DIIS/MOM/FRAC
+   @UHF iter  53:   -37.57860439783037    2.52623e-09   1.97272e-04 DIIS/MOM/FRAC
+   @UHF iter  54:   -37.57860440317955   -5.34919e-09   1.97284e-04 DIIS/MOM/FRAC
+   @UHF iter  55:   -37.57860440012164    3.05791e-09   1.97294e-04 DIIS/MOM/FRAC
+   @UHF iter  56:   -37.57860440511482   -4.99318e-09   1.97302e-04 DIIS/MOM/FRAC
+   @UHF iter  57:   -37.57860440171526    3.39956e-09   1.97309e-04 DIIS/MOM/FRAC
+   @UHF iter  58:   -37.57860440651919   -4.80393e-09   1.97315e-04 DIIS/MOM/FRAC
+   @UHF iter  59:   -37.57860440288029    3.63890e-09   1.97320e-04 DIIS/MOM/FRAC
+   @UHF iter  60:   -37.57860440740966   -4.52937e-09   1.97324e-04 DIIS/MOM/FRAC
+   @UHF iter  61:   -37.57860440372795    3.68171e-09   1.97327e-04 DIIS/MOM/FRAC
+   @UHF iter  62:   -37.57860440805698   -4.32902e-09   1.97330e-04 DIIS/MOM/FRAC
+   @UHF iter  63:   -37.57860440423816    3.81881e-09   1.97332e-04 DIIS/MOM/FRAC
+   @UHF iter  64:   -37.57860440855475   -4.31658e-09   1.97334e-04 DIIS/MOM/FRAC
+   @UHF iter  65:   -37.57860440456394    3.99081e-09   1.97336e-04 DIIS/MOM/FRAC
+   @UHF iter  66:   -37.57860440878751   -4.22357e-09   1.97337e-04 DIIS/MOM/FRAC
+   @UHF iter  67:   -37.57860440487435    3.91316e-09   1.97338e-04 DIIS/MOM/FRAC
+   @UHF iter  68:   -37.57860440907120   -4.19686e-09   1.97339e-04 DIIS/MOM/FRAC
+   @UHF iter  69:   -37.57860440503094    4.04027e-09   1.97340e-04 DIIS/MOM/FRAC
+   @UHF iter  70:   -37.57860440917831   -4.14737e-09   1.97340e-04 DIIS/MOM/FRAC
+   @UHF iter  71:   -37.57860440516676    4.01155e-09   1.97341e-04 DIIS/MOM/FRAC
+   @UHF iter  72:   -37.57860440925261   -4.08586e-09   1.97341e-04 DIIS/MOM/FRAC
+   @UHF iter  73:   -37.57860440522781    4.02481e-09   1.97342e-04 DIIS/MOM/FRAC
+   @UHF iter  74:   -37.57860440925050   -4.02270e-09   1.97342e-04 DIIS/MOM/FRAC
+   @UHF iter  75:   -37.57860440529920    3.95131e-09   1.97342e-04 DIIS/MOM/FRAC
+   @UHF iter  76:   -37.57860440939762   -4.09842e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  77:   -37.57860440538396    4.01366e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  78:   -37.57860440946566   -4.08171e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  79:   -37.57860440531041    4.15525e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  80:   -37.57860440944749   -4.13708e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  81:   -37.57860440540500    4.04249e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  82:   -37.57860440941638   -4.01138e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  83:   -37.57860440549134    3.92504e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  84:   -37.57860440952554   -4.03420e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  85:   -37.57860440539641    4.12913e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  86:   -37.57860440947221   -4.07579e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  87:   -37.57860440540621    4.06600e-09   1.97343e-04 DIIS/MOM/FRAC
+   @UHF iter  88:   -37.57860440948416   -4.07795e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  89:   -37.57860440540992    4.07424e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  90:   -37.57860440944362   -4.03370e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  91:   -37.57860440540867    4.03495e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  92:   -37.57860440949092   -4.08225e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  93:   -37.57860440545095    4.03998e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  94:   -37.57860440943671   -3.98577e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  95:   -37.57860440540870    4.02802e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  96:   -37.57860440944061   -4.03191e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  97:   -37.57860440543509    4.00551e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  98:   -37.57860440952172   -4.08662e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter  99:   -37.57860440551899    4.00273e-09   1.97344e-04 DIIS/MOM/FRAC
+   @UHF iter 100:   -37.57860440949329   -3.97431e-09   1.97344e-04 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
-	Orbital Energies (a.u.)
-	-----------------------
 
-	Alpha Occupied:                                                       
-
-	   1A    -11.172627     2A     -0.680076     3A     -0.266115  
-	   4A     -0.266115     5A     -0.011095  
-
-	Alpha Virtual:                                                        
-
-	   6A      0.203641     7A      0.203641     8A      0.205223  
-	   9A      0.226655    10A      0.560140    11A      0.560140  
-	  12A      0.560859    13A      0.560859    14A      0.561382  
-	  15A      0.896849    16A      0.896849    17A      0.944517  
-	  18A      1.105880    19A      1.780639    20A      1.780639  
-	  21A      1.793208    22A      1.793208    23A      1.797948  
-
-	Beta Occupied:                                                        
-
-	   1A    -11.125611     2A     -0.406366  
-
-	Beta Virtual:                                                         
-
-	   3A      0.164584     4A      0.171488     5A      0.171488  
-	   6A      0.231003     7A      0.318016     8A      0.348081  
-	   9A      0.348081    10A      0.602770    11A      0.605592  
-	  12A      0.605592    13A      0.614285    14A      0.614285  
-	  15A      1.016818    16A      1.046258    17A      1.046258  
-	  18A      1.182245    19A      1.883027    20A      1.891533  
-	  21A      1.891533    22A      1.918546    23A      1.918546  
-
-	Final Occupation by Irrep:
-	          A 
-	DOCC [     2 ]
-	SOCC [     3 ]
-
-  Energy converged.
-
-  @UHF Final Energy:   -37.68532629332632
-
-  ==> Properties <==
-  Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.0000
-
-  Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
-
-  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
-
-  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
-
-  Quadrupole Moment: (Debye Ang)
-    XX:    -9.0709     YY:    -9.0753     ZZ:    -9.2861
-    XY:     0.0223     XZ:    -0.0690     YZ:     0.0761
-
-  Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.0732     YY:     0.0688     ZZ:    -0.1420
-    XY:     0.0223     XZ:    -0.0690     YZ:     0.0761
-
-  Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1     C     4.50000  2.00000  2.50000 -0.50000
-
-   Total alpha =  4.50000, Total beta =  2.00000, Total charge = -0.50000
-
-
-  @Spin Contamination Metric:  0.00588
-  @S^2 Expected:               3.75000
-  @S^2 Observed:               3.75588
+  Failed to converged.
+    NOTE: MO Coefficients will not be saved to Checkpoint.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:14 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
 Module time:
-	user time   =       0.61 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       7.71 seconds =       0.13 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         13 seconds =       0.22 minutes
+	user time   =       1.78 seconds =       0.03 minutes
+	system time =       0.31 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:14 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3505,7 +3533,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3555,13 +3583,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -3605,15 +3633,15 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.67389687181885    3.10228e-02   4.97432e-03 FRAC
-   @UHF iter   9:   -37.68428497280876   -1.03881e-02   3.74048e-03 MOM/FRAC
-   @UHF iter  10:   -37.68606624818235   -1.78128e-03   1.45861e-03 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.68655988345145   -4.93635e-04   6.27215e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.68686326797916   -3.03385e-04   9.20195e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.68686908420132   -5.81622e-06   1.46487e-04 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.68686911321718   -2.90159e-08   7.09059e-06 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.68686911397390   -7.56721e-10   1.14896e-06 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.68686911398363   -9.72733e-12   1.14156e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.67389687181911    3.10228e-02   4.97432e-03 FRAC
+   @UHF iter   9:   -37.68428497280895   -1.03881e-02   3.74048e-03 MOM/FRAC
+   @UHF iter  10:   -37.68606624818249   -1.78128e-03   1.45861e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68655988345162   -4.93635e-04   6.27215e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68686326797935   -3.03385e-04   9.20195e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68686908420148   -5.81622e-06   1.46487e-04 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68686911321736   -2.90159e-08   7.09059e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68686911397410   -7.56742e-10   1.14896e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68686911398378   -9.67049e-12   1.14156e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -3655,28 +3683,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.68686911398363
+  @UHF Final Energy:   -37.68686911398378
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -9.5088     YY:    -9.5159     ZZ:    -9.8584
-    XY:     0.0363     XZ:    -0.1122     YZ:     0.1237
+    XX:    -9.7282     YY:    -9.6543     ZZ:    -9.5006
+    XY:    -0.2121     XZ:    -0.0790     YZ:    -0.0664
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.1189     YY:     0.1118     ZZ:    -0.2307
-    XY:     0.0363     XZ:    -0.1122     YZ:     0.1237
+    XX:    -0.1005     YY:    -0.0266     ZZ:     0.1271
+    XY:    -0.2121     XZ:    -0.0790     YZ:    -0.0664
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -3691,25 +3719,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:15 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.28 seconds =       0.14 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =         14 seconds =       0.23 minutes
+	user time   =       1.91 seconds =       0.03 minutes
+	system time =       0.33 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:15 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3769,7 +3797,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3819,13 +3847,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -3869,16 +3897,16 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.68165966279025    2.32600e-02   3.73303e-03 FRAC
-   @UHF iter   9:   -37.68763288726059   -5.97322e-03   2.88781e-03 MOM/FRAC
-   @UHF iter  10:   -37.68877390897570   -1.14102e-03   1.15926e-03 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.68912929185883   -3.55383e-04   5.40904e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.68938153293533   -2.52241e-04   8.87053e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.68938670721737   -5.17428e-06   1.45188e-04 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.68938673445899   -2.72416e-08   7.68771e-06 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.68938673589389   -1.43490e-09   1.71131e-06 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.68938673601900   -1.25105e-10   5.62153e-07 DIIS/MOM/FRAC
-   @UHF iter  17:   -37.68938673602368   -4.68248e-12   1.04658e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.68165966279049    2.32600e-02   3.73303e-03 FRAC
+   @UHF iter   9:   -37.68763288726078   -5.97322e-03   2.88781e-03 MOM/FRAC
+   @UHF iter  10:   -37.68877390897588   -1.14102e-03   1.15926e-03 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.68912929185895   -3.55383e-04   5.40904e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.68938153293550   -2.52241e-04   8.87053e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.68938670721757   -5.17428e-06   1.45188e-04 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.68938673445916   -2.72416e-08   7.68771e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.68938673589409   -1.43493e-09   1.71131e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.68938673601916   -1.25070e-10   5.62153e-07 DIIS/MOM/FRAC
+   @UHF iter  17:   -37.68938673602382   -4.66116e-12   1.04658e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -3920,28 +3948,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.68938673602368
+  @UHF Final Energy:   -37.68938673602382
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:    -9.9634     YY:    -9.9716     ZZ:   -10.3636
-    XY:     0.0415     XZ:    -0.1284     YZ:     0.1416
+    XX:   -10.2145     YY:   -10.1299     ZZ:    -9.9541
+    XY:    -0.2428     XZ:    -0.0904     YZ:    -0.0760
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.1361     YY:     0.1280     ZZ:    -0.2641
-    XY:     0.0415     XZ:    -0.1284     YZ:     0.1416
+    XX:    -0.1150     YY:    -0.0304     ZZ:     0.1454
+    XY:    -0.2428     XZ:    -0.0904     YZ:    -0.0760
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -3956,25 +3984,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:16 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
 Module time:
-	user time   =       0.65 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.93 seconds =       0.15 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =       2.04 seconds =       0.03 minutes
+	system time =       0.35 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:16 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4034,7 +4062,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4084,13 +4112,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -4134,15 +4162,15 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.68942245376163    1.54972e-02   2.49432e-03 FRAC
-   @UHF iter   9:   -37.69214056534024   -2.71811e-03   1.98731e-03 MOM/FRAC
-   @UHF iter  10:   -37.69271206741404   -5.71502e-04   8.14741e-04 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.69290979487782   -1.97727e-04   4.10785e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.69306755185439   -1.57757e-04   7.40653e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.69307062314606   -3.07129e-06   1.17478e-04 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.69307063925539   -1.61093e-08   6.17846e-06 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.69307064055791   -1.30252e-09   1.63038e-06 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.69307064074386   -1.85956e-10   7.19452e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.68942245376186    1.54972e-02   2.49432e-03 FRAC
+   @UHF iter   9:   -37.69214056534043   -2.71811e-03   1.98731e-03 MOM/FRAC
+   @UHF iter  10:   -37.69271206741418   -5.71502e-04   8.14741e-04 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.69290979487796   -1.97727e-04   4.10785e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.69306755185458   -1.57757e-04   7.40653e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.69307062314628   -3.07129e-06   1.17478e-04 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.69307063925555   -1.61093e-08   6.17846e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.69307064055809   -1.30254e-09   1.63038e-06 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.69307064074403   -1.85935e-10   7.19452e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -4184,28 +4212,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.69307064074386
+  @UHF Final Energy:   -37.69307064074403
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -10.4582     YY:   -10.4656     ZZ:   -10.8206
-    XY:     0.0376     XZ:    -0.1163     YZ:     0.1282
+    XX:   -10.6856     YY:   -10.6090     ZZ:   -10.4497
+    XY:    -0.2199     XZ:    -0.0819     YZ:    -0.0688
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.1232     YY:     0.1159     ZZ:    -0.2391
-    XY:     0.0376     XZ:    -0.1163     YZ:     0.1282
+    XX:    -0.1041     YY:    -0.0276     ZZ:     0.1317
+    XY:    -0.2199     XZ:    -0.0819     YZ:    -0.0688
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -4220,25 +4248,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:17 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
 Module time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.50 seconds =       0.16 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =       2.17 seconds =       0.04 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:17 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4298,7 +4326,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4348,13 +4376,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -4398,15 +4426,15 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.69718524473303    7.73445e-03   1.26581e-03 FRAC
-   @UHF iter   9:   -37.69788385266180   -6.98608e-04   1.03051e-03 MOM/FRAC
-   @UHF iter  10:   -37.69804381596794   -1.59963e-04   4.27962e-04 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.69810463883345   -6.08229e-05   2.32218e-04 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.69815820314447   -5.35643e-05   4.55314e-04 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.69815907875901   -8.75615e-07   6.54520e-05 DIIS/MOM/FRAC
-   @UHF iter  14:   -37.69815908245479   -3.69579e-09   3.11511e-06 DIIS/MOM/FRAC
-   @UHF iter  15:   -37.69815908277343   -3.18636e-10   8.12272e-07 DIIS/MOM/FRAC
-   @UHF iter  16:   -37.69815908282957   -5.61400e-11   3.94596e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.69718524473324    7.73445e-03   1.26581e-03 FRAC
+   @UHF iter   9:   -37.69788385266195   -6.98608e-04   1.03051e-03 MOM/FRAC
+   @UHF iter  10:   -37.69804381596813   -1.59963e-04   4.27962e-04 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.69810463883359   -6.08229e-05   2.32218e-04 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.69815820314461   -5.35643e-05   4.55314e-04 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.69815907875915   -8.75615e-07   6.54520e-05 DIIS/MOM/FRAC
+   @UHF iter  14:   -37.69815908245499   -3.69583e-09   3.11511e-06 DIIS/MOM/FRAC
+   @UHF iter  15:   -37.69815908277362   -3.18636e-10   8.12272e-07 DIIS/MOM/FRAC
+   @UHF iter  16:   -37.69815908282975   -5.61329e-11   3.94596e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -4448,28 +4476,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.69815908282957
+  @UHF Final Energy:   -37.69815908282975
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
-    XX:   -11.0261     YY:   -11.0308     ZZ:   -11.2574
-    XY:     0.0240     XZ:    -0.0742     YZ:     0.0818
+    XX:   -11.1712     YY:   -11.1223     ZZ:   -11.0207
+    XY:    -0.1403     XZ:    -0.0522     YZ:    -0.0439
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.0787     YY:     0.0740     ZZ:    -0.1526
-    XY:     0.0240     XZ:    -0.0742     YZ:     0.0818
+    XX:    -0.0665     YY:    -0.0176     ZZ:     0.0841
+    XY:    -0.1403     XZ:    -0.0522     YZ:    -0.0439
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -4484,25 +4512,25 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:18 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:53 2012
 Module time:
-	user time   =       0.61 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =      10.11 seconds =       0.17 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       2.30 seconds =       0.04 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstart() called on ds7
-*** at Sat Jan 21 21:13:18 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:53 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4562,7 +4590,7 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.38798693897902
+  Initial UHF energy:   -28.38798693897903
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4612,13 +4640,13 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -35.85592530616847   -7.46794e+00   0.00000e+00 
-   @UHF iter   2:   -36.04018854256869   -1.84263e-01   9.43565e-02 DIIS
-   @UHF iter   3:   -37.51785974314151   -1.47767e+00   6.63610e-02 DIIS
-   @UHF iter   4:   -37.68344562288935   -1.65586e-01   1.18204e-02 DIIS
-   @UHF iter   5:   -37.70364702322480   -2.02014e-02   4.01875e-03 DIIS
-   @UHF iter   6:   -37.70470889725834   -1.06187e-03   1.45205e-03 DIIS
-   @UHF iter   7:   -37.70491969069420   -2.10793e-04   6.82345e-04 DIIS
+   @UHF iter   1:   -35.85592530616875   -7.46794e+00   0.00000e+00 
+   @UHF iter   2:   -36.04018854256891   -1.84263e-01   9.43565e-02 DIIS
+   @UHF iter   3:   -37.51785974314176   -1.47767e+00   6.63610e-02 DIIS
+   @UHF iter   4:   -37.68344562288952   -1.65586e-01   1.18204e-02 DIIS
+   @UHF iter   5:   -37.70364702322498   -2.02014e-02   4.01875e-03 DIIS
+   @UHF iter   6:   -37.70470889725853   -1.06187e-03   1.45205e-03 DIIS
+   @UHF iter   7:   -37.70491969069437   -2.10793e-04   6.82345e-04 DIIS
 
 	Orbital Energies (a.u.)
 	-----------------------
@@ -4662,12 +4690,12 @@ Total time:
 
                         Total Energy        Delta E      Density RMS
 
-   @UHF iter   8:   -37.70494803570443   -2.83450e-05   2.78318e-04 FRAC
-   @UHF iter   9:   -37.70494813172825   -9.60238e-08   1.42885e-05 MOM/FRAC
-   @UHF iter  10:   -37.70494814522492   -1.34967e-08   4.35183e-06 DIIS/MOM/FRAC
-   @UHF iter  11:   -37.70494814816853   -2.94362e-09   2.21356e-06 DIIS/MOM/FRAC
-   @UHF iter  12:   -37.70494814912404   -9.55509e-10   1.37188e-06 DIIS/MOM/FRAC
-   @UHF iter  13:   -37.70494814932179   -1.97751e-10   7.81462e-07 DIIS/MOM/FRAC
+   @UHF iter   8:   -37.70494803570461   -2.83450e-05   2.78318e-04 FRAC
+   @UHF iter   9:   -37.70494813172841   -9.60238e-08   1.42885e-05 MOM/FRAC
+   @UHF iter  10:   -37.70494814522510   -1.34967e-08   4.35183e-06 DIIS/MOM/FRAC
+   @UHF iter  11:   -37.70494814816870   -2.94359e-09   2.21356e-06 DIIS/MOM/FRAC
+   @UHF iter  12:   -37.70494814912422   -9.55524e-10   1.37188e-06 DIIS/MOM/FRAC
+   @UHF iter  13:   -37.70494814932196   -1.97744e-10   7.81462e-07 DIIS/MOM/FRAC
 
   ==> Post-Iterations <==
 
@@ -4709,28 +4737,28 @@ Total time:
 
   Energy converged.
 
-  @UHF Final Energy:   -37.70494814932179
+  @UHF Final Energy:   -37.70494814932196
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+     X:    -0.0000      Y:    -0.0000      Z:     0.0000     Total:     0.0000
 
   Quadrupole Moment: (Debye Ang)
     XX:   -11.7116     YY:   -11.7116     ZZ:   -11.7116
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.0000     YY:    -0.0000     ZZ:    -0.0000
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XX:    -0.0000     YY:     0.0000     ZZ:     0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -4745,38 +4773,38 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Sat Jan 21 21:13:20 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:54 2012
 Module time:
-	user time   =       0.63 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =      10.74 seconds =       0.18 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         19 seconds =       0.32 minutes
+	user time   =       2.42 seconds =       0.04 minutes
+	system time =       0.40 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 
     ==> Fractional Occupation Traverse Results <==
 
-	Cation  Energy =  -3.7290250686894112E+01
-	Neutral Energy =  -3.7687760545776982E+01
-	Anion   Energy =  -3.7704948149320245E+01
+	Cation  Energy =  -3.7290250686894282E+01
+	Neutral Energy =  -3.7687760545777166E+01
+	Anion   Energy =  -3.7704948149320430E+01
 
 	Nelec    Energy                  
-	5.500E+00  -3.7479827870463211E+01
-	5.600E+00  -3.7519777157724278E+01
-	5.700E+00  -3.7560494710854691E+01
-	5.800E+00  -3.7602027729245592E+01
-	5.900E+00  -3.7644429418258710E+01
-	6.000E+00  -3.7687760545776982E+01
-	6.100E+00  -3.7686231278907123E+01
-	6.200E+00  -3.7685148131020213E+01
-	6.300E+00  -3.7684578391807456E+01
-	6.400E+00  -3.7684604177989364E+01
-	6.500E+00  -3.7685326293326320E+01
-	6.600E+00  -3.7686869113983626E+01
-	6.700E+00  -3.7689386736023678E+01
-	6.800E+00  -3.7693070640743862E+01
-	6.900E+00  -3.7698159082829569E+01
-	7.000E+00  -3.7704948149321794E+01
+	5.500E+00  -3.7479827870463325E+01
+	5.600E+00  -3.7519777157724391E+01
+	5.700E+00  -3.7560494710854833E+01
+	5.800E+00  -3.7602027729245712E+01
+	5.900E+00  -3.7644429418258895E+01
+	6.000E+00  -3.7687760545777166E+01
+	6.100E+00  -3.7686231278907293E+01
+	6.200E+00  -3.7591946718659159E+01
+	6.300E+00  -3.7589357487772773E+01
+	6.400E+00  -3.7684604177989534E+01
+	6.500E+00   0.0000000000000000E+00
+	6.600E+00  -3.7686869113983775E+01
+	6.700E+00  -3.7689386736023820E+01
+	6.800E+00  -3.7693070640744025E+01
+	6.900E+00  -3.7698159082829754E+01
+	7.000E+00  -3.7704948149321964E+01
 
 *** PSI4 exiting successfully. Buy a developer a beer!

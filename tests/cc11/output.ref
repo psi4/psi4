@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -18,6 +20,9 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+
+memory 250 mb
+
 molecule cn {
   0 2
   C
@@ -26,7 +31,6 @@ molecule cn {
 }
 
 set {
-  wfn ccsd
   reference rohf
   freeze_core true
   ao_basis disk
@@ -35,21 +39,20 @@ set {
   basis = "cc-pVDZ"
 }
 
-energy("ccsd")
-
-clean()
-
+energy('ccsd')
 --------------------------------------------------------------------------
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Thu Jan  5 11:45:27 2012
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:47 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -71,7 +74,7 @@ clean()
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =   18.915271879148936
+  Nuclear repulsion =   18.915270434706382
 
   Charge       = 0
   Multiplicity = 2
@@ -84,6 +87,7 @@ clean()
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -107,11 +111,11 @@ clean()
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 1.0795198352E-02.
+  Minimum eigenvalue in the overlap matrix is 1.0795200227E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial ROHF energy:   -72.85578334502782
+  Initial ROHF energy:   -72.85578115621330
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -140,29 +144,32 @@ clean()
       Number of irreps:                  4
       Number of functions per irrep: [  14    2    6    6 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 19125 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 19125 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
   Forming PK and K matrices.
-   @ROHF iter   1:   -83.19841353204828   -1.03426e+01   2.27039e-314  
-   @ROHF iter   2:   -84.13066806127183   -9.32255e-01   6.88627e-01 DIIS
-   @ROHF iter   3:   -91.43784781961804   -7.30718e+00   6.13978e-01 DIIS
-   @ROHF iter   4:   -91.96811668209116   -5.30269e-01   5.92065e-02 DIIS
-   @ROHF iter   5:   -92.16397431052178   -1.95858e-01   2.22209e-02 DIIS
-   @ROHF iter   6:   -92.19393973672987   -2.99654e-02   1.45283e-02 DIIS
-   @ROHF iter   7:   -92.19518729833695   -1.24756e-03   2.31421e-03 DIIS
-   @ROHF iter   8:   -92.19551337062278   -3.26072e-04   1.53652e-03 DIIS
-   @ROHF iter   9:   -92.19555267440080   -3.93038e-05   6.85207e-04 DIIS
-   @ROHF iter  10:   -92.19555655602396   -3.88162e-06   3.05450e-04 DIIS
-   @ROHF iter  11:   -92.19555661996455   -6.39406e-08   3.94671e-05 DIIS
-   @ROHF iter  12:   -92.19555662137442   -1.40987e-09   8.42822e-06 DIIS
-   @ROHF iter  13:   -92.19555662138461   -1.01892e-11   3.50113e-07 DIIS
-   @ROHF iter  14:   -92.19555662138471   -9.94760e-14   6.85465e-08 DIIS
+   @ROHF iter   1:   -83.19841367423672   -1.03426e+01   2.03110e+26 
+   @ROHF iter   2:   -84.13066745073191   -9.32254e-01   6.88627e-01 DIIS
+   @ROHF iter   3:   -91.43784766460426   -7.30718e+00   6.13977e-01 DIIS
+   @ROHF iter   4:   -91.96811661078536   -5.30269e-01   5.92065e-02 DIIS
+   @ROHF iter   5:   -92.16397428455983   -1.95858e-01   2.22209e-02 DIIS
+   @ROHF iter   6:   -92.19393972046143   -2.99654e-02   1.45283e-02 DIIS
+   @ROHF iter   7:   -92.19518728276597   -1.24756e-03   2.31421e-03 DIIS
+   @ROHF iter   8:   -92.19551335535573   -3.26073e-04   1.53652e-03 DIIS
+   @ROHF iter   9:   -92.19555265917707   -3.93038e-05   6.85208e-04 DIIS
+   @ROHF iter  10:   -92.19555654080800   -3.88163e-06   3.05451e-04 DIIS
+   @ROHF iter  11:   -92.19555660474848   -6.39405e-08   3.94672e-05 DIIS
+   @ROHF iter  12:   -92.19555660615853   -1.41006e-09   8.42822e-06 DIIS
+   @ROHF iter  13:   -92.19555660616858   -1.00471e-11   3.50119e-07 DIIS
+   @ROHF iter  14:   -92.19555660616889   -3.12639e-13   6.85456e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -180,13 +187,13 @@ clean()
 
 	Virtual:                                                              
 
-	   2B2     0.177180     2B1     0.177180     6A1     0.384745  
-	   3B2     0.655939     3B1     0.655939     7A1     0.699522  
-	   8A1     0.869525     4B2     1.036480     4B1     1.036480  
-	   9A1     1.044979    10A1     1.314443     1A2     1.314443  
-	   5B1     1.503400     5B2     1.503400    11A1     1.564388  
-	  12A1     2.160944     2A2     2.160944    13A1     2.254479  
-	   6B2     2.677031     6B1     2.677031    14A1     3.095851  
+	   2B1     0.177180     2B2     0.177180     6A1     0.384745  
+	   3B1     0.655939     3B2     0.655939     7A1     0.699522  
+	   8A1     0.869525     4B1     1.036480     4B2     1.036480  
+	   9A1     1.044978     1A2     1.314443    10A1     1.314443  
+	   5B2     1.503400     5B1     1.503400    11A1     1.564388  
+	   2A2     2.160944    12A1     2.160944    13A1     2.254479  
+	   6B1     2.677031     6B2     2.677031    14A1     3.095851  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -195,7 +202,7 @@ clean()
 
   Energy converged.
 
-  @ROHF Final Energy:   -92.19555662138471
+  @ROHF Final Energy:   -92.19555660616889
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -228,18 +235,18 @@ clean()
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:28 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:47 2012
 Module time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Thu Jan  5 11:45:28 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:47 2012
 
 
 	**************************************************
@@ -259,7 +266,7 @@ Total time:
 	Reference wfn   =	ROHF
 	Derivative      =	None
 	Delete TEI File =	No
-	Memory (Mbytes) =	100.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -276,61 +283,61 @@ Total time:
 	 B1	   6	    0	    1	    0	    5	    0
 	 B2	   6	    0	    1	    0	    5	    0
 
-	Nuclear Rep. energy (chkpt) =     18.91527187914894
-	SCF energy          (chkpt) =    -92.19555662138471
+	Nuclear Rep. energy (chkpt) =     18.91527043470638
+	SCF energy          (chkpt) =    -92.19555660616889
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
-	Frozen-core energy =  -86.999804315047598
+	Frozen-core energy =  -86.999803558492275
 	Starting first half-transformation.
-	h = 0; memfree         = 12499508
+	h = 0; memfree         = 31249508
 	h = 0; rows_per_bucket = 150
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 12499752
+	h = 1; memfree         = 31249752
 	h = 1; rows_per_bucket = 64
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 12499640
+	h = 2; memfree         = 31249640
 	h = 2; rows_per_bucket = 96
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 12499640
+	h = 3; memfree         = 31249640
 	h = 3; rows_per_bucket = 96
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Sorting half-transformed integrals.
 	Starting second half-transformation.
-	h = 0; memfree         = 12499508
+	h = 0; memfree         = 31249508
 	h = 0; rows_per_bucket = 123
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
-	h = 1; memfree         = 12499752
+	h = 1; memfree         = 31249752
 	h = 1; rows_per_bucket = 60
 	h = 1; rows_left       = 0
 	h = 1; nbuckets        = 1
-	h = 2; memfree         = 12499640
+	h = 2; memfree         = 31249640
 	h = 2; rows_per_bucket = 84
 	h = 2; rows_left       = 0
 	h = 2; nbuckets        = 1
-	h = 3; memfree         = 12499640
+	h = 3; memfree         = 31249640
 	h = 3; rows_per_bucket = 84
 	h = 3; rows_left       = 0
 	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:28 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:47 2012
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.29 seconds =       0.00 minutes
+	user time   =       0.20 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Thu Jan  5 11:45:28 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:47 2012
 
 
 			**************************
@@ -345,7 +352,7 @@ Total time:
 	Wave function   =	CCSD
 	Reference wfn   =	ROHF
 	Derivative      =	None
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	DISK
 	Make (ab|cd)    =	False
 	Make unpacked (ab|cd) =	False
@@ -367,8 +374,8 @@ Total time:
 	 B1	   6	    0	    1	    0	    5	    0
 	 B2	   6	    0	    1	    0	    5	    0
 
-	Nuclear Rep. energy (chkpt) =     18.91527187914894
-	SCF energy          (chkpt) =    -92.19555662138471
+	Nuclear Rep. energy (chkpt) =     18.91527043470638
+	SCF energy          (chkpt) =    -92.19555660616889
 
 	Size of irrep 0 of <ab|cd> integrals:      0.024 (MW) /      0.190 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.008 (MW) /      0.065 (MB)
@@ -395,26 +402,26 @@ Total time:
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =    -41.78838313615003
-	Two-electron (AA) energy     =      8.70889244999800
-	Two-electron (BB) energy     =      5.63987028268135
-	Two-electron (AB) energy     =     10.50297758432427
-	Two-electron energy          =     17.67735895066394
-	Frozen-core energy (transqt) =    -86.99980431504760
-	Reference energy             =    -92.19555662138475
+	One-electron energy          =    -41.78838188858131
+	Two-electron (AA) energy     =      8.70889220079325
+	Two-electron (BB) energy     =      5.63987008542618
+	Two-electron (AB) energy     =     10.50297726308876
+	Two-electron energy          =     17.67735840619848
+	Frozen-core energy (transqt) =    -86.99980355849227
+	Reference energy             =    -92.19555660616872
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:28 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:47 2012
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.33 seconds =       0.01 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
-*** at Thu Jan  5 11:45:28 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:47 2012
 
 			**************************
 			*                        *
@@ -422,15 +429,15 @@ Total time:
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =   18.915271879148936
-	SCF energy          (chkpt)   =  -92.195556621384711
-	Reference energy    (file100) =  -92.195556621384753
+	Nuclear Rep. energy (chkpt)   =   18.915270434706382
+	SCF energy          (chkpt)   =  -92.195556606168893
+	Reference energy    (file100) =  -92.195556606168722
 
 	Input parameters:
 	-----------------
 	Wave function   =     CCSD
 	Reference wfn   =    ROHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-07
 	Restart         =     No
@@ -454,7 +461,7 @@ Total time:
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.269179825127880    0.000e+00    0.000149    0.000285    0.000285
+     0        -0.269179850305199    0.000e+00    0.000149    0.000285    0.000285
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -473,7 +480,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     1        -0.260049723467528    1.126e-01    0.021322    0.036268    0.051291
+     1        -0.260049737412848    1.126e-01    0.021322    0.036268    0.051291
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -492,7 +499,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     2        -0.273471753467785    4.425e-02    0.022424    0.039311    0.055595
+     2        -0.273471771419372    4.425e-02    0.022424    0.039311    0.055595
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -511,7 +518,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     3        -0.278680912914734    3.740e-02    0.031307    0.059226    0.083759
+     3        -0.278680931774028    3.740e-02    0.031307    0.059226    0.083759
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -530,7 +537,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     4        -0.280246861903193    2.028e-02    0.039560    0.077598    0.109741
+     4        -0.280246881057942    2.028e-02    0.039560    0.077598    0.109741
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -549,7 +556,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     5        -0.281100386315310    1.327e-02    0.047113    0.094888    0.134192
+     5        -0.281100405518776    1.327e-02    0.047113    0.094888    0.134192
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -568,7 +575,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     6        -0.281191468294024    6.489e-03    0.051599    0.104860    0.148294
+     6        -0.281191487263150    6.489e-03    0.051599    0.104860    0.148294
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -587,7 +594,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     7        -0.281353604519328    2.263e-03    0.053025    0.107955    0.152672
+     7        -0.281353623550236    2.263e-03    0.053025    0.107955    0.152672
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -606,7 +613,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     8        -0.281350068796499    9.333e-04    0.053545    0.109088    0.154274
+     8        -0.281350087811346    9.333e-04    0.053545    0.109088    0.154274
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -625,7 +632,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-     9        -0.281340513872230    3.892e-04    0.053573    0.109147    0.154358
+     9        -0.281340532882081    3.892e-04    0.053573    0.109147    0.154358
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -644,7 +651,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    10        -0.281347713071299    2.020e-04    0.053607    0.109226    0.154468
+    10        -0.281347732083886    2.020e-04    0.053607    0.109226    0.154468
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -663,7 +670,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    11        -0.281348360648757    1.081e-04    0.053656    0.109331    0.154618
+    11        -0.281348379662507    1.081e-04    0.053656    0.109331    0.154618
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -682,7 +689,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    12        -0.281347811518403    5.799e-05    0.053635    0.109285    0.154552
+    12        -0.281347830533729    5.799e-05    0.053635    0.109285    0.154552
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -701,7 +708,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    13        -0.281346910072253    1.696e-05    0.053640    0.109298    0.154571
+    13        -0.281346929086955    1.696e-05    0.053640    0.109298    0.154571
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -720,7 +727,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    14        -0.281345909168812    4.184e-06    0.053641    0.109298    0.154571
+    14        -0.281345928182636    4.184e-06    0.053641    0.109298    0.154571
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -739,7 +746,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    15        -0.281346118524764    1.689e-06    0.053642    0.109301    0.154574
+    15        -0.281346137538857    1.689e-06    0.053642    0.109301    0.154574
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -758,7 +765,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    16        -0.281346175102696    6.292e-07    0.053642    0.109301    0.154575
+    16        -0.281346194116879    6.292e-07    0.053642    0.109301    0.154575
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -777,7 +784,7 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    17        -0.281346195511227    1.348e-07    0.053642    0.109301    0.154575
+    17        -0.281346214525441    1.348e-07    0.053642    0.109301    0.154575
      F intermediates...complete
      T1 amplitudes  ...complete
      Wmbej          ...complete
@@ -796,88 +803,88 @@ Total time:
      Wmbej -> T2    ...complete
      <ia||jb> -> T2 ...complete
      T2 amplitudes  ...complete
-    18        -0.281346192151945    4.566e-08    0.053642    0.109301    0.154575
+    18        -0.281346211166155    4.566e-08    0.053642    0.109301    0.154575
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          3  12         0.0347929276
-	          4  17         0.0347929276
-	          3  13         0.0251643343
-	          4  18         0.0251643343
-	          3  15         0.0246223231
-	          4  20         0.0246223231
-	          2   3         0.0133499021
-	          1   1         0.0124981058
-	          1   3        -0.0116022691
-	          2   1        -0.0112154675
+	          3  12         0.0347929301
+	          4  17         0.0347929301
+	          3  13         0.0251643375
+	          4  18         0.0251643375
+	          3  15         0.0246223245
+	          4  20         0.0246223245
+	          2   3         0.0133499052
+	          1   1         0.0124981079
+	          1   3        -0.0116022759
+	          2   1        -0.0112154698
 
 	Largest Tia Amplitudes:
-	          1   9         0.2183700337
-	          3  12        -0.0351079177
-	          4  17        -0.0351079177
-	          1   3         0.0266414484
-	          1   1        -0.0203028285
-	          3  14        -0.0182528873
-	          4  19        -0.0182528873
-	          1   0        -0.0121681722
-	          3  15         0.0115238313
-	          4  20         0.0115238313
+	          1   9         0.2183700314
+	          3  12        -0.0351079169
+	          4  17        -0.0351079169
+	          1   3         0.0266414489
+	          1   1        -0.0203028303
+	          3  14        -0.0182528896
+	          4  19        -0.0182528896
+	          1   0        -0.0121681748
+	          3  15         0.0115238323
+	          4  20         0.0115238323
 
 	Largest TIJAB Amplitudes:
-	  4   3  17  12        -0.0342900535
-	  3   2  12   3         0.0185542831
-	  4   2  17   3         0.0185542831
-	  4   3  18  13        -0.0175746742
-	  3   2  13   1        -0.0173835454
-	  4   2  18   1        -0.0173835454
-	  4   3  10   4        -0.0165174366
-	  3   1  12   3        -0.0139506528
-	  4   1  17   3        -0.0139506528
-	  4   3  17  14        -0.0117309883
+	  4   3  17  12        -0.0342900542
+	  3   2  12   3         0.0185542848
+	  4   2  17   3         0.0185542848
+	  4   3  18  13        -0.0175746728
+	  3   2  13   1        -0.0173835443
+	  4   2  18   1        -0.0173835443
+	  4   3  10   4        -0.0165174354
+	  3   1  12   3        -0.0139506524
+	  4   1  17   3        -0.0139506524
+	  4   3  17  14        -0.0117309873
 
 	Largest Tijab Amplitudes:
-	  3   1  12   9        -0.0387366170
-	  4   1  17   9        -0.0387366170
-	  4   3  17  12        -0.0370606039
-	  3   1  12   3        -0.0147519763
-	  4   1  17   3        -0.0147519763
-	  4   3  10   4        -0.0146978818
-	  4   3  18  13        -0.0146429245
-	  3   1  14   9        -0.0132843110
-	  4   1  19   9        -0.0132843110
-	  4   3  19  14        -0.0129372535
+	  3   1  12   9        -0.0387366205
+	  4   1  17   9        -0.0387366205
+	  4   3  17  12        -0.0370606066
+	  3   1  12   3        -0.0147519758
+	  4   1  17   3        -0.0147519758
+	  4   3  10   4        -0.0146978805
+	  4   3  18  13        -0.0146429230
+	  3   1  14   9        -0.0132843102
+	  4   1  19   9        -0.0132843102
+	  4   3  19  14        -0.0129372539
 
 	Largest TIjAb Amplitudes:
-	  3   3  12  12        -0.1035151080
-	  4   4  17  17        -0.1035151080
-	  3   1  12   9        -0.0807437800
-	  4   1  17   9        -0.0807437800
-	  3   4  12  17        -0.0612217225
-	  4   3  17  12        -0.0612217225
-	  2   3  12   9        -0.0526891989
-	  2   4  17   9        -0.0526891989
-	  1   1  12  12        -0.0410871607
-	  1   1  17  17        -0.0410871607
+	  3   3  12  12        -0.1035151249
+	  4   4  17  17        -0.1035151249
+	  3   1  12   9        -0.0807437899
+	  4   1  17   9        -0.0807437899
+	  3   4  12  17        -0.0612217305
+	  4   3  17  12        -0.0612217305
+	  2   3  12   9        -0.0526891968
+	  2   4  17   9        -0.0526891968
+	  1   1  12  12        -0.0410871648
+	  1   1  17  17        -0.0410871648
 
-	SCF energy       (chkpt)              =  -92.195556621384711
-	Reference energy (file100)            =  -92.195556621384753
+	SCF energy       (chkpt)              =  -92.195556606168893
+	Reference energy (file100)            =  -92.195556606168722
 
 	Opposite-spin CCSD correlation energy =    0.000000000000000
 	Same-spin CCSD correlation energy     =    0.000000000000000
-	CCSD correlation energy               =   -0.281346192151945
-      * CCSD total energy                     =  -92.476902813536697
+	CCSD correlation energy               =   -0.281346211166155
+      * CCSD total energy                     =  -92.476902817334874
 
 
-*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:29 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:50 2012
 Module time:
-	user time   =       0.96 seconds =       0.02 minutes
-	system time =       0.39 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       1.02 seconds =       0.02 minutes
+	system time =       0.78 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       1.30 seconds =       0.02 minutes
-	system time =       0.44 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.24 seconds =       0.02 minutes
+	system time =       0.84 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
