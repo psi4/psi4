@@ -20,7 +20,9 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# Here's a sample UHF/6-31G** CH2 computation
+#! Sample UHF/6-31G** CH2 computation
+
+memory 250 mb
 
 molecule ch2 {
   0 3
@@ -34,44 +36,21 @@ molecule ch2 {
 
 set basis 6-31G**
 set reference uhf
-
 energy ('scf')
 
 --------------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
 
-                 1            2            3
+  Memory set to 250.000 MiB by Python script.
 
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.0314554
-    3    0.0000000    1.4630297   -1.4093811
-
-
-
-
-*** tstart() called on sherrill-laptop
-*** at Thu Jan  5 16:08:28 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.0314554
-    3    0.0000000    1.4630297   -1.4093811
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:57 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               UHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -94,7 +73,7 @@ Geometry bf reorientation.
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    6.174549014784215
+  Nuclear repulsion =    6.174548543272020
 
   Charge       = 0
   Multiplicity = 3
@@ -107,6 +86,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -123,11 +103,11 @@ Geometry bf reorientation.
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.5780204729E-02.
+  Minimum eigenvalue in the overlap matrix is 3.5780211490E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial UHF energy:   -28.58173818775409
+  Initial UHF energy:   -28.58173833390530
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -141,30 +121,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.0314554
-    3    0.0000000    1.4630297   -1.4093811
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.0314554
-    3    0.0000000    1.4630297   -1.4093811
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -191,19 +147,19 @@ Geometry bf reorientation.
 
                         Total Energy        Delta E     Density RMS
 
-   @UHF iter   1:   -34.62033173651676   -6.03859e+00   0.00000e+00 
-   @UHF iter   2:   -38.25169601623416   -3.63136e+00   3.13921e-01 DIIS
-   @UHF iter   3:   -38.91282242395846   -6.61126e-01   1.04902e-01 DIIS
-   @UHF iter   4:   -38.92406695436178   -1.12445e-02   1.14436e-02 DIIS
-   @UHF iter   5:   -38.92514827922105   -1.08132e-03   3.90248e-03 DIIS
-   @UHF iter   6:   -38.92531840022303   -1.70121e-04   1.38483e-03 DIIS
-   @UHF iter   7:   -38.92534000818777   -2.16080e-05   3.83755e-04 DIIS
-   @UHF iter   8:   -38.92534154981422   -1.54163e-06   2.23625e-05 DIIS
-   @UHF iter   9:   -38.92534160500202   -5.51878e-08   1.21674e-05 DIIS
-   @UHF iter  10:   -38.92534160912508   -4.12307e-09   3.14947e-06 DIIS
-   @UHF iter  11:   -38.92534160931530   -1.90212e-10   5.50674e-07 DIIS
-   @UHF iter  12:   -38.92534160932266   -7.36122e-12   1.26305e-07 DIIS
-   @UHF iter  13:   -38.92534160932308   -4.26326e-13   2.74740e-08 DIIS
+   @UHF iter   1:   -34.62033165398587   -6.03859e+00   0.00000e+00 
+   @UHF iter   2:   -38.25169584042849   -3.63136e+00   3.13921e-01 DIIS
+   @UHF iter   3:   -38.91282241644109   -6.61127e-01   1.04902e-01 DIIS
+   @UHF iter   4:   -38.92406695234337   -1.12445e-02   1.14436e-02 DIIS
+   @UHF iter   5:   -38.92514827803254   -1.08133e-03   3.90248e-03 DIIS
+   @UHF iter   6:   -38.92531839919729   -1.70121e-04   1.38483e-03 DIIS
+   @UHF iter   7:   -38.92534000718871   -2.16080e-05   3.83756e-04 DIIS
+   @UHF iter   8:   -38.92534154881773   -1.54163e-06   2.23625e-05 DIIS
+   @UHF iter   9:   -38.92534160400565   -5.51879e-08   1.21674e-05 DIIS
+   @UHF iter  10:   -38.92534160812870   -4.12305e-09   3.14947e-06 DIIS
+   @UHF iter  11:   -38.92534160831892   -1.90219e-10   5.50669e-07 DIIS
+   @UHF iter  12:   -38.92534160832632   -7.39675e-12   1.26306e-07 DIIS
+   @UHF iter  13:   -38.92534160832668   -3.62377e-13   2.74738e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -221,7 +177,7 @@ Geometry bf reorientation.
 	   2B1     0.729993     3B2     0.777044     6A1     0.791698  
 	   7A1     1.133834     4B2     1.181305     1A2     1.660733  
 	   8A1     1.827190     3B1     1.849839     5B2     2.089625  
-	   9A1     2.263571     4B1     2.611342     6B2     2.754096  
+	   9A1     2.263571     4B1     2.611342     6B2     2.754095  
 	  10A1     2.880485     2A2     2.944177     7B2     3.698111  
 	  11A1     3.801054    12A1     4.618759  
 
@@ -236,8 +192,8 @@ Geometry bf reorientation.
 	   2B1     0.898233     6A1     0.909171     7A1     1.179656  
 	   4B2     1.222693     1A2     1.745930     8A1     1.973831  
 	   3B1     2.016860     5B2     2.120067     9A1     2.340493  
-	   4B1     2.639574     6B2     2.791227    10A1     2.899764  
-	   2A2     2.986685     7B2     3.716431    11A1     3.829224  
+	   4B1     2.639574     6B2     2.791227    10A1     2.899763  
+	   2A2     2.986685     7B2     3.716430    11A1     3.829224  
 	  12A1     4.686632  
 
 	Final Occupation by Irrep:
@@ -247,20 +203,20 @@ Geometry bf reorientation.
 
   Energy converged.
 
-  @UHF Final Energy:   -38.92534160932308
+  @UHF Final Energy:   -38.92534160832668
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6753
+     X:    -0.0000      Y:    -0.0000      Z:     0.6753
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.4562
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.2190     Total:     0.2190
+     X:    -0.0000      Y:    -0.0000      Z:     0.2190     Total:     0.2190
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     0.5568     Total:     0.5568
+     X:    -0.0000      Y:    -0.0000      Z:     0.5568     Total:     0.5568
 
 
   @Spin Contamination Metric:  0.01583
@@ -269,13 +225,13 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Thu Jan  5 16:08:28 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:57 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.14 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 

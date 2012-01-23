@@ -4,8 +4,8 @@
 
 memory 250 mb
 
-refnuc =  204.01997295842617 #TEST
-refscf = -228.95763006847639 #TEST
+refnuc =  204.01995737868003 #TEST
+refscf = -228.95763005849557 #TEST
 
 molecule bz {
     X

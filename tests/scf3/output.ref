@@ -1,409 +1,252 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 0.1 Driver
-    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
-    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
-    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremy Wilke
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
+
+    Using LocalCommunicator (Number of processes = 1)
+
     Memory level set to 256.000 MB
-    Calculation type = SCF:ENERGY
-    Wavefunction     = SCF
-    Reference        = UHF
-    Job type         = SP
-    Derivative type  = ENERGY
-    List of tasks to execute:
-    INPUT
-    CINTS
-    SCF
 
-  Job 0 is INPUT
-  with command-like argument:  INPUT 
+  ==> Input File <==
 
-  Options:
-  ----------------------------------------------------------------------------
-  CHKPT_GEOM      => FALSE              CHKPT_MOS       => FALSE            
-  EXPERT          => FALSE              FRAGMENT_DISTANCE_INVERSE => FALSE            
-  FREEZE_CORE     => FALSE              FREEZE_VIRT     => 0                
-  GEOMDAT         => FALSE              KEEP_CHKPT      => FALSE            
-  KEEP_OUTPUT     => FALSE              KEEP_REF_FRAME  => FALSE            
-  LABEL           => 6-31G** UHF CH2 3B1 !  NFRAGMENTS      => 1                
-  NOPROJECT       => FALSE              NORMALIZE       => TRUE             
-  NO_COM_SHIFT    => FALSE              NO_REORIENT     => FALSE            
-  PRINT           => 1                  PUREAM          => FALSE            
-  SAVE_MOS        => FALSE              SHOWNORM        => FALSE            
-  SUBGROUP        => (empty)            UNIQUE_AXIS     => (empty)          
-  UNITS           => ANGSTROMS          WFN             => SCF             !
+--------------------------------------------------------------------------
 
+#! are specified explicitly.
 
-*** PSI4 called tstart() on JetBook.local
-*** at Sat Mar 13 09:57:15 2010
+memory 250 mb
 
-                                --------------
-                                    INPUT
-                                --------------
+nucenergy =   6.648418918908746 #TEST
+refenergy = -38.91591819679808  #TEST
 
-  LABEL       =	6-31G** UHF CH2 3B1
-  SHOWNORM    =	0
-  PUREAM      =	0
-  PRINT_LVL   =	1
+molecule ch2 {
+    0 3
+    c
+    h 1 b1
+    h 1 b1 2 a1
 
-  Parsed basis sets from /Users/jturney/Code/psi4/source/lib/pbasis.dat
-Coordinates after reading z-matrices
+    b1 = 1.0
+    a1 = 125.0
+}
 
-           1           2           3
+set globals {
+    reference uhf
+    basis     6-31G**
+    docc      [2, 0, 0, 1]
+    socc      [1, 0, 1, 0]
+}
 
-    1   0.0000000   0.0000000   0.0000000
-    2   0.0000000   0.0000000   1.8897260
-    3   1.5479729   0.0000000  -1.0839023
+# Delete file 32 for now, because UHF has a bug in reading old MOs right now
+psioh = PsiMod.IOManager.shared_object()
+psioh.set_specific_retention(32, False)
 
-  -Geometry before Center-of-Mass shift (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000     0.000000000000
-    H         0.000000000000     0.000000000000     1.889725988579
-    H         1.547972906690     0.000000000000    -1.083902298209
+thisenergy = energy('scf')
+
+compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:03 2012
 
 
-  -Rotational constants (cm-1) :
-    A =   45.81442  B =   10.62976  C =    8.62793
-    It is an asymmetric top.
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              UHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
 
-  -Geometry after Center-of-Mass shift and reorientation (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000    -0.125489193038     0.000000000000
-    H         1.676207423608     0.747089161582    -0.000000000000
-    H        -1.676207423608     0.747089161582    -0.000000000000
+  ==> Geometry <==
 
+    Molecular point group: c2v
 
-  -SYMMETRY INFORMATION:
-    Computational point group is C2v 
-    Number of irr. rep.      = 4
-    Number of atoms          = 3
-    Number of unique atoms   = 2
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
 
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.066406025951
+           H          0.000000000000    -0.887010833178     0.395342587284
+           H         -0.000000000000     0.887010833178     0.395342587284
 
-  -BASIS SETS:
+    Number of unique atoms: 2
 
-   -Basis set on unique center 1:
-      ( (S (  3047.52488000     0.00183474)
-           (   457.36951800     0.01403732)
-           (   103.94868500     0.06884262)
-           (    29.21015530     0.23218444)
-           (     9.28666296     0.46794135)
-           (     3.16392696     0.36231199) )
-        (S (     7.86827235    -0.11933242)
-           (     1.88128854    -0.16085415)
-           (     0.54424926     1.14345644) )
-        (S (     0.16871448     1.00000000) )
-        (P (     7.86827235     0.06899907)
-           (     1.88128854     0.31642396)
-           (     0.54424926     0.74430829) )
-        (P (     0.16871448     1.00000000) )
-        (D (     0.80000000     1.00000000) )
-       )
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
 
-   -Basis set on unique center 2:
-      ( (S (    18.73113696     0.03349460)
-           (     2.82539437     0.23472695)
-           (     0.64012169     0.81375733) )
-        (S (     0.16127776     1.00000000) )
-        (P (     1.10000000     1.00000000) )
-       )
+  Running in c2v symmetry.
 
+  Nuclear repulsion =    6.648418918908746
 
-  -BASIS SET INFORMATION:
-    Total number of shells = 12
-    Number of primitives   = 20
-    Number of AO           = 25
-    Number of SO           = 25
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
 
-    Irrep    Number of SO
-    -----    ------------
-      1           12
-      2            2
-      3            4
-      4            7
+  ==> Algorithm <==
 
-  -Contraction Scheme:
-    Atom     All Primitives // Unique Primitives // Shells
-    ----     ---------------------------------------------
-       1      10s 4p 1d //  10s 1d //  3s 2p 1d
-       2      4s 1p //  4s 1p //  2s 1p
-       3      4s 1p //  4s 1p //  2s 1p
-
-
-  -Unique atoms in the canonical coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000    -0.125489193038
-    H        -0.000000000000     1.676207423608     0.747089161582
-
-
-  -Geometry in the canonical coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000    -0.125489193038
-    H        -0.000000000000     1.676207423608     0.747089161582
-    H        -0.000000000000    -1.676207423608     0.747089161582
-
-
-  -Geometry in the canonical coordinate system (Angstrom):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000    -0.066406025951
-    H        -0.000000000000     0.887010833178     0.395342587284
-    H        -0.000000000000    -0.887010833178     0.395342587284
-
-
-  -Geometry in the reference coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000    -0.125489193038
-    H        -0.000000000000     1.676207423608     0.747089161582
-    H        -0.000000000000    -1.676207423608     0.747089161582
-
-
-  --------------------------------------------------------------------------
-
-    Nuclear Repulsion Energy (a.u.) =       6.648419426607
-
-  -The Interatomic Distances in angstroms:
-
-           1           2           3
-
-    1   0.0000000
-    2   1.0000000   0.0000000
-    3   1.0000000   1.7740217   0.0000000
-
-    Note: To print *all* bond angles, out-of-plane
-          angles, and torsion angles set print = 3
-
-
-
-*** PSI4 called tstop() on JetBook.local at Sat Mar 13 09:57:15 2010
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-  Job 1 is CINTS
-  with command-like argument:  CINTS 
-
-  Options:
-  ----------------------------------------------------------------------------
-  CUTOFF          => 15                 EMPIRICAL_DISPERSION => FALSE            
-  ERI_FILE        => 33                 FINE_STRUCTURE_ALPHA => 0.00729735       
-  MAKE_ERI        => TRUE               NUM_THREADS     => 1                
-  PRINT           => 1                  RESTART         => FALSE            
-  RESTART_TASK    => 0                  S_FILE          => 35               
-  T_FILE          => 35                 V_FILE          => 35               
-  WFN             => SCF             !
-
-*** PSI4 called tstart() on JetBook.local
-*** at Sat Mar 13 09:57:15 2010
-
-                  --------------------------------------------
-                    CINTS: An integrals program written in C
-                     Justin T. Fermann and Edward F. Valeev
-                  --------------------------------------------
-
-  -OPTIONS:
-    Print level                 = 1
-    Integral tolerance          = 1e-15
-    Max. memory to use          = 2500000 double words
-    Number of threads           = 1
-    LIBINT's real type length   = 64 bit
-
-  -CALCULATION CONSTANTS:
-    Label                       = 6-31G** UHF CH2 3B1
-    Number of atoms             = 3
-    Number of atomic orbitals   = 25
-    Number of symmetry orbitals = 25
-    Maximum AM in the basis     = 2
-    Fine-structure alpha scaling =   0.0073
-
-  -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
-
-    Wrote 13617 two-electron integrals to IWL file 33
-
-
-*** PSI4 called tstop() on JetBook.local at Sat Mar 13 09:57:15 2010
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-  Job 2 is SCF
-  with command-like argument:  SCF 
-
-  Options:
-  ----------------------------------------------------------------------------
-  CHARGE          => 0               !  DEBUG           => 0                
-  DIIS            => TRUE               DIIS_VECTORS    => 4                
-  DIRECT          => FALSE              DOCC            => [ 2, 0, 0, 1 ]  !
-  D_CONVERGE      => 8                  E_CONVERGE      => 8                
-  LAMBDA          => 0                  MAXITER         => 40               
-  MULTP           => 3               !  OUT_OF_CORE     => FALSE            
-  PERTURB_H       => FALSE              PERTURB_WITH    => DIPOLE_X         
-  PRINT           => 3                  PRINT_MOS       => FALSE            
-  REFERENCE       => UHF             !  RI_BASIS        => (empty)          
-  RI_HF           => FALSE              RI_STORAGE      => DEFAULT          
-  SCHWARZ_CUTOFF  => 0                  SOCC            => [ 1, 0, 1, 0 ]  !
-
-
-*** PSI4 called tstart() on JetBook.local
-*** at Sat Mar 13 09:57:15 2010
-
- UHF: by Justin Turney
-
-  Release version.
-  Running in C2v symmetry.
-  Input DOCC vector = ( 2 A1   0 A2   0 B1   1 B2  )
-  Input SOCC vector = ( 1 A1   0 A2   1 B1   0 B2  )
-  Nuclear repulsion =    6.648419426607498
-  Energy threshold  = 1.00e-08
-  Density threshold = 1.00e-08
-
+  SCF Algorithm Type is PK.
   DIIS enabled.
-  Out of core disabled.
-  Direct disabled.
-  Density Fitting disabled.
-  Allocated 7140 elements (119 pairs) for PJ. (0.054474 MiB)
-  Allocated 7140 elements (119 pairs) for PK. (0.054474 MiB)
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
 
-  Forming PJ and PK matrices.
-  Processed 13617 two-electron integrals.
+  ==> Primary Basis: 6-31G** <==
 
-  Initial UHF energy:   -28.43239976393785
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
 
-                                  Total Energy            Delta E              Density RMS
+  ==> Pre-Iterations <==
 
-  @UHF iteration   1 energy:   -34.69634683307059       -6.26394706913273     0.00000000000000  
-  @UHF iteration   2 energy:   -38.38400791974530       -3.68766108667472     8.84980620092023  
-  @UHF iteration   3 energy:   -38.88354740089040       -0.49953948114510     2.45533191578646  
-  @UHF iteration   4 energy:   -38.91429237950772       -0.03074497861732     0.42442430821267 DIIS
-  @UHF iteration   5 energy:   -38.91584698690725       -0.00155460739953     0.10393114173182 DIIS
-  @UHF iteration   6 energy:   -38.91590956049847       -0.00006257359122     0.02494877673855 DIIS
-  @UHF iteration   7 energy:   -38.91591763993303       -0.00000807943456     0.00779824273564 DIIS
-  @UHF iteration   8 energy:   -38.91591811584898       -0.00000047591595     0.00072425184515 DIIS
-  @UHF iteration   9 energy:   -38.91591815781863       -0.00000004196965     0.00012542061084 DIIS
-  @UHF iteration  10 energy:   -38.91591816143697       -0.00000000361834     0.00007353565743 DIIS
-  @UHF iteration  11 energy:   -38.91591816163883       -0.00000000020186     0.00002624913277 DIIS
-  @UHF iteration  12 energy:   -38.91591816165236       -0.00000000001353     0.00000549169969 DIIS
-  @UHF iteration  13 energy:   -38.91591816165377       -0.00000000000141     0.00000152110869 DIIS
-  @UHF iteration  14 energy:   -38.91591816165383       -0.00000000000006     0.00000047349280 DIIS
-  @UHF iteration  15 energy:   -38.91591816165386       -0.00000000000003     0.00000013292054 DIIS
-  @UHF iteration  16 energy:   -38.91591816165386        0.00000000000000     0.00000004030275 DIIS
-  @UHF iteration  17 energy:   -38.91591816165388       -0.00000000000001     0.00000002280674 DIIS
+  Minimum eigenvalue in the overlap matrix is 2.6982852745E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.43239984735293
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       2       2       1
+     A2         2       2       0       0       0       0
+     B1         4       4       1       0       0       1
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -34.69634690262897   -6.26395e+00   0.00000e+00 
+   @UHF iter   2:   -38.38400796562519   -3.68766e+00   3.03189e-01 DIIS
+   @UHF iter   3:   -38.90810879629292   -5.24101e-01   8.00900e-02 DIIS
+   @UHF iter   4:   -38.91540261068057   -7.29381e-03   9.81356e-03 DIIS
+   @UHF iter   5:   -38.91586512660255   -4.62516e-04   2.84837e-03 DIIS
+   @UHF iter   6:   -38.91591304977093   -4.79232e-05   7.91635e-04 DIIS
+   @UHF iter   7:   -38.91591792506637   -4.87530e-06   2.09675e-04 DIIS
+   @UHF iter   8:   -38.91591818630791   -2.61242e-07   1.01848e-05 DIIS
+   @UHF iter   9:   -38.91591819607429   -9.76638e-09   4.54329e-06 DIIS
+   @UHF iter  10:   -38.91591819676600   -6.91706e-10   1.40712e-06 DIIS
+   @UHF iter  11:   -38.91591819679716   -3.11644e-11   2.19355e-07 DIIS
+   @UHF iter  12:   -38.91591819679808   -9.16600e-13   4.05748e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A1   -11.245692     2A1    -0.971446     1B2    -0.631677  
+	   3A1    -0.465431     1B1    -0.407643  
+
+	Alpha Virtual:                                                        
+
+	   4A1     0.283649     2B2     0.341173     5A1     0.712645  
+	   3B2     0.718465     2B1     0.730653     6A1     0.818492  
+	   7A1     1.212677     4B2     1.222225     1A2     1.673436  
+	   8A1     1.792837     3B1     1.828806     5B2     2.245126  
+	   9A1     2.332763     4B1     2.735856     6B2     2.784533  
+	   2A2     3.005935    10A1     3.134253    11A1     3.953221  
+	   7B2     3.970940    12A1     4.562398  
+
+	Beta Occupied:                                                        
+
+	   1A1   -11.198599     2A1    -0.806384     1B2    -0.595575  
+
+	Beta Virtual:                                                         
+
+	   3A1     0.143352     1B1     0.174805     4A1     0.311392  
+	   2B2     0.374780     3B2     0.751470     5A1     0.816976  
+	   2B1     0.897458     6A1     0.922131     7A1     1.258449  
+	   4B2     1.272080     1A2     1.761098     8A1     1.934957  
+	   3B1     1.994627     5B2     2.265981     9A1     2.414636  
+	   4B1     2.769632     6B2     2.831010     2A2     3.052013  
+	  10A1     3.158050    11A1     3.978253     7B2     3.991182  
+	  12A1     4.633145  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     2,    0,    0,    1 ]
+	SOCC [     1,    0,    1,    0 ]
 
   Energy converged.
 
-  @UHF Final Energy:   -38.91591816165388
+  @UHF Final Energy:   -38.91591819679808
 
-  Final doubly occupied vector = ( 2 A1   0 A2   0 B1   1 B2  )
-  Final singly occupied vector = ( 1 A1   0 A2   1 B1   0 B2  )
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.7412
 
-  Orbital energies (a.u.):
-    Alpha occupied
-        -11.245692 A1      -0.971446 A1      -0.631677 B2      -0.465431 A1   
-         -0.407643 B1   
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.5159
 
-    Alpha unoccupied
-          0.283649 A1       0.341173 B2       0.712646 A1       0.718466 B2   
-          0.730654 B1       0.818492 A1       1.212677 A1       1.222225 B2   
-          1.673437 A2       1.792837 A1       1.828806 B1       2.245126 B2   
-          2.332764 A1       2.735856 B1       2.784534 B2       3.005935 A2   
-          3.134254 A1       3.953221 A1       3.970940 B2       4.562399 A1   
-      
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.2253     Total:     0.2253
 
-    Beta occupied
-        -11.198599 A1      -0.806384 A1      -0.595575 B2   
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     0.5727     Total:     0.5727
 
-    Beta unoccupied
-          0.311392 A1       0.374780 B2   
-          0.751470 B2       0.816976 A1       0.897458 B1       0.922131 A1   
-          1.258449 A1       1.272080 B2       1.761098 A2       1.934958 A1   
-          1.994627 B1       2.265981 B2       2.414636 A1       2.769632 B1   
-          2.831010 B2       3.052013 A2       3.158050 A1       3.978254 A1   
-          3.991182 B2       4.633146 A1   
 
-  Electric dipole (a.u.):
-	              X	              Y	              Z
-    Nuclear part:
-	  -0.0000000000	  -0.0000000000	   0.7412431649
+  @Spin Contamination Metric:  0.01148
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.01148
 
-    Electronic part:
-	   0.0000000000	   0.0000000000	  -0.5159272481
+  Saving occupied orbitals to File 180.
 
-    Dipole moments:
-	  -0.0000000000	  -0.0000000000	   0.2253159168
-
-    Total dipole:    0.2253159168 a.u.     0.5726967315 Debye
-    Conversion: 1.0 a.u. =    2.5417500000 Debye
-
-  Alpha Orbital extents (a.u.):
-	 MO          <x^2>            <y^2>            <z^2>            <r^2>
-	  1   0.0327677057     0.0327539237     0.0485049784     0.1140266078
-	  2   0.8123550730     1.3563822736     0.9188944088     3.0876317554
-	  3   0.7249564890     0.9131285253     2.1842812715     3.8223662857
-	  4   1.5021895077     8.3892264024     2.5560651108    12.4474810208
-	  5   1.4844551579     1.3260507355     4.2776379437     7.0881438371
-	  6   2.4065250674     1.6365605686     2.0053758206     6.0484614566
-	  7   1.1406524779     4.7173122727     1.5256223358     7.3835870864
-	  8   0.6313542424     0.8859716026     1.1692039649     2.6865298099
-	  9   0.8712467966     1.7258276992     0.9782833532     3.5753578490
-	 10   0.3082821741     2.9653343684     1.0849482411     4.3585647836
-	 11   0.3673040018     2.6602747197     0.9503954531     3.9779741745
-	 12   0.6804132295     1.0486498309     0.7795082455     2.5085713059
-	 13   0.8404203235     1.6119160706     0.4472854504     2.8996218445
-	 14   0.7894670907     2.5039188804     0.7446618942     4.0380478653
-	 15   2.2088537070     0.7602467467     0.7567908608     3.7258913145
-	 16   4.0333806310     1.3164559900     1.3545758946     6.7044125156
-	 17   0.9082274231     0.6848008977     0.9512904606     2.5443187814
-	 18   0.8880896578     2.6820763365     0.8178016352     4.3879676294
-	 19   0.5746672471     2.5540719277     0.7583934148     3.8871325895
-	 20   1.4288479767     7.4035467708     3.6323915162    12.4647862637
-	 21   1.7172913313     4.0110002201     1.9060814951     7.6343730465
-	 22   0.6388416926     3.9595316403     1.8064179735     6.4047913064
-	 23   0.4539508348     3.0110254774     0.9635010100     4.4284773223
-	 24   0.3175531695     2.4823848171     1.2988354327     4.0987734194
-	 25   0.2733256088     2.7273152001     0.8084802847     3.8091210936
-
-  Beta Orbital extents (a.u.):
-	 MO          <x^2>            <y^2>            <z^2>            <r^2>
-	  1   0.0323950944     0.0324938776     0.0481217690     0.1130107410
-	  2   0.7268694031     1.7490447419     0.9503164513     3.4262305964
-	  3   1.0945715323     1.1901013381     3.0736536024     5.3583264728
-	  4   1.5102275821     8.3863398349     2.5628183169    12.4593857338
-	  5   2.0156446563     1.2828269177     2.9740951964     6.2725667704
-	  6   1.5745121889     1.4020908495     2.4409690675     5.4175721059
-	  7   1.1348226753     4.4665000759     1.4924109390     7.0937336901
-	  8   0.5814813111     1.0723279962     1.2368175892     2.8906268965
-	  9   0.9472317305     1.5276960321     0.9010618609     3.3759896235
-	 10   0.3078418201     2.9015845849     1.0874229450     4.2968493500
-	 11   0.3665029880     2.6315399455     0.9468220826     3.9448650161
-	 12   0.6704009409     1.0149267281     0.7642113072     2.4495389762
-	 13   0.8292942358     1.6993810957     0.4653689834     2.9940443149
-	 14   0.8005931783     2.4164538554     0.7265783611     3.9436253948
-	 15   3.1746636696     1.0916829045     1.0750200644     5.3413666385
-	 16   3.0676655689     0.9993634044     1.0317658857     5.0987948590
-	 17   0.9016065631     0.8091213283     0.9534400710     2.6641679624
-	 18   0.8946156174     2.5434123337     0.8202328300     4.2582607811
-	 19   0.5851803959     2.7547502561     0.8052542676     4.1451849196
-	 20   1.4586207475     7.5029564496     3.6507793972    12.6123565943
-	 21   1.7279134022     4.0066237348     1.9672350301     7.7017721672
-	 22   0.5969388730     3.7866031360     1.6746610396     6.0582030486
-	 23   0.4392768179     2.9943163968     0.9889607770     4.4225539918
-	 24   0.3221866459     2.4184304430     1.2808606545     4.0214777434
-	 25   0.2743609784     2.6851956370     0.8063499609     3.7659065763
-
-*** PSI4 called tstop() on JetBook.local at Sat Mar 13 09:57:15 2010
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:03 2012
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
-psiclean: Cleaning up files.
+Total time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!
