@@ -994,6 +994,10 @@ AC_CONFIG_FILES([
           tests/fd-freq-energy/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
+          tests/sapt2/Makefile
+          tests/sapt3/Makefile
+          tests/sapt4/Makefile
+          tests/sapt5/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
           tests/pywrap_db1/Makefile
