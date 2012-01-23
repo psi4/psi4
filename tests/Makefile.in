@@ -19,7 +19,7 @@ dcft_subdirs = dcft1 dcft2 dcft3 dcft4 #dcft5
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
-df_subdirs = sapt1 
+df_subdirs = sapt1 sapt2 sapt3 sapt4 sapt5
 
 psimrcc_subdirs = #psimrcc-sp1
 
