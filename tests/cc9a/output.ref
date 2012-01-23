@@ -23,6 +23,8 @@
 #! ROHF-CCSD(T) cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical, 
 #! with Z-matrix input.
 
+memory 250 mb
+
 molecule CN {
   0 2
   C
@@ -39,59 +41,37 @@ set {
   ao_basis disk
   delete_tei false
 
-  convergence 10
-  e_converge 10
-  d_converge 10
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
 }
 
 energy('ccsd(t)')
 
-enuc = 18.915271879148936     #TEST
-escf = -92.195556621382522    #TEST
-eccsd = -0.284922902819267    #TEST
-e_t = -0.014063032810188      #TEST
-etotal = -92.494542557011926  #TEST
+enuc   =  18.91527043470638   #TEST
+escf   = -92.19555660616878   #TEST
+eccsd  =  -0.28492292236582   #TEST
+e_t    =  -0.01406303578471   #TEST
+etotal = -92.49454256431926   #TEST
 
 compare_values(enuc, CN.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(escf, get_variable("SCF total energy"), 9, "SCF energy")               #TEST
 compare_values(eccsd, get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
 compare_values(e_t, get_variable("(T) correction energy"), 9, "(T) contribution")         #TEST
 compare_values(etotal, get_variable("Current energy"), 9, "Total energy")             #TEST
-
-clean()
 --------------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 2 x 3
 
-                 1            2            3
+  Memory set to 250.000 MiB by Python script.
 
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.2204280
-
-
-
-
-*** tstart() called on arrakis-2.local
-*** at Sun Jan  8 13:46:08 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 2 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.2204280
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:34 2012
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -113,7 +93,7 @@ Geometry bf reorientation.
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =   18.915271879148936
+  Nuclear repulsion =   18.915270434706382
 
   Charge       = 0
   Multiplicity = 2
@@ -126,6 +106,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
@@ -142,11 +123,11 @@ Geometry bf reorientation.
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 1.0795198352E-02.
+  Minimum eigenvalue in the overlap matrix is 1.0795200227E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial ROHF energy:   -72.85578334502782
+  Initial ROHF energy:   -72.85578115621330
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -160,28 +141,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 2 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.2204280
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 2 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.2204280
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -208,22 +167,22 @@ Geometry bf reorientation.
 
                         Total Energy        Delta E     Density RMS
 
-   @ROHF iter   1:   -83.19841353204828   -1.03426e+01   2.28563e-314 
-   @ROHF iter   2:   -84.13066806127183   -9.32255e-01   6.88627e-01 DIIS
-   @ROHF iter   3:   -91.43784781961804   -7.30718e+00   6.13978e-01 DIIS
-   @ROHF iter   4:   -91.96811668209116   -5.30269e-01   5.92065e-02 DIIS
-   @ROHF iter   5:   -92.16397431052178   -1.95858e-01   2.22209e-02 DIIS
-   @ROHF iter   6:   -92.19393973672987   -2.99654e-02   1.45283e-02 DIIS
-   @ROHF iter   7:   -92.19518729833695   -1.24756e-03   2.31421e-03 DIIS
-   @ROHF iter   8:   -92.19551337062278   -3.26072e-04   1.53652e-03 DIIS
-   @ROHF iter   9:   -92.19555267440080   -3.93038e-05   6.85207e-04 DIIS
-   @ROHF iter  10:   -92.19555655602396   -3.88162e-06   3.05450e-04 DIIS
-   @ROHF iter  11:   -92.19555661996455   -6.39406e-08   3.94671e-05 DIIS
-   @ROHF iter  12:   -92.19555662137442   -1.40987e-09   8.42822e-06 DIIS
-   @ROHF iter  13:   -92.19555662138461   -1.01892e-11   3.50113e-07 DIIS
-   @ROHF iter  14:   -92.19555662138471   -9.94760e-14   6.85465e-08 DIIS
-   @ROHF iter  15:   -92.19555662138482   -1.13687e-13   7.76914e-09 DIIS
-   @ROHF iter  16:   -92.19555662138474    8.52651e-14   7.30050e-10 DIIS
+   @ROHF iter   1:   -83.19841367423672   -1.03426e+01   2.03110e+26 
+   @ROHF iter   2:   -84.13066745073191   -9.32254e-01   6.88627e-01 DIIS
+   @ROHF iter   3:   -91.43784766460426   -7.30718e+00   6.13977e-01 DIIS
+   @ROHF iter   4:   -91.96811661078536   -5.30269e-01   5.92065e-02 DIIS
+   @ROHF iter   5:   -92.16397428455983   -1.95858e-01   2.22209e-02 DIIS
+   @ROHF iter   6:   -92.19393972046143   -2.99654e-02   1.45283e-02 DIIS
+   @ROHF iter   7:   -92.19518728276597   -1.24756e-03   2.31421e-03 DIIS
+   @ROHF iter   8:   -92.19551335535573   -3.26073e-04   1.53652e-03 DIIS
+   @ROHF iter   9:   -92.19555265917707   -3.93038e-05   6.85208e-04 DIIS
+   @ROHF iter  10:   -92.19555654080800   -3.88163e-06   3.05451e-04 DIIS
+   @ROHF iter  11:   -92.19555660474848   -6.39405e-08   3.94672e-05 DIIS
+   @ROHF iter  12:   -92.19555660615853   -1.41006e-09   8.42822e-06 DIIS
+   @ROHF iter  13:   -92.19555660616858   -1.00471e-11   3.50119e-07 DIIS
+   @ROHF iter  14:   -92.19555660616889   -3.12639e-13   6.85456e-08 DIIS
+   @ROHF iter  15:   -92.19555660616872    1.70530e-13   7.76910e-09 DIIS
+   @ROHF iter  16:   -92.19555660616878   -5.68434e-14   7.30049e-10 DIIS
 
   ==> Post-Iterations <==
 
@@ -233,7 +192,7 @@ Geometry bf reorientation.
 	Doubly Occupied:                                                      
 
 	   1A1   -15.636443     2A1   -11.359535     3A1    -1.246019  
-	   4A1    -0.626091     1B1    -0.507352     1B2    -0.507352  
+	   4A1    -0.626091     1B2    -0.507352     1B1    -0.507352  
 
 	Singly Occupied:                                                      
 
@@ -242,12 +201,12 @@ Geometry bf reorientation.
 	Virtual:                                                              
 
 	   2B2     0.177180     2B1     0.177180     6A1     0.384745  
-	   3B1     0.655939     3B2     0.655939     7A1     0.699522  
-	   8A1     0.869525     4B1     1.036480     4B2     1.036480  
-	   9A1     1.044979     1A2     1.314443    10A1     1.314443  
-	   5B1     1.503400     5B2     1.503400    11A1     1.564388  
+	   3B2     0.655939     3B1     0.655939     7A1     0.699522  
+	   8A1     0.869525     4B2     1.036480     4B1     1.036480  
+	   9A1     1.044978     1A2     1.314443    10A1     1.314443  
+	   5B2     1.503400     5B1     1.503400    11A1     1.564388  
 	  12A1     2.160944     2A2     2.160944    13A1     2.254479  
-	   6B2     2.677031     6B1     2.677031    14A1     3.095851  
+	   6B1     2.677031     6B2     2.677031    14A1     3.095851  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -256,7 +215,7 @@ Geometry bf reorientation.
 
   Energy converged.
 
-  @ROHF Final Energy:   -92.19555662138474
+  @ROHF Final Energy:   -92.19555660616878
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -274,18 +233,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on arrakis-2.local at Sun Jan  8 13:46:09 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:35 2012
 Module time:
-	user time   =       0.29 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.29 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on arrakis-2.local
-*** at Sun Jan  8 13:46:09 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:35 2012
 
 
 	**************************************************
@@ -305,7 +264,7 @@ Total time:
 	Reference wfn   =	ROHF (using UHF for semicanonical orbitals)
 	Derivative      =	None
 	Delete TEI File =	No
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -322,8 +281,8 @@ Total time:
 	 B1	   6	    0	    1	    0	    5	    0
 	 B2	   6	    0	    1	    0	    5	    0
 
-	Nuclear Rep. energy (chkpt) =     18.91527187914894
-	SCF energy          (chkpt) =    -92.19555662138474
+	Nuclear Rep. energy (chkpt) =     18.91527043470638
+	SCF energy          (chkpt) =    -92.19555660616878
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -337,18 +296,18 @@ Total time:
 	Starting BB second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on arrakis-2.local at Sun Jan  8 13:46:09 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:35 2012
 Module time:
 	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.33 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on arrakis-2.local
-*** at Sun Jan  8 13:46:09 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:35 2012
 
 
 			**************************
@@ -363,7 +322,7 @@ Total time:
 	Wave function   =	CCSD_T
 	Reference wfn   =	ROHF changed to UHF for Semicanonical Orbitals
 	Derivative      =	None
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	DISK
 	Make (ab|cd)    =	False
 	Make unpacked (ab|cd) =	False
@@ -385,8 +344,8 @@ Total time:
 	 B1	   6	    0	    1	    0	    5	    0
 	 B2	   6	    0	    1	    0	    5	    0
 
-	Nuclear Rep. energy (chkpt) =     18.91527187914894
-	SCF energy          (chkpt) =    -92.19555662138474
+	Nuclear Rep. energy (chkpt) =     18.91527043470638
+	SCF energy          (chkpt) =    -92.19555660616878
 
 	Size of irrep 0 of <AB|CD> integrals:      0.003 (MW) /      0.026 (MB)
 	Size of irrep 1 of <AB|CD> integrals:      0.002 (MW) /      0.015 (MB)
@@ -459,37 +418,26 @@ Total time:
 	Sorting File: F <aI|bC> nbuckets = 1
 	Sorting File: F <Ab|Ci> nbuckets = 1
 	Sorting File: F <Ai|Bc> nbuckets = 1
-	One-electron energy          =   -161.79603590538593
-	Two-electron (AA) energy     =     11.19205135142302
-	Two-electron (BB) energy     =      8.49570701881201
-	Two-electron (AB) energy     =     30.99744903461724
-	Two-electron energy          =     50.68520740485227
+	One-electron energy          =   -161.79603302546585
+	Two-electron (AA) energy     =     11.19205100818541
+	Two-electron (BB) energy     =      8.49570670587379
+	Two-electron (AB) energy     =     30.99744827053151
+	Two-electron energy          =     50.68520598459071
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -92.19555662138475
+	Reference energy             =    -92.19555660616874
 
-*** tstop() called on arrakis-2.local at Sun Jan  8 13:46:09 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:36 2012
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.41 seconds =       0.01 minutes
+	user time   =       0.05 seconds =       0.00 minutes
 	system time =       0.09 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 2 x 3
+Total time:
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    2.2204280
-
-
-
-
-*** tstart() called on arrakis-2.local
-*** at Sun Jan  8 13:46:09 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:36 2012
 
 			**************************
 			*                        *
@@ -497,15 +445,15 @@ Geometry bf reorientation.
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =   18.915271879148936
-	SCF energy          (chkpt)   =  -92.195556621384739
-	Reference energy    (file100) =  -92.195556621384753
+	Nuclear Rep. energy (chkpt)   =   18.915270434706382
+	SCF energy          (chkpt)   =  -92.195556606168779
+	Reference energy    (file100) =  -92.195556606168736
 
 	Input parameters:
 	-----------------
 	Wave function   =   CCSD_T
 	Reference wfn   =     ROHF changed to UHF for Semicanonical Orbitals
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-10
 	Restart         =     No
@@ -529,123 +477,123 @@ Geometry bf reorientation.
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.274514270113483    0.000e+00    0.013430    0.000000    0.000000
-     1        -0.263908563404965    1.106e-01    0.031103    0.000000    0.000000
-     2        -0.277752987375346    4.184e-02    0.034767    0.000000    0.000000
-     3        -0.282899006086031    3.490e-02    0.046111    0.000000    0.000000
-     4        -0.283881362287956    1.811e-02    0.054370    0.000000    0.000000
-     5        -0.284747206269912    1.217e-02    0.061801    0.000000    0.000000
-     6        -0.284789626079308    5.881e-03    0.065648    0.000000    0.000000
-     7        -0.284896556908877    2.111e-03    0.066557    0.000000    0.000000
-     8        -0.284941170305549    1.031e-03    0.067250    0.000000    0.000000
-     9        -0.284916202435584    4.000e-04    0.067255    0.000000    0.000000
-    10        -0.284925683349424    2.038e-04    0.067307    0.000000    0.000000
-    11        -0.284923574688265    1.095e-04    0.067370    0.000000    0.000000
-    12        -0.284924887463919    5.568e-05    0.067361    0.000000    0.000000
-    13        -0.284923291540093    1.501e-05    0.067367    0.000000    0.000000
-    14        -0.284922690791165    3.891e-06    0.067369    0.000000    0.000000
-    15        -0.284922803048269    1.391e-06    0.067369    0.000000    0.000000
-    16        -0.284922891572289    6.346e-07    0.067370    0.000000    0.000000
-    17        -0.284922900318470    1.131e-07    0.067370    0.000000    0.000000
-    18        -0.284922906386928    4.440e-08    0.067370    0.000000    0.000000
-    19        -0.284922903890867    1.657e-08    0.067370    0.000000    0.000000
-    20        -0.284922904143662    6.397e-09    0.067370    0.000000    0.000000
-    21        -0.284922903702759    3.100e-09    0.067370    0.000000    0.000000
-    22        -0.284922903615353    1.423e-09    0.067370    0.000000    0.000000
-    23        -0.284922903603557    5.478e-10    0.067370    0.000000    0.000000
-    24        -0.284922903558561    3.242e-10    0.067370    0.000000    0.000000
-    25        -0.284922903563115    1.398e-10    0.067370    0.000000    0.000000
-    26        -0.284922903564247    7.330e-11    0.067370    0.000000    0.000000
+     0        -0.274514295549533    0.000e+00    0.013430    0.000000    0.000000
+     1        -0.263908577061132    1.106e-01    0.031103    0.000000    0.000000
+     2        -0.277753005124944    4.184e-02    0.034767    0.000000    0.000000
+     3        -0.282899024877712    3.490e-02    0.046111    0.000000    0.000000
+     4        -0.283881381200295    1.811e-02    0.054370    0.000000    0.000000
+     5        -0.284747225232729    1.217e-02    0.061801    0.000000    0.000000
+     6        -0.284789644871196    5.881e-03    0.065648    0.000000    0.000000
+     7        -0.284896575683019    2.111e-03    0.066557    0.000000    0.000000
+     8        -0.284941189118234    1.031e-03    0.067250    0.000000    0.000000
+     9        -0.284916221232061    4.000e-04    0.067255    0.000000    0.000000
+    10        -0.284925702149822    2.038e-04    0.067307    0.000000    0.000000
+    11        -0.284923593489468    1.095e-04    0.067370    0.000000    0.000000
+    12        -0.284924906266926    5.568e-05    0.067361    0.000000    0.000000
+    13        -0.284923310341995    1.501e-05    0.067367    0.000000    0.000000
+    14        -0.284922709592591    3.891e-06    0.067369    0.000000    0.000000
+    15        -0.284922821849780    1.391e-06    0.067369    0.000000    0.000000
+    16        -0.284922910373857    6.346e-07    0.067370    0.000000    0.000000
+    17        -0.284922919120036    1.131e-07    0.067370    0.000000    0.000000
+    18        -0.284922925188500    4.440e-08    0.067370    0.000000    0.000000
+    19        -0.284922922692435    1.657e-08    0.067370    0.000000    0.000000
+    20        -0.284922922945231    6.397e-09    0.067370    0.000000    0.000000
+    21        -0.284922922504327    3.100e-09    0.067370    0.000000    0.000000
+    22        -0.284922922416920    1.423e-09    0.067370    0.000000    0.000000
+    23        -0.284922922405125    5.478e-10    0.067370    0.000000    0.000000
+    24        -0.284922922360128    3.242e-10    0.067370    0.000000    0.000000
+    25        -0.284922922364683    1.398e-10    0.067370    0.000000    0.000000
+    26        -0.284922922365815    7.330e-11    0.067370    0.000000    0.000000
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          5  11        -0.0353828643
-	          6  16        -0.0353828643
-	          5  12        -0.0248789241
-	          6  17        -0.0248789241
-	          5  14        -0.0239951922
-	          6  19        -0.0239951922
-	          4   1         0.0179530760
-	          4   3         0.0164691563
-	          4   0        -0.0113429319
-	          5  13         0.0097034035
+	          5  11        -0.0353828668
+	          6  16        -0.0353828668
+	          5  12        -0.0248789273
+	          6  17        -0.0248789273
+	          5  14        -0.0239951936
+	          6  19        -0.0239951936
+	          4   1         0.0179530798
+	          4   3         0.0164691632
+	          4   0        -0.0113429351
+	          5  13         0.0097034086
 
 	Largest Tia Amplitudes:
-	          3   0        -0.2197999630
-	          4  12         0.0352135239
-	          5  17         0.0352135239
-	          3   2         0.0219359903
-	          4  14         0.0185864667
-	          5  19         0.0185864667
-	          2   0         0.0145613577
-	          3   1         0.0136676941
-	          4  15         0.0107724467
-	          5  20         0.0107724467
+	          3   0         0.2197999610
+	          4  12         0.0352135232
+	          5  17         0.0352135232
+	          3   2        -0.0219359864
+	          4  14         0.0185864688
+	          5  19         0.0185864688
+	          2   0        -0.0145613692
+	          3   1        -0.0136676962
+	          4  15         0.0107724477
+	          5  20         0.0107724477
 
 	Largest TIJAB Amplitudes:
-	  6   5  16  11        -0.0345988961
-	  5   4  11   3        -0.0226926742
-	  6   4  16   3        -0.0226926742
-	  6   5  17  12        -0.0172561374
-	  6   5   9   4         0.0164439336
-	  5   3  12   1         0.0147258184
-	  6   3  17   1         0.0147258184
-	  6   5  16  13        -0.0114044365
-	  6   5  18  11        -0.0114044365
-	  5   4  13   3        -0.0113075781
+	  6   5  16  11        -0.0345988968
+	  5   4  11   3        -0.0226926753
+	  6   4  16   3        -0.0226926753
+	  6   5  17  12        -0.0172561361
+	  6   5   9   4        -0.0164439324
+	  5   3  12   1         0.0147258171
+	  6   3  17   1         0.0147258171
+	  6   5  16  13        -0.0114044357
+	  6   5  18  11        -0.0114044357
+	  5   4  13   3        -0.0113075813
 
 	Largest Tijab Amplitudes:
-	  4   3  12   0        -0.0383395900
-	  5   3  17   0        -0.0383395900
-	  5   4  17  12        -0.0367707930
-	  5   4  18  13        -0.0148992512
-	  5   4  10   5        -0.0147264959
-	  4   3  14   0        -0.0136504588
-	  5   3  19   0        -0.0136504588
-	  5   4  17  14        -0.0130977062
-	  5   4  19  12        -0.0130977062
-	  5   4  19  14        -0.0130893481
+	  4   3  12   0         0.0383395937
+	  5   3  17   0         0.0383395937
+	  5   4  17  12        -0.0367707958
+	  5   4  18  13        -0.0148992497
+	  5   4  10   5         0.0147264946
+	  4   3  14   0         0.0136504580
+	  5   3  19   0         0.0136504580
+	  5   4  17  14        -0.0130977056
+	  5   4  19  12        -0.0130977056
+	  5   4  19  14        -0.0130893483
 
 	Largest TIjAb Amplitudes:
-	  5   4  11  12        -0.1034065894
-	  6   5  16  17        -0.1034065894
-	  5   3  11   0        -0.0804563384
-	  6   3  16   0        -0.0804563384
-	  5   5  11  17        -0.0611850764
-	  6   4  16  12        -0.0611850764
-	  3   4  11   0         0.0596578069
-	  3   5  16   0         0.0596578069
-	  3   3  11  12         0.0484330127
-	  3   3  16  17         0.0484330127
+	  5   4  11  12        -0.1034066063
+	  6   5  16  17        -0.1034066063
+	  5   3  11   0         0.0804563486
+	  6   3  16   0         0.0804563486
+	  5   5  11  17        -0.0611850844
+	  6   4  16  12        -0.0611850844
+	  3   4  11   0        -0.0596578083
+	  3   5  16   0        -0.0596578083
+	  3   3  11  12         0.0484330185
+	  3   3  16  17         0.0484330185
 
-	SCF energy       (chkpt)              =  -92.195556621384739
-	Reference energy (file100)            =  -92.195556621384753
+	SCF energy       (chkpt)              =  -92.195556606168779
+	Reference energy (file100)            =  -92.195556606168736
 
 	Opposite-spin MP2 correlation energy  =    0.000000000000000
 	Same-spin MP2 correlation energy      =    0.000000000000000
-	MP2 correlation energy                =   -0.274405282670986
-      * MP2 total energy                      =  -92.469961904055737
+	MP2 correlation energy                =   -0.274405308099774
+      * MP2 total energy                      =  -92.469961914268509
 
 	Opposite-spin CCSD correlation energy =    0.000000000000000
 	Same-spin CCSD correlation energy     =    0.000000000000000
-	CCSD correlation energy               =   -0.284922903564247
-      * CCSD total energy                     =  -92.480479524949004
+	CCSD correlation energy               =   -0.284922922365815
+      * CCSD total energy                     =  -92.480479528534545
 
 
-*** tstop() called on arrakis-2.local at Sun Jan  8 13:46:12 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:43 2012
 Module time:
-	user time   =       1.73 seconds =       0.03 minutes
-	system time =       0.69 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.78 seconds =       0.03 minutes
+	system time =       1.06 seconds =       0.02 minutes
+	total time  =          7 seconds =       0.12 minutes
 Total time:
-	user time   =       2.16 seconds =       0.04 minutes
-	system time =       0.78 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.07 seconds =       0.03 minutes
+	system time =       1.20 seconds =       0.02 minutes
+	total time  =          9 seconds =       0.15 minutes
 
-*** tstart() called on arrakis-2.local
-*** at Sun Jan  8 13:46:12 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:43 2012
 
 			**************************
 			*                        *
@@ -657,11 +605,11 @@ Total time:
 	Wave function   =    CCSD_T
 	Reference wfn   =    ROHF changed to UHF for Semicanonical Orbitals
 
-	Nuclear Rep. energy (chkpt)   =   18.915271879148936
-	SCF energy          (chkpt)   =  -92.195556621384739
-	Reference energy    (file100) =  -92.195556621384753
-	CCSD energy         (file100) =   -0.284922903564247
-	Total CCSD energy   (file100) =  -92.480479524949004
+	Nuclear Rep. energy (chkpt)   =   18.915270434706382
+	SCF energy          (chkpt)   =  -92.195556606168779
+	Reference energy    (file100) =  -92.195556606168736
+	CCSD energy         (file100) =   -0.284922922365815
+	Total CCSD energy   (file100) =  -92.480479528534545
 
 	Number of ijk index combinations:
 	Spin Case AAA: 35
@@ -669,22 +617,22 @@ Total time:
 	Spin Case AAB: 126
 	Spin Case ABB: 105
 
-	AAA (T) energy                =   -0.000198637617586
-	BBB (T) energy                =   -0.000177305529192
-	AAB (T) energy                =   -0.007197926971975
-	ABB (T) energy                =   -0.006489162503407
-	(T) energy                    =   -0.014063032622159
-      * CCSD(T) total energy          =  -92.494542557571165
+	AAA (T) energy                =   -0.000198637636517
+	BBB (T) energy                =   -0.000177305577521
+	AAB (T) energy                =   -0.007197928454680
+	ABB (T) energy                =   -0.006489164115987
+	(T) energy                    =   -0.014063035784706
+      * CCSD(T) total energy          =  -92.494542564319261
 
 
-*** tstop() called on arrakis-2.local at Sun Jan  8 13:46:12 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:44 2012
 Module time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.40 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.57 seconds =       0.04 minutes
-	system time =       1.10 seconds =       0.02 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       2.44 seconds =       0.04 minutes
+	system time =       1.60 seconds =       0.03 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

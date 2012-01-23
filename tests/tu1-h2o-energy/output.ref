@@ -21,7 +21,9 @@
 
 --------------------------------------------------------------------------
 # Any line starting with the # character is a comment line
-# Here's a sample HF/cc-pVDZ H2O computation
+#! Sample HF/cc-pVDZ H2O computation
+
+memory 250 mb
 
 molecule h2o {
   O 
@@ -33,33 +35,11 @@ set basis cc-pVDZ
 energy('scf')
 
 --------------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
 
-                 1            2            3
+  Memory set to 250.000 MiB by Python script.
 
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
-
-
-*** tstart() called on sherrill-laptop
-*** at Thu Jan  5 16:10:02 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:56 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -70,7 +50,7 @@ Geometry bf reorientation.
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -81,7 +61,7 @@ Geometry bf reorientation.
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.065775570538
+           O          0.000000000000     0.000000000000    -0.065775570538
            H          0.000000000000    -0.759061990794     0.521953018295
            H         -0.000000000000     0.759061990794     0.521953018295
 
@@ -93,7 +73,7 @@ Geometry bf reorientation.
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.168193960505953
+  Nuclear repulsion =    9.168193260387572
 
   Charge       = 0
   Multiplicity = 1
@@ -106,6 +86,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -122,11 +103,11 @@ Geometry bf reorientation.
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.4377081629E-02.
+  Minimum eigenvalue in the overlap matrix is 3.4377086883E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.56955677335480
+  Initial RHF energy:   -58.56955700002261
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -140,30 +121,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -190,25 +147,25 @@ Geometry bf reorientation.
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.87688068278862   -1.03073e+01   0.00000e+00 
+   @RHF iter   1:   -68.87688078041757   -1.03073e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.94690670023465   -1.07003e+00   5.53911e-01 DIIS
+   @RHF iter   2:   -69.94690658607742   -1.07003e+00   5.53911e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.73850374966878   -5.79160e+00   5.21445e-01 DIIS
-   @RHF iter   4:   -76.00169075276796   -2.63187e-01   1.77865e-02 DIIS
-   @RHF iter   5:   -76.02636707389775   -2.46763e-02   8.29266e-03 DIIS
-   @RHF iter   6:   -76.02661123786504   -2.44164e-04   1.30152e-03 DIIS
-   @RHF iter   7:   -76.02665195983508   -4.07220e-05   4.60197e-04 DIIS
-   @RHF iter   8:   -76.02665357546186   -1.61563e-06   1.02979e-04 DIIS
-   @RHF iter   9:   -76.02665366509251   -8.96306e-08   1.73293e-05 DIIS
-   @RHF iter  10:   -76.02665366584137   -7.48855e-10   2.41058e-06 DIIS
-   @RHF iter  11:   -76.02665366589042   -4.90559e-11   4.62179e-07 DIIS
-   @RHF iter  12:   -76.02665366589173   -1.30740e-12   6.40738e-08 DIIS
-   @RHF iter  13:   -76.02665366589181   -8.52651e-14   1.34325e-08 DIIS
+   @RHF iter   3:   -75.73850380716033   -5.79160e+00   5.21445e-01 DIIS
+   @RHF iter   4:   -76.00169075373573   -2.63187e-01   1.77865e-02 DIIS
+   @RHF iter   5:   -76.02636706962485   -2.46763e-02   8.29266e-03 DIIS
+   @RHF iter   6:   -76.02661123362958   -2.44164e-04   1.30152e-03 DIIS
+   @RHF iter   7:   -76.02665195561394   -4.07220e-05   4.60197e-04 DIIS
+   @RHF iter   8:   -76.02665357124120   -1.61563e-06   1.02979e-04 DIIS
+   @RHF iter   9:   -76.02665366087197   -8.96308e-08   1.73293e-05 DIIS
+   @RHF iter  10:   -76.02665366162086   -7.48884e-10   2.41058e-06 DIIS
+   @RHF iter  11:   -76.02665366166983   -4.89706e-11   4.62149e-07 DIIS
+   @RHF iter  12:   -76.02665366167122   -1.39266e-12   6.40837e-08 DIIS
+   @RHF iter  13:   -76.02665366167128   -5.68434e-14   1.34295e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -227,7 +184,7 @@ Geometry bf reorientation.
 	   4B2     1.253479     7A1     1.444918     1A2     1.475588  
 	   3B1     1.674083     8A1     1.867861     5B2     1.931955  
 	   6B2     2.446380     9A1     2.483524     4B1     3.283305  
-	   2A2     3.336170    10A1     3.506961    11A1     3.862825  
+	   2A2     3.336169    10A1     3.506961    11A1     3.862825  
 	   7B2     4.144454  
 
 	Final Occupation by Irrep:
@@ -236,32 +193,32 @@ Geometry bf reorientation.
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02665366589181
+  @RHF Final Energy:   -76.02665366167128
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.9783
+     X:     0.0000      Y:     0.0000      Z:     0.9783
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1682
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.8101     Total:     0.8101
+     X:     0.0000      Y:     0.0000      Z:     0.8101     Total:     0.8101
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0592     Total:     2.0592
+     X:     0.0000      Y:     0.0000      Z:     2.0592     Total:     2.0592
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Thu Jan  5 16:10:03 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:56 2012
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

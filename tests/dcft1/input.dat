@@ -4,11 +4,11 @@
 
 memory 250 mb
 
-refnuc      =  0.66147156125000 #TEST
-refscf      = -5.71032245823757 #TEST
-refmp2      = -5.76128209224412 #TEST
-refdcftscf  = -5.62714230597787 #TEST
-refdcft     = -5.77531659915098 #TEST
+refnuc      =  0.66147151073750 #TEST
+refscf      = -5.71032245823742 #TEST
+refmp2      = -5.76128209224125 #TEST
+refdcftscf  = -5.62714230598082 #TEST
+refdcft     = -5.77531659914793 #TEST
 
 molecule he2 {
     He

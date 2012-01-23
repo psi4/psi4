@@ -3,9 +3,9 @@
 memory 250 mb
 
 # The following values are taken from PSI3 #TEST
-refnuc   =   7.6466919885 #TEST
-refscf   = -55.5301768259 #TEST
-refci    = -55.6332639725954 #TEST
+refnuc   =   7.6466914045240 #TEST
+refscf   = -55.5301768881550 #TEST
+refci    = -55.6332640345465 #TEST
 refcorr  = refci - refscf    #TEST
 
 molecule nh2 {
