@@ -327,6 +327,8 @@ void export_mints()
             def("set_variable", &Molecule::set_variable).
             def("get_variable", &Molecule::get_variable).
             def("update_geometry", &Molecule::update_geometry).
+            def("set_molecular_charge", &Molecule::set_molecular_charge).
+            def("set_multiplicity", &Molecule::set_multiplicity).
             def("set_basis_all_atoms", &Molecule::set_basis_all_atoms).
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol).
             def("set_basis_by_label", &Molecule::set_basis_by_label).
