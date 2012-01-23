@@ -1,20 +1,21 @@
-\section{Introduction} \label{introduction}
+\section{Introduction} \label{sec:introduction}
 
 \subsection{Overview} 
 
 \PSIfour\ provides a wide variety of quantum chemical methods using
 state-of-the-art numerical methods and algorithms.  Several parts of
 the code feature shared-memory parallelization to run efficiently on
-multi-core machines.  An advanced parser written in Python allows the user
+multi-core machines (see Section \ref{sec:threading}.  
+An advanced parser written in Python allows the user
 input to have a very simple style for routine computations, but it can also
 automate very complex tasks with ease. 
 
 In this section, we provide an overview of some of the features of
 \PSIfour\ along with the prerequisite steps for running calculations.
-Section \ref{tutorial} provides a brief tutorial to help new users
-get started.  Section \ref{psithon} offers further details into the
+Section \ref{sec:tutorial} provides a brief tutorial to help new users
+get started.  Section \ref{sec:psithon} offers further details into the
 structure of \PSIfour\ input files, and how Python can be mixed with
-quantum chemistry directives in \PSIfour.  Section \ref{pywrappers}
+quantum chemistry directives in \PSIfour.  Section \ref{sec:pywrappers}
 provides more detail on the Python functions provided by \PSIfour
 and discusses some of the higher-level functions such as counterpoise
 correction, complete-basis-set extrapolation, and running computations
@@ -22,9 +23,11 @@ on an entire database of molecules at a time.  Later sections deal with
 the different types of computations which can be done using \PSIfour\
 (e.g., Hartree--Fock, MP2, coupled-cluster) and general procedures
 such as geometry optimization and vibrational frequency analysis.
-The appendix includes a complete description of all possible input
+The Appendix includes a complete description of all possible input
 keywords for each module, as well as tables of available basis sets and
 a listing of the sample input files available under {\tt psi4/samples}.
+The user is urged to examine this directory of sample inputs, as
+most common types of computations are represented there.
 For the latest \PSIfour\ documentation, check \htmladdnormallink{{\tt
 www.psicode.org}} {http://www.psicode.org/}.
 
@@ -126,7 +129,7 @@ appropriate references for the underlying theory):
 \end{enumerate}
 
 \subsection{Obtaining and Installing \PSIfour}
-\label{installation}
+\label{sec:installation}
 
 The latest version of the \PSIfour\ program package may be obtained at
 \htmladdnormallink{{\tt www.psicode.org}}{http://www.psicode.org}.  The

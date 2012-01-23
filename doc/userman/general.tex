@@ -1,4 +1,4 @@
-\subsection{General Options} \label{general}
+\subsection{General Options} \label{sec:general}
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
                                                                                 
 Several options are relevant to many types of computations.  Those are
@@ -7,7 +7,7 @@ described briefly here.
 \vspace*{0.2in}
 \noindent
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         REFERENCE & The reference wavefunction used in the computation \\
+         \optionname{REFERENCE}{SCF} & The reference wavefunction used in the computation \\
 
           & {\bf Possible Values:} RHF, ROHF, UHF, CUHF, RKS, UKS \\
 \end{tabular*}
@@ -41,7 +41,7 @@ A restricted open-shell Kohn--Sham procedure is not recommended
 \vspace*{0.2in}
 \noindent
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         DOCC & An array containing the number of doubly-occupied orbitals
+         \optionname{DOCC}{GLOBALS} & An array containing the number of doubly-occupied orbitals
 per irrep (in Cotton order) \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -49,7 +49,7 @@ per irrep (in Cotton order) \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         SOCC & An array containing the number of singly-occupied orbitals
+         \optionname{SOCC}{GLOBALS} & An array containing the number of singly-occupied orbitals
 per irrep (in Cotton order) \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}

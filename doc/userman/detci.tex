@@ -1,4 +1,4 @@
-\subsection{Configuration Interaction} \label{detci}
+\subsection{Configuration Interaction} \label{sec:detci}
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 Configuration interaction (CI) is one of the most general ways to
@@ -73,7 +73,9 @@ RASCI, can be performed by setting the appropriate keywords and calling the
 module generically like {\tt energy(\qq{detci}\qq)}.  The latter approach
 will also work for any of the previously-mentioned CI wavefunctions for
 which the driver has built-in shortcuts, so long as the relevant options
-(especially \optionname{EX-LEVEL}{DETCI}) are set appropriately.
+(especially \optionname{EX-LEVEL}{DETCI}) are set appropriately.  Some
+examples of single-refence CI, RASCI, and full CI computations are provided
+in {\tt psi4/samples/}.
 
 
 \subsubsection{Basic Keywords}
@@ -240,7 +242,7 @@ lower-order coupled-cluster codes and should not be used for CCSD,
 where the \PSIccenergy\ module is much more efficient.  For higher-order
 CC (like CCSDT and beyond), the code is also not as efficient as the
 MRCC code by K{\'a}llay, to which \PSIfour\ can interface (see Section
-\ref{mrcc}); however, it may allow certain truncations of the model
+\ref{sec:mrcc}); however, it may allow certain truncations of the model
 space that might not be available presently in MRCC.  For very small
 systems, the code can be useful for testing of, for example, CCSDTQ or
 its active-space CCSDtq analog \cite{Piecuch:1999:6103}.

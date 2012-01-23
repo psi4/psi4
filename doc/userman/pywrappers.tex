@@ -2,7 +2,7 @@
 \stepcounter{subsubsection}
 \subsubsection*{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}\hspace{1em}{#1}}}
 
-\section{Python Wrappers\label{pywrappers}}
+\section{Python Wrappers\label{sec:pywrappers}}
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 The Python foundations of the \PSIfour driver and Psithon syntax permit
@@ -17,9 +17,184 @@ in the command that calls the wrapper (formatted in this manual as
 \pyoptionname{option = } \pyoptionval{value}),
 not in the \texttt{set globals} block or with any other \texttt{set} command.
 
-%\subsection{\texttt{counterpoise\_correct}\label{wrapcp}}
-%\subsection{\texttt{database}\label{wrapdb}}
-\subsection{complete\_basis\_set\label{wrapcbs}}
+\subsection{\texttt{counterpoise\_correct}\label{sec:wrapcp}}
+
+The \texttt{counterpoise\_correct()} or \texttt{cp()} wrapper computes
+counterpoise-corrected two-body interaction energies for complexes composed of
+arbitrary numbers of monomers.
+
+\hiddensubsubsection{Required Arguments}
+\begin{itemize}
+\item \pyoptionname{name} = \pyoptionval{\qq scf\qq} \textbar\; \pyoptionval{\qq ccsd(t)\qq} \textbar\; etc. \\
+First argument, usually unlabeled. Indicates the computational method to be applied to the database.
+Most any argument to \texttt{energy()} can be supplied here; however, SAPT is not appropriate.
+\end{itemize}
+
+
+\subsection{\texttt{database}\label{sec:wrapdb}}
+
+The \texttt{database()} or \texttt{db()} wrapper facilitates access to
+the molecule objects and reference energies of popular chemical databases.
+
+\hiddensubsubsection{Required Arguments}
+\begin{itemize}
+\item \pyoptionname{name} = \pyoptionval{\qq scf\qq} \textbar\; \pyoptionval{\qq sapt0\qq} \textbar\; \pyoptionval{\qq ccsd(t)\qq} \textbar\; etc. \\
+First argument, usually unlabeled. Indicates the computational method to be applied to the database.
+Any argument to \texttt{energy()} can be supplied here, though the more exotic choices have not been tested.
+
+\item \pyoptionname{db\_name} = \textsf{\qq BASIC\qq} \textbar\; \textsf{\qq S22\qq} \textbar\; \textsf{\qq HTBH\qq} \textbar\; etc. \\
+
+Second argument, usually unlabeled. String of the requested database name, matching the name of a
+python file in \texttt{\$PSIDATADIR/lib/databases} . Consult that directory for available databases
+and literature citations.
+\end{itemize}
+
+
+\hiddensubsubsection{Optional Arguments}
+\begin{itemize}
+\item \pyoptionname{mode} = \textit{\pyoptionval{\qq continuous\qq}} \textbar\; \pyoptionval{\qq sow\qq} \textbar\; \pyoptionval{\qq reap\qq} \\
+Indicates whether the calculation required to complete the database are to be run in one
+file (\pyoptionname{\qq continuous\qq}) or are to be farmed out in an embarrassingly 
+parallel fashion (\pyoptionname{\qq sow\qq}/\pyoptionname{\qq reap\qq}).
+For the latter, run an initial job with \pyoptionname{\qq sow\qq} and follow instructions in its output file.
+
+\item \pyoptionname{cp} = \pyoptionval{\qq on\qq} \textbar\; \textit{\pyoptionval{\qq off\qq}} \\
+Indicates whether counterpoise correction is employed in computing interaction energies.
+Use this option and NOT the \texttt{cp()} wrapper for BSSE correction in the \texttt{database()} wrapper.
+Option valid only for databases consisting of bimolecular complexes.
+
+\item \pyoptionname{rlxd} = \pyoptionval{\qq on\qq} \textbar\; \textit{\pyoptionval{\qq off\qq}} \\
+Indicates whether correction for the deformation energy is employed in computing interaction energies.
+Option valid only for databases consisting of bimolecular complexes with non-frozen monomers, e.g., HBC6.
+
+\item \pyoptionname{symm} = \textit{\pyoptionval{\qq on\qq}} \textbar\; \pyoptionval{\qq off\qq} \\
+Indicates whether the native symmetry of the database molecules is employed (\pyoptionval{\qq on\qq}) or whether
+it is forced to c1 symmetry (\pyoptionval{\qq off\qq}). Some computational methods (e.g., SAPT) require no symmetry,
+and this will be set by the database() wrapper.
+
+\item \pyoptionname{zpe} = \pyoptionval{\qq on\qq} \textbar\; \textit{\pyoptionval{\qq off\qq}} \\
+Indicates whether zero-point-energy corrections are appended to single-point energy values. Option
+valid only for certain thermochemical databases. Disabled until Hessians ready.
+
+\item \pyoptionname{benchmark} = \textit{\pyoptionval{\qq default\qq}} \textbar\; etc. \\
+Indicates whether a non-default set of reference energies, if available, are employed for the 
+calculation of error statistics.
+
+\item \pyoptionname{tabulate} = \textit{\pyoptionval{[]}} \textbar\; {\pyoptionval{[\qq scf total energy\qq, \qq mp2 correlation energy\qq]}} \textbar\; etc. \\
+Indicates whether to form tables of variables other than the primary requested energy. 
+Available for any \PSI\ variable.
+
+\item \pyoptionname{subset} \\
+Indicates a subset of the full database to run. This is a very flexible option and can be used in
+three distinct ways, outlined below. Note that two take a string, and the last takes a list.
+\begin{itemize}
+\item \pyoptionname{subset} = \pyoptionval{\qq small\qq} \textbar\; \pyoptionval{\qq large\qq} \textbar\; \pyoptionval{\qq equilibrium\qq} \\
+Calls predefined subsets of the requested database, either \pyoptionval{\qq small\qq}, a few
+of the smallest database members, \pyoptionval{\qq large\qq}, the largest of the database members,
+or \pyoptionval{\qq equilibrium\qq}, the equilibrium geometries for a database composed of
+dissociation curves.
+\item \pyoptionname{subset} = \textsf{\qq BzBz\_S\qq} \textbar\; \textsf{\qq ArNe\qq} \textbar\; etc. \\
+For databases composed of dissociation curves, individual curves can be called by name.
+Consult the database python files for available molecular systems.
+\item \pyoptionname{subset} = \pyoptionval{[1,2,5]} \textbar\; \pyoptionval{[\qq 1\qq, \qq 2\qq, \qq 5\qq]} \textbar\; \textsf{[\qq BzMe-3.5\qq, \qq MeMe-5.0\qq]} \textbar\; etc. \\
+Specify a list of database members to run. Consult the database python files for availables
+molecular systems.
+\end{itemize}
+\end{itemize}
+
+\hiddensubsubsection{Examples}
+A database job requires, at a minimum, the basis set to be set in its input file. The following are valid calls to the wrapper.
+\begin{Snippet}
+# [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer
+db('scf','RGC10',cast_up='sto-3g',subset=['HeHe-0.85','HeHe-1.0','HeHe-1.5'], \
+  tabulate=['scf total energy','natom'])
+
+# [2] Counterpoise-corrected interaction energies for three complexes in S22
+#     Error statistics computed wrt an old benchmark, S22A
+database('dfmp2','S22',cp=1,subset=[16,17,8],benchmark='S22A')
+
+# [3] SAPT0 on the neon dimer dissociation curve
+db('sapt0',subset='NeNe',cp=0,symm=0,db_name='RGC10')
+
+# [4] Optimize system 1 in database S22, producing tables of scf and mp2 energy
+db('mp2','S22',db_func=optimize,subset=[1], \
+  tabulate=['mp2 total energy','current energy'])
+
+# [5] CCSD on the smallest systems of HTBH, a hydrogen-transfer database
+database('ccsd','HTBH',subset='small', \
+  tabulate=['ccsd total energy', 'mp2 total energy'])
+\end{Snippet}
+
+\hiddensubsubsection{Output}
+
+At the beginning of a \texttt{db()} job is printed a listing of the individual system 
+calculations which will be performed. The output snippet below is from the example job [1]
+above. It shows each reagent required for the subset of database reactions requested.
+Note that this is an un-counterpoise-corrected example, and the wrapper is smart enough
+to compute only once the monomer whose energy will be subtracted from each of the three dimers.
+\begin{verbatim}
+                    RGC1-HeHe-0.85-dimer
+                    RGC1-He-mono-unCP
+                    RGC1-HeHe-1.0-dimer
+                    RGC1-HeHe-1.5-dimer
+\end{verbatim}
+
+At the end of the job, the Requested Energy table is printed that gives the total
+energies for the requested model chemistry for each reagent and each reaction, as
+well as the stoichoimetric weights by which the reagent energies are transfromed
+into the reaction energy. In this case, the dimer is $+1$ and the monomer is $-2$,
+indicating the the interaction energy is computed from dimer less first monomer
+less second (identical) monomer. Error statistics are computed with respect to the reference
+energies stored in the database. One of these, the mean absolute deviation, is 
+returned by the wrapper as an ordinary Python variable. (For databases
+without a stored reference energy, e.g., BASIC, large and meaningless numbers are
+printed for error.) The other two tables tabulate the \PSI variables requested
+through \pyoptionname{tabulate}, in this case the total SCF energy and the number
+of atoms in each reagent.
+
+\begin{verbatim}
+==> Scf Total Energy <==
+
+-----------------------------------------------------------------------------------
+         Reaction          Reaction Value              Reagent 1       Reagent 2
+                                                        Value Wt        Value Wt
+-----------------------------------------------------------------------------------
+   RGC1-HeHe-0.85              0.00011520         -5.71020576  1  -2.85516048 -2
+    RGC1-HeHe-1.0              0.00000153         -5.71031943  1  -2.85516048 -2
+    RGC1-HeHe-1.5             -0.00000000         -5.71032096  1  -2.85516048 -2
+-----------------------------------------------------------------------------------
+
+==> Natom <==
+
+-----------------------------------------------------------------------------------
+         Reaction          Reaction Value              Reagent 1       Reagent 2
+                                                        Value Wt        Value Wt
+-----------------------------------------------------------------------------------
+   RGC1-HeHe-0.85              0.00000000          2.00000000  1   1.00000000 -2
+    RGC1-HeHe-1.0              0.00000000          2.00000000  1   1.00000000 -2
+    RGC1-HeHe-1.5              0.00000000          2.00000000  1   1.00000000 -2
+-----------------------------------------------------------------------------------
+
+==> Requested Energy <==
+
+-----------------------------------------------------------------------------------
+         Reaction     Reaction Energy      Error       Reagent 1       Reagent 2
+                         Ref     Calc [kcal/mol]          [H] Wt          [H] Wt
+-----------------------------------------------------------------------------------
+   RGC1-HeHe-0.85     0.0376   0.0723     0.0347  -5.71020576  1  -2.85516048 -2
+    RGC1-HeHe-1.0    -0.0219   0.0010     0.0228  -5.71031943  1  -2.85516048 -2
+    RGC1-HeHe-1.5    -0.0029  -0.0000     0.0029  -5.71032096  1  -2.85516048 -2
+-----------------------------------------------------------------------------------
+      Minimal Dev                         0.0029
+      Maximal Dev                         0.0347
+  Mean Signed Dev                         0.0201
+Mean Absolute Dev                         0.0201
+          RMS Dev                         0.0240
+-----------------------------------------------------------------------------------
+\end{verbatim}
+
+
+\subsection{\texttt{complete\_basis\_set}\label{sec:wrapcbs}}
 
 The \texttt{complete\_basis\_set()} or \texttt{cbs()} wrapper defines a
 multistage energy method from combinations of basis set extrapolations
@@ -64,6 +239,19 @@ Here, $\mathcal{F}$ is an energy or energy extrapolation scheme, and the followi
     \delta_{\pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_WFN}} \; =
         \mathcal{F}_{\pyoptionname{DELTA2\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA2\_WFN}}^{\pyoptionname{DELTA2\_BASIS}}\right) -
         \mathcal{F}_{\pyoptionname{DELTA2\_SCHEME}} \left(E_{corl,\; \pyoptionname{DELTA2\_WFN\_LESSER}}^{\pyoptionname{DELTA2\_BASIS}}\right)
+\end{equation*}
+
+
+A translation of this ungainly equation to example [2] below is as follows. In words, this is a double- and \mbox{triple-$\zeta$} 2-point Helgaker-extrapolated CCSD(T) coupled-cluster correlation correction appended to a triple- and \mbox{quadruple-$\zeta$} 2-point Helgaker-extrapolated MP2 correlation energy appended to a SCF/aug-cc-pVQZ reference energy.
+\begin{equation*}
+E_{total}^{\text{CBS}} = \mathcal{F}_{\text{highest\_1}} \left(E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}}\right) \; +
+    \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}}\right) \; +
+    \delta_{\text{MP2}}^{\text{CCSD(T)}}
+\end{equation*}
+\begin{equation*}
+    \delta_{\text{MP2}}^{\text{CCSD(T)}} \; =
+        \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{CCSD(T)}}^{\text{aug-cc-pV[DT]Z}}\right) -
+        \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[DT]Z}}\right)
 \end{equation*}
 
 \hiddensubsubsection{Required Arguments}
@@ -143,32 +331,37 @@ Indicates the basis set extrapolation scheme to be applied to the second delta c
 \hiddensubsubsection{Examples}
 
 \begin{Snippet}
-# DT-zeta extrapolated mp2 correlation energy atop a T-zeta reference
+# [1] DT-zeta extrapolated mp2 correlation energy atop a T-zeta reference
 cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
 
-# a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated
-#   mp2 correlation energy atop a Q-zeta reference
+# [2] a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta 
+#     extrapolated mp2 correlation energy atop a Q-zeta reference
 cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, \
-    delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
+  delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
 
-# cbs() coupled with database()
+# [3] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction 
+#     atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
+cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, \
+  delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, \
+  delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
+
+# [4] cbs() coupled with database()
 database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, \
-    corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, \
-    delta_wfn='ccsd(t)', delta_basis='sto-3g')
-
+  corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, \
+  delta_wfn='ccsd(t)', delta_basis='sto-3g')
 \end{Snippet}
 
 \hiddensubsubsection{Output}
 
 At the beginning of a \texttt{cbs()} job is printed a listing of the individual energy
-calculations which will be performed. The output snippet below is from the second example
-job above. It shows first each model chemistries
+calculations which will be performed. The output snippet below is from the example job [2]
+above. It shows first each model chemistry
 needed to compute the aggregate model chemistry requested through \texttt{cbs()}. Then,
 since, for example, an \texttt{energy(\qq{ccsd(t)}\qq)} yields CCSD(T), CCSD, MP2, and SCF
 energy values, the wrapper condenses this task into the second list of minimum number of
 calculations which will actually be run.
 
-\begin{Snippet}
+\begin{verbatim}
     Naive listing of computations required.
             scf / aug-cc-pvqz              for  SCF TOTAL ENERGY
             mp2 / aug-cc-pvtz              for  MP2 CORRELATION ENERGY
@@ -182,7 +375,7 @@ calculations which will actually be run.
             mp2 / aug-cc-pvqz              for  MP2 CORRELATION ENERGY
         ccsd(t) / aug-cc-pvdz              for  CCSD(T) CORRELATION ENERGY
         ccsd(t) / aug-cc-pvtz              for  CCSD(T) CORRELATION ENERGY
-\end{Snippet}
+\end{verbatim}
 
 At the end of a \texttt{cbs()} job is printed a summary section like the one below. First,
 in the components section, are listed the results for each model chemistry available, whether
@@ -191,46 +384,46 @@ each extrapolation. The energies of this section must be dotted with the weighti
 to get the total cbs energy. Finally, in the CBS section, are listed the results for each stage
 of the cbs procedure. The stage energies of this section sum outright to the total cbs energy.
 
-\begin{Snippet}
- ==> Components <==
+\begin{verbatim}
+==> Components <==
 
--------------------------------------------------------------------------------------
-                  Method / Basis            Rqd   Energy [H]   Variable
--------------------------------------------------------------------------------------
-                     scf / aug-cc-pvqz        *  -1.11916375   SCF TOTAL ENERGY
-                     mp2 / aug-cc-pvqz        *  -0.03407997   MP2 CORRELATION ENERGY
-                     scf / aug-cc-pvdz           -1.11662884   SCF TOTAL ENERGY
-                     mp2 / aug-cc-pvdz        *  -0.02881480   MP2 CORRELATION ENERGY
-                 ccsd(t) / aug-cc-pvdz        *  -0.03893812   CCSD(T) CORRELATION ENERGY
-                    ccsd / aug-cc-pvdz           -0.03893812   CCSD CORRELATION ENERGY
-                     scf / aug-cc-pvtz           -1.11881134   SCF TOTAL ENERGY
-                     mp2 / aug-cc-pvtz        *  -0.03288936   MP2 CORRELATION ENERGY
-                 ccsd(t) / aug-cc-pvtz        *  -0.04201004   CCSD(T) CORRELATION ENERGY
-                    ccsd / aug-cc-pvtz           -0.04201004   CCSD CORRELATION ENERGY
--------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+               Method / Basis            Rqd   Energy [H]   Variable
+----------------------------------------------------------------------------------
+                  scf / aug-cc-pvqz        *  -1.11916375   SCF TOTAL ENERGY
+                  mp2 / aug-cc-pvqz        *  -0.03407997   MP2 CORRELATION ENERGY
+                  scf / aug-cc-pvdz           -1.11662884   SCF TOTAL ENERGY
+                  mp2 / aug-cc-pvdz        *  -0.02881480   MP2 CORRELATION ENERGY
+              ccsd(t) / aug-cc-pvdz        *  -0.03893812   CCSD(T) CORRELATION ENERGY
+                 ccsd / aug-cc-pvdz           -0.03893812   CCSD CORRELATION ENERGY
+                  scf / aug-cc-pvtz           -1.11881134   SCF TOTAL ENERGY
+                  mp2 / aug-cc-pvtz        *  -0.03288936   MP2 CORRELATION ENERGY
+              ccsd(t) / aug-cc-pvtz        *  -0.04201004   CCSD(T) CORRELATION ENERGY
+                 ccsd / aug-cc-pvtz           -0.04201004   CCSD CORRELATION ENERGY
+----------------------------------------------------------------------------------
 
- ==> Stages <==
+==> Stages <==
 
--------------------------------------------------------------------------------------
-    Stage         Method / Basis             Wt   Energy [H]   Scheme
--------------------------------------------------------------------------------------
-      scf            scf / aug-cc-pvqz        1  -1.11916375   highest_1
-     corl            mp2 / aug-cc-pv[tq]z     1  -0.03494879   corl_xtpl_helgaker_2
-    delta        ccsd(t) / aug-cc-pv[dt]z     1  -0.04330347   corl_xtpl_helgaker_2
-    delta            mp2 / aug-cc-pv[dt]z    -1  -0.03460497   corl_xtpl_helgaker_2
--------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------
+ Stage         Method / Basis             Wt   Energy [H]   Scheme
+----------------------------------------------------------------------------------
+   scf            scf / aug-cc-pvqz        1  -1.11916375   highest_1
+  corl            mp2 / aug-cc-pv[tq]z     1  -0.03494879   corl_xtpl_helgaker_2
+ delta        ccsd(t) / aug-cc-pv[dt]z     1  -0.04330347   corl_xtpl_helgaker_2
+ delta            mp2 / aug-cc-pv[dt]z    -1  -0.03460497   corl_xtpl_helgaker_2
+----------------------------------------------------------------------------------
 
- ==> CBS <==
+==> CBS <==
 
--------------------------------------------------------------------------------------
-    Stage         Method / Basis                  Energy [H]   Scheme
--------------------------------------------------------------------------------------
-      scf            scf / aug-cc-pvqz           -1.11916375   highest_1
-     corl            mp2 / aug-cc-pv[tq]z        -0.03494879   corl_xtpl_helgaker_2
-    delta  ccsd(t) - mp2 / aug-cc-pv[dt]z        -0.00869851   corl_xtpl_helgaker_2
-    total            CBS                         -1.16281105
--------------------------------------------------------------------------------------
-\end{Snippet}
+----------------------------------------------------------------------------------
+ Stage         Method / Basis                  Energy [H]   Scheme
+----------------------------------------------------------------------------------
+   scf            scf / aug-cc-pvqz           -1.11916375   highest_1
+  corl            mp2 / aug-cc-pv[tq]z        -0.03494879   corl_xtpl_helgaker_2
+ delta  ccsd(t) - mp2 / aug-cc-pv[dt]z        -0.00869851   corl_xtpl_helgaker_2
+ total            CBS                         -1.16281105
+----------------------------------------------------------------------------------
+\end{verbatim}
 
 \hiddensubsubsection{Extrapolation Schemes}
 
@@ -284,7 +477,7 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 %   \end{itemize}
 
 
-\subsection{Compound Wrapper Calls}\label{wrapcompound}
+\subsection{Compound Wrapper Calls}\label{sec:wrapcompound}
 
 The wrappers below can be called in combination according to Table \ref{table:wrapintercalls}
 below, so that db(opt(cbs(energy())) is permitted while
@@ -318,4 +511,24 @@ Caller & \multicolumn{5}{c}{Callee} \\
 \end{center}
 \end{footnotesize}
 \end{table}
+
+A few miscellaneous notes.
+documented in the Appendix \ref{kw-DFMP2}). Some basic recommendations are included below:
+\begin{itemize}
+\item It is very easy to make a database from a collection of xyz files using the script
+\texttt{\$PSIDATADIR/databases/ixyz2database.pl}. Instructions are available at 
+\htmladdnormallink{http://sirius.chem.vt.edu/trac/wiki/WrapperDatabase}{http://sirius.chem.vt.edu/trac/wiki/WrapperDatabase}.
+\item All python keyword arguments are passed along to each function traversed in the
+python driver, so don't be concerned about separating them, grouping them or
+designating them for a nested job, e.g., db(opt(energy())). Where the same keyword is
+used my multiple python wrappers, the identity of the wrapper is prefixed to the keyword
+name, e.g., \pyoptionname{db\_mode} and \pyoptionname{opt\_mode}.
+\item Boolean keywords can be specified with any of \pyoptionval{\qq yes\qq}, 
+\pyoptionval{\qq true\qq}, \pyoptionval{\qq on\qq}, \pyoptionval{1}, \pyoptionval{\qq no\qq}, 
+\pyoptionval{\qq false\qq}, \pyoptionval{\qq off\qq}, \pyoptionval{0} .
+\item Similarly, the derivative level for \texttt{optimize()} and \texttt{frequencies()} wrappers
+can be specified with any of \pyoptionval{0}, \pyoptionval{\qq none\qq}, \pyoptionval{\qq energy\qq},
+\pyoptionval{1}, \pyoptionval{\qq first\qq}, \pyoptionval{\qq gradient\qq},
+\pyoptionval{2}, \pyoptionval{\qq second\qq}, \pyoptionval{\qq hessian\qq}.
+\end{itemize}
 
