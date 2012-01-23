@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -19,6 +21,8 @@
 
 --------------------------------------------------------------------------
 #! ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
+
+memory 250 mb
 
 refnuc   =  18.9152665531957    #TEST
 refscf   = -92.1955565653       #TEST
@@ -34,30 +38,29 @@ molecule CN {
 
 set globals {
   reference rohf
-  wfn ccsd_t
   basis cc-pVDZ
   docc [4, 0, 1, 1]
   socc [1, 0, 0, 0]
   freeze_core true
   
-  convergence 10
-  e_converge 10
-  d_converge 10
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
 }
 
 energy('ccsd(t)')
 
-compare_values(refnuc,   CN.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy") #TEST
-compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")               #TEST
-compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")        #TEST
-compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")         #TEST
-compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")             #TEST
-
-clean()
+compare_values(refnuc,   CN.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
 --------------------------------------------------------------------------
 
-*** tstart() called on arrakis.local
-*** at Sun Oct 16 21:59:59 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:11 2012
 
 	There are an odd number of electrons - assuming doublet.
 	Specify the multiplicity with the MULTP option in the
@@ -66,9 +69,9 @@ clean()
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -103,6 +106,7 @@ clean()
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-10
@@ -152,15 +156,18 @@ clean()
       Number of irreps:                  4
       Number of functions per irrep: [  14    2    6    6 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 19125 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 19125 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @ROHF iter   1:   -83.19841405632548   -1.03426e+01   2.12200e-314  
+   @ROHF iter   1:   -83.19841405632548   -1.03426e+01   2.03110e+26 
    @ROHF iter   2:   -84.13066581008697   -9.32252e-01   6.88627e-01 DIIS
    @ROHF iter   3:   -91.43784724805009   -7.30718e+00   6.13977e-01 DIIS
    @ROHF iter   4:   -91.96811641917188   -5.30269e-01   5.92065e-02 DIIS
@@ -211,32 +218,33 @@ clean()
   @ROHF Final Energy:   -92.19555656528004
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0016
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8531
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.8546     Total:     0.8546
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.1723     Total:     2.1723
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on arrakis.local at Sun Oct 16 22:00:00 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:11 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on arrakis.local
-*** at Sun Oct 16 22:00:00 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:11 2012
 
 
 	**************************************************
@@ -247,8 +255,59 @@ Total time:
 	**************************************************
 
 
-*** tstart() called on arrakis.local
-*** at Sun Oct 16 22:00:00 2011
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	ROHF (using UHF for semicanonical orbitals)
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 28
+	Number of MOs        = 28
+	Number of active MOs = 26
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   14	    2	    2	    1	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   6	    0	    1	    0	    5	    0
+	 B2	   6	    0	    1	    0	    5	    0
+
+	Nuclear Rep. energy (chkpt) =     18.91526655319571
+	SCF energy          (chkpt) =    -92.19555656528004
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -86.999594722928762
+	Starting AA/AB first half-transformation.
+	Sorting AA/AB half-transformed integrals.
+	Starting AA second half-transformation.
+	Starting AB second half-transformation.
+	Starting BB first half-transformation.
+	Sorting BB half-transformed integrals.
+	Starting BB second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:11 2012
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:11 2012
 
 
 			**************************
@@ -263,7 +322,7 @@ Total time:
 	Wave function   =	CCSD_T
 	Reference wfn   =	ROHF changed to UHF for Semicanonical Orbitals
 	Derivative      =	None
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	True
@@ -370,18 +429,18 @@ Total time:
 	Frozen-core energy (transqt) =    -86.99959472292876
 	Reference energy             =    -92.19555656528010
 
-*** tstop() called on arrakis.local at Sun Oct 16 22:00:00 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:11 2012
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on arrakis.local
-*** at Sun Oct 16 22:00:00 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:11 2012
 
 			**************************
 			*                        *
@@ -397,7 +456,7 @@ Total time:
 	-----------------
 	Wave function   =   CCSD_T
 	Reference wfn   =     ROHF changed to UHF for Semicanonical Orbitals
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-10
 	Restart         =     No
@@ -406,7 +465,7 @@ Total time:
 	ABCD            =     NEW
 	Cache Level     =     2
 	Cache Type      =     LRU
-	Print Level     =     0
+	Print Level     =     1
 	Num. of threads =     1
 	# Amps to Print =     10
 	Print MP2 Amps? =     No
@@ -430,7 +489,7 @@ Total time:
      6        -0.281209125289513    5.842e-03    0.078779    0.000000    0.000000
      7        -0.281318403141612    2.096e-03    0.079858    0.000000    0.000000
      8        -0.281361253643758    1.023e-03    0.080675    0.000000    0.000000
-     9        -0.281336236582690    3.999e-04    0.080684    0.000000    0.000000
+     9        -0.281336236582691    3.999e-04    0.080684    0.000000    0.000000
     10        -0.281345781649790    2.046e-04    0.080747    0.000000    0.000000
     11        -0.281343518746969    1.098e-04    0.080822    0.000000    0.000000
     12        -0.281344898833360    5.568e-05    0.080813    0.000000    0.000000
@@ -455,24 +514,24 @@ Total time:
 	Largest TIA Amplitudes:
 	          3  11        -0.0354242570
 	          4  16        -0.0354242570
-	          3  12         0.0248643660
-	          4  17         0.0248643660
+	          3  12        -0.0248643660
+	          4  17        -0.0248643660
 	          3  14        -0.0239793996
 	          4  19        -0.0239793996
 	          2   1         0.0179455822
 	          2   3        -0.0164464275
 	          2   0        -0.0113065995
-	          3  13        -0.0097008814
+	          3  13         0.0097008814
 
 	Largest Tia Amplitudes:
-	          1   0         0.2193045715
+	          1   0        -0.2193045715
 	          2  12         0.0352551063
 	          3  17         0.0352551063
-	          1   2         0.0218236917
-	          2  14        -0.0185998570
-	          3  19        -0.0185998570
+	          1   2        -0.0218236917
+	          2  14         0.0185998570
+	          3  19         0.0185998570
 	          0   0         0.0146284533
-	          1   1        -0.0137062239
+	          1   1         0.0137062239
 	          2  15         0.0107474293
 	          3  20         0.0107474293
 
@@ -482,35 +541,35 @@ Total time:
 	  4   2  16   3         0.0227242190
 	  4   3  17  12        -0.0172866909
 	  4   3   9   4         0.0164753977
-	  3   1  12   1        -0.0147247871
-	  4   1  17   1        -0.0147247871
-	  4   3  16  13         0.0114162698
-	  4   3  18  11         0.0114162698
-	  3   2  13   3        -0.0113305155
+	  3   1  12   1         0.0147247871
+	  4   1  17   1         0.0147247871
+	  4   3  16  13        -0.0114162698
+	  4   3  18  11        -0.0114162698
+	  3   2  13   3         0.0113305155
 
 	Largest Tijab Amplitudes:
-	  2   1  12   0         0.0383271028
-	  3   1  17   0         0.0383271028
+	  2   1  12   0        -0.0383271028
+	  3   1  17   0        -0.0383271028
 	  3   2  17  12        -0.0367952867
 	  3   2  18  13        -0.0149284142
 	  3   2  10   5        -0.0147523169
 	  2   1  14   0        -0.0136549452
 	  3   1  19   0        -0.0136549452
 	  3   2  19  14        -0.0131128897
-	  3   2  17  14         0.0131124542
-	  3   2  19  12         0.0131124542
+	  3   2  17  14        -0.0131124542
+	  3   2  19  12        -0.0131124542
 
 	Largest TIjAb Amplitudes:
 	  3   2  11  12        -0.1035012143
 	  4   3  16  17        -0.1035012143
-	  3   1  11   0         0.0805134870
-	  4   1  16   0         0.0805134870
+	  3   1  11   0        -0.0805134870
+	  4   1  16   0        -0.0805134870
 	  3   3  11  17        -0.0612279307
 	  4   2  16  12        -0.0612279307
 	  1   2  11   0         0.0598380322
 	  1   3  16   0         0.0598380322
-	  1   1  11  12        -0.0485521881
-	  1   1  16  17        -0.0485521881
+	  1   1  11  12         0.0485521881
+	  1   1  16  17         0.0485521881
 
 	SCF energy       (chkpt)              =  -92.195556565280043
 	Reference energy (file100)            =  -92.195556565280100
@@ -526,18 +585,18 @@ Total time:
       * CCSD total energy                     =  -92.476899474397527
 
 
-*** tstop() called on arrakis.local at Sun Oct 16 22:00:01 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:16 2012
 Module time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.55 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.89 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       1.42 seconds =       0.02 minutes
-	system time =       0.65 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.20 seconds =       0.02 minutes
+	system time =       1.00 seconds =       0.02 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-*** tstart() called on arrakis.local
-*** at Sun Oct 16 22:00:01 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:16 2012
 
 			**************************
 			*                        *
@@ -569,14 +628,14 @@ Total time:
       * CCSD(T) total energy          =  -92.490873565653857
 
 
-*** tstop() called on arrakis.local at Sun Oct 16 22:00:02 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:16 2012
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.54 seconds =       0.03 minutes
-	system time =       0.75 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.31 seconds =       0.02 minutes
+	system time =       1.14 seconds =       0.02 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

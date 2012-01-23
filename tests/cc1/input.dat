@@ -18,10 +18,10 @@ set {
 
 optimize('ccsd')
 
-refnuc   =  9.166137300098260  #TEST
-refscf   = -76.02293995043653  #TEST
-refccsd  = -0.208238532935749  #TEST
-reftotal = -76.2311784833722   #TEST
+refnuc   =   9.1654609427539  #TEST
+refscf   = -76.0229306840181  #TEST
+refccsd  = -0.20824772787315  #TEST
+reftotal = -76.2311784118913  #TEST
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
 compare_values(refscf,   get_variable("SCF total energy"),        5, "SCF energy")               #TEST

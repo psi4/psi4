@@ -20,7 +20,9 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-# Optimize H2O HF/cc-pVDZ
+#! Optimize H2O HF/cc-pVDZ
+
+memory 250 mb
 
 nucenergy = 9.300472711622458 #TEST
 refenergy = -76.0270534721367 #TEST
@@ -36,37 +38,12 @@ optimize('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 4, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, get_variable("CURRENT ENERGY"), 4, "Reference energy") #TEST
-
-clean()
-
 --------------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
 
-                 1            2            3
+  Memory set to 250.000 MiB by Python script.
 
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
-
-
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:16 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:57 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -77,7 +54,7 @@ Geometry bf reorientation.
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -88,7 +65,7 @@ Geometry bf reorientation.
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.065775570538
+           O          0.000000000000     0.000000000000    -0.065775570538
            H          0.000000000000    -0.759061990794     0.521953018295
            H         -0.000000000000     0.759061990794     0.521953018295
 
@@ -100,7 +77,7 @@ Geometry bf reorientation.
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.168193960505953
+  Nuclear repulsion =    9.168193260387572
 
   Charge       = 0
   Multiplicity = 1
@@ -113,6 +90,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -129,11 +107,11 @@ Geometry bf reorientation.
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.4377081629E-02.
+  Minimum eigenvalue in the overlap matrix is 3.4377086883E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.56955677335480
+  Initial RHF energy:   -58.56955700002261
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -147,30 +125,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.8141369
-    3    0.0000000    1.7563524   -0.4542236
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -197,25 +151,25 @@ Geometry bf reorientation.
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.87688068278862   -1.03073e+01   0.00000e+00 
+   @RHF iter   1:   -68.87688078041757   -1.03073e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.94690670023465   -1.07003e+00   5.53911e-01 DIIS
+   @RHF iter   2:   -69.94690658607742   -1.07003e+00   5.53911e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.73850374966878   -5.79160e+00   5.21445e-01 DIIS
-   @RHF iter   4:   -76.00169075276796   -2.63187e-01   1.77865e-02 DIIS
-   @RHF iter   5:   -76.02636707389775   -2.46763e-02   8.29266e-03 DIIS
-   @RHF iter   6:   -76.02661123786504   -2.44164e-04   1.30152e-03 DIIS
-   @RHF iter   7:   -76.02665195983508   -4.07220e-05   4.60197e-04 DIIS
-   @RHF iter   8:   -76.02665357546186   -1.61563e-06   1.02979e-04 DIIS
-   @RHF iter   9:   -76.02665366509251   -8.96306e-08   1.73293e-05 DIIS
-   @RHF iter  10:   -76.02665366584137   -7.48855e-10   2.41058e-06 DIIS
-   @RHF iter  11:   -76.02665366589042   -4.90559e-11   4.62179e-07 DIIS
-   @RHF iter  12:   -76.02665366589173   -1.30740e-12   6.40738e-08 DIIS
-   @RHF iter  13:   -76.02665366589181   -8.52651e-14   1.34325e-08 DIIS
+   @RHF iter   3:   -75.73850380716033   -5.79160e+00   5.21445e-01 DIIS
+   @RHF iter   4:   -76.00169075373573   -2.63187e-01   1.77865e-02 DIIS
+   @RHF iter   5:   -76.02636706962485   -2.46763e-02   8.29266e-03 DIIS
+   @RHF iter   6:   -76.02661123362958   -2.44164e-04   1.30152e-03 DIIS
+   @RHF iter   7:   -76.02665195561394   -4.07220e-05   4.60197e-04 DIIS
+   @RHF iter   8:   -76.02665357124120   -1.61563e-06   1.02979e-04 DIIS
+   @RHF iter   9:   -76.02665366087197   -8.96308e-08   1.73293e-05 DIIS
+   @RHF iter  10:   -76.02665366162086   -7.48884e-10   2.41058e-06 DIIS
+   @RHF iter  11:   -76.02665366166983   -4.89706e-11   4.62149e-07 DIIS
+   @RHF iter  12:   -76.02665366167122   -1.39266e-12   6.40837e-08 DIIS
+   @RHF iter  13:   -76.02665366167128   -5.68434e-14   1.34295e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -234,7 +188,7 @@ Geometry bf reorientation.
 	   4B2     1.253479     7A1     1.444918     1A2     1.475588  
 	   3B1     1.674083     8A1     1.867861     5B2     1.931955  
 	   6B2     2.446380     9A1     2.483524     4B1     3.283305  
-	   2A2     3.336170    10A1     3.506961    11A1     3.862825  
+	   2A2     3.336169    10A1     3.506961    11A1     3.862825  
 	   7B2     4.144454  
 
 	Final Occupation by Irrep:
@@ -243,36 +197,36 @@ Geometry bf reorientation.
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02665366589181
+  @RHF Final Energy:   -76.02665366167128
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.9783
+     X:     0.0000      Y:     0.0000      Z:     0.9783
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1682
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.8101     Total:     0.8101
+     X:     0.0000      Y:     0.0000      Z:     0.8101     Total:     0.8101
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     2.0592     Total:     2.0592
+     X:     0.0000      Y:     0.0000      Z:     2.0592     Total:     2.0592
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:57 2012
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.16 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:17 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:57 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -317,9 +271,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.124297805059
-           H          0.000000000000    -1.434419170946     0.986348183490
-           H         -0.000000000000     1.434419170946     0.986348183490
+           O          0.000000000000     0.000000000000    -0.124297814551
+           H          0.000000000000    -1.434419280484     0.986348258811
+           H         -0.000000000000     1.434419280484     0.986348258811
 
 
 
@@ -327,52 +281,52 @@ Total time:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     2.976359789257
-       2        0.000000000000     2.043514203810    -1.488179894628
-       3        0.000000000000    -2.043514203810    -1.488179894628
+       1        0.000000000000     0.000000000000     2.976359334684
+       2        0.000000000000     2.043513891709    -1.488179667342
+       3        0.000000000000    -2.043513891709    -1.488179667342
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -7.556703711836
-       2        0.000000000000    -5.037475831203     3.778351855918
-       3        0.000000000000     5.037475831203     3.778351855918
+       1        0.000000000000     0.000000000000    -7.556702984601
+       2        0.000000000000    -5.037475348145     3.778351492300
+       3        0.000000000000     5.037475348145     3.778351492300
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.492923830824
-       2        0.000000000000     0.300422252251    -0.246461915412
-       3        0.000000000000    -0.300422252251    -0.246461915412
+       1        0.000000000000     0.000000000000     0.492923787631
+       2        0.000000000000     0.300422224309    -0.246461893816
+       3        0.000000000000    -0.300422224309    -0.246461893816
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     4.069798606609
-       2        0.000000000000     2.681096264866    -2.034899303305
-       3        0.000000000000    -2.681096264866    -2.034899303305
+       1        0.000000000000     0.000000000000     4.069798288677
+       2        0.000000000000     2.681096057556    -2.034899144339
+       3        0.000000000000    -2.681096057556    -2.034899144339
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.017621485146
-       2        0.000000000000    -0.012443110276     0.008810742573
-       3        0.000000000000     0.012443110276     0.008810742573
+       1        0.000000000000     0.000000000000    -0.017621573608
+       2        0.000000000000    -0.012443174572     0.008810786804
+       3        0.000000000000     0.012443174572     0.008810786804
 
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:57 2012
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.50 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.24 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -387,12 +341,12 @@ Total time:
 	 3 : 1
 
 	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000       -0.0000000000       -0.1242978051
-	 H           0.0000000000       -1.4344191709        0.9863481835
-	 H          -0.0000000000        1.4344191709        0.9863481835
-	             0.0000000000        0.0000000000       -0.0176214851
-	             0.0000000000       -0.0124431103        0.0088107426
-	             0.0000000000        0.0124431103        0.0088107426
+	 O           0.0000000000        0.0000000000       -0.1242978146
+	 H           0.0000000000       -1.4344192805        0.9863482588
+	 H          -0.0000000000        1.4344192805        0.9863482588
+	             0.0000000000        0.0000000000       -0.0176215736
+	             0.0000000000       -0.0124431746        0.0088107868
+	             0.0000000000        0.0124431746        0.0088107868
 
 	Previous optimization step data not found.  Starting new optimization.
 
@@ -402,11 +356,11 @@ Total time:
 	 R(1,3)           =         1.814137	       0.960000
 	 B(2,1,3)         =         1.823869	     104.500000
 
-	Current energy   :       -76.0266536659
+	Current energy   :       -76.0266536617
 
 	Generating empirical Hessian (Fischer & Almlof '92) for each fragment.
 	Following RFO solution 0.
-	Projected energy change by RFO approximation:        -0.0006215896
+	Projected energy change by RFO approximation:        -0.0006215961
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -415,22 +369,10 @@ Total time:
 	 ----------------------------------------------------------------------
 	 Coordinate             Previous        Force       Change         New 
 	 ----------             --------       ------       ------       ------
-	 R(1,2)          =      0.960000    -0.125498    -0.021506     0.938494
-	 R(1,3)          =      0.960000    -0.125498    -0.021506     0.938494
-	 B(2,1,3)        =    104.500000    -0.000090    -0.245012   104.254988
+	 R(1,2)          =      0.960000    -0.125499    -0.021506     0.938494
+	 R(1,3)          =      0.960000    -0.125499    -0.021506     0.938494
+	 B(2,1,3)        =    104.500000    -0.000090    -0.245014   104.254986
 	 ----------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7734966
-    3    0.0000000    1.7188897   -0.4367017
-
-
-
 
 	Convergence Check Cycle    1: (using internal coordinates in au)
 	                    Actual        Tolerance     Converged?
@@ -442,51 +384,15 @@ Geometry bf reorientation.
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (au)
-	    O     0.0000000000   0.0000000000  -0.1218485561
-	    H     0.0000000000  -1.3999605636   0.9669125047
-	    H    -0.0000000000   1.3999605636   0.9669125047
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7734966
-    3    0.0000000    1.7188897   -0.4367017
-
-
-
+	    O     0.0000000000   0.0000000000  -0.1218485530
+	    H     0.0000000000  -1.3999604854   0.9669124799
+	    H    -0.0000000000   1.3999604854   0.9669124799
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
 
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7734966
-    3    0.0000000    1.7188897   -0.4367017
-
-
-
-
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:17 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7734966
-    3    0.0000000    1.7188897   -0.4367017
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:57 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -497,7 +403,7 @@ Geometry bf reorientation.
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -508,9 +414,9 @@ Geometry bf reorientation.
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.064479483737
-           H          0.000000000000    -0.740827279767     0.511668099256
-           H         -0.000000000000     0.740827279767     0.511668099256
+           O          0.000000000000     0.000000000000    -0.064479477161
+           H          0.000000000000    -0.740827181822     0.511668047074
+           H         -0.000000000000     0.740827181822     0.511668047074
 
     Number of unique atoms: 2
 
@@ -520,7 +426,7 @@ Geometry bf reorientation.
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.378878646245687
+  Nuclear repulsion =    9.378879067252276
 
   Charge       = 0
   Multiplicity = 1
@@ -533,6 +439,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -549,11 +456,11 @@ Geometry bf reorientation.
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.2842984832E-02.
+  Minimum eigenvalue in the overlap matrix is 3.2842981790E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.50129025054577
+  Initial RHF energy:   -58.50129011321389
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -567,30 +474,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7734966
-    3    0.0000000    1.7188897   -0.4367017
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7734966
-    3    0.0000000    1.7188897   -0.4367017
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -617,25 +500,25 @@ Geometry bf reorientation.
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.84572409179805   -1.03444e+01   0.00000e+00 
+   @RHF iter   1:   -68.84572402461863   -1.03444e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.97432483015864   -1.12860e+00   5.68799e-01 DIIS
+   @RHF iter   2:   -69.97432485933921   -1.12860e+00   5.68799e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.72012679061132   -5.74580e+00   5.36646e-01 DIIS
-   @RHF iter   4:   -76.00036645242419   -2.80240e-01   1.84241e-02 DIIS
-   @RHF iter   5:   -76.02663476982538   -2.62683e-02   8.57691e-03 DIIS
-   @RHF iter   6:   -76.02686950560317   -2.34736e-04   1.27038e-03 DIIS
-   @RHF iter   7:   -76.02690625648209   -3.67509e-05   4.44639e-04 DIIS
-   @RHF iter   8:   -76.02690771088318   -1.45440e-06   9.76842e-05 DIIS
-   @RHF iter   9:   -76.02690779257378   -8.16906e-08   1.68274e-05 DIIS
-   @RHF iter  10:   -76.02690779316175   -5.87974e-10   2.13331e-06 DIIS
-   @RHF iter  11:   -76.02690779319809   -3.63372e-11   3.89095e-07 DIIS
-   @RHF iter  12:   -76.02690779319914   -1.05160e-12   5.49438e-08 DIIS
-   @RHF iter  13:   -76.02690779319917   -2.84217e-14   1.22359e-08 DIIS
+   @RHF iter   3:   -75.72012675175345   -5.74580e+00   5.36646e-01 DIIS
+   @RHF iter   4:   -76.00036644768031   -2.80240e-01   1.84241e-02 DIIS
+   @RHF iter   5:   -76.02663476828158   -2.62683e-02   8.57691e-03 DIIS
+   @RHF iter   6:   -76.02686950404484   -2.34736e-04   1.27038e-03 DIIS
+   @RHF iter   7:   -76.02690625491668   -3.67509e-05   4.44639e-04 DIIS
+   @RHF iter   8:   -76.02690770931738   -1.45440e-06   9.76842e-05 DIIS
+   @RHF iter   9:   -76.02690779100793   -8.16905e-08   1.68274e-05 DIIS
+   @RHF iter  10:   -76.02690779159597   -5.88045e-10   2.13331e-06 DIIS
+   @RHF iter  11:   -76.02690779163242   -3.64508e-11   3.89083e-07 DIIS
+   @RHF iter  12:   -76.02690779163333   -9.09495e-13   5.49439e-08 DIIS
+   @RHF iter  13:   -76.02690779163339   -5.68434e-14   1.22351e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -663,7 +546,7 @@ Geometry bf reorientation.
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02690779319917
+  @RHF Final Energy:   -76.02690779163339
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -681,18 +564,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:57 2012
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.63 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:17 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:57 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -737,9 +620,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O         -0.000000000000     0.000000000000    -0.121848556148
-           H          0.000000000000    -1.399960563625     0.966912504691
-           H         -0.000000000000     1.399960563625     0.966912504691
+           O          0.000000000000     0.000000000000    -0.121848553026
+           H          0.000000000000    -1.399960485441     0.966912479918
+           H         -0.000000000000     1.399960485441     0.966912479918
 
 
 
@@ -747,51 +630,51 @@ Total time:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.122924425070
-       2        0.000000000000     2.135331627060    -1.561462212535
-       3        0.000000000000    -2.135331627060    -1.561462212535
+       1        0.000000000000     0.000000000000     3.122924761550
+       2        0.000000000000     2.135331796946    -1.561462380775
+       3        0.000000000000    -2.135331796946    -1.561462380775
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -7.796565447683
-       2        0.000000000000    -5.167841311338     3.898282723841
-       3        0.000000000000     5.167841311338     3.898282723841
+       1        0.000000000000     0.000000000000    -7.796566043883
+       2        0.000000000000    -5.167841507156     3.898283021942
+       3        0.000000000000     5.167841507156     3.898283021942
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.506742617111
-       2        0.000000000000     0.307778992652    -0.253371308555
-       3        0.000000000000    -0.307778992652    -0.253371308555
+       1        0.000000000000     0.000000000000     0.506742650848
+       2        0.000000000000     0.307779003297    -0.253371325424
+       3        0.000000000000    -0.307779003297    -0.253371325424
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     4.176802830413
-       2        0.000000000000     2.732976248123    -2.088401415207
-       3        0.000000000000    -2.732976248123    -2.088401415207
+       1        0.000000000000     0.000000000000     4.176803111704
+       2        0.000000000000     2.732976308279    -2.088401555852
+       3        0.000000000000    -2.732976308279    -2.088401555852
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.009904424911
-       2        0.000000000000     0.008245556497    -0.004952212456
-       3        0.000000000000    -0.008245556497    -0.004952212456
+       1        0.000000000000     0.000000000000     0.009904480218
+       2        0.000000000000     0.008245601366    -0.004952240109
+       3        0.000000000000    -0.008245601366    -0.004952240109
 
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:58 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.98 seconds =       0.02 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 			----------------------------------
@@ -801,28 +684,28 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 O          -0.0000000000        0.0000000000       -0.1218485561
-	 H           0.0000000000       -1.3999605636        0.9669125047
-	 H          -0.0000000000        1.3999605636        0.9669125047
-	             0.0000000000        0.0000000000        0.0099044249
-	             0.0000000000        0.0082455565       -0.0049522125
-	             0.0000000000       -0.0082455565       -0.0049522125
+	 O           0.0000000000        0.0000000000       -0.1218485530
+	 H           0.0000000000       -1.3999604854        0.9669124799
+	 H          -0.0000000000        1.3999604854        0.9669124799
+	             0.0000000000        0.0000000000        0.0099044802
+	             0.0000000000        0.0082456014       -0.0049522401
+	             0.0000000000       -0.0082456014       -0.0049522401
 
 	---Fragment 1 Intrafragment Coordinates---
 	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
 	 R(1,2)           =         1.773497	       0.938494
 	 R(1,3)           =         1.773497	       0.938494
-	 B(2,1,3)         =         1.819593	     104.254988
+	 B(2,1,3)         =         1.819593	     104.254986
 
-	Current energy   :       -76.0269077932
+	Current energy   :       -76.0269077916
 
 	Energy change for the previous step:
-		Projected    :        -0.0006215896
-		Actual       :        -0.0002541273
+		Projected    :        -0.0006215961
+		Actual       :        -0.0002541300
 
 	Performing BFGS update with previous 1 gradient(s).
 	Following RFO solution 0.
-	Projected energy change by RFO approximation:        -0.0001529631
+	Projected energy change by RFO approximation:        -0.0001529648
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -833,20 +716,8 @@ Total time:
 	 ----------             --------       ------       ------       ------
 	 R(1,2)          =      0.938494     0.078672     0.008220     0.946714
 	 R(1,3)          =      0.938494     0.078672     0.008220     0.946714
-	 B(2,1,3)        =    104.254988     0.000156     0.259958   104.514946
+	 B(2,1,3)        =    104.254986     0.000156     0.259960   104.514946
 	 ----------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7890295
-    3    0.0000000    1.7319278   -0.4483890
-
-
-
 
 	Convergence Check Cycle    2: (using internal coordinates in au)
 	                    Actual        Tolerance     Converged?
@@ -858,51 +729,15 @@ Geometry bf reorientation.
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (au)
-	    O     0.0000000000   0.0000000000  -0.1225568910
-	    H     0.0000000000  -1.4147098514   0.9725333986
-	    H    -0.0000000000   1.4147098514   0.9725333986
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7890295
-    3    0.0000000    1.7319278   -0.4483890
-
-
-
+	    O    -0.0000000000   0.0000000000  -0.1225568921
+	    H     0.0000000000  -1.4147098540   0.9725334072
+	    H    -0.0000000000   1.4147098540   0.9725334072
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
 
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7890295
-    3    0.0000000    1.7319278   -0.4483890
-
-
-
-
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:17 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7890295
-    3    0.0000000    1.7319278   -0.4483890
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:58 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -913,7 +748,7 @@ Geometry bf reorientation.
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -924,9 +759,9 @@ Geometry bf reorientation.
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.064854318417
-           H          0.000000000000    -0.748632267315     0.514642548450
-           H         -0.000000000000     0.748632267315     0.514642548450
+           O          0.000000000000     0.000000000000    -0.064854314039
+           H          0.000000000000    -0.748632211481     0.514642513708
+           H         -0.000000000000     0.748632211481     0.514642513708
 
     Number of unique atoms: 2
 
@@ -936,7 +771,7 @@ Geometry bf reorientation.
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.296825551989576
+  Nuclear repulsion =    9.296825511712944
 
   Charge       = 0
   Multiplicity = 1
@@ -949,6 +784,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -965,11 +801,11 @@ Geometry bf reorientation.
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.3441261261E-02.
+  Minimum eigenvalue in the overlap matrix is 3.3441261501E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.52800699786786
+  Initial RHF energy:   -58.52800701044708
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -983,30 +819,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7890295
-    3    0.0000000    1.7319278   -0.4483890
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7890295
-    3    0.0000000    1.7319278   -0.4483890
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -1033,25 +845,25 @@ Geometry bf reorientation.
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.85850365642270   -1.03305e+01   0.00000e+00 
+   @RHF iter   1:   -68.85850366145581   -1.03305e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.96712714562223   -1.10862e+00   5.62582e-01 DIIS
+   @RHF iter   2:   -69.96712713282574   -1.10862e+00   5.62582e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.72753986843520   -5.76041e+00   5.30298e-01 DIIS
-   @RHF iter   4:   -76.00112910112550   -2.73589e-01   1.81725e-02 DIIS
-   @RHF iter   5:   -76.02677529249911   -2.56462e-02   8.46271e-03 DIIS
-   @RHF iter   6:   -76.02701313822378   -2.37846e-04   1.27959e-03 DIIS
-   @RHF iter   7:   -76.02705132502146   -3.81868e-05   4.50290e-04 DIIS
-   @RHF iter   8:   -76.02705284181613   -1.51679e-06   9.97722e-05 DIIS
-   @RHF iter   9:   -76.02705292647703   -8.46609e-08   1.70494e-05 DIIS
-   @RHF iter  10:   -76.02705292712909   -6.52065e-10   2.24950e-06 DIIS
-   @RHF iter  11:   -76.02705292717017   -4.10836e-11   4.18315e-07 DIIS
-   @RHF iter  12:   -76.02705292717137   -1.19371e-12   5.83592e-08 DIIS
-   @RHF iter  13:   -76.02705292717130    7.10543e-14   1.26816e-08 DIIS
+   @RHF iter   3:   -75.72753987197609   -5.76041e+00   5.30298e-01 DIIS
+   @RHF iter   4:   -76.00112910142327   -2.73589e-01   1.81725e-02 DIIS
+   @RHF iter   5:   -76.02677529248702   -2.56462e-02   8.46271e-03 DIIS
+   @RHF iter   6:   -76.02701313821400   -2.37846e-04   1.27959e-03 DIIS
+   @RHF iter   7:   -76.02705132501258   -3.81868e-05   4.50290e-04 DIIS
+   @RHF iter   8:   -76.02705284180732   -1.51679e-06   9.97722e-05 DIIS
+   @RHF iter   9:   -76.02705292646826   -8.46609e-08   1.70494e-05 DIIS
+   @RHF iter  10:   -76.02705292712020   -6.51937e-10   2.24950e-06 DIIS
+   @RHF iter  11:   -76.02705292716129   -4.10978e-11   4.18311e-07 DIIS
+   @RHF iter  12:   -76.02705292716242   -1.12266e-12   5.83553e-08 DIIS
+   @RHF iter  13:   -76.02705292716246   -4.26326e-14   1.26834e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1079,7 +891,7 @@ Geometry bf reorientation.
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02705292717130
+  @RHF Final Energy:   -76.02705292716246
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -1097,18 +909,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:18 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:58 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.14 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:18 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:58 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -1153,9 +965,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.122556890984
-           H          0.000000000000    -1.414709851435     0.972533398634
-           H         -0.000000000000     1.414709851435     0.972533398634
+           O          0.000000000000     0.000000000000    -0.122556892070
+           H          0.000000000000    -1.414709853956     0.972533407248
+           H         -0.000000000000     1.414709853956     0.972533407248
 
 
 
@@ -1163,52 +975,52 @@ Total time:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.059971444084
-       2        0.000000000000     2.101448763869    -1.529985722042
-       3        0.000000000000    -2.101448763869    -1.529985722042
+       1        0.000000000000     0.000000000000     3.059971430490
+       2        0.000000000000     2.101448740661    -1.529985715245
+       3        0.000000000000    -2.101448740661    -1.529985715245
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -7.686910469658
-       2        0.000000000000    -5.125733396400     3.843455234829
-       3        0.000000000000     5.125733396400     3.843455234829
+       1        0.000000000000     0.000000000000    -7.686910470258
+       2        0.000000000000    -5.125733350834     3.843455235129
+       3        0.000000000000     5.125733350834     3.843455235129
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.500484643770
-       2        0.000000000000     0.305455013010    -0.250242321885
-       3        0.000000000000    -0.305455013010    -0.250242321885
+       1        0.000000000000     0.000000000000     0.500484643975
+       2        0.000000000000     0.305455010428    -0.250242321987
+       3        0.000000000000    -0.305455010428    -0.250242321987
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     4.125675569946
-       2        0.000000000000     2.718565440247    -2.062837784973
-       3        0.000000000000    -2.718565440247    -2.062837784973
+       1        0.000000000000     0.000000000000     4.125675577527
+       2        0.000000000000     2.718565417031    -2.062837788763
+       3        0.000000000000    -2.718565417031    -2.062837788763
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.000778811858
-       2        0.000000000000    -0.000264179273     0.000389405929
-       3        0.000000000000     0.000264179273     0.000389405929
+       1        0.000000000000     0.000000000000    -0.000778818267
+       2        0.000000000000    -0.000264182715     0.000389409133
+       3        0.000000000000     0.000264182715     0.000389409133
 
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:18 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:58 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.49 seconds =       0.02 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.71 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -1217,12 +1029,12 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000       -0.0000000000       -0.1225568910
-	 H           0.0000000000       -1.4147098514        0.9725333986
-	 H          -0.0000000000        1.4147098514        0.9725333986
-	             0.0000000000        0.0000000000       -0.0007788119
-	             0.0000000000       -0.0002641793        0.0003894059
-	             0.0000000000        0.0002641793        0.0003894059
+	 O           0.0000000000        0.0000000000       -0.1225568921
+	 H           0.0000000000       -1.4147098540        0.9725334072
+	 H          -0.0000000000        1.4147098540        0.9725334072
+	             0.0000000000        0.0000000000       -0.0007788183
+	             0.0000000000       -0.0002641827        0.0003894091
+	             0.0000000000        0.0002641827        0.0003894091
 
 	---Fragment 1 Intrafragment Coordinates---
 	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
@@ -1233,8 +1045,8 @@ Total time:
 	Current energy   :       -76.0270529272
 
 	Energy change for the previous step:
-		Projected    :        -0.0001529631
-		Actual       :        -0.0001451340
+		Projected    :        -0.0001529648
+		Actual       :        -0.0001451355
 	Energy ratio indicates good step: Trust radius increased to 8.000e-01.
 
 
@@ -1253,18 +1065,6 @@ Total time:
 	 R(1,3)          =      0.946714    -0.003685    -0.000386     0.946328
 	 B(2,1,3)        =    104.514946     0.000020     0.060079   104.575025
 	 ----------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7883004
-    3    0.0000000    1.7307510   -0.4500214
-
-
-
 
 	Convergence Check Cycle    3: (using internal coordinates in au)
 	                    Actual        Tolerance     Converged?
@@ -1276,51 +1076,15 @@ Geometry bf reorientation.
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (au)
-	    O     0.0000000000  -0.0000000000  -0.1224239500
-	    H     0.0000000000  -1.4147069876   0.9714784639
-	    H    -0.0000000000   1.4147069876   0.9714784639
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7883004
-    3    0.0000000    1.7307510   -0.4500214
-
-
-
+	    O     0.0000000000   0.0000000000  -0.1224239503
+	    H     0.0000000000  -1.4147069863   0.9714784661
+	    H    -0.0000000000   1.4147069863   0.9714784661
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
 
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7883004
-    3    0.0000000    1.7307510   -0.4500214
-
-
-
-
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:18 2012
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7883004
-    3    0.0000000    1.7307510   -0.4500214
-
-
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:58 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1331,7 +1095,7 @@ Geometry bf reorientation.
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1342,9 +1106,9 @@ Geometry bf reorientation.
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.064783969090
-           H          0.000000000000    -0.748630751815     0.514084301010
-           H         -0.000000000000     0.748630751815     0.514084301010
+           O          0.000000000000     0.000000000000    -0.064783964289
+           H          0.000000000000    -0.748630694009     0.514084262914
+           H         -0.000000000000     0.748630694009     0.514084262914
 
     Number of unique atoms: 2
 
@@ -1354,7 +1118,7 @@ Geometry bf reorientation.
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.300472711622458
+  Nuclear repulsion =    9.300472709135462
 
   Charge       = 0
   Multiplicity = 1
@@ -1367,6 +1131,7 @@ Geometry bf reorientation.
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -1383,11 +1148,11 @@ Geometry bf reorientation.
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.3422377076E-02.
+  Minimum eigenvalue in the overlap matrix is 3.3422377073E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.52689365575471
+  Initial RHF energy:   -58.52689365637610
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1401,30 +1166,6 @@ Geometry bf reorientation.
    -------------------------------------------------------
 
   ==> Integral Setup <==
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7883004
-    3    0.0000000    1.7307510   -0.4500214
-
-
-
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7883004
-    3    0.0000000    1.7307510   -0.4500214
-
-
 
  MINTS: Wrapper to libmints.
    by Justin Turney
@@ -1451,25 +1192,25 @@ Geometry bf reorientation.
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.85810226216556   -1.03312e+01   0.00000e+00 
+   @RHF iter   1:   -68.85810226214663   -1.03312e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.96871305290669   -1.11061e+00   5.62694e-01 DIIS
+   @RHF iter   2:   -69.96871304953081   -1.11061e+00   5.62694e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.72721983482580   -5.75851e+00   5.30407e-01 DIIS
-   @RHF iter   4:   -76.00110167385336   -2.73882e-01   1.81825e-02 DIIS
-   @RHF iter   5:   -76.02677616900893   -2.56745e-02   8.46652e-03 DIIS
-   @RHF iter   6:   -76.02701377179029   -2.37603e-04   1.27815e-03 DIIS
-   @RHF iter   7:   -76.02705187296540   -3.81012e-05   4.49894e-04 DIIS
-   @RHF iter   8:   -76.02705338693615   -1.51397e-06   9.96868e-05 DIIS
-   @RHF iter   9:   -76.02705347144268   -8.45065e-08   1.70491e-05 DIIS
-   @RHF iter  10:   -76.02705347209442   -6.51738e-10   2.24980e-06 DIIS
-   @RHF iter  11:   -76.02705347213552   -4.10978e-11   4.17994e-07 DIIS
-   @RHF iter  12:   -76.02705347213669   -1.16529e-12   5.82050e-08 DIIS
-   @RHF iter  13:   -76.02705347213669    0.00000e+00   1.26524e-08 DIIS
+   @RHF iter   3:   -75.72721983503946   -5.75851e+00   5.30407e-01 DIIS
+   @RHF iter   4:   -76.00110167387331   -2.73882e-01   1.81825e-02 DIIS
+   @RHF iter   5:   -76.02677616900819   -2.56745e-02   8.46652e-03 DIIS
+   @RHF iter   6:   -76.02701377178980   -2.37603e-04   1.27815e-03 DIIS
+   @RHF iter   7:   -76.02705187296512   -3.81012e-05   4.49894e-04 DIIS
+   @RHF iter   8:   -76.02705338693590   -1.51397e-06   9.96868e-05 DIIS
+   @RHF iter   9:   -76.02705347144243   -8.45065e-08   1.70491e-05 DIIS
+   @RHF iter  10:   -76.02705347209420   -6.51767e-10   2.24980e-06 DIIS
+   @RHF iter  11:   -76.02705347213519   -4.09983e-11   4.17950e-07 DIIS
+   @RHF iter  12:   -76.02705347213639   -1.19371e-12   5.82087e-08 DIIS
+   @RHF iter  13:   -76.02705347213642   -2.84217e-14   1.26530e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1497,36 +1238,36 @@ Geometry bf reorientation.
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02705347213669
+  @RHF Final Energy:   -76.02705347213642
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.9636
+     X:    -0.0000      Y:    -0.0000      Z:     0.9636
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1591
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8045     Total:     0.8045
+     X:    -0.0000      Y:    -0.0000      Z:     0.8045     Total:     0.8045
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.0448     Total:     2.0448
+     X:    -0.0000      Y:    -0.0000      Z:     2.0448     Total:     2.0448
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:18 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:58 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.64 seconds =       0.03 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.79 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on sherrill-laptop
-*** at Sat Jan  7 15:38:18 2012
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:36:58 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -1571,9 +1312,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.122423950032
-           H          0.000000000000    -1.414706987555     0.971478463939
-           H         -0.000000000000     1.414706987555     0.971478463939
+           O          0.000000000000     0.000000000000    -0.122423950308
+           H          0.000000000000    -1.414706986349     0.971478466133
+           H         -0.000000000000     1.414706986349     0.971478466133
 
 
 
@@ -1581,52 +1322,52 @@ Total time:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.060392548924
-       2        0.000000000000     2.103863897975    -1.530196274462
-       3        0.000000000000    -2.103863897975    -1.530196274462
+       1        0.000000000000     0.000000000000     3.060392552975
+       2        0.000000000000     2.103863894650    -1.530196276488
+       3        0.000000000000    -2.103863894650    -1.530196276488
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -7.684269851105
-       2        0.000000000000    -5.131017899861     3.842134925553
-       3        0.000000000000     5.131017899861     3.842134925553
+       1        0.000000000000     0.000000000000    -7.684269866766
+       2        0.000000000000    -5.131017890051     3.842134933383
+       3        0.000000000000     5.131017890051     3.842134933383
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.500308561650
-       2        0.000000000000     0.305755275100    -0.250154280825
-       3        0.000000000000    -0.305755275100    -0.250154280825
+       1        0.000000000000     0.000000000000     0.500308562615
+       2        0.000000000000     0.305755274539    -0.250154281307
+       3        0.000000000000    -0.305755274539    -0.250154281307
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     4.123431297475
-       2        0.000000000000     2.721415484445    -2.061715648738
-       3        0.000000000000    -2.721415484445    -2.061715648738
+       1        0.000000000000     0.000000000000     4.123431307356
+       2        0.000000000000     2.721415478495    -2.061715653678
+       3        0.000000000000    -2.721415478495    -2.061715653678
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.000137443056
-       2        0.000000000000     0.000016757659     0.000068721528
-       3        0.000000000000    -0.000016757659     0.000068721528
+       1        0.000000000000     0.000000000000    -0.000137443819
+       2        0.000000000000     0.000016757633     0.000068721910
+       3        0.000000000000    -0.000016757633     0.000068721910
 
 
-*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:19 2012
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:36:58 2012
 Module time:
-	user time   =       0.34 seconds =       0.01 minutes
+	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.98 seconds =       0.03 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.94 seconds =       0.02 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -1635,18 +1376,18 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000       -0.0000000000       -0.1224239500
-	 H           0.0000000000       -1.4147069876        0.9714784639
-	 H          -0.0000000000        1.4147069876        0.9714784639
-	             0.0000000000        0.0000000000       -0.0001374431
-	             0.0000000000        0.0000167577        0.0000687215
-	             0.0000000000       -0.0000167577        0.0000687215
+	 O           0.0000000000        0.0000000000       -0.1224239503
+	 H           0.0000000000       -1.4147069863        0.9714784661
+	 H          -0.0000000000        1.4147069863        0.9714784661
+	             0.0000000000        0.0000000000       -0.0001374438
+	             0.0000000000        0.0000167576        0.0000687219
+	             0.0000000000       -0.0000167576        0.0000687219
 
 	---Fragment 1 Intrafragment Coordinates---
 	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
 	 R(1,2)           =         1.788300	       0.946328
 	 R(1,3)           =         1.788300	       0.946328
-	 B(2,1,3)         =         1.825179	     104.575025
+	 B(2,1,3)         =         1.825178	     104.575025
 
 	Current energy   :       -76.0270534721
 
@@ -1669,20 +1410,8 @@ Total time:
 	 ----------             --------       ------       ------       ------
 	 R(1,2)          =      0.946328    -0.000237    -0.000050     0.946277
 	 R(1,3)          =      0.946328    -0.000237    -0.000050     0.946277
-	 B(2,1,3)        =    104.575025     0.000009     0.032674   104.607699
+	 B(2,1,3)        =    104.575025     0.000009     0.032674   104.607698
 	 ----------------------------------------------------------------------
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7882050
-    3    0.0000000    1.7304018   -0.4509842
-
-
-
 
 	Convergence Check Cycle    4: (using internal coordinates in au)
 	                    Actual        Tolerance     Converged?
@@ -1698,34 +1427,29 @@ Geometry bf reorientation.
 	----------------------------------------------------------------------------
 	 Step         Energy             Delta(E)      MAX force    MAX Delta(q)  
 	----------------------------------------------------------------------------
-	   1    -76.026653665892    -76.026653665892    1.52e-02     1.52e-02
-	   2    -76.026907793199     -0.000254127307    9.55e-03     9.55e-03
-	   3    -76.027052927171     -0.000145133972    4.47e-04     4.47e-04
-	   4    -76.027053472137     -0.000000544965    1.16e-04     1.16e-04
+	   1    -76.026653661671    -76.026653661671    1.52e-02     1.52e-02
+	   2    -76.026907791633     -0.000254129962    9.55e-03     9.55e-03
+	   3    -76.027052927162     -0.000145135529    4.47e-04     4.47e-04
+	   4    -76.027053472136     -0.000000544974    1.16e-04     1.16e-04
 	----------------------------------------------------------------------
 
 	Writing optimization data to binary file.
-	Final energy is    -76.0270534721367
+	Final energy is    -76.0270534721364
 	Final (previous) structure:
 	Cartesian Geometry (au)
-	    O     0.0000000000  -0.0000000000  -0.1224239500
-	    H     0.0000000000  -1.4147069876   0.9714784639
-	    H    -0.0000000000   1.4147069876   0.9714784639
+	    O     0.0000000000   0.0000000000  -0.1224239503
+	    H     0.0000000000  -1.4147069863   0.9714784661
+	    H    -0.0000000000   1.4147069863   0.9714784661
 	Saving final (previous) structure.
-update_geometry() is called.
-Geometry bf reorientation.
-  Irrep: 1 Size: 3 x 3
-
-                 1            2            3
-
-    1    0.0000000    0.0000000    0.0000000
-    2    0.0000000    0.0000000    1.7883004
-    3    0.0000000    1.7307510   -0.4500214
-
-
-
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
+
+	Final optimized geometry and variables (in Angstrom):
+
+	O
+	H     1    0.946328
+	H     1    0.946328     2  104.575025
+
 
 *** PSI4 exiting successfully. Buy a developer a beer!
