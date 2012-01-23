@@ -98,6 +98,10 @@ def frac_traverse(mol, **kwargs):
         PsiMod.set_global_option("FRAC_LOAD", True)
         PsiMod.set_global_option("FRAC_DIIS", frac_diis)
 
+    # Reset the old guess    
+    if (neutral_guess):
+        PsiMod.set_global_option("GUESS", old_guess)
+
     # => Run the neutral next <= #
 
     mol.set_molecular_charge(charge0)
@@ -128,9 +132,5 @@ def frac_traverse(mol, **kwargs):
     for k in range(len(occs)):
         PsiMod.print_out('\t%11.3E %24.16E\n' % (occs[k], energies[k]))
         E[occs[k]] = energies[k]
-
-    # Reset the old guess    
-    if (neutral_guess):
-        PsiMod.set_global_option("GUESS", old_guess)
 
     return E    
