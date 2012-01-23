@@ -1208,12 +1208,12 @@ void Molecule::print_in_input_format() const
 {
     if (Communicator::world->me() == 0) {
         if (nallatom()) {
-            fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
-                    units_==Angstrom ? "Angstrom" : "bohr");
             // It's only worth echoing these if the user either input some variables,
             // or they used a Z matrix for input
             if(full_atoms_[0]->type()==CoordEntry::ZMatrixCoord
                     || geometry_variables_.size()){
+                fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
+                        units_==Angstrom ? "Angstrom" : "bohr");
                 for(int i = 0; i < nallatom(); ++i){
                     full_atoms_[i]->print_in_input_format();
                 }

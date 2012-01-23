@@ -1,12 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
-    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
-    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
-    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremy Wilke
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -14,14 +17,135 @@
 
     Memory level set to 256.000 MB
 
-*** tstart() called on h70-33-108-42.paws.uga.edu
-*** at Tue Jan 18 15:34:50 2011
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
+#! After the computation, the checkpoint file is renamed, using the PSIO handler.
+
+memory 250 mb
+
+refnuc   =   2.64588604295000 #TEST
+refscf   = -25.10354689697916 #TEST
+refccsd  =  -0.10026580394658 #TEST
+ref_t    =  -0.00209093345229 #TEST
+reftotal = -25.20590363437792 #TEST
+
+molecule bh {
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+set {
+   docc [3, 0, 0, 0]
+   basis cc-pvqz
+   freeze_core true
+   r_convergence 10
+   e_convergence 10
+   d_convergence 10
+}
+
+energy('ccsd(t)')
+
+compare_values(refnuc,   bh.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
+
+#Here's a demonstration of how to print an manipulate the files used by Psi
+psi4_io.print_out()
+PsiMod.IO.change_file_namespace(32, 'bh', 'cool')
+psi4_io.print_out()
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:54:34 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000    -0.083865697994
+           H          0.000000000000     0.000000000000     0.916134302006
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    2.645886042950000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 6
+  Nalpha       = 3
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVQZ <==
+
+  Basis Set
+    Number of shells: 25
+    Number of basis function: 85
+    Number of Cartesian functions: 105
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.2491309807E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -17.77884262091037
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        35      35       3       3       3       0
+     A2        10      10       0       0       0       0
+     B1        20      20       0       0       0       0
+     B2        20      20       0       0       0       0
+   -------------------------------------------------------
+    Total      85      85       3       3       3       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
 
  MINTS: Wrapper to libmints.
    by Justin Turney
-
-
-  Molecular point group: c2v
 
    Calculation information:
       Number of atoms:                   2
@@ -34,118 +158,107 @@
       Number of irreps:                  4
       Number of functions per irrep: [  35   10   20   20 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 1440997 integrals.
+      Computing two-electron integrals...done
+      Computed 1212952 non-zero two-electron integrals.
+        Stored in file 33.
 
+  ==> Iterations <==
 
-*** tstop() called on h70-33-108-42.paws.uga.edu at Tue Jan 18 15:34:57 2011
-	user time   =       6.41 seconds =       0.11 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+                        Total Energy        Delta E     Density RMS
 
-*** tstart() called on h70-33-108-42.paws.uga.edu
-*** at Tue Jan 18 15:34:57 2011
+   @RHF iter   1:   -22.22332422230655   -4.44448e+00   0.00000e+00 
+   @RHF iter   2:   -24.84054437854143   -2.61722e+00   1.19762e-01 DIIS
+   @RHF iter   3:   -25.09581425791704   -2.55270e-01   7.62596e-02 DIIS
+   @RHF iter   4:   -25.10290888820956   -7.09463e-03   4.93661e-03 DIIS
+   @RHF iter   5:   -25.10352429353645   -6.15405e-04   1.31490e-03 DIIS
+   @RHF iter   6:   -25.10354663140729   -2.23379e-05   2.50684e-04 DIIS
+   @RHF iter   7:   -25.10354689087664   -2.59469e-07   5.51114e-05 DIIS
+   @RHF iter   8:   -25.10354689670065   -5.82401e-09   7.62541e-06 DIIS
+   @RHF iter   9:   -25.10354689697735   -2.76700e-10   1.21232e-06 DIIS
+   @RHF iter  10:   -25.10354689697913   -1.77991e-12   1.29766e-07 DIIS
+   @RHF iter  11:   -25.10354689697918   -5.32907e-14   2.65929e-08 DIIS
+   @RHF iter  12:   -25.10354689697911    6.75016e-14   3.81616e-09 DIIS
+   @RHF iter  13:   -25.10354689697916   -5.32907e-14   3.17683e-10 DIIS
 
-  SO Basis Dimension (n = 4): 35  10  20  20  
-	There are an even number of electrons - assuming singlet.
-	Specify the multiplicity with the MULTP option in the
-	input if this is incorrect
+  ==> Post-Iterations <==
 
- RHF: by Justin Turney and Rob Parrish
+	Orbital Energies (a.u.)
+	-----------------------
 
-  Release version.
+	Doubly Occupied:                                                      
 
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+	   1A1    -7.656449     2A1    -0.715781     3A1    -0.341709  
 
-       Center              X                  Y                   Z       
-    ------------   -----------------  -----------------  -----------------
-           B          0.000000000000     0.000000000000    -0.250461359996
-           H          0.000000000000     0.000000000000     0.749538640004
+	Virtual:                                                              
 
-    Number of unique atoms: 2
+	   1B1     0.045923     1B2     0.045923     4A1     0.154085  
+	   5A1     0.215379     6A1     0.264489     2B1     0.267602  
+	   2B2     0.267602     3B1     0.395341     3B2     0.395341  
+	   1A2     0.408508     7A1     0.408508     8A1     0.498906  
+	   9A1     0.694962    10A1     0.760301     4B2     0.858235  
+	   4B1     0.858235     5B2     1.013777     5B1     1.013777  
+	  11A1     1.210558     6B2     1.219679     6B1     1.219679  
+	  12A1     1.221072     2A2     1.221072     7B1     1.316383  
+	   7B2     1.316383    13A1     1.341361     3A2     1.341361  
+	  14A1     1.348576    15A1     1.473935     8B2     1.532751  
+	   8B1     1.532751    16A1     1.726656    17A1     2.136117  
+	   4A2     2.538373    18A1     2.538373     9B2     2.610957  
+	   9B1     2.610957    19A1     2.855272    10B2     3.064834  
+	  10B1     3.064834    20A1     3.397074     5A2     3.397074  
+	  11B1     3.412515    11B2     3.412515    21A1     3.566685  
+	  12B2     3.739854    12B1     3.739854     6A2     3.809173  
+	  22A1     3.809173     7A2     3.897341    23A1     3.897341  
+	  24A1     3.908670    13B1     3.947554    13B2     3.947554  
+	  14B2     3.949190    14B1     3.949190    15B2     4.001132  
+	  15B1     4.001132     8A2     4.099324    25A1     4.099324  
+	  26A1     4.138267    27A1     5.032926    28A1     5.283525  
+	  16B1     5.505709    16B2     5.505709    17B2     6.418822  
+	  17B1     6.418822    29A1     7.300731    18B2     7.574075  
+	  18B1     7.574075     9A2     7.596982    30A1     7.596982  
+	  31A1     8.191050    10A2     8.448402    32A1     8.448402  
+	  19B1     8.895755    19B2     8.895755    20B1     9.775047  
+	  20B2     9.775047    33A1     9.801553    34A1    11.149102  
+	  35A1    17.128233  
 
-    Atoms equivalency:
-       unique atom 0: 0 
-       unique atom 1: 1 
-
-  Nuclear repulsion =    2.645886245000000
-  Energy threshold  = 1.00e-10
-  Density threshold = 1.00e-10
-
-  SCF Algorithm Type is PK.
-  DIIS enabled.
-  Allocated 611065 elements (1105 pairs) for PK. ( 4.66 MiB)
-
-
-  Minimum eigenvalue in the overlap matrix is 2.2491303034E-04.
-  Using Symmetric Orthogonalization.
-  SCF Guess: Reading previous MOs.
-
-
-  Initial RHF energy:   -25.10354687361513
-
-  Forming PK matrix.
-  Processed 1440997 two-electron integrals.
-
-                                  Total Energy            Delta E              Density RMS
-
-  @RHF iteration   1 energy:   -25.10354687361514       -0.00000000000000     0.00000000000000  
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    0 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -25.10354687361514
+  @RHF Final Energy:   -25.10354689697916
 
-  Final occupation vector = ( 3  A1  0  A2  0  B1  0  B2 )
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9388
 
-  Orbital energies (a.u.):
-    Doubly occupied orbitals
-         -7.656449  A1     -0.715781  A1     -0.341709  A1  
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0281
 
-    Unoccupied orbitals
-          0.045923  B1      0.045923  B2      0.154085  A1      0.215379  A1  
-          0.264489  A1      0.267602  B2      0.267602  B1      0.395341  B2  
-          0.395341  B1      0.408508  A2      0.408508  A1      0.498906  A1  
-          0.694962  A1      0.760301  A1      0.858235  B2      0.858235  B1  
-          1.013777  B2      1.013777  B1      1.210558  A1      1.219679  B1  
-          1.219679  B2      1.221072  A1      1.221072  A2      1.316383  B2  
-          1.316383  B1      1.341361  A2      1.341361  A1      1.348576  A1  
-          1.473935  A1      1.532751  B1      1.532751  B2      1.726656  A1  
-          2.136117  A1      2.538373  A1      2.538373  A2      2.610957  B1  
-          2.610957  B2      2.855272  A1      3.064834  B1      3.064834  B2  
-          3.397074  A2      3.397074  A1      3.412515  B1      3.412515  B2  
-          3.566685  A1      3.739854  B2      3.739854  B1      3.809173  A1  
-          3.809173  A2      3.897341  A1      3.897341  A2      3.908670  A1  
-          3.947554  B2      3.947554  B1      3.949190  B2      3.949190  B1  
-          4.001132  B2      4.001132  B1      4.099324  A1      4.099324  A2  
-          4.138267  A1      5.032926  A1      5.283525  A1      5.505709  B1  
-          5.505709  B2      6.418822  B1      6.418822  B2      7.300731  A1  
-          7.574075  B1      7.574075  B2      7.596982  A2      7.596982  A1  
-          8.191050  A1      8.448402  A2      8.448402  A1      8.895755  B1  
-          8.895755  B2      9.775047  B1      9.775047  B2      9.801553  A1  
-         11.149103  A1     17.128233  A1  
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9107     Total:     0.9107
 
-  Electric dipole (a.u.):
-	              X	              Y	              Z
-    Nuclear part:
-	   0.0000000000	   0.0000000000	   0.0000000000
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.3148     Total:     2.3148
 
-    Electronic part:
-	   0.0000000000	   0.0000000000	   0.0000000000
 
-    Dipole moments:
-	   0.0000000000	   0.0000000000	   0.0000000000
+  Saving occupied orbitals to File 180.
 
-    Total dipole:    0.0000000000 a.u.     0.0000000000 Debye
-    Conversion: 1.0 a.u. =    2.5417500000 Debye
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:54:36 2012
+Module time:
+	user time   =       1.58 seconds =       0.03 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       1.58 seconds =       0.03 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
-*** tstop() called on h70-33-108-42.paws.uga.edu at Tue Jan 18 15:34:57 2011
-	user time   =       6.84 seconds =       0.11 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-*** tstart() called on h70-33-108-42.paws.uga.edu
-*** at Tue Jan 18 15:34:57 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:54:36 2012
 
 
 	**************************************************
@@ -165,7 +278,7 @@
 	Reference wfn   =	RHF
 	Derivative      =	None
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	100.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -182,24 +295,29 @@
 	 B1	   20	    0	    0	    0	    20	    0
 	 B2	   20	    0	    0	    0	    20	    0
 
-	Nuclear Rep. energy (chkpt) =      2.64588624500000
-	SCF energy          (chkpt) =    -25.10354687361514
+	Nuclear Rep. energy (chkpt) =      2.64588604295000
+	SCF energy          (chkpt) =    -25.10354689697916
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
-	Frozen-core energy =  -23.044437479862516
+	Frozen-core energy =  -23.044437398996077
 	Starting first half-transformation.
 	Sorting half-transformed integrals.
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on h70-33-108-42.paws.uga.edu at Tue Jan 18 15:35:01 2011
-	user time   =       9.09 seconds =       0.15 minutes
-	system time =       0.79 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:54:39 2012
+Module time:
+	user time   =       1.16 seconds =       0.02 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       2.74 seconds =       0.05 minutes
+	system time =       0.48 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-*** tstart() called on h70-33-108-42.paws.uga.edu
-*** at Tue Jan 18 15:35:01 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:54:39 2012
 
 
 			**************************
@@ -214,7 +332,7 @@
 	Wave function   =	CCSD_T
 	Reference wfn   =	RHF
 	Derivative      =	None
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	False
@@ -236,8 +354,8 @@
 	 B1	   20	    0	    0	    0	    20	    0
 	 B2	   20	    0	    0	    0	    20	    0
 
-	Nuclear Rep. energy (chkpt) =      2.64588624500000
-	SCF energy          (chkpt) =    -25.10354687361514
+	Nuclear Rep. energy (chkpt) =      2.64588604295000
+	SCF energy          (chkpt) =    -25.10354689697916
 
 	Size of irrep 0 of <ab|cd> integrals:      3.702 (MW) /     29.614 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      2.074 (MW) /     16.589 (MB)
@@ -264,21 +382,26 @@
 	Sorting File: D <ij|ab> nbuckets = 1
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
-	One-electron energy          =     -7.29501042166189
-	Two-electron (AA) energy     =      0.68288025532877
-	Two-electron (BB) energy     =      0.68288025532877
-	Two-electron (AB) energy     =      1.90713452758049
-	Two-electron energy          =      2.59001478290926
-	Frozen-core energy (transqt) =    -23.04443747986252
-	Reference energy             =    -25.10354687361514
+	One-electron energy          =     -7.29501027037534
+	Two-electron (AA) energy     =      0.68288024148655
+	Two-electron (BB) energy     =      0.68288024148655
+	Two-electron (AB) energy     =      1.90713448795582
+	Two-electron energy          =      2.59001472944237
+	Frozen-core energy (transqt) =    -23.04443739899608
+	Reference energy             =    -25.10354689697905
 
-*** tstop() called on h70-33-108-42.paws.uga.edu at Tue Jan 18 15:35:04 2011
-	user time   =       9.69 seconds =       0.16 minutes
-	system time =       1.09 seconds =       0.02 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:54:42 2012
+Module time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.24 seconds =       0.00 minutes
 	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       3.07 seconds =       0.05 minutes
+	system time =       0.72 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
 
-*** tstart() called on h70-33-108-42.paws.uga.edu
-*** at Tue Jan 18 15:35:04 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:54:42 2012
 
 			**************************
 			*                        *
@@ -286,15 +409,15 @@
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =    2.645886245000000
-	SCF energy          (chkpt)   =  -25.103546873615137
-	Reference energy    (file100) =  -25.103546873615144
+	Nuclear Rep. energy (chkpt)   =    2.645886042950000
+	SCF energy          (chkpt)   =  -25.103546896979164
+	Reference energy    (file100) =  -25.103546896979047
 
 	Input parameters:
 	-----------------
 	Wave function   =   CCSD_T
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-10
 	Restart         =     No
@@ -302,7 +425,7 @@
 	AO Basis        =     NONE
 	ABCD            =     NEW
 	Cache Level     =     2
-	Cache Type      =     LRU
+	Cache Type      =     LOW
 	Print Level     =     1
 	Num. of threads =     1
 	# Amps to Print =     10
@@ -318,74 +441,79 @@
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.077761727086353    0.000e+00    0.000000    0.000000    0.000000
-     1        -0.090565418781345    5.829e-02    0.005971    0.011378    0.011378
-     2        -0.099495831052616    3.230e-02    0.010799    0.021037    0.021037
-     3        -0.100028586546251    1.064e-02    0.012663    0.024895    0.024895
-     4        -0.100273127823923    3.505e-03    0.013052    0.025729    0.025729
-     5        -0.100252815633401    1.289e-03    0.013046    0.025728    0.025728
-     6        -0.100258384837313    4.069e-04    0.013001    0.025635    0.025635
-     7        -0.100267433345283    9.945e-05    0.012989    0.025611    0.025611
-     8        -0.100265921876306    2.126e-05    0.012984    0.025599    0.025599
-     9        -0.100265784494558    4.744e-06    0.012982    0.025596    0.025596
-    10        -0.100265805354341    1.353e-06    0.012982    0.025595    0.025595
-    11        -0.100265809574587    3.294e-07    0.012982    0.025595    0.025595
-    12        -0.100265806016501    1.059e-07    0.012982    0.025595    0.025595
-    13        -0.100265803540636    2.286e-08    0.012982    0.025595    0.025595
-    14        -0.100265803718521    5.332e-09    0.012982    0.025595    0.025595
-    15        -0.100265803802626    1.648e-09    0.012982    0.025595    0.025595
-    16        -0.100265803825558    6.115e-10    0.012982    0.025595    0.025595
-    17        -0.100265803805867    2.874e-10    0.012982    0.025595    0.025595
-    18        -0.100265803802418    9.330e-11    0.012982    0.025595    0.025595
+     0        -0.077761727061775    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.090565418858234    5.829e-02    0.005971    0.011378    0.011378
+     2        -0.099495831216984    3.230e-02    0.010799    0.021037    0.021037
+     3        -0.100028586699097    1.064e-02    0.012663    0.024895    0.024895
+     4        -0.100273127971196    3.505e-03    0.013052    0.025729    0.025729
+     5        -0.100252815779025    1.289e-03    0.013046    0.025728    0.025728
+     6        -0.100258384980935    4.069e-04    0.013001    0.025635    0.025635
+     7        -0.100267433489499    9.945e-05    0.012989    0.025611    0.025611
+     8        -0.100265922020513    2.126e-05    0.012984    0.025599    0.025599
+     9        -0.100265784638714    4.744e-06    0.012982    0.025596    0.025596
+    10        -0.100265805498496    1.353e-06    0.012982    0.025595    0.025595
+    11        -0.100265809718745    3.294e-07    0.012982    0.025595    0.025595
+    12        -0.100265806160660    1.059e-07    0.012982    0.025595    0.025595
+    13        -0.100265803684794    2.286e-08    0.012982    0.025595    0.025595
+    14        -0.100265803862679    5.332e-09    0.012982    0.025595    0.025595
+    15        -0.100265803946784    1.648e-09    0.012982    0.025595    0.025595
+    16        -0.100265803969716    6.115e-10    0.012982    0.025595    0.025595
+    17        -0.100265803950024    2.874e-10    0.012982    0.025595    0.025595
+    18        -0.100265803946575    9.330e-11    0.012982    0.025595    0.025595
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          1   1         0.0169682687
-	          1   4         0.0118098017
-	          1   2        -0.0097755530
-	          1  10        -0.0054481611
-	          0   4        -0.0051858804
-	          0   1        -0.0051797607
-	          1   5         0.0048449456
-	          0  10         0.0031773618
-	          0   5        -0.0030988700
-	          1   7         0.0023553191
+	          1   1         0.0169682681
+	          1   4        -0.0118098015
+	          1   2        -0.0097755537
+	          1  10         0.0054481606
+	          0   4         0.0051858812
+	          0   1        -0.0051797615
+	          1   5         0.0048449451
+	          0  10        -0.0031773619
+	          0   5        -0.0030988704
+	          1   7         0.0023553184
 
 	Largest TIjAb Amplitudes:
-	  1   1  42  42        -0.1078166263
-	  1   1  62  62        -0.1078166263
-	  1   1  42  43         0.0571252188
-	  1   1  43  42         0.0571252188
-	  1   1  62  63         0.0571252188
-	  1   1  63  62         0.0571252188
-	  1   1   2   2        -0.0430333620
-	  1   1  42  44        -0.0406258145
-	  1   1  44  42        -0.0406258145
-	  1   1  62  64        -0.0406258145
+	  1   1  42  42        -0.1078166236
+	  1   1  62  62        -0.1078166236
+	  1   1  42  43        -0.0571252180
+	  1   1  43  42        -0.0571252180
+	  1   1  62  63        -0.0571252180
+	  1   1  63  62        -0.0571252180
+	  1   1   2   2        -0.0430333628
+	  1   1  42  44        -0.0406258129
+	  1   1  44  42        -0.0406258129
+	  1   1  62  64        -0.0406258129
 
-	SCF energy       (chkpt)              =  -25.103546873615137
-	Reference energy (file100)            =  -25.103546873615144
+	SCF energy       (chkpt)              =  -25.103546896979164
+	Reference energy (file100)            =  -25.103546896979047
 
-	Opposite-spin MP2 correlation energy  =   -0.072816818249066
-	Same-spin MP2 correlation energy      =   -0.004944908837288
-	MP2 correlation energy                =   -0.077761727086353
-      * MP2 total energy                      =  -25.181308600701499
+	Opposite-spin MP2 correlation energy  =   -0.072816818196932
+	Same-spin MP2 correlation energy      =   -0.004944908864843
+	MP2 correlation energy                =   -0.077761727061775
+      * MP2 total energy                      =  -25.181308624040824
 
-	Opposite-spin CCSD correlation energy =   -0.095052637285719
-	Same-spin CCSD correlation energy     =   -0.005213166516688
-	CCSD correlation energy               =   -0.100265803802418
-      * CCSD total energy                     =  -25.203812677417563
+	Opposite-spin CCSD correlation energy =   -0.095052637412089
+	Same-spin CCSD correlation energy     =   -0.005213166542338
+	CCSD correlation energy               =   -0.100265803946575
+      * CCSD total energy                     =  -25.203812700925624
 
 
-*** tstop() called on h70-33-108-42.paws.uga.edu at Tue Jan 18 15:35:09 2011
-	user time   =      10.96 seconds =       0.18 minutes
-	system time =       2.69 seconds =       0.04 minutes
-	total time  =          5 seconds =       0.08 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:54:46 2012
+Module time:
+	user time   =       1.07 seconds =       0.02 minutes
+	system time =       1.48 seconds =       0.02 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       4.16 seconds =       0.07 minutes
+	system time =       2.20 seconds =       0.04 minutes
+	total time  =         12 seconds =       0.20 minutes
 
-*** tstart() called on h70-33-108-42.paws.uga.edu
-*** at Tue Jan 18 15:35:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:54:46 2012
 
 			**************************
 			*                        *
@@ -397,19 +525,214 @@
 	Wave function   =    CCSD_T
 	Reference wfn   =      RHF
 
-	Nuclear Rep. energy (chkpt)   =    2.645886245000000
-	SCF energy          (chkpt)   =  -25.103546873615137
-	Reference energy    (file100) =  -25.103546873615144
-	CCSD energy         (file100) =   -0.100265803802418
-	Total CCSD energy   (file100) =  -25.203812677417563
+	Nuclear Rep. energy (chkpt)   =    2.645886042950000
+	SCF energy          (chkpt)   =  -25.103546896979164
+	Reference energy    (file100) =  -25.103546896979047
+	CCSD energy         (file100) =   -0.100265803946575
+	Total CCSD energy   (file100) =  -25.203812700925624
 
 	Number of ijk index combinations: 4
 
-	(T) energy                    =   -0.002090933428796
-      * CCSD(T) total energy          =  -25.205903610846359
+	(T) energy                    =   -0.002090933452291
+      * CCSD(T) total energy          =  -25.205903634377915
 
 
-*** tstop() called on h70-33-108-42.paws.uga.edu at Tue Jan 18 15:35:09 2011
-	user time   =      11.25 seconds =       0.19 minutes
-	system time =       2.74 seconds =       0.05 minutes
-	total time  =          0 seconds =       0.00 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:54:47 2012
+Module time:
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       4.35 seconds =       0.07 minutes
+	system time =       2.28 seconds =       0.04 minutes
+	total time  =         13 seconds =       0.22 minutes
+                    --------------------------------
+                    ==> PSI4 Current File Status <==
+                    --------------------------------
+
+  Default Path: /tmp1/andysim/
+
+  Specific File Paths:
+
+  FileNo Path                                              
+  ----------------------------------------------------------------------
+
+  Specific File Retentions:
+
+  FileNo 
+  -------
+
+  Current File Retention Rules:
+
+  Filename 
+  --------------------------------------------------
+
+  Current Files:
+
+  Filename                                          Status   Fate         
+  ----------------------------------------------------------------------
+  /tmp1/andysim/psi.60296.bh.100                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.101                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.102                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.103                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.104                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.105                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.106                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.107                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.108                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.109                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.110                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.111                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.112                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.113                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.114                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.115                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.116                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.117                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.118                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.119                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.120                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.121                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.122                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.123                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.124                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.125                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.126                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.127                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.128                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.129                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.130                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.131                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.132                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.133                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.134                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.135                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.136                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.137                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.138                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.139                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.140                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.141                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.142                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.143                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.144                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.145                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.146                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.147                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.148                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.149                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.150                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.151                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.152                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.153                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.154                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.155                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.156                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.157                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.158                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.159                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.160                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.161                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.162                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.163                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.164                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.180                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.32                     CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.35                     CLOSED   DEREZZ       
+
+                    --------------------------------
+                    ==> PSI4 Current File Status <==
+                    --------------------------------
+
+  Default Path: /tmp1/andysim/
+
+  Specific File Paths:
+
+  FileNo Path                                              
+  ----------------------------------------------------------------------
+
+  Specific File Retentions:
+
+  FileNo 
+  -------
+
+  Current File Retention Rules:
+
+  Filename 
+  --------------------------------------------------
+
+  Current Files:
+
+  Filename                                          Status   Fate         
+  ----------------------------------------------------------------------
+  /tmp1/andysim/psi.60296.bh.100                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.101                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.102                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.103                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.104                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.105                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.106                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.107                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.108                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.109                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.110                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.111                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.112                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.113                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.114                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.115                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.116                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.117                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.118                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.119                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.120                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.121                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.122                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.123                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.124                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.125                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.126                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.127                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.128                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.129                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.130                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.131                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.132                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.133                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.134                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.135                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.136                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.137                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.138                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.139                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.140                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.141                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.142                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.143                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.144                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.145                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.146                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.147                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.148                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.149                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.150                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.151                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.152                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.153                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.154                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.155                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.156                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.157                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.158                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.159                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.160                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.161                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.162                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.163                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.164                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.180                    CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.bh.35                     CLOSED   DEREZZ       
+  /tmp1/andysim/psi.60296.cool.32                   CLOSED   DEREZZ       
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

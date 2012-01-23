@@ -3,11 +3,11 @@
 
 memory 250 mb
 
-refnuc   =   2.645886245000000 #TEST
-refscf   = -25.103546873615137 #TEST
-refccsd  =  -0.100265803802460 #TEST
-ref_t    =  -0.002090933428780 #TEST
-reftotal = -25.205903610846349 #TEST
+refnuc   =   2.64588604295000 #TEST
+refscf   = -25.10354689697916 #TEST
+refccsd  =  -0.10026580394658 #TEST
+ref_t    =  -0.00209093345229 #TEST
+reftotal = -25.20590363437792 #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
