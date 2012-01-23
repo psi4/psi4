@@ -21,7 +21,7 @@ set globals {
   d_convergence 10
 }
 
-optimize('CCSD(T)')
+gradient('CCSD(T)')
 
 refnuc     =   6.06482004489131   #TEST
 refscf     = -38.92655208442658   #TEST

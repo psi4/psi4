@@ -208,33 +208,7 @@ PsiReturnType cctriples(Options &options)
   chkpt_wt_e_t(ET);
   chkpt_close();
 
-  /* Write pertinent data to energy.dat */
-//  if(params.wfn == "CCSD_T" || params.wfn == "BCCD_T") {
-//    chkpt_init(PSIO_OPEN_OLD);
-//    natom = chkpt_rd_natom();
-//    geom = chkpt_rd_geom();
-//    zvals = chkpt_rd_zvals();
-//    chkpt_close();
-//    ffile(&efile,"energy.dat",1);
-//    fprintf(efile, "*\n");
-//    for(i=0; i < natom; i++)
-//      fprintf(efile, " %4d   %5.2f     %13.10f    %13.10f    %13.10f\n",
-//          i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
-//    free_block(geom);  free(zvals);
-//    fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
-//    fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
-//    if(params.wfn == "CCSD_T") {
-//      fprintf(efile, "CCSD      %22.12f\n", (moinfo.ecc+moinfo.eref));
-//      fprintf(efile, "CCSD(T)   %22.12f\n", (ET+ moinfo.ecc+moinfo.eref));
-//    }
-//    else if(params.wfn == "BCCD_T") {
-//      fprintf(efile, "BCCD      %22.12f\n", (moinfo.ecc+moinfo.eref));
-//      fprintf(efile, "BCCD(T)   %22.12f\n", (ET+ moinfo.ecc+moinfo.eref));
-//    }
-//    fclose(efile);
-//  }
-
-  /* Dump triples energy to CC_INFO */
+  /* Dump triples energy to CC_INFO and the python environment*/
   psio_write_entry(CC_INFO, "(T) Energy", (char *) &(ET), sizeof(double));
 
   Process::environment.globals["(T) CORRECTION ENERGY"] = ET; 
