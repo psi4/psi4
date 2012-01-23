@@ -59,9 +59,21 @@ def frac_traverse(mol, **kwargs):
     if kwargs.has_key('frac_diis'):
         frac_diis = kwargs['frac_diis']
 
+    # By default, use the neutral orbitals as a guess for the anion
+    neutral_guess = True
+    if kwargs.has_key('neutral_guess'):
+        neutral_guess = kwargs['neutral_guess']
+
     # => Traverse <= #
     occs = []
     energies = []
+
+    # => Run the neutral for its orbitals, if requested <= #
+
+    if (neutral_guess):
+        energy('scf')
+        old_guess = PsiMod.get_global_option("GUESS")
+        PsiMod.set_global_option("GUESS", "READ")
 
     # => Run the anion first <= #
 
@@ -85,6 +97,10 @@ def frac_traverse(mol, **kwargs):
         PsiMod.set_global_option("FRAC_START", 2)
         PsiMod.set_global_option("FRAC_LOAD", True)
         PsiMod.set_global_option("FRAC_DIIS", frac_diis)
+
+    # Reset the old guess    
+    if (neutral_guess):
+        PsiMod.set_global_option("GUESS", old_guess)
 
     # => Run the neutral next <= #
 
@@ -111,10 +127,10 @@ def frac_traverse(mol, **kwargs):
 
     # => Print the results out <= #
     E = {}
-    print '\n    ==> Fractional Occupation Traverse Results <==\n\n'
-    print '\t%-11s %-24s\n' %('Nelec', 'Energy') 
+    PsiMod.print_out('\n    ==> Fractional Occupation Traverse Results <==\n\n')
+    PsiMod.print_out('\t%-11s %-24s\n' %('Nelec', 'Energy'))
     for k in range(len(occs)):
-        print '\t%11.3E %24.16E\n' % (occs[k], energies[k])
+        PsiMod.print_out('\t%11.3E %24.16E\n' % (occs[k], energies[k]))
         E[occs[k]] = energies[k]
-    
+
     return E    
