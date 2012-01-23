@@ -965,6 +965,8 @@ void Molecule::update_geometry()
         for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
             (*iter)->invalidate();
         }
+        int temp_charge = molecular_charge_;
+        int temp_multiplicity = multiplicity_;
         molecular_charge_ = 0;
         multiplicity_    = 1;
         for(int fragment = 0; fragment < fragments_.size(); ++fragment){
@@ -979,6 +981,12 @@ void Molecule::update_geometry()
                 full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
                 if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
             }
+        }
+        // TODO: This is a hack to ensure that set_multiplicity and set_molecular_charge
+        // work for single-fragment molecules. 
+        if (fragments_.size() < 2) {
+            molecular_charge_ = temp_charge;
+            multiplicity_ = temp_multiplicity;
         }
     }
 
