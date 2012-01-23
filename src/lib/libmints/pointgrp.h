@@ -91,6 +91,9 @@ enum Groups {
     D2h   = SymmOps::E | SymmOps::C2_x | SymmOps::C2_y | SymmOps::C2_z | SymmOps::i |
             SymmOps::Sigma_xy | SymmOps::Sigma_xz | SymmOps::Sigma_yz
 };
+
+void similar(unsigned char bits, unsigned char* sim, char& cnt);
+
 }
 
 // //////////////////////////////////////////////////////////////////
@@ -542,11 +545,12 @@ class PointGroup {
     /// Sets (or resets) the Schoenflies symbol.
     void set_symbol(const std::string&);
 
+    /// Returns the bitwise representation of the point group
+    unsigned char bits() const { return bits_; }
+
     static const char* bits_to_full_name(unsigned char bits);
     static const char* bits_to_basic_name(unsigned char bits);
     static bool full_name_to_bits(const std::string& pg, unsigned char& bits);
-
-    // void save_data_state(StateOut& so);
 
     void print(FILE *out = outfile) const;
 };

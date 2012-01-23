@@ -4,10 +4,10 @@
 
 memory 250 mb
 
-refnuc   =  15.2403047712  #TEST
-refscf   = -75.37898763394901  #TEST
-refci    = -75.5556153485391    #TEST
-refcorr  = refci - refscf  #TEST
+refnuc   =  15.2403036073920  #TEST
+refscf   = -75.3789876324580  #TEST
+refci    = -75.5556153544407  #TEST
+refcorr  = refci - refscf     #TEST
 
 molecule c2 {
   C
