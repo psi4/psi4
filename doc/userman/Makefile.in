@@ -8,7 +8,7 @@ include ../MakeVars
 TEX = userman.tex
 
 SUBTEX = \
-additional-docs.tex cc.tex detcas.tex detci.tex input.tex \
+additional-docs.tex cc.tex detcas.tex detci.tex  \
 introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
 psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex \
 psithon.tex basissets.tex pywrappers.tex dfmp2.tex sapt.tex adc.tex \

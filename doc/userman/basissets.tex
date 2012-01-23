@@ -1,4 +1,5 @@
 \section{Basis Sets}
+\label{sec:basis}
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), 
@@ -98,8 +99,8 @@ cc-pVXZ                 &                                                       
 \hline\hline
 \end{tabular}
 \end{center}
-$^a\quad$ \mbox{D$\zeta$} has $\ell_{max}=2$ or d. \mbox{T$\zeta$} has $\ell_{max}=3$ or f. \mbox{Q$\zeta$} has $\ell_{max}=4$ or g, \textit{etc}. \\
-$^b\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+$^a$ \mbox{D$\zeta$} has $\ell_{max}=2$ or d. \mbox{T$\zeta$} has $\ell_{max}=3$ or f. \mbox{Q$\zeta$} has $\ell_{max}=4$ or g, \textit{etc}. \\
+$^b$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \end{footnotesize}
 \end{table}
 
@@ -122,7 +123,7 @@ cc-pwCV(X+d)Z        & DTQ5  &                 & --{}--{}--5  & --{}--Q5  & --TQ
 \hline\hline
 \end{tabular}
 \end{center}
-$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+$^a$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \end{footnotesize}
 \end{table}
 
@@ -145,7 +146,7 @@ cc-pwCV(X+d)Z-DK     \\
 \hline\hline
 \end{tabular}
 \end{center}
-$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+$^a$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \end{footnotesize}
 \end{table}
 
@@ -168,8 +169,8 @@ cc-pwCV(X+d)Z-JKFIT  \\
 \hline\hline
 \end{tabular}
 \end{center}
-$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical. \\
-$^b\quad$ The JKFIT basis sets are designed in the cc-stub(X+d)Z framework that includes an additional set of
+$^a$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical. \\
+$^b$ The JKFIT basis sets are designed in the cc-stub(X+d)Z framework that includes an additional set of
 $d$-fuctions for second-row $p$-block elements. Identical basis sets with the cc-stubXZ-JKFIT label are provided
 for convenience.
 \end{footnotesize}
@@ -194,7 +195,7 @@ cc-pwCV(X+d)Z-RI     & DTQ5  &                 & --{}--{}--5  & --{}--Q5  & --TQ
 \hline\hline
 \end{tabular}
 \end{center}
-$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+$^a$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \end{footnotesize}
 \end{table}
 
@@ -217,7 +218,7 @@ cc-pwCV(X+d)Z-DUAL   \\
 \hline\hline
 \end{tabular}
 \end{center}
-$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+$^a$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \end{footnotesize}
 \end{table}
 
@@ -245,7 +246,7 @@ def2-QZVPP   & def2-QZVPPD &       \\
 \end{table}
 
 
-\subsection{User-Specified Basis Sets} \label{sec:BasisSetSpecification}
+\subsection{User-Defined Basis Sets} \label{sec:BasisSetSpecification}
 
 There are three routes by which a basis set in G94 format can be introduced to \PSIfour's notice.
 
@@ -320,10 +321,7 @@ basis {
 
 The primary basis set is specified with option \optionname{BASIS}{MINTS}, which assigns,
 for instance, aug-cc-pVDZ to all atoms of the last-defined molecule through
-\texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{\}} block.
+\texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{$\dots$\}} block.
 
 
-
-%\subsection{Calling Built-in Basis Sets}
-%\subsection{Calling Custom Basis Sets}
 
