@@ -766,6 +766,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("FRAC_VAL", new ArrayType());
     /*- Do use DIIS extrapolation to accelerate convergence in frac? -*/
     options.add_bool("FRAC_DIIS", true);
+    /*- Do renormalize C matrices prior to writing to checkpoint? -*/
+    options.add_bool("FRAC_RENORMALIZE", true);
+    /*- Do recompute guess from stored orbitals? -*/
+    options.add_bool("FRAC_LOAD", false);
 
     /*- SUBSECTION Environmental Effects -*/
 

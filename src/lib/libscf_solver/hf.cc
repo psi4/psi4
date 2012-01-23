@@ -1200,7 +1200,7 @@ double HF::compute_energy()
     MOM_performed_ = false;
     diis_performed_ = false;
     // Neither of these are idempotent
-    if ((options_.get_str("GUESS") == "SAD") || (options_.get_str("GUESS") == "READ"))
+    if (options_.get_str("GUESS") == "SAD" || options_.get_str("GUESS") == "READ")
         iteration_ = -1;
     else
         iteration_ = 0;
@@ -1336,6 +1336,7 @@ double HF::compute_energy()
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
+    frac_renormalize();
 
     if (converged) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
