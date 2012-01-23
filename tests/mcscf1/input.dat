@@ -3,8 +3,8 @@
 
 memory 250 mb
 
-nucenergy =   6.648419426607498 #TEST
-refenergy = -38.911369329340    #TEST
+nucenergy =   6.64841891890875  #TEST
+refenergy = -38.91136934915929  #TEST
 
 molecule ch2 {
     0 3

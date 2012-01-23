@@ -1,413 +1,268 @@
-******************************************************************************
-PSI3 started on julius at Fri Feb  4 14:01:49 2011
-
-    -----------------------------------------------------------------------    
-            PSI3: An Open-Source Ab Initio Electronic Structure Package 
-                                Version 3.4 Alpha
-
-    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
-    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
-    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
-    -----------------------------------------------------------------------    
-
-PSI3 will perform a RHF CCSD_T energy computation.
-
-The following programs will be executed:
-
- input
- cints
- cscf
- transqt2
- ccsort
- ccenergy
- cctriples
- psiclean
-
-******************************************************************************
-INPUT tstart called on julius
-Fri Feb  4 14:01:49 2011
-
-                                --------------
-                                    INPUT
-                                --------------
-
-  LABEL       =	Planar C4NH4 STO-3G/CCSD(T)//cc-pVDZ/CCSD(T)
-  SHOWNORM    =	0
-  PUREAM      =	0
-  PRINT_LVL   =	2
-
-  Parsed basis sets from /theoryfs2/common/software/bin/psi3-bin/share/psi/pbasis.dat
-
-  -Geometry before Center-of-Mass shift (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000     2.138688040000
-    N         0.000000000000     0.000000000000     4.421979110000
-    C         0.000000000000     0.000000000000    -0.461341920000
-    C        -1.477585820000     0.000000000000    -2.825930590000
-    C         1.477585820000     0.000000000000    -2.825930590000
-    H        -2.412695530000    -1.740211900000    -3.529159890000
-    H        -2.412695530000     1.740211900000    -3.529159890000
-    H         2.412695530000     1.740211900000    -3.529159890000
-    H         2.412695530000    -1.740211900000    -3.529159890000
-
-
-  -Rotational constants (cm-1) :
-    A =    0.68352  B =    0.10285  C =    0.09276
-    It is an asymmetric top.
-
-  -Geometry after Center-of-Mass shift and reorientation (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         2.138687778202     0.000000000000     0.000000000000
-    N         4.421978848202     0.000000000000     0.000000000000
-    C        -0.461342181798     0.000000000000     0.000000000000
-    C        -2.825930851798    -1.477585820000     0.000000000000
-    C        -2.825930851798     1.477585820000     0.000000000000
-    H        -3.529160151798    -2.412695530000    -1.740211900000
-    H        -3.529160151798    -2.412695530000     1.740211900000
-    H        -3.529160151798     2.412695530000     1.740211900000
-    H        -3.529160151798     2.412695530000    -1.740211900000
-
-
-  -SYMMETRY INFORMATION:
-    Computational point group is C2v 
-    Number of irr. rep.      = 4
-    Number of atoms          = 9
-    Number of unique atoms   = 5
-
-
-  -BASIS SETS:
-
-   -Basis set on unique center 1:
-      ( (S (    71.61683700     0.15432897)
-           (    13.04509600     0.53532814)
-           (     3.53051220     0.44463454) )
-        (S (     2.94124940    -0.09996723)
-           (     0.68348310     0.39951283)
-           (     0.22228990     0.70011547) )
-        (P (     2.94124940     0.15591627)
-           (     0.68348310     0.60768372)
-           (     0.22228990     0.39195739) )
-       )
-
-   -Basis set on unique center 2:
-      ( (S (    99.10616900     0.15432897)
-           (    18.05231200     0.53532814)
-           (     4.88566020     0.44463454) )
-        (S (     3.78045590    -0.09996723)
-           (     0.87849660     0.39951283)
-           (     0.28571440     0.70011547) )
-        (P (     3.78045590     0.15591627)
-           (     0.87849660     0.60768372)
-           (     0.28571440     0.39195739) )
-       )
-
-   -Basis set on unique center 3:
-      ( (S (    71.61683700     0.15432897)
-           (    13.04509600     0.53532814)
-           (     3.53051220     0.44463454) )
-        (S (     2.94124940    -0.09996723)
-           (     0.68348310     0.39951283)
-           (     0.22228990     0.70011547) )
-        (P (     2.94124940     0.15591627)
-           (     0.68348310     0.60768372)
-           (     0.22228990     0.39195739) )
-       )
-
-   -Basis set on unique center 4:
-      ( (S (    71.61683700     0.15432897)
-           (    13.04509600     0.53532814)
-           (     3.53051220     0.44463454) )
-        (S (     2.94124940    -0.09996723)
-           (     0.68348310     0.39951283)
-           (     0.22228990     0.70011547) )
-        (P (     2.94124940     0.15591627)
-           (     0.68348310     0.60768372)
-           (     0.22228990     0.39195739) )
-       )
-
-   -Basis set on unique center 5:
-      ( (S (     3.42525091     0.15432897)
-           (     0.62391373     0.53532814)
-           (     0.16885540     0.44463454) )
-       )
-
-
-  -BASIS SET INFORMATION:
-    Total number of shells = 19
-    Number of primitives   = 39
-    Number of AO           = 29
-    Number of SO           = 29
-
-    Irrep    Number of SO
-    -----    ------------
-      1           14
-      2            2
-      3            8
-      4            5
-
-  -Contraction Scheme:
-    Atom     All Primitives // Unique Primitives // Shells
-    ----     ---------------------------------------------
-       1      6s 3p //  6s //  2s 1p
-       2      6s 3p //  6s //  2s 1p
-       3      6s 3p //  6s //  2s 1p
-       4      6s 3p //  6s //  2s 1p
-       5      6s 3p //  6s //  2s 1p
-       6      3s //  3s //  1s
-       7      3s //  3s //  1s
-       8      3s //  3s //  1s
-       9      3s //  3s //  1s
-
-
-  -Unique atoms in the canonical coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000     2.138687778202
-    N         0.000000000000     0.000000000000     4.421978848202
-    C         0.000000000000     0.000000000000    -0.461342181798
-    C         1.477585820000     0.000000000000    -2.825930851798
-    H         2.412695530000     1.740211900000    -3.529160151798
-
-
-  -Geometry in the canonical coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000     2.138687778202
-    N         0.000000000000     0.000000000000     4.421978848202
-    C         0.000000000000     0.000000000000    -0.461342181798
-    C        -1.477585820000     0.000000000000    -2.825930851798
-    C         1.477585820000     0.000000000000    -2.825930851798
-    H        -2.412695530000    -1.740211900000    -3.529160151798
-    H        -2.412695530000     1.740211900000    -3.529160151798
-    H         2.412695530000     1.740211900000    -3.529160151798
-    H         2.412695530000    -1.740211900000    -3.529160151798
-
-
-  -Geometry in the canonical coordinate system (Angstrom):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000     1.131744914939
-    N         0.000000000000     0.000000000000     2.340010602028
-    C         0.000000000000     0.000000000000    -0.244131786611
-    C        -0.781904799389     0.000000000000    -1.495418314019
-    C         0.781904799389     0.000000000000    -1.495418314019
-    H        -1.276743583240    -0.920880545919    -1.867551260409
-    H        -1.276743583240     0.920880545919    -1.867551260409
-    H         1.276743583240     0.920880545919    -1.867551260409
-    H         1.276743583240    -0.920880545919    -1.867551260409
-
-
-  -Geometry in the reference coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    C         0.000000000000     0.000000000000     2.138687778202
-    N         0.000000000000     0.000000000000     4.421978848202
-    C         0.000000000000     0.000000000000    -0.461342181798
-    C        -1.477585820000     0.000000000000    -2.825930851798
-    C         1.477585820000     0.000000000000    -2.825930851798
-    H        -2.412695530000    -1.740211900000    -3.529160151798
-    H        -2.412695530000     1.740211900000    -3.529160151798
-    H         2.412695530000     1.740211900000    -3.529160151798
-    H         2.412695530000    -1.740211900000    -3.529160151798
-
-
-  --------------------------------------------------------------------------
-
-    Nuclear Repulsion Energy (a.u.) =     135.092128488420
-
-  -The Interatomic Distances in angstroms:
-
-           1           2           3           4           5           6           7           8           9
-
-    1   0.0000000
-    2   1.2082657   0.0000000
-    3   1.3758767   2.5841424   0.0000000
-    4   2.7410512   3.9143186   1.4754976   0.0000000
-    5   2.7410512   3.9143186   1.4754976   1.5638096   0.0000000
-    6   3.3873105   4.4924016   2.2613239   1.1096708   2.2857246   0.0000000
-    7   3.3873105   4.4924016   2.2613239   1.1096708   2.2857246   1.8417611   0.0000000
-    8   3.3873105   4.4924016   2.2613239   2.2857246   1.1096708   3.1483933   2.5534872   0.0000000
-    9   3.3873105   4.4924016   2.2613239   2.2857246   1.1096708   2.5534872   3.1483933   1.8417611   0.0000000
-
-    Note: To print *all* bond angles, out-of-plane
-          angles, and torsion angles set print = 3
-
-
-******************************************************************************
-INPUT tstop called on julius
-Fri Feb  4 14:01:49 2011
-
-user time   =       0.02 seconds =       0.00 minutes
-system time =       0.01 seconds =       0.00 minutes
-total time  =          0 seconds =       0.00 minutes
-******************************************************************************
-cints tstart called on julius
-Fri Feb  4 14:01:49 2011
-
-                  --------------------------------------------
-                    CINTS: An integrals program written in C
-                     Justin T. Fermann and Edward F. Valeev
-                  --------------------------------------------
-
-
-  -OPTIONS:
-    Print level                 = 2
-    Integral tolerance          = 1e-15
-    Max. memory to use          = 125000000 double words
-    Number of threads           = 1
-    LIBINT's real type length   = 64 bit
-
-  -CALCULATION CONSTANTS:
-    Label                       = Planar C4NH4 STO-3G/CCSD(T)//cc-pVDZ/CCSD(T)
-    Number of atoms             = 9
-    Number of atomic orbitals   = 29
-    Number of symmetry orbitals = 29
-    Maximum AM in the basis     = 1
-
-  -SYMMETRY INFORMATION;
-    Computational point group        = C2v
-    Number of irreps                 = 4
-
-  -CARTESIAN COORDINATES (a.u.):
-     Nuc. charge           X                  Y                   Z
-    -------------   -----------------  -----------------  -----------------
-         6.000         0.000000000000     0.000000000000     2.138687778202
-         7.000         0.000000000000     0.000000000000     4.421978848202
-         6.000         0.000000000000     0.000000000000    -0.461342181798
-         6.000        -1.477585820000     0.000000000000    -2.825930851798
-         6.000         1.477585820000     0.000000000000    -2.825930851798
-         1.000        -2.412695530000    -1.740211900000    -3.529160151798
-         1.000        -2.412695530000     1.740211900000    -3.529160151798
-         1.000         2.412695530000     1.740211900000    -3.529160151798
-         1.000         2.412695530000    -1.740211900000    -3.529160151798
-
-
-    Wrote 25319 two-electron integrals to IWL file 33
-
-******************************************************************************
-cints tstop called on julius
-Fri Feb  4 14:01:50 2011
-
-user time   =       0.11 seconds =       0.00 minutes
-system time =       0.01 seconds =       0.00 minutes
-total time  =          1 seconds =       0.02 minutes
-******************************************************************************
-SCF tstart called on julius
-Fri Feb  4 14:01:50 2011
-
-
-             ------------------------------------------
-
-                CSCF3.0: An SCF program written in C
-
-              Written by too many people to mention here
-
-             ------------------------------------------
-
-  I think the multiplicity is 1.
-  If this is wrong, please specify the MULTP keyword
-
-  label        = Planar C4NH4 STO-3G/CCSD(T)//cc-pVDZ/CCSD(T)
-  wfn          = CCSD_T
-  reference    = RHF
-  multiplicity = 1
-  charge       = -1
-  direct       = false
-  dertype      = NONE
-  convergence  = 10
-  maxiter      = 100
-  guess        = AUTO
-
-  nuclear repulsion energy      135.0921284884196
-  first run, so defaulting to core-hamiltonian guess
-
-  level shift                      = 0.100000
-
-  level shifting will stop after 10 cycles
-  diis scale factor                = 1.000000
-  iterations before extrapolation  = 0
-  6 error matrices will be kept
-
-  keeping integrals in 203600 bytes of core
-
-  The lowest eigenvalue of the overlap matrix was 1.783035e-01
-
-
-  Using DOCC and SOCC to 
-  determine occupations
-
-
-  Symmetry block:   A1    A2    B1    B2   
-  DOCC:             10     1     4     3   
-  SOCC:              0     0     0     0   
-
-  reading integrals in the IWL format from files 33,35,36,37
-  wrote 12536 integrals to file92
-
-  iter       total energy        delta E         delta P          diiser
-    1      -182.8589894142    3.179511e+02    0.000000e+00    0.000000e+00
-    2      -190.5990781812    7.740089e+00    1.529634e-01    5.031406e-01
-    3      -200.2013177695    9.602240e+00    7.074073e-02    6.729663e-01
-    4      -200.8228763597    6.215586e-01    1.076023e-02    5.585266e-01
-    5      -201.4903328096    6.674564e-01    1.110826e-02    5.612828e-01
-    6      -201.6192321983    1.288994e-01    2.803793e-03    5.212811e-01
-    7      -201.5799584149   -3.927378e-02    3.330488e-03    5.185204e-01
-    8      -197.0552432892   -4.524715e+00    8.550080e-02    5.092912e-01
-    9      -205.2633559976    8.208113e+00    7.141077e-02    7.684465e-01
-   10      -205.4064026685    1.430467e-01    8.650253e-03    1.253021e-01
-   11      -205.4197488310    1.334616e-02    2.192419e-03    4.094830e-02
-   12      -205.4217570531    2.008222e-03    9.996808e-04    9.398000e-03
-   13      -205.4221779076    4.208545e-04    3.974062e-04    5.923747e-03
-   14      -205.4223334733    1.555657e-04    2.817451e-04    2.543313e-03
-   15      -205.4223687067    3.523332e-05    1.870693e-04    1.220170e-03
-   16      -205.4223691138    4.071265e-07    1.764315e-05    1.472402e-04
-   17      -205.4223691521    3.835544e-08    4.715116e-06    7.115615e-05
-   18      -205.4223691551    2.949264e-09    1.345319e-06    1.345041e-05
-   19      -205.4223691553    2.564775e-10    5.179786e-07    3.080181e-06
-   20      -205.4223691554    1.034550e-11    9.094929e-08    8.975138e-07
-   21      -205.4223691554    6.252776e-13    2.639656e-08    1.364082e-07
-   22      -205.4223691554   -1.705303e-13    4.169358e-09    5.704880e-08
-   23      -205.4223691554   -1.136868e-13    2.349081e-09    2.527507e-08
-   24      -205.4223691554    5.684342e-14    1.638768e-09    1.451817e-08
-   25      -205.4223691554    1.136868e-13    4.850045e-10    3.444815e-09
-   26      -205.4223691554   -1.705303e-13    7.694123e-11    7.512639e-10
-
-Orbital energies (a.u.):
-
-  Doubly occupied orbitals
-   1A1    -14.972135     1B1    -10.804778     2A1    -10.804584  
-   3A1    -10.758176     4A1    -10.659126     5A1     -0.848286  
-   6A1     -0.814687     2B1     -0.561390     7A1     -0.547932  
-   8A1     -0.392154     1B2     -0.376986     1A2     -0.261346  
-   9A1     -0.198003     3B1     -0.190152     2B2     -0.164467  
-  10A1     -0.143309     4B1     -0.071075     3B2      0.080466  
-
-  Unoccupied orbitals
-   5B1      0.590873     4B2      0.659399     6B1      0.781361  
-  11A1      0.837718    12A1      0.884651     5B2      0.919659  
-   7B1      0.919860     2A2      1.018322     8B1      1.057431  
-  13A1      1.179611    14A1      1.658356  
-
-
-      * SCF total energy   =    -205.422369155359
-        kinetic energy     =     205.038758896098
-        nuc. attr. energy  =    -761.091511347268
-        elec. rep. energy  =     350.630383295811
-        potential energy   =    -410.461128051457
-        virial theorem     =       1.998132577962
-        wavefunction norm  =       1.000000000000
-******************************************************************************
-SCF tstop called on julius
-Fri Feb  4 14:01:50 2011
-
-user time   =       0.01 seconds =       0.00 minutes
-system time =       0.00 seconds =       0.00 minutes
-total time  =          0 seconds =       0.00 minutes
-******************************************************************************
-TRANSQT tstart called on julius
-Fri Feb  4 14:01:50 2011
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
+
+memory 250 mb
+
+refnuc   =  135.0921284884196   #TEST
+refscf   = -205.422369155359    #TEST
+refccsd  =   -0.345263564418438 #TEST
+ref_t    =   -0.007645878508210 #TEST
+reftotal = -205.775278598298456 #TEST
+
+molecule C4NH4 {
+  -1 1
+  C         0.00000000     0.00000000     2.13868804
+  N         0.00000000     0.00000000     4.42197911
+  C         0.00000000     0.00000000    -0.46134192
+  C        -1.47758582     0.00000000    -2.82593059
+  C         1.47758582     0.00000000    -2.82593059
+  H        -2.41269553    -1.74021190    -3.52915989
+  H        -2.41269553     1.74021190    -3.52915989
+  H         2.41269553     1.74021190    -3.52915989
+  H         2.41269553    -1.74021190    -3.52915989
+  units bohr
+}
+
+set globals {
+  docc        [10, 1, 4, 3]
+  basis       STO-3G
+  freeze_core true
+  r_convergence 10
+  e_convergence  10
+  d_convergence  10
+}
+
+energy('ccsd(t)')
+
+compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),        9, "Nuclear repulsion energy")  #TEST
+compare_values(refscf,   get_variable("SCF total energy"),              9, "SCF energy")                   #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")            #TEST
+compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")             #TEST
+compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")                 #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:54:59 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = -1, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000     2.138687778202
+           N          0.000000000000     0.000000000000     4.421978848202
+           C          0.000000000000     0.000000000000    -0.461342181798
+           C         -1.477585820000    -0.000000000000    -2.825930851798
+           C          1.477585820000     0.000000000000    -2.825930851798
+           H         -2.412695530000    -1.740211900000    -3.529160151798
+           H         -2.412695530000     1.740211900000    -3.529160151798
+           H          2.412695530000     1.740211900000    -3.529160151798
+           H          2.412695530000    -1.740211900000    -3.529160151798
+
+    Number of unique atoms: 5
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+       unique atom 3: 3 4 
+       unique atom 4: 5 6 7 8 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =  135.092128488419604
+
+  Charge       = -1
+  Multiplicity = 1
+  Electrons    = 36
+  Nalpha       = 18
+  Nbeta        = 18
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-10
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  Basis Set
+    Number of shells: 19
+    Number of basis function: 29
+    Number of Cartesian functions: 29
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 1.7830346674E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:  -156.02298026615520
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        14      14      10      10      10       0
+     A2         2       2       1       1       1       0
+     B1         8       8       4       4       4       0
+     B2         5       5       3       3       3       0
+   -------------------------------------------------------
+    Total      29      29      18      18      18       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   9
+      Number of AO shells:              19
+      Number of SO shells:              13
+      Number of primitives:             57
+      Number of atomic orbitals:        29
+      Number of basis functions:        29
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  14    2    8    5 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 25278 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:  -182.85898941421735   -2.68360e+01   0.00000e+00 
+   @RHF iter   2:  -190.59907818123506   -7.74009e+00   5.80205e-01 DIIS
+   @RHF iter   3:  -203.83304089114043   -1.32340e+01   3.31237e-01 DIIS
+   @RHF iter   4:  -203.98707022882465   -1.54029e-01   9.09616e-02 DIIS
+   @RHF iter   5:  -204.00721618272880   -2.01460e-02   6.48559e-03 DIIS
+   @RHF iter   6:  -204.01295899956412   -5.74282e-03   1.24178e-02 DIIS
+   @RHF iter   7:  -204.04151210838805   -2.85531e-02   5.59642e-03 DIIS
+   @RHF iter   8:  -203.99079036818668    5.07217e-02   2.15038e-02 DIIS
+   @RHF iter   9:  -204.24032553998470   -2.49535e-01   2.91140e-02 DIIS
+   @RHF iter  10:  -204.57720093126275   -3.36875e-01   2.83845e-02 DIIS
+   @RHF iter  11:  -205.01802211860590   -4.40821e-01   3.02170e-02 DIIS
+   @RHF iter  12:  -205.37691727207581   -3.58895e-01   3.30742e-02 DIIS
+   @RHF iter  13:  -205.42063297711340   -4.37157e-02   1.32718e-02 DIIS
+   @RHF iter  14:  -205.42177509465645   -1.14212e-03   2.59543e-03 DIIS
+   @RHF iter  15:  -205.42222462880702   -4.49534e-04   1.79188e-03 DIIS
+   @RHF iter  16:  -205.42235984527090   -1.35216e-04   1.30912e-03 DIIS
+   @RHF iter  17:  -205.42236890531066   -9.06004e-06   3.64070e-04 DIIS
+   @RHF iter  18:  -205.42236913685721   -2.31547e-07   6.36755e-05 DIIS
+   @RHF iter  19:  -205.42236915488073   -1.80235e-08   1.19302e-05 DIIS
+   @RHF iter  20:  -205.42236915535946   -4.78735e-10   2.42192e-06 DIIS
+   @RHF iter  21:  -205.42236915537174   -1.22782e-11   3.55528e-07 DIIS
+   @RHF iter  22:  -205.42236915537185   -1.13687e-13   3.82001e-08 DIIS
+   @RHF iter  23:  -205.42236915537202   -1.70530e-13   6.58622e-09 DIIS
+   @RHF iter  24:  -205.42236915537197    5.68434e-14   5.36180e-10 DIIS
+   @RHF iter  25:  -205.42236915537202   -5.68434e-14   6.12853e-10 DIIS
+   @RHF iter  26:  -205.42236915537191    1.13687e-13   1.04040e-10 DIIS
+   @RHF iter  27:  -205.42236915537185    5.68434e-14   1.76290e-10 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -14.972135     1B1   -10.804778     2A1   -10.804584  
+	   3A1   -10.758176     4A1   -10.659126     5A1    -0.848286  
+	   6A1    -0.814687     2B1    -0.561390     7A1    -0.547932  
+	   8A1    -0.392154     1B2    -0.376986     1A2    -0.261346  
+	   9A1    -0.198003     3B1    -0.190152     2B2    -0.164467  
+	  10A1    -0.143309     4B1    -0.071075     3B2     0.080466  
+
+	Virtual:                                                              
+
+	   5B1     0.590873     4B2     0.659399     6B1     0.781361  
+	  11A1     0.837718    12A1     0.884651     5B2     0.919659  
+	   7B1     0.919860     2A2     1.018322     8B1     1.057431  
+	  13A1     1.179611    14A1     1.658356  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [    10,    1,    4,    3 ]
+
+  Energy converged.
+
+  @RHF Final Energy:  -205.42236915537185
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -7.0099
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     5.7888
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -1.2211     Total:     1.2211
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -3.1037     Total:     3.1037
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:00 2012
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:00 2012
 
 
 	**************************************************
@@ -422,13 +277,13 @@ Fri Feb  4 14:01:50 2011
 	-----------------
 	Wave function   =	CCSD_T
 	Backtransform   =	No
-	Print Level     =	2
+	Print Level     =	1
 	Print TEIs      =	No
 	Reference wfn   =	RHF
 	Derivative      =	None
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	1000.0
-	Cache Level     =	0
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
 	--------------------
@@ -439,63 +294,34 @@ Fri Feb  4 14:01:50 2011
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   14	    4	    6	    0	    4	    0
-	 A2 	   2	    0	    1	    0	    1	    0
-	 B1 	   8	    1	    3	    0	    4	    0
-	 B2 	   5	    0	    3	    0	    2	    0
+	 A1	   14	    4	    6	    0	    4	    0
+	 A2	   2	    0	    1	    0	    1	    0
+	 B1	   8	    1	    3	    0	    4	    0
+	 B2	   5	    0	    3	    0	    2	    0
 
 	Nuclear Rep. energy (chkpt) =    135.09212848841960
-	SCF energy          (chkpt) =   -205.42236915535878
+	SCF energy          (chkpt) =   -205.42236915537185
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
-	Frozen-core energy = -238.524143954643279
+	Frozen-core energy = -238.524143954644899
 	Starting first half-transformation.
-	h = 0; memfree         = 124999533
-	h = 0; rows_per_bucket = 159
-	h = 0; rows_left       = 0
-	h = 0; nbuckets        = 1
-	h = 1; memfree         = 124999754
-	h = 1; rows_per_bucket = 68
-	h = 1; rows_left       = 0
-	h = 1; nbuckets        = 1
-	h = 2; memfree         = 124999596
-	h = 2; rows_per_bucket = 122
-	h = 2; rows_left       = 0
-	h = 2; nbuckets        = 1
-	h = 3; memfree         = 124999700
-	h = 3; rows_per_bucket = 86
-	h = 3; rows_left       = 0
-	h = 3; nbuckets        = 1
 	Sorting half-transformed integrals.
 	Starting second half-transformation.
-	h = 0; memfree         = 124999533
-	h = 0; rows_per_bucket = 101
-	h = 0; rows_left       = 0
-	h = 0; nbuckets        = 1
-	h = 1; memfree         = 124999754
-	h = 1; rows_per_bucket = 55
-	h = 1; rows_left       = 0
-	h = 1; nbuckets        = 1
-	h = 2; memfree         = 124999596
-	h = 2; rows_per_bucket = 80
-	h = 2; rows_left       = 0
-	h = 2; nbuckets        = 1
-	h = 3; memfree         = 124999700
-	h = 3; rows_per_bucket = 64
-	h = 3; rows_left       = 0
-	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
-******************************************************************************
-TRANSQT tstop called on julius
-Fri Feb  4 14:01:50 2011
 
-user time   =       0.02 seconds =       0.00 minutes
-system time =       0.01 seconds =       0.00 minutes
-total time  =          0 seconds =       0.00 minutes
-******************************************************************************
-CCSORT tstart called on julius
-Fri Feb  4 14:01:50 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:00 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:00 2012
 
 
 			**************************
@@ -510,10 +336,11 @@ Fri Feb  4 14:01:50 2011
 	Wave function   =	CCSD_T
 	Reference wfn   =	RHF
 	Derivative      =	None
-	Memory (Mbytes) =	1000.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
-	Cache Level     =	0
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
 	Cache Type      =	LRU
 	Local CC        =     No
 
@@ -526,13 +353,13 @@ Fri Feb  4 14:01:50 2011
 
 	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A1 	   14	    4	    6	    0	    4	    0
-	 A2 	   2	    0	    1	    0	    1	    0
-	 B1 	   8	    1	    3	    0	    4	    0
-	 B2 	   5	    0	    3	    0	    2	    0
+	 A1	   14	    4	    6	    0	    4	    0
+	 A2	   2	    0	    1	    0	    1	    0
+	 B1	   8	    1	    3	    0	    4	    0
+	 B2	   5	    0	    3	    0	    2	    0
 
 	Nuclear Rep. energy (chkpt) =    135.09212848841960
-	SCF energy          (chkpt) =   -205.42236915535878
+	SCF energy          (chkpt) =   -205.42236915537185
 
 	Size of irrep 0 of <ab|cd> integrals:      0.001 (MW) /      0.011 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.001 (MW) /      0.005 (MB)
@@ -559,23 +386,26 @@ Fri Feb  4 14:01:50 2011
 	Sorting File: D <ij|ab> nbuckets = 1
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
-	One-electron energy          =   -195.00206503710837
-	Two-electron (AA) energy     =     41.34381592767286
-	Two-electron (BB) energy     =     41.34381592767286
-	Two-electron (AB) energy     =     51.66789542030043
-	Two-electron energy          =     93.01171134797329
-	Frozen-core energy (transqt) =   -238.52414395464328
-	Reference energy             =   -205.42236915535875
-******************************************************************************
-CCSORT tstop called on julius
-Fri Feb  4 14:01:50 2011
+	One-electron energy          =   -195.00206503469289
+	Two-electron (AA) energy     =     41.34381592627608
+	Two-electron (BB) energy     =     41.34381592627608
+	Two-electron (AB) energy     =     51.66789541927015
+	Two-electron energy          =     93.01171134554623
+	Frozen-core energy (transqt) =   -238.52414395464490
+	Reference energy             =   -205.42236915537194
 
-user time   =       0.02 seconds =       0.00 minutes
-system time =       0.01 seconds =       0.00 minutes
-total time  =          0 seconds =       0.00 minutes
-******************************************************************************
-CCENERGY tstart called on julius
-Fri Feb  4 14:01:50 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:00 2012
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:00 2012
 
 			**************************
 			*                        *
@@ -584,304 +414,113 @@ Fri Feb  4 14:01:50 2011
 			**************************
 
 	Nuclear Rep. energy (chkpt)   =  135.092128488419604
-	SCF energy          (chkpt)   = -205.422369155358780
-	Reference energy    (file100) = -205.422369155358751
+	SCF energy          (chkpt)   = -205.422369155371854
+	Reference energy    (file100) = -205.422369155371939
 
 	Input parameters:
 	-----------------
-	Wave function   =    CCSD_T
-	Reference wfn   =      RHF
-	Memory (Mbytes) =  1000.0
+	Wave function   =   CCSD_T
+	Reference wfn   =     RHF
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
-	Convergence     = 1.0e-07
-	Restart         =     Yes
+	Convergence     =     1.0e-10
+	Restart         =     No
 	DIIS            =     Yes
 	AO Basis        =     NONE
 	ABCD            =     NEW
-	Cache Level     =    0
+	Cache Level     =     2
 	Cache Type      =     LOW
-	Print Level     =    2
+	Print Level     =     1
 	Num. of threads =     1
-	# Amps to Print =    10
-	Print MP2 Amps? =    No
-	Analyze T2 Amps =    No
-	Print Pair Ener =    No
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
 	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
 
 	            Solving CC Amplitude Equations
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.300601276004203    0.000e+00    0.000000    0.000000    0.000000
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     1        -0.321691792887309    8.501e-02    0.009764    0.044129    0.044129
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     2        -0.339352285748985    3.383e-02    0.011551    0.049812    0.049812
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     3        -0.344687161251636    1.377e-02    0.013734    0.059128    0.059128
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     4        -0.345180948727733    4.038e-03    0.014156    0.060710    0.060710
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     5        -0.345281732415406    1.340e-03    0.014260    0.061087    0.061087
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     6        -0.345269449199712    4.392e-04    0.014271    0.061153    0.061153
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     7        -0.345261768506040    1.722e-04    0.014274    0.061168    0.061168
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     8        -0.345263909753186    6.552e-05    0.014278    0.061185    0.061185
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-     9        -0.345264445725858    2.009e-05    0.014280    0.061193    0.061193
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-    10        -0.345263705265681    7.862e-06    0.014280    0.061195    0.061195
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-    11        -0.345263559223191    2.886e-06    0.014281    0.061197    0.061197
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-    12        -0.345263519559195    6.980e-07    0.014281    0.061197    0.061197
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-    13        -0.345263543435850    2.550e-07    0.014281    0.061197    0.061197
-     F intermediates...complete
-     T1 amplitudes  ...complete
-     Wmbej          ...complete
-     Z              ...complete
-     Wmnij          ...complete
-     <ij||ab> -> T2 ...complete
-     F -> T2        ...complete
-     Wmnij -> T2    ...complete
-     <ab||cd> -> T2 ...complete
-     Z -> T2        ...complete
-     <ia||bc> -> T2 ...complete
-     <ij||ka> -> T2 ...complete
-     Wmbej -> T2    ...complete
-     <ia||jb> -> T2 ...complete
-     T2 amplitudes  ...complete
-    14        -0.345263555868298    8.664e-08    0.014281    0.061197    0.061197
+     0        -0.300601275761031    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.321691792812921    8.501e-02    0.009764    0.044129    0.044129
+     2        -0.339352285737340    3.383e-02    0.011551    0.049812    0.049812
+     3        -0.344687161276303    1.377e-02    0.013734    0.059128    0.059128
+     4        -0.345180948746328    4.038e-03    0.014156    0.060710    0.060710
+     5        -0.345281732431374    1.340e-03    0.014260    0.061087    0.061087
+     6        -0.345269449215560    4.392e-04    0.014271    0.061153    0.061153
+     7        -0.345261768521919    1.722e-04    0.014274    0.061168    0.061168
+     8        -0.345263909769109    6.552e-05    0.014278    0.061185    0.061185
+     9        -0.345264445741777    2.009e-05    0.014280    0.061193    0.061193
+    10        -0.345263705281598    7.862e-06    0.014280    0.061195    0.061195
+    11        -0.345263559239105    2.886e-06    0.014281    0.061197    0.061197
+    12        -0.345263519575106    6.980e-07    0.014281    0.061197    0.061197
+    13        -0.345263543451761    2.550e-07    0.014281    0.061197    0.061197
+    14        -0.345263560142619    8.664e-08    0.014281    0.061197    0.061197
+    15        -0.345263563497291    2.575e-08    0.014281    0.061197    0.061197
+    16        -0.345263564296987    9.255e-09    0.014281    0.061197    0.061197
+    17        -0.345263564446938    2.854e-09    0.014281    0.061197    0.061197
+    18        -0.345263564413245    9.556e-10    0.014281    0.061197    0.061197
+    19        -0.345263564417433    2.996e-10    0.014281    0.061197    0.061197
+    20        -0.345263564430282    1.082e-10    0.014281    0.061197    0.061197
+    21        -0.345263564433407    4.263e-11    0.014281    0.061197    0.061197
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	         11   9         0.0553280004
-	          9   5        -0.0242807824
-	         12   9         0.0233481187
-	         11  10        -0.0174221356
-	         12  10         0.0168581078
-	          8   6        -0.0097038330
-	          4   1        -0.0090597890
-	         10  10        -0.0085562611
-	          4   0        -0.0081739216
-	          8   8        -0.0062058980
+	         11   9         0.0553280106
+	          9   5        -0.0242808143
+	         12   9        -0.0233481604
+	         11  10         0.0174221383
+	         12  10         0.0168581187
+	          8   6        -0.0097038411
+	          4   1         0.0090597899
+	         10  10         0.0085562610
+	          4   0         0.0081739213
+	          8   8        -0.0062058894
 
 	Largest TIjAb Amplitudes:
-	  9   9   5   5        -0.1056964054
-	 11  11   9   9        -0.0756182576
-	 12  12   9   9        -0.0744467864
-	  5   5   6   6        -0.0626096311
-	  8   8   5   5        -0.0525689059
-	  9  11   5   9        -0.0473644265
-	 11   9   9   5        -0.0473644265
-	  8   9   5   5        -0.0471493399
-	  9   8   5   5        -0.0471493399
-	  9  12   5   9        -0.0431842245
+	  9   9   5   5        -0.1056964016
+	 11  11   9   9        -0.0756182656
+	 12  12   9   9        -0.0744467882
+	  5   5   6   6        -0.0626096390
+	  8   8   5   5        -0.0525689091
+	  9  11   5   9        -0.0473644309
+	 11   9   9   5        -0.0473644309
+	  8   9   5   5        -0.0471493400
+	  9   8   5   5        -0.0471493400
+	  9  12   5   9         0.0431842140
 
-	SCF energy       (chkpt)   = -205.422369155358780
-	Reference energy (file100) = -205.422369155358751
-	MP2 correlation energy     =   -0.300601276004203
-      * MP2 total energy           = -205.722970431362967
-	CCSD correlation energy    =   -0.345263555868298
-      * CCSD total energy          = -205.767632711227037
+	SCF energy       (chkpt)              = -205.422369155371854
+	Reference energy (file100)            = -205.422369155371939
 
-******************************************************************************
-CCENERGY tstop called on julius
-Fri Feb  4 14:01:51 2011
+	Opposite-spin MP2 correlation energy  =   -0.238672402843258
+	Same-spin MP2 correlation energy      =   -0.061928872917774
+	MP2 correlation energy                =   -0.300601275761031
+      * MP2 total energy                      = -205.722970431132978
 
-user time   =       0.21 seconds =       0.00 minutes
-system time =       0.14 seconds =       0.00 minutes
-total time  =          1 seconds =       0.02 minutes
-******************************************************************************
-CCTRIPLES tstart called on julius
-Fri Feb  4 14:01:51 2011
+	Opposite-spin CCSD correlation energy =   -0.295789480756328
+	Same-spin CCSD correlation energy     =   -0.049474083596126
+	CCSD correlation energy               =   -0.345263564433407
+      * CCSD total energy                     = -205.767632719805334
+
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:04 2012
+Module time:
+	user time   =       0.56 seconds =       0.01 minutes
+	system time =       0.58 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.64 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:55:04 2012
 
 			**************************
 			*                        *
@@ -894,29 +533,25 @@ Fri Feb  4 14:01:51 2011
 	Reference wfn   =      RHF
 
 	Nuclear Rep. energy (chkpt)   =  135.092128488419604
-	SCF energy          (chkpt)   = -205.422369155358780
-	Reference energy    (file100) = -205.422369155358751
-	CCSD energy         (file100) =   -0.345263555868298
-	Total CCSD energy   (file100) = -205.767632711227037
+	SCF energy          (chkpt)   = -205.422369155371854
+	Reference energy    (file100) = -205.422369155371939
+	CCSD energy         (file100) =   -0.345263564433407
+	Total CCSD energy   (file100) = -205.767632719805334
 
 	Number of ijk index combinations: 455
 
-	(T) energy                    =   -0.007645878440281
-      * CCSD(T) total energy          = -205.775278589667323
+	(T) energy                    =   -0.007645878499467
+      * CCSD(T) total energy          = -205.775278598304823
 
-******************************************************************************
-CCTRIPLES tstop called on julius
-Fri Feb  4 14:01:51 2011
 
-user time   =       0.05 seconds =       0.00 minutes
-system time =       0.01 seconds =       0.00 minutes
-total time  =          0 seconds =       0.00 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:55:04 2012
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.92 seconds =       0.02 minutes
+	system time =       0.69 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-                          --------------------------
-                          PSI3 Computation Completed
-                          --------------------------
-
-PSI3 stopped on julius at Fri Feb  4 14:01:51 2011
-
-Total PSI3 wall time          2 seconds =       0.03 minutes
-******************************************************************************
+*** PSI4 exiting successfully. Buy a developer a beer!

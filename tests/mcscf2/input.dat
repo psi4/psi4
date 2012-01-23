@@ -2,8 +2,8 @@
 
 memory 250 mb
 
-nucenergy =   68.259512887939   #TEST
-refenergy = -224.359390149846   #TEST
+nucenergy =   68.2595076754  #TEST
+refenergy = -224.3593901378  #TEST
 
 molecule ozone {
    O
