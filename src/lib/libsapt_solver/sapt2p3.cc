@@ -172,7 +172,10 @@ void SAPT2p3::print_results()
   e_sapt2p3_ = e_sapt2pp3_ + e_exch_disp30_ + e_ind_disp30_ 
     + e_exch_ind_disp30_;
 
-  e_exch_ind30r_ = e_ind30r_ * (e_exch_ind30_/e_ind30_);
+  if (e_ind30r_ != 0.0)
+    e_exch_ind30r_ = e_ind30r_ * (e_exch_ind30_/e_ind30_);
+  else 
+    e_exch_ind30r_ = 0.0;
 
   double dHF2 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
   double dHF3 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_
@@ -282,6 +285,7 @@ void SAPT2p3::print_results()
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
+  Process::environment.globals["SAPT SAPT2+ ENERGY"] = e_sapt2p_;
   Process::environment.globals["SAPT SAPT2+(3) ENERGY"] = e_sapt2pp3_;
   if (third_order_) {
     Process::environment.globals["SAPT SAPT2+3 ENERGY"] = e_sapt2p3_;
