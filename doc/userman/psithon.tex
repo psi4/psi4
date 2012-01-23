@@ -411,15 +411,7 @@ set scf print 1
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes. 
 
-%In addition to specifying
-%charge and multiplicity in the {\tt molecule} block, they can be set through {\tt set}
-%commands:
-%\begin{Snippet}
-%set charge 1 # A cation
-%set multp 3  # A triplet electronic state
-%\end{Snippet}
-
-\subsection{Assigning Basis Sets}
+\subsection{Assigning Basis Sets} \label{sec:PsithonBasisSets}
 While the above syntax will suffice for specifying basis sets in most cases,
 the user may need to assign basis sets to specific atoms.  To achieve this, a
 {\tt basis} block can be used.  We use a snippet from the {\tt mints2} sample
@@ -605,7 +597,7 @@ set basis cc-pvdz
 set reference uhf
 h_energy = energy('scf')
 
-D_e = 627.51*(2*h_energy - h2_energy)
+D_e = psi_hartree2kcalmol*(2*h_energy - h2_energy)
 print"De=%f"%D_e
 \end{Snippet}
 The {\tt energy()} function returns the final result of the computation, which we
@@ -623,7 +615,7 @@ e_scs_mp2=get_variable('SCS-DF-MP2 TOTAL ENERGY')
 Each module and the Python driver set \PSI variables over the course of
 a calculation.  The values for all can be printed in the output file
 with the input file command \texttt{print\_variables()} . Note that
-\PSI variables accumulate over a \PSIfour instance are not cleared by
+\PSI variables accumulate over a \PSIfour instance and are not cleared by
 \texttt{clean()}. So if you run in a single input file a STO-3G FCI
 followed by a aug-cc-pVQZ SCF followed by a \texttt{print\_variables()}
 command, the last will include both SCF TOTAL ENERGY and FCI TOTAL
