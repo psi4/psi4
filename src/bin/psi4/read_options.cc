@@ -34,11 +34,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   (in Cotton order) -*/
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
-  irrep (these are not excited in a correlated wavefunction, nor can they be 
+  irrep (these are not excited in a correlated wavefunction, nor can they be
   optimized in MCSCF -*/
   options.add("FROZEN_DOCC", new ArrayType());
   /*- An array containing the number of frozen unoccupied orbitals per
-  irrep (these are not populated in a correlated wavefunction, nor can they be 
+  irrep (these are not populated in a correlated wavefunction, nor can they be
   optimized in MCSCF -*/
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The number of core orbitals to freeze in later correlated computations.
@@ -49,13 +49,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("NUM_FROZEN_UOCC", 0);
   /*- Specifies how many core orbitals to freeze in correlated computations.
   TRUE will default to freezing the standard default number of core orbitals.
-  For heavier elements, there can be some ambiguity in how many core 
+  For heavier elements, there can be some ambiguity in how many core
   orbitals to freeze; in such cases, SMALL picks the most conservative
   standard setting (freezes fewer orbitals), and LARGE picks the least
   conservative standard setting (freezes more orbitals).  More precise
   control over the number of frozen orbitals can be attained by using
-  the keywords NUM_FROZEN_DOCC (gives the total number of orbitals to 
-  freeze, program picks the lowest-energy orbitals) or FROZEN_DOCC (gives 
+  the keywords NUM_FROZEN_DOCC (gives the total number of orbitals to
+  freeze, program picks the lowest-energy orbitals) or FROZEN_DOCC (gives
   the number of orbitals to freeze per irreducible representation) -*/
   options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
 
@@ -1164,7 +1164,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("OPDM_RELAX",false);
     /*- Do require $\bar{H}$ and $R$ to be connected? !expert -*/
     options.add_bool("XI_CONNECT",false);
-    /*- The number of electronic states to computed, per irreducible 
+    /*- The number of electronic states to computed, per irreducible
     representation -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Do compute all relaxed excited states? -*/
@@ -1383,7 +1383,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SS_E_CONVERGENCE", 1E-6);
     /*- Number of important CC amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 5);
-    /*- Minimum absolute value above which a guess vector to a root is added 
+    /*- Minimum absolute value above which a guess vector to a root is added
     to the Davidson algorithm in the EOM-CC iterative procedure.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
@@ -1391,7 +1391,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SS_SKIP_DIAG", false);
     /*- Do ? -*/
     options.add_bool("RESTART_EOM_CC3", false);
-    /*- Specifies a set of single-excitation guess vectors for the EOM-CC 
+    /*- Specifies a set of single-excitation guess vectors for the EOM-CC
     procedure.  If EOM_GUESS = SINGLES, the guess will be taken from
     the singles-singles block of the similarity-transformed Hamiltonian,
     Hbar.  If EOM_GUESS = DISK, guess vectors from a previous computation
@@ -1420,7 +1420,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DIIS",1);
     /*- The response property desired.  Acceptable values are POLARIZABILITY
     (default) for dipole-polarizabilities, ROTATION for specific rotations,
-    ROA for Raman Optical Activity, and ALL for all of the above. 
+    ROA for Raman Optical Activity, and ALL for all of the above.
     -*/
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
     /*- -*/
@@ -1449,7 +1449,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEKINO",0);
     /*- Do Bartlett size-extensive linear model? -*/
     options.add_bool("LINEAR",0);
-    /*- Array that specifies the desired frequencies of the incident 
+    /*- Array that specifies the desired frequencies of the incident
     radiation field in CCLR calculations.  If only one element is
     given, the units will be assumed to be atomic units.  If more
     than one element is given, then the units must be specified as the final
@@ -1462,14 +1462,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     /*- -*/
     options.add("OMEGA", new ArrayType());
-    /*- Array that specifies the desired frequencies of the incident 
+    /*- Array that specifies the desired frequencies of the incident
     radiation field in CCLR calculations.  If only one element is
     given, the units will be assumed to be atomic units.  If more
     than one element is given, then the units must be specified as the final
     element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
     /*- The response property desired.  Acceptable values are POLARIZABILITY
     (default) for dipole-polarizabilities, ROTATION for specific rotations,
-    ROA for Raman Optical Activity, and ALL for all of the above. 
+    ROA for Raman Optical Activity, and ALL for all of the above.
     -*/
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
   }
@@ -1541,26 +1541,26 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for wavefunction (change) in CC amplitude equations.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE", 1e-7);
-    /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$ 
+    /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$
     amplitudes?  For geometry optimizations, Brueckner
-    calculations, etc. the iterative solution of the CC amplitude 
-    equations may benefit considerably by reusing old vectors as initial 
-    guesses.  Assuming that the MO phases remain the same between 
-    updates, the CC codes will, by default, re-use old vectors, unless 
+    calculations, etc. the iterative solution of the CC amplitude
+    equations may benefit considerably by reusing old vectors as initial
+    guesses.  Assuming that the MO phases remain the same between
+    updates, the CC codes will, by default, re-use old vectors, unless
     the user sets RESTART = false. -*/
     options.add_bool("RESTART",1);
     /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? !expert -*/
     options.add_bool("FORCE_RESTART", 0);
 //#warning CCEnergy ao_basis keyword type was changed.
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms 
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms
     If AO_BASIS=NONE, the MO-basis integrals will be used;
-    if AO_BASIS=DISK, the AO-basis integrals, stored on disk, will 
-    be used; if AO_BASIS=DIRECT, the AO-basis integrals will be computed 
+    if AO_BASIS=DISK, the AO-basis integrals, stored on disk, will
+    be used; if AO_BASIS=DIRECT, the AO-basis integrals will be computed
     on the fly as necessary.  NB: The AO_BASIS=DIRECT option is not fully
     implemented and should only be used by experts.  Default is NONE.
-    Note: The developers recommend use of this keyword only as a last 
-    resort because it significantly slows the calculation. The current 
-    algorithms for handling the MO-basis four-virtual-index integrals have 
+    Note: The developers recommend use of this keyword only as a last
+    resort because it significantly slows the calculation. The current
+    algorithms for handling the MO-basis four-virtual-index integrals have
     been significantly improved and are preferable to the AO-based approach.
     !expert -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
@@ -1610,8 +1610,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 10);
-    /*- Convergence criterion for Breuckner orbitals. The convergence 
-       is determined based on the largest $T_1$ amplitude.  See the note 
+    /*- Convergence criterion for Breuckner orbitals. The convergence
+       is determined based on the largest $T_1$ amplitude.  See the note
        at the beginning of Section \ref{keywords}. -*/
     options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
     /*- Do print the MP2 amplitudes which are the starting guesses for RHF and UHF reference functions? -*/
@@ -2149,7 +2149,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\'{a}ly K\'{a}llay. -*/
 
-      /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC. -*/
+      /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC.
+          If the environment variable OMP_NUM_THREADS is set prior to calling PSI4 then
+          that value is used. When set, this option overrides everything. Be aware
+          the {\tt -n} command-line option described in section \ref{sec:threading}
+          does not affect MRCC.
+          !expert -*/
       options.add_int("MRCC_OMP_NUM_THREADS", 1);
 
       /*- See the note at the beginning of Section \ref{keywords}.

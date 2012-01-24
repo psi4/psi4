@@ -17,6 +17,6 @@ set globals {
   d_convergence 10
 }
 
-frequencies('ccsd', dertype=0)
+frequencies('scf', dertype=1)
 
-
+#
