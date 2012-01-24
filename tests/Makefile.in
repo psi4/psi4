@@ -1,5 +1,5 @@
 
-.PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
+.PHONY: tests quicktests cc_tests clean quicktestsclean
 
 # Tutorial test cases
 tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sapt tu6-cp-ne2
@@ -8,12 +8,10 @@ tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sa
 #  This is probably not the final solution:
 maddness_subdirs = dfmp2_1 dfmp2_2
 
-cc_subdirs = cc1 cc2 cc4 cc4a cc5a cc8 cc8a cc8b cc8c cc9 cc9a cc10 cc11 \
+cc_subdirs = cc1 cc2 cc4 cc4a cc5a cc6 cc8 cc8a cc8b cc8c cc9 cc9a cc10 cc11 \
 cc12 cc13 cc13a cc15 cc16 cc17 cc18 cc19 cc22 cc24 cc25 cc26 cc27 cc28 \
 cc29 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 \
 cc43 cc44 cc45 cc49 cc50 cc51 cc52 # cc5 these should be restored when fixed
-
-rb_subdirs = 
 
 ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh
 
@@ -21,7 +19,7 @@ dcft_subdirs = dcft1 dcft2 dcft3 dcft4 #dcft5
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
-df_subdirs = sapt1 
+df_subdirs = sapt1 sapt2 sapt3 sapt4 sapt5
 
 psimrcc_subdirs = #psimrcc-sp1
 
@@ -121,9 +119,6 @@ psimrcc_tests:
 	$(call runtests, $(psimrcc_subdirs))
 
 python_tests:
-	$(call runtests, $(python_test_subdirs))
-
-psirb_tests:
 	$(call runtests, $(python_test_subdirs))
 
 plugins:
