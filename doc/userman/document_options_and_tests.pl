@@ -342,7 +342,6 @@ closedir TESTS;
 my $SrcFolder = $DriverPath . "../../src";
 $TexSummary = "variables_list.tex";
 open(TEXOUT,">$TexSummary") or die "I can't write to $TexSummary\n";
-print TEXOUT "\\section{Environment Variables Set by Each Module}\\label{variableslist}\n";
 print TEXOUT "{\n \\footnotesize\n";
 
 # Grab psi modules and ordering from options parsing above
