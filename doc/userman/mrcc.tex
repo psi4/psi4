@@ -1,14 +1,21 @@
 \subsection{The MRCC Program of M. K\'{a}llay} \label{sec:mrcc}
 \PSIfour\ contains code to interface to the MRCC program of M. K\'{a}llay
 and J. Gauss.  The license and source code of the MRCC program must be
-obtained from Mih\'{a}ly K\'{a}llay ({\tt http://www.mrcc.hu/}). Currently, only single reference methods with RHF reference functions are supported.
+obtained from Mih\'{a}ly K\'{a}llay ({\tt http://www.mrcc.hu/}). Currently,
+only single reference methods with RHF reference functions are supported.
+
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 \subsubsection{Installation}
-Follow the instructions provided with the source to build the MRCC programs. To be used by \PSIfour, ensure that the program binary for {\tt dmrcc} can be found in your {\tt PATH}. If \PSIfour\ is unable to execute the binary, an error will be reported.
+Follow the instructions provided with the source to build the MRCC programs.
+To be used by \PSIfour, ensure that the program binary for {\tt dmrcc} can be
+found in your {\tt PATH}. If \PSIfour\ is unable to execute the binary, an
+error will be reported.
 
 \subsubsection{Running MRCC}
-MRCC can be invoked in similar fashion as other theories provided in \PSIfour. For example, if you want to obtain the CCSDT energy for water with cc-pVDZ using MRCC simply provide the following:
+MRCC can be invoked in similar fashion as other theories provided in \PSIfour.
+For example, if you want to obtain the CCSDT energy for water with cc-pVDZ using
+MRCC simply provide the following:
 \begin{Snippet}
 molecule h2o {
     O
@@ -21,13 +28,20 @@ set {
 energy('mrccsdt')
 \end{Snippet}
 
-{\tt mrccsdt} in the call to {\tt energy()} instructs \PSIfour\ to first perform an RHF calculation and then call MRCC to compute the CCSDT energy. For a CCSDT(Q) energy, simply use {\tt mrccsdt(q)} in the call to {\tt energy}.  MRCC can be used to perform geometry optimization and frequency calculations as well.
+{\tt mrccsdt} in the call to {\tt energy()} instructs \PSIfour\ to first
+perform an RHF calculation and then call MRCC to compute the CCSDT energy.
+For a CCSDT(Q) energy, simply use {\tt mrccsdt(q)} in the call to
+{\tt energy}. MRCC can be used to perform geometry optimization and
+frequency calculations for electronic ground states only.
 
 At this time, \PSIfour\ is only able to automatically generate the proper
-input file for MRCC for the methods listed in Table \ref{table:mrccauto}. For other methods, you will be required to use the MRCC keywords described elsewhere in this manual.
+input file for MRCC for the methods listed in Table \ref{table:mrccauto}.
+To utilize any method described in Table \ref{table:mrccauto}, you must prefix
+the method name with {\tt MR}. For other methods, you will be required to
+use the MRCC keywords described elsewhere in this manual.
 
 \begin{table}
-\caption{Methods available for automatic interface with MRCC.} 
+\caption{Methods available in automatic interface with MRCC.}
 \label{table:mrccauto}
 \begin{center}
 \small
@@ -56,7 +70,8 @@ CC6         &                  &                   \\
 \end{center}
 \end{table}
 
-Frozen-core approximation is also supported in the MRCC interface. To optimize CH$_4$ with CCSDT freezing the 1s on carbon, run:
+Frozen-core approximation is also supported in the MRCC interface.
+To optimize CH$_4$ with CCSDT freezing the 1s on carbon, run:
 
 \begin{Snippet}
 molecule H2O {
