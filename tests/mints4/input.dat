@@ -5,7 +5,7 @@
 
 memory 250 mb
 
-refENuc   =  268.617198719  #TEST
+refENuc   = 268.617178206572646  #TEST
 
 molecule dimer {
 1 1

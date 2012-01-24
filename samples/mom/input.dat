@@ -8,7 +8,6 @@
 
 memory 250 mb
 
-E56_triplet = -75.79200708284641 # TEST 
 
 # Standard water molecule
 molecule water {

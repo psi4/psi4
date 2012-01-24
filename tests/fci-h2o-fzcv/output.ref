@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -20,9 +22,11 @@
 --------------------------------------------------------------------------
 #! 6-31G H2O Test FCI Energy Point
 
+memory 250 mb
+
 refnuc   =   9.2342185209120 #TEST
 refscf   = -75.985323665263  #TEST
-refci    = -76.0996220292430 #TEST
+refci    = -76.0996220351809 #TEST
 refcorr  = refci - refscf    #TEST
 
 molecule h2o {
@@ -33,27 +37,24 @@ units bohr
 }
 
 set globals {
-  wfn detci
-  fci true 
   basis 6-31G
   frozen_docc = [1, 0, 0, 0]
   frozen_uocc = [1, 0, 0, 0]
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('fci')
 
 # 7 digits on CI seems ok, but we may need to back it down to 6 later #TEST
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
-
-clean()
-
 --------------------------------------------------------------------------
 
-*** tstart() called on ds9
-*** at Mon Nov 21 16:18:58 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:44:27 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -64,7 +65,7 @@ clean()
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -77,7 +78,7 @@ clean()
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000     0.111757309654
            H          0.000000000000    -1.494958998200    -0.886834802246
-           H          0.000000000000     1.494958998200    -0.886834802246
+           H         -0.000000000000     1.494958998200    -0.886834802246
 
     Number of unique atoms: 2
 
@@ -100,6 +101,7 @@ clean()
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -120,7 +122,7 @@ clean()
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.33567055287419
+  Initial RHF energy:   -58.33567055287425
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -149,32 +151,35 @@ clean()
       Number of irreps:                  4
       Number of functions per irrep: [   7    0    2    4 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 1270 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 1270 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -69.64819664095911   -1.13125e+01   0.00000e+00  
+   @RHF iter   1:   -69.64819664095916   -1.13125e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -70.91117406230794   -1.26298e+00   9.88629e-01 DIIS
+   @RHF iter   2:   -70.91117406230791   -1.26298e+00   9.88629e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.86520538605038   -4.95403e+00   9.32600e-01 DIIS
-   @RHF iter   4:   -75.97963227314797   -1.14427e-01   2.58095e-02 DIIS
+   @RHF iter   3:   -75.86520538605036   -4.95403e+00   9.32600e-01 DIIS
+   @RHF iter   4:   -75.97963227314800   -1.14427e-01   2.58095e-02 DIIS
    @RHF iter   5:   -75.98513801013297   -5.50574e-03   9.49664e-03 DIIS
-   @RHF iter   6:   -75.98530588617209   -1.67876e-04   1.81745e-03 DIIS
-   @RHF iter   7:   -75.98532259908878   -1.67129e-05   6.51479e-04 DIIS
-   @RHF iter   8:   -75.98532365477040   -1.05568e-06   1.02455e-04 DIIS
-   @RHF iter   9:   -75.98532367168409   -1.69137e-08   1.91657e-05 DIIS
-   @RHF iter  10:   -75.98532367239595   -7.11864e-10   3.94160e-06 DIIS
-   @RHF iter  11:   -75.98532367241128   -1.53335e-11   7.68995e-07 DIIS
-   @RHF iter  12:   -75.98532367241187   -5.82645e-13   9.05932e-08 DIIS
+   @RHF iter   6:   -75.98530588617214   -1.67876e-04   1.81745e-03 DIIS
+   @RHF iter   7:   -75.98532259908876   -1.67129e-05   6.51479e-04 DIIS
+   @RHF iter   8:   -75.98532365477050   -1.05568e-06   1.02455e-04 DIIS
+   @RHF iter   9:   -75.98532367168410   -1.69136e-08   1.91657e-05 DIIS
+   @RHF iter  10:   -75.98532367239596   -7.11864e-10   3.94161e-06 DIIS
+   @RHF iter  11:   -75.98532367241128   -1.53193e-11   7.68973e-07 DIIS
+   @RHF iter  12:   -75.98532367241184   -5.54223e-13   9.05713e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -198,7 +203,7 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:   -75.98532367241187
+  @RHF Final Energy:   -75.98532367241184
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -216,7 +221,7 @@ clean()
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds9 at Mon Nov 21 16:18:58 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:27 2012
 Module time:
 	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
@@ -226,93 +231,56 @@ Total time:
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds9
-*** at Mon Nov 21 16:18:58 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:44:27 2012
 
 
 	**************************************************
-	* TRANSQT:  Program to transform integrals from  *
+	* TRANSQT2: Program to transform integrals from  *
 	*           the SO basis to the MO basis.        *
 	*                                                *
 	*            Daniel, David, & Justin             *
-	*                   Sept  1995                   *
 	**************************************************
 
-	Input Parameters:
+
+	Input parameters:
 	-----------------
-	Wavefunction           =  DETCI
-	Reference orbitals     =  RHF
-	Backtrans              =  No
-	Print MOs              =  No
-	Freeze Core            =  Yes
-	Delete Restricted Docc =  Yes
-	Do All TEI             =  No
-	Memory (Mbytes)        =  256.0
-	Max Buckets            =  499
-	First Tmp File         =  150
-	Presort File           =  41
-	Source TEI File        =  33
-	Opdm In File           =  73
-	Opdm Out File          =  76
-	Lag In File            =  75
-	Keep Presort           =  No
-	J File                 =  91
-	Keep J                 =  No
-	M File                 =  72
-	Bare OEI file          =  35
-	Frozen Core OEI file   =  35
-	Sorted TEI file        =  72
-	Delete TEI source file =  Yes
-	Add TPDM Ref Part      =  No
-	Do Bare OEI tranform   =  No
-	Do FZC  OEI tranform   =  Yes
-	Tolerance              =  1.0e-14
-	Print Level            =  1
-	Print TE Ints          =  No
-	Print OE Ints          =  No
-	Print Sorted TE Ints   =  No
-	Print Sorted OE Ints   =  No
-	Reorder MOs            =  No
-	Check C Orthonormality =  No
-	QRHF orbitals          =  No
-	IVO orbitals           =  No
-	Pitzer                 =  No
+	Wave function   =	DETCI
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 13
+	Number of MOs        = 13
+	Number of active MOs = 11
 
-	Chkpt File Parameters:
-	------------------
-	Number of irreps = 4
-	Number of SOs    = 13
-	Number of MOs    = 13
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   7	    1	    2	    0	    3	    1
+	 A2	   0	    0	    0	    0	    0	    0
+	 B1	   2	    0	    1	    0	    1	    0
+	 B2	   4	    0	    1	    0	    3	    0
 
-	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
-	-----	-----	-----	------	------	------	------	------
-	 A1	   7	   7	    1	    3	    0	    4	    1
-	 A2	   0	   0	    0	    0	    0	    0	    0
-	 B1	   2	   2	    0	    1	    0	    1	    0
-	 B2	   4	   4	    0	    1	    0	    3	    0
+	Nuclear Rep. energy (chkpt) =      9.23421852091198
+	SCF energy          (chkpt) =    -75.98532367241184
 
-	Nuclear Repulsion Energy    =         9.2342185209
-	Total SCF Energy            =       -75.9853236724
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.325924554485354
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
 
-	Reading one-electron integrals...done.
-
-	Pre-sorting two-electron ints...
-
-
-	Frozen core energy =  -61.325924554485290
-	Transforming two-electron ints...
-
-	Sorting half-transformed integrals...
-	Finished half-transform...
-	Working on second half...
-
-	Transformation finished.
-	Two-electron integrals written to file72.
-
-	Transforming one-electron integrals...
-	Frozen-core operator written to file 35.
-
-*** tstop() called on ds9 at Mon Nov 21 16:18:58 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:27 2012
 Module time:
 	user time   =       0.00 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
@@ -322,8 +290,8 @@ Total time:
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds9
-*** at Mon Nov 21 16:18:58 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:44:27 2012
 
 
 *******************************************************
@@ -337,42 +305,42 @@ Total time:
 
 
 Note: Calculation requested is a full CI.
-Resetting EX_LVL to 8 and turning on all excitations
+Resetting EX_LEVEL to 8 and turning on all excitations
 
 
 PARAMETERS: 
-   EX LVL        =        8      H0 BLOCKSIZE =      400
-   VAL EX LVL    =        0      H0 GUESS SIZE=      400
+   EX LEVEL      =        8      H0 BLOCKSIZE =      400
+   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
    H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   NPRINT        =       20
+   NUM PRINT     =       20
    MAXITER       =       12      FREEZE CORE  =      yes
    NUM ROOTS     =        1      ICORE        =        1
    PRINT         =        1      FCI          =      yes
-   CONV          =        4      MIXED        =      yes
-   E CONV        =        6      MIXED4       =      yes
+   R CONV        =   1.00e-04      MIXED        =      yes
+   E CONV        =   1.00e-06      MIXED4       =      yes
    OEI FILE      =       35      R4S          =       no
    REPL OTF      =       no
    TEI FILE      =       72      DIAG METHOD  =      SEM
    PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
    S             =   0.0000      Ms0          =      yes
-   MAXNVECT      =       13
+   MAX NUM VECS  =       13
    RESTART       =       no
    GUESS VECTOR  =  H0BLOCK      OPENTYPE     =     NONE
    REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVE       = EVANGELISTI
+   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
    LSE           =       no      LSE ITER     =        0
    HD OTF        =      yes      NO DFILE     =       no
    MPN           =       no      MPN SCHMIDT  =       no
-   ZAPTN         =       no      WIGNER       =       no
-   PERT Z        =   1.0000      ROOT         =        0
-   NTHREADS      =        1
-   EXPORT VECTOR =       no      NUM EXPORT   =        0
-   FILTER_GUESS  =       no      SF_RESTRICT  =       no
+   ZAPTN         =       no      MPN WIGNER   =       no
+   PERT Z        =   1.0000    FOLLOW ROOT  =        0
+   NUM THREADS   =        1
+   VECS WRITE    =       no      NUM VECS WRITE =        0
+   FILTER GUESS  =       no      SF RESTRICT  =       no
    OPDM          =       no      TRANS DENSITY=       no
 
    FILES         =  50 51 52 53
 
-   EX_ALLOW      =  1  1  1  1  1  1  1  1 
+   EX ALLOW      =  1  1  1  1  1  1  1  1 
    STATE AVERAGE =  1(1.00) 
    STATE AVERAGE =  1(1.00) 
 
@@ -438,42 +406,42 @@ Iter  5  Root  1 = -76.099621950   Delta_E -7.706E-07   Delta_C  6.445E-04
 Iter  6  Root  1 = -76.099622028   Delta_E -7.833E-08   Delta_C  1.908E-04  
 Iter  7  Root  1 = -76.099622035   Delta_E -7.216E-09   Delta_C  6.363E-05 c
 
-* ROOT 1 CI total energy = -76.0996220351809
+* ROOT 1 CI total energy = -76.0996220351807
 
 
 The 20 most important determinants
 
-    1   -0.980081  (   82,   82)  2A1X  3A1X  1B1X  1B2X  
-    2    0.052723  (   92,   92)  2A1X  3A1X  1B2X  2B1X  
-    3    0.046546  (   88,   88)  2A1X  1B1X  1B2X  6A1X  
-    4    0.039161  (  102,  102)  2A1X  3A1X  1B1X  2B2X  
-    5   -0.034218  (   88,   92)  2A1X  3A1B  1B1A  1B2X  6A1A  2B1B  
-    6   -0.034218  (   92,   88)  2A1X  3A1A  1B1B  1B2X  6A1B  2B1A  
-    7    0.028966  (  171,  171)  2A1X  3A1X  1B1X  5A1X  
-*   8    0.026793  (  144,  144)  2A1X  3A1X  1B1X  4B2X  
-    9    0.026608  (  122,  122)  2A1X  3A1X  1B1X  3B2X  
-   10   -0.026043  (   92,  144)  2A1X  3A1X  1B1B  1B2A  2B1A  4B2B  
-   11   -0.026043  (  144,   92)  2A1X  3A1X  1B1A  1B2B  2B1B  4B2A  
-   12   -0.024926  (   92,  102)  2A1X  3A1X  1B1B  1B2A  2B1A  2B2B  
-   13   -0.024926  (  102,   92)  2A1X  3A1X  1B1A  1B2B  2B1B  2B2A  
-   14    0.024901  (   82,   98)  2A1X  3A1A  1B1A  1B2X  6A1B  2B1B  
-   15    0.024901  (   98,   82)  2A1X  3A1B  1B1B  1B2X  6A1A  2B1A  
-   16    0.024465  (  102,  144)  2A1X  3A1X  1B1X  2B2A  4B2B  
-   17    0.024465  (  144,  102)  2A1X  3A1X  1B1X  2B2B  4B2A  
-   18    0.023528  (   88,  144)  2A1X  3A1B  1B1X  1B2A  6A1A  4B2B  
-   19    0.023528  (  144,   88)  2A1X  3A1A  1B1X  1B2B  6A1B  4B2A  
-   20    0.023371  (   88,  102)  2A1X  3A1B  1B1X  1B2A  6A1A  2B2B  
+    1    0.980081  (   82,   82)  2A1X  3A1X  1B1X  1B2X  
+    2   -0.052723  (   92,   92)  2A1X  3A1X  1B2X  2B1X  
+    3   -0.046546  (   88,   88)  2A1X  1B1X  1B2X  6A1X  
+    4   -0.039161  (  102,  102)  2A1X  3A1X  1B1X  2B2X  
+    5    0.034218  (   88,   92)  2A1X  3A1B  1B1A  1B2X  6A1A  2B1B  
+    6    0.034218  (   92,   88)  2A1X  3A1A  1B1B  1B2X  6A1B  2B1A  
+    7   -0.028966  (  171,  171)  2A1X  3A1X  1B1X  5A1X  
+*   8   -0.026793  (  144,  144)  2A1X  3A1X  1B1X  4B2X  
+    9   -0.026608  (  122,  122)  2A1X  3A1X  1B1X  3B2X  
+   10    0.026043  (   92,  144)  2A1X  3A1X  1B1B  1B2A  2B1A  4B2B  
+   11    0.026043  (  144,   92)  2A1X  3A1X  1B1A  1B2B  2B1B  4B2A  
+   12    0.024926  (   92,  102)  2A1X  3A1X  1B1B  1B2A  2B1A  2B2B  
+   13    0.024926  (  102,   92)  2A1X  3A1X  1B1A  1B2B  2B1B  2B2A  
+   14   -0.024901  (   82,   98)  2A1X  3A1A  1B1A  1B2X  6A1B  2B1B  
+   15   -0.024901  (   98,   82)  2A1X  3A1B  1B1B  1B2X  6A1A  2B1A  
+   16   -0.024465  (  102,  144)  2A1X  3A1X  1B1X  2B2A  4B2B  
+   17   -0.024465  (  144,  102)  2A1X  3A1X  1B1X  2B2B  4B2A  
+   18   -0.023528  (   88,  144)  2A1X  3A1B  1B1X  1B2A  6A1A  4B2B  
+   19   -0.023528  (  144,   88)  2A1X  3A1A  1B1X  1B2B  6A1B  4B2A  
+   20   -0.023371  (   88,  102)  2A1X  3A1B  1B1X  1B2A  6A1A  2B2B  
 
 
 
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.015774
- Write     0.013251
+ Read      0.018970
+ Write     0.005798
  Sigma1    0.000000
- Sigma2    0.018293
- Sigma3    0.070813
+ Sigma2    0.022941
+ Sigma3    0.093624
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -487,14 +455,14 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on ds9 at Mon Nov 21 16:18:58 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:28 2012
 Module time:
-	user time   =       0.24 seconds =       0.00 minutes
+	user time   =       0.50 seconds =       0.01 minutes
 	system time =       0.04 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.28 seconds =       0.00 minutes
+	user time   =       0.54 seconds =       0.01 minutes
 	system time =       0.05 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
