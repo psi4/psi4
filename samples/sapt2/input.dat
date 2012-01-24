@@ -1,0 +1,60 @@
+#! SAPT0 aug-cc-pVDZ computation of the benzene-methane interaction energy,
+#! using the aug-pVDZ-JKFIT DF basis for SCF, the aug-cc-pVDZ-RI DF basis for
+#! SAPT0 induction and dispersion, and the aug-pVDZ-JKFIT DF basis for SAPT0
+#! electrostatics and induction. This example uses frozen core as well as
+#! asyncronous I/O while forming the DF integrals and CPHF coefficients.
+
+memory 250 mb
+
+molecule benzene_methane {
+     0 1
+     C     1.3932178    0.0362913   -0.6332803
+     C     0.7280364   -1.1884015   -0.6333017
+     C    -0.6651797   -1.2247077   -0.6332803
+     C    -1.3932041   -0.0362972   -0.6333017
+     C    -0.7280381    1.1884163   -0.6332803
+     C     0.6651677    1.2246987   -0.6333017
+     H     2.4742737    0.0644484   -0.6317240
+     H     1.2929588   -2.1105409   -0.6317401
+     H    -1.1813229   -2.1750081   -0.6317240
+     H    -2.4742614   -0.0644647   -0.6317401
+     H    -1.2929508    2.1105596   -0.6317240
+     H     1.1813026    2.1750056   -0.6317401
+     --
+     0 1
+     C     0.0000000    0.0000000    3.0826195
+     H     0.5868776    0.8381742    3.4463772
+     H    -1.0193189    0.0891638    3.4463772
+     H     0.0000000    0.0000000    1.9966697
+     H     0.4324413   -0.9273380    3.4463772
+     units angstrom
+     no_reorient
+     symmetry c1
+}
+
+set globals {
+    basis         aug-cc-pvdz
+    df_basis_scf  aug-cc-pvdz-jkfit
+    df_basis_sapt aug-cc-pvdz-ri
+    df_basis_elst aug-cc-pvdz-jkfit
+    guess         sad
+    scf_type      df
+    puream        true
+    print         1
+}
+
+set sapt {
+    freeze_core   true
+    aio_cphf      true
+    aio_df_ints   true
+}
+
+energy('sapt0',cast_up=True)
+
+Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
+Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
+Eind  = PsiMod.get_variable("SAPT IND ENERGY")
+Edisp = PsiMod.get_variable("SAPT DISP ENERGY")
+ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY")
+
+
