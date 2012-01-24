@@ -69,18 +69,15 @@ ROHF      & CC2     & Y & N & Y & N  \\
 RHF       & CCSD    & Y & Y & Y & Y  \\
 RHF       & CCSD(T) & Y & N & --& -- \\
 ROHF      & CCSD    & Y & Y & Y & N  \\
-ROHF      & CCSD(T) & N & N & --& -- \\
+ROHF      & CCSD(T) & Y & N & --& -- \\
 UHF       & CCSD    & Y & Y & Y & N  \\
-UHF       & CCSD(T) & Y & Y$^*$ & --& -- \\
+UHF       & CCSD(T) & Y & Y & --& -- \\
 Brueckner & CCD     & Y & N & N & N  \\
 Brueckner & CCD(T)  & Y & N & --& -- \\
 \hline
 \hline
 \end{tabular}
 \end{center}
-{\footnotesize $^*$CCSD(T) gradients implemented via an experimental code.
-A more efficient and robust implementation will appear in the next
-release.}
 \end{table}
 
 The following wavefunctions are currently recognized by \PSIfour\ as arguments
@@ -198,11 +195,13 @@ or CCSD(T) computation, the following keywords are common:
 Here are a few recommendations for carrying out large-basis-set coupled
 cluster calculations with \PSIfour: 
 \begin{enumerate}
-\item Set the {\tt MEMORY} keyword to 90\% of the available physical
-memory, at most.  There is a small amount of overhead associated with the
+\item In most cases it is reasonable to set the {\tt MEMORY} keyword to 90\% of 
+the available physical memory, at most.  There is a small amount of overhead 
+associated with the
 coupled cluster modules that is not accounted for by the internal CC memory
 handling routines.  Thus, the user should {\em not} sepcify the entire
-physical memory of the system, or swapping is likely.
+physical memory of the system, or swapping is likely.  However, for especially large
+calculations, it is better to set the {\tt MEMORY} keyword to a value less than 16 GB.
 \item Set the \optionname{CACHELEVEL}{CCENERGY} keyword to \optionval{0}.
 This will turn off cacheing, which, for very large calculations, can
 lead to heap fragmentation and memory faults, even when sufficient
@@ -306,5 +305,21 @@ The most important keywords associated with CC-LR calculations are as follows.
            & {\bf Type:} array &  {\bf Default:} 0 \\
          & & \\
 \end{tabular*} 
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{GAUGE}{CCRESPONSE}
+         & Specifies the choice of representation of the electric dipole operator.
+         Acceptable values are {\tt LENGTH} for the usual length-gauge representation,
+         {\tt VELOCITY} for the modified velocity-gauge representation in which the 
+         static-limit optical rotation tensor is subtracted from the frequency-dependent 
+         tensor, or {\tt BOTH}.  Note that, for optical rotation calculations, only the
+         choices of {\tt VELOCITY} or {\tt BOTH} will yield origin-independent results. \\
+         & {\bf Possible Values:} LENGTH, VELOCITY, BOTH \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} LENGTH \\
+         & & \\
+\end{tabular*}
+
+
 
 

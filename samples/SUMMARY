@@ -289,7 +289,19 @@ rasci-ne:     Ne atom RASCI/cc-pVQZ  Example of split-virtual CISD[TQ] from Sher
 sad1:         Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.
 
 
-sapt1:        SAPT0 cc-pVDZ computation of the ethene-ethyne binding energy, using the cc-pVDZ-JKFIT RI basis for SCF and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+sapt1:        SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+
+
+sapt2:        SAPT0 aug-cc-pVDZ computation of the benzene-methane interaction energy, using the aug-pVDZ-JKFIT DF basis for SCF, the aug-cc-pVDZ-RI DF basis for SAPT0 induction and dispersion, and the aug-pVDZ-JKFIT DF basis for SAPT0 electrostatics and induction. This example uses frozen core as well as asyncronous I/O while forming the DF integrals and CPHF coefficients.
+
+
+sapt3:        SAPT2+3 aug-cc-pVDZ computation of the water dimer interaction energy,  using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
+
+
+sapt4:        SAPT2+(3) aug-cc-pVDZ computation of the formamide dimer interaction energy, using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI  for SAPT. This example uses frozen core as well as MP2 natural orbital  approximations.
+
+
+sapt5:        SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the water dimer.
 
 
 scf-bz2:      Benzene Dimer Out-of-Core HF/cc-pVDZ

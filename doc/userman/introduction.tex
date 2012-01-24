@@ -72,8 +72,15 @@ appropriate references for the underlying theory):
 \begin{enumerate}
 \item ``The Configuration Interaction Method: Advances in Highly 
    Correlated Approaches,'' C. D. Sherrill and H. F. Schaefer, in
-   {\em Advances in Quantum Chemistry}, vol. 34, P.-O. L{\"o}wdin, Ed.
+   {\em Adv. Quantum Chem.}, vol. 34, P.-O. L{\"o}wdin, Ed.
    (Academic Press, New York, 1999), pp. 143-269.
+\end{enumerate}
+
+{\bf CC}
+\begin{enumerate}
+\item ``An Introduction to Coupled Cluster Theory for Computational
+   Chemists,'' T. D. Crawford and H. F. Schaefer, {\em Rev. Comp. Chem.} 
+   {\bf 14}, 33-136 (2000).
 \end{enumerate}
 
 {\bf Mk-MRCCSD} 
@@ -210,16 +217,13 @@ RHF/ROHF RAS-CI       & Y & N \\
 RHF/ROHF MP(n)        & Y & N \\
 RHF/ROHF ZAPT(n)      & Y & N \\
 %RAS-CI DBOC           & Y & N \\
+RHF/UHF/ROHF CC2      & Y & N \\
 RHF/UHF/ROHF CCSD     & Y & Y \\
 RHF/UHF/ROHF CCSD(T)  & Y & Y$^*$ \\
 RHF/UHF/ROHF EOM-CCSD & Y & Y \\
+RHF/UHF/ROHF CC3      & Y & N \\
 \hline\hline
-\multicolumn{3}{l}{
-\footnotesize{$^*$ CCSD(T) gradients implemented only via an experimental}} \\
-\multicolumn{3}{l}{
-\footnotesize{code.  A more efficient and robust implementation will
-appear}} \\
-\multicolumn{3}{l}{\footnotesize{in the next release.}}
+\multicolumn{3}{l}{\footnotesize{$^*$ UHF-CCSD(T) gradients only, as of 4.0.0-beta1}} \\
 \end{tabular}
 \end{center}
 \end{table}
