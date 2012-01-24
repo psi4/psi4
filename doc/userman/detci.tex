@@ -7,11 +7,25 @@ correlated motions of electrons.  Simply put, a CI wavefunction
 is a linear combination of Slater determinants (or spin-adapted
 configuration state functions), with the linear coefficients being
 determined variationally via diagonalization of the Hamiltonian in the
-given subspace of determinants.  The simplest standard CI method which
-improves upon Hartree--Fock is a CI which adds all singly and doubly
-substituted determinants (CISD).  The CISD wavefunction has fallen out
-of favor because truncated CI wavefunctions are not size-extensive,
-meaning that their quality degrades for larger molecules.  MP2 is a less
+given subspace of determinants.  For a ``single-reference'' CI based 
+on reference function $\ket{\Phi_0}$, we can write the CI expansion as
+follows:
+\begin{equation}
+\label{eq:CIexpansion}
+\ket{\Psi} = c_0 \ket{\Phi_0} 
+ + \sum_i^{\rm occ} \sum_a^{\rm vir} c_i^a \ket{\Phi_i^a}
+ + \sum_{i<j}^{\rm occ} \sum_{a<b}^{\rm vir} c_{ij}^{ab} \ket{\Phi_{ij}^{ab}}
+ + \sum_{i<j<k}^{\rm occ} \sum_{a<b<c}^{\rm vir} c_{ijk}^{abc}
+   \ket{\Phi_{ijk}^{abc}} 
+ + \cdots
+\end{equation}
+
+The simplest standard CI method that improves upon Hartree--Fock is a CI
+that adds all singly $\ket{\Phi_i^a}$ and doubly $\ket{\Phi_{ij}^{ab}}$
+substituted determinants (CISD) to the reference determinant
+$\ket{\Phi_0}$.  The CISD wavefunction has fallen out of favor
+because truncated CI wavefunctions are not size-extensive, meaning
+that their quality degrades for larger molecules.  MP2 is a less
 expensive alternative giving results similar to those of CISD for small
 molecules, but the quality of MP2 does not degrade for larger molecules.
 Coupled-cluster singles and doubles (CCSD) is another size-extensive

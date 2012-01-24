@@ -70,4 +70,79 @@ smaller basis sets (like STO-3G); doing so can be a practical way to get
 the right occupations, which can then be specified manually for
 larger-basis computations.
 
+\vspace*{0.2in}
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{FREEZE-CORE}{GLOBALS} & 
+  Specifies how many core orbitals to freeze in correlated computations.
+  TRUE will default to freezing the standard default number of core orbitals.
+  For heavier elements, there can be some ambiguity in how many core 
+  orbitals to freeze; in such cases, SMALL picks the most conservative
+  standard setting (freezes fewer orbitals), and LARGE picks the least
+  conservative standard setting (freezes more orbitals).  More precise
+  control over the number of frozen orbitals can be attained by using
+  the keywords \optionname{NUM-FROZEN-DOCC}{GLOBALS} (gives the total number 
+  of orbitals to freeze, program picks the lowest-energy orbitals) or
+  \optionname{FROZEN-DOCC}{GLOBALS} (gives the number of orbitals to freeze 
+  per irreducible representation) \\ & {\bf Possible Values:} FALSE, TRUE, SMALL, LARGE \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{NUM-FROZEN-DOCC}{GLOBALS} & 
+  The number of occupied orbitals to freeze in later correlated computations.
+  \optionname{FROZEN-UOCC}{GLOBALS} trumps this option.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 0\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{FROZEN-DOCC}{GLOBALS} &     
+  The number of frozen doubly-occupied orbitals per
+  irrep (these are not excited in a correlated wavefunction, nor can they be 
+  optimized in MCSCF).
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} No Default\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{NUM-FROZEN-UOCC}{GLOBALS} &     
+  The number of virtual orbitals to freeze in later correlated computations.
+  \optionname{FROZEN-DOCC}{GLOBALS} trumps this option.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 0\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{FROZEN-UOCC}{GLOBALS} &    
+  The number of frozen unoccupied orbitals per
+  irrep (these are not populated in a correlated wavefunction, 
+  nor can they be optimized in MCSCF).
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} No Default\\
+         & & \\
+\end{tabular*}
+
+
+\vspace*{0.2in}
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{PRINT}{GLOBALS} &
+  The amount of information to print to the output file.  1 prints
+  basic information, and higher levels print more information. A value
+  of 5 will print very large amounts of debugging information. 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 1\\
+         & & \\
+\end{tabular*}
+
+
+
 
