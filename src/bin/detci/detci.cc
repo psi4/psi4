@@ -1050,6 +1050,16 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
        Process::environment.globals["CISDTQ TOTAL ENERGY"] = tval;
        Process::environment.globals["CISDTQ CORRELATION ENERGY"] = tval - CalcInfo.escf;
      }
+     else {
+       /*- Process::environment.globals["CI$N$ TOTAL ENERGY"] -*/
+       /*- Process::environment.globals["CI$N$ CORRELATION ENERGY"] -*/
+       std::stringstream s;
+       s << "CI" << Parameters.ex_lvl << " TOTAL ENERGY";
+       Process::environment.globals[s.str()] = tval;
+       s.str(std::string());
+       s << "CI" << Parameters.ex_lvl << " CORRELATION ENERGY";
+       Process::environment.globals[s.str()] = tval - CalcInfo.escf;
+     }
    }
 
    for (i=0; i<nroots; i++) {
@@ -1057,6 +1067,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
      tval = evals[i]+efzc+nucrep;
      chkpt_wt_e_labeled(e_label, tval);
 
+     /*- Process::environment.globals["CI ROOT $N$ TOTAL ENERGY"] -*/
+     /*- Process::environment.globals["CI ROOT $N$ CORRELATION ENERGY"] -*/
      std::stringstream s;
      s << "CI ROOT " << (i+1) << " TOTAL ENERGY";
      Process::environment.globals[s.str()] = tval;
