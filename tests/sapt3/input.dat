@@ -1,0 +1,63 @@
+#! SAPT2+3 aug-cc-pVDZ computation of the water dimer interaction energy, 
+#! using the aug-cc-pVDZ-JKFIT DF basis for SCF and aug-cc-pVDZ-RI for SAPT.
+
+
+memory 250 mb
+
+molecule water_dimer {
+     0 1
+     O  -1.551007  -0.114520   0.000000
+     H  -1.934259   0.762503   0.000000
+     H  -0.599677   0.040712   0.000000
+     --
+     0 1
+     O   1.350625   0.111469   0.000000
+     H   1.680398  -0.373741  -0.758561
+     H   1.680398  -0.373741   0.758561
+     units angstrom
+     no_reorient
+     symmetry c1
+}
+
+set globals {
+    basis         aug-cc-pvdz
+    df_basis_sapt aug-cc-pvdz-ri
+    df_basis_scf  aug-cc-pvdz-jkfit
+    guess         sad
+    scf_type      df
+    d_convergence 11
+    puream        true
+    print         1
+}
+
+energy('sapt2+3')
+
+Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
+Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
+Eind = PsiMod.get_variable("SAPT IND ENERGY")
+Edisp = PsiMod.get_variable("SAPT DISP ENERGY")
+ESAPT0 = PsiMod.get_variable("SAPT SAPT0 ENERGY")
+ESAPT2 = PsiMod.get_variable("SAPT SAPT2 ENERGY")
+ESAPT2p = PsiMod.get_variable("SAPT SAPT2+ ENERGY")
+ESAPT2pp3 = PsiMod.get_variable("SAPT SAPT2+(3) ENERGY")
+ESAPT2p3 = PsiMod.get_variable("SAPT SAPT2+3 ENERGY")
+
+Eref = [ -0.01306751029,  #TEST
+          0.01341651636,  #TEST
+         -0.00391342273,  #TEST
+         -0.00362438997,  #TEST
+         -0.00858542121,  #TEST
+         -0.00672965694,  #TEST
+         -0.00734334168,  #TEST
+         -0.00701736586,  #TEST
+         -0.00718880663 ] #TEST
+
+compare_values(Eref[0], Eelst, 6, "SAPT Elst")           #TEST
+compare_values(Eref[1], Eexch, 6, "SAPT Exch")           #TEST
+compare_values(Eref[2], Eind, 6,  "SAPT Ind")            #TEST
+compare_values(Eref[3], Edisp, 6, "SAPT Disp")           #TEST
+compare_values(Eref[4], ESAPT0, 6, "SAPT0 total")        #TEST
+compare_values(Eref[5], ESAPT2, 6, "SAPT2 total")        #TEST
+compare_values(Eref[6], ESAPT2p, 6, "SAPT2+ total")      #TEST
+compare_values(Eref[7], ESAPT2pp3, 6, "SAPT2+(3) total") #TEST
+compare_values(Eref[8], ESAPT2p3, 6, "SAPT2+3 total")    #TEST

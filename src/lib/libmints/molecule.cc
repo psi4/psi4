@@ -983,7 +983,7 @@ void Molecule::update_geometry()
             }
         }
         // TODO: This is a hack to ensure that set_multiplicity and set_molecular_charge
-        // work for single-fragment molecules. 
+        // work for single-fragment molecules.
         if (fragments_.size() < 2) {
             molecular_charge_ = temp_charge;
             multiplicity_ = temp_multiplicity;
@@ -1208,12 +1208,12 @@ void Molecule::print_in_input_format() const
 {
     if (Communicator::world->me() == 0) {
         if (nallatom()) {
-            fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
-                    units_==Angstrom ? "Angstrom" : "bohr");
             // It's only worth echoing these if the user either input some variables,
             // or they used a Z matrix for input
             if(full_atoms_[0]->type()==CoordEntry::ZMatrixCoord
                     || geometry_variables_.size()){
+                fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
+                        units_==Angstrom ? "Angstrom" : "bohr");
                 for(int i = 0; i < nallatom(); ++i){
                     full_atoms_[i]->print_in_input_format();
                 }
@@ -1926,16 +1926,59 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 
         int end = user.length() - 1;
 
+        bool user_specified_direction = false;
         // Did the user provide directionality? If they did, the last letter would be x, y, or z
         if (user[end] == 'X' || user[end] == 'x' || user[end] == 'Y' || user[end] == 'y' || user[end] == 'Z' || user[end] == 'z') {
             // Directionality given, assume the user is smart enough to know what they're doing.
+            user_specified_direction = true;
         }
 
         if (symmetry_from_input() != pg->symbol()) {
             boost::shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
 
-            // Make sure user is subgroup of pg
-            CorrelationTable corrtable(pg, user);
+            if (user_specified_direction == true) {
+                // Assume the user knows what they're doing.
+
+                // Make sure user is subgroup of pg
+                if ((pg->bits() & user->bits()) != user->bits()) {
+                    std::stringstream err;
+
+                    err << "User specified point group (" << PointGroup::bits_to_full_name(user->bits()) <<
+                           ") is not a subgroup of the highest detected point group (" <<
+                           PointGroup::bits_to_full_name(pg->bits()) << ")";
+                    throw PSIEXCEPTION(err.str());
+                }
+            }
+            else {
+                unsigned char similars[3];
+                char count;
+
+                PointGroups::similar(user->bits(), similars, count);
+
+                int type=0;
+                bool found = false;
+                for (type=0; type < count; ++type) {
+                    // If what the user specified and the similar type matches the full point group we've got a
+                    // match
+                    if ((similars[type] & pg->bits()) == similars[type]) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    // Construct a point group object using the found similar
+                    user = boost::shared_ptr<PointGroup>(new PointGroup(similars[type]));
+                }
+                else {
+                    std::stringstream err;
+
+                    err << "User specified point group (" << PointGroup::bits_to_full_name(user->bits()) <<
+                           ") is not a subgroup of the highest detected point group (" <<
+                           PointGroup::bits_to_full_name(pg->bits()) << ")";
+                    throw PSIEXCEPTION(err.str());
+                }
+            }
 
             // If we make it here, what the user specified is good.
             pg = user;

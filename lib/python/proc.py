@@ -702,6 +702,7 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out(line1)
     PsiMod.print_out(line2)
     PsiMod.print_out(line3)
+    PsiMod.set_variable("SAPT CT ENERGY",CT)
 
     return CT
 
@@ -762,6 +763,15 @@ def run_mrcc(name, **kwargs):
     #    PGI Fortan prints warning to screen if STOP is used
     os.environ['NO_STOP_MESSAGE'] = "1"
 
+    # Obtain user's OMP_NUM_THREADS so that we don't blow it away.
+    omp_num_threads_found = os.environ.has_key("OMP_NUM_THREADS")
+    if omp_num_threads_found == True:
+        omp_num_threads_user = os.environ['OMP_NUM_THREADS']
+
+    # If the user provided MRCC_OMP_NUM_THREADS set the environ to it
+    if PsiMod.has_option_changed('MRCC_OMP_NUM_THREADS') == True:
+        os.environ['OMP_NUM_THREADS'] = str(PsiMod.get_option('MRCC_OMP_NUM_THREADS'))
+
     # Call dmrcc, directing all screen output to the output file
     try:
         if PsiMod.outfile_name() == "stdout":
@@ -779,6 +789,11 @@ def run_mrcc(name, **kwargs):
     except OSError, e:
         print >>sys.stderr, "Execution failed:", e
         exit(1)
+
+    # Restore the OMP_NUM_THREADS that the user set.
+    if omp_num_threads_found == True:
+        if PsiMod.has_option_changed('MRCC_OMP_NUM_THREADS') == True:
+            os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
 
     # Scan iface file and grab the file energy.
     e = 0.0

@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -20,9 +22,11 @@
 --------------------------------------------------------------------------
 #! 6-31G H2O Test FCI Energy Point
 
+memory 250 mb
+
 refnuc   =   9.2342185209120 #TEST
-refscf   = -75.985323665263  #TEST
-refci    = -76.1210978474779 #TEST
+refscf   = -75.9853236724118 #TEST
+refci    = -76.1210978591481 #TEST
 refcorr  = refci - refscf    #TEST
 
 molecule h2o {
@@ -33,23 +37,22 @@ units bohr
 }
 
 set globals {
-  wfn detci
-  fci true 
   basis 6-31G
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('fci')
 
 # 7 digits on CI seems ok, but we may need to back it down to 6 later #TEST
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF energy"),     8, "SCF energy") #TEST
+compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
-
 --------------------------------------------------------------------------
 
-*** tstart() called on ds9
-*** at Sat Nov  5 13:41:08 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:44:14 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -60,7 +63,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -73,7 +76,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000     0.111757309654
            H          0.000000000000    -1.494958998200    -0.886834802246
-           H          0.000000000000     1.494958998200    -0.886834802246
+           H         -0.000000000000     1.494958998200    -0.886834802246
 
     Number of unique atoms: 2
 
@@ -96,6 +99,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -116,7 +120,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.33567055287423
+  Initial RHF energy:   -58.33567055287425
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -145,32 +149,35 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
       Number of irreps:                  4
       Number of functions per irrep: [   7    0    2    4 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 1270 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 1270 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -69.64819664095909   -1.13125e+01   0.00000e+00  
+   @RHF iter   1:   -69.64819664095916   -1.13125e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -70.91117406230796   -1.26298e+00   9.88629e-01 DIIS
+   @RHF iter   2:   -70.91117406230791   -1.26298e+00   9.88629e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.86520538605043   -4.95403e+00   9.32600e-01 DIIS
-   @RHF iter   4:   -75.97963227314791   -1.14427e-01   2.58095e-02 DIIS
-   @RHF iter   5:   -75.98513801013294   -5.50574e-03   9.49664e-03 DIIS
+   @RHF iter   3:   -75.86520538605036   -4.95403e+00   9.32600e-01 DIIS
+   @RHF iter   4:   -75.97963227314800   -1.14427e-01   2.58095e-02 DIIS
+   @RHF iter   5:   -75.98513801013297   -5.50574e-03   9.49664e-03 DIIS
    @RHF iter   6:   -75.98530588617214   -1.67876e-04   1.81745e-03 DIIS
-   @RHF iter   7:   -75.98532259908879   -1.67129e-05   6.51479e-04 DIIS
-   @RHF iter   8:   -75.98532365477044   -1.05568e-06   1.02455e-04 DIIS
-   @RHF iter   9:   -75.98532367168403   -1.69136e-08   1.91657e-05 DIIS
-   @RHF iter  10:   -75.98532367239586   -7.11836e-10   3.94159e-06 DIIS
-   @RHF iter  11:   -75.98532367241131   -1.54472e-11   7.69039e-07 DIIS
-   @RHF iter  12:   -75.98532367241179   -4.83169e-13   9.06497e-08 DIIS
+   @RHF iter   7:   -75.98532259908876   -1.67129e-05   6.51479e-04 DIIS
+   @RHF iter   8:   -75.98532365477050   -1.05568e-06   1.02455e-04 DIIS
+   @RHF iter   9:   -75.98532367168410   -1.69136e-08   1.91657e-05 DIIS
+   @RHF iter  10:   -75.98532367239596   -7.11864e-10   3.94161e-06 DIIS
+   @RHF iter  11:   -75.98532367241128   -1.53193e-11   7.68973e-07 DIIS
+   @RHF iter  12:   -75.98532367241184   -5.54223e-13   9.05713e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -194,131 +201,95 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
   Energy converged.
 
-  @RHF Final Energy:   -75.98532367241179
+  @RHF Final Energy:   -75.98532367241184
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.8796
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0972
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.9768     Total:     0.9768
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:    -2.4827     Total:     2.4827
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds9 at Sat Nov  5 13:41:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:14 2012
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds9
-*** at Sat Nov  5 13:41:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:44:14 2012
 
 
 	**************************************************
-	* TRANSQT:  Program to transform integrals from  *
+	* TRANSQT2: Program to transform integrals from  *
 	*           the SO basis to the MO basis.        *
 	*                                                *
 	*            Daniel, David, & Justin             *
-	*                   Sept  1995                   *
 	**************************************************
 
-	Input Parameters:
+
+	Input parameters:
 	-----------------
-	Wavefunction           =  DETCI
-	Reference orbitals     =  RHF
-	Backtrans              =  No
-	Print MOs              =  No
-	Freeze Core            =  No
-	Delete Restricted Docc =  Yes
-	Do All TEI             =  No
-	Memory (Mbytes)        =  256.0
-	Max Buckets            =  499
-	First Tmp File         =  150
-	Presort File           =  41
-	Source TEI File        =  33
-	Opdm In File           =  73
-	Opdm Out File          =  76
-	Lag In File            =  75
-	Keep Presort           =  No
-	J File                 =  91
-	Keep J                 =  No
-	M File                 =  72
-	Bare OEI file          =  35
-	Frozen Core OEI file   =  35
-	Sorted TEI file        =  72
-	Delete TEI source file =  Yes
-	Add TPDM Ref Part      =  No
-	Do Bare OEI tranform   =  No
-	Do FZC  OEI tranform   =  Yes
-	Tolerance              =  1.0e-14
-	Print Level            =  1
-	Print TE Ints          =  No
-	Print OE Ints          =  No
-	Print Sorted TE Ints   =  No
-	Print Sorted OE Ints   =  No
-	Reorder MOs            =  No
-	Check C Orthonormality =  No
-	QRHF orbitals          =  No
-	IVO orbitals           =  No
-	Pitzer                 =  No
+	Wave function   =	DETCI
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 13
+	Number of MOs        = 13
+	Number of active MOs = 13
 
-	Chkpt File Parameters:
-	------------------
-	Number of irreps = 4
-	Number of SOs    = 13
-	Number of MOs    = 13
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   7	    0	    3	    0	    4	    0
+	 A2	   0	    0	    0	    0	    0	    0
+	 B1	   2	    0	    1	    0	    1	    0
+	 B2	   4	    0	    1	    0	    3	    0
 
-	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
-	-----	-----	-----	------	------	------	------	------
-	 A1	   7	   7	    0	    3	    0	    4	    0
-	 A2	   0	   0	    0	    0	    0	    0	    0
-	 B1	   2	   2	    0	    1	    0	    1	    0
-	 B2	   4	   4	    0	    1	    0	    3	    0
+	Nuclear Rep. energy (chkpt) =      9.23421852091198
+	SCF energy          (chkpt) =    -75.98532367241184
 
-	Nuclear Repulsion Energy    =         9.2342185209
-	Total SCF Energy            =       -75.9853236724
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
 
-	Reading one-electron integrals...done.
-
-	Pre-sorting two-electron ints...
-
-
-	Frozen core energy =    0.000000000000000
-	Transforming two-electron ints...
-
-	Sorting half-transformed integrals...
-	Finished half-transform...
-	Working on second half...
-
-	Transformation finished.
-	Two-electron integrals written to file72.
-
-	Transforming one-electron integrals...
-	Frozen-core operator written to file 35.
-
-*** tstop() called on ds9 at Sat Nov  5 13:41:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:14 2012
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.09 seconds =       0.00 minutes
+	user time   =       0.05 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds9
-*** at Sat Nov  5 13:41:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:44:14 2012
 
 
 *******************************************************
@@ -332,42 +303,42 @@ Total time:
 
 
 Note: Calculation requested is a full CI.
-Resetting EX_LVL to 10 and turning on all excitations
+Resetting EX_LEVEL to 10 and turning on all excitations
 
 
 PARAMETERS: 
-   EX LVL        =       10      H0 BLOCKSIZE =      400
-   VAL EX LVL    =        0      H0 GUESS SIZE=      400
+   EX LEVEL      =       10      H0 BLOCKSIZE =      400
+   VAL EX LEVEL  =        0      H0 GUESS SIZE=      400
    H0COUPLINGSIZE=        0      H0 COUPLING  =       no
-   NPRINT        =       20
+   NUM PRINT     =       20
    MAXITER       =       12      FREEZE CORE  =      yes
    NUM ROOTS     =        1      ICORE        =        1
    PRINT         =        1      FCI          =      yes
-   CONV          =        4      MIXED        =      yes
-   E CONV        =        6      MIXED4       =      yes
+   R CONV        =   1.00e-04      MIXED        =      yes
+   E CONV        =   1.00e-06      MIXED4       =      yes
    OEI FILE      =       35      R4S          =       no
    REPL OTF      =       no
    TEI FILE      =       72      DIAG METHOD  =      SEM
    PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
    S             =   0.0000      Ms0          =      yes
-   MAXNVECT      =       13
+   MAX NUM VECS  =       13
    RESTART       =       no
    GUESS VECTOR  =  H0BLOCK      OPENTYPE     =     NONE
    REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVE       = EVANGELISTI
+   COLLAPSE SIZE =        1      HD AVG       = EVANGELISTI
    LSE           =       no      LSE ITER     =        0
    HD OTF        =      yes      NO DFILE     =       no
    MPN           =       no      MPN SCHMIDT  =       no
-   ZAPTN         =       no      WIGNER       =       no
-   PERT Z        =   1.0000      ROOT         =        0
-   NTHREADS      =        1
-   EXPORT VECTOR =       no      NUM EXPORT   =        0
-   FILTER_GUESS  =       no      SF_RESTRICT  =       no
+   ZAPTN         =       no      MPN WIGNER   =       no
+   PERT Z        =   1.0000    FOLLOW ROOT  =        0
+   NUM THREADS   =        1
+   VECS WRITE    =       no      NUM VECS WRITE =        0
+   FILTER GUESS  =       no      SF RESTRICT  =       no
    OPDM          =       no      TRANS DENSITY=       no
 
    FILES         =  50 51 52 53
 
-   EX_ALLOW      =  1  1  1  1  1  1  1  1  1  1 
+   EX ALLOW      =  1  1  1  1  1  1  1  1  1  1 
    STATE AVERAGE =  1(1.00) 
    STATE AVERAGE =  1(1.00) 
 
@@ -434,7 +405,7 @@ Iter  6  Root  1 = -76.121097835   Delta_E -2.386E-07   Delta_C  3.664E-04
 Iter  7  Root  1 = -76.121097856   Delta_E -2.165E-08   Delta_C  1.260E-04  
 Iter  8  Root  1 = -76.121097859   Delta_E -2.674E-09   Delta_C  4.669E-05 c
 
-* ROOT 1 CI total energy = -76.1210978591482
+* ROOT 1 CI total energy = -76.1210978591481
 
 
 The 20 most important determinants
@@ -465,11 +436,11 @@ The 20 most important determinants
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      1.109570
- Write     0.757138
+ Read      0.886431
+ Write     0.179663
  Sigma1    0.000000
- Sigma2    2.125879
- Sigma3    10.222615
+ Sigma2    0.545430
+ Sigma3    2.697670
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -483,14 +454,14 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on ds9 at Sat Nov  5 13:41:24 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:20 2012
 Module time:
-	user time   =      13.55 seconds =       0.23 minutes
-	system time =       1.42 seconds =       0.02 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =       4.22 seconds =       0.07 minutes
+	system time =       1.09 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
 Total time:
-	user time   =      13.64 seconds =       0.23 minutes
-	system time =       1.44 seconds =       0.02 minutes
-	total time  =         16 seconds =       0.27 minutes
+	user time   =       4.27 seconds =       0.07 minutes
+	system time =       1.11 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

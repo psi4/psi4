@@ -51,12 +51,15 @@ and literature citations.
 
 
 \hiddensubsubsection{Optional Arguments}
+
+Default values for keywords are indicated by italics.
+
 \begin{itemize}
 \item \pyoptionname{mode} = \textit{\pyoptionval{\qq continuous\qq}} \textbar\; \pyoptionval{\qq sow\qq} \textbar\; \pyoptionval{\qq reap\qq} \\
 Indicates whether the calculation required to complete the database are to be run in one
-file (\pyoptionname{\qq continuous\qq}) or are to be farmed out in an embarrassingly 
-parallel fashion (\pyoptionname{\qq sow\qq}/\pyoptionname{\qq reap\qq}).
-For the latter, run an initial job with \pyoptionname{\qq sow\qq} and follow instructions in its output file.
+file (\pyoptionval{\qq continuous\qq}) or are to be farmed out in an embarrassingly 
+parallel fashion (\pyoptionval{\qq sow\qq}/\pyoptionval{\qq reap\qq}).
+For the latter, run an initial job with \pyoptionval{\qq sow\qq} and follow instructions in its output file.
 
 \item \pyoptionname{cp} = \pyoptionval{\qq on\qq} \textbar\; \textit{\pyoptionval{\qq off\qq}} \\
 Indicates whether counterpoise correction is employed in computing interaction energies.
@@ -512,8 +515,7 @@ Caller & \multicolumn{5}{c}{Callee} \\
 \end{footnotesize}
 \end{table}
 
-A few miscellaneous notes.
-documented in the Appendix \ref{kw-DFMP2}). Some basic recommendations are included below:
+A few miscellaneous notes are included below:
 \begin{itemize}
 \item It is very easy to make a database from a collection of xyz files using the script
 \texttt{\$PSIDATADIR/databases/ixyz2database.pl}. Instructions are available at 
@@ -530,5 +532,9 @@ name, e.g., \pyoptionname{db\_mode} and \pyoptionname{opt\_mode}.
 can be specified with any of \pyoptionval{0}, \pyoptionval{\qq none\qq}, \pyoptionval{\qq energy\qq},
 \pyoptionval{1}, \pyoptionval{\qq first\qq}, \pyoptionval{\qq gradient\qq},
 \pyoptionval{2}, \pyoptionval{\qq second\qq}, \pyoptionval{\qq hessian\qq}.
+\item Keyword names (not options) are the last bastion of case sensitivity remaining
+in \PSIfour\ . The names in \pyoptionname{this\_formatting} must be lowercase. The keyword
+values in \pyoptionval{this\_formatting} can ususally be of any case, the exception being
+subset keywords in \texttt{database()} whose case structure must match the database file.
 \end{itemize}
 

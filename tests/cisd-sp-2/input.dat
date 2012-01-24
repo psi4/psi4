@@ -2,10 +2,10 @@
 
 memory 250 mb
 
-refnuc   =   8.8046872910  #TEST
-refscf   = -76.0172965718  #TEST
-refci    = -76.21984746    #TEST
-refcorr  = refci - refscf  #TEST
+refnuc   =   8.8046866186391  #TEST
+refscf   = -76.0172965552830  #TEST
+refci    = -76.2198474486343  #TEST
+refcorr  = refci - refscf     #TEST
 
 molecule h2o {
     O
