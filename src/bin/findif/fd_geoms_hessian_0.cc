@@ -1,7 +1,7 @@
 /*! \file
     \ingroup OPTKING
     \brief fd_geoms_hessian_0(): returns geometries necessary for finite-difference
-     computation of hessian; formulas in fd_geoms_freq_0 
+     computation of hessian; formulas in fd_geoms_freq_0
 
      For starters will work only in C1 and without translations/rotations projected out
 */
@@ -47,7 +47,7 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
     if (salc_list[i].irrep() == 0)
       symm_salcs.push_back(i);
 
-  fprintf(outfile,"\tNumber of symmetric SALC's is %d\n", symm_salcs.size());
+  fprintf(outfile,"\tNumber of symmetric SALC's is %zu\n", symm_salcs.size());
 
   int Ndisp=1; // for reference geometry
 
@@ -158,7 +158,7 @@ std::vector< SharedMatrix > fd_geoms_hessian_0(Options &options) {
         disp_geoms.push_back(geom8);
       } // pts == 5
     } // m, salc_j
-  } // i, salc_i 
+  } // i, salc_i
 
   // put reference geometry list in list
   disp_geoms.push_back(ref_geom);

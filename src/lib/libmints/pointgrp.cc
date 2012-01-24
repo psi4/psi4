@@ -61,6 +61,67 @@
 using namespace std;
 using namespace psi;
 
+namespace psi {
+namespace PointGroups
+{
+void similar(unsigned char bits, unsigned char* sim, char& cnt)
+{
+    static unsigned char cs[3] = { CsX, CsY, CsZ };
+    static unsigned char c2v[3] = { C2vZ, C2vY, C2vX };
+    static unsigned char c2h[3] = { C2hZ, C2hY, C2hX };
+    static unsigned char c2[3]  = { C2Z, C2Y, C2X };
+    static unsigned char d2h[3] = { D2h, 0, 0 };
+    static unsigned char d2[3]  = { D2, 0, 0 };
+    static unsigned char ci[3]  = { Ci, 0, 0 };
+    static unsigned char c1[3]  = { C1, 0, 0 };
+
+    switch (bits) {
+    case CsX:
+    case CsY:
+    case CsZ:
+        memcpy(sim, cs, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case C2vZ:
+    case C2vY:
+    case C2vX:
+        memcpy(sim, c2v, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case C2hZ:
+    case C2hY:
+    case C2hX:
+        memcpy(sim, c2h, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case C2Z:
+    case C2Y:
+    case C2X:
+        memcpy(sim, c2, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case D2h:
+        memcpy(sim, d2h, sizeof(char)*1);
+        cnt = 1;
+        break;
+    case Ci:
+        memcpy(sim, ci, sizeof(char)*1);
+        cnt = 1;
+        break;
+    case C1:
+        memcpy(sim, c1, sizeof(char)*1);
+        cnt = 1;
+        break;
+    case D2:
+        memcpy(sim, d2, sizeof(char)*1);
+        cnt = 1;
+        break;
+    default:
+        throw PSIEXCEPTION("Should not have reaced here.");
+    }
+}
+} } // end namespace
+
 ////////////////////////////////////////////////////////////////////////
 
 PointGroup::PointGroup()
@@ -187,7 +248,7 @@ bool PointGroup::full_name_to_bits(const std::string& pg, unsigned char &bits)
 
     // Ok, the user gave us Cs, C2v, C2h, C2, but no directionality
     else if (boost::iequals(pg, "Cs"))
-        bits = PointGroups::CsZ;
+        bits = PointGroups::CsX;
     else if (boost::iequals(pg, "C2v"))
         bits = PointGroups::C2vZ;
     else if (boost::iequals(pg, "C2h"))

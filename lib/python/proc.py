@@ -702,6 +702,7 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out(line1)
     PsiMod.print_out(line2)
     PsiMod.print_out(line3)
+    PsiMod.set_variable("SAPT CT ENERGY",CT)
 
     return CT
 
