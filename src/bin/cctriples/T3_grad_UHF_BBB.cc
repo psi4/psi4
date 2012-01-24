@@ -14,11 +14,19 @@
 
 namespace psi { namespace cctriples {
 
-    void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, int I, int Gi, int J, int Gj, int K, int Gk, 
-		    dpdbuf4 *C2, dpdbuf4 *F, dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ, dpdfile2 *fAB,
-		    int *occpi, int *occ_off, int *virtpi, int *vir_off, double omega);
+extern void T3_UHF_AAA(double ***W, double ***V, int disc, int nirreps, 
+    int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *C2, dpdbuf4 *F, 
+    dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ, 
+    dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off, 
+    double omega);
 
-    void T3_grad_UHF_BBB(void)
+extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
+    int A, int Ga, int B, int Gb, int C, int Gc, dpdbuf4 *C2, dpdbuf4 *F,
+    dpdbuf4 *E, dpdfile2 *C1, dpdbuf4 *D, dpdfile2 *fIA, dpdfile2 *fIJ,
+    dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
+    double omega);
+
+    double T3_grad_UHF_BBB(void)
     {
       int h, nirreps;
       int *occpi, *virtpi, *occ_off, *vir_off;
@@ -42,10 +50,11 @@ namespace psi { namespace cctriples {
       double t_jkbc, t_jkac, t_jkba, t_ikbc, t_ikac, t_ikba, t_jibc, t_jiac, t_jiba;
       dpdbuf4 T2, Fints, Eints, Dints, S2, Gijab, Gijka, Gidab;
       dpdfile2 fIJ, fAB, fIA, T1, S1, Dab, Dij;
-      dpdbuf4 T2_junk, Fints_junk, Eints_junk, Dints_junk;
-      dpdfile2 fIJ_junk, fAB_junk, fIA_junk, T1_junk;
-      double ***WABC, ***VABC, ***XABC, ***Y, ***WABC2, ***VABC2;
+      dpdfile2 fij, fab, fia;
+      double ***WABC, ***VABC, ***XABC, ***Y;
       double **Z;
+      double ***WIJK = (double ***) malloc(nirreps * sizeof(double **));
+      double ***VIJK = (double ***) malloc(nirreps * sizeof(double **));
 
       nirreps = moinfo.nirreps;
       occpi = moinfo.boccpi; 
@@ -63,16 +72,6 @@ namespace psi { namespace cctriples {
       dpd_buf4_init(&Eints, CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
       dpd_buf4_init(&Dints, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
 
-      dpd_file2_init(&fIJ_junk, CC_OEI, 0, 2, 2, "fij");
-      dpd_file2_init(&fAB_junk, CC_OEI, 0, 3, 3, "fab");
-      dpd_file2_init(&fIA_junk, CC_OEI, 0, 2, 3, "fia");
-      dpd_file2_init(&T1_junk, CC_OEI, 0, 2, 3, "tia");
-
-      dpd_buf4_init(&T2_junk, CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-      dpd_buf4_init(&Fints_junk, CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
-      dpd_buf4_init(&Eints_junk, CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
-      dpd_buf4_init(&Dints_junk, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-
       dpd_file2_init(&S1, CC_OEI, 0, 2, 3, "Sia");
       dpd_file2_mat_init(&S1); 
       dpd_buf4_init(&S2, CC_MISC, 0, 10, 15, 12, 17, 0, "Sijab");
@@ -81,9 +80,6 @@ namespace psi { namespace cctriples {
 
       dpd_file2_init(&Dab, CC_OEI, 0, 3, 3, "Dab");
       dpd_file2_mat_init(&Dab); 
-
-      dpd_file2_init(&Dij, CC_OEI, 0, 2, 2, "Dij");
-      dpd_file2_mat_init(&Dij);
 
       dpd_buf4_init(&Gijab, CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
       for(h=0; h < nirreps; h++)
@@ -101,8 +97,6 @@ namespace psi { namespace cctriples {
       VABC = (double ***) malloc(nirreps * sizeof(double **));
       XABC = (double ***) malloc(nirreps * sizeof(double **));
       Y = (double ***) malloc(nirreps * sizeof(double **));
-      WABC2 = (double ***) malloc(nirreps * sizeof(double **));
-      VABC2 = (double ***) malloc(nirreps * sizeof(double **));
 
       ET = 0.0;
 
@@ -121,8 +115,6 @@ namespace psi { namespace cctriples {
 	      WABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 	      VABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 	      XABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
-	      WABC2[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
-	      VABC2[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 	    }
 	    for(Ga=0; Ga < nirreps; Ga++) {
 	      Gbc = Ga ^ Gijk;
@@ -324,24 +316,6 @@ namespace psi { namespace cctriples {
 
 		  /**** T3 --> DAB complete ****/
 
-		  /**** T3 --> DIJ ****/
-		  Gl = Gk;
-		  for(l=0; l < occpi[Gl]; l++) {
-		    L = occ_off[Gl] + l;
-		    T3_UHF_AAA(WABC2, VABC2, 1, nirreps, I, Gi, J, Gj, L, Gl, &T2_junk, &Fints_junk, &Eints_junk,
-			       &T1_junk, &Dints_junk, &fIA_junk, &fIJ_junk, &fAB_junk, occpi, occ_off, virtpi, vir_off, 0.0);
-		    for(Gab=0; Gab < nirreps; Gab++) {
-		      Gc = Gijk ^ Gab;
-		      for(ab=0; ab < Fints.params->coltot[Gab]; ab++) {
-			for(c=0; c < virtpi[Gc]; c++) {
-			  C = vir_off[Gc] + c;
-			  Dij.matrix[Gk][k][l] -= (1.0/12.0) * WABC2[Gab][ab][c] * (WABC[Gab][ab][c] + VABC[Gab][ab][c]);
-			} /* c */
-		      } /* ab */
-		    } /* Gab */
-		  } /* l */
-		  /**** T3 --> DIJ complete ****/
-
 		  /**** T3 --> Gijab ****/
 		  /** This can be simplified */
 		  for(Gab=0; Gab < nirreps; Gab++) {
@@ -438,8 +412,6 @@ namespace psi { namespace cctriples {
 	      dpd_free_block(WABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 	      dpd_free_block(VABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 	      dpd_free_block(XABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
-	      dpd_free_block(WABC2[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
-	      dpd_free_block(VABC2[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 	    }
 	    for(Ga=0; Ga < nirreps; Ga++) {
 	      Gbc = Ga ^ Gijk;
@@ -451,7 +423,6 @@ namespace psi { namespace cctriples {
       } /* Gi */
 
       ET *= (1.0/36.0);
-      fprintf(outfile, "\tE(T) BBB = %20.15f\n", ET);
 
       free(WABC);
       free(VABC);
@@ -460,10 +431,6 @@ namespace psi { namespace cctriples {
       dpd_file2_mat_wrt(&Dab);
       dpd_file2_mat_close(&Dab);
       dpd_file2_close(&Dab);
-
-      dpd_file2_mat_wrt(&Dij);
-      dpd_file2_mat_close(&Dij);
-      dpd_file2_close(&Dij);
 
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_wrt(&S2, h);
@@ -500,15 +467,99 @@ namespace psi { namespace cctriples {
       dpd_file2_close(&fAB);
       dpd_file2_close(&fIA);
 
-      dpd_buf4_close(&T2_junk);
-      dpd_buf4_close(&Fints_junk);
-      dpd_buf4_close(&Eints_junk);
-      dpd_buf4_close(&Dints_junk);
+      /*** T3 --> Dij ***/
 
-      dpd_file2_close(&T1_junk);
-      dpd_file2_close(&fIJ_junk);
-      dpd_file2_close(&fAB_junk);
-      dpd_file2_close(&fIA_junk);
+      dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
+      dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
+      dpd_file2_init(&fia, CC_OEI, 0, 2, 3, "fia");
+      dpd_file2_init(&T1, CC_OEI, 0, 2, 3, "tia");
+
+      dpdbuf4 EBBints;
+      dpd_buf4_init(&EBBints, CC_EINTS, 0, 31, 10, 31, 12, 0, "E <ak||ij> (ak, i>j)");
+      dpdbuf4 FBBints;
+      dpd_buf4_init(&FBBints, CC_FINTS, 0, 15, 30, 17, 30, 0, "F <bc||ia>");
+      dpdbuf4 T2BB;
+      dpd_buf4_init(&T2BB, CC_TAMPS, 0, 15, 10, 17, 12, 0, "tabij");
+      dpdbuf4 DBBints;
+      dpd_buf4_init(&DBBints, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+
+      dpd_file2_init(&Dij, CC_OEI, 0, 2, 2, "Dij");
+      dpd_file2_mat_init(&Dij);
+
+      int Gabc;
+      for (Ga=0; Ga < nirreps; ++Ga) {
+        for (a=0; a<virtpi[Ga]; ++a) {
+          A = vir_off[Ga] + a;
+          for (Gb=0; Gb < nirreps; ++Gb) {
+            for (b=0; b<virtpi[Gb]; ++b) {
+              B = vir_off[Gb] + b;
+              for (Gc=0; Gc < nirreps; ++Gc) {
+                for (c=0; c < virtpi[Gc]; ++c) {
+                  C = vir_off[Gc] + c;
+                  Gabc = Ga ^ Gb ^ Gc;
+                  //Allocate the memory for connected and disconnected triples
+                  for (Gij=0; Gij < nirreps; ++Gij) {
+                    Gk = Gij ^ Gabc;
+                    WIJK[Gij] = dpd_block_matrix(T2BB.params->coltot[Gij], occpi[Gk]);
+                    VIJK[Gij] = dpd_block_matrix(T2BB.params->coltot[Gij], occpi[Gk]);
+                  }
+
+                  T3_UHF_AAA_abc(WIJK, VIJK, 1, nirreps, A, Ga, B, Gb, C, Gc,
+                      &T2BB, &FBBints, &EBBints, &T1, &DBBints, &fia, &fij, &fab,
+                      occpi, occ_off, virtpi, vir_off, 0.0);
+
+                  /**** T3 --> DIJ ****/
+                  for(Gi=0; Gi < nirreps; Gi++) {
+                    Gj = Gi;
+                    Gkl = Gi ^ Gabc;
+                    for(Gk=0; Gk < nirreps; Gk++) {
+                      Gl = Gk ^ Gkl;
+                      Gik = Gjk = Gi ^ Gk;
+                      for(i=0; i < occpi[Gi]; i++) {
+                        I = occ_off[Gi] + i;
+                        for(j=0; j < occpi[Gj]; j++) {
+                          J = occ_off[Gj] + j;
+                          for(k=0; k < occpi[Gk]; k++) {
+                            K = occ_off[Gk] + k;
+                            ik = T2BB.params->colidx[I][K];
+                            jk = T2BB.params->colidx[J][K];
+                            for(l=0; l < occpi[Gl]; l++) {
+                              Dij.matrix[Gi][i][j] -= (1.0/12.0) * WIJK[Gik][ik][l] * (WIJK[Gjk][jk][l] + VIJK[Gjk][jk][l]);
+                            } /* l */
+                          } /* k */
+                        } /* j */
+                      } /* i */
+                    } /* Gk */
+                  } /* Gi */
+
+                  //Deallocate the memory for connected and disconnected triples
+                  for (Gij=0; Gij < nirreps; ++Gij) {
+                    Gk = Gij ^ Gabc;
+                    dpd_free_block(WIJK[Gij], T2BB.params->coltot[Gij], occpi[Gk]);
+                    dpd_free_block(VIJK[Gij], T2BB.params->coltot[Gij], occpi[Gk]);
+                  }
+
+                } // c
+              } // Gc
+            } // b
+          } // Gb
+        } // a
+      } // Ga
+
+      dpd_file2_mat_wrt(&Dij);
+      dpd_file2_mat_close(&Dij);
+      dpd_file2_close(&Dij);
+
+      dpd_buf4_close(&EBBints);
+      dpd_buf4_close(&FBBints);
+      dpd_buf4_close(&DBBints);
+      dpd_buf4_close(&T2BB);
+      dpd_file2_close(&T1);
+      dpd_file2_close(&fij);
+      dpd_file2_close(&fia);
+      dpd_file2_close(&fab);
+
+      return ET;
 
     } /* void T3_grad_UHF_BBB() */
 
