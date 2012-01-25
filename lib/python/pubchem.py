@@ -17,7 +17,7 @@
 #                                                   with PSI4's Molecule creation
 #
 
-import urllib
+import urllib2
 import re
 
 class PubChemObj:
@@ -30,20 +30,32 @@ class PubChemObj:
         self.natom = 0
         self.dataSDF = ''
 
+    def __str__(self):
+        return "%17d   %s\n" % (self.cid, self.iupac)
+
     def getSDF(self):
         if (len(self.dataSDF) == 0):
-            print "Querying PubChem for compound %d" % (self.cid)
             # When completed uncomment the following:
-            location = urllib.urlretrieve(self.url+'?cid='+str(self.cid)+'&disopt=SaveSDF')[0]
-            dataFile = open(location, 'r')
-            self.dataSDF = dataFile.read()
-            # and remove the following
-            #self.dataSDF = sdf
-
+            url = self.url+'?cid='+urllib2.quote(str(self.cid))+'&disopt=3DDisplaySDF'
+            try:
+                location = urllib2.urlopen(url)
+            except urllib2.URLError, e:
+                msg =  "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e),  url)
+                msg += "\tCheck your internet connection, and the above URL, and try again.\n"
+                raise Exception(msg)
+            self.dataSDF = location.read()
+            #f = open("TEST", "w")
+            #f.write(self.dataSDF)
         return self.dataSDF
 
+    def name(self):
+        return self.iupac
+
     def getCartesian(self):
-        sdfText = self.getSDF()
+        try:
+            sdfText = self.getSDF()
+        except Exception as e:
+            raise e
 
         # Find
         # NA NB                        CONSTANT
@@ -54,8 +66,8 @@ class PubChemObj:
             self.natom = int(m.group(1))
 
         if (self.natom == 0):
-            print "Unable to find the number of atoms."
-            return None
+            raise Exception("PubchemError\n Cannot find the number of atoms.  3D data doesn't appear\n" +
+                            "to be available for %s.\n" % self.iupac)
 
         lines = re.split('\n', sdfText)
 
@@ -63,7 +75,7 @@ class PubChemObj:
         NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
         atom_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*(\w+)(?:\s+\d+){12}')
 
-        molecule_string = ""
+        molecule_string = "PubchemInput\n"
 
         atom_count = 0
         for line in lines:
@@ -87,24 +99,29 @@ class PubChemObj:
         return molecule_string
 
     def getXYZFile(self):
-        temp = self.getCartesian()
-
+        try:
+            temp = self.getCartesian()
+        except Exception as e:
+            raise
         molstr = "%d\n%s\n%s" % (self.natom, self.iupac, temp)
         return molstr
 
     def getMoleculeString(self):
-        return self.getCartesian()
-
+        try:
+            return self.getCartesian()
+        except Exception as e:
+            return e.message
+   
 def getPubChemResults(name):
-    url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % (name)
-
-    # When PubChemObj is finished uncomment the following 3 lines
-    print "Searching PubChem database for %s" % (name)
-    loc = urllib.urlretrieve(url)[0]
-    dataFile = open(loc, 'r')
-    data = dataFile.read()
-    # and remove the following:
-    #data = searchresults
+    url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % (urllib2.quote(name))
+    print "\tSearching PubChem database for %s" % (name)
+    try:
+        loc = urllib2.urlopen(url)
+    except urllib2.URLError as e:
+        msg =  "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e),  url)
+        msg += "\tCheck your internet connection, and the above URL, and try again.\n"
+        raise Exception(msg)
+    data = loc.read()
 
     ans = []
     l = data.find("<pre>")
@@ -126,18 +143,17 @@ def getPubChemResults(name):
         pubobj = PubChemObj(cid, mf, iupac)
         ans.append(pubobj)
 
-    print "Found %d results" % (len(ans))
+    print "\tFound %d results" % (len(ans))
     return ans
 
 if __name__ == "__main__":
-    obj1 = getPubChemResults("1,3,5-hexatriene")
-    obj2 = getPubChemResults("benzene")
+    try:
+        obj = getPubChemResults("1-methoxy-4-[(E)-prop-1-enyl]benzene")
+        #obj = getPubChemResults("sodium benzenesulfonate")
+    except Exception as e:
+        print e.message
 
-    print "Results for 1,3,5-hexatriene"
-    for mol in obj1:
-        print mol["PubChemObj"].getMoleculeString()
+    for r in obj:
+        print r
+        print r.getMoleculeString()
 
-    print "Results for benzene"
-    for mol in obj2:
-        print "IUPAC name: %s\nCompound: %d" % (mol["IUPAC"], mol["CID"])
-        print mol["PubChemObj"].getMoleculeString()

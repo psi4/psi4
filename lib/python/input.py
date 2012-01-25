@@ -1,4 +1,5 @@
 import PsiMod
+from pubchem import getPubChemResults,PubChemObj 
 import re;
 import os;
 
@@ -97,10 +98,49 @@ def process_set_commands(matchobj):
     return result
 
 
+def process_pubchem_command(matchobj):
+    string = matchobj.group(2)
+    if re.match(r'^\s*[0-9]+\s*$', string):
+        # This is just a number - must be a CID
+        pcobj = PubChemObj(int(string), '', '')
+        try:
+            return pcobj.getMoleculeString()
+        except Exception as e:
+            return e.message
+    else:
+        # Search pubchem for the provided string
+        try:
+            results = getPubChemResults(string)
+        except Exception as e: 
+            return e.message
+
+        # N.B. Anything starting with PubchemError will be handled correctly by the molecule parser
+        # in libmints, which will just print the rest of the string and exit gracefully.
+        if(not results):
+            # Nothing!
+            return "PubchemError\n\tNo results were found when searching PubChem for %s.\n" % string
+        elif(len(results) == 1):
+            # There's only 1 result - use it
+            return results[0].getMoleculeString()
+        else:
+            # There are multiple results. Print and exit
+            msg =  "\tPubchemError\n"
+            msg += "\tMultiple pubchem results were found. Replace\n\n\t\tpubchem:%s\n\n" % string
+            msg += "\twith the Chemical ID number or exact name from one of the following and re-run.\n\n"
+            msg += "\t Chemical ID     IUPAC Name\n\n"
+            for result in results:
+                msg += "%s" % result
+                if result.name().lower() == string.lower():
+                    #We've found an exact match!
+                    return result.getMoleculeString()
+            return msg
+
 def process_molecule_command(matchobj):
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     geometry = matchobj.group(3)
+    pubchemre = re.compile(r'^(\s*pubchem\s*:\s*(.*)\n)$', re.MULTILINE | re.IGNORECASE)
+    geometry = pubchemre.sub(process_pubchem_command, geometry)
     molecule = spaces
     if name != "":
         molecule += '%s = ' % (name)
