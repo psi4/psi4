@@ -327,27 +327,55 @@ memory to hold $3o^2v^2+v^2N_{aux}$ arrays in core. With this requirement
 computations on the adenine-thymine complex can be performed with an
 aug-cc-pVTZ basis in less than 64GB of memory.
 
-In addition the SAPT0 keywords listed above, the following additional
-advanced keywords are relevant for Higher-order SAPT.
-%\begin{flushleft}
-%{\bf Additional SAPT Keywords for Higher-order SAPT} \\[5pt]
-%\end{flushleft}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-%         \optionname{DO\_THIRD\_ORDER} & This option computes the following
-%corrections: $E_{ind}^{(30)}$, $E_{ind,resp}^{(30)}$, $E_{exch-ind}^{(30)}$,
-%$E_{exch-disp}^{(30)}$, $E_{ind-disp}^{(30)}$, and
-%$E_{exch-ind-disp}^{(30)}$. This is only relavent when the energy computed
-%is SAPT2+3; this option distinguishes SAPT2+(3) from SAPT2+3. A brief
-%technical note: the evaluation of $E_{disp}^{(30)}$ will be slower if this
-%option is activated. \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-%           & {\bf Type:} boolean &  {\bf Default:} FALSE \\
-%         & & \\
-%\end{tabular*}
+Higher-order SAPT is treated separately from the higly optimized SAPT0
+code, therefore, higher-order SAPT uses a separate set of keywords. 
+The following keywords are relevant for higher-order SAPT.
+\begin{flushleft}
+{\bf Basic Keywords for Higher-order SAPT} \\[5pt]
+\end{flushleft}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{BASIS}{SAPT} & The basis set used to describe the monomer molecular
+orbitals. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} none \\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{DF-BASIS-SAPT}{SAPT} & The fitting basis to use for all
+two-electron integrals in the SAPT computation. \PSIfour\ will attempt to
+pick a reasonable fitting basis if one is not provided. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} none \\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{FREEZE-CORE}{GLOBALS} & Sets the number of core orbitals to freeze
+in the evaluation of all dispersion terms and intramonomer correlation amplitudes.
+It is highly recommended to freeze core in all higher-order SAPT computations. \\
+
+          & {\bf Possible Values:} TRUE, FALSE, SMALL, LARGE
+\\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} FALSE \\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{PRINT}{SAPT} & The print level for the \PSIsapt\ module. If
+\optionname{PRINT}{SAPT} is set to 0, only the header and final results are printed.
+If \optionname{PRINT}{SAPT} is set to 1, some intermediate quantities are also
+printed. For large SAPT computations, it is advisable to set \optionname{PRINT}{SAPT}
+to 1 so the progess of the computation can be tracked. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 1 \\
+         & & \\
+\end{tabular*}
 
 \begin{flushleft}
-{\bf Additional Advanced Keywords for Higher-order SAPT} \\[5pt]
+{\bf Advanced Keywords for Higher-order SAPT} \\[5pt]
 \end{flushleft}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
          \optionname{INTS-TOLERANCE}{SAPT} & All three-index DF integrals and those
@@ -365,6 +393,14 @@ memory checking in the higher-order SAPT code; disabling it is ill advised. \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} boolean &  {\bf Default:} TRUE \\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{DEBUG}{GLOBALS} & The \optionname{DEBUG}{GLOBALS} flag will 
+print lots of additional intermediate quantities that are not usually interesting. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 0 \\
          & & \\
 \end{tabular*}
 

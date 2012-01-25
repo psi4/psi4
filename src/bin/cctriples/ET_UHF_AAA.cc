@@ -100,6 +100,7 @@ double ET_UHF_AAA(void)
   fprintf(ijkfile, "Spin Case: AAA\n");
   fprintf(ijkfile, "Number of IJK combintions: %d\n", nijk);
   fprintf(ijkfile, "\nCurrent IJK Combination:\n");
+  fflush(ijkfile);
 
   WABC = (double ***) malloc(nirreps * sizeof(double **));
   VABC = (double ***) malloc(nirreps * sizeof(double **));

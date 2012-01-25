@@ -1,5 +1,3 @@
-memory 250 mb
-
 molecule C4H4N {
     -1 1
     units bohr
@@ -17,11 +15,13 @@ molecule C4H4N {
 memory 1 gb
 
 set {
-  basis aug-cc-pvtz
+  basis cc-pVDZ
   print 2
   docc [10, 1, 4, 3]
   freeze_core true
-#  ao_basis disk
+  ao_basis disk
 }
 
 energy('ccsd(t)')
+
+
