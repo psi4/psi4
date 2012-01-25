@@ -43,6 +43,7 @@ class PubChemObj:
                 msg =  "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e),  url)
                 msg += "\tCheck your internet connection, and the above URL, and try again.\n"
                 raise Exception(msg)
+            print "\tRetrieved entry for chemical ID %d\n" % self.cid
             self.dataSDF = location.read()
             #f = open("TEST", "w")
             #f.write(self.dataSDF)
