@@ -230,10 +230,10 @@ achieved by adding either {\tt no\_reorient} or {\tt noreorient}. By default,
 
 Obtaining rough starting guess geometries can be burdensome.  The Z-matrix
 coordinate system was designed to provide chemists with an intuitive method for
-guessing structures in terms of bond lengths and angles.  While Z-matrix is
+guessing structures in terms of bond lengths and angles.  While Z-matrix input is
 intuitive for small molecules with few degrees of freedom, it quickly becomes
 laborious as the system size grows.  To obtain a reasonable starting guess
-geometry, \PSIfour can take a IUPAC chemical name as input; this is then used
+geometry, \PSIfour can take a chemical name as input; this is then used
 to attempt to retrieve Cartesian coordinates from the PubChem database.\cite{PubChem}
 
 For example, to run a computation on benzene, we can use the following molecule specification:
@@ -252,7 +252,7 @@ example) exactly matches one of the results, that entry will be used.  If no
 exact match is found the results, along with a unique chemical identifier
 (CID), are printed to the output file, prompting the user to provide a more
 specific name.  For example, if we know that we want to run a computation on a
-compound whose name contains ``benzene'', but we're not sure of the exact IUPAC
+compound whose name(s) contain ``benzene'', but we're not sure of the exact IUPAC
 name, the following input can be used:
 \begin{Snippet}
 molecule benzene {
@@ -261,6 +261,7 @@ molecule benzene {
 \end{Snippet}
 Appending the ``*'' prevents an exact match from being found and, at the time
 of writing, the following results are displayed in the output file:
+{\small
 \begin{Snippet}
      Chemical ID     IUPAC Name
               241   benzene
@@ -284,6 +285,7 @@ of writing, the following results are displayed in the output file:
            637563   1-methoxy-4-[(E)-prop-1-enyl]benzene
            252325   [(E)-prop-1-enyl]benzene
 \end{Snippet}
+}
 Note that some of these results do not contain the string ``benzene''; these
 compounds have synonyms containing that text.  We can now replace the
 ``benzene*'' in the input file with one of the above compounds using either the
@@ -301,14 +303,13 @@ molecule benzene {
 \end{Snippet}
 
 Some of the structures in the database are quite loosely optimized and do not
-have the correct symmetry.  Before starding the computation, \PSIfour will
+have the correct symmetry.  Before starting the computation, \PSIfour will
 check to see if the molecule is close to having each of the possible
 symmetries, and will adjust the structure accordingly so that the maximum
 symmetry is utilized.
 
 The standard keywords, described in section \ref{sec:MoleculeKeywords}, can be
 used in conjuction to specify charge, multiplicity, symmetry to use, {\it etc.} .
-
 
 \subsection{Symmetry} \label{sec:Symmetry}
 
