@@ -1,5 +1,5 @@
 
-.PHONY: tests quicktests cc_tests clean quicktestsclean
+.PHONY: tests quicktests cc_tests clean quicktestsclean longtests longtestsclean
 
 # Tutorial test cases
 tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sapt tu6-cp-ne2
@@ -19,7 +19,7 @@ dcft_subdirs = dcft1 dcft2 dcft3 dcft4 #dcft5
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
-df_subdirs = sapt1 sapt2 sapt3 sapt4 sapt5
+df_subdirs = sapt1 sapt3 sapt5
 
 psimrcc_subdirs = #psimrcc-sp1
 
@@ -36,6 +36,9 @@ scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 castup1 mom props1 props2 dft1 dfscf
 python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 
 plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2 plugin_mointegrals plugin_testparse
+
+longtest_subdirs = sapt2 sapt4
+
 subdirs = \
 $(tutorial_subdirs) \
 $(mints_subdirs) \
@@ -121,6 +124,9 @@ psimrcc_tests:
 python_tests:
 	$(call runtests, $(python_test_subdirs))
 
+longtests:
+	$(call runtests, $(longtest_subdirs))
+
 plugins:
 	for dir in $(plugin_subdirs); \
 	do \
@@ -140,6 +146,12 @@ quicktestsclean:
 	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
 	done
 	rm -f ../test-case-results
+
+longtestsclean:
+	for dir in $(longtest_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
 
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@

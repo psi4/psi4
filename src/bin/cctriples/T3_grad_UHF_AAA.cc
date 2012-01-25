@@ -28,7 +28,7 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
     dpdfile2 *fAB, int *occpi, int *occ_off, int *virtpi, int *vir_off,
     double omega);
 
-    void T3_grad_UHF_AAA(void)
+    double T3_grad_UHF_AAA(void)
     {
       int h, nirreps;
       int *occpi, *virtpi, *occ_off, *vir_off;
@@ -52,9 +52,7 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       double t_jkbc, t_jkac, t_jkba, t_ikbc, t_ikac, t_ikba, t_jibc, t_jiac, t_jiba;
       dpdbuf4 T2, Fints, Eints, Dints, S2, GIJAB, GIJKA, GIDAB;
       dpdfile2 fIJ, fAB, fIA, T1, S1, DAB, DIJ;
-//      dpdbuf4 T2_junk, Fints_junk, Eints_junk, Dints_junk;
-//      dpdfile2 fIJ_junk, fAB_junk, fIA_junk, T1_junk;
-      double ***WABC, ***VABC, ***XABC, ***Y, ***WABC2, ***VABC2;
+      double ***WABC, ***VABC, ***XABC, ***Y;
       double **Z;
       double ***WIJK = (double ***) malloc(nirreps * sizeof(double **));
       double ***VIJK = (double ***) malloc(nirreps * sizeof(double **));
@@ -70,20 +68,10 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       dpd_file2_init(&fIA, CC_OEI, 0, 0, 1, "fIA");
       dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
 
-//      dpd_file2_init(&fIJ_junk, CC_OEI, 0, 0, 0, "fIJ");
-//      dpd_file2_init(&fAB_junk, CC_OEI, 0, 1, 1, "fAB");
-//      dpd_file2_init(&fIA_junk, CC_OEI, 0, 0, 1, "fIA");
-//      dpd_file2_init(&T1_junk, CC_OEI, 0, 0, 1, "tIA");
-
       dpd_buf4_init(&T2, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
       dpd_buf4_init(&Fints, CC_FINTS, 0, 20, 5, 20, 5, 1, "F <IA|BC>");
       dpd_buf4_init(&Eints, CC_EINTS, 0, 0, 20, 2, 20, 0, "E <IJ||KA> (I>J,KA)");
       dpd_buf4_init(&Dints, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
-
-//      dpd_buf4_init(&T2_junk, CC_TAMPS, 0, 0, 5, 2, 7, 0, "tIJAB");
-//      dpd_buf4_init(&Fints_junk, CC_FINTS, 0, 20, 5, 20, 5, 1, "F <IA|BC>");
-//      dpd_buf4_init(&Eints_junk, CC_EINTS, 0, 0, 20, 2, 20, 0, "E <IJ||KA> (I>J,KA)");
-//      dpd_buf4_init(&Dints_junk, CC_DINTS, 0, 0, 5, 0, 5, 0, "D <IJ||AB>");
 
       dpd_file2_init(&S1, CC_OEI, 0, 0, 1, "SIA");
       dpd_file2_mat_init(&S1); 
@@ -93,9 +81,6 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 
       dpd_file2_init(&DAB, CC_OEI, 0, 1, 1, "DAB");
       dpd_file2_mat_init(&DAB);
-
-//      dpd_file2_init(&DIJ, CC_OEI, 0, 0, 0, "DIJ");
-//      dpd_file2_mat_init(&DIJ);
 
       dpd_buf4_init(&GIJAB, CC_GAMMA, 0, 0, 5, 2, 7, 0, "GIJAB");
       for(h=0; h < nirreps; h++)
@@ -113,8 +98,6 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       VABC = (double ***) malloc(nirreps * sizeof(double **));
       XABC = (double ***) malloc(nirreps * sizeof(double **));
       Y = (double ***) malloc(nirreps * sizeof(double **));
-      WABC2 = (double ***) malloc(nirreps * sizeof(double **));
-      VABC2 = (double ***) malloc(nirreps * sizeof(double **));
 
       ET = 0.0;
 
@@ -133,8 +116,6 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 	      WABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 	      VABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 	      XABC[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
-	      WABC2[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
-	      VABC2[Gab] = dpd_block_matrix(Fints.params->coltot[Gab], virtpi[Gc]);
 	    }
 	    for(Ga=0; Ga < nirreps; Ga++) {
 	      Gbc = Ga ^ Gijk;
@@ -334,24 +315,6 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 
 		  /**** T3 --> DAB complete ****/
 
-		  /**** T3 --> DIJ ****/
-//		  Gl = Gk;
-//		  for(l=0; l < occpi[Gl]; l++) {
-//		    L = occ_off[Gl] + l;
-//		    T3_UHF_AAA(WABC2, VABC2, 1, nirreps, I, Gi, J, Gj, L, Gl, &T2_junk, &Fints_junk, &Eints_junk,
-//			       &T1_junk, &Dints_junk, &fIA_junk, &fIJ_junk, &fAB_junk, occpi, occ_off, virtpi, vir_off, 0.0);
-//		    for(Gab=0; Gab < nirreps; Gab++) {
-//		      Gc = Gijk ^ Gab;
-//		      for(ab=0; ab < Fints.params->coltot[Gab]; ab++) {
-//			for(c=0; c < virtpi[Gc]; c++) {
-//			  C = vir_off[Gc] + c;
-//			  DIJ.matrix[Gk][k][l] -= (1.0/12.0) * WABC2[Gab][ab][c] * (WABC[Gab][ab][c] + VABC[Gab][ab][c]);
-//			} /* c */
-//		      } /* ab */
-//		    } /* Gab */
-//		  } /* l */
-		  /**** T3 --> DIJ complete ****/
-
 		  /* T3 --> GIJAB ****/
 
 		  for(Gab=0; Gab < nirreps; Gab++) {
@@ -448,8 +411,6 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
 	      dpd_free_block(WABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 	      dpd_free_block(VABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 	      dpd_free_block(XABC[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
-	      dpd_free_block(WABC2[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
-	      dpd_free_block(VABC2[Gab], Fints.params->coltot[Gab], virtpi[Gc]);
 	    }
 	    for(Ga=0; Ga < nirreps; Ga++) {
 	      Gbc = Ga ^ Gijk;
@@ -461,21 +422,15 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       } /* Gi */
 
       ET *= (1.0/36.0);
-      fprintf(outfile, "\tE(T) AAA = %20.15f\n", ET);
 
       free(WABC);
       free(VABC);
       free(XABC);
       free(Y);
-      free(WABC2);
-      free(VABC2);
 
       dpd_file2_mat_wrt(&DAB);
       dpd_file2_mat_close(&DAB);
       dpd_file2_close(&DAB);
-//      dpd_file2_mat_wrt(&DIJ);
-//      dpd_file2_mat_close(&DIJ);
-//      dpd_file2_close(&DIJ);
 
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_wrt(&S2, h);
@@ -512,16 +467,8 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       dpd_file2_close(&fAB);
       dpd_file2_close(&fIA);
 
-//      dpd_buf4_close(&T2_junk);
-//      dpd_buf4_close(&Fints_junk);
-//      dpd_buf4_close(&Eints_junk);
-//      dpd_buf4_close(&Dints_junk);
 
-//      dpd_file2_close(&T1_junk);
-//      dpd_file2_close(&fIJ_junk);
-//      dpd_file2_close(&fAB_junk);
-//      dpd_file2_close(&fIA_junk);
-
+      /** T3 --> DIJ **/
       dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
       dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
       dpd_file2_init(&fIA, CC_OEI, 0, 0, 1, "fIA");
@@ -540,7 +487,6 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       dpd_file2_mat_init(&DIJ);
 
       int Gabc;
-      ET = 0.0;
       for (Ga=0; Ga < nirreps; ++Ga) {
         for (a=0; a<virtpi[Ga]; ++a) {
           A = vir_off[Ga] + a;
@@ -609,6 +555,10 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       dpd_file2_close(&fIJ);
       dpd_file2_close(&fIA);
       dpd_file2_close(&fAB);
+
+      /** T3 --> DIJ complete **/
+
+      return ET;
 
     } /* void T3_grad_UHF_AAA() */
 
