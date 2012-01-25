@@ -75,6 +75,8 @@ boost::regex fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
 boost::regex orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::regex comCommand_("\\s*no_?com\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::regex symmetry_("\\s*symmetry[\\s=]+(\\w+)\\s*", boost::regbase::normal| boost::regbase::icase);
+boost::regex pubchemError_("\\s*PubchemError\\s*", boost::regbase::normal| boost::regbase::icase);
+boost::regex pubchemInput_("\\s*PubchemInput\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::smatch reMatches_;
 
 /**
@@ -726,7 +728,6 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
 
     boost::shared_ptr<Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
-    std::string symtemp;
 
     if(boost::iequals(units, "ANG") || boost::iequals(units, "ANGSTROM") || boost::iequals(units, "ANGSTROMS")) {
         mol->set_units(Angstrom);
@@ -741,6 +742,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     mol->molecular_charge_ = 0;
     mol->multiplicity_ = 1;
 
+    bool pubchemerror = false;
+    bool pubcheminput = false;
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
      * a variable, units, comment lines, and blank lines.  When found, process them
@@ -757,6 +760,16 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(regex_match(lines[lineNumber], reMatches, blankLine_)) {
             // A blank line, nuke it
+            lines.erase(lines.begin() + lineNumber);
+        }
+        else if(regex_match(lines[lineNumber], reMatches, pubchemError_)) {
+            // A marker to flag that pubchem gave a problem nuke the line
+            pubchemerror = true;
+            lines.erase(lines.begin() + lineNumber);
+        }
+        else if(regex_match(lines[lineNumber], reMatches, pubchemInput_)) {
+            // A marker to flag that pubchem gave us this geometry, nuke the line
+            pubcheminput = true;
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, commentLine_)) {
@@ -811,6 +824,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     mol->fragment_charges_.push_back(mol->molecular_charge_);
 
     for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+        if(pubchemerror)
+            fprintf(outfile, "%s\n", lines[lineNumber].c_str());
         if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
             // Check that there are more lines remaining
             if(lineNumber == lines.size() - 1)
@@ -838,6 +853,9 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         else {
             ++atomCount;
         }
+    }
+    if(pubchemerror){
+        exit(EXIT_SUCCESS);
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
     mol->fragment_types_.push_back(Real);
@@ -951,7 +969,54 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         ++currentAtom;
     }
+
+    if(pubcheminput){
+        // The coordinates are a bit crude, so we symmetrize them
+        // First, populate the atom list
+        mol->reinterpret_coordentries();
+        double tol = 1.0e-3;
+        // Now, redetect the symmetry with a really crude tolerance
+        SharedMatrix frame = mol->symmetry_frame(tol);
+        // Put it on the center of mass and rotate
+        mol->move_to_com();
+        mol->rotate_full(*frame.get());
+        mol->set_point_group(mol->find_point_group(tol));
+        // Clean up the molecule, to make sure it actually has the correct symmetry
+        mol->symmetrize();
+    }
     return mol;
+}
+
+void Molecule::reinterpret_coordentries()
+{
+    atoms_.clear();
+    EntryVectorIter iter;
+    for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
+        (*iter)->invalidate();
+    }
+    int temp_charge = molecular_charge_;
+    int temp_multiplicity = multiplicity_;
+    molecular_charge_ = 0;
+    multiplicity_    = 1;
+    for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+        if(fragment_types_[fragment] == Absent)
+            continue;
+        if(fragment_types_[fragment] == Real) {
+            molecular_charge_ += fragment_charges_[fragment];
+            multiplicity_    += fragment_multiplicities_[fragment] - 1;
+        }
+        for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+            full_atoms_[atom]->compute();
+            full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
+            if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+        }
+    }
+    // TODO: This is a hack to ensure that set_multiplicity and set_molecular_charge
+    // work for single-fragment molecules.
+    if (fragments_.size() < 2) {
+        molecular_charge_ = temp_charge;
+        multiplicity_ = temp_multiplicity;
+    }
 }
 
 void Molecule::update_geometry()
@@ -959,36 +1024,8 @@ void Molecule::update_geometry()
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
-    if (reinterpret_coordentries_) {
-        atoms_.clear();
-        EntryVectorIter iter;
-        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
-            (*iter)->invalidate();
-        }
-        int temp_charge = molecular_charge_;
-        int temp_multiplicity = multiplicity_;
-        molecular_charge_ = 0;
-        multiplicity_    = 1;
-        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-            if(fragment_types_[fragment] == Absent)
-                continue;
-            if(fragment_types_[fragment] == Real) {
-                molecular_charge_ += fragment_charges_[fragment];
-                multiplicity_    += fragment_multiplicities_[fragment] - 1;
-            }
-            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
-                full_atoms_[atom]->compute();
-                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
-            }
-        }
-        // TODO: This is a hack to ensure that set_multiplicity and set_molecular_charge
-        // work for single-fragment molecules.
-        if (fragments_.size() < 2) {
-            molecular_charge_ = temp_charge;
-            multiplicity_ = temp_multiplicity;
-        }
-    }
+    if (reinterpret_coordentries_)
+        reinterpret_coordentries();
 
     if (move_to_com_)
         move_to_com();
@@ -1532,10 +1569,9 @@ int Molecule::max_nequivalent() const
     return max;
 }
 
-boost::shared_ptr<Matrix> Molecule::symmetry_frame()
+boost::shared_ptr<Matrix> Molecule::symmetry_frame(double tol)
 {
     int i, j;
-    double tol = 1.0e-6;
 
     Vector3 com = center_of_mass();
 
