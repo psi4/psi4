@@ -1,4 +1,4 @@
-#! cc36: RHF-CC2/cc-pVDZ energy of H2O.
+#! CC2(RHF)/cc-pVDZ energy of H2O.
 
 memory 250 mb
 

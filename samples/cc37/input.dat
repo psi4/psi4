@@ -1,4 +1,4 @@
-#! cc36: UHF-CC2/cc-pVDZ energy of H2O+.
+#! CC2(UHF)/cc-pVDZ energy of H2O+.
 
 memory 250 mb
 

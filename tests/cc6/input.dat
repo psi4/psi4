@@ -1,3 +1,5 @@
+#! Frozen-core CCSD(T)/cc-pVDZ on C$@@4$H$@@4$N anion with disk ao algorithm
+
 molecule C4H4N {
     -1 1
     units bohr
