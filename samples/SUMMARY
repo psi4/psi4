@@ -262,7 +262,7 @@ props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation
 psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 
-pubchem:      RHF STO-3G Benzene optimization using PubChem to obtain geometry
+pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
 
 
 pywrap_all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
