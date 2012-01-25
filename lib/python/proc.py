@@ -702,6 +702,7 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out(line1)
     PsiMod.print_out(line2)
     PsiMod.print_out(line3)
+    PsiMod.set_variable("SAPT CT ENERGY",CT)
 
     return CT
 
@@ -812,7 +813,7 @@ def run_mrcc(name, **kwargs):
     os.chdir("..")
     try:
         # Delete unless we're told not to
-        if (keep == False or kwargs.has_key('path') == False):
+        if (keep == False and kwargs.has_key('path') == False):
             shutil.rmtree(mrcc_tmpdir)
     except OSerror, e:
         print >>sys.stderr, "Unable to remove MRCC temporary directory", e
