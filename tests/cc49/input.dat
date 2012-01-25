@@ -1,3 +1,5 @@
+#! EOM-CC3(UHF) on CH radical with user-specified basis and properties for particular root
+
 memory 250 mb
 
 molecule ch {
