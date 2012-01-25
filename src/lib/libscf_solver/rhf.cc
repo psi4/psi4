@@ -26,8 +26,9 @@
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 
-#include <libmints/mints.h>
 #include <libmints/basisset_parser.h>
+#include <libmints/mints.h>
+#include <libfock/jk.h>
 #include "integralfunctors.h"
 
 #include "rhf.h"
@@ -155,9 +156,33 @@ void RHF::form_G()
         return;
     }
 #endif
-    J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
-    process_tei<J_K_Functor>(jk_builder);
-    G_->subtract(K_);
+
+    // TODO: Relax the if statement
+    if (scf_type_ == "DF") {
+
+        // Push the C matrix on
+        std::vector<SharedMatrix> & C = jk_->C_left();
+        C.clear();
+        C.push_back(Ca_subset("SO", "OCC"));
+        
+        // Run the JK object
+        jk_->compute();
+
+        // Pull the J and K matrices off
+        const std::vector<SharedMatrix> & J = jk_->J();
+        const std::vector<SharedMatrix> & K = jk_->K();
+        J_ = J[0];
+        J_->scale(2.0);
+        K_ = K[0];
+
+        G_->copy(J_);
+        G_->subtract(K_);
+
+    } else {
+        J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
+        process_tei<J_K_Functor>(jk_builder);
+        G_->subtract(K_);
+    }
 }
 
 void RHF::save_information()
@@ -212,6 +237,10 @@ void RHF::form_F()
 
     if (debug_) {
         Fa_->print(outfile);
+        J_->print();
+        K_->print();
+        G_->print();
+        
     }
 }
 
