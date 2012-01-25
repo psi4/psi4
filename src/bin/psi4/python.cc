@@ -1054,6 +1054,13 @@ void Python::finalize()
     Py_Finalize();
 }
 
+#define PY_TRY(ptr, command)  \
+     if(!(ptr = command)){    \
+         PyErr_Print();       \
+         exit(1);             \
+     } 
+
+
 void Python::run(FILE *input)
 {
     using namespace boost::python;
@@ -1089,9 +1096,9 @@ void Python::run(FILE *input)
 
         // Add PSI library python path
         PyObject *path, *sysmod, *str;
-        sysmod = PyImport_ImportModule("sys");
-        path = PyObject_GetAttrString(sysmod, "path");
-        str = PyString_FromString(psiDataDirWithPython.c_str());
+        PY_TRY(sysmod , PyImport_ImportModule("sys"));
+        PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+        PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
         PyList_Append(path, str);
         Py_DECREF(str);
         Py_DECREF(path);
@@ -1120,10 +1127,14 @@ void Python::run(FILE *input)
             PyRun_SimpleString(s);
 
             // Process the input file
-            PyObject *input = PyImport_ImportModule("input");
-            PyObject *function = PyObject_GetAttrString(input, "process_input");
-            PyObject *pargs = Py_BuildValue("(s)", file.str().c_str());
-            PyObject *ret = PyEval_CallObject(function, pargs);
+            PyObject *input;
+            PY_TRY(input, PyImport_ImportModule("input") );
+            PyObject *function;
+            PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
+            PyObject *pargs;
+            PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
+            PyObject *ret;
+            PY_TRY( ret, PyEval_CallObject(function, pargs) );
 
             char *val;
             PyArg_Parse(ret, "s", &val);
