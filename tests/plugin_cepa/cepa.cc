@@ -266,7 +266,7 @@ void CoupledPair::Initialize(Options &options){
   eps_test.reset();
 
   // by default, t2 will be held in core
-  t2_on_disk = true;
+  t2_on_disk = false;
 
 }
 
