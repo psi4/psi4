@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -20,10 +22,7 @@
 --------------------------------------------------------------------------
 #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
-refnuc   =  9.166137300098260  #TEST
-refscf   = -76.02293995043653  #TEST
-refccsd  = -0.208238532935749  #TEST
-reftotal = -76.2311784833722   #TEST
+memory 250 mb
 
 molecule h2o {
     O
@@ -32,30 +31,30 @@ molecule h2o {
 }
 
 set {
-    wfn ccsd
-    jobtype opt
-    dertype first
-    docc [3, 0, 1, 1]
     basis 6-31G**
-    relax_opdm true     # Currently needed until ccdensity is fixed.
 
-    convergence 11
-    e_converge 11
-    d_converge 11
+    r_convergence 11
+    e_convergence 11
+    d_convergence 11
 }
 
-thisenergy = optimize('ccsd')
+optimize('ccsd')
+
+refnuc   =   9.1654609427539  #TEST
+refscf   = -76.0229306840181  #TEST
+refccsd  = -0.20824772787315  #TEST
+reftotal = -76.2311784118913  #TEST
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
 compare_values(refscf,   get_variable("SCF total energy"),        5, "SCF energy")               #TEST
 compare_values(refccsd,  get_variable("CCSD correlation energy"), 4, "CCSD contribution")        #TEST
 compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")             #TEST
-
-clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:39 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:21 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -66,7 +65,7 @@ clean()
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -77,9 +76,9 @@ clean()
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.067578587269
+           O         -0.000000000000     0.000000000000    -0.067578587269
            H          0.000000000000    -0.759129912147     0.536260610269
-           H          0.000000000000     0.759129912147     0.536260610269
+           H         -0.000000000000     0.759129912147     0.536260610269
 
     Number of unique atoms: 2
 
@@ -89,7 +88,7 @@ clean()
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.077238846803626
+  Nuclear repulsion =    9.077238153630928
 
   Charge       = 0
   Multiplicity = 1
@@ -102,6 +101,7 @@ clean()
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -118,11 +118,11 @@ clean()
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 2.2308643074E-02.
+  Minimum eigenvalue in the overlap matrix is 2.2308645666E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.67612875350986
+  Initial RHF energy:   -58.67612896328600
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -162,23 +162,28 @@ clean()
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.29457522228250   -9.61845e+00   0.00000e+00  
-   @RHF iter   2:   -71.34486741530057   -3.05029e+00   4.97315e-01 DIIS
-   @RHF iter   3:   -75.81013143245222   -4.46526e+00   4.66975e-01 DIIS
-   @RHF iter   4:   -76.01017434597556   -2.00043e-01   1.56065e-02 DIIS
-   @RHF iter   5:   -76.02184648850000   -1.16721e-02   4.76455e-03 DIIS
-   @RHF iter   6:   -76.02197219560719   -1.25707e-04   5.56330e-04 DIIS
-   @RHF iter   7:   -76.02199732728931   -2.51317e-05   2.94798e-04 DIIS
-   @RHF iter   8:   -76.02199785150621   -5.24217e-07   5.67592e-05 DIIS
-   @RHF iter   9:   -76.02199787400053   -2.24943e-08   1.60666e-05 DIIS
-   @RHF iter  10:   -76.02199787583602   -1.83549e-09   3.45562e-06 DIIS
-   @RHF iter  11:   -76.02199787587327   -3.72467e-11   5.89985e-07 DIIS
-   @RHF iter  12:   -76.02199787587377   -4.97380e-13   4.17061e-08 DIIS
-   @RHF iter  13:   -76.02199787587374    2.84217e-14   3.96366e-09 DIIS
-   @RHF iter  14:   -76.02199787587375   -1.42109e-14   2.82452e-10 DIIS
-   @RHF iter  15:   -76.02199787587374    1.42109e-14   2.58444e-10 DIIS
-   @RHF iter  16:   -76.02199787587379   -5.68434e-14   1.71701e-11 DIIS
-   @RHF iter  17:   -76.02199787587378    1.42109e-14   1.45128e-11 DIIS
+   @RHF iter   1:   -68.29457538492346   -9.61845e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.40214895176796   -3.10757e+00   5.21557e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76849950140168   -4.36635e+00   4.95640e-01 DIIS
+   @RHF iter   4:   -76.00465639463496   -2.36157e-01   1.70838e-02 DIIS
+   @RHF iter   5:   -76.02157592921314   -1.69195e-02   7.74804e-03 DIIS
+   @RHF iter   6:   -76.02195844293945   -3.82514e-04   1.22994e-03 DIIS
+   @RHF iter   7:   -76.02199662644675   -3.81835e-05   5.22673e-04 DIIS
+   @RHF iter   8:   -76.02199779472249   -1.16828e-06   8.31744e-05 DIIS
+   @RHF iter   9:   -76.02199786640745   -7.16850e-08   2.41323e-05 DIIS
+   @RHF iter  10:   -76.02199786811563   -1.70819e-09   3.82411e-06 DIIS
+   @RHF iter  11:   -76.02199786812274   -7.10543e-12   1.86343e-07 DIIS
+   @RHF iter  12:   -76.02199786812299   -2.55795e-13   3.72535e-08 DIIS
+   @RHF iter  13:   -76.02199786812304   -4.26326e-14   6.40834e-09 DIIS
+   @RHF iter  14:   -76.02199786812304    0.00000e+00   6.32018e-10 DIIS
+   @RHF iter  15:   -76.02199786812307   -2.84217e-14   3.86294e-11 DIIS
+   @RHF iter  16:   -76.02199786812302    4.26326e-14   1.02012e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -192,7 +197,7 @@ clean()
 
 	Virtual:                                                              
 
-	   4A1     0.209148     2B2     0.301191     3B2     0.992987  
+	   4A1     0.209148     2B2     0.301190     3B2     0.992987  
 	   5A1     1.080901     6A1     1.131133     2B1     1.168613  
 	   4B2     1.294487     7A1     1.418369     1A2     1.805555  
 	   8A1     1.805556     3B1     1.919426     9A1     2.554725  
@@ -206,36 +211,36 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02199787587378
+  @RHF Final Energy:   -76.02199786812302
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0051
+     X:    -0.0000      Y:     0.0000      Z:     1.0051
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1315
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8736     Total:     0.8736
+     X:    -0.0000      Y:     0.0000      Z:     0.8736     Total:     0.8736
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.2205     Total:     2.2205
+     X:    -0.0000      Y:     0.0000      Z:     2.2205     Total:     2.2205
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:39 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:21 2012
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:39 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:21 2012
 
 
 	**************************************************
@@ -255,7 +260,7 @@ Total time:
 	Reference wfn   =	RHF
 	Derivative      =	First
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -272,8 +277,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.07723884680362
-	SCF energy          (chkpt) =    -76.02199787587378
+	Nuclear Rep. energy (chkpt) =      9.07723815363093
+	SCF energy          (chkpt) =    -76.02199786812302
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -283,18 +288,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:39 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:21 2012
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.18 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:39 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:21 2012
 
 
 			**************************
@@ -309,7 +314,7 @@ Total time:
 	Wave function   =	CCSD
 	Reference wfn   =	RHF
 	Derivative      =	First
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	True
@@ -331,8 +336,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.07723884680362
-	SCF energy          (chkpt) =    -76.02199787587378
+	Nuclear Rep. energy (chkpt) =      9.07723815363093
+	SCF energy          (chkpt) =    -76.02199786812302
 
 	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
@@ -361,26 +366,26 @@ Total time:
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =   -122.88008962040171
-	Two-electron (AA) energy     =     14.41616329310858
-	Two-electron (BB) energy     =     14.41616329310858
-	Two-electron (AB) energy     =     23.36468960461574
-	Two-electron energy          =     37.78085289772432
+	One-electron energy          =   -122.88008837997808
+	Two-electron (AA) energy     =     14.41616306310353
+	Two-electron (BB) energy     =     14.41616306310353
+	Two-electron (AB) energy     =     23.36468929512058
+	Two-electron energy          =     37.78085235822412
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -76.02199787587377
+	Reference energy             =    -76.02199786812302
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:39 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:22 2012
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.22 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:39 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:22 2012
 
 			**************************
 			*                        *
@@ -388,15 +393,15 @@ Total time:
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =    9.077238846803624
-	SCF energy          (chkpt)   =  -76.021997875873780
-	Reference energy    (file100) =  -76.021997875873765
+	Nuclear Rep. energy (chkpt)   =    9.077238153630928
+	SCF energy          (chkpt)   =  -76.021997868123023
+	Reference energy    (file100) =  -76.021997868123023
 
 	Input parameters:
 	-----------------
 	Wave function   =     CCSD
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-11
 	Restart         =     No
@@ -420,78 +425,78 @@ Total time:
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.200284585698371    0.000e+00    0.000000    0.000000    0.000000
-     1        -0.204524503454777    2.733e-02    0.004508    0.008904    0.008904
-     2        -0.208454936703275    9.794e-03    0.005161    0.010333    0.010333
-     3        -0.208976354274567    2.795e-03    0.005693    0.011917    0.011917
-     4        -0.208980675748431    6.466e-04    0.005747    0.012228    0.012228
-     5        -0.208995516757842    2.053e-04    0.005786    0.012422    0.012422
-     6        -0.208991616016718    6.453e-05    0.005799    0.012493    0.012493
-     7        -0.208991058194502    1.565e-05    0.005803    0.012511    0.012511
-     8        -0.208991039041425    2.937e-06    0.005803    0.012514    0.012514
-     9        -0.208990962183420    7.070e-07    0.005803    0.012514    0.012514
-    10        -0.208990982405052    1.507e-07    0.005803    0.012514    0.012514
-    11        -0.208990980767861    2.941e-08    0.005803    0.012514    0.012514
-    12        -0.208990981387616    4.776e-09    0.005803    0.012514    0.012514
-    13        -0.208990981277183    1.062e-09    0.005803    0.012514    0.012514
-    14        -0.208990981268122    1.977e-10    0.005803    0.012514    0.012514
-    15        -0.208990981264855    5.170e-11    0.005803    0.012514    0.012514
-    16        -0.208990981264856    1.045e-11    0.005803    0.012514    0.012514
-    17        -0.208990981265030    2.791e-12    0.005803    0.012514    0.012514
+     0        -0.200284590959928    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.204524507806170    2.733e-02    0.004508    0.008904    0.008904
+     2        -0.208454941717411    9.794e-03    0.005161    0.010333    0.010333
+     3        -0.208976359460194    2.795e-03    0.005693    0.011917    0.011917
+     4        -0.208980680931965    6.466e-04    0.005747    0.012228    0.012228
+     5        -0.208995521947601    2.053e-04    0.005786    0.012422    0.012422
+     6        -0.208991621203427    6.453e-05    0.005799    0.012493    0.012493
+     7        -0.208991063381113    1.565e-05    0.005803    0.012511    0.012511
+     8        -0.208991044227945    2.937e-06    0.005803    0.012514    0.012514
+     9        -0.208990967369909    7.070e-07    0.005803    0.012514    0.012514
+    10        -0.208990987591551    1.507e-07    0.005803    0.012514    0.012514
+    11        -0.208990985954358    2.941e-08    0.005803    0.012514    0.012514
+    12        -0.208990986574113    4.776e-09    0.005803    0.012514    0.012514
+    13        -0.208990986463680    1.062e-09    0.005803    0.012514    0.012514
+    14        -0.208990986454619    1.977e-10    0.005803    0.012514    0.012514
+    15        -0.208990986451352    5.170e-11    0.005803    0.012514    0.012514
+    16        -0.208990986451353    1.045e-11    0.005803    0.012514    0.012514
+    17        -0.208990986451527    2.791e-12    0.005803    0.012514    0.012514
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          2   0         0.0108430059
-	          3  11        -0.0066539435
-	          4  14        -0.0062968552
-	          4  18         0.0053909622
-	          4  16         0.0049115251
-	          1   2         0.0043626409
-	          2   5         0.0040679845
-	          1   0        -0.0026726430
-	          1   7         0.0023396381
-	          2   1         0.0022229042
+	          2   0         0.0108430096
+	          3  11        -0.0066539442
+	          4  14        -0.0062968550
+	          4  18         0.0053909633
+	          4  16         0.0049115272
+	          1   2         0.0043626420
+	          2   5         0.0040679854
+	          1   0        -0.0026726419
+	          1   7         0.0023396379
+	          2   1         0.0022229037
 
 	Largest TIjAb Amplitudes:
-	  3   3  11  11        -0.0518990469
-	  4   4  14  14        -0.0394129129
-	  2   2   2   2        -0.0298937466
-	  4   4  15  15        -0.0287516401
-	  2   3   2  11         0.0252440860
-	  3   2  11   2         0.0252440860
-	  3   4  11  16        -0.0248319623
-	  4   3  16  11        -0.0248319623
-	  4   4  16  16        -0.0246255040
-	  3   4  11  14        -0.0244548482
+	  3   3  11  11        -0.0518990471
+	  4   4  14  14        -0.0394129220
+	  2   2   2   2        -0.0298937646
+	  4   4  15  15        -0.0287516408
+	  2   3   2  11         0.0252440967
+	  3   2  11   2         0.0252440967
+	  3   4  11  16        -0.0248319621
+	  4   3  16  11        -0.0248319621
+	  4   4  16  16        -0.0246255030
+	  3   4  11  14        -0.0244548498
 
-	SCF energy       (chkpt)              =  -76.021997875873780
-	Reference energy (file100)            =  -76.021997875873765
+	SCF energy       (chkpt)              =  -76.021997868123023
+	Reference energy (file100)            =  -76.021997868123023
 
-	Opposite-spin MP2 correlation energy  =   -0.149954964748060
-	Same-spin MP2 correlation energy      =   -0.050329620950311
-	MP2 correlation energy                =   -0.200284585698371
-      * MP2 total energy                      =  -76.222282461572135
+	Opposite-spin MP2 correlation energy  =   -0.149954968985827
+	Same-spin MP2 correlation energy      =   -0.050329621974100
+	MP2 correlation energy                =   -0.200284590959928
+      * MP2 total energy                      =  -76.222282459082948
 
-	Opposite-spin CCSD correlation energy =   -0.164400076260241
-	Same-spin CCSD correlation energy     =   -0.044590905007550
-	CCSD correlation energy               =   -0.208990981265030
-      * CCSD total energy                     =  -76.230988857138797
+	Opposite-spin CCSD correlation energy =   -0.164400081315826
+	Same-spin CCSD correlation energy     =   -0.044590905133471
+	CCSD correlation energy               =   -0.208990986451527
+      * CCSD total energy                     =  -76.230988854574548
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:41 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:26 2012
 Module time:
-	user time   =       0.44 seconds =       0.01 minutes
-	system time =       0.35 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.44 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.41 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.48 seconds =       0.01 minutes
+	system time =       0.51 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:41 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:26 2012
 
 
 			**************************
@@ -501,18 +506,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:41 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:26 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.70 seconds =       0.01 minutes
-	system time =       0.44 seconds =       0.01 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.54 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:41 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:26 2012
 
 
 			**************************
@@ -520,12 +525,12 @@ Total time:
 			**************************
 
 
-	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	Nuclear Rep. energy (chkpt)   =    9.077238153630928
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   =  -76.021997875873780
-	Reference energy    (CC_INFO) =  -76.021997875873765
-	CCSD energy         (CC_INFO) =   -0.208990981265030
-	Total CCSD energy   (CC_INFO) =  -76.230988857138797
+	SCF energy          (chkpt)   =  -76.021997868123023
+	Reference energy    (CC_INFO) =  -76.021997868123023
+	CCSD energy         (CC_INFO) =   -0.208990986451527
+	Total CCSD energy   (CC_INFO) =  -76.230988854574548
 
 	Input parameters:
 	-----------------
@@ -550,64 +555,64 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.209027788883761    0.000e+00
-	   1        -0.206495153391010    7.993e-03
-	   2        -0.206067354097138    1.345e-03
-	   3        -0.205981809119993    6.208e-04
-	   4        -0.205975116737507    2.062e-04
-	   5        -0.205978816892806    6.254e-05
-	   6        -0.205978784629472    1.506e-05
-	   7        -0.205978872565372    3.417e-06
-	   8        -0.205978902036542    5.200e-07
-	   9        -0.205978900673058    9.017e-08
-	  10        -0.205978900383873    1.891e-08
-	  11        -0.205978900406213    3.916e-09
-	  12        -0.205978900429829    7.410e-10
-	  13        -0.205978900425811    1.618e-10
-	  14        -0.205978900426056    4.113e-11
-	  15        -0.205978900426697    1.296e-11
-	  16        -0.205978900426949    4.608e-12
+	   0        -0.209027794067313    0.000e+00
+	   1        -0.206495158211654    7.993e-03
+	   2        -0.206067358871964    1.345e-03
+	   3        -0.205981813878250    6.208e-04
+	   4        -0.205975121492862    2.062e-04
+	   5        -0.205978821649412    6.254e-05
+	   6        -0.205978789385976    1.506e-05
+	   7        -0.205978877321942    3.417e-06
+	   8        -0.205978906793124    5.200e-07
+	   9        -0.205978905429641    9.017e-08
+	  10        -0.205978905140455    1.891e-08
+	  11        -0.205978905162795    3.916e-09
+	  12        -0.205978905186411    7.410e-10
+	  13        -0.205978905182393    1.618e-10
+	  14        -0.205978905182638    4.113e-11
+	  15        -0.205978905183279    1.296e-11
+	  16        -0.205978905183531    4.608e-12
 
 	Largest LIA Amplitudes:
-	          2   0         0.0072417686
-	          4  16         0.0050589308
-	          4  18         0.0046513013
-	          3  11        -0.0039991679
-	          2   5         0.0036194764
-	          1   2         0.0032129526
-	          4  14        -0.0031908058
-	          1   3        -0.0025293240
-	          1   7         0.0021477537
-	          4  15        -0.0021208341
+	          2   0         0.0072417716
+	          4  16         0.0050589325
+	          4  18         0.0046513022
+	          3  11        -0.0039991687
+	          2   5         0.0036194771
+	          1   2         0.0032129535
+	          4  14        -0.0031908057
+	          1   3        -0.0025293246
+	          1   7         0.0021477535
+	          4  15        -0.0021208344
 
 	Largest LIjAb Amplitudes:
-	  3   3  11  11        -0.0516330653
-	  4   4  14  14        -0.0384957295
-	  2   2   2   2        -0.0295153413
-	  4   4  15  15        -0.0280304810
-	  2   3   2  11         0.0250935023
-	  3   2  11   2         0.0250935023
-	  3   4  11  16        -0.0246412008
-	  4   3  16  11        -0.0246412008
-	  4   4  16  16        -0.0243635784
-	  3   4  11  14        -0.0241957729
+	  3   3  11  11        -0.0516330656
+	  4   4  14  14        -0.0384957383
+	  2   2   2   2        -0.0295153592
+	  4   4  15  15        -0.0280304817
+	  2   3   2  11         0.0250935129
+	  3   2  11   2         0.0250935129
+	  3   4  11  16        -0.0246412005
+	  4   3  16  11        -0.0246412005
+	  4   4  16  16        -0.0243635774
+	  3   4  11  14        -0.0241957745
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.94273433574
+	Overlap <L|e^T> =        0.94273433030
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:42 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:26 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.84 seconds =       0.01 minutes
-	system time =       0.52 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.60 seconds =       0.01 minutes
+	system time =       0.64 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:42 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:26 2012
 
 
 			**************************
@@ -621,6 +626,7 @@ Total time:
 	-----------------
 	Wave function    =   CCSD
 	Reference wfn    =   RHF
+	Dertype          = 1
 	Tolerance        = 1.0e-14
 	Cache Level      = 2
 	AO Basis         = No
@@ -628,13 +634,13 @@ Total time:
 	Relax OPDM       = Yes
 	Compute Xi       = No
 	Use Zeta         = No
-	Xi connected     = No
+	Xi connected     = Yes
 
-	Nuclear Rep. energy (chkpt)   =    9.077238846803624
-	SCF energy          (chkpt)   =  -76.021997875873780
-	Reference energy    (file100) =  -76.021997875873765
-	CCSD energy         (CC_INFO) =   -0.208990981265030
-	Total CCSD energy   (CC_INFO) =  -76.230988857138797
+	Nuclear Rep. energy (chkpt)   =    9.077238153630928
+	SCF energy          (chkpt)   =  -76.021997868123023
+	Reference energy    (file100) =  -76.021997868123023
+	CCSD energy         (CC_INFO) =   -0.208990986451527
+	Total CCSD energy   (CC_INFO) =  -76.230988854574548
 	Number of States = 1
 
 	Ground?  State     EOM Energy       R0
@@ -642,64 +648,64 @@ Total time:
 
 	Energies re-computed from CC density:
 	-------------------------------------
-	One-electron energy        =    0.221186772564462
-	IJKL energy                =    0.041993249576785
-	IJKA energy                =   -0.001393403073113
-	IJAB energy                =   -0.412136969513873
-	IBJA energy                =   -0.101198071086548
-	CIAB energy                =   -0.000203577800648
-	ABCD energy                =    0.042761018067782
-	Total two-electron energy  =   -0.430177753829616
-	CCSD correlation energy    =   -0.208990981265154
-	Total CCSD energy          =  -76.230988857138925
+	One-electron energy        =    0.221186778637749
+	IJKL energy                =    0.041993252484072
+	IJKA energy                =   -0.001393403177276
+	IJAB energy                =   -0.412136979050138
+	IBJA energy                =   -0.101198078804120
+	CIAB energy                =   -0.000203578189109
+	ABCD energy                =    0.042761021647171
+	Total two-electron energy  =   -0.430177765089400
+	CCSD correlation energy    =   -0.208990986451651
+	Total CCSD energy          =  -76.230988854574676
 
 	Virial Theorem Data:
 	--------------------
-	Kinetic energy (ref)   =   75.764057450146012
-	Kinetic energy (corr)  =    0.151616965980082
-	Kinetic energy (total) =   75.915674416126095
-	-V/T (ref)             =    2.003404522334320
-	-V/T (corr)            =    2.378414215810682
-	-V/T (total)           =    2.004153482708779
+	Kinetic energy (ref)   =   75.764057171273635
+	Kinetic energy (corr)  =    0.151616996233699
+	Kinetic energy (total) =   75.915674167507333
+	-V/T (ref)             =    2.003404525925351
+	-V/T (corr)            =    2.378413974970149
+	-V/T (total)           =    2.004153485963537
 
 	Energies re-computed from Fock-adjusted CC density:
 	---------------------------------------------------
-	One-electron energy        =    0.245781762740515
-	IJKL energy                =   -0.672858093345413
-	IJKA energy                =   -0.047236972541601
-	IJAB energy                =   -0.412136969513873
-	IBJA energy                =    0.634901851127718
-	CIAB energy                =   -0.000203577800648
-	ABCD energy                =    0.042761018067782
-	Total two-electron energy  =   -0.454772744006035
-	CCSD correlation energy    =   -0.208990981265520
-	Total CCSD energy          =  -76.230988857139280
+	One-electron energy        =    0.245781758780072
+	IJKL energy                =   -0.672858141032973
+	IJKA energy                =   -0.047236969366183
+	IJAB energy                =   -0.412136979050138
+	IBJA energy                =    0.634901900759662
+	CIAB energy                =   -0.000203578189109
+	ABCD energy                =    0.042761021647171
+	Total two-electron energy  =   -0.454772745231571
+	CCSD correlation energy    =   -0.208990986451499
+	Total CCSD energy          =  -76.230988854574520
 
 	Energies re-computed from Mulliken density:
 	-------------------------------------------
-	One-electron energy        =    0.245781762740515
-	IJKL energy                =   -0.672858093345413
-	IJKA energy                =   -0.047236972541601
-	IJAB energy                =   -0.381058768299929
-	IBJA energy                =    0.603823649913774
-	CIAB energy                =   -0.000203577800648
-	ABCD energy                =    0.042761018067782
-	Total two-electron energy  =   -0.454772744006035
-	CCSD correlation energy    =   -0.208990981265519
-	Total CCSD energy          =  -76.230988857139280
+	One-electron energy        =    0.245781758780072
+	IJKL energy                =   -0.672858141032973
+	IJKA energy                =   -0.047236969366183
+	IJAB energy                =   -0.381058776614138
+	IBJA energy                =    0.603823698323662
+	CIAB energy                =   -0.000203578189109
+	ABCD energy                =    0.042761021647171
+	Total two-electron energy  =   -0.454772745231571
+	CCSD correlation energy    =   -0.208990986451499
+	Total CCSD energy          =  -76.230988854574520
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:42 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:27 2012
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
+	user time   =       0.05 seconds =       0.00 minutes
 	system time =       0.06 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.91 seconds =       0.02 minutes
-	system time =       0.58 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.66 seconds =       0.01 minutes
+	system time =       0.70 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:42 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:27 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -744,121 +750,15 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.127705012634
-           H          0.000000000000    -1.434547523692     1.013385611877
-           H          0.000000000000     1.434547523692     1.013385611877
+           O         -0.000000000000     0.000000000000    -0.127705022386
+           H          0.000000000000    -1.434547633239     1.013385689263
+           H         -0.000000000000     1.434547633239     1.013385689263
 
 	Presorting MO-basis TPDM.
 	Sorting File: MO TPDM (AA|AA) nbuckets = 1
 	Starting first half-transformation.
 	Sorting half-transformed TPDM.
 	First half integral transformation complete.
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1   2.0786919
-    2  -0.1838973   0.5224846
-    3   0.0470488  -0.0911573   0.6296332
-    4  -0.2243966   0.5116014  -0.3049133   0.6354612
-    5   0.0438578  -0.0896983   0.4060831  -0.2490457   0.2942476
-    6  -0.0078527  -0.0028758  -0.0058467   0.0032025  -0.0049819   0.0053299
-    7  -0.0089671   0.0002938   0.0017473   0.0018739  -0.0012804  -0.0014818   0.0057499
-    8  -0.0039461  -0.0102629   0.0437191  -0.0238465   0.0296395  -0.0021590  -0.0008037   0.0086633
-    9  -0.0516900   0.1174685   0.2550973   0.0162027   0.1691890  -0.0040530   0.0031478   0.0188768   0.1822388
-   10   0.0123826  -0.0287035   0.1559215  -0.0891662   0.1130027  -0.0019061   0.0010961   0.0124034   0.0736820   0.0470312
-   11  -0.0101027   0.0210748   0.0249668   0.0108090   0.0160308  -0.0003827  -0.0002701   0.0018446   0.0202869   0.0064119
-   12   0.0099002  -0.0206101   0.0074663  -0.0230295   0.0071462  -0.0001498  -0.0002310   0.0011883  -0.0039087   0.0026614
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11   0.0030536
-   12  -0.0007919   0.0016123
-   13   0.0000000   0.0000000   0.0141771
-   14   0.0000000   0.0000000  -0.0008472   0.0007320
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.8110034
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.6153393   0.5193304
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0592435   0.0493288   0.0186414
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0357720   0.0302230   0.0034231   0.0023410
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.5247705
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2640727   0.1455959
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0544357   0.0277203
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3263635  -0.1778619
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.1921346  -0.1073608
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0117990  -0.0063418
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0239444   0.0131239
-          21          22          23          24          25
-
-   21   0.0207129
-   22  -0.0383986   0.2419156
-   23  -0.0227823   0.1413219   0.0879413
-   24  -0.0009828   0.0092877   0.0043025   0.0010233
-   25   0.0019157  -0.0166777  -0.0090939  -0.0006692   0.0018360
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1 -81.7063119
-    2  -1.0905110  -1.6111138
-    3  -0.1246822   0.0121567  -1.0296795
-    4   0.2182699  -1.2566212   0.2401428  -1.2852098
-    5  -0.0038888   0.0468457  -0.4800002   0.2093681  -0.3367307
-    6   0.3068749   0.0376461   0.0033488   0.0138356   0.0078374  -0.0379842
-    7   0.3018228   0.0297909  -0.0137271   0.0204377   0.0063193   0.0009474  -0.0418859
-    8   0.2988877   0.0385198  -0.0625301   0.0394009  -0.0310276   0.0031770  -0.0030676  -0.0442691
-    9   0.1806017  -0.4217820  -0.3570974  -0.2625311  -0.2037610   0.0089974  -0.0089766  -0.0238727  -0.3825622
-   10   0.0262250   0.0271288  -0.1745809   0.0812416  -0.1192242  -0.0016080  -0.0089984  -0.0195873  -0.0992647  -0.0587042
-   11   0.0669539  -0.0706555  -0.0381374  -0.0499965  -0.0231120   0.0010536   0.0029625  -0.0020256  -0.0491702  -0.0074487
-   12  -0.0499743   0.0546522  -0.0026048   0.0479716  -0.0049235  -0.0000492  -0.0001280  -0.0039206   0.0233368  -0.0023843
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11  -0.0107612
-   12   0.0040854  -0.0066356
-   13   0.0000000   0.0000000  -0.0808438
-   14   0.0000000   0.0000000   0.0042208  -0.0043273
-   15   0.0000000   0.0000000   0.0000000   0.0000000  -1.1350039
-   16   0.0000000   0.0000000   0.0000000   0.0000000  -0.5956163  -0.4837124
-   17   0.0000000   0.0000000   0.0000000   0.0000000  -0.0623194  -0.0468850  -0.0866757
-   18   0.0000000   0.0000000   0.0000000   0.0000000  -0.0351717  -0.0283886  -0.0055737  -0.0052399
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.9814760
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3952805  -0.2151464
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0960793  -0.0376752
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.4718590   0.2437694
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2486828   0.1393712
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0183383   0.0103586
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0371168  -0.0210020
-          21          22          23          24          25
-
-   21  -0.0979402
-   22   0.0603117  -0.3873961
-   23   0.0341362  -0.1957182  -0.1246216
-   24  -0.0005532  -0.0224317  -0.0049193  -0.0059180
-   25   0.0003354   0.0294161   0.0107155   0.0021329  -0.0066437
 
 
 
@@ -866,52 +766,52 @@ Read in lower triangle:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     2.964342698462
-       2        0.000000000000     1.984826257654    -1.482171349231
-       3        0.000000000000    -1.984826257654    -1.482171349231
+       1        0.000000000000     0.000000000000     2.964342245725
+       2        0.000000000000     1.984825954516    -1.482171122862
+       3        0.000000000000    -1.984825954516    -1.482171122862
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -6.872401422197
-       2        0.000000000000    -4.509661094719     3.436200711099
-       3        0.000000000000     4.509661094719     3.436200711099
+       1        0.000000000000     0.000000000000    -6.872400548141
+       2        0.000000000000    -4.509660588927     3.436200274070
+       3        0.000000000000     4.509660588927     3.436200274070
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.411443495932
-       2        0.000000000000     0.245759903828    -0.205721747966
-       3        0.000000000000    -0.245759903828    -0.205721747966
+       1        0.000000000000     0.000000000000     0.411443443479
+       2        0.000000000000     0.245759876713    -0.205721721740
+       3        0.000000000000    -0.245759876713    -0.205721721740
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.483428645549
-       2        0.000000000000     2.272612963551    -1.741714322775
-       3        0.000000000000    -2.272612963551    -1.741714322775
+       1        0.000000000000     0.000000000000     3.483428194681
+       2        0.000000000000     2.272612728131    -1.741714097340
+       3        0.000000000000    -2.272612728131    -1.741714097340
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.013186582253
-       2        0.000000000000    -0.006461969686     0.006593291127
-       3        0.000000000000     0.006461969686     0.006593291127
+       1        0.000000000000     0.000000000000    -0.013186664256
+       2        0.000000000000    -0.006462029567     0.006593332128
+       3        0.000000000000     0.006462029567     0.006593332128
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:42 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:27 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.26 seconds =       0.02 minutes
-	system time =       0.62 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.81 seconds =       0.01 minutes
+	system time =       0.73 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -926,12 +826,12 @@ Total time:
 	 3 : 1
 
 	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000        0.0000000000       -0.1277050126
-	 H           0.0000000000       -1.4345475237        1.0133856119
-	 H           0.0000000000        1.4345475237        1.0133856119
-	             0.0000000000        0.0000000000       -0.0131865823
-	             0.0000000000       -0.0064619697        0.0065932911
-	             0.0000000000        0.0064619697        0.0065932911
+	 O          -0.0000000000        0.0000000000       -0.1277050224
+	 H           0.0000000000       -1.4345476332        1.0133856893
+	 H          -0.0000000000        1.4345476332        1.0133856893
+	             0.0000000000        0.0000000000       -0.0131866643
+	             0.0000000000       -0.0064620296        0.0065933321
+	             0.0000000000        0.0064620296        0.0065933321
 
 	Previous optimization step data not found.  Starting new optimization.
 
@@ -941,11 +841,11 @@ Total time:
 	 R(1,3)           =         1.833034	       0.970000
 	 B(2,1,3)         =         1.797689	     103.000000
 
-	Current energy   :       -76.2309888571
+	Current energy   :       -76.2309888546
 
 	Generating empirical Hessian (Fischer & Almlof '92) for each fragment.
 	Following RFO solution 0.
-	Projected energy change by RFO approximation:        -0.0002407518
+	Projected energy change by RFO approximation:        -0.0002407555
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -954,9 +854,9 @@ Total time:
 	 ----------------------------------------------------------------------
 	 Coordinate             Previous        Force       Change         New 
 	 ----------             --------       ------       ------       ------
-	 R(1,2)          =      0.970000    -0.075480    -0.013445     0.956555
-	 R(1,3)          =      0.970000    -0.075480    -0.013445     0.956555
-	 B(2,1,3)        =    103.000000     0.000159     0.438354   103.438354
+	 R(1,2)          =      0.970000    -0.075481    -0.013445     0.956555
+	 R(1,3)          =      0.970000    -0.075481    -0.013445     0.956555
+	 B(2,1,3)        =    103.000000     0.000159     0.438352   103.438352
 	 ----------------------------------------------------------------------
 
 	Convergence Check Cycle    1: (using internal coordinates in au)
@@ -969,15 +869,15 @@ Total time:
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (au)
-	    O     0.0000000000   0.0000000000  -0.1253283220
-	    H     0.0000000000  -1.4189573306   0.9945257089
-	    H     0.0000000000   1.4189573306   0.9945257089
+	    O    -0.0000000000   0.0000000000  -0.1253283200
+	    H     0.0000000000  -1.4189572589   0.9945256933
+	    H    -0.0000000000   1.4189572589   0.9945256933
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:42 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:27 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -988,7 +888,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -999,9 +899,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.066320896631
-           H          0.000000000000    -0.750879936666     0.526280378714
-           H          0.000000000000     0.750879936666     0.526280378714
+           O         -0.000000000000     0.000000000000    -0.066320890527
+           H          0.000000000000    -0.750879841386     0.526280330272
+           H         -0.000000000000     0.750879841386     0.526280330272
 
     Number of unique atoms: 2
 
@@ -1011,7 +911,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.203758293206654
+  Nuclear repulsion =    9.203758639876726
 
   Charge       = 0
   Multiplicity = 1
@@ -1024,6 +924,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -1040,11 +941,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 2.1847650555E-02.
+  Minimum eigenvalue in the overlap matrix is 2.1847649272E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.63841053399461
+  Initial RHF energy:   -58.63841042742548
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1084,25 +985,28 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.26519816381193   -9.62679e+00   0.00000e+00  
-   @RHF iter   2:   -71.33477294240930   -3.06957e+00   5.06934e-01 DIIS
-   @RHF iter   3:   -75.80465006281779   -4.46988e+00   4.77120e-01 DIIS
-   @RHF iter   4:   -76.01089534234524   -2.06245e-01   1.58771e-02 DIIS
-   @RHF iter   5:   -76.02296877536679   -1.20734e-02   4.85978e-03 DIIS
-   @RHF iter   6:   -76.02308713966733   -1.18364e-04   5.36514e-04 DIIS
-   @RHF iter   7:   -76.02311032435884   -2.31847e-05   2.80299e-04 DIIS
-   @RHF iter   8:   -76.02311084607072   -5.21712e-07   5.71275e-05 DIIS
-   @RHF iter   9:   -76.02311086771525   -2.16445e-08   1.59592e-05 DIIS
-   @RHF iter  10:   -76.02311086937542   -1.66017e-09   3.34491e-06 DIIS
-   @RHF iter  11:   -76.02311086940639   -3.09797e-11   5.40624e-07 DIIS
-   @RHF iter  12:   -76.02311086940676   -3.69482e-13   3.85270e-08 DIIS
-   @RHF iter  13:   -76.02311086940685   -8.52651e-14   3.71331e-09 DIIS
-   @RHF iter  14:   -76.02311086940688   -2.84217e-14   2.98248e-10 DIIS
-   @RHF iter  15:   -76.02311086940685    2.84217e-14   2.75514e-10 DIIS
-   @RHF iter  16:   -76.02311086940682    2.84217e-14   1.84178e-11 DIIS
-   @RHF iter  17:   -76.02311086940688   -5.68434e-14   1.52932e-11 DIIS
-   @RHF iter  18:   -76.02311086940691   -2.84217e-14   1.00055e-11 DIIS
-   @RHF iter  19:   -76.02311086940685    5.68434e-14   1.56125e-11 DIIS
+   @RHF iter   1:   -68.26519807453174   -9.62679e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.40657024094818   -3.14137e+00   5.30058e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76650894991315   -4.35994e+00   5.04472e-01 DIIS
+   @RHF iter   4:   -76.00580781769249   -2.39299e-01   1.72241e-02 DIIS
+   @RHF iter   5:   -76.02271091654073   -1.69031e-02   7.70200e-03 DIIS
+   @RHF iter   6:   -76.02307469086055   -3.63774e-04   1.20878e-03 DIIS
+   @RHF iter   7:   -76.02310979646158   -3.51056e-05   5.04492e-04 DIIS
+   @RHF iter   8:   -76.02311080928857   -1.01283e-06   7.89476e-05 DIIS
+   @RHF iter   9:   -76.02311086961285   -6.03243e-08   2.20490e-05 DIIS
+   @RHF iter  10:   -76.02311087106241   -1.44956e-09   3.60934e-06 DIIS
+   @RHF iter  11:   -76.02311087106720   -4.78906e-12   1.53788e-07 DIIS
+   @RHF iter  12:   -76.02311087106739   -1.84741e-13   2.87974e-08 DIIS
+   @RHF iter  13:   -76.02311087106744   -5.68434e-14   5.34287e-09 DIIS
+   @RHF iter  14:   -76.02311087106743    1.42109e-14   3.74602e-10 DIIS
+   @RHF iter  15:   -76.02311087106733    9.94760e-14   2.49368e-10 DIIS
+   @RHF iter  16:   -76.02311087106744   -1.13687e-13   1.62951e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -1130,7 +1034,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02311086940685
+  @RHF Final Energy:   -76.02311087106744
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -1148,18 +1052,18 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:43 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:27 2012
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.43 seconds =       0.02 minutes
-	system time =       0.63 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.88 seconds =       0.01 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:43 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:27 2012
 
 
 	**************************************************
@@ -1179,7 +1083,7 @@ Total time:
 	Reference wfn   =	RHF
 	Derivative      =	First
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -1196,8 +1100,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.20375829320666
-	SCF energy          (chkpt) =    -76.02311086940685
+	Nuclear Rep. energy (chkpt) =      9.20375863987673
+	SCF energy          (chkpt) =    -76.02311087106744
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -1207,18 +1111,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:43 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:27 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.45 seconds =       0.02 minutes
-	system time =       0.64 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.89 seconds =       0.01 minutes
+	system time =       0.75 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:43 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:27 2012
 
 
 			**************************
@@ -1233,7 +1137,7 @@ Total time:
 	Wave function   =	CCSD
 	Reference wfn   =	RHF
 	Derivative      =	First
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	True
@@ -1255,8 +1159,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.20375829320666
-	SCF energy          (chkpt) =    -76.02311086940685
+	Nuclear Rep. energy (chkpt) =      9.20375863987673
+	SCF energy          (chkpt) =    -76.02311087106744
 
 	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
@@ -1285,26 +1189,26 @@ Total time:
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =   -123.10732064624209
-	Two-electron (AA) energy     =     14.45864930201395
-	Two-electron (BB) energy     =     14.45864930201395
-	Two-electron (AB) energy     =     23.42180218161464
-	Two-electron energy          =     37.88045148362859
+	One-electron energy          =   -123.10732125417285
+	Two-electron (AA) energy     =     14.45864941257051
+	Two-electron (BB) energy     =     14.45864941257051
+	Two-electron (AB) energy     =     23.42180233065819
+	Two-electron energy          =     37.88045174322870
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -76.02311086940684
+	Reference energy             =    -76.02311087106742
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:43 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:27 2012
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.49 seconds =       0.02 minutes
-	system time =       0.67 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.92 seconds =       0.02 minutes
+	system time =       0.79 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:43 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:27 2012
 
 			**************************
 			*                        *
@@ -1312,15 +1216,15 @@ Total time:
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =    9.203758293206656
-	SCF energy          (chkpt)   =  -76.023110869406850
-	Reference energy    (file100) =  -76.023110869406835
+	Nuclear Rep. energy (chkpt)   =    9.203758639876726
+	SCF energy          (chkpt)   =  -76.023110871067445
+	Reference energy    (file100) =  -76.023110871067416
 
 	Input parameters:
 	-----------------
 	Wave function   =     CCSD
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-11
 	Restart         =     No
@@ -1344,77 +1248,77 @@ Total time:
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.199293055308207    2.791e-12    0.000000    0.000000    0.000000
-     1        -0.203705894620834    2.676e-02    0.004396    0.008601    0.008601
-     2        -0.207517892833686    9.450e-03    0.005017    0.009952    0.009952
-     3        -0.208008405599876    2.648e-03    0.005514    0.011422    0.011422
-     4        -0.208012921164836    6.075e-04    0.005563    0.011708    0.011708
-     5        -0.208026629326543    1.889e-04    0.005597    0.011882    0.011882
-     6        -0.208023179606418    5.944e-05    0.005609    0.011947    0.011947
-     7        -0.208022632950559    1.471e-05    0.005612    0.011964    0.011964
-     8        -0.208022628461959    2.726e-06    0.005613    0.011967    0.011967
-     9        -0.208022557185369    6.377e-07    0.005613    0.011967    0.011967
-    10        -0.208022575518780    1.339e-07    0.005613    0.011967    0.011967
-    11        -0.208022574166749    2.609e-08    0.005613    0.011967    0.011967
-    12        -0.208022574704457    4.207e-09    0.005613    0.011967    0.011967
-    13        -0.208022574607629    9.244e-10    0.005613    0.011967    0.011967
-    14        -0.208022574599343    1.699e-10    0.005613    0.011967    0.011967
-    15        -0.208022574596631    4.394e-11    0.005613    0.011967    0.011967
-    16        -0.208022574596787    8.952e-12    0.005613    0.011967    0.011967
+     0        -0.199293052924009    2.791e-12    0.000000    0.000000    0.000000
+     1        -0.203705892647000    2.676e-02    0.004396    0.008601    0.008601
+     2        -0.207517890569998    9.450e-03    0.005017    0.009952    0.009952
+     3        -0.208008403271910    2.648e-03    0.005514    0.011422    0.011422
+     4        -0.208012918834720    6.075e-04    0.005563    0.011708    0.011708
+     5        -0.208026626993786    1.889e-04    0.005597    0.011882    0.011882
+     6        -0.208023177274614    5.944e-05    0.005609    0.011947    0.011947
+     7        -0.208022630618766    1.471e-05    0.005612    0.011964    0.011964
+     8        -0.208022626130197    2.726e-06    0.005613    0.011967    0.011967
+     9        -0.208022554853622    6.377e-07    0.005613    0.011967    0.011967
+    10        -0.208022573187028    1.339e-07    0.005613    0.011967    0.011967
+    11        -0.208022571834998    2.609e-08    0.005613    0.011967    0.011967
+    12        -0.208022572372706    4.207e-09    0.005613    0.011967    0.011967
+    13        -0.208022572275878    9.244e-10    0.005613    0.011967    0.011967
+    14        -0.208022572267592    1.699e-10    0.005613    0.011967    0.011967
+    15        -0.208022572264880    4.394e-11    0.005613    0.011967    0.011967
+    16        -0.208022572265036    8.952e-12    0.005613    0.011967    0.011967
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          2   0         0.0102727437
-	          3  11        -0.0065312205
-	          4  14        -0.0062975245
-	          4  18         0.0051889005
-	          4  16         0.0045197550
-	          1   2         0.0041561041
-	          2   5         0.0039018448
-	          1   0        -0.0029045912
-	          1   7         0.0023829856
-	          2   1         0.0023237862
+	          2   0         0.0102727430
+	          3  11        -0.0065312203
+	          4  14        -0.0062975246
+	          4  18         0.0051889000
+	          4  16         0.0045197541
+	          1   2         0.0041561031
+	          2   5         0.0039018443
+	          1   0        -0.0029045915
+	          1   7         0.0023829857
+	          2   1         0.0023237867
 
 	Largest TIjAb Amplitudes:
-	  3   3  11  11        -0.0518613553
-	  4   4  14  14        -0.0376697299
-	  4   4  15  15        -0.0286026897
-	  2   2   2   2        -0.0267594442
-	  2   2   1   1        -0.0253859468
-	  3   4  11  16        -0.0248447413
-	  4   3  16  11        -0.0248447413
-	  4   4  16  16        -0.0247740206
-	  3   4  11  14        -0.0241426258
-	  4   3  14  11        -0.0241426258
+	  3   3  11  11        -0.0518613551
+	  4   4  14  14        -0.0376697262
+	  4   4  15  15        -0.0286026892
+	  2   2   2   2        -0.0267594270
+	  2   2   1   1        -0.0253859639
+	  3   4  11  16        -0.0248447416
+	  4   3  16  11        -0.0248447416
+	  4   4  16  16        -0.0247740214
+	  3   4  11  14        -0.0241426251
+	  4   3  14  11        -0.0241426251
 
-	SCF energy       (chkpt)              =  -76.023110869406850
-	Reference energy (file100)            =  -76.023110869406835
+	SCF energy       (chkpt)              =  -76.023110871067445
+	Reference energy (file100)            =  -76.023110871067416
 
-	Opposite-spin MP2 correlation energy  =   -0.149158602787789
-	Same-spin MP2 correlation energy      =   -0.050134452520418
-	MP2 correlation energy                =   -0.199293055308207
-      * MP2 total energy                      =  -76.222403924715039
+	Opposite-spin MP2 correlation energy  =   -0.149158600867602
+	Same-spin MP2 correlation energy      =   -0.050134452056407
+	MP2 correlation energy                =   -0.199293052924009
+      * MP2 total energy                      =  -76.222403923991422
 
-	Opposite-spin CCSD correlation energy =   -0.163460846009746
-	Same-spin CCSD correlation energy     =   -0.044561728588873
-	CCSD correlation energy               =   -0.208022574596787
-      * CCSD total energy                     =  -76.231133444003618
+	Opposite-spin CCSD correlation energy =   -0.163460843726189
+	Same-spin CCSD correlation energy     =   -0.044561728536017
+	CCSD correlation energy               =   -0.208022572265036
+      * CCSD total energy                     =  -76.231133443332453
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:46 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:31 2012
 Module time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.38 seconds =       0.01 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.44 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
 Total time:
-	user time   =       1.96 seconds =       0.03 minutes
-	system time =       1.05 seconds =       0.02 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       1.23 seconds =       0.02 minutes
+	total time  =         10 seconds =       0.17 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:46 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:31 2012
 
 
 			**************************
@@ -1424,18 +1328,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:46 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:31 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.99 seconds =       0.03 minutes
-	system time =       1.08 seconds =       0.02 minutes
-	total time  =          7 seconds =       0.12 minutes
+	user time   =       1.32 seconds =       0.02 minutes
+	system time =       1.27 seconds =       0.02 minutes
+	total time  =         10 seconds =       0.17 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:46 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:31 2012
 
 
 			**************************
@@ -1443,12 +1347,12 @@ Total time:
 			**************************
 
 
-	Nuclear Rep. energy (chkpt)   =    9.203758293206656
+	Nuclear Rep. energy (chkpt)   =    9.203758639876726
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   =  -76.023110869406850
-	Reference energy    (CC_INFO) =  -76.023110869406835
-	CCSD energy         (CC_INFO) =   -0.208022574596787
-	Total CCSD energy   (CC_INFO) =  -76.231133444003618
+	SCF energy          (chkpt)   =  -76.023110871067445
+	Reference energy    (CC_INFO) =  -76.023110871067416
+	CCSD energy         (CC_INFO) =   -0.208022572265036
+	Total CCSD energy   (CC_INFO) =  -76.231133443332453
 
 	Input parameters:
 	-----------------
@@ -1473,64 +1377,64 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.208059067208299    4.608e-12
-	   1        -0.205592297995724    7.962e-03
-	   2        -0.205172787413747    1.304e-03
-	   3        -0.205090223348415    5.970e-04
-	   4        -0.205084035176841    1.968e-04
-	   5        -0.205087508402208    5.960e-05
-	   6        -0.205087493631598    1.431e-05
-	   7        -0.205087570655889    3.198e-06
-	   8        -0.205087598124846    4.864e-07
-	   9        -0.205087596660724    8.213e-08
-	  10        -0.205087596465475    1.677e-08
-	  11        -0.205087596470500    3.453e-09
-	  12        -0.205087596490427    6.364e-10
-	  13        -0.205087596484895    1.358e-10
-	  14        -0.205087596484955    3.355e-11
-	  15        -0.205087596485446    1.068e-11
-	  16        -0.205087596485647    3.726e-12
+	   0        -0.208059064871130    4.608e-12
+	   1        -0.205592295810601    7.962e-03
+	   2        -0.205172785246736    1.304e-03
+	   3        -0.205090221188827    5.970e-04
+	   4        -0.205084033018637    1.968e-04
+	   5        -0.205087506243474    5.960e-05
+	   6        -0.205087491472907    1.431e-05
+	   7        -0.205087568497171    3.198e-06
+	   8        -0.205087595966123    4.864e-07
+	   9        -0.205087594502000    8.213e-08
+	  10        -0.205087594306751    1.677e-08
+	  11        -0.205087594311777    3.453e-09
+	  12        -0.205087594331703    6.364e-10
+	  13        -0.205087594326171    1.358e-10
+	  14        -0.205087594326231    3.355e-11
+	  15        -0.205087594326723    1.068e-11
+	  16        -0.205087594326923    3.726e-12
 
 	Largest LIA Amplitudes:
-	          2   0         0.0068115022
-	          4  16         0.0047484473
-	          4  18         0.0044798206
-	          3  11        -0.0038574856
-	          2   5         0.0034775968
-	          4  14        -0.0031900186
-	          1   2         0.0030570939
-	          1   3        -0.0024150164
-	          1   7         0.0021886299
+	          2   0         0.0068115017
+	          4  16         0.0047484467
+	          4  18         0.0044798201
+	          3  11        -0.0038574854
+	          2   5         0.0034775964
+	          4  14        -0.0031900187
+	          1   2         0.0030570929
+	          1   3        -0.0024150161
+	          1   7         0.0021886300
 	          4  15        -0.0020515404
 
 	Largest LIjAb Amplitudes:
-	  3   3  11  11        -0.0515731407
-	  4   4  14  14        -0.0368093303
-	  4   4  15  15        -0.0278967963
-	  2   2   2   2        -0.0264086328
-	  2   2   1   1        -0.0251566068
-	  3   4  11  16        -0.0246589245
-	  4   3  16  11        -0.0246589245
-	  4   4  16  16        -0.0245230148
-	  3   4  11  14        -0.0238854915
-	  4   3  14  11        -0.0238854915
+	  3   3  11  11        -0.0515731406
+	  4   4  14  14        -0.0368093267
+	  4   4  15  15        -0.0278967958
+	  2   2   2   2        -0.0264086157
+	  2   2   1   1        -0.0251566238
+	  3   4  11  16        -0.0246589248
+	  4   3  16  11        -0.0246589248
+	  4   4  16  16        -0.0245230156
+	  3   4  11  14        -0.0238854908
+	  4   3  14  11        -0.0238854908
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.94372119760
+	Overlap <L|e^T> =        0.94372120001
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:47 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:32 2012
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.12 seconds =       0.04 minutes
-	system time =       1.16 seconds =       0.02 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       1.42 seconds =       0.02 minutes
+	system time =       1.36 seconds =       0.02 minutes
+	total time  =         11 seconds =       0.18 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:47 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:32 2012
 
 
 			**************************
@@ -1544,6 +1448,7 @@ Total time:
 	-----------------
 	Wave function    =   CCSD
 	Reference wfn    =   RHF
+	Dertype          = 1
 	Tolerance        = 1.0e-14
 	Cache Level      = 2
 	AO Basis         = No
@@ -1551,13 +1456,13 @@ Total time:
 	Relax OPDM       = Yes
 	Compute Xi       = No
 	Use Zeta         = No
-	Xi connected     = No
+	Xi connected     = Yes
 
-	Nuclear Rep. energy (chkpt)   =    9.203758293206656
-	SCF energy          (chkpt)   =  -76.023110869406850
-	Reference energy    (file100) =  -76.023110869406835
-	CCSD energy         (CC_INFO) =   -0.208022574596787
-	Total CCSD energy   (CC_INFO) =  -76.231133444003618
+	Nuclear Rep. energy (chkpt)   =    9.203758639876726
+	SCF energy          (chkpt)   =  -76.023110871067445
+	Reference energy    (file100) =  -76.023110871067416
+	CCSD energy         (CC_INFO) =   -0.208022572265036
+	Total CCSD energy   (CC_INFO) =  -76.231133443332453
 	Number of States = 1
 
 	Ground?  State     EOM Energy       R0
@@ -1565,64 +1470,64 @@ Total time:
 
 	Energies re-computed from CC density:
 	-------------------------------------
-	One-electron energy        =    0.220068107612380
-	IJKL energy                =    0.041464094421959
-	IJKA energy                =   -0.001375333159569
-	IJAB energy                =   -0.410350210302745
-	IBJA energy                =   -0.099798909731524
-	CIAB energy                =   -0.000134965215266
-	ABCD energy                =    0.042104641777838
-	Total two-electron energy  =   -0.428090682209307
-	CCSD correlation energy    =   -0.208022574596927
-	Total CCSD energy          =  -76.231133444003760
+	One-electron energy        =    0.220068104882529
+	IJKL energy                =    0.041464093112646
+	IJKA energy                =   -0.001375333112746
+	IJAB energy                =   -0.410350205976913
+	IBJA energy                =   -0.099798906269335
+	CIAB energy                =   -0.000134965074044
+	ABCD energy                =    0.042104640172687
+	Total two-electron energy  =   -0.428090677147705
+	CCSD correlation energy    =   -0.208022572265176
+	Total CCSD energy          =  -76.231133443332595
 
 	Virial Theorem Data:
 	--------------------
-	Kinetic energy (ref)   =   75.814821891912601
-	Kinetic energy (corr)  =    0.146261791168403
-	Kinetic energy (total) =   75.961083683081000
-	-V/T (ref)             =    2.002747338479423
-	-V/T (corr)            =    2.422261910886040
-	-V/T (total)           =    2.003555106744518
+	Kinetic energy (ref)   =   75.814822032379936
+	Kinetic energy (corr)  =    0.146261780615433
+	Kinetic energy (total) =   75.961083812995369
+	-V/T (ref)             =    2.002747336643467
+	-V/T (corr)            =    2.422261997561697
+	-V/T (total)           =    2.003555105019327
 
 	Energies re-computed from Fock-adjusted CC density:
 	---------------------------------------------------
-	One-electron energy        =    0.246538792967382
-	IJKL energy                =   -0.664179929367840
-	IJKA energy                =   -0.047803662385797
-	IJAB energy                =   -0.410350210302745
-	IBJA energy                =    0.625802757929316
-	CIAB energy                =   -0.000134965215266
-	ABCD energy                =    0.042104641777838
-	Total two-electron energy  =   -0.454561367564493
-	CCSD correlation energy    =   -0.208022574597111
-	Total CCSD energy          =  -76.231133444003945
+	One-electron energy        =    0.246538793680735
+	IJKL energy                =   -0.664179908344883
+	IJKA energy                =   -0.047803662672057
+	IJAB energy                =   -0.410350205976913
+	IBJA energy                =    0.625802735949495
+	CIAB energy                =   -0.000134965074044
+	ABCD energy                =    0.042104640172687
+	Total two-electron energy  =   -0.454561365945715
+	CCSD correlation energy    =   -0.208022572264980
+	Total CCSD energy          =  -76.231133443332396
 
 	Energies re-computed from Mulliken density:
 	-------------------------------------------
-	One-electron energy        =    0.246538792967382
-	IJKL energy                =   -0.664179929367840
-	IJKA energy                =   -0.047803662385797
-	IJAB energy                =   -0.379503308853051
-	IBJA energy                =    0.594955856479622
-	CIAB energy                =   -0.000134965215266
-	ABCD energy                =    0.042104641777838
-	Total two-electron energy  =   -0.454561367564493
-	CCSD correlation energy    =   -0.208022574597111
-	Total CCSD energy          =  -76.231133444003945
+	One-electron energy        =    0.246538793680735
+	IJKL energy                =   -0.664179908344883
+	IJKA energy                =   -0.047803662672057
+	IJAB energy                =   -0.379503305118932
+	IBJA energy                =    0.594955835091514
+	CIAB energy                =   -0.000134965074044
+	ABCD energy                =    0.042104640172687
+	Total two-electron energy  =   -0.454561365945715
+	CCSD correlation energy    =   -0.208022572264980
+	Total CCSD energy          =  -76.231133443332396
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:47 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:32 2012
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.20 seconds =       0.04 minutes
-	system time =       1.21 seconds =       0.02 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       1.48 seconds =       0.02 minutes
+	system time =       1.41 seconds =       0.02 minutes
+	total time  =         11 seconds =       0.18 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:47 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:32 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -1667,121 +1572,15 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.125328321950
-           H          0.000000000000    -1.418957330621     0.994525708935
-           H          0.000000000000     1.418957330621     0.994525708935
+           O         -0.000000000000     0.000000000000    -0.125328319985
+           H          0.000000000000    -1.418957258924     0.994525693339
+           H         -0.000000000000     1.418957258924     0.994525693339
 
 	Presorting MO-basis TPDM.
 	Sorting File: MO TPDM (AA|AA) nbuckets = 1
 	Starting first half-transformation.
 	Sorting half-transformed TPDM.
 	First half integral transformation complete.
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1   2.0785394
-    2  -0.1830373   0.5195763
-    3   0.0468347  -0.0908187   0.6344311
-    4  -0.2222823   0.5064390  -0.3068876   0.6280702
-    5   0.0445485  -0.0912714   0.4089020  -0.2516236   0.2963949
-    6  -0.0079574  -0.0027873  -0.0061008   0.0034226  -0.0051460   0.0053510
-    7  -0.0088396   0.0000999   0.0013818   0.0017993  -0.0015902  -0.0014654   0.0058046
-    8  -0.0038224  -0.0105201   0.0440450  -0.0242070   0.0298061  -0.0021718  -0.0008177   0.0087147
-    9  -0.0541736   0.1220905   0.2558557   0.0194680   0.1683764  -0.0041082   0.0028554   0.0187228   0.1849182
-   10   0.0117462  -0.0276336   0.1508040  -0.0858529   0.1090492  -0.0018830   0.0009994   0.0119860   0.0706208   0.0435236
-   11  -0.0104955   0.0216334   0.0251174   0.0111229   0.0160138  -0.0003990  -0.0003098   0.0018123   0.0208174   0.0061788
-   12   0.0100870  -0.0208479   0.0079871  -0.0233041   0.0075646  -0.0001577  -0.0001996   0.0012325  -0.0040218   0.0026748
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11   0.0031541
-   12  -0.0008181   0.0016507
-   13   0.0000000   0.0000000   0.0141911
-   14   0.0000000   0.0000000  -0.0008303   0.0007469
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.8099843
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.6148600   0.5189247
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0596977   0.0496641   0.0187471
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0363074   0.0306608   0.0034703   0.0024085
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.5270935
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2619883   0.1427278
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0547147   0.0274045
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3301685  -0.1775785
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.1884064  -0.1039324
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0118141  -0.0062928
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0241846   0.0131021
-          21          22          23          24          25
-
-   21   0.0207930
-   22  -0.0385647   0.2455744
-   23  -0.0223026   0.1390162   0.0839468
-   24  -0.0009729   0.0094134   0.0042015   0.0010457
-   25   0.0019239  -0.0169844  -0.0089586  -0.0006813   0.0018828
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1 -81.6964245
-    2  -1.0949310  -1.6077396
-    3  -0.1259827   0.0082958  -1.0389821
-    4   0.2112383  -1.2482818   0.2424244  -1.2725922
-    5  -0.0074685   0.0499165  -0.4828803   0.2138408  -0.3389995
-    6   0.3089624   0.0378717   0.0036883   0.0139127   0.0079877  -0.0382596
-    7   0.2991264   0.0307224  -0.0136032   0.0217818   0.0067957   0.0007750  -0.0426262
-    8   0.2975047   0.0392847  -0.0633392   0.0407195  -0.0311344   0.0030711  -0.0032421  -0.0447918
-    9   0.1931376  -0.4360428  -0.3613901  -0.2707519  -0.2031623   0.0091067  -0.0080501  -0.0233654  -0.3952792
-   10   0.0279495   0.0273084  -0.1698368   0.0795469  -0.1151681  -0.0017838  -0.0091509  -0.0193586  -0.0958904  -0.0549967
-   11   0.0719959  -0.0724793  -0.0383392  -0.0511350  -0.0231044   0.0011200   0.0031991  -0.0018084  -0.0513837  -0.0071446
-   12  -0.0526461   0.0552904  -0.0033689   0.0484651  -0.0054717  -0.0000723  -0.0003763  -0.0040401   0.0242263  -0.0024727
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11  -0.0113045
-   12   0.0042915  -0.0068161
-   13   0.0000000   0.0000000  -0.0812764
-   14   0.0000000   0.0000000   0.0041485  -0.0044567
-   15   0.0000000   0.0000000   0.0000000   0.0000000  -1.1347300
-   16   0.0000000   0.0000000   0.0000000   0.0000000  -0.5962421  -0.4845746
-   17   0.0000000   0.0000000   0.0000000   0.0000000  -0.0630795  -0.0472452  -0.0872167
-   18   0.0000000   0.0000000   0.0000000   0.0000000  -0.0357395  -0.0289277  -0.0055558  -0.0054286
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.9927456
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3952119  -0.2127154
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0981381  -0.0374221
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.4818816   0.2456748
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2463576   0.1362860
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0182203   0.0103464
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0375594  -0.0210955
-          21          22          23          24          25
-
-   21  -0.0992217
-   22   0.0603435  -0.3977213
-   23   0.0339125  -0.1942133  -0.1202342
-   24  -0.0007367  -0.0232011  -0.0047884  -0.0061765
-   25   0.0004912   0.0304389   0.0106177   0.0022584  -0.0069538
 
 
 
@@ -1789,52 +1588,52 @@ Read in lower triangle:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.033579792341
-       2        0.000000000000     2.046076936014    -1.516789896170
-       3        0.000000000000    -2.046076936014    -1.516789896170
+       1        0.000000000000     0.000000000000     3.033580082897
+       2       -0.000000000000     2.046077065672    -1.516790041448
+       3        0.000000000000    -2.046077065672    -1.516790041448
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -6.987882292822
-       2        0.000000000000    -4.621378278250     3.493941146411
-       3        0.000000000000     4.621378278250     3.493941146411
+       1        0.000000000000     0.000000000000    -6.987882911411
+       2        0.000000000000    -4.621378438901     3.493941455706
+       3        0.000000000000     4.621378438901     3.493941455706
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.418192898583
-       2        0.000000000000     0.251899353906    -0.209096449292
-       3        0.000000000000    -0.251899353906    -0.209096449292
+       1        0.000000000000     0.000000000000     0.418192934856
+       2        0.000000000000     0.251899361023    -0.209096467428
+       3        0.000000000000    -0.251899361023    -0.209096467428
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.539388721648
-       2        0.000000000000     2.327683890274    -1.769694360824
-       3        0.000000000000    -2.327683890274    -1.769694360824
+       1        0.000000000000     0.000000000000     3.539389053185
+       2        0.000000000000     2.327683948701    -1.769694526593
+       3        0.000000000000    -2.327683948701    -1.769694526593
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.003279119750
-       2        0.000000000000     0.004281901944    -0.001639559875
-       3        0.000000000000    -0.004281901944    -0.001639559875
+       1        0.000000000000     0.000000000000     0.003279159527
+       2       -0.000000000000     0.004281936495    -0.001639579763
+       3        0.000000000000    -0.004281936495    -0.001639579763
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:47 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:32 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
+	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.55 seconds =       0.04 minutes
-	system time =       1.24 seconds =       0.02 minutes
-	total time  =          8 seconds =       0.13 minutes
+	user time   =       1.63 seconds =       0.03 minutes
+	system time =       1.44 seconds =       0.02 minutes
+	total time  =         11 seconds =       0.18 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -1843,28 +1642,28 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000        0.0000000000       -0.1253283220
-	 H           0.0000000000       -1.4189573306        0.9945257089
-	 H           0.0000000000        1.4189573306        0.9945257089
-	             0.0000000000        0.0000000000        0.0032791198
-	             0.0000000000        0.0042819019       -0.0016395599
-	             0.0000000000       -0.0042819019       -0.0016395599
+	 O          -0.0000000000        0.0000000000       -0.1253283200
+	 H           0.0000000000       -1.4189572589        0.9945256933
+	 H          -0.0000000000        1.4189572589        0.9945256933
+	             0.0000000000        0.0000000000        0.0032791595
+	            -0.0000000000        0.0042819365       -0.0016395798
+	             0.0000000000       -0.0042819365       -0.0016395798
 
 	---Fragment 1 Intrafragment Coordinates---
 	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
 	 R(1,2)           =         1.807626	       0.956555
 	 R(1,3)           =         1.807626	       0.956555
-	 B(2,1,3)         =         1.805340	     103.438354
+	 B(2,1,3)         =         1.805340	     103.438352
 
-	Current energy   :       -76.2311334440
+	Current energy   :       -76.2311334433
 
 	Energy change for the previous step:
-		Projected    :        -0.0002407518
-		Actual       :        -0.0001445869
+		Projected    :        -0.0002407555
+		Actual       :        -0.0001445888
 
 	Performing BFGS update with previous 1 gradient(s).
 	Following RFO solution 0.
-	Projected energy change by RFO approximation:        -0.0000407695
+	Projected energy change by RFO approximation:        -0.0000407701
 
 	Back-transformation to cartesian coordinates...
 	Successfully converged to displaced geometry.
@@ -1873,9 +1672,9 @@ Total time:
 	 ----------------------------------------------------------------------
 	 Coordinate             Previous        Force       Change         New 
 	 ----------             --------       ------       ------       ------
-	 R(1,2)          =      0.956555     0.036061     0.003927     0.960481
-	 R(1,3)          =      0.956555     0.036061     0.003927     0.960481
-	 B(2,1,3)        =    103.438354     0.000188     0.384821   103.823175
+	 R(1,2)          =      0.956555     0.036061     0.003927     0.960482
+	 R(1,3)          =      0.956555     0.036061     0.003927     0.960482
+	 B(2,1,3)        =    103.438352     0.000188     0.384822   103.823174
 	 ----------------------------------------------------------------------
 
 	Convergence Check Cycle    2: (using internal coordinates in au)
@@ -1888,15 +1687,15 @@ Total time:
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (au)
-	    O     0.0000000000   0.0000000000  -0.1253066212
-	    H     0.0000000000  -1.4285504021   0.9943535057
-	    H     0.0000000000   1.4285504021   0.9943535057
+	    O    -0.0000000000   0.0000000000  -0.1253066232
+	    H     0.0000000000  -1.4285503976   0.9943535215
+	    H    -0.0000000000   1.4285503976   0.9943535215
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:47 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:32 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1907,7 +1706,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1918,9 +1717,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.066309413094
-           H          0.000000000000    -0.755956371851     0.526189252679
-           H          0.000000000000     0.755956371851     0.526189252679
+           O         -0.000000000000     0.000000000000    -0.066309409084
+           H          0.000000000000    -0.755956311747     0.526189220857
+           H         -0.000000000000     0.755956311747     0.526189220857
 
     Number of unique atoms: 2
 
@@ -1930,7 +1729,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.165204627041705
+  Nuclear repulsion =    9.165204592005542
 
   Charge       = 0
   Multiplicity = 1
@@ -1943,6 +1742,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -1959,11 +1759,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 2.1993267594E-02.
+  Minimum eigenvalue in the overlap matrix is 2.1993267709E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.65044963085852
+  Initial RHF energy:   -58.65044964030920
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2003,25 +1803,28 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.27544036356096   -9.62499e+00   0.00000e+00  
-   @RHF iter   2:   -71.34392686025983   -3.06849e+00   5.04276e-01 DIIS
-   @RHF iter   3:   -75.80702939598430   -4.46310e+00   4.74344e-01 DIIS
-   @RHF iter   4:   -76.01085170901230   -2.03822e-01   1.57769e-02 DIIS
-   @RHF iter   5:   -76.02276445180384   -1.19127e-02   4.82357e-03 DIIS
-   @RHF iter   6:   -76.02288394626838   -1.19494e-04   5.39526e-04 DIIS
-   @RHF iter   7:   -76.02290743157465   -2.34853e-05   2.82720e-04 DIIS
-   @RHF iter   8:   -76.02290795236520   -5.20791e-07   5.70343e-05 DIIS
-   @RHF iter   9:   -76.02290797425366   -2.18885e-08   1.60324e-05 DIIS
-   @RHF iter  10:   -76.02290797596608   -1.71242e-09   3.39313e-06 DIIS
-   @RHF iter  11:   -76.02290797599872   -3.26423e-11   5.53978e-07 DIIS
-   @RHF iter  12:   -76.02290797599912   -3.97904e-13   3.91810e-08 DIIS
-   @RHF iter  13:   -76.02290797599909    2.84217e-14   3.77790e-09 DIIS
-   @RHF iter  14:   -76.02290797599908    1.42109e-14   3.01104e-10 DIIS
-   @RHF iter  15:   -76.02290797599912   -4.26326e-14   2.77653e-10 DIIS
-   @RHF iter  16:   -76.02290797599910    1.42109e-14   1.83834e-11 DIIS
-   @RHF iter  17:   -76.02290797599909    1.42109e-14   1.54133e-11 DIIS
-   @RHF iter  18:   -76.02290797599915   -5.68434e-14   1.01502e-11 DIIS
-   @RHF iter  19:   -76.02290797599908    7.10543e-14   1.58726e-11 DIIS
+   @RHF iter   1:   -68.27544036960822   -9.62499e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.41009384894686   -3.13465e+00   5.27672e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76806000325335   -4.35797e+00   5.02017e-01 DIIS
+   @RHF iter   4:   -76.00567993961614   -2.37620e-01   1.71596e-02 DIIS
+   @RHF iter   5:   -76.02250316229181   -1.68232e-02   7.69719e-03 DIIS
+   @RHF iter   6:   -76.02287094235530   -3.67780e-04   1.21541e-03 DIIS
+   @RHF iter   7:   -76.02290685942478   -3.59171e-05   5.11170e-04 DIIS
+   @RHF iter   8:   -76.02290791157998   -1.05216e-06   8.03517e-05 DIIS
+   @RHF iter   9:   -76.02290797412707   -6.25471e-08   2.25174e-05 DIIS
+   @RHF iter  10:   -76.02290797563198   -1.50492e-09   3.65578e-06 DIIS
+   @RHF iter  11:   -76.02290797563718   -5.20117e-12   1.60302e-07 DIIS
+   @RHF iter  12:   -76.02290797563739   -2.13163e-13   3.04585e-08 DIIS
+   @RHF iter  13:   -76.02290797563742   -2.84217e-14   5.62506e-09 DIIS
+   @RHF iter  14:   -76.02290797563742    0.00000e+00   6.51329e-10 DIIS
+   @RHF iter  15:   -76.02290797563741    1.42109e-14   3.70940e-11 DIIS
+   @RHF iter  16:   -76.02290797563739    1.42109e-14   1.01494e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -2030,7 +1833,7 @@ Total time:
 
 	Doubly Occupied:                                                      
 
-	   1A1   -20.561590     2A1    -1.339241     1B2    -0.700412  
+	   1A1   -20.561590     2A1    -1.339241     1B2    -0.700411  
 	   3A1    -0.569574     1B1    -0.497203  
 
 	Virtual:                                                              
@@ -2049,7 +1852,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02290797599908
+  @RHF Final Energy:   -76.02290797563739
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -2067,18 +1870,18 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:48 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:32 2012
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.72 seconds =       0.05 minutes
-	system time =       1.26 seconds =       0.02 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       1.70 seconds =       0.03 minutes
+	system time =       1.45 seconds =       0.02 minutes
+	total time  =         11 seconds =       0.18 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:48 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:32 2012
 
 
 	**************************************************
@@ -2098,7 +1901,7 @@ Total time:
 	Reference wfn   =	RHF
 	Derivative      =	First
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -2115,8 +1918,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.16520462704171
-	SCF energy          (chkpt) =    -76.02290797599908
+	Nuclear Rep. energy (chkpt) =      9.16520459200554
+	SCF energy          (chkpt) =    -76.02290797563739
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -2126,18 +1929,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:48 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:32 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.74 seconds =       0.05 minutes
-	system time =       1.27 seconds =       0.02 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       1.71 seconds =       0.03 minutes
+	system time =       1.46 seconds =       0.02 minutes
+	total time  =         11 seconds =       0.18 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:48 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:32 2012
 
 
 			**************************
@@ -2152,7 +1955,7 @@ Total time:
 	Wave function   =	CCSD
 	Reference wfn   =	RHF
 	Derivative      =	First
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	True
@@ -2174,8 +1977,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.16520462704171
-	SCF energy          (chkpt) =    -76.02290797599908
+	Nuclear Rep. energy (chkpt) =      9.16520459200554
+	SCF energy          (chkpt) =    -76.02290797563739
 
 	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
@@ -2204,26 +2007,26 @@ Total time:
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =   -123.04018777319705
-	Two-electron (AA) energy     =     14.44657816532901
-	Two-electron (BB) energy     =     14.44657816532901
-	Two-electron (AB) energy     =     23.40549700482717
-	Two-electron energy          =     37.85207517015618
+	One-electron energy          =   -123.04018770624404
+	Two-electron (AA) energy     =     14.44657815183002
+	Two-electron (BB) energy     =     14.44657815183002
+	Two-electron (AB) energy     =     23.40549698677107
+	Two-electron energy          =     37.85207513860108
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -76.02290797599916
+	Reference energy             =    -76.02290797563742
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:30:48 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:33 2012
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       2.78 seconds =       0.05 minutes
-	system time =       1.31 seconds =       0.02 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       1.74 seconds =       0.03 minutes
+	system time =       1.49 seconds =       0.02 minutes
+	total time  =         12 seconds =       0.20 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:30:48 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:33 2012
 
 			**************************
 			*                        *
@@ -2231,15 +2034,15 @@ Total time:
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =    9.165204627041708
-	SCF energy          (chkpt)   =  -76.022907975999075
-	Reference energy    (file100) =  -76.022907975999161
+	Nuclear Rep. energy (chkpt)   =    9.165204592005542
+	SCF energy          (chkpt)   =  -76.022907975637395
+	Reference energy    (file100) =  -76.022907975637423
 
 	Input parameters:
 	-----------------
 	Wave function   =     CCSD
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-11
 	Restart         =     No
@@ -2263,77 +2066,77 @@ Total time:
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.199540409061295    8.952e-12    0.000000    0.000000    0.000000
-     1        -0.203912626169695    2.691e-02    0.004421    0.008676    0.008676
-     2        -0.207756878737267    9.542e-03    0.005053    0.010063    0.010063
-     3        -0.208254269553695    2.685e-03    0.005559    0.011567    0.011567
-     4        -0.208258863543718    6.193e-04    0.005609    0.011864    0.011864
-     5        -0.208272850460218    1.945e-04    0.005645    0.012046    0.012046
-     6        -0.208269234623946    6.126e-05    0.005658    0.012112    0.012112
-     7        -0.208268680874071    1.503e-05    0.005661    0.012130    0.012130
-     8        -0.208268672350510    2.790e-06    0.005662    0.012133    0.012133
-     9        -0.208268599320717    6.573e-07    0.005662    0.012133    0.012133
-    10        -0.208268618199878    1.386e-07    0.005662    0.012133    0.012133
-    11        -0.208268616761805    2.707e-08    0.005662    0.012133    0.012133
-    12        -0.208268617319379    4.378e-09    0.005662    0.012133    0.012133
-    13        -0.208268617217734    9.656e-10    0.005662    0.012133    0.012133
-    14        -0.208268617209091    1.776e-10    0.005662    0.012133    0.012133
-    15        -0.208268617206251    4.612e-11    0.005662    0.012133    0.012133
-    16        -0.208268617206416    9.436e-12    0.005662    0.012133    0.012133
+     0        -0.199540409405743    8.952e-12    0.000000    0.000000    0.000000
+     1        -0.203912626461749    2.691e-02    0.004421    0.008676    0.008676
+     2        -0.207756879070884    9.542e-03    0.005053    0.010063    0.010063
+     3        -0.208254269902804    2.685e-03    0.005559    0.011567    0.011567
+     4        -0.208258863890698    6.193e-04    0.005609    0.011864    0.011864
+     5        -0.208272850807582    1.945e-04    0.005645    0.012046    0.012046
+     6        -0.208269234970875    6.126e-05    0.005658    0.012112    0.012112
+     7        -0.208268681220963    1.503e-05    0.005661    0.012130    0.012130
+     8        -0.208268672697393    2.790e-06    0.005662    0.012133    0.012133
+     9        -0.208268599667600    6.573e-07    0.005662    0.012133    0.012133
+    10        -0.208268618546762    1.386e-07    0.005662    0.012133    0.012133
+    11        -0.208268617108688    2.707e-08    0.005662    0.012133    0.012133
+    12        -0.208268617666262    4.378e-09    0.005662    0.012133    0.012133
+    13        -0.208268617564617    9.656e-10    0.005662    0.012133    0.012133
+    14        -0.208268617555974    1.776e-10    0.005662    0.012133    0.012133
+    15        -0.208268617553134    4.612e-11    0.005662    0.012133    0.012133
+    16        -0.208268617553299    9.436e-12    0.005662    0.012133    0.012133
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          2   0         0.0104390866
-	          3  11        -0.0065544501
+	          2   0         0.0104390875
+	          3  11        -0.0065544502
 	          4  14        -0.0062641094
-	          4  18         0.0052339909
-	          4  16         0.0046147712
+	          4  18         0.0052339910
+	          4  16         0.0046147714
 	          1   2         0.0042745997
 	          2   5         0.0039447137
-	          1   0        -0.0028854353
+	          1   0        -0.0028854351
 	          1   7         0.0023750773
 	          2   1         0.0022663769
 
 	Largest TIjAb Amplitudes:
 	  3   3  11  11        -0.0518775362
-	  4   4  14  14        -0.0380305776
-	  2   2   2   2        -0.0288988569
+	  4   4  14  14        -0.0380305784
+	  2   2   2   2        -0.0288988560
 	  4   4  15  15        -0.0286552798
-	  3   4  11  16        -0.0248064476
-	  4   3  16  11        -0.0248064476
-	  4   4  16  16        -0.0246748090
-	  2   3   2  11         0.0246386393
-	  3   2  11   2         0.0246386393
-	  3   4  11  14        -0.0242180365
+	  3   4  11  16        -0.0248064477
+	  4   3  16  11        -0.0248064477
+	  4   4  16  16        -0.0246748091
+	  2   3   2  11         0.0246386388
+	  3   2  11   2         0.0246386388
+	  3   4  11  14        -0.0242180366
 
-	SCF energy       (chkpt)              =  -76.022907975999075
-	Reference energy (file100)            =  -76.022907975999161
+	SCF energy       (chkpt)              =  -76.022907975637395
+	Reference energy (file100)            =  -76.022907975637423
 
-	Opposite-spin MP2 correlation energy  =   -0.149358407057800
-	Same-spin MP2 correlation energy      =   -0.050182002003495
-	MP2 correlation energy                =   -0.199540409061295
-      * MP2 total energy                      =  -76.222448385060460
+	Opposite-spin MP2 correlation energy  =   -0.149358407332918
+	Same-spin MP2 correlation energy      =   -0.050182002072825
+	MP2 correlation energy                =   -0.199540409405743
+      * MP2 total energy                      =  -76.222448385043165
 
-	Opposite-spin CCSD correlation energy =   -0.163702791937840
-	Same-spin CCSD correlation energy     =   -0.044565825270477
-	CCSD correlation energy               =   -0.208268617206416
-      * CCSD total energy                     =  -76.231176593205575
+	Opposite-spin CCSD correlation energy =   -0.163702792264152
+	Same-spin CCSD correlation energy     =   -0.044565825287166
+	CCSD correlation energy               =   -0.208268617553299
+      * CCSD total energy                     =  -76.231176593190725
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:03 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:36 2012
 Module time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.42 seconds =       0.01 minutes
-	total time  =         15 seconds =       0.25 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.44 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       3.27 seconds =       0.05 minutes
-	system time =       1.73 seconds =       0.03 minutes
-	total time  =         24 seconds =       0.40 minutes
+	user time   =       2.11 seconds =       0.04 minutes
+	system time =       1.93 seconds =       0.03 minutes
+	total time  =         15 seconds =       0.25 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:03 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:36 2012
 
 
 			**************************
@@ -2343,18 +2146,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:03 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:36 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.31 seconds =       0.06 minutes
-	system time =       1.75 seconds =       0.03 minutes
-	total time  =         24 seconds =       0.40 minutes
+	user time   =       2.14 seconds =       0.04 minutes
+	system time =       1.97 seconds =       0.03 minutes
+	total time  =         15 seconds =       0.25 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:03 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:36 2012
 
 
 			**************************
@@ -2362,12 +2165,12 @@ Total time:
 			**************************
 
 
-	Nuclear Rep. energy (chkpt)   =    9.165204627041708
+	Nuclear Rep. energy (chkpt)   =    9.165204592005542
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   =  -76.022907975999075
-	Reference energy    (CC_INFO) =  -76.022907975999161
-	CCSD energy         (CC_INFO) =   -0.208268617206416
-	Total CCSD energy   (CC_INFO) =  -76.231176593205575
+	SCF energy          (chkpt)   =  -76.022907975637395
+	Reference energy    (CC_INFO) =  -76.022907975637423
+	CCSD energy         (CC_INFO) =   -0.208268617553299
+	Total CCSD energy   (CC_INFO) =  -76.231176593190725
 
 	Input parameters:
 	-----------------
@@ -2392,64 +2195,64 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.208305171810465    3.726e-12
-	   1        -0.205822167806338    7.968e-03
-	   2        -0.205400707810301    1.313e-03
-	   3        -0.205317341045871    6.027e-04
-	   4        -0.205311002893692    1.996e-04
-	   5        -0.205314535095421    6.058e-05
-	   6        -0.205314516055902    1.453e-05
-	   7        -0.205314596180401    3.255e-06
-	   8        -0.205314624273906    4.946e-07
-	   9        -0.205314622839759    8.393e-08
-	  10        -0.205314622622969    1.727e-08
-	  11        -0.205314622634357    3.561e-09
-	  12        -0.205314622655208    6.635e-10
-	  13        -0.205314622650128    1.426e-10
-	  14        -0.205314622650226    3.542e-11
-	  15        -0.205314622650759    1.124e-11
-	  16        -0.205314622650971    3.927e-12
+	   0        -0.208305172153575    3.726e-12
+	   1        -0.205822168124645    7.968e-03
+	   2        -0.205400708125010    1.313e-03
+	   3        -0.205317341359629    6.027e-04
+	   4        -0.205311003207388    1.996e-04
+	   5        -0.205314535409216    6.058e-05
+	   6        -0.205314516369694    1.453e-05
+	   7        -0.205314596494197    3.255e-06
+	   8        -0.205314624587702    4.946e-07
+	   9        -0.205314623153555    8.393e-08
+	  10        -0.205314622936766    1.727e-08
+	  11        -0.205314622948153    3.561e-09
+	  12        -0.205314622969004    6.635e-10
+	  13        -0.205314622963924    1.426e-10
+	  14        -0.205314622964022    3.542e-11
+	  15        -0.205314622964555    1.124e-11
+	  16        -0.205314622964767    3.927e-12
 
 	Largest LIA Amplitudes:
-	          2   0         0.0069447777
-	          4  16         0.0048247827
-	          4  18         0.0045208949
+	          2   0         0.0069447785
+	          4  16         0.0048247829
+	          4  18         0.0045208950
 	          3  11        -0.0038842181
 	          2   5         0.0035123888
 	          4  14        -0.0031635869
-	          1   2         0.0031578918
-	          1   3        -0.0024421708
+	          1   2         0.0031578917
+	          1   3        -0.0024421709
 	          1   7         0.0021812309
-	          4  15        -0.0020457478
+	          4  15        -0.0020457479
 
 	Largest LIjAb Amplitudes:
 	  3   3  11  11        -0.0515949468
-	  4   4  14  14        -0.0371596394
-	  2   2   2   2        -0.0285304109
-	  4   4  15  15        -0.0279469466
-	  3   4  11  16        -0.0246200917
-	  4   3  16  11        -0.0246200917
-	  2   3   2  11         0.0244874164
-	  3   2  11   2         0.0244874164
+	  4   4  14  14        -0.0371596401
+	  2   2   2   2        -0.0285304100
+	  4   4  15  15        -0.0279469467
+	  3   4  11  16        -0.0246200918
+	  4   3  16  11        -0.0246200918
+	  2   3   2  11         0.0244874159
+	  3   2  11   2         0.0244874159
 	  4   4  16  16        -0.0244223455
-	  3   4  11  14        -0.0239605794
+	  3   4  11  14        -0.0239605795
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.94345942421
+	Overlap <L|e^T> =        0.94345942386
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:04 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:36 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.45 seconds =       0.06 minutes
-	system time =       1.85 seconds =       0.03 minutes
-	total time  =         25 seconds =       0.42 minutes
+	user time   =       2.24 seconds =       0.04 minutes
+	system time =       2.06 seconds =       0.03 minutes
+	total time  =         15 seconds =       0.25 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:04 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:36 2012
 
 
 			**************************
@@ -2463,6 +2266,7 @@ Total time:
 	-----------------
 	Wave function    =   CCSD
 	Reference wfn    =   RHF
+	Dertype          = 1
 	Tolerance        = 1.0e-14
 	Cache Level      = 2
 	AO Basis         = No
@@ -2470,13 +2274,13 @@ Total time:
 	Relax OPDM       = Yes
 	Compute Xi       = No
 	Use Zeta         = No
-	Xi connected     = No
+	Xi connected     = Yes
 
-	Nuclear Rep. energy (chkpt)   =    9.165204627041708
-	SCF energy          (chkpt)   =  -76.022907975999075
-	Reference energy    (file100) =  -76.022907975999161
-	CCSD energy         (CC_INFO) =   -0.208268617206416
-	Total CCSD energy   (CC_INFO) =  -76.231176593205575
+	Nuclear Rep. energy (chkpt)   =    9.165204592005542
+	SCF energy          (chkpt)   =  -76.022907975637395
+	Reference energy    (file100) =  -76.022907975637423
+	CCSD energy         (CC_INFO) =   -0.208268617553299
+	Total CCSD energy   (CC_INFO) =  -76.231176593190725
 	Number of States = 1
 
 	Ground?  State     EOM Energy       R0
@@ -2484,64 +2288,64 @@ Total time:
 
 	Energies re-computed from CC density:
 	-------------------------------------
-	One-electron energy        =    0.220360952032393
-	IJKL energy                =    0.041605640268759
-	IJKA energy                =   -0.001379860152925
-	IJAB energy                =   -0.410805148785717
-	IBJA energy                =   -0.100175184610090
-	CIAB energy                =   -0.000151813316786
-	ABCD energy                =    0.042276797357800
-	Total two-electron energy  =   -0.428629569238959
-	CCSD correlation energy    =   -0.208268617206566
-	Total CCSD energy          =  -76.231176593205731
+	One-electron energy        =    0.220360952423254
+	IJKL energy                =    0.041605640442688
+	IJKA energy                =   -0.001379860154947
+	IJAB energy                =   -0.410805149415170
+	IBJA energy                =   -0.100175185074180
+	CIAB energy                =   -0.000151813356191
+	ABCD energy                =    0.042276797581096
+	Total two-electron energy  =   -0.428629569976703
+	CCSD correlation energy    =   -0.208268617553449
+	Total CCSD energy          =  -76.231176593190867
 
 	Virial Theorem Data:
 	--------------------
-	Kinetic energy (ref)   =   75.798861366118871
-	Kinetic energy (corr)  =    0.147611818568179
-	Kinetic energy (total) =   75.946473184687051
-	-V/T (ref)             =    2.002955804425585
-	-V/T (corr)            =    2.410921017209878
-	-V/T (total)           =    2.003748737717236
+	Kinetic energy (ref)   =   75.798861350790673
+	Kinetic energy (corr)  =    0.147611822439518
+	Kinetic energy (total) =   75.946473173230189
+	-V/T (ref)             =    2.002955804623633
+	-V/T (corr)            =    2.410920982556354
+	-V/T (total)           =    2.003748737868461
 
 	Energies re-computed from Fock-adjusted CC density:
 	---------------------------------------------------
-	One-electron energy        =    0.246404674721559
-	IJKL energy                =   -0.666454475172779
-	IJKA energy                =   -0.047697671232518
-	IJAB energy                =   -0.410805148785717
-	IBJA energy                =    0.628159019221693
-	CIAB energy                =   -0.000151813316786
-	ABCD energy                =    0.042276797357800
-	Total two-electron energy  =   -0.454673291928307
-	CCSD correlation energy    =   -0.208268617206748
-	Total CCSD energy          =  -76.231176593205902
+	One-electron energy        =    0.246404673726516
+	IJKL energy                =   -0.666454478228350
+	IJKA energy                =   -0.047697670279457
+	IJAB energy                =   -0.410805149415170
+	IBJA energy                =    0.628159022418230
+	CIAB energy                =   -0.000151813356191
+	ABCD energy                =    0.042276797581096
+	Total two-electron energy  =   -0.454673291279843
+	CCSD correlation energy    =   -0.208268617553327
+	Total CCSD energy          =  -76.231176593190753
 
 	Energies re-computed from Mulliken density:
 	-------------------------------------------
-	One-electron energy        =    0.246404674721559
-	IJKL energy                =   -0.666454475172779
-	IJKA energy                =   -0.047697671232518
-	IJAB energy                =   -0.379895253598926
-	IBJA energy                =    0.597249124034902
-	CIAB energy                =   -0.000151813316786
-	ABCD energy                =    0.042276797357800
-	Total two-electron energy  =   -0.454673291928307
-	CCSD correlation energy    =   -0.208268617206748
-	Total CCSD energy          =  -76.231176593205902
+	One-electron energy        =    0.246404673726516
+	IJKL energy                =   -0.666454478228350
+	IJKA energy                =   -0.047697670279457
+	IJAB energy                =   -0.379895254152300
+	IBJA energy                =    0.597249127155360
+	CIAB energy                =   -0.000151813356191
+	ABCD energy                =    0.042276797581096
+	Total two-electron energy  =   -0.454673291279843
+	CCSD correlation energy    =   -0.208268617553327
+	Total CCSD energy          =  -76.231176593190753
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:07 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:37 2012
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
 	system time =       0.06 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       3.53 seconds =       0.06 minutes
-	system time =       1.91 seconds =       0.03 minutes
-	total time  =         28 seconds =       0.47 minutes
+	user time   =       2.30 seconds =       0.04 minutes
+	system time =       2.12 seconds =       0.04 minutes
+	total time  =         16 seconds =       0.27 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:07 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:37 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -2586,121 +2390,15 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.125306621211
-           H          0.000000000000    -1.428550402118     0.994353505698
-           H          0.000000000000     1.428550402118     0.994353505698
+           O         -0.000000000000     0.000000000000    -0.125306623202
+           H          0.000000000000    -1.428550397628     0.994353521497
+           H         -0.000000000000     1.428550397628     0.994353521497
 
 	Presorting MO-basis TPDM.
 	Sorting File: MO TPDM (AA|AA) nbuckets = 1
 	Starting first half-transformation.
 	Sorting half-transformed TPDM.
 	First half integral transformation complete.
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1   2.0785317
-    2  -0.1831676   0.5201138
-    3   0.0468147  -0.0907486   0.6341979
-    4  -0.2226767   0.5074771  -0.3058710   0.6291057
-    5   0.0442973  -0.0906919   0.4096641  -0.2508776   0.2974851
-    6  -0.0079199  -0.0028350  -0.0060357   0.0033276  -0.0051134   0.0053477
-    7  -0.0088960   0.0001912   0.0015031   0.0018535  -0.0014943  -0.0014715   0.0058041
-    8  -0.0038894  -0.0104060   0.0438484  -0.0239600   0.0297552  -0.0021700  -0.0008143   0.0086715
-    9  -0.0536123   0.1210845   0.2549346   0.0194509   0.1685314  -0.0040836   0.0029677   0.0186261   0.1833918
-   10   0.0118125  -0.0277106   0.1522943  -0.0863532   0.1104122  -0.0018873   0.0010366   0.0120523   0.0712438   0.0444411
-   11  -0.0104150   0.0215527   0.0249997   0.0111683   0.0160004  -0.0003932  -0.0002960   0.0018067   0.0206135   0.0062209
-   12   0.0099877  -0.0206930   0.0079618  -0.0231669   0.0075278  -0.0001573  -0.0002062   0.0012209  -0.0039206   0.0026880
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11   0.0031228
-   12  -0.0008066   0.0016287
-   13   0.0000000   0.0000000   0.0141942
-   14   0.0000000   0.0000000  -0.0008348   0.0007419
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.8101315
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.6150266   0.5191927
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0593551   0.0493972   0.0186859
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0361484   0.0305342   0.0034412   0.0023876
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.5257836
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2619406   0.1430317
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0543563   0.0273121
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3292223  -0.1775074
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.1886945  -0.1043396
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0120218  -0.0064169
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0240558   0.0130574
-          21          22          23          24          25
-
-   21   0.0207207
-   22  -0.0383727   0.2449315
-   23  -0.0222598   0.1393106   0.0844815
-   24  -0.0009926   0.0095401   0.0043038   0.0010504
-   25   0.0019027  -0.0168688  -0.0089457  -0.0006854   0.0018658
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1 -81.6980331
-    2  -1.0938322  -1.6079829
-    3  -0.1251924   0.0094703  -1.0363746
-    4   0.2127532  -1.2503584   0.2409417  -1.2752112
-    5  -0.0061813   0.0487109  -0.4828256   0.2120753  -0.3394957
-    6   0.3084471   0.0378604   0.0035870   0.0139634   0.0079436  -0.0381898
-    7   0.2999936   0.0303885  -0.0136990   0.0213550   0.0066343   0.0008250  -0.0425314
-    8   0.2983428   0.0390742  -0.0627940   0.0401560  -0.0310502   0.0031084  -0.0031841  -0.0445514
-    9   0.1892999  -0.4319945  -0.3584179  -0.2695155  -0.2028461   0.0090649  -0.0083574  -0.0232444  -0.3901017
-   10   0.0277103   0.0270296  -0.1708836   0.0793736  -0.1163473  -0.0017484  -0.0091442  -0.0193272  -0.0964119  -0.0558820
-   11   0.0704336  -0.0721214  -0.0381337  -0.0510314  -0.0230462   0.0011002   0.0031406  -0.0018461  -0.0506881  -0.0071895
-   12  -0.0514995   0.0548389  -0.0033629   0.0481216  -0.0054104  -0.0000608  -0.0003234  -0.0039892   0.0237564  -0.0024611
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11  -0.0111506
-   12   0.0042221  -0.0067013
-   13   0.0000000   0.0000000  -0.0811961
-   14   0.0000000   0.0000000   0.0041670  -0.0044124
-   15   0.0000000   0.0000000   0.0000000   0.0000000  -1.1343281
-   16   0.0000000   0.0000000   0.0000000   0.0000000  -0.5958485  -0.4842588
-   17   0.0000000   0.0000000   0.0000000   0.0000000  -0.0626158  -0.0469628  -0.0870295
-   18   0.0000000   0.0000000   0.0000000   0.0000000  -0.0355764  -0.0287631  -0.0055337  -0.0053694
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.9892740
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3947330  -0.2129429
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0971804  -0.0372830
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.4799053   0.2452564
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2463499   0.1365956
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0185880   0.0105385
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0374051  -0.0210048
-          21          22          23          24          25
-
-   21  -0.0988131
-   22   0.0601806  -0.3956552
-   23   0.0337560  -0.1943794  -0.1207946
-   24  -0.0006703  -0.0232427  -0.0049295  -0.0061308
-   25   0.0004723   0.0300863   0.0105983   0.0022262  -0.0068610
 
 
 
@@ -2708,52 +2406,52 @@ Read in lower triangle:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     2.996006007207
-       2        0.000000000000     2.033773590409    -1.498003003603
-       3        0.000000000000    -2.033773590409    -1.498003003603
+       1        0.000000000000     0.000000000000     2.996006017964
+       2        0.000000000000     2.033773561668    -1.498003008982
+       3        0.000000000000    -2.033773561668    -1.498003008982
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -6.902590346001
-       2        0.000000000000    -4.611034351878     3.451295173001
-       3        0.000000000000     4.611034351878     3.451295173001
+       1        0.000000000000     0.000000000000    -6.902590406083
+       2        0.000000000000    -4.611034278324     3.451295203041
+       3        0.000000000000     4.611034278324     3.451295203041
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.413146820760
-       2        0.000000000000     0.251595675464    -0.206573410380
-       3        0.000000000000    -0.251595675464    -0.206573410380
+       1        0.000000000000     0.000000000000     0.413146824469
+       2        0.000000000000     0.251595670984    -0.206573412234
+       3        0.000000000000    -0.251595670984    -0.206573412234
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.492724391834
-       2        0.000000000000     2.325921744043    -1.746362195917
-       3        0.000000000000    -2.325921744043    -1.746362195917
+       1        0.000000000000     0.000000000000     3.492724430804
+       2        0.000000000000     2.325921701880    -1.746362215402
+       3        0.000000000000    -2.325921701880    -1.746362215402
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.000713126201
-       2        0.000000000000     0.000256658039     0.000356563101
-       3        0.000000000000    -0.000256658039     0.000356563101
+       1        0.000000000000     0.000000000000    -0.000713132845
+       2        0.000000000000     0.000256656208     0.000356566423
+       3        0.000000000000    -0.000256656208     0.000356566423
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:37 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       3.88 seconds =       0.06 minutes
-	system time =       1.94 seconds =       0.03 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =       2.45 seconds =       0.04 minutes
+	system time =       2.14 seconds =       0.04 minutes
+	total time  =         16 seconds =       0.27 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -2762,24 +2460,24 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000        0.0000000000       -0.1253066212
-	 H           0.0000000000       -1.4285504021        0.9943535057
-	 H           0.0000000000        1.4285504021        0.9943535057
-	             0.0000000000        0.0000000000       -0.0007131262
-	             0.0000000000        0.0002566580        0.0003565631
-	             0.0000000000       -0.0002566580        0.0003565631
+	 O          -0.0000000000        0.0000000000       -0.1253066232
+	 H           0.0000000000       -1.4285503976        0.9943535215
+	 H          -0.0000000000        1.4285503976        0.9943535215
+	             0.0000000000        0.0000000000       -0.0007131328
+	             0.0000000000        0.0002566562        0.0003565664
+	             0.0000000000       -0.0002566562        0.0003565664
 
 	---Fragment 1 Intrafragment Coordinates---
 	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
-	 R(1,2)           =         1.815047	       0.960481
-	 R(1,3)           =         1.815047	       0.960481
-	 B(2,1,3)         =         1.812056	     103.823175
+	 R(1,2)           =         1.815047	       0.960482
+	 R(1,3)           =         1.815047	       0.960482
+	 B(2,1,3)         =         1.812056	     103.823174
 
 	Current energy   :       -76.2311765932
 
 	Energy change for the previous step:
-		Projected    :        -0.0000407695
-		Actual       :        -0.0000431492
+		Projected    :        -0.0000407701
+		Actual       :        -0.0000431499
 	Energy ratio indicates good step: Trust radius increased to 8.000e-01.
 
 
@@ -2794,9 +2492,9 @@ Total time:
 	 ----------------------------------------------------------------------
 	 Coordinate             Previous        Force       Change         New 
 	 ----------             --------       ------       ------       ------
-	 R(1,2)          =      0.960481    -0.000148    -0.000082     0.960399
-	 R(1,3)          =      0.960481    -0.000148    -0.000082     0.960399
-	 B(2,1,3)        =    103.823175     0.000061     0.221019   104.044194
+	 R(1,2)          =      0.960482    -0.000148    -0.000082     0.960399
+	 R(1,3)          =      0.960482    -0.000148    -0.000082     0.960399
+	 B(2,1,3)        =    103.823174     0.000061     0.221019   104.044194
 	 ----------------------------------------------------------------------
 
 	Convergence Check Cycle    3: (using internal coordinates in au)
@@ -2809,15 +2507,15 @@ Total time:
 	Writing optimization data to binary file.
 	Structure for next step:
 	Cartesian Geometry (au)
-	    O     0.0000000000   0.0000000000  -0.1249873346
-	    H     0.0000000000  -1.4305849168   0.9918198507
-	    H     0.0000000000   1.4305849168   0.9918198507
+	    O     0.0000000000   0.0000000000  -0.1249873359
+	    H     0.0000000000  -1.4305849105   0.9918198608
+	    H    -0.0000000000   1.4305849105   0.9918198608
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:37 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2828,7 +2526,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2839,9 +2537,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.066140453890
-           H          0.000000000000    -0.757032990753     0.524848500093
-           H          0.000000000000     0.757032990753     0.524848500093
+           O         -0.000000000000     0.000000000000    -0.066140449511
+           H          0.000000000000    -0.757032929578     0.524848465338
+           H         -0.000000000000     0.757032929578     0.524848465338
 
     Number of unique atoms: 2
 
@@ -2851,7 +2549,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.165460950715984
+  Nuclear repulsion =    9.165460942753894
 
   Charge       = 0
   Multiplicity = 1
@@ -2864,6 +2562,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-11
@@ -2880,11 +2579,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 2.1995254022E-02.
+  Minimum eigenvalue in the overlap matrix is 2.1995254041E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.65060532296057
+  Initial RHF energy:   -58.65060532451480
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2924,25 +2623,28 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.27588068911766   -9.62528e+00   0.00000e+00  
-   @RHF iter   2:   -71.34646454448779   -3.07058e+00   5.04408e-01 DIIS
-   @RHF iter   3:   -75.80728262927498   -4.46082e+00   4.74493e-01 DIIS
-   @RHF iter   4:   -76.01089097077528   -2.03608e-01   1.57701e-02 DIIS
-   @RHF iter   5:   -76.02278771601851   -1.18967e-02   4.82074e-03 DIIS
-   @RHF iter   6:   -76.02290677305905   -1.19057e-04   5.38283e-04 DIIS
-   @RHF iter   7:   -76.02293014058422   -2.33675e-05   2.81882e-04 DIIS
-   @RHF iter   8:   -76.02293066052076   -5.19937e-07   5.70316e-05 DIIS
-   @RHF iter   9:   -76.02293068240233   -2.18816e-08   1.60487e-05 DIIS
-   @RHF iter  10:   -76.02293068411480   -1.71246e-09   3.39955e-06 DIIS
-   @RHF iter  11:   -76.02293068414724   -3.24434e-11   5.53323e-07 DIIS
-   @RHF iter  12:   -76.02293068414772   -4.83169e-13   3.90672e-08 DIIS
-   @RHF iter  13:   -76.02293068414770    2.84217e-14   3.77724e-09 DIIS
-   @RHF iter  14:   -76.02293068414765    4.26326e-14   3.04227e-10 DIIS
-   @RHF iter  15:   -76.02293068414762    2.84217e-14   2.80560e-10 DIIS
-   @RHF iter  16:   -76.02293068414771   -8.52651e-14   1.85219e-11 DIIS
-   @RHF iter  17:   -76.02293068414765    5.68434e-14   1.55528e-11 DIIS
-   @RHF iter  18:   -76.02293068414770   -4.26326e-14   1.02417e-11 DIIS
-   @RHF iter  19:   -76.02293068414770    0.00000e+00   1.59919e-11 DIIS
+   @RHF iter   1:   -68.27588068918726   -9.62528e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.41210330753911   -3.13622e+00   5.27773e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76841494779657   -4.35631e+00   5.02130e-01 DIIS
+   @RHF iter   4:   -76.00573964732102   -2.37325e-01   1.71512e-02 DIIS
+   @RHF iter   5:   -76.02252657217838   -1.67869e-02   7.68916e-03 DIIS
+   @RHF iter   6:   -76.02289369618504   -3.67124e-04   1.21547e-03 DIIS
+   @RHF iter   7:   -76.02292957094247   -3.58748e-05   5.11671e-04 DIIS
+   @RHF iter   8:   -76.02293062041427   -1.04947e-06   8.04042e-05 DIIS
+   @RHF iter   9:   -76.02293068251456   -6.21003e-08   2.24530e-05 DIIS
+   @RHF iter  10:   -76.02293068401274   -1.49818e-09   3.64949e-06 DIIS
+   @RHF iter  11:   -76.02293068401789   -5.15854e-12   1.59553e-07 DIIS
+   @RHF iter  12:   -76.02293068401806   -1.70530e-13   3.01484e-08 DIIS
+   @RHF iter  13:   -76.02293068401809   -2.84217e-14   5.56898e-09 DIIS
+   @RHF iter  14:   -76.02293068401811   -1.42109e-14   6.54208e-10 DIIS
+   @RHF iter  15:   -76.02293068401806    4.26326e-14   3.71729e-11 DIIS
+   @RHF iter  16:   -76.02293068401809   -2.84217e-14   1.02032e-11 DIIS
 
   ==> Post-Iterations <==
 
@@ -2970,36 +2672,36 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02293068414770
+  @RHF Final Energy:   -76.02293068401809
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.9837
+     X:    -0.0000      Y:     0.0000      Z:     0.9837
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.1201
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8636     Total:     0.8636
+     X:    -0.0000      Y:     0.0000      Z:     0.8636     Total:     0.8636
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.1951     Total:     2.1951
+     X:    -0.0000      Y:     0.0000      Z:     2.1951     Total:     2.1951
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:37 2012
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.06 seconds =       0.07 minutes
-	system time =       1.96 seconds =       0.03 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =       2.52 seconds =       0.04 minutes
+	system time =       2.15 seconds =       0.04 minutes
+	total time  =         16 seconds =       0.27 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:37 2012
 
 
 	**************************************************
@@ -3019,7 +2721,7 @@ Total time:
 	Reference wfn   =	RHF
 	Derivative      =	First
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -3036,8 +2738,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.16546095071598
-	SCF energy          (chkpt) =    -76.02293068414770
+	Nuclear Rep. energy (chkpt) =      9.16546094275389
+	SCF energy          (chkpt) =    -76.02293068401809
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
@@ -3047,18 +2749,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:37 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.08 seconds =       0.07 minutes
-	system time =       1.97 seconds =       0.03 minutes
-	total time  =         29 seconds =       0.48 minutes
+	user time   =       2.53 seconds =       0.04 minutes
+	system time =       2.16 seconds =       0.04 minutes
+	total time  =         16 seconds =       0.27 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:37 2012
 
 
 			**************************
@@ -3073,7 +2775,7 @@ Total time:
 	Wave function   =	CCSD
 	Reference wfn   =	RHF
 	Derivative      =	First
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	True
@@ -3095,8 +2797,8 @@ Total time:
 	 B1	   4	    0	    1	    0	    3	    0
 	 B2	   7	    0	    1	    0	    6	    0
 
-	Nuclear Rep. energy (chkpt) =      9.16546095071598
-	SCF energy          (chkpt) =    -76.02293068414770
+	Nuclear Rep. energy (chkpt) =      9.16546094275389
+	SCF energy          (chkpt) =    -76.02293068401809
 
 	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
@@ -3125,26 +2827,26 @@ Total time:
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
 	Sorting File: F <ai|bc> nbuckets = 1
-	One-electron energy          =   -123.04147094933042
-	Two-electron (AA) energy     =     14.44702103222717
-	Two-electron (BB) energy     =     14.44702103222717
-	Two-electron (AB) energy     =     23.40605828223956
-	Two-electron energy          =     37.85307931446674
+	One-electron energy          =   -123.04147093151937
+	Two-electron (AA) energy     =     14.44702102805085
+	Two-electron (BB) energy     =     14.44702102805085
+	Two-electron (AB) energy     =     23.40605827669649
+	Two-electron energy          =     37.85307930474734
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =    -76.02293068414770
+	Reference energy             =    -76.02293068401814
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:37 2012
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.12 seconds =       0.07 minutes
-	system time =       2.00 seconds =       0.03 minutes
-	total time  =         30 seconds =       0.50 minutes
+	user time   =       2.56 seconds =       0.04 minutes
+	system time =       2.20 seconds =       0.04 minutes
+	total time  =         16 seconds =       0.27 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:37 2012
 
 			**************************
 			*                        *
@@ -3152,15 +2854,15 @@ Total time:
 			*                        *
 			**************************
 
-	Nuclear Rep. energy (chkpt)   =    9.165460950715984
-	SCF energy          (chkpt)   =  -76.022930684147696
-	Reference energy    (file100) =  -76.022930684147696
+	Nuclear Rep. energy (chkpt)   =    9.165460942753894
+	SCF energy          (chkpt)   =  -76.022930684018093
+	Reference energy    (file100) =  -76.022930684018135
 
 	Input parameters:
 	-----------------
 	Wave function   =     CCSD
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-11
 	Restart         =     No
@@ -3184,77 +2886,77 @@ Total time:
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.199517091956035    9.436e-12    0.000000    0.000000    0.000000
-     1        -0.203894169292746    2.690e-02    0.004417    0.008669    0.008669
-     2        -0.207736946161400    9.537e-03    0.005049    0.010061    0.010061
-     3        -0.208233361552877    2.682e-03    0.005555    0.011565    0.011565
-     4        -0.208238013404295    6.194e-04    0.005606    0.011863    0.011863
-     5        -0.208251974913226    1.948e-04    0.005642    0.012046    0.012046
-     6        -0.208248346380030    6.138e-05    0.005654    0.012113    0.012113
-     7        -0.208247791354194    1.504e-05    0.005658    0.012130    0.012130
-     8        -0.208247782920180    2.790e-06    0.005658    0.012133    0.012133
-     9        -0.208247709876213    6.569e-07    0.005658    0.012133    0.012133
-    10        -0.208247728742904    1.385e-07    0.005658    0.012133    0.012133
-    11        -0.208247727303145    2.707e-08    0.005658    0.012133    0.012133
-    12        -0.208247727858788    4.380e-09    0.005658    0.012133    0.012133
-    13        -0.208247727756769    9.660e-10    0.005658    0.012133    0.012133
-    14        -0.208247727748075    1.775e-10    0.005658    0.012133    0.012133
-    15        -0.208247727745249    4.609e-11    0.005658    0.012133    0.012133
-    16        -0.208247727745421    9.458e-12    0.005658    0.012133    0.012133
+     0        -0.199517092074615    9.436e-12    0.000000    0.000000    0.000000
+     1        -0.203894169398634    2.690e-02    0.004417    0.008669    0.008669
+     2        -0.207736946283030    9.537e-03    0.005049    0.010061    0.010061
+     3        -0.208233361682912    2.682e-03    0.005555    0.011565    0.011565
+     4        -0.208238013532281    6.194e-04    0.005606    0.011863    0.011863
+     5        -0.208251975041342    1.948e-04    0.005642    0.012046    0.012046
+     6        -0.208248346507796    6.138e-05    0.005654    0.012113    0.012113
+     7        -0.208247791481925    1.504e-05    0.005658    0.012130    0.012130
+     8        -0.208247783047905    2.790e-06    0.005658    0.012133    0.012133
+     9        -0.208247710003939    6.569e-07    0.005658    0.012133    0.012133
+    10        -0.208247728870630    1.385e-07    0.005658    0.012133    0.012133
+    11        -0.208247727430870    2.707e-08    0.005658    0.012133    0.012133
+    12        -0.208247727986514    4.380e-09    0.005658    0.012133    0.012133
+    13        -0.208247727884495    9.660e-10    0.005658    0.012133    0.012133
+    14        -0.208247727875801    1.775e-10    0.005658    0.012133    0.012133
+    15        -0.208247727872975    4.609e-11    0.005658    0.012133    0.012133
+    16        -0.208247727873146    9.458e-12    0.005658    0.012133    0.012133
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          2   0         0.0104357704
+	          2   0         0.0104357711
 	          3  11        -0.0065485007
 	          4  14        -0.0062505458
-	          4  18         0.0052256092
-	          4  16         0.0046043213
-	          1   2         0.0042930369
+	          4  18         0.0052256093
+	          4  16         0.0046043214
+	          1   2         0.0042930368
 	          2   5         0.0039413911
-	          1   0        -0.0029069051
+	          1   0        -0.0029069050
 	          1   7         0.0023775258
 	          2   1         0.0022570867
 
 	Largest TIjAb Amplitudes:
 	  3   3  11  11        -0.0518791175
-	  4   4  14  14        -0.0379598938
-	  2   2   2   2        -0.0293287636
+	  4   4  14  14        -0.0379598942
+	  2   2   2   2        -0.0293287624
 	  4   4  15  15        -0.0286554343
-	  2   3   2  11         0.0248941414
-	  3   2  11   2         0.0248941414
+	  2   3   2  11         0.0248941407
+	  3   2  11   2         0.0248941407
 	  3   4  11  16        -0.0247916329
 	  4   3  16  11        -0.0247916329
-	  4   4  16  16        -0.0246527850
+	  4   4  16  16        -0.0246527851
 	  3   4  11  14        -0.0242091802
 
-	SCF energy       (chkpt)              =  -76.022930684147696
-	Reference energy (file100)            =  -76.022930684147696
+	SCF energy       (chkpt)              =  -76.022930684018093
+	Reference energy (file100)            =  -76.022930684018135
 
-	Opposite-spin MP2 correlation energy  =   -0.149340124852251
-	Same-spin MP2 correlation energy      =   -0.050176967103783
-	MP2 correlation energy                =   -0.199517091956035
-      * MP2 total energy                      =  -76.222447776103735
+	Opposite-spin MP2 correlation energy  =   -0.149340124946461
+	Same-spin MP2 correlation energy      =   -0.050176967128154
+	MP2 correlation energy                =   -0.199517092074615
+      * MP2 total energy                      =  -76.222447776092750
 
-	Opposite-spin CCSD correlation energy =   -0.163683995624820
-	Same-spin CCSD correlation energy     =   -0.044563732122523
-	CCSD correlation energy               =   -0.208247727745421
-      * CCSD total energy                     =  -76.231178411893112
+	Opposite-spin CCSD correlation energy =   -0.163683995739935
+	Same-spin CCSD correlation energy     =   -0.044563732131235
+	CCSD correlation energy               =   -0.208247727873146
+      * CCSD total energy                     =  -76.231178411891278
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:13 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:42 2012
 Module time:
-	user time   =       0.46 seconds =       0.01 minutes
-	system time =       0.37 seconds =       0.01 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.38 seconds =       0.01 minutes
+	system time =       0.45 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 Total time:
-	user time   =       4.59 seconds =       0.08 minutes
-	system time =       2.37 seconds =       0.04 minutes
-	total time  =         34 seconds =       0.57 minutes
+	user time   =       2.94 seconds =       0.05 minutes
+	system time =       2.65 seconds =       0.04 minutes
+	total time  =         21 seconds =       0.35 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:13 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:42 2012
 
 
 			**************************
@@ -3264,18 +2966,18 @@ Total time:
 			**************************
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:13 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:43 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       4.62 seconds =       0.08 minutes
-	system time =       2.40 seconds =       0.04 minutes
-	total time  =         34 seconds =       0.57 minutes
+	user time   =       2.96 seconds =       0.05 minutes
+	system time =       2.68 seconds =       0.04 minutes
+	total time  =         22 seconds =       0.37 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:13 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:43 2012
 
 
 			**************************
@@ -3283,12 +2985,12 @@ Total time:
 			**************************
 
 
-	Nuclear Rep. energy (chkpt)   =    9.165460950715984
+	Nuclear Rep. energy (chkpt)   =    9.165460942753894
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   =  -76.022930684147696
-	Reference energy    (CC_INFO) =  -76.022930684147696
-	CCSD energy         (CC_INFO) =   -0.208247727745421
-	Total CCSD energy   (CC_INFO) =  -76.231178411893112
+	SCF energy          (chkpt)   =  -76.022930684018093
+	Reference energy    (CC_INFO) =  -76.022930684018135
+	CCSD energy         (CC_INFO) =   -0.208247727873146
+	Total CCSD energy   (CC_INFO) =  -76.231178411891278
 
 	Input parameters:
 	-----------------
@@ -3313,31 +3015,31 @@ Total time:
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.208284274302680    3.927e-12
-	   1        -0.205802753865685    7.966e-03
-	   2        -0.205381513162428    1.312e-03
-	   3        -0.205298186267870    6.021e-04
-	   4        -0.205291847363414    1.996e-04
-	   5        -0.205295375375904    6.062e-05
-	   6        -0.205295356627633    1.453e-05
-	   7        -0.205295436734288    3.252e-06
-	   8        -0.205295464839266    4.938e-07
-	   9        -0.205295463406318    8.370e-08
-	  10        -0.205295463191870    1.722e-08
-	  11        -0.205295463203652    3.551e-09
-	  12        -0.205295463224519    6.631e-10
-	  13        -0.205295463219497    1.425e-10
-	  14        -0.205295463219599    3.538e-11
-	  15        -0.205295463220132    1.123e-11
-	  16        -0.205295463220344    3.916e-12
+	   0        -0.208284274426550    3.927e-12
+	   1        -0.205802753979529    7.966e-03
+	   2        -0.205381513274555    1.312e-03
+	   3        -0.205298186379698    6.021e-04
+	   4        -0.205291847475284    1.996e-04
+	   5        -0.205295375487822    6.062e-05
+	   6        -0.205295356739552    1.453e-05
+	   7        -0.205295436846208    3.252e-06
+	   8        -0.205295464951186    4.938e-07
+	   9        -0.205295463518238    8.370e-08
+	  10        -0.205295463303790    1.722e-08
+	  11        -0.205295463315572    3.551e-09
+	  12        -0.205295463336440    6.631e-10
+	  13        -0.205295463331418    1.425e-10
+	  14        -0.205295463331519    3.538e-11
+	  15        -0.205295463332053    1.123e-11
+	  16        -0.205295463332264    3.916e-12
 
 	Largest LIA Amplitudes:
-	          2   0         0.0069455892
-	          4  16         0.0048168844
+	          2   0         0.0069455899
+	          4  16         0.0048168845
 	          4  18         0.0045148965
 	          3  11        -0.0038772294
 	          2   5         0.0035087449
-	          1   2         0.0031763715
+	          1   2         0.0031763714
 	          4  14        -0.0031527080
 	          1   3        -0.0024386288
 	          1   7         0.0021835918
@@ -3345,32 +3047,32 @@ Total time:
 
 	Largest LIjAb Amplitudes:
 	  3   3  11  11        -0.0515960567
-	  4   4  14  14        -0.0370916856
-	  2   2   2   2        -0.0289571119
+	  4   4  14  14        -0.0370916859
+	  2   2   2   2        -0.0289571106
 	  4   4  15  15        -0.0279480898
-	  2   3   2  11         0.0247417004
-	  3   2  11   2         0.0247417004
-	  3   4  11  16        -0.0246056784
-	  4   3  16  11        -0.0246056784
-	  4   4  16  16        -0.0244010732
-	  3   4  11  14        -0.0239518343
+	  2   3   2  11         0.0247416997
+	  3   2  11   2         0.0247416997
+	  3   4  11  16        -0.0246056785
+	  4   3  16  11        -0.0246056785
+	  4   4  16  16        -0.0244010733
+	  3   4  11  14        -0.0239518344
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.94347500253
+	Overlap <L|e^T> =        0.94347500240
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:14 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:43 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.09 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.76 seconds =       0.08 minutes
-	system time =       2.49 seconds =       0.04 minutes
-	total time  =         35 seconds =       0.58 minutes
+	user time   =       3.06 seconds =       0.05 minutes
+	system time =       2.77 seconds =       0.05 minutes
+	total time  =         22 seconds =       0.37 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:14 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:43 2012
 
 
 			**************************
@@ -3384,6 +3086,7 @@ Total time:
 	-----------------
 	Wave function    =   CCSD
 	Reference wfn    =   RHF
+	Dertype          = 1
 	Tolerance        = 1.0e-14
 	Cache Level      = 2
 	AO Basis         = No
@@ -3391,13 +3094,13 @@ Total time:
 	Relax OPDM       = Yes
 	Compute Xi       = No
 	Use Zeta         = No
-	Xi connected     = No
+	Xi connected     = Yes
 
-	Nuclear Rep. energy (chkpt)   =    9.165460950715984
-	SCF energy          (chkpt)   =  -76.022930684147696
-	Reference energy    (file100) =  -76.022930684147696
-	CCSD energy         (CC_INFO) =   -0.208247727745421
-	Total CCSD energy   (CC_INFO) =  -76.231178411893112
+	Nuclear Rep. energy (chkpt)   =    9.165460942753894
+	SCF energy          (chkpt)   =  -76.022930684018093
+	Reference energy    (file100) =  -76.022930684018135
+	CCSD energy         (CC_INFO) =   -0.208247727873146
+	Total CCSD energy   (CC_INFO) =  -76.231178411891278
 	Number of States = 1
 
 	Ground?  State     EOM Energy       R0
@@ -3405,64 +3108,64 @@ Total time:
 
 	Energies re-computed from CC density:
 	-------------------------------------
-	One-electron energy        =    0.220340790387980
-	IJKL energy                =    0.041597711300710
-	IJKA energy                =   -0.001379558581899
-	IJAB energy                =   -0.410766693118306
-	IBJA energy                =   -0.100155067109802
-	CIAB energy                =   -0.000150228027224
-	ABCD energy                =    0.042265317402968
-	Total two-electron energy  =   -0.428588518133552
-	CCSD correlation energy    =   -0.208247727745573
-	Total CCSD energy          =  -76.231178411893268
+	One-electron energy        =    0.220340790529030
+	IJKL energy                =    0.041597711357943
+	IJKA energy                =   -0.001379558580076
+	IJAB energy                =   -0.410766693343053
+	IBJA energy                =   -0.100155067266247
+	CIAB energy                =   -0.000150228051142
+	ABCD energy                =    0.042265317480247
+	Total two-electron energy  =   -0.428588518402328
+	CCSD correlation energy    =   -0.208247727873298
+	Total CCSD energy          =  -76.231178411891435
 
 	Virial Theorem Data:
 	--------------------
-	Kinetic energy (ref)   =   75.798796241202268
-	Kinetic energy (corr)  =    0.147490737604824
-	Kinetic energy (total) =   75.946286978807095
-	-V/T (ref)             =    2.002956965731121
-	-V/T (corr)            =    2.411937665559613
-	-V/T (total)           =    2.003751222665639
+	Kinetic energy (ref)   =   75.798796236672999
+	Kinetic energy (corr)  =    0.147490740254534
+	Kinetic energy (total) =   75.946286976927539
+	-V/T (ref)             =    2.002956965789342
+	-V/T (corr)            =    2.411937641059773
+	-V/T (total)           =    2.003751222690456
 
 	Energies re-computed from Fock-adjusted CC density:
 	---------------------------------------------------
-	One-electron energy        =    0.246449421381333
-	IJKL energy                =   -0.666306531858827
-	IJKA energy                =   -0.047728106059508
-	IJAB energy                =   -0.410766693118306
-	IBJA energy                =    0.627989092533806
-	CIAB energy                =   -0.000150228027224
-	ABCD energy                =    0.042265317402968
-	Total two-electron energy  =   -0.454697149127091
-	CCSD correlation energy    =   -0.208247727745757
-	Total CCSD energy          =  -76.231178411893453
+	One-electron energy        =    0.246449420584413
+	IJKL energy                =   -0.666306532989236
+	IJKA energy                =   -0.047728105254444
+	IJAB energy                =   -0.410766693343053
+	IBJA energy                =    0.627989093700037
+	CIAB energy                =   -0.000150228051142
+	ABCD energy                =    0.042265317480247
+	Total two-electron energy  =   -0.454697148457590
+	CCSD correlation energy    =   -0.208247727873177
+	Total CCSD energy          =  -76.231178411891307
 
 	Energies re-computed from Mulliken density:
 	-------------------------------------------
-	One-electron energy        =    0.246449421381333
-	IJKL energy                =   -0.666306531858827
-	IJKA energy                =   -0.047728106059508
-	IJAB energy                =   -0.379860390856004
-	IBJA energy                =    0.597082790271504
-	CIAB energy                =   -0.000150228027224
-	ABCD energy                =    0.042265317402968
-	Total two-electron energy  =   -0.454697149127091
-	CCSD correlation energy    =   -0.208247727745757
-	Total CCSD energy          =  -76.231178411893453
+	One-electron energy        =    0.246449420584413
+	IJKL energy                =   -0.666306532989236
+	IJKA energy                =   -0.047728105254444
+	IJAB energy                =   -0.379860391056620
+	IBJA energy                =    0.597082791413604
+	CIAB energy                =   -0.000150228051142
+	ABCD energy                =    0.042265317480247
+	Total two-electron energy  =   -0.454697148457591
+	CCSD correlation energy    =   -0.208247727873178
+	Total CCSD energy          =  -76.231178411891307
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:14 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:43 2012
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
 	system time =       0.06 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.84 seconds =       0.08 minutes
-	system time =       2.55 seconds =       0.04 minutes
-	total time  =         35 seconds =       0.58 minutes
+	user time   =       3.12 seconds =       0.05 minutes
+	system time =       2.83 seconds =       0.05 minutes
+	total time  =         22 seconds =       0.37 minutes
 
-*** tstart() called on lawn-143-215-101-15.lawn.gatech.edu
-*** at Mon Dec 19 12:31:14 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:53:43 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -3507,121 +3210,15 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.124987334613
-           H          0.000000000000    -1.430584916838     0.991819850692
-           H          0.000000000000     1.430584916838     0.991819850692
+           O         -0.000000000000     0.000000000000    -0.124987335881
+           H          0.000000000000    -1.430584910478     0.991819860755
+           H         -0.000000000000     1.430584910478     0.991819860755
 
 	Presorting MO-basis TPDM.
 	Sorting File: MO TPDM (AA|AA) nbuckets = 1
 	Starting first half-transformation.
 	Sorting half-transformed TPDM.
 	First half integral transformation complete.
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1   2.0785094
-    2  -0.1831102   0.5199584
-    3   0.0467762  -0.0906719   0.6347247
-    4  -0.2225644   0.5072341  -0.3056893   0.6285634
-    5   0.0442796  -0.0906496   0.4103529  -0.2508886   0.2982258
-    6  -0.0079176  -0.0028439  -0.0060415   0.0033157  -0.0051211   0.0053491
-    7  -0.0089034   0.0002053   0.0015063   0.0018676  -0.0014943  -0.0014719   0.0058111
-    8  -0.0039021  -0.0103902   0.0438057  -0.0239004   0.0297537  -0.0021709  -0.0008148   0.0086597
-    9  -0.0537010   0.1212618   0.2546398   0.0198684   0.1684855  -0.0040805   0.0029768   0.0185641   0.1831009
-   10   0.0117570  -0.0276025   0.1522572  -0.0861310   0.1104728  -0.0018859   0.0010401   0.0120256   0.0711114   0.0443802
-   11  -0.0104320   0.0215903   0.0249693   0.0112271   0.0159921  -0.0003929  -0.0002953   0.0018000   0.0205968   0.0062085
-   12   0.0099696  -0.0206574   0.0080197  -0.0231434   0.0075673  -0.0001581  -0.0002049   0.0012216  -0.0038923   0.0026950
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11   0.0031227
-   12  -0.0008050   0.0016244
-   13   0.0000000   0.0000000   0.0141973
-   14   0.0000000   0.0000000  -0.0008345   0.0007417
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.8100639
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.6150334   0.5192494
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0592667   0.0493253   0.0186734
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0361508   0.0305376   0.0034349   0.0023876
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.5255376
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2616465   0.1427852
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0542414   0.0272316
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3293175  -0.1774356
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.1883345  -0.1040685
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0121121  -0.0064631
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0240316   0.0130347
-          21          22          23          24          25
-
-   21   0.0207001
-   22  -0.0383129   0.2451365
-   23  -0.0221801   0.1391354   0.0841965
-   24  -0.0009999   0.0096105   0.0043340   0.0010554
-   25   0.0018948  -0.0168592  -0.0089223  -0.0006887   0.0018646
-Read in lower triangle:
-
-           1           2           3           4           5           6           7           8           9          10
-
-    1 -81.6974287
-    2  -1.0939599  -1.6076410
-    3  -0.1250314   0.0094603  -1.0364829
-    4   0.2124658  -1.2501318   0.2406081  -1.2746488
-    5  -0.0061059   0.0486045  -0.4831735   0.2119056  -0.3399983
-    6   0.3085039   0.0378859   0.0035889   0.0139965   0.0079445  -0.0381967
-    7   0.3000059   0.0303669  -0.0137234   0.0213484   0.0066276   0.0008234  -0.0425894
-    8   0.2985199   0.0390831  -0.0626666   0.0400878  -0.0310269   0.0031099  -0.0031823  -0.0445178
-    9   0.1893366  -0.4321439  -0.3577141  -0.2700581  -0.2026240   0.0090622  -0.0083634  -0.0231251  -0.3895930
-   10   0.0278349   0.0269327  -0.1707060   0.0790765  -0.1163154  -0.0017567  -0.0091620  -0.0192838  -0.0961952  -0.0557822
-   11   0.0704309  -0.0722044  -0.0380715  -0.0511325  -0.0230191   0.0011007   0.0031472  -0.0018333  -0.0506856  -0.0071690
-   12  -0.0513617   0.0547276  -0.0034612   0.0480381  -0.0054567  -0.0000592  -0.0003337  -0.0039830   0.0236735  -0.0024675
-   13   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   14   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   15   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   16   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   17   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   18   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000
-          11          12          13          14          15          16          17          18          19          20
-
-   11  -0.0111572
-   12   0.0042193  -0.0066762
-   13   0.0000000   0.0000000  -0.0812190
-   14   0.0000000   0.0000000   0.0041649  -0.0044105
-   15   0.0000000   0.0000000   0.0000000   0.0000000  -1.1341279
-   16   0.0000000   0.0000000   0.0000000   0.0000000  -0.5957642  -0.4842354
-   17   0.0000000   0.0000000   0.0000000   0.0000000  -0.0625165  -0.0468878  -0.0870206
-   18   0.0000000   0.0000000   0.0000000   0.0000000  -0.0355812  -0.0287638  -0.0055217  -0.0053693
-   19   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.9892927
-   20   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.3945166  -0.2127187
-   21   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0970454  -0.0371910
-   22   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.4803794   0.2453199
-   23   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.2460457   0.1363246
-   24   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0187287   0.0106179
-   25   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000   0.0000000  -0.0373961  -0.0209764
-          21          22          23          24          25
-
-   21  -0.0988054
-   22   0.0601145  -0.3961376
-   23   0.0336615  -0.1942531  -0.1204679
-   24  -0.0006655  -0.0233626  -0.0049724  -0.0061455
-   25   0.0004839   0.0300707   0.0105771   0.0022292  -0.0068623
 
 
 
@@ -3629,52 +3226,52 @@ Read in lower triangle:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     2.989139032129
-       2        0.000000000000     2.036638627029    -1.494569516064
-       3        0.000000000000    -2.036638627029    -1.494569516064
+       1        0.000000000000     0.000000000000     2.989139052775
+       2        0.000000000000     2.036638613405    -1.494569526388
+       3        0.000000000000    -2.036638613405    -1.494569526388
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -6.881300031737
-       2        0.000000000000    -4.621239937097     3.440650015868
-       3        0.000000000000     4.621239937097     3.440650015868
+       1        0.000000000000     0.000000000000    -6.881300101224
+       2        0.000000000000    -4.621239894570     3.440650050612
+       3        0.000000000000     4.621239894570     3.440650050612
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     0.411860751258
-       2        0.000000000000     0.252262240039    -0.205930375629
-       3        0.000000000000    -0.252262240039    -0.205930375629
+       1        0.000000000000     0.000000000000     0.411860755474
+       2        0.000000000000     0.252262237327    -0.205930377737
+       3        0.000000000000    -0.252262237327    -0.205930377737
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     3.480102591900
-       2        0.000000000000     2.332337942966    -1.740051295950
-       3        0.000000000000    -2.332337942966    -1.740051295950
+       1        0.000000000000     0.000000000000     3.480102633768
+       2        0.000000000000     2.332337917080    -1.740051316884
+       3        0.000000000000    -2.332337917080    -1.740051316884
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000    -0.000197656450
-       2        0.000000000000    -0.000001127063     0.000098828225
-       3        0.000000000000     0.000001127063     0.000098828225
+       1        0.000000000000     0.000000000000    -0.000197659207
+       2        0.000000000000    -0.000001126757     0.000098829603
+       3        0.000000000000     0.000001126757     0.000098829603
 
 
-*** tstop() called on lawn-143-215-101-15.lawn.gatech.edu at Mon Dec 19 12:31:15 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:53:43 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
+	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       5.19 seconds =       0.09 minutes
-	system time =       2.57 seconds =       0.04 minutes
-	total time  =         36 seconds =       0.60 minutes
+	user time   =       3.27 seconds =       0.05 minutes
+	system time =       2.85 seconds =       0.05 minutes
+	total time  =         22 seconds =       0.37 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -3683,12 +3280,12 @@ Total time:
 
 	Previous internal coordinate definitions found.
 	---Fragment 1 Geometry and Gradient---
-	 O           0.0000000000        0.0000000000       -0.1249873346
-	 H           0.0000000000       -1.4305849168        0.9918198507
-	 H           0.0000000000        1.4305849168        0.9918198507
-	             0.0000000000        0.0000000000       -0.0001976564
-	             0.0000000000       -0.0000011271        0.0000988282
-	             0.0000000000        0.0000011271        0.0000988282
+	 O          -0.0000000000        0.0000000000       -0.1249873359
+	 H           0.0000000000       -1.4305849105        0.9918198608
+	 H          -0.0000000000        1.4305849105        0.9918198608
+	             0.0000000000        0.0000000000       -0.0001976592
+	             0.0000000000       -0.0000011268        0.0000988296
+	             0.0000000000        0.0000011268        0.0000988296
 
 	---Fragment 1 Intrafragment Coordinates---
 	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
@@ -3717,7 +3314,7 @@ Total time:
 	 ----------             --------       ------       ------       ------
 	 R(1,2)          =      0.960399    -0.000508    -0.000086     0.960314
 	 R(1,3)          =      0.960399    -0.000508    -0.000086     0.960314
-	 B(2,1,3)        =    104.044194     0.000011     0.050072   104.094267
+	 B(2,1,3)        =    104.044194     0.000011     0.050073   104.094267
 	 ----------------------------------------------------------------------
 
 	Convergence Check Cycle    4: (using internal coordinates in au)
@@ -3734,22 +3331,29 @@ Total time:
 	----------------------------------------------------------------------------
 	 Step         Energy             Delta(E)      MAX force    MAX Delta(q)  
 	----------------------------------------------------------------------------
-	   1    -76.230988857139    -76.230988857139    9.16e-03     9.16e-03
-	   2    -76.231133444004     -0.000144586865    4.38e-03     4.38e-03
-	   3    -76.231176593206     -0.000043149202    7.97e-04     7.97e-04
-	   4    -76.231178411893     -0.000001818688    1.40e-04     1.40e-04
+	   1    -76.230988854575    -76.230988854575    9.16e-03     9.16e-03
+	   2    -76.231133443332     -0.000144588758    4.38e-03     4.38e-03
+	   3    -76.231176593191     -0.000043149858    7.97e-04     7.97e-04
+	   4    -76.231178411891     -0.000001818701    1.40e-04     1.40e-04
 	----------------------------------------------------------------------
 
 	Writing optimization data to binary file.
-	Final energy is    -76.2311784118931
+	Final energy is    -76.2311784118913
 	Final (previous) structure:
 	Cartesian Geometry (au)
-	    O     0.0000000000   0.0000000000  -0.1249873346
-	    H     0.0000000000  -1.4305849168   0.9918198507
-	    H     0.0000000000   1.4305849168   0.9918198507
+	    O    -0.0000000000   0.0000000000  -0.1249873359
+	    H     0.0000000000  -1.4305849105   0.9918198608
+	    H    -0.0000000000   1.4305849105   0.9918198608
 	Saving final (previous) structure.
 			--------------------------
 			 OPTKING Finished Execution 
 			--------------------------
+
+	Final optimized geometry and variables (in Angstrom):
+
+	O
+	H     1    0.960399
+	H     1    0.960399     2  104.044194
+
 
 *** PSI4 exiting successfully. Buy a developer a beer!

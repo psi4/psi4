@@ -46,41 +46,6 @@ cite some of the following references for theoretical, algorithmic,
 or implementation contributions specific to \PSIfour\ (in addition to
 appropriate references for the underlying theory):
 
-{\bf SAPT0} 
-\begin{enumerate}
-\item ``Large-scale Symmetry-adapted Perturbation Theory Computations via
-  Density Fitting and Laplace Transformation Techniques: Investigating the
-  Fundamental Forces of {DNA}-Intercalator Interactions,'' E. G. Hohenstein,
-  R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, {\em J.
-  Chem. Phys.} {\bf 135}, 174017 (2011).
-\item ``Density Fitting and Cholesky Decomposition Approximations
-  in Symmetry-Adapted Perturbation Theory: Implementation and Application
-  to Probe the Nature of $\pi$-$\pi$ Interactions in Linear Acenes,''
-  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 132},
-  184111 (2010).
-\end{enumerate}
-
-{\bf SAPT2} 
-\begin{enumerate}
-\item ``Density Fitting of Intramonomer Correlation Effects in
-  Symmetry-Adapted Perturbation Theory,''
-  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133},
-  014101 (2010).
-\end{enumerate}
-
-{\bf SAPT2+, SAPT2+(3), SAPT2+3} 
-\begin{enumerate}
-\item ``Wavefunction Methods for Noncovalent Interactions,'' E. G.
-  Hohenstein and C. D. Sherrill, {\em WIREs: Comput. Mol. Sci.}, in press.
-\end{enumerate}
-
-{\bf Using Natural Orbitals in SAPT2+, SAPT2+(3), SAPT2+3, etc.} 
-\begin{enumerate}
-\item ``Efficient Evaluation of Triple Excitations in Symmetry-Adapted
-  Perturbation Theory via MP2 Natural Orbitals,'' E. G. Hohenstein
-  and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133}, 104107 (2010).
-\end{enumerate}
-
 {\bf DCFT} 
 \begin{enumerate}
 \item ``Density Cumulant Functional Theory: First Implementation and
@@ -107,8 +72,15 @@ appropriate references for the underlying theory):
 \begin{enumerate}
 \item ``The Configuration Interaction Method: Advances in Highly 
    Correlated Approaches,'' C. D. Sherrill and H. F. Schaefer, in
-   {\em Advances in Quantum Chemistry}, vol. 34, P.-O. L{\"o}wdin, Ed.
+   {\em Adv. Quantum Chem.}, vol. 34, P.-O. L{\"o}wdin, Ed.
    (Academic Press, New York, 1999), pp. 143-269.
+\end{enumerate}
+
+{\bf CC}
+\begin{enumerate}
+\item ``An Introduction to Coupled Cluster Theory for Computational
+   Chemists,'' T. D. Crawford and H. F. Schaefer, {\em Rev. Comp. Chem.} 
+   {\bf 14}, 33-136 (2000).
 \end{enumerate}
 
 {\bf Mk-MRCCSD} 
@@ -126,6 +98,50 @@ appropriate references for the underlying theory):
   Model Systems,'' F. A. Evangelista, A. C. Simmonett, W. D. Allen,
   H. F. Schaefer, and J. Gauss, {\em J. Chem. Phys.} {\bf 128}, 124104
   (2008).
+\end{enumerate}
+
+{\bf SAPT (General)}  \\
+All capabilities of the \PSIsapt\ module are based on Symmetry Adapted
+Perturbation Theory.  A good review article for this method is as
+follows:
+\begin{enumerate}
+\item ``Perturbation Theory Approach to Intermolecular Potential Energy
+  Surfaces of van der Waals Complexes,'' B. Jeziorski, R. Moszynski,
+  and K. Szalewicz, {\em Chem. Rev.} {\bf 94}, 1887-1930 (1994).   
+\end{enumerate}
+
+The particular implementation and algorithms for various orders of SAPT
+available in \PSIfour\ are provided below.
+
+{\bf SAPT0} 
+\begin{enumerate}
+\item ``Large-scale Symmetry-adapted Perturbation Theory Computations via
+  Density Fitting and Laplace Transformation Techniques: Investigating the
+  Fundamental Forces of {DNA}-Intercalator Interactions,'' E. G. Hohenstein,
+  R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, {\em J.
+  Chem. Phys.} {\bf 135}, 174017 (2011).
+\item ``Density Fitting and Cholesky Decomposition Approximations
+  in Symmetry-Adapted Perturbation Theory: Implementation and Application
+  to Probe the Nature of $\pi$-$\pi$ Interactions in Linear Acenes,''
+  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 132},
+  184111 (2010).
+\end{enumerate}
+
+{\bf SAPT2, SAPT2+, SAPT2+(3), SAPT2+3}
+\begin{enumerate}
+\item ``Density Fitting of Intramonomer Correlation Effects in
+  Symmetry-Adapted Perturbation Theory,''
+  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133},
+  014101 (2010).
+\item ``Wavefunction Methods for Noncovalent Interactions,'' E. G.
+  Hohenstein and C. D. Sherrill, {\em WIREs: Comput. Mol. Sci.}, in press.
+\end{enumerate}
+
+{\bf Using Natural Orbitals in SAPT}
+\begin{enumerate}
+\item ``Efficient Evaluation of Triple Excitations in Symmetry-Adapted
+  Perturbation Theory via MP2 Natural Orbitals,'' E. G. Hohenstein
+  and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133}, 104107 (2010).
 \end{enumerate}
 
 \subsection{Obtaining and Installing \PSIfour}
@@ -201,16 +217,13 @@ RHF/ROHF RAS-CI       & Y & N \\
 RHF/ROHF MP(n)        & Y & N \\
 RHF/ROHF ZAPT(n)      & Y & N \\
 %RAS-CI DBOC           & Y & N \\
+RHF/UHF/ROHF CC2      & Y & N \\
 RHF/UHF/ROHF CCSD     & Y & Y \\
 RHF/UHF/ROHF CCSD(T)  & Y & Y$^*$ \\
 RHF/UHF/ROHF EOM-CCSD & Y & Y \\
+RHF/UHF/ROHF CC3      & Y & N \\
 \hline\hline
-\multicolumn{3}{l}{
-\footnotesize{$^*$ CCSD(T) gradients implemented only via an experimental}} \\
-\multicolumn{3}{l}{
-\footnotesize{code.  A more efficient and robust implementation will
-appear}} \\
-\multicolumn{3}{l}{\footnotesize{in the next release.}}
+\multicolumn{3}{l}{\footnotesize{$^*$ UHF-CCSD(T) gradients only, as of 4.0.0-beta1}} \\
 \end{tabular}
 \end{center}
 \end{table}

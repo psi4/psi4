@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -19,6 +21,9 @@
 
 --------------------------------------------------------------------------
 # H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+
+memory 250 mb
+
 molecule h2o {
  units bohr
  O 0.0  0.00000000 -0.00900000
@@ -27,7 +32,6 @@ molecule h2o {
 }
 
 set {
- wfn cc3
  basis cc-pVDZ
 }
 
@@ -37,12 +41,12 @@ escf = -76.024038511513183  #TEST
 ecc3 = -76.241273893572554  #TEST
 compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
 compare_values(ecc3, get_variable("CC3 TOTAL ENERGY"), 7, "CC3 energy") #TEST
-
-clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on ganymede-2.local
-*** at Mon Dec 26 13:51:10 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:10:03 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -53,7 +57,7 @@ clean()
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -66,7 +70,7 @@ clean()
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000     0.117499201619
            H          0.000000000000    -1.515263000000    -0.932398798381
-           H          0.000000000000     1.515263000000    -0.932398798381
+           H         -0.000000000000     1.515263000000    -0.932398798381
 
     Number of unique atoms: 2
 
@@ -89,6 +93,7 @@ clean()
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -213,18 +218,18 @@ clean()
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Mon Dec 26 13:51:10 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:10:03 2012
 Module time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ganymede-2.local
-*** at Mon Dec 26 13:51:10 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:10:03 2012
 
 
 	**************************************************
@@ -244,7 +249,7 @@ Total time:
 	Reference wfn   =	RHF
 	Derivative      =	None
 	Delete TEI File =	Yes
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	Cache Level     =	2
 	Cache Type      =	LRU
 	Chkpt Parameters:
@@ -272,18 +277,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on ganymede-2.local at Mon Dec 26 13:51:10 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:10:03 2012
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ganymede-2.local
-*** at Mon Dec 26 13:51:10 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:10:03 2012
 
 
 			**************************
@@ -298,7 +303,7 @@ Total time:
 	Wave function   =	CC3
 	Reference wfn   =	RHF
 	Derivative      =	None
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	True
@@ -358,18 +363,18 @@ Total time:
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =    -76.02403851151317
 
-*** tstop() called on ganymede-2.local at Mon Dec 26 13:51:10 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:10:03 2012
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ganymede-2.local
-*** at Mon Dec 26 13:51:10 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:10:03 2012
 
 			**************************
 			*                        *
@@ -385,7 +390,7 @@ Total time:
 	-----------------
 	Wave function   =      CC3
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
 	Convergence     =     1.0e-07
 	Restart         =     No
@@ -411,7 +416,7 @@ Total time:
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
      0        -0.204690005353670    0.000e+00    0.000000    0.000000    0.000000
-     1        -0.212564207006115    2.781e-02    0.003598    0.007561    0.007561
+     1        -0.212564207006114    2.781e-02    0.003598    0.007561    0.007561
      2        -0.216986916912717    1.023e-02    0.004766    0.010065    0.010065
      3        -0.217205216620992    2.238e-03    0.005153    0.011255    0.011255
      4        -0.217234524409601    6.156e-04    0.005230    0.011619    0.011619
@@ -461,14 +466,14 @@ Total time:
       * CC3 total energy           =  -76.241273893572554
 
 
-*** tstop() called on ganymede-2.local at Mon Dec 26 13:51:15 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:10:06 2012
 Module time:
-	user time   =       2.79 seconds =       0.05 minutes
-	system time =       2.36 seconds =       0.04 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       1.42 seconds =       0.02 minutes
+	system time =       1.65 seconds =       0.03 minutes
+	total time  =          3 seconds =       0.05 minutes
 Total time:
-	user time   =       3.04 seconds =       0.05 minutes
-	system time =       2.46 seconds =       0.04 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       1.53 seconds =       0.03 minutes
+	system time =       1.71 seconds =       0.03 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

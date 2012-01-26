@@ -1,10 +1,10 @@
-#! SAPT0 cc-pVDZ computation of the ethene-ethyne binding energy, using the cc-pVDZ-JKFIT RI basis for SCF
+#! SAPT0 cc-pVDZ computation of the ethene-ethyne interaction energy, using the cc-pVDZ-JKFIT RI basis for SCF
 #! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
 memory 250 mb
 
-Eref = [ 85.189070701792517,  -0.003599150860,  0.003629113572,  #TEST
-         -0.000831371296,     -0.001505424063, -0.002306832646 ] #TEST
+Eref = [ 85.189064196429101,  -0.00359915058,  0.00362911158,  #TEST
+         -0.00083137117,      -0.00150542374, -0.00230683391 ] #TEST
 
 molecule ethene_ethyne {
      0 1

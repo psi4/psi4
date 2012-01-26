@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -20,50 +22,81 @@
 --------------------------------------------------------------------------
 #! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates
 #! using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables
-#! that are updated during the potential energy surface scan.
+#! that are updated during the potential energy surface scan, and then the same procedure is performed
+#! using polar coordinates, converted to Cartesian coordinates.
 
-refENuc = [ 9.785886586224326, 9.780670853323890, 8.807297927601891,     #TEST
-            8.802603767991497, 8.006634479638080, 8.002367061810450 ]    #TEST
+memory 250 mb
 
-refSCF  = [ -76.02132543096083, -76.02170971655210, -76.02148198312274,  #TEST
-            -76.02145797759667, -75.99010405718796, -75.98979581991821 ] #TEST
+refENuc = [ 9.785885838936569, 9.780670106434425, 8.807297255042920,     #TEST
+            8.802603095790996, 8.006633868220828, 8.002366450719077 ]    #TEST
 
+refSCF  = [ -76.02132544789552, -76.02170973316878, -76.02148196836463,  #TEST
+            -76.02145796257284, -75.99010402297635, -75.98979578551810 ] #TEST
+
+# Define the points on the potential energy surface using standard Python list functions
+Rvals = [ 0.9, 1.0, 1.1 ]
+Avals = range(102, 106, 2)
+
+
+# Start with a potentital energy scan in Z-matrix coordinates
 molecule h2o {
     O
     H 1 R
     H 1 R 2 A
 }
 
-Rvals = [ 0.9, 1.0, 1.1 ]
-Avals = range(102, 106, 2)
+print_stdout(" Testing Z-matrix coordinates") #TEST
 
 count = 0
 
 set basis cc-pvdz
-set scf e_converge = 11
+set scf e_convergence = 11
 
 for R in Rvals:
     h2o.R = R
-
     for A in Avals:
-
         h2o.A = A
-
-        thisenergy = scf()
-
+        thisenergy = energy('scf')
         compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
                        10, "Nuclear repulsion energy %d" % count)                      #TEST
         compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
-
         count = count + 1
 
-clean()
+# And now the same thing, using Python's trigonometry functions, and Cartesian input.  This time
+# we want to reset the Cartesian positions every time the angles and bond lengths change, so we
+# define the geometry inside the loops.  N.B. this requires the basis set to be re-specified after
+# every change of geometry
+
+count = 0
+
+print_stdout(" Testing polar coordinates") #TEST
+
+for R in Rvals:
+    for A in Avals:
+        molecule h2o {
+            O   0.0    0.0    0.0
+            H   0.0      R    0.0
+            H   0.0  RCosA  RSinA
+        }
+        # The non-numeric entries above just define placeholders with names.  They still need
+        # to be set, which we do below.
+        h2o.R = R
+        h2o.RCosA = R * math.cos(math.radians(A))
+        h2o.RSinA = R * math.sin(math.radians(A))
+        set basis cc-pvdz
+        thisenergy = energy('scf')
+        compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
+                       10, "Nuclear repulsion energy %d" % count)                      #TEST
+        compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
+        count = count + 1
 --------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
 Setting geometry variable R to 0.900000
 Setting geometry variable A to 102.000000
 
-*** tstart() called on ganymede-2.local
-*** at Wed Sep 28 16:20:02 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:03 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -72,9 +105,9 @@ Setting geometry variable A to 102.000000
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -85,9 +118,9 @@ Setting geometry variable A to 102.000000
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.063387280631
+           O         -0.000000000000     0.000000000000    -0.063387280631
            H          0.000000000000    -0.699431365311     0.503001071314
-           H          0.000000000000     0.699431365311     0.503001071314
+           H         -0.000000000000     0.699431365311     0.503001071314
 
     Number of unique atoms: 2
 
@@ -97,7 +130,7 @@ Setting geometry variable A to 102.000000
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.785886586224322
+  Nuclear repulsion =    9.785885838936569
 
   Charge       = 0
   Multiplicity = 1
@@ -110,6 +143,7 @@ Setting geometry variable A to 102.000000
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-08
@@ -126,11 +160,11 @@ Setting geometry variable A to 102.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.0154667412E-02.
+  Minimum eigenvalue in the overlap matrix is 3.0154671590E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.36805182759035
+  Initial RHF energy:   -58.36805206727226
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -159,32 +193,35 @@ Setting geometry variable A to 102.000000
       Number of irreps:                  4
       Number of functions per irrep: [  11    2    4    7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 11412 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.77629868803248   -1.04082e+01   0.00000e+00  
+   @RHF iter   1:   -68.77629881138947   -1.04082e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.98389090873195   -1.20759e+00   6.03634e-01 DIIS
+   @RHF iter   2:   -69.98389083413196   -1.20759e+00   6.03634e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.67879791115193   -5.69491e+00   5.72071e-01 DIIS
-   @RHF iter   4:   -75.99167413546033   -3.12876e-01   1.96821e-02 DIIS
-   @RHF iter   5:   -76.02106809677262   -2.93940e-02   9.17354e-03 DIIS
-   @RHF iter   6:   -76.02129322179654   -2.25125e-04   1.25099e-03 DIIS
-   @RHF iter   7:   -76.02132419235501   -3.09706e-05   4.21883e-04 DIIS
-   @RHF iter   8:   -76.02132536200497   -1.16965e-06   8.79264e-05 DIIS
-   @RHF iter   9:   -76.02132543058964   -6.85847e-08   1.55939e-05 DIIS
-   @RHF iter  10:   -76.02132543094115   -3.51505e-10   1.61910e-06 DIIS
-   @RHF iter  11:   -76.02132543096032   -1.91704e-11   2.63782e-07 DIIS
-   @RHF iter  12:   -76.02132543096070   -3.83693e-13   3.89326e-08 DIIS
+   @RHF iter   3:   -75.67879799275779   -5.69491e+00   5.72071e-01 DIIS
+   @RHF iter   4:   -75.99167415820169   -3.12876e-01   1.96821e-02 DIIS
+   @RHF iter   5:   -76.02106811368176   -2.93940e-02   9.17354e-03 DIIS
+   @RHF iter   6:   -76.02129323872063   -2.25125e-04   1.25099e-03 DIIS
+   @RHF iter   7:   -76.02132420928932   -3.09706e-05   4.21883e-04 DIIS
+   @RHF iter   8:   -76.02132537893964   -1.16965e-06   8.79264e-05 DIIS
+   @RHF iter   9:   -76.02132544752433   -6.85847e-08   1.55939e-05 DIIS
+   @RHF iter  10:   -76.02132544787590   -3.51562e-10   1.61910e-06 DIIS
+   @RHF iter  11:   -76.02132544789507   -1.91704e-11   2.63797e-07 DIIS
+   @RHF iter  12:   -76.02132544789552   -4.54747e-13   3.89272e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -199,7 +236,7 @@ Setting geometry variable A to 102.000000
 	Virtual:                                                              
 
 	   4A1     0.193806     2B2     0.264303     3B2     0.824413  
-	   5A1     0.924421     6A1     1.162288     2B1     1.197331  
+	   5A1     0.924420     6A1     1.162288     2B1     1.197331  
 	   4B2     1.253681     7A1     1.415286     1A2     1.502177  
 	   3B1     1.673607     8A1     1.852359     5B2     2.018415  
 	   6B2     2.585824     9A1     2.650589     4B1     3.352827  
@@ -212,36 +249,37 @@ Setting geometry variable A to 102.000000
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02132543096070
+  @RHF Final Energy:   -76.02132544789552
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9428
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1422
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.8006     Total:     0.8006
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.0350     Total:     2.0350
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Wed Sep 28 16:20:02 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:03 2012
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Setting geometry variable A to 104.000000
 
-*** tstart() called on ganymede-2.local
-*** at Wed Sep 28 16:20:02 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:03 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -250,9 +288,9 @@ Setting geometry variable A to 104.000000
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -265,7 +303,7 @@ Setting geometry variable A to 104.000000
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.062011508391
            H          0.000000000000    -0.709209678246     0.492083819402
-           H          0.000000000000     0.709209678246     0.492083819402
+           H         -0.000000000000     0.709209678246     0.492083819402
 
     Number of unique atoms: 2
 
@@ -275,7 +313,7 @@ Setting geometry variable A to 104.000000
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    9.780670853323885
+  Nuclear repulsion =    9.780670106434425
 
   Charge       = 0
   Multiplicity = 1
@@ -288,6 +326,7 @@ Setting geometry variable A to 104.000000
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-08
@@ -304,11 +343,11 @@ Setting geometry variable A to 104.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.0308204715E-02.
+  Minimum eigenvalue in the overlap matrix is 3.0308209013E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.37199222314243
+  Initial RHF energy:   -58.37199246272331
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -337,32 +376,35 @@ Setting geometry variable A to 104.000000
       Number of irreps:                  4
       Number of functions per irrep: [  11    2    4    7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 11412 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.78141541221341   -1.04094e+01   0.00000e+00  
+   @RHF iter   1:   -68.78141553555830   -1.04094e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -70.01688270730207   -1.23547e+00   5.97632e-01 DIIS
+   @RHF iter   2:   -70.01688263578112   -1.23547e+00   5.97632e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.67969243422674   -5.66281e+00   5.65813e-01 DIIS
-   @RHF iter   4:   -75.99208921460072   -3.12397e-01   1.96362e-02 DIIS
-   @RHF iter   5:   -76.02145412383896   -2.93649e-02   9.12410e-03 DIIS
-   @RHF iter   6:   -76.02167796219230   -2.23838e-04   1.22242e-03 DIIS
-   @RHF iter   7:   -76.02170848605562   -3.05239e-05   4.16770e-04 DIIS
-   @RHF iter   8:   -76.02170964810185   -1.16205e-06   8.75884e-05 DIIS
-   @RHF iter   9:   -76.02170971614419   -6.80423e-08   1.57852e-05 DIIS
-   @RHF iter  10:   -76.02170971652997   -3.85782e-10   1.72065e-06 DIIS
-   @RHF iter  11:   -76.02170971655146   -2.14868e-11   2.86033e-07 DIIS
-   @RHF iter  12:   -76.02170971655190   -4.40536e-13   4.07451e-08 DIIS
+   @RHF iter   3:   -75.67969251536513   -5.66281e+00   5.65813e-01 DIIS
+   @RHF iter   4:   -75.99208923697357   -3.12397e-01   1.96362e-02 DIIS
+   @RHF iter   5:   -76.02145414043237   -2.93649e-02   9.12410e-03 DIIS
+   @RHF iter   6:   -76.02167797879844   -2.23838e-04   1.22242e-03 DIIS
+   @RHF iter   7:   -76.02170850267191   -3.05239e-05   4.16770e-04 DIIS
+   @RHF iter   8:   -76.02170966471866   -1.16205e-06   8.75884e-05 DIIS
+   @RHF iter   9:   -76.02170973276102   -6.80424e-08   1.57852e-05 DIIS
+   @RHF iter  10:   -76.02170973314676   -3.85739e-10   1.72064e-06 DIIS
+   @RHF iter  11:   -76.02170973316817   -2.14015e-11   2.85982e-07 DIIS
+   @RHF iter  12:   -76.02170973316878   -6.11067e-13   4.07381e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -390,37 +432,38 @@ Setting geometry variable A to 104.000000
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02170971655190
+  @RHF Final Energy:   -76.02170973316878
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9223
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1331
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.7892     Total:     0.7892
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.0059     Total:     2.0059
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Wed Sep 28 16:20:02 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:03 2012
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Setting geometry variable R to 1.000000
 Setting geometry variable A to 102.000000
 
-*** tstart() called on ganymede-2.local
-*** at Wed Sep 28 16:20:02 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:03 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -429,9 +472,9 @@ Setting geometry variable A to 102.000000
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -444,7 +487,7 @@ Setting geometry variable A to 102.000000
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.070430311812
            H          0.000000000000    -0.777145961457     0.558890079238
-           H          0.000000000000     0.777145961457     0.558890079238
+           H         -0.000000000000     0.777145961457     0.558890079238
 
     Number of unique atoms: 2
 
@@ -454,7 +497,7 @@ Setting geometry variable A to 102.000000
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.807297927601892
+  Nuclear repulsion =    8.807297255042920
 
   Charge       = 0
   Multiplicity = 1
@@ -467,6 +510,7 @@ Setting geometry variable A to 102.000000
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-08
@@ -483,11 +527,11 @@ Setting geometry variable A to 102.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6941786472E-02.
+  Minimum eigenvalue in the overlap matrix is 3.6941792286E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.68439483660310
+  Initial RHF energy:   -58.68439505769982
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -516,33 +560,36 @@ Setting geometry variable A to 102.000000
       Number of irreps:                  4
       Number of functions per irrep: [  11    2    4    7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 11412 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.91755299624612   -1.02332e+01   0.00000e+00  
+   @RHF iter   1:   -68.91755307295873   -1.02332e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.83025872478963   -9.12706e-01   5.35336e-01 DIIS
+   @RHF iter   2:   -69.83025857584151   -9.12706e-01   5.35336e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.76448577628082   -5.93423e+00   5.02523e-01 DIIS
-   @RHF iter   4:   -75.99915526792421   -2.34669e-01   1.67864e-02 DIIS
-   @RHF iter   5:   -76.02115695344706   -2.20017e-02   7.86846e-03 DIIS
-   @RHF iter   6:   -76.02143018298250   -2.73230e-04   1.40558e-03 DIIS
-   @RHF iter   7:   -76.02148000177274   -4.98188e-05   4.91727e-04 DIIS
-   @RHF iter   8:   -76.02148187584662   -1.87407e-06   1.10691e-04 DIIS
-   @RHF iter   9:   -76.02148198209714   -1.06251e-07   1.77739e-05 DIIS
-   @RHF iter  10:   -76.02148198304903   -9.51886e-10   2.69692e-06 DIIS
-   @RHF iter  11:   -76.02148198312052   -7.14948e-11   5.66934e-07 DIIS
-   @RHF iter  12:   -76.02148198312268   -2.16005e-12   8.50410e-08 DIIS
-   @RHF iter  13:   -76.02148198312264    4.26326e-14   1.58685e-08 DIIS
+   @RHF iter   3:   -75.76448581810399   -5.93423e+00   5.02523e-01 DIIS
+   @RHF iter   4:   -75.99915525781151   -2.34669e-01   1.67864e-02 DIIS
+   @RHF iter   5:   -76.02115693861670   -2.20017e-02   7.86846e-03 DIIS
+   @RHF iter   6:   -76.02143016820672   -2.73230e-04   1.40558e-03 DIIS
+   @RHF iter   7:   -76.02147998701423   -4.98188e-05   4.91727e-04 DIIS
+   @RHF iter   8:   -76.02148186108856   -1.87407e-06   1.10691e-04 DIIS
+   @RHF iter   9:   -76.02148196733908   -1.06251e-07   1.77739e-05 DIIS
+   @RHF iter  10:   -76.02148196829111   -9.52028e-10   2.69692e-06 DIIS
+   @RHF iter  11:   -76.02148196836244   -7.13243e-11   5.67000e-07 DIIS
+   @RHF iter  12:   -76.02148196836460   -2.16005e-12   8.50242e-08 DIIS
+   @RHF iter  13:   -76.02148196836463   -2.84217e-14   1.58674e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -570,36 +617,37 @@ Setting geometry variable A to 102.000000
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02148198312264
+  @RHF Final Energy:   -76.02148196836463
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0475
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2080
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.8395     Total:     0.8395
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.1338     Total:     2.1338
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Wed Sep 28 16:20:02 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.59 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Setting geometry variable A to 104.000000
 
-*** tstart() called on ganymede-2.local
-*** at Wed Sep 28 16:20:02 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -608,9 +656,9 @@ Setting geometry variable A to 104.000000
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -621,9 +669,9 @@ Setting geometry variable A to 104.000000
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068901675990
+           O         -0.000000000000     0.000000000000    -0.068901675990
            H          0.000000000000    -0.788010753607     0.546759799336
-           H          0.000000000000     0.788010753607     0.546759799336
+           H         -0.000000000000     0.788010753607     0.546759799336
 
     Number of unique atoms: 2
 
@@ -633,7 +681,7 @@ Setting geometry variable A to 104.000000
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.802603767991501
+  Nuclear repulsion =    8.802603095790996
 
   Charge       = 0
   Multiplicity = 1
@@ -646,6 +694,7 @@ Setting geometry variable A to 104.000000
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-08
@@ -662,11 +711,11 @@ Setting geometry variable A to 104.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7289482669E-02.
+  Minimum eigenvalue in the overlap matrix is 3.7289488642E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.68822978421231
+  Initial RHF energy:   -58.68823000525614
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -695,33 +744,36 @@ Setting geometry variable A to 104.000000
       Number of irreps:                  4
       Number of functions per irrep: [  11    2    4    7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 11412 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.92227207034664   -1.02340e+01   0.00000e+00  
+   @RHF iter   1:   -68.92227214648960   -1.02340e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.86892770756828   -9.46656e-01   5.30789e-01 DIIS
+   @RHF iter   2:   -69.86892756379993   -9.46655e-01   5.30789e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.76496810204058   -5.89604e+00   4.97703e-01 DIIS
-   @RHF iter   4:   -75.99912912198747   -2.34161e-01   1.67254e-02 DIIS
-   @RHF iter   5:   -76.02113730296465   -2.20082e-02   7.83068e-03 DIIS
-   @RHF iter   6:   -76.02140669866128   -2.69396e-04   1.37860e-03 DIIS
-   @RHF iter   7:   -76.02145598296661   -4.92843e-05   4.89662e-04 DIIS
-   @RHF iter   8:   -76.02145787093147   -1.88796e-06   1.11416e-04 DIIS
-   @RHF iter   9:   -76.02145797643726   -1.05506e-07   1.79910e-05 DIIS
-   @RHF iter  10:   -76.02145797751479   -1.07752e-09   2.88925e-06 DIIS
-   @RHF iter  11:   -76.02145797759428   -7.94955e-11   6.08222e-07 DIIS
-   @RHF iter  12:   -76.02145797759658   -2.30216e-12   8.38643e-08 DIIS
-   @RHF iter  13:   -76.02145797759663   -4.26326e-14   1.55817e-08 DIIS
+   @RHF iter   3:   -75.76496814376463   -5.89604e+00   4.97703e-01 DIIS
+   @RHF iter   4:   -75.99912911161148   -2.34161e-01   1.67254e-02 DIIS
+   @RHF iter   5:   -76.02113728786985   -2.20082e-02   7.83068e-03 DIIS
+   @RHF iter   6:   -76.02140668361959   -2.69396e-04   1.37860e-03 DIIS
+   @RHF iter   7:   -76.02145596794233   -4.92843e-05   4.89662e-04 DIIS
+   @RHF iter   8:   -76.02145785590761   -1.88797e-06   1.11416e-04 DIIS
+   @RHF iter   9:   -76.02145796141343   -1.05506e-07   1.79910e-05 DIIS
+   @RHF iter  10:   -76.02145796249100   -1.07757e-09   2.88925e-06 DIIS
+   @RHF iter  11:   -76.02145796257045   -7.94529e-11   6.08278e-07 DIIS
+   @RHF iter  12:   -76.02145796257287   -2.41585e-12   8.38567e-08 DIIS
+   @RHF iter  13:   -76.02145796257284    2.84217e-14   1.55799e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -749,37 +801,38 @@ Setting geometry variable A to 104.000000
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02145797759663
+  @RHF Final Energy:   -76.02145796257284
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0248
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1973
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.8275     Total:     0.8275
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.1032     Total:     2.1032
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Wed Sep 28 16:20:03 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Setting geometry variable R to 1.100000
 Setting geometry variable A to 102.000000
 
-*** tstart() called on ganymede-2.local
-*** at Wed Sep 28 16:20:03 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -788,9 +841,9 @@ Setting geometry variable A to 102.000000
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -803,7 +856,7 @@ Setting geometry variable A to 102.000000
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.077473342993
            H          0.000000000000    -0.854860557603     0.614779087162
-           H          0.000000000000     0.854860557603     0.614779087162
+           H         -0.000000000000     0.854860557603     0.614779087162
 
     Number of unique atoms: 2
 
@@ -813,7 +866,7 @@ Setting geometry variable A to 102.000000
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.006634479638080
+  Nuclear repulsion =    8.006633868220828
 
   Charge       = 0
   Multiplicity = 1
@@ -826,6 +879,7 @@ Setting geometry variable A to 102.000000
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-08
@@ -842,11 +896,11 @@ Setting geometry variable A to 102.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 4.5556863264E-02.
+  Minimum eigenvalue in the overlap matrix is 4.5556871380E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.95474459554598
+  Initial RHF energy:   -58.95474480855718
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -875,33 +929,36 @@ Setting geometry variable A to 102.000000
       Number of irreps:                  4
       Number of functions per irrep: [  11    2    4    7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 11412 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.97620367466500   -1.00215e+01   0.00000e+00  
+   @RHF iter   1:   -68.97620369011101   -1.00215e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.60114835126323   -6.24945e-01   4.85523e-01 DIIS
+   @RHF iter   2:   -69.60114813385448   -6.24944e-01   4.85523e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.79127292795684   -6.19012e+00   4.50609e-01 DIIS
-   @RHF iter   4:   -75.97246448457939   -1.81192e-01   1.48460e-02 DIIS
-   @RHF iter   5:   -75.98967210720507   -1.72076e-02   7.02443e-03 DIIS
-   @RHF iter   6:   -75.99002381446908   -3.51707e-04   1.56015e-03 DIIS
-   @RHF iter   7:   -75.99010152819905   -7.77137e-05   5.62221e-04 DIIS
-   @RHF iter   8:   -75.99010389515625   -2.36696e-06   1.24519e-04 DIIS
-   @RHF iter   9:   -75.99010405463385   -1.59478e-07   1.98559e-05 DIIS
-   @RHF iter  10:   -75.99010405694300   -2.30915e-09   4.22280e-06 DIIS
-   @RHF iter  11:   -75.99010405718091   -2.37918e-10   1.10944e-06 DIIS
-   @RHF iter  12:   -75.99010405718788   -6.96332e-12   1.65215e-07 DIIS
-   @RHF iter  13:   -75.99010405718796   -8.52651e-14   2.05614e-08 DIIS
+   @RHF iter   3:   -75.79127292794536   -6.19012e+00   4.50608e-01 DIIS
+   @RHF iter   4:   -75.97246445305647   -1.81192e-01   1.48460e-02 DIIS
+   @RHF iter   5:   -75.98967207289760   -1.72076e-02   7.02443e-03 DIIS
+   @RHF iter   6:   -75.99002378022719   -3.51707e-04   1.56015e-03 DIIS
+   @RHF iter   7:   -75.99010149398704   -7.77138e-05   5.62221e-04 DIIS
+   @RHF iter   8:   -75.99010386094446   -2.36696e-06   1.24519e-04 DIIS
+   @RHF iter   9:   -75.99010402042218   -1.59478e-07   1.98559e-05 DIIS
+   @RHF iter  10:   -75.99010402273132   -2.30914e-09   4.22280e-06 DIIS
+   @RHF iter  11:   -75.99010402296926   -2.37947e-10   1.10944e-06 DIIS
+   @RHF iter  12:   -75.99010402297628   -7.02016e-12   1.65199e-07 DIIS
+   @RHF iter  13:   -75.99010402297635   -7.10543e-14   2.05761e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -929,36 +986,37 @@ Setting geometry variable A to 102.000000
 
   Energy converged.
 
-  @RHF Final Energy:   -75.99010405718796
+  @RHF Final Energy:   -75.99010402297635
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     1.1523
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2832
 
- Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8691     Total:     0.8691
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.8691     Total:     0.8691
 
- Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.2090     Total:     2.2090
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     2.2090     Total:     2.2090
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Wed Sep 28 16:20:03 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.99 seconds =       0.02 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.41 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Setting geometry variable A to 104.000000
 
-*** tstart() called on ganymede-2.local
-*** at Wed Sep 28 16:20:03 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -967,9 +1025,9 @@ Setting geometry variable A to 104.000000
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -982,7 +1040,7 @@ Setting geometry variable A to 104.000000
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.075791843589
            H          0.000000000000    -0.866811828967     0.601435779270
-           H          0.000000000000     0.866811828967     0.601435779270
+           H         -0.000000000000     0.866811828967     0.601435779270
 
     Number of unique atoms: 2
 
@@ -992,7 +1050,7 @@ Setting geometry variable A to 104.000000
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.002367061810451
+  Nuclear repulsion =    8.002366450719077
 
   Charge       = 0
   Multiplicity = 1
@@ -1005,6 +1063,7 @@ Setting geometry variable A to 104.000000
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-11
   Density threshold  = 1.00e-08
@@ -1021,11 +1080,11 @@ Setting geometry variable A to 104.000000
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 4.6103798736E-02.
+  Minimum eigenvalue in the overlap matrix is 4.6103807002E-02.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.95851497382994
+  Initial RHF energy:   -58.95851518677435
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1054,33 +1113,36 @@ Setting geometry variable A to 104.000000
       Number of irreps:                  4
       Number of functions per irrep: [  11    2    4    7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 11412 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.98003271945801   -1.00215e+01   0.00000e+00  
+   @RHF iter   1:   -68.98003273414295   -1.00215e+01   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -69.64725463937184   -6.67222e-01   4.81743e-01 DIIS
+   @RHF iter   2:   -69.64725442845804   -6.67222e-01   4.81743e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.79192914585013   -6.14467e+00   4.46512e-01 DIIS
-   @RHF iter   4:   -75.97218925969666   -1.80260e-01   1.47618e-02 DIIS
-   @RHF iter   5:   -75.98936909295611   -1.71798e-02   6.99075e-03 DIIS
-   @RHF iter   6:   -75.98971636936048   -3.47276e-04   1.53750e-03 DIIS
-   @RHF iter   7:   -75.98979327422276   -7.69049e-05   5.61904e-04 DIIS
-   @RHF iter   8:   -75.98979566003629   -2.38581e-06   1.25420e-04 DIIS
-   @RHF iter   9:   -75.98979581716081   -1.57125e-07   1.98865e-05 DIIS
-   @RHF iter  10:   -75.98979581965658   -2.49577e-09   4.41497e-06 DIIS
-   @RHF iter  11:   -75.98979581991114   -2.54559e-10   1.15834e-06 DIIS
-   @RHF iter  12:   -75.98979581991797   -6.83542e-12   1.58592e-07 DIIS
-   @RHF iter  13:   -75.98979581991823   -2.55795e-13   2.00339e-08 DIIS
+   @RHF iter   3:   -75.79192914624528   -6.14467e+00   4.46512e-01 DIIS
+   @RHF iter   4:   -75.97218922804171   -1.80260e-01   1.47618e-02 DIIS
+   @RHF iter   5:   -75.98936905846075   -1.71798e-02   6.99075e-03 DIIS
+   @RHF iter   6:   -75.98971633493068   -3.47276e-04   1.53750e-03 DIIS
+   @RHF iter   7:   -75.98979323982235   -7.69049e-05   5.61904e-04 DIIS
+   @RHF iter   8:   -75.98979562563619   -2.38581e-06   1.25420e-04 DIIS
+   @RHF iter   9:   -75.98979578276078   -1.57125e-07   1.98865e-05 DIIS
+   @RHF iter  10:   -75.98979578525643   -2.49565e-09   4.41497e-06 DIIS
+   @RHF iter  11:   -75.98979578551102   -2.54587e-10   1.15831e-06 DIIS
+   @RHF iter  12:   -75.98979578551807   -7.04858e-12   1.58606e-07 DIIS
+   @RHF iter  13:   -75.98979578551810   -2.84217e-14   2.00327e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1099,8 +1161,8 @@ Setting geometry variable A to 104.000000
 	   4B2     1.268027     1A2     1.450914     7A1     1.473927  
 	   3B1     1.658468     5B2     1.804244     8A1     1.891430  
 	   6B2     2.149116     9A1     2.200244     4B1     3.172600  
-	   2A2     3.209688    10A1     3.328097    11A1     3.721355  
-	   7B2     3.985473  
+	   2A2     3.209688    10A1     3.328097    11A1     3.721354  
+	   7B2     3.985472  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -1108,31 +1170,1146 @@ Setting geometry variable A to 104.000000
 
   Energy converged.
 
-  @RHF Final Energy:   -75.98979581991823
+  @RHF Final Energy:   -75.98979578551810
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.1273
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2709
 
- Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8564     Total:     0.8564
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8564     Total:     0.8564
 
- Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.1766     Total:     2.1766
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.1766     Total:     2.1766
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Wed Sep 28 16:20:03 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.18 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Setting geometry variable R to 0.900000
+Setting geometry variable RCosA to -0.187121
+Setting geometry variable RSinA to 0.880333
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.063387280631
+           H         -0.000000000000     0.699431365311     0.503001071314
+           H          0.000000000000    -0.699431365311     0.503001071314
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.785885838936572
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.0154671590E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.36805206727222
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.77629881138944   -1.04082e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.98389083413201   -1.20759e+00   6.03634e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.67879799275784   -5.69491e+00   5.72071e-01 DIIS
+   @RHF iter   4:   -75.99167415820165   -3.12876e-01   1.96821e-02 DIIS
+   @RHF iter   5:   -76.02106811368182   -2.93940e-02   9.17354e-03 DIIS
+   @RHF iter   6:   -76.02129323872063   -2.25125e-04   1.25099e-03 DIIS
+   @RHF iter   7:   -76.02132420928933   -3.09706e-05   4.21883e-04 DIIS
+   @RHF iter   8:   -76.02132537893965   -1.16965e-06   8.79264e-05 DIIS
+   @RHF iter   9:   -76.02132544752436   -6.85847e-08   1.55939e-05 DIIS
+   @RHF iter  10:   -76.02132544787597   -3.51605e-10   1.61910e-06 DIIS
+   @RHF iter  11:   -76.02132544789507   -1.90994e-11   2.63819e-07 DIIS
+   @RHF iter  12:   -76.02132544789549   -4.26326e-13   3.89266e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.541265     2A1    -1.370437     1B2    -0.725895  
+	   3A1    -0.582567     1B1    -0.498672  
+
+	Virtual:                                                              
+
+	   4A1     0.193806     2B2     0.264303     3B2     0.824413  
+	   5A1     0.924420     6A1     1.162288     2B1     1.197331  
+	   4B2     1.253681     7A1     1.415286     1A2     1.502177  
+	   3B1     1.673607     8A1     1.852359     5B2     2.018415  
+	   6B2     2.585824     9A1     2.650589     4B1     3.352827  
+	   2A2     3.386871    10A1     3.595045    11A1     3.912861  
+	   7B2     4.230440  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02132544789549
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9428
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1422
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8006     Total:     0.8006
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.0350     Total:     2.0350
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Setting geometry variable R to 0.900000
+Setting geometry variable RCosA to -0.217730
+Setting geometry variable RSinA to 0.873266
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.062011508391
+           H         -0.000000000000     0.709209678246     0.492083819402
+           H          0.000000000000    -0.709209678246     0.492083819402
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.780670106434428
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.0308209013E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.37199246272333
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.78141553555825   -1.04094e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -70.01688263578113   -1.23547e+00   5.97632e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.67969251536525   -5.66281e+00   5.65813e-01 DIIS
+   @RHF iter   4:   -75.99208923697361   -3.12397e-01   1.96362e-02 DIIS
+   @RHF iter   5:   -76.02145414043241   -2.93649e-02   9.12410e-03 DIIS
+   @RHF iter   6:   -76.02167797879852   -2.23838e-04   1.22242e-03 DIIS
+   @RHF iter   7:   -76.02170850267194   -3.05239e-05   4.16770e-04 DIIS
+   @RHF iter   8:   -76.02170966471876   -1.16205e-06   8.75884e-05 DIIS
+   @RHF iter   9:   -76.02170973276107   -6.80423e-08   1.57852e-05 DIIS
+   @RHF iter  10:   -76.02170973314681   -3.85739e-10   1.72064e-06 DIIS
+   @RHF iter  11:   -76.02170973316825   -2.14442e-11   2.86040e-07 DIIS
+   @RHF iter  12:   -76.02170973316873   -4.83169e-13   4.07353e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.540311     2A1    -1.368599     1B2    -0.730278  
+	   3A1    -0.578351     1B1    -0.498029  
+
+	Virtual:                                                              
+
+	   4A1     0.194413     2B2     0.263875     3B2     0.831607  
+	   5A1     0.914881     6A1     1.159565     2B1     1.197741  
+	   4B2     1.251838     7A1     1.433606     1A2     1.494790  
+	   3B1     1.686267     8A1     1.856647     5B2     2.005229  
+	   6B2     2.592530     9A1     2.645351     4B1     3.340977  
+	   2A2     3.395191    10A1     3.588460    11A1     3.929927  
+	   7B2     4.217613  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02170973316873
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9223
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1331
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.7892     Total:     0.7892
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.0059     Total:     2.0059
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.65 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Setting geometry variable R to 1.000000
+Setting geometry variable RCosA to -0.207912
+Setting geometry variable RSinA to 0.978148
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000    -0.000000000000    -0.070430311812
+           H         -0.000000000000     0.777145961457     0.558890079238
+           H          0.000000000000    -0.777145961457     0.558890079238
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    8.807297255042917
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.6941792286E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.68439505769974
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.91755307295864   -1.02332e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.83025857584144   -9.12706e-01   5.35336e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76448581810396   -5.93423e+00   5.02523e-01 DIIS
+   @RHF iter   4:   -75.99915525781141   -2.34669e-01   1.67864e-02 DIIS
+   @RHF iter   5:   -76.02115693861667   -2.20017e-02   7.86846e-03 DIIS
+   @RHF iter   6:   -76.02143016820666   -2.73230e-04   1.40558e-03 DIIS
+   @RHF iter   7:   -76.02147998701417   -4.98188e-05   4.91727e-04 DIIS
+   @RHF iter   8:   -76.02148186108847   -1.87407e-06   1.10691e-04 DIIS
+   @RHF iter   9:   -76.02148196733901   -1.06251e-07   1.77739e-05 DIIS
+   @RHF iter  10:   -76.02148196829106   -9.52042e-10   2.69692e-06 DIIS
+   @RHF iter  11:   -76.02148196836231   -7.12532e-11   5.66982e-07 DIIS
+   @RHF iter  12:   -76.02148196836460   -2.28795e-12   8.50253e-08 DIIS
+   @RHF iter  13:   -76.02148196836454    5.68434e-14   1.58695e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.559297     2A1    -1.318055     1B2    -0.672659  
+	   3A1    -0.563762     1B1    -0.491356  
+
+	Virtual:                                                              
+
+	   4A1     0.177648     2B2     0.249584     3B2     0.752466  
+	   5A1     0.826526     6A1     1.168108     2B1     1.197816  
+	   4B2     1.259344     7A1     1.429053     1A2     1.473972  
+	   3B1     1.654946     8A1     1.871992     5B2     1.903361  
+	   6B2     2.350086     9A1     2.392036     4B1     3.260287  
+	   2A2     3.289015    10A1     3.461392    11A1     3.806529  
+	   7B2     4.111258  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02148196836454
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0475
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2080
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8395     Total:     0.8395
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.1338     Total:     2.1338
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Setting geometry variable R to 1.000000
+Setting geometry variable RCosA to -0.241922
+Setting geometry variable RSinA to 0.970296
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068901675990
+           H         -0.000000000000     0.788010753607     0.546759799336
+           H          0.000000000000    -0.788010753607     0.546759799336
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    8.802603095790985
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.7289488642E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.68823000525617
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.92227214648965   -1.02340e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.86892756379994   -9.46655e-01   5.30789e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76496814376465   -5.89604e+00   4.97703e-01 DIIS
+   @RHF iter   4:   -75.99912911161147   -2.34161e-01   1.67254e-02 DIIS
+   @RHF iter   5:   -76.02113728786989   -2.20082e-02   7.83068e-03 DIIS
+   @RHF iter   6:   -76.02140668361970   -2.69396e-04   1.37860e-03 DIIS
+   @RHF iter   7:   -76.02145596794237   -4.92843e-05   4.89662e-04 DIIS
+   @RHF iter   8:   -76.02145785590771   -1.88797e-06   1.11416e-04 DIIS
+   @RHF iter   9:   -76.02145796141353   -1.05506e-07   1.79910e-05 DIIS
+   @RHF iter  10:   -76.02145796249107   -1.07754e-09   2.88925e-06 DIIS
+   @RHF iter  11:   -76.02145796257057   -7.94955e-11   6.08250e-07 DIIS
+   @RHF iter  12:   -76.02145796257295   -2.38742e-12   8.38557e-08 DIIS
+   @RHF iter  13:   -76.02145796257291    4.26326e-14   1.55833e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.558142     2A1    -1.316554     1B2    -0.676204  
+	   3A1    -0.559731     1B1    -0.490580  
+
+	Virtual:                                                              
+
+	   4A1     0.177946     2B2     0.249509     3B2     0.758670  
+	   5A1     0.818232     6A1     1.166509     2B1     1.198450  
+	   4B2     1.257045     7A1     1.447949     1A2     1.467616  
+	   3B1     1.665402     8A1     1.876097     5B2     1.892497  
+	   6B2     2.353807     9A1     2.388994     4B1     3.251119  
+	   2A2     3.296062    10A1     3.455901    11A1     3.817993  
+	   7B2     4.101599  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02145796257291
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0248
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1973
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8275     Total:     0.8275
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.1032     Total:     2.1032
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.81 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Setting geometry variable R to 1.100000
+Setting geometry variable RCosA to -0.228703
+Setting geometry variable RSinA to 1.075962
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.077473342993
+           H         -0.000000000000     0.854860557603     0.614779087162
+           H          0.000000000000    -0.854860557603     0.614779087162
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    8.006633868220828
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 4.5556871380E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.95474480855725
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.97620369011103   -1.00215e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.60114813385454   -6.24944e-01   4.85523e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.79127292794541   -6.19012e+00   4.50608e-01 DIIS
+   @RHF iter   4:   -75.97246445305657   -1.81192e-01   1.48460e-02 DIIS
+   @RHF iter   5:   -75.98967207289772   -1.72076e-02   7.02443e-03 DIIS
+   @RHF iter   6:   -75.99002378022728   -3.51707e-04   1.56015e-03 DIIS
+   @RHF iter   7:   -75.99010149398713   -7.77138e-05   5.62221e-04 DIIS
+   @RHF iter   8:   -75.99010386094456   -2.36696e-06   1.24519e-04 DIIS
+   @RHF iter   9:   -75.99010402042236   -1.59478e-07   1.98559e-05 DIIS
+   @RHF iter  10:   -75.99010402273137   -2.30901e-09   4.22280e-06 DIIS
+   @RHF iter  11:   -75.99010402296938   -2.38003e-10   1.10949e-06 DIIS
+   @RHF iter  12:   -75.99010402297640   -7.02016e-12   1.65172e-07 DIIS
+   @RHF iter  13:   -75.99010402297645   -5.68434e-14   2.05750e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.576062     2A1    -1.278884     1B2    -0.627092  
+	   3A1    -0.545440     1B1    -0.487446  
+
+	Virtual:                                                              
+
+	   4A1     0.157732     2B2     0.229110     3B2     0.699477  
+	   5A1     0.751389     6A1     1.172048     2B1     1.185504  
+	   4B2     1.270756     1A2     1.456034     7A1     1.456677  
+	   3B1     1.650525     5B2     1.812087     8A1     1.889074  
+	   6B2     2.147153     9A1     2.200355     4B1     3.179085  
+	   2A2     3.204010    10A1     3.333145    11A1     3.713652  
+	   7B2     3.992005  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -75.99010402297645
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.1523
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2832
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8691     Total:     0.8691
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.2090     Total:     2.2090
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.89 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Setting geometry variable R to 1.100000
+Setting geometry variable RCosA to -0.266114
+Setting geometry variable RSinA to 1.067325
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:04 2012
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.075791843589
+           H         -0.000000000000     0.866811828967     0.601435779270
+           H          0.000000000000    -0.866811828967     0.601435779270
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    8.002366450719078
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-11
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 4.6103807002E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.95851518677445
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 11412 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.98003273414301   -1.00215e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.64725442845807   -6.67222e-01   4.81743e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.79192914624535   -6.14467e+00   4.46512e-01 DIIS
+   @RHF iter   4:   -75.97218922804186   -1.80260e-01   1.47618e-02 DIIS
+   @RHF iter   5:   -75.98936905846088   -1.71798e-02   6.99075e-03 DIIS
+   @RHF iter   6:   -75.98971633493085   -3.47276e-04   1.53750e-03 DIIS
+   @RHF iter   7:   -75.98979323982248   -7.69049e-05   5.61904e-04 DIIS
+   @RHF iter   8:   -75.98979562563626   -2.38581e-06   1.25420e-04 DIIS
+   @RHF iter   9:   -75.98979578276089   -1.57125e-07   1.98865e-05 DIIS
+   @RHF iter  10:   -75.98979578525655   -2.49565e-09   4.41497e-06 DIIS
+   @RHF iter  11:   -75.98979578551116   -2.54616e-10   1.15840e-06 DIIS
+   @RHF iter  12:   -75.98979578551815   -6.99174e-12   1.58564e-07 DIIS
+   @RHF iter  13:   -75.98979578551821   -5.68434e-14   2.00334e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.574752     2A1    -1.277566     1B2    -0.629911  
+	   3A1    -0.541684     1B1    -0.486545  
+
+	Virtual:                                                              
+
+	   4A1     0.157621     2B2     0.229513     3B2     0.704679  
+	   5A1     0.744562     6A1     1.170810     2B1     1.186420  
+	   4B2     1.268027     1A2     1.450914     7A1     1.473927  
+	   3B1     1.658468     5B2     1.804244     8A1     1.891430  
+	   6B2     2.149116     9A1     2.200244     4B1     3.172600  
+	   2A2     3.209688    10A1     3.328097    11A1     3.721354  
+	   7B2     3.985472  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -75.98979578551821
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.1273
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2709
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8564     Total:     0.8564
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.1766     Total:     2.1766
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:04 2012
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.97 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

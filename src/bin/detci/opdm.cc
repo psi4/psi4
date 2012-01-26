@@ -633,6 +633,11 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 
     // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
 
+    /*- Process::environment.globals["CI ROOT $N$ DIPOLE $X$,\quad for $X = $\;X, Y, Z"] -*/
+    /*- Process::environment.globals["CI ROOT $N$ QUADRUPOLE $X$,\quad for $X = $\;XX, XY, XZ, YY, YZ, ZZ"] -*/
+    /*- Process::environment.globals["CI ROOT $N$ $\rightarrow$ ROOT $M$ DIPOLE $X$,\quad for $X = $\;X, Y, Z"] -*/
+    /*- Process::environment.globals["CI ROOT $N$ $\rightarrow$ ROOT $M$ QUADRUPOLE $X$,\quad for $X = $\;XX, XY, XZ, YY, YZ, ZZ"] -*/
+
     // if this is the "special" root, then copy over OEProp 
     // Process::environment variables from the current root into
     // more general locations

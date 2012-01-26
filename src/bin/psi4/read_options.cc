@@ -34,25 +34,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   (in Cotton order) -*/
   options.add("SOCC", new ArrayType());
   /*- An array containing the number of frozen doubly-occupied orbitals per
-  irrep (these are not excited in a CI, nor can they be optimized in MCSCF -*/
+  irrep (these are not excited in a correlated wavefunction, nor can they be
+  optimized in MCSCF -*/
   options.add("FROZEN_DOCC", new ArrayType());
   /*- An array containing the number of frozen unoccupied orbitals per
-  irrep (these are not populated in a CI, nor can they be optimized in MCSCF -*/
+  irrep (these are not populated in a correlated wavefunction, nor can they be
+  optimized in MCSCF -*/
   options.add("FROZEN_UOCC", new ArrayType());
-  /*- The scope of core orbitals to freeze in later correlated computations
+  /*- The number of core orbitals to freeze in later correlated computations.
   FROZEN_DOCC trumps this option -*/
   options.add_int("NUM_FROZEN_DOCC", 0);
-  /*- The scope of virtual orbitals to freeze in later correlated computations
+  /*- The number of virtual orbitals to freeze in later correlated computations.
   FROZEN_UOCC trumps this option -*/
   options.add_int("NUM_FROZEN_UOCC", 0);
-  /*- The scope of core orbitals to freeze in later correlated computations
-  FROZEN_DOCC or NUM_FROZEN_DOCC trumps this option  -*/
+  /*- Specifies how many core orbitals to freeze in correlated computations.
+  TRUE will default to freezing the standard default number of core orbitals.
+  For heavier elements, there can be some ambiguity in how many core
+  orbitals to freeze; in such cases, SMALL picks the most conservative
+  standard setting (freezes fewer orbitals), and LARGE picks the least
+  conservative standard setting (freezes more orbitals).  More precise
+  control over the number of frozen orbitals can be attained by using
+  the keywords NUM_FROZEN_DOCC (gives the total number of orbitals to
+  freeze, program picks the lowest-energy orbitals) or FROZEN_DOCC (gives
+  the number of orbitals to freeze per irreducible representation) -*/
   options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
 
   /*- Do use pure angular momentum basis functions?
   If not explicitly set, the default comes from the basis set. -*/
   options.add_bool("PUREAM", true);
-  /*- The amount of information to print to the output file -*/
+  /*- The amount of information to print to the output file.  1 prints
+  basic information, and higher levels print more information. A value
+  of 5 will print very large amounts of debugging information. -*/
   options.add_int("PRINT", 1);
   /*- The amount of information to print to the output file !expert -*/
   options.add_int("DEBUG", 0);
@@ -715,7 +727,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation -*/
       options.add_int("DIIS_MIN_VECS", 3);
-      /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+      /*- The algorithm to use for the $\left<VV||VV\right>$ terms. -*/
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
@@ -1154,7 +1166,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("OPDM_RELAX",false);
     /*- Do require $\bar{H}$ and $R$ to be connected? !expert -*/
     options.add_bool("XI_CONNECT",false);
-    /*- The number of electronic states to computed, per irreducible representation -*/
+    /*- The number of electronic states to computed, per irreducible
+    representation -*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Do compute all relaxed excited states? -*/
     options.add_bool("PROP_ALL",false);
@@ -1372,14 +1385,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SS_E_CONVERGENCE", 1E-6);
     /*- Number of important CC amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 5);
-    /*- Minimum absolute value above which a guess vector to a root is added to the Davidson algorithm.
+    /*- Minimum absolute value above which a guess vector to a root is added
+    to the Davidson algorithm in the EOM-CC iterative procedure.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SCHMIDT_ADD_RESIDUAL_TOLERANCE", 1E-3);
     /*- Do ? -*/
     options.add_bool("SS_SKIP_DIAG", false);
     /*- Do ? -*/
     options.add_bool("RESTART_EOM_CC3", false);
-    /*- -*/
+    /*- Specifies a set of single-excitation guess vectors for the EOM-CC
+    procedure.  If EOM_GUESS = SINGLES, the guess will be taken from
+    the singles-singles block of the similarity-transformed Hamiltonian,
+    Hbar.  If EOM_GUESS = DISK, guess vectors from a previous computation
+    will be read from disk.  If EOM_GUESS = INPUT, guess vectors will be
+    specified in user input.  The latter method is not currently available. -*/
     options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
@@ -1401,8 +1420,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("R_CONVERGENCE",1e-7);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
-    /*- -*/
-    options.add_str("PROPERTY","POLARIZABILITY");
+    /*- The response property desired.  Acceptable values are POLARIZABILITY
+    (default) for dipole-polarizabilities, ROTATION for specific rotations,
+    ROA for Raman Optical Activity, and ALL for all of the above.
+    -*/
+    options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
     /*- -*/
     options.add_str("ABCD","NEW");
     /*- Do restart from on-disk amplitudes? -*/
@@ -1429,7 +1451,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEKINO",0);
     /*- Do Bartlett size-extensive linear model? -*/
     options.add_bool("LINEAR",0);
-    /*- Energy of applied field for dynamic polarizabilities -*/
+    /*- Array that specifies the desired frequencies of the incident
+    radiation field in CCLR calculations.  If only one element is
+    given, the units will be assumed to be atomic units.  If more
+    than one element is given, then the units must be specified as the final
+    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
     options.add("OMEGA",new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
@@ -1438,8 +1464,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     /*- -*/
     options.add("OMEGA", new ArrayType());
-    /*- -*/
-    options.add_str("PROPERTY","POLARIZABILITY");
+    /*- Array that specifies the desired frequencies of the incident
+    radiation field in CCLR calculations.  If only one element is
+    given, the units will be assumed to be atomic units.  If more
+    than one element is given, then the units must be specified as the final
+    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
+    /*- The response property desired.  Acceptable values are POLARIZABILITY
+    (default) for dipole-polarizabilities, ROTATION for specific rotations,
+    ROA for Raman Optical Activity, and ALL for all of the above.
+    -*/
+    options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
   }
   if(name == "MCSCF"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF, and more general MCSCF computations. Called
@@ -1499,7 +1533,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF");
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- Do ? -*/
     options.add_bool("NEW_TRIPLES", 1);
     /*- Do ? -*/
@@ -1509,12 +1543,28 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for wavefunction (change) in CC amplitude equations.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE", 1e-7);
-    /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$ amplitudes? -*/
+    /*- Do restart the coupled-cluster iterations from old $t@@1$ and $t@@2$
+    amplitudes?  For geometry optimizations, Brueckner
+    calculations, etc. the iterative solution of the CC amplitude
+    equations may benefit considerably by reusing old vectors as initial
+    guesses.  Assuming that the MO phases remain the same between
+    updates, the CC codes will, by default, re-use old vectors, unless
+    the user sets RESTART = false. -*/
     options.add_bool("RESTART",1);
     /*- Do restart the coupled-cluster iterations even if MO phases are screwed up? !expert -*/
     options.add_bool("FORCE_RESTART", 0);
 //#warning CCEnergy ao_basis keyword type was changed.
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms
+    If AO_BASIS=NONE, the MO-basis integrals will be used;
+    if AO_BASIS=DISK, the AO-basis integrals, stored on disk, will
+    be used; if AO_BASIS=DIRECT, the AO-basis integrals will be computed
+    on the fly as necessary.  NB: The AO_BASIS=DIRECT option is not fully
+    implemented and should only be used by experts.  Default is NONE.
+    Note: The developers recommend use of this keyword only as a last
+    resort because it significantly slows the calculation. The current
+    algorithms for handling the MO-basis four-virtual-index integrals have
+    been significantly improved and are preferable to the AO-based approach.
+    !expert -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- Cacheing level for libdpd governing the storage of amplitudes,
     integrals, and intermediates in the CC procedure. A value of 0 retains
@@ -1562,7 +1612,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- Number of important $t@@1$ and $t@@2$ amplitudes to print -*/
     options.add_int("NUM_AMPS_PRINT", 10);
-    /*- Convergence criterion for Breuckner orbitals. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for Breuckner orbitals. The convergence
+       is determined based on the largest $T_1$ amplitude.  See the note
+       at the beginning of Section \ref{keywords}. -*/
     options.add_double("BRUECKNER_ORBS_R_CONVERGENCE", 1e-5);
     /*- Do print the MP2 amplitudes which are the starting guesses for RHF and UHF reference functions? -*/
     options.add_bool("MP2_AMPS_PRINT", 0);
@@ -1604,7 +1656,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convergence criterion for CIS wavefunction.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("R_CONVERGENCE", 1e-7);
-    /*- -*/
+    /*- The number of electronic states to computed, per irreducible
+    representation-*/
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- -*/
     options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
@@ -2098,7 +2151,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if (name == "MRCC"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\'{a}ly K\'{a}llay. -*/
 
-      /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC. -*/
+      /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC.
+          If the environment variable OMP_NUM_THREADS is set prior to calling PSI4 then
+          that value is used. When set, this option overrides everything. Be aware
+          the {\tt -n} command-line option described in section \ref{sec:threading}
+          does not affect MRCC.
+          !expert -*/
       options.add_int("MRCC_OMP_NUM_THREADS", 1);
 
       /*- See the note at the beginning of Section \ref{keywords}.
