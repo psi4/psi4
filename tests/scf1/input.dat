@@ -2,8 +2,8 @@
 
 memory 500 mb
 
-nucenergy =   2.645886245000000 #TEST
-refenergy = -25.10354687361508  #TEST
+nucenergy =   2.64588604295000  #TEST
+refenergy =  -25.1035468969791  #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000

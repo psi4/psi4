@@ -1,12 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
-    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
-    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
-    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -17,6 +20,9 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+
+memory 250 mb
+
 molecule hof {
           O          -0.947809457408    -0.132934425181     0.000000000000
           H          -1.513924046286     1.610489987673     0.000000000000
@@ -26,20 +32,17 @@ noreorient
 }
 
 set {
-    wfn ccsd
-    dertype response
     basis cc-pVDZ
-    mu_irreps = [0, 0, 1]
-    omega = [0.05, 0.1]
-    omega_units = au
+    omega = [0.05, 0.1, au]
 }
 
 response('ccsd')
-clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on ganymede.local
-*** at Sat Jun 25 19:11:17 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:03:56 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -48,9 +51,9 @@ clean()
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -87,8 +90,9 @@ clean()
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -107,7 +111,7 @@ clean()
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:  -133.10619662228319
+  Initial RHF energy:  -133.10619662228331
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -134,34 +138,37 @@ clean()
       Number of irreps:                  2
       Number of functions per irrep: [  24    9 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 78700 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 78700 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:  -159.89903886265782   -2.67928e+01   0.00000e+00  
+   @RHF iter   1:  -159.89903886265745   -2.67928e+01   0.00000e+00 
 	Occupation by irrep:
 	         A'    A" 
 	DOCC [     8,    1 ]
-   @RHF iter   2:  -161.87005159720272   -1.97101e+00   2.86011e-01 DIIS
+   @RHF iter   2:  -161.87005159720300   -1.97101e+00   2.86011e-01 DIIS
 	Occupation by irrep:
 	         A'    A" 
 	DOCC [     7,    2 ]
-   @RHF iter   3:  -174.13894832477388   -1.22689e+01   2.46076e-01 DIIS
-   @RHF iter   4:  -174.39661955605192   -2.57671e-01   1.68208e-02 DIIS
-   @RHF iter   5:  -174.41501884406284   -1.83993e-02   4.76869e-03 DIIS
-   @RHF iter   6:  -174.41784376455035   -2.82492e-03   2.13077e-03 DIIS
-   @RHF iter   7:  -174.41837739415624   -5.33630e-04   1.13021e-03 DIIS
-   @RHF iter   8:  -174.41843153805792   -5.41439e-05   4.74213e-04 DIIS
-   @RHF iter   9:  -174.41843292019837   -1.38214e-06   7.43395e-05 DIIS
-   @RHF iter  10:  -174.41843300059753   -8.03992e-08   2.07694e-05 DIIS
-   @RHF iter  11:  -174.41843300157728   -9.79753e-10   1.80913e-06 DIIS
-   @RHF iter  12:  -174.41843300162273   -4.54463e-11   2.54362e-07 DIIS
-   @RHF iter  13:  -174.41843300162486   -2.13163e-12   8.65684e-08 DIIS
-   @RHF iter  14:  -174.41843300162472   1.42109e-13   1.45291e-08 DIIS
+   @RHF iter   3:  -174.13894832477413   -1.22689e+01   2.46076e-01 DIIS
+   @RHF iter   4:  -174.39661955605203   -2.57671e-01   1.68208e-02 DIIS
+   @RHF iter   5:  -174.41501884406316   -1.83993e-02   4.76869e-03 DIIS
+   @RHF iter   6:  -174.41784376455013   -2.82492e-03   2.13077e-03 DIIS
+   @RHF iter   7:  -174.41837739415647   -5.33630e-04   1.13021e-03 DIIS
+   @RHF iter   8:  -174.41843153805800   -5.41439e-05   4.74213e-04 DIIS
+   @RHF iter   9:  -174.41843292019803   -1.38214e-06   7.43395e-05 DIIS
+   @RHF iter  10:  -174.41843300059733   -8.03993e-08   2.07694e-05 DIIS
+   @RHF iter  11:  -174.41843300157751   -9.80179e-10   1.80913e-06 DIIS
+   @RHF iter  12:  -174.41843300162284   -4.53326e-11   2.54361e-07 DIIS
+   @RHF iter  13:  -174.41843300162458   -1.73372e-12   8.65693e-08 DIIS
+   @RHF iter  14:  -174.41843300162458    0.00000e+00   1.45291e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -191,30 +198,36 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:  -174.41843300162472
+  @RHF Final Energy:  -174.41843300162458
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -1.1919      Y:     0.7854      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     1.1188      Y:    -0.1743      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0731      Y:     0.6110      Z:     0.0000     Total:     0.6154
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.1857      Y:     1.5531      Z:     0.0000     Total:     1.5642
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede.local at Sat Jun 25 19:11:17 2011
-	user time   =       0.31 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:56 2012
+Module time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.26 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ganymede.local
-*** at Sat Jun 25 19:11:17 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:03:56 2012
 
 
 	**************************************************
@@ -225,8 +238,53 @@ clean()
 	**************************************************
 
 
-*** tstart() called on ganymede.local
-*** at Sat Jun 25 19:11:17 2011
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	Response
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 2
+	Number of SOs        = 33
+	Number of MOs        = 33
+	Number of active MOs = 33
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A'	   24	    0	    7	    0	    17	    0
+	 A"	   9	    0	    2	    0	    7	    0
+
+	Nuclear Rep. energy (chkpt) =     46.78036205835981
+	SCF energy          (chkpt) =   -174.41843300162458
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:56 2012
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:03:56 2012
 
 
 			**************************
@@ -241,7 +299,7 @@ clean()
 	Wave function   =	CCSD
 	Reference wfn   =	RHF
 	Derivative      =	Response
-	Memory (Mbytes) =	256.0
+	Memory (Mbytes) =	250.0
 	AO Basis        =	NONE
 	Make (ab|cd)    =	True
 	Make unpacked (ab|cd) =	False
@@ -262,7 +320,7 @@ clean()
 	 A"	   9	    0	    2	    0	    7	    0
 
 	Nuclear Rep. energy (chkpt) =     46.78036205835981
-	SCF energy          (chkpt) =   -174.41843300162472
+	SCF energy          (chkpt) =   -174.41843300162458
 
 	Size of irrep 0 of <ab|cd> integrals:      0.114 (MW) /      0.914 (MB)
 	Size of irrep 1 of <ab|cd> integrals:      0.057 (MW) /      0.453 (MB)
@@ -283,21 +341,26 @@ clean()
 	Sorting File: D <ij|ab> nbuckets = 1
 	Sorting File: E <ai|jk> nbuckets = 1
 	Sorting File: F <ia|bc> nbuckets = 1
-	One-electron energy          =   -334.75769231860534
-	Two-electron (AA) energy     =     47.26858977470961
-	Two-electron (BB) energy     =     47.26858977470961
-	Two-electron (AB) energy     =     66.29030748391142
-	Two-electron energy          =    113.55889725862103
+	One-electron energy          =   -334.75769231860568
+	Two-electron (AA) energy     =     47.26858977470966
+	Two-electron (BB) energy     =     47.26858977470966
+	Two-electron (AB) energy     =     66.29030748391150
+	Two-electron energy          =    113.55889725862116
 	Frozen-core energy (transqt) =      0.00000000000000
-	Reference energy             =   -174.41843300162452
+	Reference energy             =   -174.41843300162472
 
-*** tstop() called on ganymede.local at Sat Jun 25 19:11:17 2011
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:03:57 2012
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** tstart() called on ganymede.local
-*** at Sat Jun 25 19:11:17 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:03:57 2012
 
 			**************************
 			*                        *
@@ -306,23 +369,23 @@ clean()
 			**************************
 
 	Nuclear Rep. energy (chkpt)   =   46.780362058359806
-	SCF energy          (chkpt)   = -174.418433001624720
-	Reference energy    (file100) = -174.418433001624521
+	SCF energy          (chkpt)   = -174.418433001624578
+	Reference energy    (file100) = -174.418433001624720
 
 	Input parameters:
 	-----------------
 	Wave function   =     CCSD
 	Reference wfn   =     RHF
-	Memory (Mbytes) =     256.0
+	Memory (Mbytes) =     250.0
 	Maxiter         =     50
-	Convergence     =     1.0e-10
+	Convergence     =     1.0e-07
 	Restart         =     No
 	DIIS            =     Yes
 	AO Basis        =     NONE
 	ABCD            =     NEW
 	Cache Level     =     2
-	Cache Type      =     LRU
-	Print Level     =     0
+	Cache Type      =     LOW
+	Print Level     =     1
 	Num. of threads =     1
 	# Amps to Print =     10
 	Print MP2 Amps? =     No
@@ -337,74 +400,73 @@ clean()
 	            ------------------------------
   Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
   ----     ---------------------    ---------   ----------  ----------  ----------
-     0        -0.356636240726635    0.000e+00    0.000000    0.000000    0.000000
-     1        -0.362752063098802    3.144e-02    0.004275    0.011894    0.011894
+     0        -0.356636240726634    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.362752063098801    3.144e-02    0.004275    0.011894    0.011894
      2        -0.368196197119331    1.020e-02    0.004675    0.013297    0.013297
      3        -0.368909989053916    3.691e-03    0.005274    0.015965    0.015965
      4        -0.368843223250080    1.064e-03    0.005417    0.016790    0.016790
-     5        -0.368847102126305    5.172e-04    0.005511    0.017384    0.017384
+     5        -0.368847102126304    5.172e-04    0.005511    0.017384    0.017384
      6        -0.368845295153107    1.896e-04    0.005559    0.017671    0.017671
-     7        -0.368842607498801    4.221e-05    0.005566    0.017712    0.017712
-     8        -0.368842991731538    9.726e-06    0.005568    0.017722    0.017722
+     7        -0.368842607498800    4.221e-05    0.005566    0.017712    0.017712
+     8        -0.368842991731537    9.726e-06    0.005568    0.017722    0.017722
      9        -0.368843083956378    1.805e-06    0.005568    0.017722    0.017722
     10        -0.368843084633750    4.602e-07    0.005568    0.017723    0.017723
     11        -0.368843099035879    1.246e-07    0.005568    0.017723    0.017723
-    12        -0.368843101812295    3.400e-08    0.005568    0.017723    0.017723
-    13        -0.368843102945219    8.788e-09    0.005568    0.017723    0.017723
-    14        -0.368843103081472    2.167e-09    0.005568    0.017723    0.017723
-    15        -0.368843103075482    9.026e-10    0.005568    0.017723    0.017723
-    16        -0.368843103064292    3.214e-10    0.005568    0.017723    0.017723
-    17        -0.368843103060978    1.157e-10    0.005568    0.017723    0.017723
-    18        -0.368843103062227    3.373e-11    0.005568    0.017723    0.017723
+    12        -0.368843101561144    3.400e-08    0.005568    0.017723    0.017723
 
 	Iterations converged.
 
 
 	Largest TIA Amplitudes:
-	          6   0        -0.0137314029
-	          6   2         0.0064752660
-	          7  17         0.0058546055
-	          5   0         0.0054831010
-	          6   9        -0.0050129181
-	          3   1        -0.0049539838
+	          6   0         0.0137314001
+	          6   2        -0.0064752642
+	          7  17        -0.0058546052
+	          5   0        -0.0054830915
+	          6   9         0.0050129170
+	          3   1         0.0049539855
 	          8  17        -0.0043004430
-	          6   1         0.0041980318
-	          4   9        -0.0039633121
+	          6   1        -0.0041980484
+	          4   9        -0.0039633122
 	          7  18         0.0038967923
 
 	Largest TIjAb Amplitudes:
-	  8   8  17  17        -0.0347803136
-	  6   6   2   2        -0.0346572616
+	  8   8  17  17        -0.0347803133
+	  6   6   2   2        -0.0346572608
 	  6   6   0   0        -0.0242680503
-	  6   6   0   2         0.0221026076
-	  6   6   2   0         0.0221026076
-	  8   8  18  18        -0.0216499642
-	  7   7  18  18        -0.0211241948
-	  7   8  17  17         0.0203462181
-	  8   7  17  17         0.0203462181
-	  7   8  18  18        -0.0189838363
+	  6   6   0   2         0.0221026069
+	  6   6   2   0         0.0221026069
+	  8   8  18  18        -0.0216499648
+	  7   7  18  18        -0.0211241949
+	  7   8  17  17        -0.0203462179
+	  8   7  17  17        -0.0203462179
+	  7   8  18  18         0.0189838367
 
-	SCF energy       (chkpt)              = -174.418433001624720
-	Reference energy (file100)            = -174.418433001624521
+	SCF energy       (chkpt)              = -174.418433001624578
+	Reference energy (file100)            = -174.418433001624720
 
-	Opposite-spin MP2 correlation energy  =   -0.260477904536018
+	Opposite-spin MP2 correlation energy  =   -0.260477904536016
 	Same-spin MP2 correlation energy      =   -0.096158336190617
-	MP2 correlation energy                =   -0.356636240726635
-      * MP2 total energy                      = -174.775069242351151
+	MP2 correlation energy                =   -0.356636240726634
+      * MP2 total energy                      = -174.775069242351350
 
-	Opposite-spin CCSD correlation energy =   -0.280899925871276
-	Same-spin CCSD correlation energy     =   -0.087943177197539
-	CCSD correlation energy               =   -0.368843103062227
-      * CCSD total energy                     = -174.787276104686754
+	Opposite-spin CCSD correlation energy =   -0.280899923857957
+	Same-spin CCSD correlation energy     =   -0.087943177709775
+	CCSD correlation energy               =   -0.368843101561144
+      * CCSD total energy                     = -174.787276103185860
 
 
-*** tstop() called on ganymede.local at Sat Jun 25 19:11:23 2011
-	user time   =       1.40 seconds =       0.02 minutes
-	system time =       0.87 seconds =       0.01 minutes
-	total time  =          6 seconds =       0.10 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:04:01 2012
+Module time:
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.45 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       1.12 seconds =       0.02 minutes
+	system time =       0.55 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
 
-*** tstart() called on ganymede.local
-*** at Sat Jun 25 19:11:23 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:04:01 2012
 
 
 			**************************
@@ -414,13 +476,18 @@ clean()
 			**************************
 
 
-*** tstop() called on ganymede.local at Sat Jun 25 19:11:24 2011
-	user time   =       1.47 seconds =       0.02 minutes
-	system time =       0.94 seconds =       0.02 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:04:02 2012
+Module time:
+	user time   =       0.09 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.21 seconds =       0.02 minutes
+	system time =       0.61 seconds =       0.01 minutes
+	total time  =          6 seconds =       0.10 minutes
 
-*** tstart() called on ganymede.local
-*** at Sat Jun 25 19:11:24 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:04:02 2012
 
 
 			**************************
@@ -430,15 +497,15 @@ clean()
 
 	Nuclear Rep. energy (chkpt)   =   46.780362058359806
 	Reference           (chkpt)   = 0
-	SCF energy          (chkpt)   = -174.418433001624720
-	Reference energy    (CC_INFO) = -174.418433001624521
-	CCSD energy         (CC_INFO) =   -0.368843103062227
-	Total CCSD energy   (CC_INFO) = -174.787276104686754
+	SCF energy          (chkpt)   = -174.418433001624578
+	Reference energy    (CC_INFO) = -174.418433001624720
+	CCSD energy         (CC_INFO) =   -0.368843101561144
+	Total CCSD energy   (CC_INFO) = -174.787276103185860
 
 	Input parameters:
 	-----------------
 	Maxiter       =      50
-	Convergence   = 1.0e-10
+	Convergence   = 1.0e-07
 	Restart       =     No
 	Cache Level   =     2
 	Model III     =     No
@@ -459,59 +526,59 @@ clean()
 	          ------------------------
 	Iter     PseudoEnergy or Norm         RMS  
 	----     ---------------------     --------
-	   0        -0.368917658983441    0.000e+00
-	   1        -0.364932523096784    1.124e-02
-	   2        -0.364255665890652    1.639e-03
-	   3        -0.364135867380743    9.744e-04
-	   4        -0.364111552169824    4.261e-04
-	   5        -0.364122022025907    1.761e-04
-	   6        -0.364124905725834    4.164e-05
-	   7        -0.364124461293684    9.123e-06
-	   8        -0.364124452896989    1.977e-06
-	   9        -0.364124473901688    5.096e-07
-	  10        -0.364124471169513    1.305e-07
-	  11        -0.364124469791253    3.649e-08
-	  12        -0.364124469251064    9.352e-09
-	  13        -0.364124469475562    2.299e-09
-	  14        -0.364124469494571    6.048e-10
-	  15        -0.364124469494435    2.015e-10
-	  16        -0.364124469489571    5.908e-11
+	   0        -0.368917657479702    0.000e+00
+	   1        -0.364932522710935    1.124e-02
+	   2        -0.364255665845356    1.639e-03
+	   3        -0.364135867455912    9.744e-04
+	   4        -0.364111552241288    4.261e-04
+	   5        -0.364122022092683    1.761e-04
+	   6        -0.364124905790445    4.164e-05
+	   7        -0.364124461359542    9.123e-06
+	   8        -0.364124452963068    1.977e-06
+	   9        -0.364124473967865    5.096e-07
+	  10        -0.364124471235739    1.305e-07
+	  11        -0.364124470197863    3.649e-08
 
 	Largest LIA Amplitudes:
-	          6   0        -0.0088889553
-	          6   9        -0.0046230265
-	          6   2         0.0043558282
-	          7  17         0.0037331043
-	          3   1        -0.0037156080
+	          6   0         0.0088889556
+	          6   9         0.0046230270
+	          6   2        -0.0043558327
+	          7  17        -0.0037331035
+	          3   1         0.0037156071
 	          4   9        -0.0037153617
-	          5   0         0.0036783104
-	          6   1         0.0029821853
-	          4   2        -0.0027873912
-	          3  10        -0.0027698857
+	          5   0        -0.0036782953
+	          6   1        -0.0029821744
+	          4   2        -0.0027873895
+	          3  10         0.0027698858
 
 	Largest LIjAb Amplitudes:
-	  8   8  17  17        -0.0343768534
-	  6   6   2   2        -0.0334418909
-	  6   6   0   0        -0.0231204851
-	  8   8  18  18        -0.0214011801
-	  6   6   0   2         0.0212279711
-	  6   6   2   0         0.0212279711
-	  7   7  18  18        -0.0210288531
-	  7   8  17  17         0.0202007792
-	  8   7  17  17         0.0202007792
-	  7   8  18  18        -0.0188264244
+	  8   8  17  17        -0.0343768543
+	  6   6   2   2        -0.0334418934
+	  6   6   0   0        -0.0231204892
+	  8   8  18  18        -0.0214011798
+	  6   6   0   2         0.0212279748
+	  6   6   2   0         0.0212279748
+	  7   7  18  18        -0.0210288529
+	  7   8  17  17        -0.0202007798
+	  8   7  17  17        -0.0202007798
+	  7   8  18  18         0.0188264243
 
 	Iterations converged.
 
-	Overlap <L|e^T> =        0.92327310268
+	Overlap <L|e^T> =        0.92327310293
 
-*** tstop() called on ganymede.local at Sat Jun 25 19:11:25 2011
-	user time   =       1.92 seconds =       0.03 minutes
-	system time =       1.17 seconds =       0.02 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:04:03 2012
+Module time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.54 seconds =       0.03 minutes
+	system time =       0.75 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
 
-*** tstart() called on ganymede.local
-*** at Sat Jun 25 19:11:25 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 15:04:03 2012
 
 			**************************
 			*                        *
@@ -523,12 +590,12 @@ clean()
 	-----------------
 	Property         =    POLARIZABILITY
 	Reference wfn    =      RHF
-	Memory (Mbytes)  =  256.0
+	Memory (Mbytes)  =  250.0
 	Cache Level      =    0
-	Print Level      =    0
+	Print Level      =    1
 	Maxiter          =     50
-	Convergence      = 1.0e-10
-	Restart          =     Not Allowed
+	Convergence      = 1.0e-07
+	Restart          =     Allowed
 	DIIS             =     Yes
 	Model III        =     No
 	Linear Model     =     No
@@ -636,150 +703,117 @@ clean()
 	Computing Mu_X-Perturbed Wave Function (0.050 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         4.102741798516
-	   1         5.169883452364    2.839e-01
-	   2         6.160877990983    1.719e-01
-	   3         6.223230773430    5.812e-02
-	   4         6.272628711361    3.365e-02
-	   5         6.278541614640    5.661e-03
-	   6         6.276858753031    1.660e-03
-	   7         6.276945260863    4.790e-04
-	   8         6.276905335149    1.161e-04
-	   9         6.276885987760    2.881e-05
-	  10         6.276887806219    7.093e-06
-	  11         6.276891159818    1.786e-06
-	  12         6.276892500493    3.933e-07
-	  13         6.276892597952    9.435e-08
-	  14         6.276892613392    3.075e-08
-	  15         6.276892597843    9.410e-09
-	  16         6.276892592007    2.806e-09
-	  17         6.276892591272    8.979e-10
-	  18         6.276892591337    2.323e-10
+	   0         4.102741742429
+	   1         5.169883371600    2.839e-01
+	   2         6.160877864740    1.719e-01
+	   3         6.223230641644    5.812e-02
+	   4         6.272628576386    3.365e-02
+	   5         6.278541479113    5.661e-03
+	   6         6.276858617677    1.660e-03
+	   7         6.276945125489    4.790e-04
+	   8         6.276905199781    1.161e-04
+	   9         6.276885852391    2.881e-05
+	  10         6.276887670850    7.093e-06
+	  11         6.276891024450    1.786e-06
+	  12         6.276892365125    3.933e-07
 	-----------------------------------------
-	Converged Mu_X-Perturbed Wfn to 7.876e-11
+	Converged Mu_X-Perturbed Wfn to 9.435e-08
 
 	Computing Mu_X-Perturbed Wave Function (-0.050 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         3.859955314812
-	   1         4.792972803591    2.394e-01
-	   2         5.543286085313    1.288e-01
-	   3         5.564275023804    3.367e-02
-	   4         5.579487507525    1.800e-02
-	   5         5.581833676558    2.837e-03
-	   6         5.581097711439    7.784e-04
-	   7         5.581122145641    1.972e-04
-	   8         5.581111154785    4.625e-05
-	   9         5.581102603165    1.172e-05
-	  10         5.581103563528    2.765e-06
-	  11         5.581104793636    6.203e-07
-	  12         5.581105250961    1.294e-07
-	  13         5.581105284102    2.905e-08
-	  14         5.581105288648    8.942e-09
-	  15         5.581105283683    2.624e-09
-	  16         5.581105281902    7.293e-10
-	  17         5.581105281666    2.109e-10
+	   0         3.859955265237
+	   1         4.792972734544    2.394e-01
+	   2         5.543285986540    1.288e-01
+	   3         5.564274923175    3.367e-02
+	   4         5.579487405991    1.800e-02
+	   5         5.581833574796    2.837e-03
+	   6         5.581097609737    7.784e-04
+	   7         5.581122043934    1.972e-04
+	   8         5.581111053079    4.625e-05
+	   9         5.581102501459    1.172e-05
+	  10         5.581103461822    2.765e-06
+	  11         5.581104691930    6.203e-07
+	  12         5.581105149255    1.294e-07
 	-----------------------------------------
-	Converged Mu_X-Perturbed Wfn to 5.011e-11
+	Converged Mu_X-Perturbed Wfn to 2.905e-08
 
 	Computing Mu_Y-Perturbed Wave Function (0.050 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         4.359153205454
-	   1         5.598361316173    3.880e-01
-	   2         7.210172546790    2.546e-01
-	   3         7.288570449269    6.955e-02
-	   4         7.375149918038    3.606e-02
-	   5         7.384722070222    5.193e-03
-	   6         7.384223777392    1.466e-03
-	   7         7.384480443342    2.971e-04
-	   8         7.384507918217    6.671e-05
-	   9         7.384497345572    1.959e-05
-	  10         7.384499718128    6.135e-06
-	  11         7.384503338119    1.864e-06
-	  12         7.384505090826    4.256e-07
-	  13         7.384505202989    8.019e-08
-	  14         7.384505213417    2.835e-08
-	  15         7.384505173569    1.181e-08
-	  16         7.384505158370    4.221e-09
-	  17         7.384505153694    1.695e-09
-	  18         7.384505152486    5.226e-10
-	  19         7.384505152345    1.426e-10
+	   0         4.359153208837
+	   1         5.598361319778    3.880e-01
+	   2         7.210172549529    2.546e-01
+	   3         7.288570451902    6.955e-02
+	   4         7.375149921057    3.606e-02
+	   5         7.384722072837    5.193e-03
+	   6         7.384223780119    1.466e-03
+	   7         7.384480446067    2.971e-04
+	   8         7.384507920948    6.671e-05
+	   9         7.384497348301    1.959e-05
+	  10         7.384499720858    6.135e-06
+	  11         7.384503340850    1.864e-06
+	  12         7.384505093556    4.256e-07
 	-----------------------------------------
-	Converged Mu_Y-Perturbed Wfn to 4.440e-11
+	Converged Mu_Y-Perturbed Wfn to 8.019e-08
 
 	Computing Mu_Y-Perturbed Wave Function (-0.050 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         4.036471671229
-	   1         5.067027189241    3.128e-01
-	   2         6.144597807169    1.828e-01
-	   3         6.161141987908    3.976e-02
-	   4         6.188160970139    1.914e-02
-	   5         6.191772838620    2.638e-03
-	   6         6.191582083864    7.170e-04
-	   7         6.191669682680    1.346e-04
-	   8         6.191679721725    2.789e-05
-	   9         6.191675500082    7.395e-06
-	  10         6.191676175958    2.148e-06
-	  11         6.191677184923    6.026e-07
-	  12         6.191677666708    1.338e-07
-	  13         6.191677704708    2.408e-08
-	  14         6.191677710552    7.534e-09
-	  15         6.191677703567    2.448e-09
-	  16         6.191677701301    7.489e-10
-	  17         6.191677700756    2.437e-10
+	   0         4.036471674683
+	   1         5.067027193041    3.128e-01
+	   2         6.144597810617    1.828e-01
+	   3         6.161141991141    3.976e-02
+	   4         6.188160973509    1.914e-02
+	   5         6.191772841824    2.638e-03
+	   6         6.191582087101    7.170e-04
+	   7         6.191669685916    1.346e-04
+	   8         6.191679724962    2.789e-05
+	   9         6.191675503319    7.395e-06
+	  10         6.191676179196    2.148e-06
+	  11         6.191677188160    6.026e-07
+	  12         6.191677669945    1.338e-07
 	-----------------------------------------
-	Converged Mu_Y-Perturbed Wfn to 7.051e-11
+	Converged Mu_Y-Perturbed Wfn to 2.408e-08
 
 	Computing Mu_Z-Perturbed Wave Function (0.050 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         2.430648844013
-	   1         2.910766984837    1.864e-01
-	   2         3.294611223955    1.238e-01
-	   3         3.368260900688    6.734e-02
-	   4         3.423879607126    3.077e-02
-	   5         3.424926242962    8.248e-03
-	   6         3.427469011687    2.201e-03
-	   7         3.427520599283    4.848e-04
-	   8         3.427494919063    1.290e-04
-	   9         3.427510561885    3.374e-05
-	  10         3.427513187991    1.209e-05
-	  11         3.427511651690    3.141e-06
-	  12         3.427510371185    9.024e-07
-	  13         3.427510381537    2.093e-07
-	  14         3.427510487448    5.389e-08
-	  15         3.427510504982    1.249e-08
-	  16         3.427510508023    3.100e-09
-	  17         3.427510506513    1.109e-09
-	  18         3.427510505835    3.253e-10
+	   0         2.430648848362
+	   1         2.910766992506    1.864e-01
+	   2         3.294611241127    1.238e-01
+	   3         3.368260923356    6.734e-02
+	   4         3.423879633453    3.077e-02
+	   5         3.424926269218    8.248e-03
+	   6         3.427469038022    2.201e-03
+	   7         3.427520625631    4.848e-04
+	   8         3.427494945410    1.290e-04
+	   9         3.427510588232    3.374e-05
+	  10         3.427513214338    1.209e-05
+	  11         3.427511678038    3.141e-06
+	  12         3.427510397533    9.024e-07
+	  13         3.427510407885    2.093e-07
 	-----------------------------------------
-	Converged Mu_Z-Perturbed Wfn to 9.274e-11
+	Converged Mu_Z-Perturbed Wfn to 5.389e-08
 
 	Computing Mu_Z-Perturbed Wave Function (-0.050 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         2.319515964296
-	   1         2.745304655729    1.539e-01
-	   2         3.034510150969    8.730e-02
-	   3         3.051803950266    3.527e-02
-	   4         3.065551688032    1.340e-02
-	   5         3.065056385747    3.294e-03
-	   6         3.065551019509    8.083e-04
-	   7         3.065578750294    1.694e-04
-	   8         3.065568797165    4.034e-05
-	   9         3.065572206969    8.828e-06
-	  10         3.065572936179    2.796e-06
-	  11         3.065572835271    7.295e-07
-	  12         3.065572624344    2.091e-07
-	  13         3.065572613118    4.685e-08
-	  14         3.065572629828    1.167e-08
-	  15         3.065572634666    2.626e-09
-	  16         3.065572635792    6.110e-10
-	  17         3.065572635795    1.348e-10
+	   0         2.319515967779
+	   1         2.745304661524    1.539e-01
+	   2         3.034510162564    8.730e-02
+	   3         3.051803963190    3.527e-02
+	   4         3.065551701832    1.340e-02
+	   5         3.065056399511    3.294e-03
+	   6         3.065551033286    8.083e-04
+	   7         3.065578764074    1.694e-04
+	   8         3.065568810945    4.034e-05
+	   9         3.065572220748    8.828e-06
+	  10         3.065572949958    2.796e-06
+	  11         3.065572849050    7.295e-07
+	  12         3.065572638124    2.091e-07
 	-----------------------------------------
-	Converged Mu_Z-Perturbed Wfn to 3.309e-11
+	Converged Mu_Z-Perturbed Wfn to 4.685e-08
 
 	Computing <<Mu;Mu>_(0.050) tensor.
 
@@ -790,163 +824,127 @@ clean()
 
                 0                  1                  2        
 
-    0   5.757358187895309 -1.826687695549452  0.000000000000000
-    1  -1.826957818783350  6.559981838351234  0.000000000000000
-    2   0.000000000000000  0.000000000000000  3.189442019786100
+    0   5.757358035392504 -1.826687615153663  0.000000000000000
+    1  -1.826957711196270  6.559981896547534  0.000000000000000
+    2   0.000000000000000  0.000000000000000  3.189441996770138
 
-	alpha_(0.050) =      15.506782046033 a.u.
+	alpha_(0.050) =      15.506781928710 a.u.
 
 	Computing Mu_X-Perturbed Wave Function (0.100 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         4.239364366786
-	   1         5.388323912486    3.132e-01
-	   2         6.544443555500    2.031e-01
-	   3         6.658705564756    8.002e-02
-	   4         6.756016560975    4.857e-02
-	   5         6.766956974635    8.604e-03
-	   6         6.764283079497    2.620e-03
-	   7         6.764477743452    8.068e-04
-	   8         6.764392716148    1.967e-04
-	   9         6.764363325278    4.842e-05
-	  10         6.764365255233    1.235e-05
-	  11         6.764371126837    3.317e-06
-	  12         6.764373610645    7.462e-07
-	  13         6.764373807035    1.871e-07
-	  14         6.764373848744    6.361e-08
-	  15         6.764373824929    1.980e-08
-	  16         6.764373815577    6.240e-09
-	  17         6.764373815063    2.127e-09
-	  18         6.764373815524    6.178e-10
-	  19         6.764373815817    2.442e-10
-	  20         6.764373816063    1.027e-10
+	   0         4.239364306737
+	   1         5.388323824273    3.132e-01
+	   2         6.544443409854    2.031e-01
+	   3         6.658705408727    8.002e-02
+	   4         6.756016398425    4.857e-02
+	   5         6.766956811129    8.604e-03
+	   6         6.764282916319    2.620e-03
+	   7         6.764477580234    8.068e-04
+	   8         6.764392552941    1.967e-04
+	   9         6.764363162070    4.842e-05
+	  10         6.764365092025    1.235e-05
+	  11         6.764370963629    3.317e-06
+	  12         6.764373447438    7.462e-07
+	  13         6.764373643827    1.871e-07
 	-----------------------------------------
-	Converged Mu_X-Perturbed Wfn to 4.343e-11
+	Converged Mu_X-Perturbed Wfn to 6.361e-08
 
 	Computing Mu_X-Perturbed Wave Function (-0.100 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         3.751195574222
-	   1         4.628361508101    2.221e-01
-	   2         5.290727046119    1.134e-01
-	   3         5.303446494234    2.659e-02
-	   4         5.312382212754    1.370e-02
-	   5         5.314004568437    2.112e-03
-	   6         5.313496286645    5.636e-04
-	   7         5.313511163633    1.342e-04
-	   8         5.313504959482    3.063e-05
-	   9         5.313499142379    7.817e-06
-	  10         5.313499794811    1.828e-06
-	  11         5.313500575422    3.909e-07
-	  12         5.313500858004    7.900e-08
-	  13         5.313500879169    1.727e-08
-	  14         5.313500882208    5.194e-09
-	  15         5.313500879466    1.482e-09
-	  16         5.313500878485    4.014e-10
-	  17         5.313500878363    1.105e-10
+	   0         3.751195527358
+	   1         4.628361443742    2.221e-01
+	   2         5.290726957208    1.134e-01
+	   3         5.303446404181    2.659e-02
+	   4         5.312382122198    1.370e-02
+	   5         5.314004477724    2.112e-03
+	   6         5.313496195970    5.636e-04
+	   7         5.313511072955    1.342e-04
+	   8         5.313504868804    3.063e-05
+	   9         5.313499051701    7.817e-06
+	  10         5.313499704133    1.828e-06
+	  11         5.313500484744    3.909e-07
 	-----------------------------------------
-	Converged Mu_X-Perturbed Wfn to 2.580e-11
+	Converged Mu_X-Perturbed Wfn to 7.900e-08
 
 	Computing Mu_Y-Perturbed Wave Function (0.100 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         4.547271331783
-	   1         5.921487058631    4.387e-01
-	   2         7.955606357103    3.071e-01
-	   3         8.127349003702    9.742e-02
-	   4         8.298354982537    5.266e-02
-	   5         8.316124676432    7.806e-03
-	   6         8.315308423758    2.241e-03
-	   7         8.315808625547    4.746e-04
-	   8         8.315860011833    1.114e-04
-	   9         8.315842438557    3.446e-05
-	  10         8.315847563087    1.119e-05
-	  11         8.315855141690    3.554e-06
-	  12         8.315858865256    8.295e-07
-	  13         8.315859070039    1.631e-07
-	  14         8.315859077340    6.204e-08
-	  15         8.315858970827    2.876e-08
-	  16         8.315858926270    1.113e-08
-	  17         8.315858910524    4.875e-09
-	  18         8.315858906125    1.554e-09
-	  19         8.315858905576    4.129e-10
-	  20         8.315858905392    1.280e-10
+	   0         4.547271335079
+	   1         5.921487062044    4.387e-01
+	   2         7.955606359141    3.071e-01
+	   3         8.127349006128    9.742e-02
+	   4         8.298354985760    5.266e-02
+	   5         8.316124678969    7.806e-03
+	   6         8.315308426527    2.241e-03
+	   7         8.315808628317    4.746e-04
+	   8         8.315860014613    1.114e-04
+	   9         8.315842441336    3.446e-05
+	  10         8.315847565867    1.119e-05
+	  11         8.315855144471    3.554e-06
+	  12         8.315858868038    8.295e-07
+	  13         8.315859072821    1.631e-07
 	-----------------------------------------
-	Converged Mu_Y-Perturbed Wfn to 3.935e-11
+	Converged Mu_Y-Perturbed Wfn to 6.204e-08
 
 	Computing Mu_Y-Perturbed Wave Function (-0.100 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         3.896429243394
-	   1         4.844813027741    2.843e-01
-	   2         5.749499475239    1.576e-01
-	   3         5.756135720283    3.131e-02
-	   4         5.772161918281    1.456e-02
-	   5         5.774571677837    1.971e-03
-	   6         5.774450287183    5.252e-04
-	   7         5.774506093506    9.531e-05
-	   8         5.774512673111    1.907e-05
-	   9         5.774509882995    4.813e-06
-	  10         5.774510277976    1.343e-06
-	  11         5.774510851226    3.624e-07
-	  12         5.774511123650    7.982e-08
-	  13         5.774511146787    1.426e-08
-	  14         5.774511150646    4.284e-09
-	  15         5.774511147371    1.249e-09
-	  16         5.774511146391    3.591e-10
-	  17         5.774511146193    1.019e-10
+	   0         3.896429246848
+	   1         4.844813031574    2.843e-01
+	   2         5.749499478862    1.576e-01
+	   3         5.756135723723    3.131e-02
+	   4         5.772161921814    1.456e-02
+	   5         5.774571681256    1.971e-03
+	   6         5.774450290621    5.252e-04
+	   7         5.774506096944    9.531e-05
+	   8         5.774512676549    1.907e-05
+	   9         5.774509886433    4.813e-06
+	  10         5.774510281414    1.343e-06
+	  11         5.774510854664    3.624e-07
 	-----------------------------------------
-	Converged Mu_Y-Perturbed Wfn to 2.681e-11
+	Converged Mu_Y-Perturbed Wfn to 7.982e-08
 
 	Computing Mu_Z-Perturbed Wave Function (0.100 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         2.491952407219
-	   1         3.005265091349    2.089e-01
-	   2         3.447580406174    1.520e-01
-	   3         3.607570758318    9.857e-02
-	   4         3.749752678628    5.306e-02
-	   5         3.762047672047    1.567e-02
-	   6         3.770518167346    4.401e-03
-	   7         3.770564035326    9.843e-04
-	   8         3.770526573318    2.817e-04
-	   9         3.770570721689    8.164e-05
-	  10         3.770575560889    3.073e-05
-	  11         3.770569475648    7.811e-06
-	  12         3.770565479044    2.258e-06
-	  13         3.770565680540    5.334e-07
-	  14         3.770566033103    1.429e-07
-	  15         3.770566065634    3.454e-08
-	  16         3.770566064348    1.056e-08
-	  17         3.770566052512    4.732e-09
-	  18         3.770566049266    1.220e-09
-	  19         3.770566048764    3.272e-10
-	  20         3.770566048670    1.024e-10
+	   0         2.491952412130
+	   1         3.005265100307    2.089e-01
+	   2         3.447580426761    1.520e-01
+	   3         3.607570791427    9.857e-02
+	   4         3.749752721870    5.306e-02
+	   5         3.762047715592    1.567e-02
+	   6         3.770518211203    4.401e-03
+	   7         3.770564079221    9.843e-04
+	   8         3.770526617210    2.817e-04
+	   9         3.770570765583    8.164e-05
+	  10         3.770575604784    3.073e-05
+	  11         3.770569519543    7.811e-06
+	  12         3.770565522939    2.258e-06
+	  13         3.770565724434    5.334e-07
+	  14         3.770566076997    1.429e-07
 	-----------------------------------------
-	Converged Mu_Z-Perturbed Wfn to 3.141e-11
+	Converged Mu_Z-Perturbed Wfn to 3.454e-08
 
 	Computing Mu_Z-Perturbed Wave Function (-0.100 E_h).
 	Iter   Pseudopolarizability       RMS 
 	----   --------------------   -----------
-	   0         2.268748027692
-	   1         2.671832390576    1.418e-01
-	   2         2.926184075047    7.510e-02
-	   3         2.934537172485    2.669e-02
-	   4         2.942376986130    9.551e-03
-	   5         2.941962072885    2.279e-03
-	   6         2.942227121179    5.402e-04
-	   7         2.942246442646    1.104e-04
-	   8         2.942239950492    2.513e-05
-	   9         2.942241777777    5.113e-06
-	  10         2.942242189335    1.513e-06
-	  11         2.942242183050    3.874e-07
-	  12         2.942242086392    1.103e-07
-	  13         2.942242078811    2.463e-08
-	  14         2.942242086475    6.042e-09
-	  15         2.942242089087    1.360e-09
-	  16         2.942242089703    3.168e-10
+	   0         2.268748030836
+	   1         2.671832395676    1.418e-01
+	   2         2.926184084702    7.510e-02
+	   3         2.934537182844    2.669e-02
+	   4         2.942376996996    9.551e-03
+	   5         2.941962083729    2.279e-03
+	   6         2.942227132030    5.402e-04
+	   7         2.942246453499    1.104e-04
+	   8         2.942239961344    2.513e-05
+	   9         2.942241788629    5.113e-06
+	  10         2.942242200188    1.513e-06
+	  11         2.942242193902    3.874e-07
+	  12         2.942242097245    1.103e-07
 	-----------------------------------------
-	Converged Mu_Z-Perturbed Wfn to 6.498e-11
+	Converged Mu_Z-Perturbed Wfn to 2.463e-08
 
 	Computing <<Mu;Mu>_(0.100) tensor.
 
@@ -957,11 +955,11 @@ clean()
 
                 0                  1                  2        
 
-    0   5.861609262166009 -1.962553080351984  0.000000000000000
-    1  -1.963177068404622  6.804320764736936  0.000000000000000
-    2   0.000000000000000  0.000000000000000  3.296071320716004
+    0   5.861609089920714 -1.962553013568794  0.000000000000000
+    1  -1.963176957463175  6.804320852898581  0.000000000000000
+    2   0.000000000000000  0.000000000000000  3.296071350218419
 
-	alpha_(0.100) =      15.962001347619 a.u.
+	alpha_(0.100) =      15.962001293038 a.u.
 
 	-------------------------------
 	      CCSD Polarizability
@@ -972,9 +970,14 @@ clean()
 	0.050   911.27        15.50678
 	0.100   455.63        15.96200
 
-*** tstop() called on ganymede.local at Sat Jun 25 19:11:40 2011
-	user time   =      10.35 seconds =       0.17 minutes
-	system time =       7.05 seconds =       0.12 minutes
-	total time  =         15 seconds =       0.25 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 15:04:14 2012
+Module time:
+	user time   =       6.23 seconds =       0.10 minutes
+	system time =       3.43 seconds =       0.06 minutes
+	total time  =         11 seconds =       0.18 minutes
+Total time:
+	user time   =       7.77 seconds =       0.13 minutes
+	system time =       4.18 seconds =       0.07 minutes
+	total time  =         18 seconds =       0.30 minutes
 
-*** PSI4 exiting successfully, buy a developer a beer!
+*** PSI4 exiting successfully. Buy a developer a beer!

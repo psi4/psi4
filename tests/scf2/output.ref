@@ -1,12 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
-    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
-    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
-    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -18,13 +21,13 @@
 
 --------------------------------------------------------------------------
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
-#! This compuation runs in C1 symmetry, which is currently required for RI-SCF.
 
-nucenergy =   8.801466202085710  #TEST
-refenergy = -76.05098621944234   #TEST
+memory 250 mb
+
+nucenergy =   8.80146552997207  #TEST
+refenergy = -76.05098620307962  #TEST
 
 molecule h2o {
-    symmetry c1
     O
     H 1 1.0
     H 1 1.0 2 104.5
@@ -33,20 +36,19 @@ molecule h2o {
 set globals {
   basis        cc-pVTZ
   scf_type     df
-  ri_basis_scf cc-pVTZ-JKFIT
-  e_converge   10
+  e_convergence   10
 }
 
 thisenergy = energy('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
-
-clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on hohenstein-laptop
-*** at Wed Jul 13 16:19:25 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:38:02 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -55,33 +57,32 @@ clean()
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
 
-    Molecular point group: c1
+    Molecular point group: c2v
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000     0.790689573744     0.543701060724
+           O         -0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
-    Number of unique atoms: 3
+    Number of unique atoms: 2
 
     Atoms equivalency:
        unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
+       unique atom 1: 1 2 
 
-  Running in c1 symmetry.
+  Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801466202085710
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -94,6 +95,7 @@ clean()
   SCF Algorithm Type is DF.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-08
@@ -110,16 +112,19 @@ clean()
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 2.9026025875E-03.
+  Minimum eigenvalue in the overlap matrix is 2.9026033945E-03.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -60.32108534205970
+  Initial RHF energy:   -60.32108560423950
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A         58      58       5       5       5       0
+     A1        23      23       3       3       3       0
+     A2         7       7       0       0       0       0
+     B1        11      11       1       1       1       0
+     B2        17      17       1       1       1       0
    -------------------------------------------------------
     Total      58      58       5       5       5       0
    -------------------------------------------------------
@@ -129,7 +134,9 @@ clean()
  DFHF: Density-Fitted SCF Algorithms.
    by Rob Parrish
 
-  ==> Auxiliary Basis: CC-PVTZ-JKFIT <==
+  No auxiliary basis selected, defaulting to CC-PVTZ-JKFIT
+
+  ==> Auxiliary Basis:  <==
 
   Basis Set
     Number of shells: 45
@@ -144,19 +151,25 @@ clean()
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -61.31470794225068   -9.93623e-01   0.00000e+00  
-   @RHF iter   2:   -66.48315533750394   -5.16845e+00   2.15358e-01 DIIS
-   @RHF iter   3:   -73.60196587972203   -7.11881e+00   2.13461e-01 DIIS
-   @RHF iter   4:   -75.62913038173797   -2.02716e+00   8.77709e-03 DIIS
-   @RHF iter   5:   -76.04754577960844   -4.18415e-01   5.78054e-03 DIIS
-   @RHF iter   6:   -76.05037965506818   -2.83388e-03   8.76867e-04 DIIS
-   @RHF iter   7:   -76.05094917123323   -5.69516e-04   2.13998e-04 DIIS
-   @RHF iter   8:   -76.05098431810994   -3.51469e-05   8.53542e-05 DIIS
-   @RHF iter   9:   -76.05098616253035   -1.84442e-06   2.53764e-05 DIIS
-   @RHF iter  10:   -76.05098621860841   -5.60781e-08   3.95702e-06 DIIS
-   @RHF iter  11:   -76.05098621941045   -8.02032e-10   4.80897e-07 DIIS
-   @RHF iter  12:   -76.05098621944173   -3.12781e-11   7.60334e-08 DIIS
-   @RHF iter  13:   -76.05098621944234   -6.11067e-13   1.83797e-08 DIIS
+   @RHF iter   1:   -61.31470778189309   -9.93622e-01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -66.48315489011263   -5.16845e+00   3.97383e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -73.60196544130834   -7.11881e+00   3.93884e-01 DIIS
+   @RHF iter   4:   -75.62913021420073   -2.02716e+00   1.61957e-02 DIIS
+   @RHF iter   5:   -76.04754576024054   -4.18416e-01   1.06664e-02 DIIS
+   @RHF iter   6:   -76.05037963843746   -2.83388e-03   1.61802e-03 DIIS
+   @RHF iter   7:   -76.05094915484641   -5.69516e-04   3.94875e-04 DIIS
+   @RHF iter   8:   -76.05098430174544   -3.51469e-05   1.57498e-04 DIIS
+   @RHF iter   9:   -76.05098614616766   -1.84442e-06   4.68252e-05 DIIS
+   @RHF iter  10:   -76.05098620224578   -5.60781e-08   7.30161e-06 DIIS
+   @RHF iter  11:   -76.05098620304794   -8.02160e-10   8.87365e-07 DIIS
+   @RHF iter  12:   -76.05098620307911   -3.11644e-11   1.40291e-07 DIIS
+   @RHF iter  13:   -76.05098620307962   -5.11591e-13   3.39456e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -165,56 +178,62 @@ clean()
 
 	Doubly Occupied:                                                      
 
-	   1A    -20.562138     2A     -1.324719     3A     -0.687037  
-	   4A     -0.569630     5A     -0.501255  
+	   1A1   -20.562138     2A1    -1.324719     1B2    -0.687037  
+	   3A1    -0.569630     1B1    -0.501255  
 
 	Virtual:                                                              
 
-	   6A      0.137557     7A      0.199842     8A      0.526492  
-	   9A      0.576831    10A      0.677461    11A      0.785997  
-	  12A      0.793875    13A      0.805787    14A      0.852292  
-	  15A      0.951778    16A      1.165822    17A      1.172443  
-	  18A      1.489228    19A      1.501210    20A      2.019244  
-	  21A      2.048947    22A      2.115800    23A      2.157398  
-	  24A      2.253311    25A      2.570131    26A      2.925729  
-	  27A      3.356690    28A      3.471321    29A      3.552110  
-	  30A      3.599876    31A      3.766354    32A      3.826770  
-	  33A      3.874687    34A      3.936042    35A      4.015354  
-	  36A      4.055492    37A      4.135577    38A      4.246990  
-	  39A      4.323614    40A      4.478353    41A      4.645991  
-	  42A      4.776742    43A      5.012617    44A      5.229074  
-	  45A      5.516784    46A      5.976687    47A      6.414996  
-	  48A      6.772506    49A      6.849685    50A      6.905158  
-	  51A      6.934088    52A      7.012922    53A      7.168713  
-	  54A      7.181120    55A      7.433881    56A      7.697134  
-	  57A      8.106357    58A     12.196040  
+	   4A1     0.137557     2B2     0.199842     3B2     0.526492  
+	   5A1     0.576831     6A1     0.677461     2B1     0.785997  
+	   7A1     0.793875     4B2     0.805787     1A2     0.852292  
+	   3B1     0.951778     8A1     1.165822     5B2     1.172443  
+	   6B2     1.489228     9A1     1.501210     4B1     2.019244  
+	   2A2     2.048947     7B2     2.115800    10A1     2.157398  
+	  11A1     2.253311    12A1     2.570131     8B2     2.925729  
+	   5B1     3.356690    13A1     3.471321     3A2     3.552110  
+	   9B2     3.599876     6B1     3.766354    10B2     3.826770  
+	  14A1     3.874687     4A2     3.936042     7B1     4.015354  
+	  11B2     4.055492    15A1     4.135577     5A2     4.246989  
+	  16A1     4.323614    12B2     4.478353     8B1     4.645991  
+	  13B2     4.776742    17A1     5.012617    18A1     5.229074  
+	  14B2     5.516784     9B1     5.976687    19A1     6.414996  
+	  10B1     6.772506     6A2     6.849685    20A1     6.905158  
+	  15B2     6.934087    11B1     7.012922    21A1     7.168713  
+	   7A2     7.181120    22A1     7.433881    16B2     7.697134  
+	  17B2     8.106356    23A1    12.196039  
 
 	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.05098621944234
+  @RHF Final Energy:   -76.05098620307962
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2092
 
- Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.8099     Total:     0.8099
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.8099     Total:     0.8099
 
- Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     2.0586     Total:     2.0586
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     2.0586     Total:     2.0586
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on hohenstein-laptop at Wed Jul 13 16:19:25 2011
-	user time   =       0.77 seconds =       0.01 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:03 2012
+Module time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-*** PSI4 exiting successfully, buy a developer a beer!
+*** PSI4 exiting successfully. Buy a developer a beer!

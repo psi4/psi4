@@ -14,16 +14,25 @@
 
 namespace psi { namespace cctriples {
 
-    void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, 
-		    int I, int Gi, int J, int Gj, int K, int Gk,
-		    dpdbuf4 *T2AA, dpdbuf4 *T2AB, dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA,
-		    dpdbuf4 *EAA, dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, 
-		    dpdbuf4 *DAA, dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, 
-		    dpdfile2 *fIJ, dpdfile2 *fij,dpdfile2 *fAB, dpdfile2 *fab, 
-		    int *aoccpi, int *aocc_off, int *boccpi, int *bocc_off,
-		    int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, double omega);
+extern void T3_UHF_AAB(double ***W, double ***V, int disc, int nirreps, 
+    int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2AA, dpdbuf4 *T2AB, 
+    dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA, dpdbuf4 *EAA, 
+    dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA, 
+    dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij,
+    dpdfile2 *fAB, dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi, 
+    int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off, 
+    double omega);
 
-    void T3_grad_UHF_BBA(void)
+extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps,
+    int I, int Gi, int J, int Gj, int K, int Gk, dpdbuf4 *T2AA, dpdbuf4 *T2AB,
+    dpdbuf4 *T2BA, dpdbuf4 *FAA, dpdbuf4 *FAB, dpdbuf4 *FBA, dpdbuf4 *EAA,
+    dpdbuf4 *EAB, dpdbuf4 *EBA, dpdfile2 *T1A, dpdfile2 *T1B, dpdbuf4 *DAA,
+    dpdbuf4 *DAB, dpdfile2 *fIA, dpdfile2 *fia, dpdfile2 *fIJ, dpdfile2 *fij,
+    dpdfile2 *fAB, dpdfile2 *fab, int *aoccpi, int *aocc_off, int *boccpi,
+    int *bocc_off, int *avirtpi, int *avir_off, int *bvirtpi, int *bvir_off,
+    double omega);
+
+    double T3_grad_UHF_BBA(void)
     {
       int cnt;
       int h, nirreps;
@@ -51,16 +60,11 @@ namespace psi { namespace cctriples {
       dpdfile2 T1A, T1B, fIJ, fij, fAB, fab, fIA, fia;
       dpdfile2 S1A, S1B, DAB, Dab, DIJ, Dij;
       dpdbuf4 S2BB, S2BA, Gijab, GiJaB, Gijka, GIjKa, GiJkA, Gidab, GiDaB, GIdAb;
-      dpdbuf4 T2BB_junk, T2AB_junk, T2BA_junk;
-      dpdbuf4 FBBints_junk, FABints_junk, FBAints_junk;
-      dpdbuf4 EBBints_junk, EABints_junk, EBAints_junk;
-      dpdbuf4 DBBints_junk, DBAints_junk;
-      dpdfile2 T1A_junk, T1B_junk;
-      dpdfile2 fIA_junk, fia_junk, fIJ_junk, fij_junk, fAB_junk, fab_junk;
       double ***WabC, ***VabC;
-      double ***WabC2, ***VabC2;
       double ***XabC, ***Y1, ***Y2;
       double **Z;
+      double ***WijK = (double ***) malloc(nirreps * sizeof(double **));
+      double ***VijK = (double ***) malloc(nirreps * sizeof(double **));
 
       nirreps = moinfo.nirreps;
       aoccpi = moinfo.aoccpi; 
@@ -97,31 +101,6 @@ namespace psi { namespace cctriples {
       dpd_buf4_init(&DBBints, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
       dpd_buf4_init(&DBAints, CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
 
-      dpd_file2_init(&fIJ_junk, CC_OEI, 0, 0, 0, "fIJ");
-      dpd_file2_init(&fij_junk, CC_OEI, 0, 2, 2, "fij");
-      dpd_file2_init(&fAB_junk, CC_OEI, 0, 1, 1, "fAB");
-      dpd_file2_init(&fab_junk, CC_OEI, 0, 3, 3, "fab");
-      dpd_file2_init(&fIA_junk, CC_OEI, 0, 0, 1, "fIA");
-      dpd_file2_init(&fia_junk, CC_OEI, 0, 2, 3, "fia");
-
-      dpd_file2_init(&T1A_junk, CC_OEI, 0, 0, 1, "tIA");
-      dpd_file2_init(&T1B_junk, CC_OEI, 0, 2, 3, "tia");
-
-      dpd_buf4_init(&T2BB_junk, CC_TAMPS, 0, 10, 15, 12, 17, 0, "tijab");
-      dpd_buf4_init(&T2AB_junk, CC_TAMPS, 0, 22, 28, 22, 28, 0, "tIjAb");
-      dpd_buf4_init(&T2BA_junk, CC_TAMPS, 0, 23, 29, 23, 29, 0, "tiJaB");
-
-      dpd_buf4_init(&FBBints_junk, CC_FINTS, 0, 30, 15, 30, 15, 1, "F <ia|bc>");
-      dpd_buf4_init(&FABints_junk, CC_FINTS, 0, 24, 28, 24, 28, 0, "F <Ia|Bc>");
-      dpd_buf4_init(&FBAints_junk, CC_FINTS, 0, 27, 29, 27, 29, 0, "F <iA|bC>");
-
-      dpd_buf4_init(&EBBints_junk, CC_EINTS, 0, 10, 30, 12, 30, 0, "E <ij||ka> (i>j,ka)");
-      dpd_buf4_init(&EABints_junk, CC_EINTS, 0, 22, 24, 22, 24, 0, "E <Ij|Ka>");
-      dpd_buf4_init(&EBAints_junk, CC_EINTS, 0, 23, 27, 23, 27, 0, "E <iJ|kA>");
-
-      dpd_buf4_init(&DBBints_junk, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
-      dpd_buf4_init(&DBAints_junk, CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
-
       dpd_file2_init(&S1A, CC_OEI, 0, 0, 1, "SIA");
       dpd_file2_mat_init(&S1A);
       dpd_file2_mat_rd(&S1A);
@@ -143,13 +122,6 @@ namespace psi { namespace cctriples {
       dpd_file2_init(&Dab, CC_OEI, 0, 3, 3, "Dab");
       dpd_file2_mat_init(&Dab);
       dpd_file2_mat_rd(&Dab);
-
-      dpd_file2_init(&DIJ, CC_OEI, 0, 0, 0, "DIJ");
-      dpd_file2_mat_init(&DIJ);
-      dpd_file2_mat_rd(&DIJ);
-      dpd_file2_init(&Dij, CC_OEI, 0, 2, 2, "Dij");
-      dpd_file2_mat_init(&Dij);
-      dpd_file2_mat_rd(&Dij);
 
       dpd_buf4_init(&Gijab, CC_GAMMA, 0, 10, 15, 12, 17, 0, "Gijab");
       dpd_buf4_init(&GiJaB, CC_GAMMA, 0, 23, 29, 23, 29, 0, "GiJaB");
@@ -190,8 +162,6 @@ namespace psi { namespace cctriples {
       XabC = (double ***) malloc(nirreps * sizeof(double **));
       Y1 = (double ***) malloc(nirreps * sizeof(double **));
       Y2 = (double ***) malloc(nirreps * sizeof(double **));
-      WabC2 = (double ***) malloc(nirreps * sizeof(double **));
-      VabC2 = (double ***) malloc(nirreps * sizeof(double **));
 
       for(Gi=0; Gi < nirreps; Gi++) {
 	for(Gj=0; Gj < nirreps; Gj++) {
@@ -209,8 +179,6 @@ namespace psi { namespace cctriples {
 	      WabC[Gab] = dpd_block_matrix(FBBints.params->coltot[Gab], avirtpi[Gc]);
 	      VabC[Gab] = dpd_block_matrix(FBBints.params->coltot[Gab], avirtpi[Gc]);
 	      XabC[Gab] = dpd_block_matrix(FBBints.params->coltot[Gab], avirtpi[Gc]);
-	      WabC2[Gab] = dpd_block_matrix(FBBints.params->coltot[Gab], avirtpi[Gc]);
-	      VabC2[Gab] = dpd_block_matrix(FBBints.params->coltot[Gab], avirtpi[Gc]);
 	    }
 
 	    for(Ga=0; Ga < nirreps; Ga++) {
@@ -618,44 +586,6 @@ namespace psi { namespace cctriples {
 
 		  /**** T3 --> Dab complete ****/
 
-		  /**** T3 --> DIJ ****/
-		  Gl = Gi;
-		  for(l=0; l < boccpi[Gl]; l++) {
-		    L = bocc_off[Gl] + l;
-		    T3_UHF_AAB(WabC2, VabC2, 1, nirreps, L, Gl, J, Gj, K, Gk, &T2BB_junk, &T2BA_junk, &T2AB_junk,
-			       &FBBints_junk, &FBAints_junk, &FABints_junk, &EBBints_junk, &EBAints_junk, &EABints_junk,
-			       &T1B_junk, &T1A_junk, &DBBints_junk, &DBAints_junk, &fia_junk, &fIA_junk, &fij_junk, &fIJ_junk, 
-			       &fab_junk, &fAB_junk, boccpi, bocc_off, aoccpi, aocc_off, bvirtpi, bvir_off, avirtpi, avir_off, 0.0);
-		    for(Gab=0; Gab < nirreps; Gab++) {
-		      Gc = Gijk ^ Gab;
-		      for(ab=0; ab < FBBints.params->coltot[Gab]; ab++) {
-			for(c=0; c < avirtpi[Gc]; c++) {
-			  C = avir_off[Gc] + c;
-			  Dij.matrix[Gi][i][l] -= (1.0/2.0) * WabC2[Gab][ab][c] * (WabC[Gab][ab][c] + VabC[Gab][ab][c]);
-			} /* c */
-		      } /* ab */
-		    } /* Gab */
-		  } /* l */
-
-		  Gl = Gk;
-		  for(l=0; l < aoccpi[Gl]; l++) {
-		    L = aocc_off[Gl] + l;
-		    T3_UHF_AAB(WabC2, VabC2, 1, nirreps, I, Gi, J, Gj, L, Gl, &T2BB_junk, &T2BA_junk, &T2AB_junk,
-			       &FBBints_junk, &FBAints_junk, &FABints_junk, &EBBints_junk, &EBAints_junk, &EABints_junk,
-			       &T1B_junk, &T1A_junk, &DBBints_junk, &DBAints_junk, &fia_junk, &fIA_junk, &fij_junk, &fIJ_junk, 
-			       &fab_junk, &fAB_junk, boccpi, bocc_off, aoccpi, aocc_off, bvirtpi, bvir_off, avirtpi, avir_off, 0.0);
-		    for(Gab=0; Gab < nirreps; Gab++) {
-		      Gc = Gijk ^ Gab;
-		      for(ab=0; ab < FBBints.params->coltot[Gab]; ab++) {
-			for(c=0; c < avirtpi[Gc]; c++) {
-			  C = avir_off[Gc] + c;
-			  DIJ.matrix[Gk][k][l] -= (1.0/4.0) * WabC2[Gab][ab][c] * (WabC[Gab][ab][c] + VabC[Gab][ab][c]);
-			} /* c */
-		      } /* ab */
-		    } /* Gab */
-		  } /* l */
-		  /**** T3 --> DIJ complete ****/
-
 		  /**** T3 --> Gijab ****/
 
 		  for(Gab=0; Gab < nirreps; Gab++) {
@@ -876,8 +806,6 @@ namespace psi { namespace cctriples {
 	      dpd_free_block(WabC[Gab], FBBints.params->coltot[Gab], avirtpi[Gc]);
 	      dpd_free_block(VabC[Gab], FBBints.params->coltot[Gab], avirtpi[Gc]);
 	      dpd_free_block(XabC[Gab], FBBints.params->coltot[Gab], avirtpi[Gc]);
-	      dpd_free_block(WabC2[Gab], FBBints.params->coltot[Gab], avirtpi[Gc]);
-	      dpd_free_block(VabC2[Gab], FBBints.params->coltot[Gab], avirtpi[Gc]);
 	    }
 	    for(Ga=0; Ga < nirreps; Ga++) {
 	      Gbc = Ga ^ Gijk;
@@ -890,14 +818,11 @@ namespace psi { namespace cctriples {
       } /* Gi */
 
       ET *= 0.25;
-      fprintf(outfile, "\tE(T) BBA = %20.15f\n", ET);
 
       free(WabC);
       free(VabC);
       free(XabC);
       free(Y1); free(Y2);
-      free(WabC2);
-      free(VabC2);
 
       dpd_file2_mat_wrt(&DAB);
       dpd_file2_mat_close(&DAB);
@@ -905,13 +830,6 @@ namespace psi { namespace cctriples {
       dpd_file2_mat_wrt(&Dab);
       dpd_file2_mat_close(&Dab);
       dpd_file2_close(&Dab);
-
-      dpd_file2_mat_wrt(&DIJ);
-      dpd_file2_mat_close(&DIJ);
-      dpd_file2_close(&DIJ);
-      dpd_file2_mat_wrt(&Dij);
-      dpd_file2_mat_close(&Dij);
-      dpd_file2_close(&Dij);
 
       for(h=0; h < nirreps; h++) {
 	dpd_buf4_mat_irrep_wrt(&S2BB, h);
@@ -996,26 +914,136 @@ namespace psi { namespace cctriples {
       dpd_file2_close(&fIA);
       dpd_file2_close(&fia);
 
-      dpd_buf4_close(&T2BB_junk);
-      dpd_buf4_close(&T2AB_junk);
-      dpd_buf4_close(&T2BA_junk);
-      dpd_buf4_close(&FBBints_junk);
-      dpd_buf4_close(&FABints_junk);
-      dpd_buf4_close(&FBAints_junk);
-      dpd_buf4_close(&EBBints_junk);
-      dpd_buf4_close(&EABints_junk);
-      dpd_buf4_close(&EBAints_junk);
-      dpd_buf4_close(&DBBints_junk);
-      dpd_buf4_close(&DBAints_junk);
 
-      dpd_file2_close(&T1A_junk);
-      dpd_file2_close(&T1B_junk);
-      dpd_file2_close(&fIJ_junk);
-      dpd_file2_close(&fij_junk);
-      dpd_file2_close(&fAB_junk);
-      dpd_file2_close(&fab_junk);
-      dpd_file2_close(&fIA_junk);
-      dpd_file2_close(&fia_junk);
+      /*** T3 -> DIJ and Dij ***/
+
+      dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
+      dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
+      dpd_file2_init(&fab, CC_OEI, 0, 3, 3, "fab");
+      dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
+      dpd_file2_init(&fia, CC_OEI, 0, 2, 3, "fia");
+      dpd_file2_init(&fIA, CC_OEI, 0, 0, 1, "fIA");
+      dpd_file2_init(&T1B, CC_OEI, 0, 2, 3, "tia");
+      dpd_file2_init(&T1A, CC_OEI, 0, 0, 1, "tIA");
+
+      dpd_buf4_init(&T2BB, CC_TAMPS, 0, 15, 10, 17, 12, 0, "tabij");
+      dpd_buf4_init(&T2AB, CC_TAMPS, 0, 28, 22, 28, 22, 0, "tAbIj");
+      dpd_buf4_init(&T2BA, CC_TAMPS, 0, 29, 23, 29, 23, 0, "taBiJ");
+      dpd_buf4_init(&FBBints, CC_FINTS, 0, 15, 30, 17, 30, 0, "F <bc||ia>");
+      dpd_buf4_init(&FBAints, CC_FINTS, 0, 29, 27, 29, 27, 0, "F <bC|iA>");
+      dpd_buf4_init(&FABints, CC_FINTS, 0, 28, 24, 28, 24, 0, "F <Bc|Ia>");
+      dpd_buf4_init(&EBBints, CC_EINTS, 0, 31, 10, 31, 12, 0, "E <ak||ij> (ak, i>j)");
+      dpd_buf4_init(&EABints, CC_EINTS, 0, 25, 22, 25, 22, 0, "E <aK|Ij>");
+      dpd_buf4_init(&EBAints, CC_EINTS, 0, 26, 23, 26, 23, 0, "E <Ak|iJ>");
+      dpd_buf4_init(&DBBints, CC_DINTS, 0, 10, 15, 10, 15, 0, "D <ij||ab>");
+      dpd_buf4_init(&DBAints, CC_DINTS, 0, 23, 29, 23, 29, 0, "D <iJ|aB>");
+
+      dpd_file2_init(&DIJ, CC_OEI, 0, 0, 0, "DIJ");
+      dpd_file2_mat_init(&DIJ);
+      dpd_file2_mat_rd(&DIJ);
+      dpd_file2_init(&Dij, CC_OEI, 0, 2, 2, "Dij");
+      dpd_file2_mat_init(&Dij);
+      dpd_file2_mat_rd(&Dij);
+
+      int Gabc;
+      for (Ga=0; Ga < nirreps; ++Ga) {
+        for (a=0; a<bvirtpi[Ga]; ++a) {
+          A = bvir_off[Ga] + a;
+          for (Gb=0; Gb < nirreps; ++Gb) {
+            for (b=0; b<bvirtpi[Gb]; ++b) {
+              B = bvir_off[Gb] + b;
+              for (Gc=0; Gc < nirreps; ++Gc) {
+                for (c=0; c < avirtpi[Gc]; ++c) {
+                  C = avir_off[Gc] + c;
+                  Gabc = Ga ^ Gb ^ Gc;
+                  //Allocate the memory for connected and disconnected triples
+                  for (Gij=0; Gij < nirreps; ++Gij) {
+                    Gk = Gij ^ Gabc;
+                    WijK[Gij] = dpd_block_matrix(T2BB.params->coltot[Gij], aoccpi[Gk]);
+                    VijK[Gij] = dpd_block_matrix(T2BB.params->coltot[Gij], aoccpi[Gk]);
+                  }
+
+                  T3_UHF_AAB_abc(WijK, VijK, 1, nirreps, A, Ga, B, Gb, C, Gc,
+                      &T2BB, &T2BA, &T2AB, &FBBints, &FBAints, &FABints, &EBBints,
+                      &EBAints, &EABints, &T1B, &T1A, &DBBints, &DBAints, &fia,
+                      &fIA, &fij, &fIJ, &fab, &fAB, boccpi, bocc_off, aoccpi,
+                      aocc_off, bvirtpi, bvir_off, avirtpi, avir_off, 0.0);
+
+                  for(Gi=0; Gi < nirreps; Gi++) {
+                    Gj = Gi;
+                    Gkl = Gi ^ Gabc;
+                    for(Gk=0; Gk < nirreps; Gk++) {
+                      Gl = Gk ^ Gkl;
+                      Gik = Gjk = Gi ^ Gk;
+                      for(i=0; i < boccpi[Gi]; i++) {
+                        I = bocc_off[Gi] + i;
+                        for(j=0; j < boccpi[Gj]; j++) {
+                          J = bocc_off[Gj] + j;
+                          for(k=0; k < boccpi[Gk]; k++) {
+                            K = bocc_off[Gk] + k;
+                            ik = T2BB.params->colidx[I][K];
+                            jk = T2BB.params->colidx[J][K];
+                            for(l=0; l < aoccpi[Gl]; l++) {
+                              Dij.matrix[Gi][i][j] -= 0.5 * WijK[Gik][ik][l] * (WijK[Gjk][jk][l] + VijK[Gjk][jk][l]);
+                            } /* l */
+                          } /* k */
+                        } /* j */
+                      } /* i */
+                    } /* Gk */
+                  } /* Gi */
+
+                  for(Gi=0; Gi < nirreps; Gi++) {
+                    Gj = Gi;
+                    Gkl = Gi ^ Gabc;
+                    for(kl=0; kl < T2BB.params->coltot[Gkl]; kl++) {
+                      for(i=0; i < aoccpi[Gi]; i++) {
+                        for(j=0; j < aoccpi[Gj]; j++) {
+                          DIJ.matrix[Gi][i][j] -= 0.25 * WijK[Gkl][kl][i] * (WijK[Gkl][kl][j] + VijK[Gkl][kl][j]);
+                        } /* j */
+                      } /* i */
+                    } /* kl */
+                  } /* Gi */
+
+                  //Deallocate the memory for connected and disconnected triples
+                  for (Gij=0; Gij < nirreps; ++Gij) {
+                    Gk = Gij ^ Gabc;
+                    dpd_free_block(WijK[Gij], T2BB.params->coltot[Gij], aoccpi[Gk]);
+                    dpd_free_block(VijK[Gij], T2BB.params->coltot[Gij], aoccpi[Gk]);
+                  }
+
+                } // c
+              } // Gc
+            } // b
+          } // Gb
+        } // a
+      } // Ga
+
+      dpd_file2_mat_wrt(&DIJ);
+      dpd_file2_mat_close(&DIJ);
+      dpd_file2_close(&DIJ);
+      dpd_file2_mat_wrt(&Dij);
+      dpd_file2_mat_close(&Dij);
+      dpd_file2_close(&Dij);
+
+      dpd_file2_close(&fij);
+      dpd_file2_close(&fIJ);
+      dpd_file2_close(&fab);
+      dpd_file2_close(&fAB);
+
+      dpd_buf4_close(&T2BB);
+      dpd_buf4_close(&T2AB);
+      dpd_buf4_close(&T2BA);
+      dpd_buf4_close(&EBBints);
+      dpd_buf4_close(&EABints);
+      dpd_buf4_close(&EBAints);
+      dpd_buf4_close(&FBBints);
+      dpd_buf4_close(&FABints);
+      dpd_buf4_close(&FBAints);
+      dpd_buf4_close(&DBBints);
+      dpd_buf4_close(&DBAints);
+
+      return ET;
+
     }
 
   }} // namespace psi::CCTRIPLES
