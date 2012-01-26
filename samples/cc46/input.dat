@@ -1,3 +1,5 @@
+#! EOM-CC2/cc-pVDZ on H$@@2$O$@@2$ with two excited states in each irrep
+
 memory 250 mb
 
 molecule h2o2 {

@@ -41,10 +41,10 @@ namespace psi { namespace cctriples {
     void cachedone_rhf(int **cachelist);
 
     void T3_grad_RHF(void);
-    void T3_grad_UHF_AAA(void);
-    void T3_grad_UHF_BBB(void);
-    void T3_grad_UHF_AAB(void);
-    void T3_grad_UHF_BBA(void);
+    double T3_grad_UHF_AAA(void);
+    double T3_grad_UHF_BBB(void);
+    double T3_grad_UHF_AAB(void);
+    double T3_grad_UHF_BBA(void);
 
 
     void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps, int A, int Ga, int B, int Gb, int C, int Gc,
@@ -146,21 +146,45 @@ PsiReturnType cctriples(Options &options)
     Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
   }
   else if(params.ref == 2) { /** UHF **/
-    ETAAA = ET_UHF_AAA();
-    fprintf(outfile, "\tAAA (T) energy                = %20.15f\n", ETAAA);
-    fflush(outfile);
 
-    ETBBB = ET_UHF_BBB();
-    fprintf(outfile, "\tBBB (T) energy                = %20.15f\n", ETBBB);
-    fflush(outfile);
+    if(params.dertype == 0) {
+      ETAAA = ET_UHF_AAA();
+      fprintf(outfile, "\tAAA (T) energy                = %20.15f\n", ETAAA);
+      fflush(outfile);
 
-    ETAAB = ET_UHF_AAB();
-    fprintf(outfile, "\tAAB (T) energy                = %20.15f\n", ETAAB);
-    fflush(outfile);
+      ETBBB = ET_UHF_BBB();
+      fprintf(outfile, "\tBBB (T) energy                = %20.15f\n", ETBBB);
+      fflush(outfile);
 
-    ETABB = ET_UHF_ABB();
-    fprintf(outfile, "\tABB (T) energy                = %20.15f\n", ETABB);
-    fflush(outfile);
+      ETAAB = ET_UHF_AAB();
+      fprintf(outfile, "\tAAB (T) energy                = %20.15f\n", ETAAB);
+      fflush(outfile);
+
+      ETABB = ET_UHF_ABB();
+      fprintf(outfile, "\tABB (T) energy                = %20.15f\n", ETABB);
+      fflush(outfile);
+    }
+    else if(params.dertype==1) {
+      transpose_integrals();
+      fprintf(outfile, "\n\tComputing (T) contributions to CC density...\n");
+      fflush(outfile);
+
+      ETAAA = T3_grad_UHF_AAA();
+      fprintf(outfile, "\tAAA (T) energy                = %20.15f\n", ETAAA);
+      fflush(outfile);
+
+      ETBBB = T3_grad_UHF_BBB();
+      fprintf(outfile, "\tBBB (T) energy                = %20.15f\n", ETBBB);
+      fflush(outfile);
+
+      ETAAB = T3_grad_UHF_AAB();
+      fprintf(outfile, "\tAAB (T) energy                = %20.15f\n", ETAAB);
+      fflush(outfile);
+
+      ETABB = T3_grad_UHF_BBA();
+      fprintf(outfile, "\tABB (T) energy                = %20.15f\n", ETABB);
+      fflush(outfile);
+    }
 
     ET = ETAAA + ETAAB + ETABB + ETBBB;
     fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
@@ -175,30 +199,7 @@ PsiReturnType cctriples(Options &options)
     Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
     Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
 
-    if(params.dertype==1) {
-
-      transpose_integrals();
-      test_abc_loops_AAA();
-      test_abc_loops_BBB();
-      test_abc_loops_AAB();
-      test_abc_loops_BBA();
-
-      fprintf(outfile, "\n\tComputing (T) contributions to CC density...\n");
-      fflush(outfile);
-      T3_grad_UHF_AAA();
-      fprintf(outfile, "\tAAA contributions complete.\n");
-      fflush(outfile);
-      T3_grad_UHF_BBB();
-      fprintf(outfile, "\tBBB contributions complete.\n");
-      fflush(outfile);
-      T3_grad_UHF_AAB();
-      fprintf(outfile, "\tAAB contributions complete.\n");
-      fflush(outfile);
-      T3_grad_UHF_BBA();
-      fprintf(outfile, "\tBBA contributions complete.\n");
-      fflush(outfile);
-    }
-  }
+  } // UHF
 
   fprintf(outfile, "\n");
 
@@ -208,38 +209,9 @@ PsiReturnType cctriples(Options &options)
   chkpt_wt_e_t(ET);
   chkpt_close();
 
-  /* Write pertinent data to energy.dat */
-//  if(params.wfn == "CCSD_T" || params.wfn == "BCCD_T") {
-//    chkpt_init(PSIO_OPEN_OLD);
-//    natom = chkpt_rd_natom();
-//    geom = chkpt_rd_geom();
-//    zvals = chkpt_rd_zvals();
-//    chkpt_close();
-//    ffile(&efile,"energy.dat",1);
-//    fprintf(efile, "*\n");
-//    for(i=0; i < natom; i++)
-//      fprintf(efile, " %4d   %5.2f     %13.10f    %13.10f    %13.10f\n",
-//          i+1, zvals[i], geom[i][0], geom[i][1], geom[i][2]);
-//    free_block(geom);  free(zvals);
-//    fprintf(efile, "SCF(30)   %22.12f\n", moinfo.escf);
-//    fprintf(efile, "REF(100)  %22.12f\n", moinfo.eref);
-//    if(params.wfn == "CCSD_T") {
-//      fprintf(efile, "CCSD      %22.12f\n", (moinfo.ecc+moinfo.eref));
-//      fprintf(efile, "CCSD(T)   %22.12f\n", (ET+ moinfo.ecc+moinfo.eref));
-//    }
-//    else if(params.wfn == "BCCD_T") {
-//      fprintf(efile, "BCCD      %22.12f\n", (moinfo.ecc+moinfo.eref));
-//      fprintf(efile, "BCCD(T)   %22.12f\n", (ET+ moinfo.ecc+moinfo.eref));
-//    }
-//    fclose(efile);
-//  }
-
-  /* Dump triples energy to CC_INFO */
+  /* Dump triples energy to CC_INFO and the python environment*/
   psio_write_entry(CC_INFO, "(T) Energy", (char *) &(ET), sizeof(double));
 
-  Process::environment.globals["(T) CORRECTION ENERGY"] = ET; 
-  Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET+ moinfo.ecc+moinfo.eref;
-  Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET+ moinfo.ecc;
   Process::environment.globals["CURRENT ENERGY"] = ET+ moinfo.ecc+moinfo.eref;
   Process::environment.globals["CURRENT CORRELATION ENERGY"] = ET+ moinfo.ecc;
 

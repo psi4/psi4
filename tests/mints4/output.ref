@@ -1,0 +1,108 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! A demonstration of mixed Cartesian/ZMatrix geometry specification, using variables, for
+#! the benzene-hydronium complex.  Atoms can be placed using ZMatrix coordinates, whether they belong
+#! to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries
+#! because the former define absolute positions, while the latter are relative.
+
+memory 250 mb
+
+refENuc   = 268.617178206572646  #TEST
+
+molecule dimer {
+1 1
+# This part is just a normal Cartesian geometry specification for benzene
+C          0.710500000000    -0.794637665924    -1.230622098778
+C          1.421000000000    -0.794637665924     0.000000000000
+C          0.710500000000    -0.794637665924     1.230622098778
+C         -0.710500000000    -0.794637665924     1.230622098778
+H          1.254500000000    -0.794637665924    -2.172857738095
+H         -1.254500000000    -0.794637665924     2.172857738095
+C         -0.710500000000    -0.794637665924    -1.230622098778
+C         -1.421000000000    -0.794637665924     0.000000000000
+H          2.509000000000    -0.794637665924     0.000000000000
+H          1.254500000000    -0.794637665924     2.172857738095
+H         -1.254500000000    -0.794637665924    -2.172857738095
+H         -2.509000000000    -0.794637665924     0.000000000000
+# And the hydronium part is specified using a zmatrix, referencing the benzene coordinates
+X  1  CC  3  30   2  A2
+O  13 R   1  90   2  90
+H  14 OH  13 TDA  1  0
+H  14 OH  15 TDA  13 A1
+H  14 OH  15 TDA  13 -A1
+
+CC    = 1.421
+CH    = 1.088
+A1    = 120.0
+A2    = 180.0
+OH    = 1.05
+R     = 4.0
+units angstrom
+}
+
+dimer.update_geometry()
+dimer.print_out()
+compare_values(refENuc, dimer.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")   #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+    Molecular point group: cs
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.710500000000    -0.794637665924    -1.230622098778
+           C          1.421000000000    -0.794637665924     0.000000000000
+           C          0.710500000000    -0.794637665924     1.230622098778
+           C         -0.710500000000    -0.794637665924     1.230622098778
+           H          1.254500000000    -0.794637665924    -2.172857738095
+           H         -1.254500000000    -0.794637665924     2.172857738095
+           C         -0.710500000000    -0.794637665924    -1.230622098778
+           C         -1.421000000000    -0.794637665924     0.000000000000
+           H          2.509000000000    -0.794637665924     0.000000000000
+           H          1.254500000000    -0.794637665924     2.172857738095
+           H         -1.254500000000    -0.794637665924    -2.172857738095
+           H         -2.509000000000    -0.794637665924     0.000000000000
+           O          0.000000000000     3.205362334076     0.000000000000
+           H          0.494974746831     3.555362334076    -0.857321409974
+           H          0.494974746831     3.555362334076     0.857321409974
+           H         -0.989949493661     3.555362334076     0.000000000000
+
+    Number of unique atoms: 11
+
+    Atoms equivalency:
+       unique atom 0: 0 2 
+       unique atom 1: 1 
+       unique atom 2: 3 6 
+       unique atom 3: 4 9 
+       unique atom 4: 5 10 
+       unique atom 5: 7 
+       unique atom 6: 8 
+       unique atom 7: 11 
+       unique atom 8: 12 
+       unique atom 9: 13 14 
+       unique atom 10: 15 
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

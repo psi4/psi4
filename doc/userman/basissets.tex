@@ -2,10 +2,10 @@
 \label{sec:basis}
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
-Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), 
-all-electron [no effective core potentials (ECPs)], of segmented contraction (not general contraction), 
-and of Gaussian94 format (for ease of export from \htmladdnormallink{EMSL}{https://bse.pnl.gov/bse/portal}). 
-Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported, 
+Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves),
+all-electron [no effective core potentials (ECPs)],
+and of Gaussian94 format (for ease of export from \htmladdnormallink{EMSL}{https://bse.pnl.gov/bse/portal}).
+Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported,
 but their mixtures are not, neither within a basis set (\textit{e.g.}, 6D/7F) nor within a calculation
 (\textit{e.g.}, cartesian for the orbital basis and spherical for the fitting basis).
 For built-in basis sets, the correct \optionval{spherical}/\optionval{cartesian} value is set internally from the orbital basis.
@@ -28,7 +28,7 @@ approximations. JKFIT sets are appropriate for fitting $(oo|$-type products,
 such as encountered in SCF theory and the electrostatics/exchange terms of SAPT.
 RI sets are appropriate for fitting $(ov|$-type products, such as encountered in
 MP2 and most SAPT terms.  Citations for basis sets can be found in their
-definition files at psi4/lib/basis in the source.  For basis set availability by
+definition files at {\tt psi4/lib/basis} in the source.  For basis set availability by
 element and the default value for keyword \optionname{PUREAM}{GLOBALS}, consult
 Appendix \ref{basisElement}.
 
@@ -110,7 +110,7 @@ $^b$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \caption{Summary of Dunning orbital basis sets available in \PSIfour.} \label{table:basisDunningOrbital}
 \parsep 10pt
 \begin{center}
-\begin{tabular}{llllllllll} 
+\begin{tabular}{llllllllll}
 \hline\hline
 Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
 \hline
@@ -156,7 +156,7 @@ $^a$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \caption{Summary of Dunning JK-fitting basis sets available in \PSIfour.} \label{table:basisDunningJKFIT}
 \parsep 10pt
 \begin{center}
-\begin{tabular}{llllllllll} 
+\begin{tabular}{llllllllll}
 \hline\hline
 Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
 \hline
@@ -182,7 +182,7 @@ for convenience.
 \caption{Summary of Dunning MP2-fitting basis sets available in \PSIfour.} \label{table:basisDunningMP2FIT}
 \parsep 10pt
 \begin{center}
-\begin{tabular}{llllllllll} 
+\begin{tabular}{llllllllll}
 \hline\hline
 Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
 \hline
@@ -273,31 +273,31 @@ Copy the new basis set file into \texttt{\$PSIDATADIR/basis}.
 Copy the basis set definitions for all elements into a blank file. Exclamation points denote comments.
 As the first line of the file, add the basis set name in brackets.
 As the second line of the file, add the word \texttt{spherical} or \texttt{cartesian} to indicate
-whether the basis set will run in (5D/7F) or (6D/10F). 
-The combination of [ basis name ], \optionname{PUREAM}{GLOBALS} value, and element basis set specifications 
+whether the basis set will run in (5D/7F) or (6D/10F).
+The combination of [ basis name ], \optionname{PUREAM}{GLOBALS} value, and element basis set specifications
 forms a section, like the one shown below.
 Multiple basis sets can be specified in the same file by adding additional sections to the file.
-Specify the location of the new basis set file in a \PSIfour input file with the command 
+Specify the location of the new basis set file in a \PSIfour input file with the command
 \texttt{basis file path/to/basis.file}, where the path can be either relative or absolute.
 \begin{Snippet}
 [ sto-3g ]
 cartesian
 ****
-H     0 
+H     0
 S   3   1.00
-      3.42525091             0.15432897       
-      0.62391373             0.53532814       
-      0.16885540             0.44463454       
+      3.42525091             0.15432897
+      0.62391373             0.53532814
+      0.16885540             0.44463454
 ****
-O     0 
+O     0
 S   3   1.00
-    130.7093200              0.15432897       
-     23.8088610              0.53532814       
-      6.4436083              0.44463454       
+    130.7093200              0.15432897
+     23.8088610              0.53532814
+      6.4436083              0.44463454
 SP   3   1.00
-      5.0331513             -0.09996723             0.15591627       
-      1.1695961              0.39951283             0.60768372       
-      0.3803890              0.70011547             0.39195739       
+      5.0331513             -0.09996723             0.15591627
+      1.1695961              0.39951283             0.60768372
+      0.3803890              0.70011547             0.39195739
 ****
 \end{Snippet}
 
@@ -305,7 +305,7 @@ SP   3   1.00
 
 Construct for a basis set a section like the one above that includes [ basis name ], \optionname{PUREAM}{GLOBALS}
 value, and element basis set specifications. Hash signs denote comments.
-Copy the section into a \PSIfour input file and surround it with the command \texttt{basis \{\dots\}}, 
+Copy the section into a \PSIfour input file and surround it with the command \texttt{basis \{\dots\}},
 as shown below.
 Multiple basis sets can be specified by adding additional sections within the surrounding brackets.
 \begin{Snippet}
@@ -322,6 +322,7 @@ basis {
 The primary basis set is specified with option \optionname{BASIS}{MINTS}, which assigns,
 for instance, aug-cc-pVDZ to all atoms of the last-defined molecule through
 \texttt{set basis aug-cc-pVDZ} or \texttt{basis aug-cc-pVDZ} within a \texttt{set \{$\dots$\}} block.
+More details are provided in section \ref{sec:PsithonBasisSets}.
 
 
 

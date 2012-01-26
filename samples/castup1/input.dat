@@ -1,5 +1,6 @@
 #! Test of SAD/Cast-up (mainly not dying due to file weirdness)
 
+
 memory 250 mb
 
 molecule h2o {

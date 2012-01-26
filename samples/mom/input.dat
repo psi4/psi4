@@ -1,14 +1,13 @@
-# Maximum Overlap Method (MOM) Test
-#
-# MOM is designed to stabilize SCF convergence
-# and to target excited Slater determinants directly.
+#! Maximum Overlap Method (MOM) Test.
+#!
+#! MOM is designed to stabilize SCF convergence
+#! and to target excited Slater determinants directly.
 #
 # The latter is somewhat dicey, you never know what 
 # you are going to find.
 
 memory 250 mb
 
-E56_triplet = -75.79200708284641 # TEST 
 
 # Standard water molecule
 molecule water {
