@@ -1,6 +1,6 @@
 \section{A \PSIfour\ Tutorial} \label{sec:tutorial}
 
-\subsection{Basic Input File Structure} 
+\subsection{Basic Input File Structure}
 
 PSI4 reads input from a text file, which can be prepared in any standard
 text editor.  The default input file name is \file{input.dat} and the
@@ -14,7 +14,7 @@ The syntax is:
 \subsection{Running a Basic Hartree--Fock Calculation}
 In our first example, we will consider a Hartree--Fock SCF computation
 for the water molecule using a cc-pVDZ basis set.  We will specify the
-geometry of our water molecule using a standard z-matrix.
+geometry of our water molecule using a standard Z-matrix.
 
 \begin{Snippet}
 
@@ -22,7 +22,7 @@ geometry of our water molecule using a standard z-matrix.
 # Here's a sample HF/cc-pVDZ H2O computation
 
 molecule h2o {
-  O 
+  O
   H 1 0.96
   H 1 0.96 2 104.5
 }
@@ -58,7 +58,7 @@ like the charge on the molecule (0, it's neutral), the spin multiplicity
 wavefunction to use (restricted Hartree--Fock, or RHF, is usually
 appropriate for a closed-shell molecule).  The program correctly guessed
 all of these options for us.  We can change the default behavior through
-additional keywords.  
+additional keywords.
 
 Let's consider what we would do for an open-shell molecule, where
 not all electrons are paired.  For example, let's run a computation
@@ -173,7 +173,7 @@ frequencies('scf')
 \end{Snippet}
 Alternatively, it's also possible for \PSIfour\ to use Cartesian coordinate
 input.  Here, the Cartesian coordinates of the optimized geometry can be
-extracted from the {\em bottom} of the optimization output.  The input 
+extracted from the {\em bottom} of the optimization output.  The input
 would then look like
 this:
 \begin{Snippet}
@@ -272,7 +272,7 @@ set globals {
 energy('sapt0')
 \end{Snippet}
 
-Before, we have been setting keywords individually with commands like 
+Before, we have been setting keywords individually with commands like
 {\tt set basis cc-pVDZ}.  Because we have a few more options now, it's
 convenient to place them together into the {\tt set globals} or {\tt set}
 block, bounded by {\tt \{\dots\}}.  This
@@ -336,7 +336,7 @@ electron-rich double bond in ethylene bears a partial negative charge.  At
 the same time, the dispersion interaction should be smaller because the
 perpendicular geometry does not allow much overlap between the monomers.
 Hence, the SAPT analysis helps clarify (and quantify) our physical
-understanding about the interaction between the two monomers. 
+understanding about the interaction between the two monomers.
 
 \subsection{Potential Surface Scans and Counterpoise Correction Made Easy
 with Psithon}
@@ -406,7 +406,7 @@ print "CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n"
 print "        R (Ang)         E_int (kcal/mol)             \n"
 print "-----------------------------------------------------\n"
 for R in Rvals:
-  e = ecp[R] * 627.5095
+  e = ecp[R] * psi_hartree2kcalmol
   print "        %3.1f            %10.6f\n" % (R, e)
 \end{Snippet}
 
@@ -444,19 +444,20 @@ the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in
 Psithon function {\tt cp()} does it all for us, automatically.
 
-And that's it!  The only remaining part of the example input is a little
-table of the different R values and the CP-corrected CCSD(T) energies,
-converted from atomic units (hartree) to kcal mol$^{-1}$ by multiplying by 
-627.5095.  Notice
-the loop over {\tt R} to create the table looks just like the loop over
-{\tt R} to run the different computations, and the CP-corrected energies 
-{\tt ecp[R]} are accessed the same way they were stored.  The {\tt print}
-line at the end just specifies some formatting for the printed table (first
-element is a floating point number 3 spaces wide with one digit after the
-decimal, and the second element is a floating point number 10 spaces wide
-with 6 digits after the decimal); the format strings are the same as in the
-C programming language.  For tables more complicated than the simple one
-used here, Psithon has built-in support for tables (see the next section).
+And that's it!  The only remaining part of the example input is a little table
+of the different R values and the CP-corrected CCSD(T) energies, converted from
+atomic units (hartree) to kcal mol$^{-1}$ by multiplying by the
+automatically-defined conversion factor {\tt psi\_hartree2kcalmol}, which is
+defined in section \ref{sec:psirc}.  Notice the loop over {\tt R} to create
+the table looks just like the loop over {\tt R} to run the different
+computations, and the CP-corrected energies {\tt ecp[R]} are accessed the same
+way they were stored.  The {\tt print} line at the end just specifies some
+formatting for the printed table (first element is a floating point number 3
+spaces wide with one digit after the decimal, and the second element is a
+floating point number 10 spaces wide with 6 digits after the decimal); the
+format strings are the same as in the C programming language.  For tables more
+complicated than the simple one used here, Psithon has built-in support for
+tables (see the next section).
 
 The following section goes over Psithon in much more detail, but
 hopefully this example already makes it clear that many complex tasks

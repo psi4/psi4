@@ -75,6 +75,8 @@ boost::regex fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
 boost::regex orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::regex comCommand_("\\s*no_?com\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::regex symmetry_("\\s*symmetry[\\s=]+(\\w+)\\s*", boost::regbase::normal| boost::regbase::icase);
+boost::regex pubchemError_("\\s*PubchemError\\s*", boost::regbase::normal| boost::regbase::icase);
+boost::regex pubchemInput_("\\s*PubchemInput\\s*", boost::regbase::normal| boost::regbase::icase);
 boost::smatch reMatches_;
 
 /**
@@ -726,7 +728,6 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
 
     boost::shared_ptr<Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
-    std::string symtemp;
 
     if(boost::iequals(units, "ANG") || boost::iequals(units, "ANGSTROM") || boost::iequals(units, "ANGSTROMS")) {
         mol->set_units(Angstrom);
@@ -741,6 +742,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     mol->molecular_charge_ = 0;
     mol->multiplicity_ = 1;
 
+    bool pubchemerror = false;
+    bool pubcheminput = false;
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
      * a variable, units, comment lines, and blank lines.  When found, process them
@@ -757,6 +760,16 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         else if(regex_match(lines[lineNumber], reMatches, blankLine_)) {
             // A blank line, nuke it
+            lines.erase(lines.begin() + lineNumber);
+        }
+        else if(regex_match(lines[lineNumber], reMatches, pubchemError_)) {
+            // A marker to flag that pubchem gave a problem nuke the line
+            pubchemerror = true;
+            lines.erase(lines.begin() + lineNumber);
+        }
+        else if(regex_match(lines[lineNumber], reMatches, pubchemInput_)) {
+            // A marker to flag that pubchem gave us this geometry, nuke the line
+            pubcheminput = true;
             lines.erase(lines.begin() + lineNumber);
         }
         else if(regex_match(lines[lineNumber], reMatches, commentLine_)) {
@@ -811,6 +824,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
     mol->fragment_charges_.push_back(mol->molecular_charge_);
 
     for(unsigned int lineNumber = 0; lineNumber < lines.size(); ++lineNumber) {
+        if(pubchemerror)
+            fprintf(outfile, "%s\n", lines[lineNumber].c_str());
         if(regex_match(lines[lineNumber], reMatches, fragmentMarker_)) {
             // Check that there are more lines remaining
             if(lineNumber == lines.size() - 1)
@@ -838,6 +853,9 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         else {
             ++atomCount;
         }
+    }
+    if(pubchemerror){
+        exit(EXIT_SUCCESS);
     }
     mol->fragments_.push_back(std::make_pair(firstAtom, atomCount));
     mol->fragment_types_.push_back(Real);
@@ -951,7 +969,54 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         }
         ++currentAtom;
     }
+
+    if(pubcheminput){
+        // The coordinates are a bit crude, so we symmetrize them
+        // First, populate the atom list
+        mol->reinterpret_coordentries();
+        double tol = 1.0e-3;
+        // Now, redetect the symmetry with a really crude tolerance
+        SharedMatrix frame = mol->symmetry_frame(tol);
+        // Put it on the center of mass and rotate
+        mol->move_to_com();
+        mol->rotate_full(*frame.get());
+        mol->set_point_group(mol->find_point_group(tol));
+        // Clean up the molecule, to make sure it actually has the correct symmetry
+        mol->symmetrize();
+    }
     return mol;
+}
+
+void Molecule::reinterpret_coordentries()
+{
+    atoms_.clear();
+    EntryVectorIter iter;
+    for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
+        (*iter)->invalidate();
+    }
+    int temp_charge = molecular_charge_;
+    int temp_multiplicity = multiplicity_;
+    molecular_charge_ = 0;
+    multiplicity_    = 1;
+    for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+        if(fragment_types_[fragment] == Absent)
+            continue;
+        if(fragment_types_[fragment] == Real) {
+            molecular_charge_ += fragment_charges_[fragment];
+            multiplicity_    += fragment_multiplicities_[fragment] - 1;
+        }
+        for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+            full_atoms_[atom]->compute();
+            full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
+            if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+        }
+    }
+    // TODO: This is a hack to ensure that set_multiplicity and set_molecular_charge
+    // work for single-fragment molecules.
+    if (fragments_.size() < 2) {
+        molecular_charge_ = temp_charge;
+        multiplicity_ = temp_multiplicity;
+    }
 }
 
 void Molecule::update_geometry()
@@ -959,28 +1024,8 @@ void Molecule::update_geometry()
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
-    if (reinterpret_coordentries_) {
-        atoms_.clear();
-        EntryVectorIter iter;
-        for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter){
-            (*iter)->invalidate();
-        }
-        molecular_charge_ = 0;
-        multiplicity_    = 1;
-        for(int fragment = 0; fragment < fragments_.size(); ++fragment){
-            if(fragment_types_[fragment] == Absent)
-                continue;
-            if(fragment_types_[fragment] == Real) {
-                molecular_charge_ += fragment_charges_[fragment];
-                multiplicity_    += fragment_multiplicities_[fragment] - 1;
-            }
-            for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
-                full_atoms_[atom]->compute();
-                full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-                if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
-            }
-        }
-    }
+    if (reinterpret_coordentries_)
+        reinterpret_coordentries();
 
     if (move_to_com_)
         move_to_com();
@@ -1200,12 +1245,12 @@ void Molecule::print_in_input_format() const
 {
     if (Communicator::world->me() == 0) {
         if (nallatom()) {
-            fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
-                    units_==Angstrom ? "Angstrom" : "bohr");
             // It's only worth echoing these if the user either input some variables,
             // or they used a Z matrix for input
             if(full_atoms_[0]->type()==CoordEntry::ZMatrixCoord
                     || geometry_variables_.size()){
+                fprintf(outfile, "\n\tFinal optimized geometry and variables (in %s):\n\n",
+                        units_==Angstrom ? "Angstrom" : "bohr");
                 for(int i = 0; i < nallatom(); ++i){
                     full_atoms_[i]->print_in_input_format();
                 }
@@ -1524,10 +1569,9 @@ int Molecule::max_nequivalent() const
     return max;
 }
 
-boost::shared_ptr<Matrix> Molecule::symmetry_frame()
+boost::shared_ptr<Matrix> Molecule::symmetry_frame(double tol)
 {
     int i, j;
-    double tol = 1.0e-6;
 
     Vector3 com = center_of_mass();
 
@@ -1918,16 +1962,59 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 
         int end = user.length() - 1;
 
+        bool user_specified_direction = false;
         // Did the user provide directionality? If they did, the last letter would be x, y, or z
         if (user[end] == 'X' || user[end] == 'x' || user[end] == 'Y' || user[end] == 'y' || user[end] == 'Z' || user[end] == 'z') {
             // Directionality given, assume the user is smart enough to know what they're doing.
+            user_specified_direction = true;
         }
 
         if (symmetry_from_input() != pg->symbol()) {
             boost::shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
 
-            // Make sure user is subgroup of pg
-            CorrelationTable corrtable(pg, user);
+            if (user_specified_direction == true) {
+                // Assume the user knows what they're doing.
+
+                // Make sure user is subgroup of pg
+                if ((pg->bits() & user->bits()) != user->bits()) {
+                    std::stringstream err;
+
+                    err << "User specified point group (" << PointGroup::bits_to_full_name(user->bits()) <<
+                           ") is not a subgroup of the highest detected point group (" <<
+                           PointGroup::bits_to_full_name(pg->bits()) << ")";
+                    throw PSIEXCEPTION(err.str());
+                }
+            }
+            else {
+                unsigned char similars[3];
+                char count;
+
+                PointGroups::similar(user->bits(), similars, count);
+
+                int type=0;
+                bool found = false;
+                for (type=0; type < count; ++type) {
+                    // If what the user specified and the similar type matches the full point group we've got a
+                    // match
+                    if ((similars[type] & pg->bits()) == similars[type]) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    // Construct a point group object using the found similar
+                    user = boost::shared_ptr<PointGroup>(new PointGroup(similars[type]));
+                }
+                else {
+                    std::stringstream err;
+
+                    err << "User specified point group (" << PointGroup::bits_to_full_name(user->bits()) <<
+                           ") is not a subgroup of the highest detected point group (" <<
+                           PointGroup::bits_to_full_name(pg->bits()) << ")";
+                    throw PSIEXCEPTION(err.str());
+                }
+            }
 
             // If we make it here, what the user specified is good.
             pg = user;

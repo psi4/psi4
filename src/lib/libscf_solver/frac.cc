@@ -67,9 +67,11 @@ void HF::frac()
         if (MOM_excited_) 
             throw PSIEXCEPTION("Fractional Occupation SCF: Don't try an excited-state MOM");
     
-        // frac header
+        // Close off a previous burn-in SCF
         fprintf(outfile, "\n");
         print_orbitals(); 
+        
+        // frac header
         fprintf(outfile, "\n  ==> Fractionally-Occupied SCF Iterations <==\n\n");
         for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
             int i = options_["FRAC_OCC"][ind].to_integer();
@@ -91,12 +93,10 @@ void HF::frac()
                 throw PSIEXCEPTION("Fractional Occupation SCF: PSI4 is not configured for positrons. Please annihilate and start again");             
 
             fprintf(outfile, "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), abs(i), val);
-            fflush(outfile);
+            fprintf(outfile, "\n");
         }
-        fprintf(outfile, "\n                        Total Energy        Delta E      Density RMS\n\n");
-        fflush(outfile);
-        
-        // TODO: Make sure diis restarts correctly/frac plays well with MOM
+
+        // Make sure diis restarts correctly/frac plays well with MOM
         if (initialized_diis_manager_) {
             diis_manager_->delete_diis_file();
             diis_manager_.reset();
@@ -108,6 +108,19 @@ void HF::frac()
         if (!options_.get_bool("FRAC_DIIS")) {
             diis_enabled_ = false;
         }
+
+        // Load the old orbitals in if requested
+        if (options_.get_bool("FRAC_LOAD")) {
+            fprintf(outfile, "    Orbitals reloaded from file, your previous iterations are garbage.\n\n");
+            load_orbitals();
+        }
+
+        // Keep the printing nice
+        fprintf(outfile, "                        Total Energy        Delta E      Density RMS\n\n");
+        fflush(outfile);
+
+        // Prevent spurious convergence (technically this iteration comes from the N-electron system anyways)
+        frac_performed_ = false;
     }
     
     // Every frac iteration: renormalize the Ca/Cb matrices
@@ -143,6 +156,47 @@ void HF::frac()
 
         // And I say all that to say this
         C_DSCAL(nso, sqrt(val), &Cp[0][i], nmo); 
+    } 
+}
+void HF::frac_renormalize()
+{
+    if (!options_.get_bool("FRAC_RENORMALIZE") || !frac_enabled_) return;
+
+    // Renormalize the fractional occupations back to 1, if possible before storage 
+    fprintf(outfile, "    FRAC: Renormalizing orbitals to 1.0 for storage.\n\n");
+
+    // Sort the eigenvalues in the usual manner
+    std::vector<boost::tuple<double,int,int> > pairs_a;
+    std::vector<boost::tuple<double,int,int> > pairs_b;
+    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+            pairs_a.push_back(boost::tuple<double,int,int>(epsilon_a_->get(h, i), h, i));
+    }
+    for (int h=0; h<epsilon_b_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
+            pairs_b.push_back(boost::tuple<double,int,int>(epsilon_b_->get(h, i), h, i));
+    }
+    sort(pairs_a.begin(),pairs_a.end());
+    sort(pairs_b.begin(),pairs_b.end());
+    
+    // Renormalize the C matrix entries
+    for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
+        int i = options_["FRAC_OCC"][ind].to_integer();
+        double val = options_["FRAC_VAL"][ind].to_double(); 
+        bool is_alpha = (i > 0);
+        i = abs(i) - 1; // Back to C ordering
+
+        int i2  = ((is_alpha) ? get<2>(pairs_a[i]) : get<2>(pairs_b[i])); 
+        int h   = ((is_alpha) ? get<1>(pairs_a[i]) : get<1>(pairs_b[i])); 
+
+        int nso = Ca_->rowspi()[h];
+        int nmo = Ca_->colspi()[h];
+
+        double** Cp = ((is_alpha) ? Ca_->pointer(h) : Cb_->pointer(h));
+
+        // And I say all that to say this
+        if (val != 0.0) 
+            C_DSCAL(nso, 1.0 / sqrt(val), &Cp[0][i], nmo); 
     } 
 }
 

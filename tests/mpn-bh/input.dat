@@ -4,10 +4,10 @@
 memory 250 mb
 
 # Test MP(10) at its equilibrium geometry
-refnuc   =   2.110192720877929 #TEST
-refscf   = -25.12626287261418  #TEST
-refci_10 = -25.2183501083950   #TEST
-refcorr_10  = refci_10 - refscf    #TEST
+refnuc      =   2.1101925597355 #TEST
+refscf      = -25.1262628711449 #TEST
+refci_10    = -25.2183501083948 #TEST
+refcorr_10  = refci_10 - refscf #TEST
 
 
 molecule bh {
@@ -30,10 +30,10 @@ compare_values(refcorr_10, get_variable("CURRENT CORRELATION ENERGY"), 8, "MP(10
 clean()
 
 # Now test MP(19) at its equilibrium geometry
-refnuc   =   2.110849278403153 #TEST
-refscf   = -25.12626880497961  #TEST
-refci_19 = -25.2184321372791   #TEST
-refcorr_19  = refci_19 - refscf    #TEST
+refnuc     =   2.1108491172106 #TEST
+refscf     = -25.1262688035365 #TEST
+refci_19   = -25.2184321372791 #TEST
+refcorr_19 = refci_19 - refscf #TEST
 
 molecule bh {
     B

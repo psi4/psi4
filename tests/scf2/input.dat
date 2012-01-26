@@ -2,8 +2,8 @@
 
 memory 250 mb
 
-nucenergy =   8.801466202085710  #TEST
-refenergy = -76.05098621944234   #TEST
+nucenergy =   8.80146552997207  #TEST
+refenergy = -76.05098620307962  #TEST
 
 molecule h2o {
     O

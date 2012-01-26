@@ -994,6 +994,10 @@ AC_CONFIG_FILES([
           tests/fd-freq-energy/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
+          tests/sapt2/Makefile
+          tests/sapt3/Makefile
+          tests/sapt4/Makefile
+          tests/sapt5/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
           tests/pywrap_db1/Makefile
@@ -1024,6 +1028,7 @@ AC_CONFIG_FILES([
           tests/cc4/Makefile
           tests/cc4a/Makefile
           tests/cc5a/Makefile
+          tests/cc6/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
           tests/cc8b/Makefile
@@ -1077,6 +1082,7 @@ AC_CONFIG_FILES([
           tests/mints4/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
+          tests/pubchem1/Makefile
           tests/props1/Makefile
           tests/props2/Makefile
           tests/dft1/Makefile

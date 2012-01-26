@@ -68,6 +68,7 @@ void export_mints()
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
 
+
     class_<Vector, boost::shared_ptr<Vector> >( "Vector").
             def(init<int>()).
             def("get", vector_getitem_1(&Vector::get)).
@@ -327,6 +328,8 @@ void export_mints()
             def("set_variable", &Molecule::set_variable).
             def("get_variable", &Molecule::get_variable).
             def("update_geometry", &Molecule::update_geometry).
+            def("set_molecular_charge", &Molecule::set_molecular_charge).
+            def("set_multiplicity", &Molecule::set_multiplicity).
             def("set_basis_all_atoms", &Molecule::set_basis_all_atoms).
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol).
             def("set_basis_by_label", &Molecule::set_basis_by_label).

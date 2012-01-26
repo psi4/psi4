@@ -1,4 +1,4 @@
-memory 250 mb
+#! Frozen-core CCSD(T)/cc-pVDZ on C$@@4$H$@@4$N anion with disk ao algorithm
 
 molecule C4H4N {
     -1 1
@@ -17,11 +17,21 @@ molecule C4H4N {
 memory 1 gb
 
 set {
-  basis aug-cc-pvtz
+  basis cc-pVDZ
   print 2
   docc [10, 1, 4, 3]
   freeze_core true
-#  ao_basis disk
+  ao_basis disk
 }
 
 energy('ccsd(t)')
+
+refnuc  =  135.092128488419604 #TEST
+refscf  = -208.153697555164882 #TEST
+refccsd = -208.885085641759929 #TEST
+ref_t   = -208.915761028789774 #TEST
+
+compare_values(refnuc, C4H4N.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refscf, get_variable("SCF total energy"), 7, "SCF energy") #TEST
+compare_values(refccsd, get_variable("CCSD total energy"), 7, "CCSD energy") #TEST
+compare_values(ref_t, get_variable("Current energy"), 7, "CCSD(T) energy") #TEST
