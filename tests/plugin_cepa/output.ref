@@ -31,9 +31,11 @@ refcepa3   = -0.211995035292 # TEST
 refacpf    = -0.214525653939 # TEST
 refaqcc    = -0.211850393774 # TEST
 refDipHF   = 2.09546990908   # TEST
+refDipCEPA = 1.92023515566   # TEST
 refDipCISD = 1.98873708462   # TEST
 refDipACPF = 1.94427081117   # TEST
 refDipAQCC = 1.96020546503   # TEST
+refQdpCEPA = -5.79763143854  # TEST
 refQdpCISD = -5.75628641309  # TEST
 refQdpACPF = -5.78358853983  # TEST
 refQdpAQCC = -5.77402246385  # TEST
@@ -57,9 +59,6 @@ set {
 scf_energy = scf()
 transqt2()
 
-set cepa_level cepa0
-plugin('./plugin_cepa.so')
-
 set cepa_level cepa1
 plugin('./plugin_cepa.so')
 
@@ -72,6 +71,9 @@ plugin('./plugin_cepa.so')
 # also evaluate dipoles/quadrupoles for the stationary methods
 set dipmom true
 set print 2
+
+set cepa_level cepa0
+plugin('./plugin_cepa.so')
 
 set cepa_level acpf
 plugin('./plugin_cepa.so')
@@ -88,10 +90,12 @@ energy("cisd")
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
 compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")                 #TEST
-compare_values(refcepa0, get_variable("CEPA(0) CORRELATION ENERGY"), 7, "CEPA(0) correlation energy")         #TEST
 compare_values(refcepa1, get_variable("CEPA(1) CORRELATION ENERGY"), 7, "CEPA(1) correlation energy")         #TEST
 compare_values(refcepa2, get_variable("CEPA(2) CORRELATION ENERGY"), 7, "CEPA(2) correlation energy")         #TEST
 compare_values(refcepa3, get_variable("CEPA(3) CORRELATION ENERGY"), 7, "CEPA(3) correlation energy")         #TEST
+compare_values(refcepa0, get_variable("CEPA(0) CORRELATION ENERGY"), 7, "CEPA(0) correlation energy")         #TEST
+compare_values(refDipCEPA, get_variable("CEPA(0) DIPOLE Z"), 5, "CEPA(0) Z Component of dipole")             #TEST
+compare_values(refQdpCEPA, get_variable("CEPA(0) QUADRUPOLE ZZ"), 5, "CEPA(0) ZZ Component of quadrupole")   #TEST
 compare_values(refacpf, get_variable("ACPF CORRELATION ENERGY"), 7, "ACPF correlation energy")         #TEST
 compare_values(refDipACPF, get_variable("ACPF DIPOLE Z"), 5, "ACPF Z Component of dipole")             #TEST
 compare_values(refQdpACPF, get_variable("ACPF QUADRUPOLE ZZ"), 5, "ACPF ZZ Component of quadrupole")   #TEST
@@ -110,7 +114,7 @@ clean()
 ./plugin_cepa.so loaded.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:38 2012
+*** at Thu Jan 26 11:45:24 2012
 
 
          ---------------------------------------------------------
@@ -269,18 +273,18 @@ clean()
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:38 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:24 2012
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:38 2012
+*** at Thu Jan 26 11:45:24 2012
 
 
 	**************************************************
@@ -325,119 +329,20 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:38 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:24 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:38 2012
-
-
-
-        *******************************************************
-        *                                                     *
-        *                       CEPA(0)                       *
-        *        Coupled Electron Pair Approximation          *
-        *                                                     *
-        *                   Eugene DePrince                   *
-        *                                                     *
-        *******************************************************
-
-
-
-        Begin integral sort
-
-        Integral sort will use                      0.83 mb
-
-        Initial sort.....done.
-
-        IJKL block.......done.
-        IJAK block 1/2...done.
-        IJAK block 2/2...done.
-        KCLD block.......done.
-        KLCD block.......done.
-        ABCI block 1/2...done.
-        ABCI block 1/2...done.
-        ABCD block 1/2...done.
-        ABCD block 2/2...done.
-
-  Time for integral sort:             0.01 s (user)
-                                      0.04 s (system)
-                                         0 s (total)
-
-  available memory =                           244.14 mb
-  minimum memory requirements for CEPA(0) =         0.14 mb
-        v(ab,cd) diagrams will be evaluated in   1 blocks.
-        v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
-        v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
-
-  Allocate cpu memory (     0.37 mb).....done.
-  Initialize cpu memory..................done.
-
-  Begin CEPA(0) iterations
-
-   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2113011793   -0.0066087724    0.0309033906        0
-      2   2 1   -0.2171026859   -0.0058015066    0.0127933585        0
-      3   3 1   -0.2178164280   -0.0007137421    0.0039034927        0
-      4   4 1   -0.2178409638   -0.0000245358    0.0012076445        0
-      5   5 1   -0.2178659797   -0.0000250158    0.0005034970        0
-      6   6 1   -0.2178591477    0.0000068320    0.0002067767        0
-      7   7 1   -0.2178577991    0.0000013486    0.0000581432        0
-      8   8 1   -0.2178575612    0.0000002379    0.0000113351        0
-      9   8 2   -0.2178574454    0.0000001158    0.0000031246        0
-     10   8 3   -0.2178575006   -0.0000000551    0.0000007388        0
-     11   8 4   -0.2178574894    0.0000000112    0.0000001654        0
-     12   8 5   -0.2178574881    0.0000000013    0.0000000380        0
-
-  CEPA(0) iterations converged!
-
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
-
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
-
-        OS CEPA(0) correlation energy:          -0.172645928472
-        SS CEPA(0) correlation energy:          -0.045211559634
-        CEPA(0) correlation energy:             -0.217857488106
-      * CEPA(0) total energy:                  -76.239275933261
-
-  Total time for CEPA(0) iterations:       0.12 s (user)
-                                        0.19 s (system)
-                                           0 s (total)
-
-  Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
-                                        0.00 s (total)
-
-*** tstop() called on ds8 at Thu Jan 26 11:18:38 2012
-Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.28 seconds =       0.00 minutes
-	system time =       0.28 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Reading options from the PLUGIN_CEPA block
-Calling plugin ./plugin_cepa.so.
-
-*** tstart() called on ds8
-*** at Thu Jan 26 11:18:38 2012
+*** at Thu Jan 26 11:45:24 2012
 
 
 
@@ -469,7 +374,7 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 2/2...done.
 
   Time for integral sort:             0.01 s (user)
-                                      0.04 s (system)
+                                      0.03 s (system)
                                          0 s (total)
 
   available memory =                           244.14 mb
@@ -484,7 +389,7 @@ Calling plugin ./plugin_cepa.so.
   Begin CEPA(1) iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        1
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
       1   1 1   -0.2084429798   -0.0037505729    0.0290316331        0
       2   2 1   -0.2135546693   -0.0051116895    0.0116183055        0
       3   3 1   -0.2143275223   -0.0007728531    0.0036335805        0
@@ -515,27 +420,27 @@ Calling plugin ./plugin_cepa.so.
       * CEPA(1) total energy:                  -76.235782019239
 
   Total time for CEPA(1) iterations:       0.10 s (user)
-                                        0.20 s (system)
-                                           1 s (total)
+                                        0.19 s (system)
+                                           0 s (total)
 
   Time per iteration:                   0.01 s (user)
                                         0.02 s (system)
-                                        0.09 s (total)
+                                        0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:39 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:24 2012
 Module time:
 	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.39 seconds =       0.01 minutes
-	system time =       0.52 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:39 2012
+*** at Thu Jan 26 11:45:24 2012
 
 
 
@@ -588,7 +493,7 @@ Calling plugin ./plugin_cepa.so.
       3   3 1   -0.2168236395   -0.0007243567    0.0037878050        0
       4   4 1   -0.2168458751   -0.0000222356    0.0011052829        0
       5   5 1   -0.2168694320   -0.0000235569    0.0004379976        0
-      6   6 1   -0.2168637409    0.0000056911    0.0001773570        0
+      6   6 1   -0.2168637409    0.0000056911    0.0001773570        1
       7   7 1   -0.2168625282    0.0000012127    0.0000496077        0
       8   8 1   -0.2168622997    0.0000002285    0.0000096450        0
       9   8 2   -0.2168621833    0.0000001164    0.0000026765        0
@@ -613,28 +518,28 @@ Calling plugin ./plugin_cepa.so.
         CEPA(2) correlation energy:             -0.216862220479
       * CEPA(2) total energy:                  -76.238280665634
 
-  Total time for CEPA(2) iterations:       0.15 s (user)
-                                        0.18 s (system)
-                                           0 s (total)
+  Total time for CEPA(2) iterations:       0.11 s (user)
+                                        0.21 s (system)
+                                           1 s (total)
 
   Time per iteration:                   0.01 s (user)
                                         0.02 s (system)
-                                        0.00 s (total)
+                                        0.08 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:39 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:25 2012
 Module time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.74 seconds =       0.01 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.52 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:39 2012
+*** at Thu Jan 26 11:45:25 2012
 
 
 
@@ -665,7 +570,7 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 1/2...done.
         ABCD block 2/2...done.
 
-  Time for integral sort:             0.00 s (user)
+  Time for integral sort:             0.01 s (user)
                                       0.04 s (system)
                                          0 s (total)
 
@@ -688,7 +593,7 @@ Calling plugin ./plugin_cepa.so.
       4   4 1   -0.2119791314   -0.0000191631    0.0008046126        0
       5   5 1   -0.2119984694   -0.0000193379    0.0002655681        0
       6   6 1   -0.2119958635    0.0000026059    0.0000984434        0
-      7   7 1   -0.2119952802    0.0000005833    0.0000269061        1
+      7   7 1   -0.2119952802    0.0000005833    0.0000269061        0
       8   8 1   -0.2119951007    0.0000001795    0.0000053871        0
       9   8 2   -0.2119950122    0.0000000884    0.0000014885        0
      10   8 3   -0.2119950415   -0.0000000292    0.0000003426        0
@@ -711,28 +616,168 @@ Calling plugin ./plugin_cepa.so.
         CEPA(3) correlation energy:             -0.211995035555
       * CEPA(3) total energy:                  -76.233413480710
 
-  Total time for CEPA(3) iterations:       0.12 s (user)
-                                        0.19 s (system)
-                                           1 s (total)
+  Total time for CEPA(3) iterations:       0.11 s (user)
+                                        0.18 s (system)
+                                           0 s (total)
 
   Time per iteration:                   0.01 s (user)
                                         0.02 s (system)
-                                        0.09 s (total)
+                                        0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:40 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:25 2012
 Module time:
 	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.97 seconds =       0.02 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:40 2012
+*** at Thu Jan 26 11:45:25 2012
+
+
+
+        *******************************************************
+        *                                                     *
+        *                       CEPA(0)                       *
+        *        Coupled Electron Pair Approximation          *
+        *                                                     *
+        *                   Eugene DePrince                   *
+        *                                                     *
+        *******************************************************
+
+
+
+        Begin integral sort
+
+        Integral sort will use                      0.83 mb
+
+        Initial sort.....done.
+
+        IJKL block.......done.
+        IJAK block 1/2...done.
+        IJAK block 2/2...done.
+        KCLD block.......done.
+        KLCD block.......done.
+        ABCI block 1/2...done.
+        ABCI block 1/2...done.
+        ABCD block 1/2...done.
+        ABCD block 2/2...done.
+
+  Time for integral sort:             0.02 s (user)
+                                      0.03 s (system)
+                                         0 s (total)
+
+  available memory =                           244.14 mb
+  minimum memory requirements for CEPA(0) =         0.14 mb
+        v(ab,cd) diagrams will be evaluated in   1 blocks.
+        v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
+        v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
+
+  Allocate cpu memory (     0.37 mb).....done.
+  Initialize cpu memory..................done.
+
+  Begin CEPA(0) iterations
+
+   Iter  DIIS          Energy       d(Energy)          |d(T)|     time
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
+      1   1 1   -0.2113011793   -0.0066087724    0.0309033906        0
+      2   2 1   -0.2171026859   -0.0058015066    0.0127933585        0
+      3   3 1   -0.2178164280   -0.0007137421    0.0039034927        0
+      4   4 1   -0.2178409638   -0.0000245358    0.0012076445        0
+      5   5 1   -0.2178659797   -0.0000250158    0.0005034970        0
+      6   6 1   -0.2178591477    0.0000068320    0.0002067767        0
+      7   7 1   -0.2178577991    0.0000013486    0.0000581432        0
+      8   8 1   -0.2178575612    0.0000002379    0.0000113351        0
+      9   8 2   -0.2178574454    0.0000001158    0.0000031246        0
+     10   8 3   -0.2178575006   -0.0000000551    0.0000007388        0
+     11   8 4   -0.2178574894    0.0000000112    0.0000001654        0
+     12   8 5   -0.2178574881    0.0000000013    0.0000000380        0
+
+  CEPA(0) iterations converged!
+
+        OS SCS-MP2 correlation energy:          -0.184186591992
+        SS SCS-MP2 correlation energy:          -0.017067860073
+        SCS-MP2 correlation energy:             -0.201254452065
+      * SCS-MP2 total energy:                  -76.222672897220
+
+        OS MP2 correlation energy:              -0.153488826660
+        SS MP2 correlation energy:              -0.051203580218
+        MP2 correlation energy:                 -0.204692406879
+      * MP2 total energy:                      -76.226110852034
+
+        OS CEPA(0) correlation energy:          -0.172645928472
+        SS CEPA(0) correlation energy:          -0.045211559634
+        CEPA(0) correlation energy:             -0.217857488106
+      * CEPA(0) total energy:                  -76.239275933261
+
+  Total time for CEPA(0) iterations:       0.11 s (user)
+                                        0.20 s (system)
+                                           0 s (total)
+
+  Time per iteration:                   0.01 s (user)
+                                        0.02 s (system)
+                                        0.00 s (total)
+
+*** tstop() called on ds8 at Thu Jan 26 11:45:25 2012
+Module time:
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.65 seconds =       0.01 minutes
+	system time =       0.97 seconds =       0.02 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+  ==> Properties CEPA(0) <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.2636
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.7555     Total:     0.7555
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     1.9202     Total:     1.9202
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -7.1617     YY:    -4.2558     ZZ:    -5.7976
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.4233     YY:     1.4826     ZZ:    -0.0593
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.15098  4.15098  0.00000 -0.30196
+       2     H     0.42451  0.42451  0.00000  0.15098
+       3     H     0.42451  0.42451  0.00000  0.15098
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
+
+  Natural Orbital Occupations:
+
+  Total Occupations:
+  HONO-2 :    3  A    1.972
+  HONO-1 :    4  A    1.961
+  HONO-0 :    5  A    1.958
+  LUNO+0 :    6  A    0.032
+  LUNO+1 :    7  A    0.030
+  LUNO+2 :    8  A    0.018
+  LUNO+3 :    9  A    0.012
+
+Reading options from the PLUGIN_CEPA block
+Calling plugin ./plugin_cepa.so.
+
+*** tstart() called on ds8
+*** at Thu Jan 26 11:45:25 2012
 
 
 
@@ -765,7 +810,7 @@ Calling plugin ./plugin_cepa.so.
 
   Time for integral sort:             0.01 s (user)
                                       0.03 s (system)
-                                         0 s (total)
+                                         1 s (total)
 
   available memory =                           244.14 mb
   minimum memory requirements for ACPF =         0.14 mb
@@ -810,7 +855,7 @@ Calling plugin ./plugin_cepa.so.
         ACPF correlation energy:                -0.214525654212
       * ACPF total energy:                     -76.235944099367
 
-  Total time for ACPF iterations:       0.13 s (user)
+  Total time for ACPF iterations:       0.12 s (user)
                                         0.19 s (system)
                                            0 s (total)
 
@@ -818,13 +863,13 @@ Calling plugin ./plugin_cepa.so.
                                         0.02 s (system)
                                         0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:40 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:26 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.22 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.81 seconds =       0.01 minutes
+	user time   =       0.79 seconds =       0.01 minutes
 	system time =       1.19 seconds =       0.02 minutes
 	total time  =          2 seconds =       0.03 minutes
 
@@ -872,7 +917,7 @@ Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:40 2012
+*** at Thu Jan 26 11:45:26 2012
 
 
 
@@ -903,8 +948,8 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 1/2...done.
         ABCD block 2/2...done.
 
-  Time for integral sort:             0.01 s (user)
-                                      0.03 s (system)
+  Time for integral sort:             0.00 s (user)
+                                      0.04 s (system)
                                          0 s (total)
 
   available memory =                           244.14 mb
@@ -949,21 +994,21 @@ Calling plugin ./plugin_cepa.so.
         AQCC correlation energy:                -0.211850394036
       * AQCC total energy:                     -76.233268839191
 
-  Total time for AQCC iterations:       0.11 s (user)
-                                        0.18 s (system)
+  Total time for AQCC iterations:       0.12 s (user)
+                                        0.17 s (system)
                                            0 s (total)
 
   Time per iteration:                   0.01 s (user)
                                         0.02 s (system)
                                         0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:40 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:26 2012
 Module time:
 	user time   =       0.12 seconds =       0.00 minutes
 	system time =       0.21 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.94 seconds =       0.02 minutes
+	user time   =       0.92 seconds =       0.02 minutes
 	system time =       1.40 seconds =       0.02 minutes
 	total time  =          2 seconds =       0.03 minutes
 
@@ -1011,7 +1056,7 @@ Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:40 2012
+*** at Thu Jan 26 11:45:26 2012
 
 
 
@@ -1058,7 +1103,7 @@ Calling plugin ./plugin_cepa.so.
   Begin CISD iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        1
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
       1   1 1   -0.2008909299    0.0038014770    0.0259710333        0
       2   2 1   -0.2048735676   -0.0039826377    0.0094348242        0
       3   3 1   -0.2057335446   -0.0008599770    0.0032436732        0
@@ -1067,7 +1112,7 @@ Calling plugin ./plugin_cepa.so.
       6   6 1   -0.2057672803    0.0000008129    0.0000484029        0
       7   7 1   -0.2057671690    0.0000001113    0.0000121895        0
       8   8 1   -0.2057670895    0.0000000794    0.0000025216        0
-      9   8 2   -0.2057670398    0.0000000498    0.0000006727        0
+      9   8 2   -0.2057670398    0.0000000498    0.0000006727        1
      10   8 3   -0.2057670524   -0.0000000126    0.0000001592        0
      11   8 4   -0.2057670492    0.0000000032    0.0000000323        0
 
@@ -1088,22 +1133,22 @@ Calling plugin ./plugin_cepa.so.
         CISD correlation energy:                -0.205767049207
       * CISD total energy:                     -76.227185494362
 
-  Total time for CISD iterations:       0.11 s (user)
-                                        0.18 s (system)
+  Total time for CISD iterations:       0.10 s (user)
+                                        0.19 s (system)
                                            1 s (total)
 
   Time per iteration:                   0.01 s (user)
                                         0.02 s (system)
                                         0.09 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:41 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:27 2012
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.22 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.07 seconds =       0.02 minutes
-	system time =       1.61 seconds =       0.03 minutes
+	user time   =       1.03 seconds =       0.02 minutes
+	system time =       1.62 seconds =       0.03 minutes
 	total time  =          3 seconds =       0.05 minutes
 
   ==> Properties CISD <==
@@ -1148,7 +1193,7 @@ Total time:
 
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:41 2012
+*** at Thu Jan 26 11:45:27 2012
 
 
          ---------------------------------------------------------
@@ -1332,18 +1377,18 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:41 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:27 2012
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.21 seconds =       0.02 minutes
-	system time =       1.63 seconds =       0.03 minutes
+	user time   =       1.16 seconds =       0.02 minutes
+	system time =       1.64 seconds =       0.03 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:41 2012
+*** at Thu Jan 26 11:45:27 2012
 
 
 	**************************************************
@@ -1396,18 +1441,18 @@ Total time:
 	h = 0; nbuckets        = 1
 	Two-electron integral transformation complete.
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:41 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:27 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.24 seconds =       0.02 minutes
-	system time =       1.65 seconds =       0.03 minutes
+	user time   =       1.20 seconds =       0.02 minutes
+	system time =       1.66 seconds =       0.03 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:18:41 2012
+*** at Thu Jan 26 11:45:27 2012
 
 
 *******************************************************
@@ -1617,11 +1662,11 @@ The 20 most important determinants
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.016976
- Write     0.011592
- Sigma1    0.001051
- Sigma2    0.581916
- Sigma3    0.401203
+ Read      0.018027
+ Write     0.011091
+ Sigma1    0.001035
+ Sigma2    0.599289
+ Sigma3    0.429909
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -1635,10 +1680,10 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on ds8 at Thu Jan 26 11:18:42 2012
+*** tstop() called on ds8 at Thu Jan 26 11:45:28 2012
 Module time:
-	user time   =       1.29 seconds =       0.02 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       1.33 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
 	user time   =       2.53 seconds =       0.04 minutes
