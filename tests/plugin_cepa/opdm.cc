@@ -223,6 +223,9 @@ void BuildD1(long int o,long int v,double*t1,double*ta,double*tb,double c0,doubl
 
 // normalize the wave function and return the leading coefficient
 double Normalize(long int o,long int v,double*t1,double*t2,int cepa_level){
+
+  if (cepa_level == 0) return 1.0;
+
   double nrm = 1.0;
   double fac = 1.0;
   if (cepa_level == -2)      fac = 1.0/o;

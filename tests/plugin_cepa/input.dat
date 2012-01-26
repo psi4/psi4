@@ -9,9 +9,11 @@ refcepa3   = -0.211995035292 # TEST
 refacpf    = -0.214525653939 # TEST
 refaqcc    = -0.211850393774 # TEST
 refDipHF   = 2.09546990908   # TEST
+refDipCEPA = 1.92023515566   # TEST
 refDipCISD = 1.98873708462   # TEST
 refDipACPF = 1.94427081117   # TEST
 refDipAQCC = 1.96020546503   # TEST
+refQdpCEPA = -5.79763143854  # TEST
 refQdpCISD = -5.75628641309  # TEST
 refQdpACPF = -5.78358853983  # TEST
 refQdpAQCC = -5.77402246385  # TEST
@@ -35,9 +37,6 @@ set {
 scf_energy = scf()
 transqt2()
 
-set cepa_level cepa0
-plugin('./plugin_cepa.so')
-
 set cepa_level cepa1
 plugin('./plugin_cepa.so')
 
@@ -50,6 +49,9 @@ plugin('./plugin_cepa.so')
 # also evaluate dipoles/quadrupoles for the stationary methods
 set dipmom true
 set print 2
+
+set cepa_level cepa0
+plugin('./plugin_cepa.so')
 
 set cepa_level acpf
 plugin('./plugin_cepa.so')
@@ -66,10 +68,12 @@ energy("cisd")
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
 compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")                 #TEST
-compare_values(refcepa0, get_variable("CEPA(0) CORRELATION ENERGY"), 7, "CEPA(0) correlation energy")         #TEST
 compare_values(refcepa1, get_variable("CEPA(1) CORRELATION ENERGY"), 7, "CEPA(1) correlation energy")         #TEST
 compare_values(refcepa2, get_variable("CEPA(2) CORRELATION ENERGY"), 7, "CEPA(2) correlation energy")         #TEST
 compare_values(refcepa3, get_variable("CEPA(3) CORRELATION ENERGY"), 7, "CEPA(3) correlation energy")         #TEST
+compare_values(refcepa0, get_variable("CEPA(0) CORRELATION ENERGY"), 7, "CEPA(0) correlation energy")         #TEST
+compare_values(refDipCEPA, get_variable("CEPA(0) DIPOLE Z"), 5, "CEPA(0) Z Component of dipole")             #TEST
+compare_values(refQdpCEPA, get_variable("CEPA(0) QUADRUPOLE ZZ"), 5, "CEPA(0) ZZ Component of quadrupole")   #TEST
 compare_values(refacpf, get_variable("ACPF CORRELATION ENERGY"), 7, "ACPF correlation energy")         #TEST
 compare_values(refDipACPF, get_variable("ACPF DIPOLE Z"), 5, "ACPF Z Component of dipole")             #TEST
 compare_values(refQdpACPF, get_variable("ACPF QUADRUPOLE ZZ"), 5, "ACPF ZZ Component of quadrupole")   #TEST

@@ -82,8 +82,8 @@ void RunCoupledPair(Options &options){
 
   // dipole moments for CISD, ACPF, or AQCC
   if (options.get_bool("DIPMOM")){
-     if (cepa->cepa_level>=0) 
-        throw PsiException("dipole moments available only for CISD, ACFP, and AQCC",__FILE__,__LINE__);
+     if (cepa->cepa_level>0) 
+        throw PsiException("dipole moments available only for CEPA(0), CISD, ACFP, and AQCC",__FILE__,__LINE__);
      OPDM(cepa,options);
   }
 
