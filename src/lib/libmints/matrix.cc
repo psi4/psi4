@@ -1943,6 +1943,28 @@ void Matrix::copy_upper_to_lower()
     }
 }
 
+void Matrix::hermitivitize()
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Hermitivitize: matrix is not totally symmetric");
+    }
+
+    for (int h = 0; h < nirrep_; h++) {
+        if (rowspi_[h] != colspi_[h]) {
+            throw PSIEXCEPTION("Hermitivitize: matrix is not square");
+        }
+        int n = rowspi_[h];
+        if (!n) continue;
+        double** M = matrix_[h];
+        
+        for (int row = 0; row < n - 1; row++) {
+            for (int col = row + 1; col < n; col++) {
+                M[row][col] = M[col][row] = 0.5*(M[row][col] + M[col][row]);
+            }
+        }
+    }
+}
+
 // Reference versions of the above functions:
 
 void Matrix::transform(const Matrix& a, const Matrix& transformer)

@@ -1,0 +1,90 @@
+# cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
+refnuc     = 8.80146552997   # TEST
+refscf     = -76.0214184452  # TEST
+refcisd    = -0.20576704897  # TEST
+refcepa0   = -0.217857487817 # TEST
+refcepa1   = -0.214363573811 # TEST
+refcepa2   = -0.216862220196 # TEST
+refcepa3   = -0.211995035292 # TEST
+refacpf    = -0.214525653939 # TEST
+refaqcc    = -0.211850393774 # TEST
+refDipHF   = 2.09546990908   # TEST
+refDipCEPA = 1.92023515566   # TEST
+refDipCISD = 1.98873708462   # TEST
+refDipACPF = 1.94427081117   # TEST
+refDipAQCC = 1.96020546503   # TEST
+refQdpCEPA = -5.79763143854  # TEST
+refQdpCISD = -5.75628641309  # TEST
+refQdpACPF = -5.78358853983  # TEST
+refQdpAQCC = -5.77402246385  # TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+plugin_load('./plugin_cepa.so')
+
+set {
+  r_convergence 1e-7
+  basis cc-pvdz
+  freeze_core true
+}
+
+scf_energy = scf()
+transqt2()
+
+set cepa_level cepa1
+plugin('./plugin_cepa.so')
+
+set cepa_level cepa2
+plugin('./plugin_cepa.so')
+
+set cepa_level cepa3
+plugin('./plugin_cepa.so')
+
+# also evaluate dipoles/quadrupoles for the stationary methods
+set dipmom true
+set print 2
+
+set cepa_level cepa0
+plugin('./plugin_cepa.so')
+
+set cepa_level acpf
+plugin('./plugin_cepa.so')
+
+set cepa_level aqcc
+plugin('./plugin_cepa.so')
+
+set cepa_level cisd
+plugin('./plugin_cepa.so')
+
+# also check against detci cisd implementation
+energy("cisd")
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")                 #TEST
+compare_values(refcepa1, get_variable("CEPA(1) CORRELATION ENERGY"), 7, "CEPA(1) correlation energy")         #TEST
+compare_values(refcepa2, get_variable("CEPA(2) CORRELATION ENERGY"), 7, "CEPA(2) correlation energy")         #TEST
+compare_values(refcepa3, get_variable("CEPA(3) CORRELATION ENERGY"), 7, "CEPA(3) correlation energy")         #TEST
+compare_values(refcepa0, get_variable("CEPA(0) CORRELATION ENERGY"), 7, "CEPA(0) correlation energy")         #TEST
+compare_values(refDipCEPA, get_variable("CEPA(0) DIPOLE Z"), 5, "CEPA(0) Z Component of dipole")             #TEST
+compare_values(refQdpCEPA, get_variable("CEPA(0) QUADRUPOLE ZZ"), 5, "CEPA(0) ZZ Component of quadrupole")   #TEST
+compare_values(refacpf, get_variable("ACPF CORRELATION ENERGY"), 7, "ACPF correlation energy")         #TEST
+compare_values(refDipACPF, get_variable("ACPF DIPOLE Z"), 5, "ACPF Z Component of dipole")             #TEST
+compare_values(refQdpACPF, get_variable("ACPF QUADRUPOLE ZZ"), 5, "ACPF ZZ Component of quadrupole")   #TEST
+compare_values(refaqcc, get_variable("AQCC CORRELATION ENERGY"), 7, "AQCC correlation energy")         #TEST
+compare_values(refDipAQCC, get_variable("AQCC DIPOLE Z"), 5, "AQCC Z Component of dipole")             #TEST
+compare_values(refQdpAQCC, get_variable("AQCC QUADRUPOLE ZZ"), 5, "AQCC ZZ Component of quadrupole")   #TEST
+compare_values(refcisd, get_variable("CISD CORRELATION ENERGY"), 7, "CISD correlation energy")         #TEST
+compare_values(refDipCISD, get_variable("CISD DIPOLE Z"), 5, "CISD Z Component of dipole")             #TEST
+compare_values(refQdpCISD, get_variable("CISD QUADRUPOLE ZZ"), 5, "CISD ZZ Component of quadrupole")   #TEST
+compare_values(get_variable("CI CORRELATION ENERGY"), get_variable("CISD CORRELATION ENERGY"), 7, "DETCI vs plugin CISD correlation energy")   #TEST
+compare_values(get_variable("CI DIPOLE Z"), get_variable("CISD DIPOLE Z"), 5, "DETCI vs plugin CISD Z component of dipole")   #TEST
+compare_values(get_variable("CI QUADRUPOLE ZZ"), get_variable("CISD QUADRUPOLE ZZ"), 5, "DETCI vs plugin CISD ZZ component of quadrupole")   #TEST
+
+clean()

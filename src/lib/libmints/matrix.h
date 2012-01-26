@@ -829,6 +829,8 @@ public:
     /// Swap cols i and j
     void swap_columns(int h, int i, int j);
 
+    /*! Average off-diagonal elements */
+    void hermitivitize();
     /*! Copy lower triangle to upper triangle */
     void copy_lower_to_upper();
     /*! Copy upper triangle to lower triangle */
