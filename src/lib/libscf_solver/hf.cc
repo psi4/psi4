@@ -327,13 +327,14 @@ void HF::integrals()
         // Give the JK 70% of the memory
         jk_->set_memory((ULI)(0.7*(Process::environment.get_memory() / 8L)));
         // Tell the JK to do erf integrals if needed 
-        jk_->set_do_wK(options_.get_double("DFT_OMEGA") != 0.0);
+        jk_->set_do_wK((options_.get_double("DFT_OMEGA") != 0.0) 
+            && (options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS"));
         // Tell the JK to do erf integrals if needed 
         jk_->set_omega(options_.get_double("DFT_OMEGA"));
-        // Print the header
-        jk_->print_header();
         // Initialize
         jk_->initialize(); 
+        // Print the header
+        jk_->print_header();
     }
 }
 

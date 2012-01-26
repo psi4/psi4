@@ -97,12 +97,6 @@ void RKS::integrals()
             aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
-        ULI mem = (ULI) (0.35 * memory_);
-        df_->set_memory(mem);
-        
-        erf_df_ = boost::shared_ptr<DFHF>(new DFHF(HF::basisset_, HF::psio_, HF::options_, functional_->getOmega()));
-        erf_df_->set_memory(mem);
-        erf_df_->set_unit(PSIF_DFSCF_K);
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
     }

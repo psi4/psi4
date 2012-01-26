@@ -64,21 +64,37 @@ def frac_traverse(mol, **kwargs):
     if kwargs.has_key('neutral_guess'):
         neutral_guess = kwargs['neutral_guess']
 
+    # By default, burn-in with UHF first, if UKS
+    hf_guess = False
+    if PsiMod.get_global_option('REFERENCE') == 'UKS':
+        hf_guess = True
+        if kwargs.has_key('hf_guess'):
+            hf_guess = kwargs['hf_guess']
+
     # => Traverse <= #
     occs = []
     energies = []
 
     # => Run the neutral for its orbitals, if requested <= #
 
+    old_guess = PsiMod.get_global_option("GUESS")
     if (neutral_guess):
+        if (hf_guess):
+            PsiMod.set_global_option("REFERENCE","UHF")
         energy('scf')
-        old_guess = PsiMod.get_global_option("GUESS")
         PsiMod.set_global_option("GUESS", "READ")
 
     # => Run the anion first <= #
 
     mol.set_molecular_charge(chargem)
     mol.set_multiplicity(multm)
+    
+    # => Burn the anion in with hf, if requested <= #
+    if (hf_guess):
+        PsiMod.set_global_option("REFERENCE","UHF")
+        energy('scf')
+        PsiMod.set_global_option("REFERENCE","UKS")
+        PsiMod.set_global_option("GUESS", "READ")
 
     PsiMod.set_global_option("FRAC_START", frac_start)
     PsiMod.set_global_option("FRAC_RENORMALIZE", True)
@@ -97,15 +113,24 @@ def frac_traverse(mol, **kwargs):
         PsiMod.set_global_option("FRAC_START", 2)
         PsiMod.set_global_option("FRAC_LOAD", True)
         PsiMod.set_global_option("FRAC_DIIS", frac_diis)
+        PsiMod.set_global_option("GUESS", "READ")
+        
 
     # Reset the old guess    
-    if (neutral_guess):
-        PsiMod.set_global_option("GUESS", old_guess)
+    PsiMod.set_global_option("GUESS", old_guess)
 
     # => Run the neutral next <= #
 
     mol.set_molecular_charge(charge0)
     mol.set_multiplicity(mult0)
+
+    # Burn the neutral in with hf, if requested <= #
+    if (hf_guess):
+        PsiMod.set_global_option("FRAC_START", 0)
+        PsiMod.set_global_option("REFERENCE","UHF")
+        energy('scf')
+        PsiMod.set_global_option("REFERENCE","UKS")
+        PsiMod.set_global_option("GUESS", "READ")
 
     PsiMod.set_global_option("FRAC_START", frac_start)
     PsiMod.set_global_option("FRAC_RENORMALIZE", True)
@@ -124,6 +149,7 @@ def frac_traverse(mol, **kwargs):
         PsiMod.set_global_option("FRAC_START", 2)
         PsiMod.set_global_option("FRAC_LOAD", True)
         PsiMod.set_global_option("FRAC_DIIS", frac_diis)
+        PsiMod.set_global_option("GUESS", "READ")
 
     # => Print the results out <= #
     E = {}

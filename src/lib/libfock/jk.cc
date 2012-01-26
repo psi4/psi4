@@ -990,7 +990,7 @@ void DFJK::print_header() const
         auxiliary_->print_by_level(outfile, print_);
     }
 }
-bool DFJK::is_core()
+bool DFJK::is_core() const 
 {
     int ntri = sieve_->function_pairs().size();
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
@@ -998,9 +998,9 @@ bool DFJK::is_core()
 
     // Two is for buffer space in fitting
     if (do_wK_)
-        return (three_memory + 2L*two_memory < memory_); 
-    else
         return (3L*three_memory + 2L*two_memory < memory_); 
+    else
+        return (three_memory + 2L*two_memory < memory_); 
 }
 unsigned long int DFJK::memory_temp()
 {
@@ -1133,9 +1133,9 @@ void DFJK::preiterations()
 
     if (do_wK_) {
         if (is_core_)
-            initialize_JK_core();
+            initialize_wK_core();
         else 
-            initialize_JK_disk();
+            initialize_wK_disk();
     }
 }
 void DFJK::compute_JK()
@@ -1157,6 +1157,10 @@ void DFJK::compute_JK()
         else
             manage_wK_disk();
         free_w_temps();
+        // Bring the wK matrices back to Hermitian
+        for (int N = 0; N < wK_ao_.size(); N++) {   
+            wK_ao_[N]->hermitivitize();
+        }
     }
 }
 void DFJK::postiterations()
@@ -1663,9 +1667,9 @@ void DFJK::initialize_wK_core()
 
     // Fitting metric
     boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true)); 
-    Jinv->form_full_inverse();
+    Jinv->form_full_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
-        
+
     // Fitting in one GEMM (being a clever bastard)
     C_DGEMM('N','N',naux,ntri,naux,1.0,Jinvp[0],naux,Qmn2p[0],ntri,0.0,Qmnp[0],ntri);
 
@@ -1931,7 +1935,7 @@ void DFJK::initialize_wK_disk()
     
     // Form the J full inverse
     boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true)); 
-    Jinv->form_full_inverse();
+    Jinv->form_full_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
     // Synch up
@@ -2094,8 +2098,10 @@ void DFJK::initialize_wK_disk()
 
             for (int om = 0; om < nm; om++) {
                 for (int on = 0; on < nn; on++) {
-                    if (om >= on && schwarz_fun_pairs_r[om*(om+1)/2 + on] >= 0) {
-                        int delta = schwarz_fun_pairs_r[om*(om+1)/2 + on];
+                    long int m = sm + om;
+                    long int n = sn + on;
+                    if (m >= n && schwarz_fun_pairs_r[m*(m+1)/2 + n] >= 0) {
+                        long int delta = schwarz_fun_pairs_r[m*(m+1)/2 + n];
                         for (int oq = 0; oq < nq; oq++) {
                             Amn2p[sq + oq - qoff][delta] =
                             buffer2[thread][oq * nm * nn + om * nn + on];
@@ -2318,31 +2324,28 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
 
         }
 
-        if (N == 0 || C_right_[N].get() != C_right_[N-1].get()) {
-            
-            #pragma omp parallel for schedule (dynamic)
-            for (int m = 0; m < nbf; m++) {
+        #pragma omp parallel for schedule (dynamic)
+        for (int m = 0; m < nbf; m++) {
 
-                int thread = 0;
-                #ifdef _OPENMP
-                    thread = omp_get_thread_num();
-                #endif
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
 
-                double** Ctp = C_temp_[thread]->pointer();
-                double** QSp = Q_temp_[thread]->pointer();
+            double** Ctp = C_temp_[thread]->pointer();
+            double** QSp = Q_temp_[thread]->pointer();
 
-                const std::vector<int>& pairs = sieve_->function_to_function()[m];
-                int rows = pairs.size();
+            const std::vector<int>& pairs = sieve_->function_to_function()[m];
+            int rows = pairs.size();
 
-                for (int i = 0; i < rows; i++) {
-                    int n = pairs[i];
-                    long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
-                    C_DCOPY(naux,&Qrmnp[0][ij],num_nm,&QSp[0][i],nbf);
-                    C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
-                }
-                
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+            for (int i = 0; i < rows; i++) {
+                int n = pairs[i];
+                long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                C_DCOPY(naux,&Qrmnp[0][ij],num_nm,&QSp[0][i],nbf);
+                C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
             }
+            
+            C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
         }
 
         C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,wKp[0],nbf);        
