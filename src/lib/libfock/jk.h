@@ -617,7 +617,7 @@ protected:
     /// Common initialization
     void common_init();
 
-    bool is_core();
+    bool is_core() const;
     unsigned long int memory_temp();
     int max_rows();
     int max_nocc();
