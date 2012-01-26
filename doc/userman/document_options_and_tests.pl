@@ -85,7 +85,10 @@ sub print_hash
  my $label_string = $_[3];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
  print OUT "{\n \\footnotesize\n";
- foreach my $Module (sort {$a cmp $b} keys %hash){
+ my @RearrModules = sort {$a cmp $b} keys %hash;
+ @RearrModules = grep { $_ ne "GLOBALS"} @RearrModules;
+ unshift(@RearrModules, "GLOBALS");
+ foreach my $Module (@RearrModules){
      push(@temp, $Module);
      printf OUT "\n\\subsection{%s}\\label{%s-%s}\n",$Module,$label_string, $Module;
      if (exists $ModuleDescriptions{$Module} and $print_description){
