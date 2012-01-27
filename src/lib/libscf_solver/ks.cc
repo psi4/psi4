@@ -50,21 +50,24 @@ void KS::common_init()
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 
-    //Build the superfunctional
-    int block_size = options_.get_int("DFT_MAX_POINTS");
+    // Build the superfunctional
+    int block_size = options_.get_int("DFT_BLOCK_MAX_POINTS");
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
 
-    // Temporary print, to make sure we're in the right spot
-    fprintf(outfile,"  Selected Functional is %s.\n\n",functional_->getName().c_str());
-
-    //Grab the properties object for this basis
+    // Force the user to spec a range-separation omega
     if (functional_->isRangeCorrected()) {
+        if (!options_["DFT_OMEGA"].has_changed()) 
+            throw PSIEXCEPTION("DFT: Set DFT_OMEGA option to use RC-DFT");
 
-        if (options_["DFT_OMEGA"].has_changed()) {
-            functional_->setOmega(options_.get_double("DFT_OMEGA"));
-        }
-
+        functional_->setOmega(options_.get_double("DFT_OMEGA"));
     }
+
+    // Print some info on the DFT functional
+    fprintf(outfile,"  ==> KS-DFT <==\n\n"); 
+    fprintf(outfile,"   Selected Functional is %s.\n",functional_->getName().c_str());
+    if (functional_->isRangeCorrected()) 
+        fprintf(outfile,"   Range-separation omega is %11.3E.\n", functional_->getOmega());  
+    fprintf(outfile,"\n");
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
