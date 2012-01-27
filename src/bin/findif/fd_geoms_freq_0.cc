@@ -118,7 +118,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
   for (int h=0; h<Nirrep; ++h)
     Ndisp_all += Ndisp_pi[h];
 
-  fprintf(outfile,"\tNumber of displacements (including reference) is %d.\n", Ndisp_all);
+  fprintf(outfile,"\tNumber of geometries (including reference) is %d.\n", Ndisp_all);
   fprintf(outfile,"\tNumber of displacements per irrep:\n");
   for (int h=0; h<Nirrep; ++h)
     fprintf(outfile,"\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);

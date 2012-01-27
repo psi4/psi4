@@ -32,20 +32,19 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
-  int print_lvl = 3;
+  int print_lvl = options.get_int("PRINT");
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
   CdSalcList salc_list(mol, fact, 0xF, true, true);
   int Nirrep = salc_list.nirrep();
-  int Nsalc_all = salc_list.ncd();
 
   // build vectors that list indices of salcs for each irrep
   std::vector< std::vector<int> > salcs_pi;
   for (int h=0; h<Nirrep; ++h)
     salcs_pi.push_back( std::vector<int>() );
-  for (int i=0; i<Nsalc_all; ++i)
+  for (int i=0; i<salc_list.ncd(); ++i)
     salcs_pi[salc_list[i].irrep()].push_back(i);
 
   // Now remove irreps that are not requested
@@ -53,6 +52,15 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     for (int h=0; h<Nirrep; ++h)
       if (h != freq_irrep_only)
         salcs_pi[h].clear();
+  }
+
+  // Determine total num of salcs and where each irrep starts
+  int Nsalc_all = salcs_pi[0].size();
+  int salc_irr_start[8];
+  salc_irr_start[0] = 0;
+  for (int h=1; h<Nirrep; ++h) {
+    Nsalc_all += salcs_pi[h].size();
+    salc_irr_start[h] = salc_irr_start[h-1] + salcs_pi[h-1].size();
   }
 
   // count displacements
@@ -108,7 +116,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   //int num_projected_out = rot_trans_out->nrow();
 
   char **irrep_lbls = mol->irrep_labels();
-  double **H = block_matrix(Nsalc_all, Nsalc_all);
+  double **H_irr[8]; // hessian by irrep block
 
   std::vector<VIBRATION *> modes;
 
@@ -116,19 +124,19 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
 
     if (salcs_pi[h].size() == 0) continue;
 
-    double **H_irr = block_matrix(salcs_pi[h].size(),salcs_pi[h].size());
+    H_irr[h] = block_matrix(salcs_pi[h].size(),salcs_pi[h].size());
 
     // do diagonal displacements
     for (int i=0; i<salcs_pi[h].size(); ++i) { // loop over salcs of this irrep
 
       if (h == 0) { // symmetric
         if (pts == 3) {
-          H_irr[i][i] = ( + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
+          H_irr[h][i][i] = ( + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
                           + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
                                 - 2.0 * energy_ref) / (disp_size*disp_size);
         }
         else if (pts == 5) {
-          H_irr[i][i] = (
+          H_irr[h][i][i] = (
             -  1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
             + 16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
             + 16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0,  1, 0)]
@@ -138,10 +146,10 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
       }
       else {  // asymmetric
         if (pts == 3)
-          H_irr[i][i] = 2.0 * (E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - energy_ref) /
+          H_irr[h][i][i] = 2.0 * (E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - energy_ref) /
             (disp_size * disp_size);
         else if (pts == 5)
-          H_irr[i][i] = (
+          H_irr[h][i][i] = (
             -  2.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
             + 32.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
             - 30.0 * energy_ref ) / (12.0 * disp_size * disp_size);
@@ -154,7 +162,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
       for (int j=0; j<i; ++j) {        // loop over salcs of this irrep
 
         if (pts == 3) {
-          H_irr[i][j] = H_irr[j][i] = (
+          H_irr[h][i][j] = H_irr[h][j][i] = (
             + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)]
             + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
             + 2.0 * energy_ref
@@ -165,7 +173,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
             ) / (2.0*disp_size*disp_size) ;
         }
         else if (pts == 5) {
-          H_irr[i][j] = H_irr[j][i] = (
+          H_irr[h][i][j] = H_irr[h][j][i] = (
             - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -2)]
             - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -2, -1)]
             + 9.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
@@ -190,24 +198,15 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     if (print_lvl >= 3) {
       fprintf(outfile, "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
       fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
-      mat_print(H_irr, salcs_pi[h].size(), salcs_pi[h].size(), outfile);
+      mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), outfile);
     }
-
-    // Build complete hessian for transformation later to cartesians
-    int start_irr = 0;
-    for (int i=0; i<h; ++i)
-      start_irr += salcs_pi[i].size();
-
-    for (int i=0; i<salcs_pi[h].size(); ++i)
-      for (int j=0; j<=i; ++j)
-        H[start_irr + i][start_irr + j] = H[start_irr + j][start_irr + i] = H_irr[i][j];
 
     // diagonalize force constant matrix
     int dim = salcs_pi[h].size(); 
     double *evals= init_array(dim);
     double **evects = block_matrix(dim, dim);
 
-    sq_rsp(dim, dim, H_irr, evals, 3, evects, 1e-14);
+    sq_rsp(dim, dim, H_irr[h], evals, 3, evects, 1e-14);
 
     // Build Bu^1/2 matrix for this irrep
     SharedMatrix B_irr_shared = salc_list.matrix_irrep(h);
@@ -237,7 +236,6 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
 
     free(evals);
     free_block(evects);
-    free_block(H_irr);
     free_block(normal_irr);
   }
 
@@ -248,8 +246,20 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
     delete modes[i];
   modes.clear();
 
-  // Transform Hessian into cartesian coordinates
+  // Build complete hessian for transformation to cartesians
+  double **H = block_matrix(Nsalc_all, Nsalc_all);
 
+  for (int h=0; h<Nirrep; ++h)
+    for (int i=0; i<salcs_pi[h].size(); ++i) {
+      int start = salc_irr_start[h];
+      for (int j=0; j<=i; ++j)
+        H[start + i][start + j] = H[start + j][start + i] = H_irr[h][i][j];
+    }
+
+  for (int h=0; h<Nirrep; ++h)
+    if (salcs_pi[h].size()) free_block(H_irr[h]);
+
+  // Transform Hessian into cartesian coordinates
   if (print_lvl >= 3) {
     fprintf(outfile, "\n\tFull force constant matrix in mass-weighted SALCS.\n");
     mat_print(H, Nsalc_all, Nsalc_all, outfile);
@@ -260,10 +270,11 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   SharedMatrix B_shared = salc_list.matrix();
   double **B = B_shared->pointer();
 
-  for (int i=0; i<dim; ++i) 
-    for (int a=0; a<Natom; ++a)
-      for (int xyz=0; xyz<3; ++xyz)
-        B[i][3*a+xyz] *= sqrt(mol->mass(a));
+  // un mass-weighted below
+  //for (int i=0; i<dim; ++i) 
+    //for (int a=0; a<Natom; ++a)
+      //for (int xyz=0; xyz<3; ++xyz)
+        //B[i][3*a+xyz] *= sqrt(mol->mass(a));
 
   double **Hx = block_matrix(3*Natom, 3*Natom);
 
@@ -271,22 +282,31 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
   for (int i=0; i<dim; ++i)
     for (int j=0; j<dim; ++j)
       for (int x1=0; x1<3*Natom; ++x1)
-        for (int x2=0; x2<3*Natom; ++x2)
+        for (int x2=0; x2 <= x1; ++x2)
           Hx[x1][x2] += B[i][x1] * H[i][j] * B[j][x2];
 
-  //for (int x1=0; x1<3*Natom; ++x1)
-    //for (int x2=0; x2 < x1; ++x2)
-      //Hx[x2][x1] = Hx[x1][x2];
+  for (int x1=0; x1<3*Natom; ++x1)
+    for (int x2=0; x2 < x1; ++x2)
+      Hx[x2][x1] = Hx[x1][x2];
 
   free_block(H);
 
-  fprintf(outfile, "\n\tForce Constants in mass-weighted cartesian coordinates assuming zero gradient.\n");
-  mat_print(Hx, 3*Natom, 3*Natom, outfile);
+  if (print_lvl >= 3) {
+    fprintf(outfile, "\n\tForce Constants in mass-weighted cartesian coordinates.\n");
+    mat_print(Hx, 3*Natom, 3*Natom, outfile);
+  }
 
-  // Compute the gradient. It's needed for the (probably) smaller derivative B term 
-  // that vanishes at stationary points.
+  /* We should compute the gradient in internal coordinates (the SALCs).  Then combine
+   with the derivative B term.  This term is 0 at stationary points.  We need it to
+   get the proper cartesian hessian.  However, I haven't figured out how to get the
+   finite-difference derivative B matrix generated by the code below exactly correct.
+   I think the problem is that the cartesian displacments generated by the code below
+   break the symmetry of the molecule - which totally changes the nature of the SALCs
+   generated by the cdsalc code.  This is a to be finished later problem - RAK
+  */
 
   // Gradient in mass-weighted SALCS
+  /*
   double *g_q = init_array(salcs_pi[0].size());
   if (pts == 3) {
     for (int i=0; i<salcs_pi[0].size(); ++i)
@@ -301,12 +321,26 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
                 -1.0*E[iE0(Ndisp_pi, salcs_pi, pts, 0, i, 0, +2,  0)]) / (12.0*disp_size);
   }
 
-  fprintf(outfile,"Gradient in mass-weighted SALC coordinates:\n");
-  for (int i=0; i<salcs_pi[0].size(); ++i)
-    fprintf(outfile," %d  %20.10lf\n", i, g_q[i]);
+  if (print_lvl >= 3) {
+    fprintf(outfile,"Gradient in mass-weighted SALC coordinates:\n");
+    for (int i=0; i<salcs_pi[0].size(); ++i)
+      fprintf(outfile," %d  %20.10lf\n", i, g_q[i]);
+  }
 
-  // linear, gradient term is H_kj += dE/dq . d2q/(dx_k dx_j); 
-  // g_q is in mass-weighted SALCS
+  // ***if we need it, this shows how to get the gradient in ordinary cartesians
+  //SharedMatrix B_sym_shared = salc_list.matrix_irrep(0);
+  //double **B_sym = B_sym_shared->pointer();
+  //for (int i=0; salcs_pi[0].size(); ++i) 
+    //for (int a=0; a<Natom; ++a)
+      //for (int xyz=0; xyz<3; ++xyz)
+        //B_sym[i][3*a+xyz] *= sqrt(mol->mass(a));
+  // Gradient in ordinary cartesians g_q B -> g_cart
+  //double *g_cart = init_array(3*Natom);
+  //C_DGEMM('n', 'n', 1, 3*Natom, salcs_pi[0].size(), 1.0, g_q, salcs_pi[0].size(),
+    //B_sym[0], 3*Natom, 0, g_cart, 3*Natom);
+  //free(g_cart);
+
+  // The linear, gradient term is H_kj += dE/dq . d2q/(dx_k dx_j); 
   // displacements done by displace_cart are also in mass-weighted coordinates
   double **ref_geom = mol->geometry().to_block_matrix();
 
@@ -321,6 +355,8 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
       CdSalcList B_p_list(mol, fact, 0x1, true, true);
       SharedMatrix B_p = B_p_list.matrix();
       //mass_weight_columns_plus_one_half(B_p);
+      // We can multiply columns by sqrt(mol->mass(atom_b), but if we also divide
+      // by it in the finite-difference formula it cancels anyway.
 
       ref_geom[atom_a][xyz_a] += DX / sqrt(mol->mass(atom_a));
       mol->set_geometry(ref_geom);
@@ -348,98 +384,31 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& python_ener
           for (int i=0; i<salcs_pi[0].size(); ++i) {
               dq2dx2 = (B_m2->get(i,3*atom_b+xyz_b) - 8.0*B_m->get(i,3*atom_b+xyz_b)
                     +8.0*B_p->get(i,3*atom_b+xyz_b) -    B_p2->get(i,3*atom_b+xyz_b)) / 
-                   (12.0*DX); //* sqrt(mol->mass(atom_b));
-                   //fprintf(outfile,"%20.10lf\n", dq2dx2);
+                   (12.0*DX); // * sqrt(mol->mass(atom_b));
 
-      //        Hx[3*atom_a+xyz_a][3*atom_b+xyz_b] += g_q[i] * dq2dx2;
+              Hx[3*atom_a+xyz_a][3*atom_b+xyz_b] += g_q[i] * dq2dx2;
           }
         }
-      }
-    }
-  free_block(ref_geom);
-
-  fprintf(outfile, "\n\tForce Constants in cartesian coordinates including derivative term b/f un-mw.\n");
-  mat_print(Hx, 3*Natom, 3*Natom, outfile);
-
-  // Un-mass-weight Hessian
-/*
-  for (int atom_a=0; atom_a<Natom; ++atom_a)
-    for (int xyz_a=0; xyz_a<3; ++xyz_a)
-      for (int atom_b=0; atom_b<Natom; ++atom_b)
-        for (int xyz_b=0; xyz_b<3; ++xyz_b)
-      Hx[3*atom_a+xyz_a][3*atom_b+xyz_b] *= sqrt(mol->mass(atom_a)) * sqrt(mol->mass(atom_b));
-*/
-
-  //for (int x1=0; x1<3*Natom; ++x1)
-    //for (int x2=0; x2<3*Natom; ++x2)
-
-  for (int atom_a=0; atom_a<Natom; ++atom_a)
-    for (int xyz_a=0; xyz_a<3; ++xyz_a)
-      for (int atom_b=0; atom_b<=atom_a; ++atom_b)
-        for (int xyz_b=0; xyz_b<3; ++xyz_b)
-          if (fabs(Hx[3*atom_a+xyz_a][3*atom_b+xyz_b] - Hx[3*atom_b+xyz_b][3*atom_a+xyz_a]) > 1e-10)
-            printf("assymetry (%d,%d;%d,%d) vs transpose: %15.10f\n", atom_a,xyz_a,atom_b,xyz_b,
-              Hx[3*atom_a+xyz_a][3*atom_b+xyz_b] - Hx[3*atom_b+xyz_b][3*atom_a+xyz_a]);
-         
-
-  fprintf(outfile, "\n\tForce Constants in cartesian coordinates including derivative term.\n");
-  mat_print(Hx, 3*Natom, 3*Natom, outfile);
-
-  free(g_q);
-
-/*
-  SharedMatrix B_sym_shared = salc_list.matrix_irrep(0);
-  double **B_sym = B_sym_shared->pointer();
-
-  for (int i=0; salcs_pi[0].size(); ++i) 
-    for (int a=0; a<Natom; ++a)
-      for (int xyz=0; xyz<3; ++xyz)
-        B_sym[i][3*a+xyz] *= sqrt(mol->mass(a));
-
-  // Gradient in ordinary cartesians g_q B -> g_cart
-  double *g_cart = init_array(3*Natom);
-  C_DGEMM('n', 'n', 1, 3*Natom, salcs_pi[0].size(), 1.0, g_q, salcs_pi[0].size(),
-    B_sym[0], 3*Natom, 0, g_cart, 3*Natom);
-
-  fprintf(outfile,"Forces in cartesian coordinates\n");
-  for (int i=0; i<3*Natom; ++i)
-    fprintf(outfile,"\t%15.10lf\n",g_cart[i]);
-  free(g_cart);
-*/
-
-
-/*
-  double **tmat = block_matrix(3*Natom, dim);
-  //C_DGEMM('t', 'n', 3*Natom, dim, dim, 1.0, B[0], 3*Natom, H[0], dim, 0, tmat[0], dim);
-
-  opt_matrix_mult(B, 1, H, 0, tmat, 0, 3*Natom, dim, dim, 0);
-
-  //C_DGEMM('n', 'n', 3*Natom, 3*Natom, dim, 1.0, tmat[0], dim, B[0], 3*Natom, 0, Hx[0], 3*Natom);
-
-  opt_matrix_mult(tmat, 0, B, 0, Hx, 0, 3*Natom, dim, 3*Natom, 0);
-
-  // un mass weight the thing
-  for (int i=0; i<Natom; ++i) {
-    double mass_i = mol->mass(i);
-    for (int j=0; j<Natom; ++j) {
-      double mass_j = mol->mass(j);
-      for (int i_xyz=0; i_xyz<3; ++i_xyz)
-        for (int j_xyz=0; j_xyz<3; ++j_xyz)
-          Hx[3*i+i_xyz][3*j+j_xyz] /= sqrt(mass_i) * sqrt(mass_j);
     }
   }
-*/
-/*
-  // Do I need to project this thing?
-  double **Px = block_matrix(3*Natom, 3*Natom);
-  for (int i=0; i<3*Natom; ++i)
-    Px[i][i] = 1.0;
+  free_block(ref_geom);
 
-  double **R = block_matrix(3*Natom, 3*Natom);
-
-  fprintf(outfile, "\n\tProjected Force Constants in cartesian coordinates.\n");
-  mat_print(Hx, 3*Natom, 3*Natom, outfile);
+  if (print_lvl >= 3) {
+    fprintf(outfile, "\n\tMass-weighted force constants in cartesian coordinates including derivative term.\n");
+    mat_print(Hx, 3*Natom, 3*Natom, outfile);
+  }
+  free(g_q);
 */
+
+  // Un-mass-weight Hessian
+  for (int x1=0; x1<3*Natom; ++x1)
+    for (int x2=0; x2<3*Natom; ++x2)
+      Hx[x1][x2] *= sqrt(mol->mass(x1/3)) * sqrt(mol->mass(x2/3));
+
+  if (print_lvl >= 3) {
+    fprintf(outfile, "\n\tForce Constants in cartesian coordinates.\n");
+    mat_print(Hx, 3*Natom, 3*Natom, outfile);
+  }
 
   FILE *of_Hx = fopen("psi.file15.dat","w");
   fprintf(of_Hx,"%5d", Natom);
