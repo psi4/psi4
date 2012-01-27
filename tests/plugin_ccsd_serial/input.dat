@@ -1,4 +1,9 @@
-#
+#  cc-pvdz H2O Test CCSD(T) energies
+refnuc     = 8.80146552997   # TEST
+refscf     = -76.0214184452  # TEST
+refccsd    = -0.214295329669 # TEST
+refccsdt   = -0.217539266337 # TEST
+
 molecule h2o {
 0 1
 O
@@ -7,25 +12,14 @@ H 1 1.0 2 104.5
 symmetry c1
 }
 
-plugin_load('./plugin_ccsd_serial.so')
-
-memory 500 mb
 set {
-  max_mapped_memory 200
-  wfn ccsd_t
-  convergence 7
-  basis       cc-pvdz
-  scf_type pk
-  guess sad
-  reference rhf
+  r_convergence 1e-7
+  basis cc-pvdz
   freeze_core true
-  e_converge 12
 }
+energy("plugin_ccsd_serial")
 
-#  e(ccsd)    = -0.214295324941422
-#  e(ccsd(t)) = -0.003243936319252
-
-psi4_io.set_default_path('/lustre/medusa/deprince/')
-scf_energy = scf()
-transqt()
-plugin('./plugin_ccsd_serial.so')
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                 #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                             #TEST
+compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy")        #TEST 
+compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"), 8, "CCSD(T) correlation energy") #TEST
