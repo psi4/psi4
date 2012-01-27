@@ -1,7 +1,7 @@
 # Location of your PSI4 source
-psi_top_srcdir = /nics/c/home/deprince/psi4
+psi_top_srcdir = /home/deprince/psi4
 # Location of your PSI4 install, by default as listed
-psi_top_objdir = /nics/c/home/deprince/psi4/objdir
+psi_top_objdir = /home/deprince/psi4/objdir
 
 #############################################################
 #   set CUDA=anything if you want to use cuda. if it is 
@@ -36,7 +36,8 @@ UNAME := $(shell uname)
 include $(psi_top_objdir)/src/bin/MakeVars
 
 PSITARGET = $(shell basename `pwd`).so
-PSIINCLUDE = -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib
+#PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib 
+PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE) -DCUDA
 PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
 

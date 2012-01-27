@@ -128,7 +128,7 @@ void CoupledCluster::Initialize(Options &options){
   scale_t = 1.0;
 
   // get paramters from input 
-  conv    = options.get_double("CONVERGENCE");
+  conv    = options.get_double("R_CONVERGENCE");
   maxiter = options.get_int("MAXITER");
   maxdiis = options.get_int("DIIS_MAX_VECS");
 
@@ -563,6 +563,8 @@ double eccsd2 = 0.0;
   fprintf(outfile,"        SCS-MP2 correlation energy:     %20.12lf\n",emp2_os+emp2_ss);
   fprintf(outfile,"      * SCS-MP2 total energy:           %20.12lf\n",emp2_os+emp2_ss+escf);
   fprintf(outfile,"\n");
+  fprintf(outfile,"        OS MP2 correlation energy:      %20.12lf\n",emp2_os/emp2_os_fac);
+  fprintf(outfile,"        SS MP2 correlation energy:      %20.12lf\n",emp2_ss/emp2_ss_fac);
   fprintf(outfile,"        MP2 correlation energy:         %20.12lf\n",emp2);
   fprintf(outfile,"      * MP2 total energy:               %20.12lf\n",emp2+escf);
   fprintf(outfile,"\n");
@@ -571,6 +573,8 @@ double eccsd2 = 0.0;
   fprintf(outfile,"        SCS-CCSD correlation energy:    %20.12lf\n",eccsd_os+eccsd_ss);
   fprintf(outfile,"      * SCS-CCSD total energy:          %20.12lf\n",eccsd_os+eccsd_ss+escf);
   fprintf(outfile,"\n");
+  fprintf(outfile,"        OS CCSD correlation energy:     %20.12lf\n",eccsd_os/eccsd_os_fac);
+  fprintf(outfile,"        SS CCSD correlation energy:     %20.12lf\n",eccsd_ss/eccsd_ss_fac);
   fprintf(outfile,"        CCSD correlation energy:        %20.12lf\n",eccsd);
   fprintf(outfile,"      * CCSD total energy:              %20.12lf\n",eccsd+escf);
   fprintf(outfile,"\n");
