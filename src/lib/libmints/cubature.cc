@@ -498,13 +498,14 @@ void DFTGrid::buildGridFromOptions()
     }
 
     // Blocking/sieving info
-    int max_points = options_.get_int("DFT_MAX_POINTS");
-    int min_points = options_.get_int("DFT_MIN_POINTS");
+    int max_points = options_.get_int("DFT_BLOCK_MAX_POINTS");
+    int min_points = options_.get_int("DFT_BLOCK_MIN_POINTS");
+    double max_radius = options_.get_double("DFT_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("DFT_BASIS_TOLERANCE");
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights
-    buildGrid(atoms, options_.get_str("DFT_NUCLEAR_SCHEME"), extents, max_points, min_points);
+    buildGrid(atoms, options_.get_str("DFT_NUCLEAR_SCHEME"), extents, max_points, min_points, max_radius);
 }
 
 
@@ -894,13 +895,14 @@ void PseudospectralGrid::buildGridFromOptions()
         atoms.push_back(atom);
     }
 
-    int max_points = options_.get_int("PS_MAX_POINTS");
-    int min_points = options_.get_int("PS_MIN_POINTS");
+    int max_points = options_.get_int("PS_BLOCK_MAX_POINTS");
+    int min_points = options_.get_int("PS_BLOCK_MIN_POINTS");
+    double max_radius = options_.get_double("PS_BLOCK_MAX_RADIUS");
     double epsilon = options_.get_double("PS_BASIS_TOLERANCE");
     boost::shared_ptr<BasisExtents> extents(new BasisExtents(primary_, epsilon));
 
     /// Apply nuclear weights
-    buildGrid(atoms, options_.get_str("PS_NUCLEAR_SCHEME"), extents, max_points, min_points);
+    buildGrid(atoms, options_.get_str("PS_NUCLEAR_SCHEME"), extents, max_points, min_points, max_radius);
 }
 
 MolecularGrid::MolecularGrid(boost::shared_ptr<Molecule> molecule) :
@@ -925,17 +927,17 @@ void MolecularGrid::sieve()
     // => Remove points that are very distant <= //
     remove_distant_points(extents_->maxR());
 }
-void MolecularGrid::block(int max_points, int min_points)
+void MolecularGrid::block(int max_points, int min_points, double max_radius)
 {
     // Hack
     Options& options_ = Process::environment.options;
 
     // Reassign
     boost::shared_ptr<GridBlocker> blocker;
-    if (options_.get_str("DFT_BOXING_SCHEME") == "NAIVE") {
-        blocker = boost::shared_ptr<GridBlocker>(new NaiveGridBlocker(npoints_,x_,y_,z_,w_,max_points,min_points,extents_));
-    } else if (options_.get_str("DFT_BOXING_SCHEME") == "OCTREE") {
-        blocker = boost::shared_ptr<GridBlocker>(new OctreeGridBlocker(npoints_,x_,y_,z_,w_,max_points,min_points, extents_));
+    if (options_.get_str("DFT_BLOCK_SCHEME") == "NAIVE") {
+        blocker = boost::shared_ptr<GridBlocker>(new NaiveGridBlocker(npoints_,x_,y_,z_,w_,max_points,min_points,max_radius,extents_));
+    } else if (options_.get_str("DFT_BLOCK_SCHEME") == "OCTREE") {
+        blocker = boost::shared_ptr<GridBlocker>(new OctreeGridBlocker(npoints_,x_,y_,z_,w_,max_points,min_points,max_radius,extents_));
     }
 
     blocker->set_print(options_.get_int("PRINT"));
@@ -1325,7 +1327,7 @@ boost::shared_ptr<GridBlock> MolecularGrid::fullGrid()
     return g;
 }
 void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms, const std::string& scheme,
-   boost::shared_ptr<BasisExtents> extents, int max_points, int min_points)
+   boost::shared_ptr<BasisExtents> extents, int max_points, int min_points, double max_radius)
 {
     extents_ = extents;
     primary_ = extents_->basis();
@@ -1374,7 +1376,7 @@ void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms
     }
 
     sieve();
-    block(max_points, min_points);
+    block(max_points, min_points, max_radius);
 }
 void MolecularGrid::getBSRadii()
 {
@@ -1608,6 +1610,14 @@ void MolecularGrid::print(FILE* out, int print)
 
     if (print > 2) {
         extents_->print();
+    }
+
+    if (print > 2) {
+        fprintf(out, "   Blocks:\n\n");
+        for (int N = 0; N < blocks_.size(); N++) {
+            boost::shared_ptr<BlockOPoints> block = blocks_[N];
+            block->print(out, 1); 
+        } 
     }
 }
 
@@ -7299,17 +7309,20 @@ int SphericalGrid::lebedevReccurence(int type, int start, double a, double b, do
 }
 
 GridBlocker::GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
+    double const* w_ref, const int max_points, const int min_points, const double max_radius,
+    boost::shared_ptr<BasisExtents> extents) :
     npoints_ref_(npoints_ref), x_ref_(x_ref), y_ref_(y_ref), z_ref_(z_ref), w_ref_(w_ref),
-    tol_max_points_(max_points), tol_min_points_(min_points), extents_(extents), print_(1), debug_(0)
+    tol_max_points_(max_points), tol_min_points_(min_points), tol_max_radius_(max_radius),
+    extents_(extents), print_(1), debug_(0)
 {
 }
 GridBlocker::~GridBlocker()
 {
 }
 NaiveGridBlocker::NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
-    GridBlocker(npoints_ref,x_ref,y_ref,z_ref,w_ref,max_points,min_points,extents)
+    double const* w_ref, const int max_points, const int min_points, const double max_radius,
+    boost::shared_ptr<BasisExtents> extents) :
+    GridBlocker(npoints_ref,x_ref,y_ref,z_ref,w_ref,max_points,min_points,max_radius,extents)
 {
 }
 NaiveGridBlocker::~NaiveGridBlocker()
@@ -7338,8 +7351,9 @@ void NaiveGridBlocker::block()
     }
 }
 OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
-    GridBlocker(npoints_ref,x_ref,y_ref,z_ref,w_ref,max_points,min_points,extents)
+    double const* w_ref, const int max_points, const int min_points, const double max_radius,
+    boost::shared_ptr<BasisExtents> extents) :
+    GridBlocker(npoints_ref,x_ref,y_ref,z_ref,w_ref,max_points,min_points,max_radius,extents)
 {
 }
 OctreeGridBlocker::~OctreeGridBlocker()
@@ -7347,6 +7361,8 @@ OctreeGridBlocker::~OctreeGridBlocker()
 }
 void OctreeGridBlocker::block()
 {
+    // K-PR Octree algorithm (Rob Parrish and Justin Turney)
+
     npoints_ = npoints_ref_;
     max_points_ = tol_max_points_;
     max_functions_ = extents_->basis()->nbf();
@@ -7364,6 +7380,7 @@ void OctreeGridBlocker::block()
         active_tree[0].push_back(Q);
     }
 
+    // => OLD ALGORITHM <= //
     // K-PR Tree blocking
     FILE* fh_ktree;
     if (bench_) {
@@ -7371,168 +7388,137 @@ void OctreeGridBlocker::block()
         //fprintf(fh_ktree,"#  %4s %5s %15s %15s %15s\n", "Dept","ID","X","Y","Z");
     }
     int tree_level = 0;
+
+    double const* dims[3];
+    dims[0] = x;
+    dims[1] = y;
+    dims[2] = z;
+
+    double T2 = tol_max_radius_ * tol_max_radius_;
     while (true) {
 
-        // X
-        new_leaves.clear();
-        double const* X = x;
-        for (int A = 0; A < active_tree.size(); A++) {
+        bool completed = false;
+        for (int k = 0; k < 3; k++) {
 
-            // Block to subdivide
-            std::vector<int> block = active_tree[A];
+            new_leaves.clear();
+            double const* X = dims[k];
+            for (int A = 0; A < active_tree.size(); A++) {
 
-            // Determine xcenter of mass
-            double xc = 0.0;
-            for (int Q = 0; Q < block.size(); Q++) {
-                xc += X[block[Q]];
-            }
-            xc /= block.size();
+                // Block to subdivide
+                std::vector<int> block = active_tree[A];
 
-            double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
-            for (int Q = 0; Q < block.size(); Q++) {
-                XC[0] += x[block[Q]];
-                XC[1] += y[block[Q]];
-                XC[2] += z[block[Q]];
-            }
-            XC[0] /= block.size();
-            XC[1] /= block.size();
-            XC[2] /= block.size();
-            if (bench_) fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
+                // Determine xcenter of mass
+                double xc = 0.0;
+                for (int Q = 0; Q < block.size(); Q++) {
+                    xc += X[block[Q]];
+                }
+                xc /= block.size();
 
-            std::vector<int> left;
-            std::vector<int> right;
-            for (int Q = 0; Q < block.size(); Q++) {
-                if (X[block[Q]] < xc) {
-                    left.push_back(block[Q]);
+                if (bench_) {
+                    double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
+                    for (int Q = 0; Q < block.size(); Q++) {
+                        XC[0] += x[block[Q]];
+                        XC[1] += y[block[Q]];
+                        XC[2] += z[block[Q]];
+                    }
+                    XC[0] /= block.size();
+                    XC[1] /= block.size();
+                    XC[2] /= block.size();
+                    fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
+                }
+
+                std::vector<int> left;
+                std::vector<int> right;
+                for (int Q = 0; Q < block.size(); Q++) {
+                    if (X[block[Q]] < xc) {
+                        left.push_back(block[Q]);
+                    } else {
+                        right.push_back(block[Q]);
+                    }
+                }
+
+                // Left side fate
+                if (left.size() > tol_max_points_) {
+                    new_leaves.push_back(left);
+                } else if (left.size() <= tol_min_points_) {
+                    completed_tree.push_back(left);
                 } else {
-                    right.push_back(block[Q]);
+                    double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
+                    for (int Q = 0; Q < left.size(); Q++) {
+                        XC[0] += x[left[Q]];
+                        XC[1] += y[left[Q]];
+                        XC[2] += z[left[Q]];
+                    }
+                    XC[0] /= left.size();
+                    XC[1] /= left.size();
+                    XC[2] /= left.size();
+
+                    // Determine radius of bounding sphere
+                    double RC2 = 0.0;
+                    for (int Q = 0; Q < left.size(); Q++) {
+                        double dx = x[Q] - XC[0];
+                        double dy = y[Q] - XC[1];
+                        double dz = z[Q] - XC[2];
+                        double R2 = dx * dx + dy * dy + dz * dz;
+                        RC2 = (RC2 > R2 ? RC2 : R2);
+                    }
+                    
+                    // Terminate if necessary
+                    if (RC2 < T2) {
+                        completed_tree.push_back(left);
+                        continue;
+                    } else {
+                        new_leaves.push_back(left);
+                    }
+                }
+
+                // Right side fate
+                if (right.size() > tol_max_points_) {
+                    new_leaves.push_back(right);
+                } else if (right.size() <= tol_min_points_) {
+                    completed_tree.push_back(right);
+                } else {
+                    double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
+                    for (int Q = 0; Q < right.size(); Q++) {
+                        XC[0] += x[right[Q]];
+                        XC[1] += y[right[Q]];
+                        XC[2] += z[right[Q]];
+                    }
+                    XC[0] /= right.size();
+                    XC[1] /= right.size();
+                    XC[2] /= right.size();
+
+                    // Determine radius of bounding sphere
+                    double RC2 = 0.0;
+                    for (int Q = 0; Q < right.size(); Q++) {
+                        double dx = x[Q] - XC[0];
+                        double dy = y[Q] - XC[1];
+                        double dz = z[Q] - XC[2];
+                        double R2 = dx * dx + dy * dy + dz * dz;
+                        RC2 = (RC2 > R2 ? RC2 : R2);
+                    }
+                    
+                    // Terminate if necessary
+                    if (RC2 < T2) {
+                        completed_tree.push_back(right);
+                        continue;
+                    } else {
+                        new_leaves.push_back(right);
+                    }
                 }
             }
-
-            if (left.size() > tol_max_points_) {
-                new_leaves.push_back(left);
-            } else {
-                completed_tree.push_back(left);
-            }
-
-            if (right.size() > tol_max_points_) {
-                new_leaves.push_back(right);
-            } else {
-                completed_tree.push_back(right);
+            active_tree = new_leaves;
+            tree_level++;
+            if (!active_tree.size()) {
+                completed = true;
+                break;
             }
         }
-        active_tree = new_leaves;
-        tree_level++;
-        if (!active_tree.size()) break;
-
-        // Y
-        new_leaves.clear();
-        X = y;
-        for (int A = 0; A < active_tree.size(); A++) {
-
-            // Block to subdivide
-            std::vector<int> block = active_tree[A];
-
-            // Determine xcenter of mass
-            double xc = 0.0;
-            for (int Q = 0; Q < block.size(); Q++) {
-                xc += X[block[Q]];
-            }
-            xc /= block.size();
-
-            double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
-            for (int Q = 0; Q < block.size(); Q++) {
-                XC[0] += x[block[Q]];
-                XC[1] += y[block[Q]];
-                XC[2] += z[block[Q]];
-            }
-            XC[0] /= block.size();
-            XC[1] /= block.size();
-            XC[2] /= block.size();
-            if (bench_) fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
-
-            std::vector<int> left;
-            std::vector<int> right;
-            for (int Q = 0; Q < block.size(); Q++) {
-                if (X[block[Q]] < xc) {
-                    left.push_back(block[Q]);
-                } else {
-                    right.push_back(block[Q]);
-                }
-            }
-
-            if (left.size() > tol_max_points_) {
-                new_leaves.push_back(left);
-            } else {
-                completed_tree.push_back(left);
-            }
-
-            if (right.size() > tol_max_points_) {
-                new_leaves.push_back(right);
-            } else {
-                completed_tree.push_back(right);
-            }
-        }
-        active_tree = new_leaves;
-        tree_level++;
-        if (!active_tree.size()) break;
-
-        // Z
-        new_leaves.clear();
-        X = z;
-        for (int A = 0; A < active_tree.size(); A++) {
-
-            // Block to subdivide
-            std::vector<int> block = active_tree[A];
-
-            // Determine xcenter of mass
-            double xc = 0.0;
-            for (int Q = 0; Q < block.size(); Q++) {
-                xc += X[block[Q]];
-            }
-            xc /= block.size();
-
-            double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
-            for (int Q = 0; Q < block.size(); Q++) {
-                XC[0] += x[block[Q]];
-                XC[1] += y[block[Q]];
-                XC[2] += z[block[Q]];
-            }
-            XC[0] /= block.size();
-            XC[1] /= block.size();
-            XC[2] /= block.size();
-            if (bench_) fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
-
-            std::vector<int> left;
-            std::vector<int> right;
-            for (int Q = 0; Q < block.size(); Q++) {
-                if (X[block[Q]] < xc) {
-                    left.push_back(block[Q]);
-                } else {
-                    right.push_back(block[Q]);
-                }
-            }
-
-            if (left.size() > tol_max_points_) {
-                new_leaves.push_back(left);
-            } else {
-                completed_tree.push_back(left);
-            }
-
-            if (right.size() > tol_max_points_) {
-                new_leaves.push_back(right);
-            } else {
-                completed_tree.push_back(right);
-            }
-        }
-        active_tree = new_leaves;
-        tree_level++;
-        if (!active_tree.size()) break;
-
+        if (completed)
+            break;
     }
     if (bench_) fclose(fh_ktree);
-
-
+    
     // Move stuff over
     x_ = new double[npoints_];
     y_ = new double[npoints_];

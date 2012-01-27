@@ -37,6 +37,7 @@ protected:
 
     const int tol_max_points_;
     const int tol_min_points_;
+    const double tol_max_radius_;
     boost::shared_ptr<BasisExtents> extents_;
 
     // New grid layout (built in blocks -- method specific)
@@ -52,7 +53,8 @@ protected:
 public:
     
     GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents);
+        double const* w_ref, const int max_points, const int min_points, const double max_radius,
+        boost::shared_ptr<BasisExtents> extents);
     virtual ~GridBlocker();
     
     virtual void block() = 0;
@@ -80,7 +82,8 @@ class NaiveGridBlocker : public GridBlocker {
 public:
     
     NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents);
+        double const* w_ref, const int max_points, const int min_points, const double max_radius,
+        boost::shared_ptr<BasisExtents> extents);
     virtual ~NaiveGridBlocker();
     
     virtual void block();
@@ -94,7 +97,8 @@ class OctreeGridBlocker : public GridBlocker {
 public:
     
     OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
-        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents);
+        double const* w_ref, const int max_points, const int min_points, const double max_radius,
+        boost::shared_ptr<BasisExtents> extents);
     virtual ~OctreeGridBlocker();
     
     virtual void block();

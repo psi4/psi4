@@ -869,10 +869,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
+    /*- The DFT combined functional name (for now). -*/
+    options.add_str("DFT_FUNCTIONAL", "");
+    /*- The DFT Range-separation parameter -*/
+    options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT grid specification, such as SG1. -*/
     options.add_str("DFT_GRID_NAME","","SG1");
     /*- Maximum order of spherical grids. -*/
-    options.add_int("DFT_ORDER_SPHERICAL", 15);
+    options.add_int("DFT_ORDER_SPHERICAL", 29);
     /*- Number of radial points. -*/
     options.add_int("DFT_NUM_RADIAL", 99);
     /*- Spherical Scheme. -*/
@@ -887,18 +891,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_BS_RADIUS_ALPHA",1.0);
     /*- Spread alpha for logarithmic pruning. -*/
     options.add_double("DFT_PRUNING_ALPHA",1.0);
-    /*- The number of grid points per evaluation block. -*/
-    options.add_int("DFT_MAX_POINTS",5000);
-    /*- The number of grid points per evaluation block. -*/
-    options.add_int("DFT_MIN_POINTS",0);
-    /*- The boxing scheme for DFT. -*/
-    options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
     /*- DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("DFT_BASIS_TOLERANCE", 0.0);
-    /*- The DFT combined functional name (for now). -*/
-    options.add_str("DFT_FUNCTIONAL", "");
-    /*- The DFT Range-separation parameter (only used if changed by the user). -*/
-    options.add_double("DFT_OMEGA", 0.0);
+    options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
+    /*- The maximum number of grid points per evaluation block. -*/
+    options.add_int("DFT_BLOCK_MAX_POINTS",5000);
+    /*- The minimum number of grid points per evaluation block. -*/
+    options.add_int("DFT_BLOCK_MIN_POINTS",1000);
+    /*- The maximum radius to terminate subdivision of an octree block (a.u.) -*/ 
+    options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
+    /*- The blocking scheme for DFT. -*/
+    options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
   }
   if (name == "MP2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
@@ -1826,13 +1828,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PS_BS_RADIUS_ALPHA",1.0);
     /*- Spread alpha for logarithmic pruning -*/
     options.add_double("PS_PRUNING_ALPHA",1.0);
-    /*- The number of grid points per evaluation block -*/
-    options.add_int("PS_MAX_POINTS",5000);
-    /*- The number of grid points per evaluation block -*/
-    options.add_int("PS_MIN_POINTS",0);
-    /*- The DFT basis cutoff.
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("PS_BASIS_TOLERANCE", 0.0);
+    /*- PS basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("PS_BASIS_TOLERANCE", 1.0E-12);
+    /*- The maximum number of grid points per evaluation block. -*/
+    options.add_int("PS_BLOCK_MAX_POINTS",5000);
+    /*- The minimum number of grid points per evaluation block. -*/
+    options.add_int("PS_BLOCK_MIN_POINTS",1000);
+    /*- The maximum radius to terminate subdivision of an octree block (a.u.) -*/ 
+    options.add_double("PS_BLOCK_MAX_RADIUS", 1.0);
     /*- Minumum eigenvalue for primary basis -*/
     options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
     /*- Minumum eigenvalue for dealias basis -*/

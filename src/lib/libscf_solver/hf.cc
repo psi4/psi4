@@ -1397,7 +1397,7 @@ double HF::compute_energy()
             }
 
             if (Communicator::world->me() == 0)
-                fprintf(outfile, "\n  ==> Properties <==\n");
+                fprintf(outfile, "\n  ==> Properties <==\n\n");
             oe->compute();
         }
 
