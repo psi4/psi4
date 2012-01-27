@@ -27,6 +27,7 @@ class Matrix;
 class Vector;
 class SimpleVector;
 class TwoBodySOInt;
+class JK;
 namespace scf {
 
 class PseudospectralHF;
@@ -102,10 +103,11 @@ protected:
     /// The value below which integrals are neglected
     double integral_threshold_;
 
+    /// The soon to be ubiquitous JK object
+    boost::shared_ptr<JK> jk_;
 
     /// The SO integral generator.  Only ever constructed if needed
     boost::shared_ptr<TwoBodySOInt> eri_;
-
     /// Pseudospectral stuff
     boost::shared_ptr<PseudospectralHF> pseudospectral_;
     /// DF stuff

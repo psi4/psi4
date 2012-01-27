@@ -848,6 +848,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DF_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc !expert -*/
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
+    /*- Fitting Condition !expert -*/
+    options.add_int("DF_FITTING_CONDITION", 1.0E-12);
 
     /*- SUBSECTION SAD Guess Algorithm -*/
 
@@ -867,10 +869,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
+    /*- The DFT combined functional name (for now). -*/
+    options.add_str("DFT_FUNCTIONAL", "");
+    /*- The DFT Range-separation parameter -*/
+    options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT grid specification, such as SG1. -*/
     options.add_str("DFT_GRID_NAME","","SG1");
     /*- Maximum order of spherical grids. -*/
-    options.add_int("DFT_ORDER_SPHERICAL", 15);
+    options.add_int("DFT_ORDER_SPHERICAL", 29);
     /*- Number of radial points. -*/
     options.add_int("DFT_NUM_RADIAL", 99);
     /*- Spherical Scheme. -*/
@@ -885,18 +891,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_BS_RADIUS_ALPHA",1.0);
     /*- Spread alpha for logarithmic pruning. -*/
     options.add_double("DFT_PRUNING_ALPHA",1.0);
-    /*- The number of grid points per evaluation block. -*/
-    options.add_int("DFT_MAX_POINTS",5000);
-    /*- The number of grid points per evaluation block. -*/
-    options.add_int("DFT_MIN_POINTS",0);
-    /*- The boxing scheme for DFT. -*/
-    options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
     /*- DFT basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("DFT_BASIS_TOLERANCE", 0.0);
-    /*- The DFT combined functional name (for now). -*/
-    options.add_str("DFT_FUNCTIONAL", "");
-    /*- The DFT Range-separation parameter (only used if changed by the user). -*/
-    options.add_double("DFT_OMEGA", 0.0);
+    options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
+    /*- The maximum number of grid points per evaluation block. -*/
+    options.add_int("DFT_BLOCK_MAX_POINTS",5000);
+    /*- The minimum number of grid points per evaluation block. -*/
+    options.add_int("DFT_BLOCK_MIN_POINTS",1000);
+    /*- The maximum radius to terminate subdivision of an octree block (a.u.) -*/ 
+    options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
+    /*- The blocking scheme for DFT. -*/
+    options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
   }
   if (name == "MP2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
@@ -1639,6 +1643,45 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
+  if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
+      /*- The amount of information printed
+             to the output file.  not used -*/
+      options.add_int("PRINT", 1);
+      /*- The amount of information printed
+             to the output file. not used -*/
+      options.add_int("DEBUG", 0);
+      /*- default convergence of amplitudes-*/
+      options.add_double("R_CONVERGENCE", 1.0e-7);
+      /*- default maximum iterations -*/
+      options.add_int("MAXITER", 100);
+      /*- default number of DIIS iterations -*/
+      options.add_int("DIIS_MAX_VECS", 8);
+      /*- for GPU code, cap the amount of memory registerred with the GPU -*/
+      options.add_int("MAX_MAPPED_MEMORY", 1000);
+      /*- compute triples by default */
+      options.add_bool("COMPUTE_TRIPLES", true);
+      /*- cutoff for occupation of MP2 NO orbitals in (T) -*/
+      options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
+      /*- triples by default use the full virtual space -*/
+      options.add_bool("TRIPLES_USE_NOS", false);
+      /*- number of threads for triples, not set by default -*/
+      options.add_int("NUM_THREADS", 1);
+      /*- generate density-fitted integrals so we can skip
+          transqt2() and OutOfCoreSort(). default false */
+      options.add_bool("DF_INTEGRALS",false);
+      /*- SCS MP2, default true -*/
+      options.add_bool("SCS_MP2", true);
+      /*- SCS CCSD, default true -*/
+      options.add_bool("SCS_CCSD", true);
+      /*- opposite-spin scaling factor -*/
+      options.add_double("MP2_SCALE_OS",1.20);
+      /*- same-spin scaling factor -*/
+      options.add_double("MP2_SCALE_SS",1.0/3.0);
+      /*- oppposite-spin scaling factor -*/
+      options.add_double("CC_SCALE_OS", 1.27);
+      /*- same-spin scaling factor -*/
+      options.add_double("CC_SCALE_SS",1.13);
+  }
   if(name == "CIS"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
         Psi4. -*/
@@ -1824,13 +1867,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PS_BS_RADIUS_ALPHA",1.0);
     /*- Spread alpha for logarithmic pruning -*/
     options.add_double("PS_PRUNING_ALPHA",1.0);
-    /*- The number of grid points per evaluation block -*/
-    options.add_int("PS_MAX_POINTS",5000);
-    /*- The number of grid points per evaluation block -*/
-    options.add_int("PS_MIN_POINTS",0);
-    /*- The DFT basis cutoff.
-    See the note at the beginning of Section \ref{keywords}. -*/
-    options.add_double("PS_BASIS_TOLERANCE", 0.0);
+    /*- PS basis cutoff. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("PS_BASIS_TOLERANCE", 1.0E-12);
+    /*- The maximum number of grid points per evaluation block. -*/
+    options.add_int("PS_BLOCK_MAX_POINTS",5000);
+    /*- The minimum number of grid points per evaluation block. -*/
+    options.add_int("PS_BLOCK_MIN_POINTS",1000);
+    /*- The maximum radius to terminate subdivision of an octree block (a.u.) -*/ 
+    options.add_double("PS_BLOCK_MAX_RADIUS", 1.0);
     /*- Minumum eigenvalue for primary basis -*/
     options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
     /*- Minumum eigenvalue for dealias basis -*/

@@ -20,7 +20,7 @@
 #include"globals.h"
 #include"gpuhelper.h"
 #include"blas.h"
-#include"ccsd.h"
+#include"cepa.h"
 #include"sort.h"
 
 #ifdef _OPENMP
@@ -29,8 +29,6 @@
 
 using namespace psi;
 using namespace boost;
-
-
 
 // position in a symmetric packed matrix
 long int Position(long int i,long int j){
@@ -66,18 +64,46 @@ namespace psi{
     return address;
   }
 
-CoupledCluster::CoupledCluster()
+CoupledPair::CoupledPair()
 {}
-CoupledCluster::~CoupledCluster()
+CoupledPair::~CoupledPair()
 {}
 
-void CoupledCluster::WriteBanner(){
+void CoupledPair::WriteBanner(Options&options){
   fflush(outfile);
   fprintf(outfile,"\n\n");
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                        CCSD                         *\n");
-  fprintf(outfile, "        *           Coupled-Cluster Singles Doubles           *\n");
+  if (options.get_str("CEPA_LEVEL")=="CEPA0"){
+     fprintf(outfile, "        *                       CEPA(0)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="CEPA1"){
+     fprintf(outfile, "        *                       CEPA(1)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="CEPA2"){
+     fprintf(outfile, "        *                       CEPA(2)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  if (options.get_str("CEPA_LEVEL")=="CEPA3"){
+     fprintf(outfile, "        *                       CEPA(3)                       *\n");
+     fprintf(outfile, "        *        Coupled Electron Pair Approximation          *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="ACPF"){
+     fprintf(outfile, "        *                        ACPF                         *\n");
+     fprintf(outfile, "        *          Averaged Coupled Pair Functional           *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="AQCC"){
+     fprintf(outfile, "        *                        AQCC                         *\n");
+     fprintf(outfile, "        *         Averaged Quadratic Coupled Cluster          *\n");
+  }
+  else if (options.get_str("CEPA_LEVEL")=="CISD"){
+     fprintf(outfile, "        *                        CISD                         *\n");
+     fprintf(outfile, "        *      Singles Doubles Configuration Interaction      *\n");
+  }
+
+
   fprintf(outfile, "        *                                                     *\n");
   fprintf(outfile, "        *                   Eugene DePrince                   *\n");
   fprintf(outfile, "        *                                                     *\n");
@@ -93,7 +119,7 @@ void CoupledCluster::WriteBanner(){
   integral sort.
   
 ================================================================*/
-void CoupledCluster::Initialize(Options &options){
+void CoupledPair::Initialize(Options &options){
  
   // grab the reference wave function and its parameters
   boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
@@ -108,7 +134,7 @@ void CoupledCluster::Initialize(Options &options){
      fzv     = ref->frzvpi();
   }
   if (nirreps>1){
-     throw PsiException("plugin_ccsd requires symmetry c1",__FILE__,__LINE__);
+     throw PsiException("plugin_cepa requires symmetry c1",__FILE__,__LINE__);
   }
   nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
   long int full=0;
@@ -139,11 +165,32 @@ void CoupledCluster::Initialize(Options &options){
      memory *= (long int)1024*1024;
   }
 
-  // SCS MP2 and CCSD
+  // SCS MP2 and CEPA
   emp2_os_fac = options.get_double("MP2_SCALE_OS");
   emp2_ss_fac = options.get_double("MP2_SCALE_SS");
-  eccsd_os_fac = options.get_double("CC_SCALE_OS");
-  eccsd_ss_fac = options.get_double("CC_SCALE_SS");
+  ecepa_os_fac = options.get_double("CC_SCALE_OS");
+  ecepa_ss_fac = options.get_double("CC_SCALE_SS");
+
+  // which cepa level? 0,1,2,3
+  // also, -1 = cisd
+  // also, -2 = acpf
+  // also, -3 = aqcc
+  std::string cepa = options.get_str("CEPA_LEVEL");
+  if (cepa == "CEPA0") cepa_level = 0;
+  if (cepa == "CEPA1") cepa_level = 1;
+  if (cepa == "CEPA2") cepa_level = 2;
+  if (cepa == "CEPA3") cepa_level = 3;
+  if (cepa == "CISD") cepa_level = -1;
+  if (cepa == "ACPF") cepa_level = -2;
+  if (cepa == "AQCC") cepa_level = -3;
+  cepa_type = (char*)malloc(100*sizeof(char));
+  if (cepa_level == 0)       sprintf(cepa_type,"CEPA(0)");
+  else if (cepa_level == 1)  sprintf(cepa_type,"CEPA(1)");
+  else if (cepa_level == 2)  sprintf(cepa_type,"CEPA(2)");
+  else if (cepa_level == 3)  sprintf(cepa_type,"CEPA(3)");
+  else if (cepa_level == -1) sprintf(cepa_type,"CISD");
+  else if (cepa_level == -2) sprintf(cepa_type,"ACPF");
+  else if (cepa_level == -3) sprintf(cepa_type,"AQCC");
 
   /**
     *  GPU helper class knows if we have gpus or not and how to use them
@@ -185,7 +232,6 @@ void CoupledCluster::Initialize(Options &options){
      user_start = ((double) total_tmstime.tms_utime)/clk_tck;
      sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
      OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
-     //RandomIntegralFiles();
 
      times(&total_tmstime);
      time_stop = time(NULL);
@@ -223,222 +269,14 @@ void CoupledCluster::Initialize(Options &options){
   t2_on_disk = false;
 
 }
-void CoupledCluster::RandomIntegralFiles(){
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int dim = 4*o*o*v*v;
-  double*temp=(double*)malloc(dim*sizeof(double));
-  srand(time(NULL));
-  for (long int i=0; i<dim; i++) temp[i] = .00002*((double)rand()/RAND_MAX-1.0);
-
-  boost::shared_ptr<PSIO> psio(new PSIO());
-
-  psio_address addr = PSIO_ZERO;
-  long int count=0;
-  /*psio->open(PSIF_IJKL,PSIO_OPEN_NEW);
-  for (long int i=0; i<o*o*o*o; i++){
-      count++;
-      //temp[count++] = .01*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_IJKL,"E2ijkl",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_IJKL,"E2ijkl",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_IJKL,1);*/
-  psio->open(PSIF_IJAK,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*o*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_IJAK,"E2ijak",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_IJAK,"E2ijak",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_IJAK,1);
-  /*psio->open(PSIF_IJAK2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*o*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_IJAK2,"E2ijak2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_IJAK2,"E2ijak2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_IJAK2,1);*/
-  psio->open(PSIF_KLCD,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_KLCD,"E2klcd",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_KLCD,"E2klcd",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_KLCD,1);
-  /*psio->open(PSIF_AKJC2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_AKJC2,"E2akjc2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_AKJC2,"E2akjc2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_AKJC2,1);*/
-  psio->open(PSIF_ABCI,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI,"E2abci",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI,"E2abci",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI,1);
-return;
-
-
-
-  psio->open(PSIF_ABCI2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI2,"E2abci2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI2,"E2abci2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI2,1);
-  psio->open(PSIF_ABCI3,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI3,"E2abci3",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI3,"E2abci3",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI3,1);
-  psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI4,"E2abci4",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI4,"E2abci4",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI4,1);
-  psio->open(PSIF_ABCI5,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI5,"E2abci5",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI5,"E2abci5",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI5,1);
-  psio->open(PSIF_ABCD1,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<v*(v+1)/2*v*(v+1)/2; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCD1,"E2abcd1",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCD1,"E2abcd1",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCD1,1);
-  psio->open(PSIF_ABCD2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<v*(v+1)/2*v*(v+1)/2; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCD2,"E2abcd2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCD2,"E2abcd2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCD2,1);
-
-  free(temp);
-}
 
 /*===================================================================
 
-  solve ccsd equations
+  solve cepa equations
 
 ===================================================================*/
-PsiReturnType CoupledCluster::CCSDIterations(Options&options){
+PsiReturnType CoupledPair::CEPAIterations(Options&options){
+
 
   // timer stuff:
   struct tms total_tmstime;
@@ -460,11 +298,11 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
   replace_diis_iter=1;
   nrm=1.0;
   Eold=1.0e9;
-  eccsd=0.0;
+  ecepa=0.0;
 
   fprintf(outfile,"\n");
   fprintf(outfile,
-    "  Begin singles and doubles coupled cluster iterations\n\n");
+    "  Begin %s iterations\n\n",cepa_type);
   fprintf(outfile,
     "   Iter  DIIS          Energy       d(Energy)          |d(T)|     time\n");
   fflush(outfile);
@@ -483,7 +321,7 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
      psio->write_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_T2,1);
   }
-double eccsd2 = 0.0;
+  pair_energy = (double*)malloc(o*o*sizeof(double));
 
   // cc diagrams split up as tasks
   DefineTasks();
@@ -513,7 +351,8 @@ double eccsd2 = 0.0;
       }
 
       // update the amplitudes and check the energy
-      Eold = eccsd;
+      Eold = ecepa;
+      PairEnergy();
       UpdateT1(iter);
       UpdateT2(iter);
 
@@ -529,7 +368,7 @@ double eccsd2 = 0.0;
          else                   DIIS(diisvec,maxdiis,arraysize+o*v);
          DIISNewAmplitudes(diis_iter);
       }
-      eccsd = CheckEnergy();
+      ecepa = CheckEnergy();
 
       if (diis_iter<=maxdiis) diis_iter++;
       else if (replace_diis_iter<maxdiis) replace_diis_iter++;
@@ -537,10 +376,10 @@ double eccsd2 = 0.0;
 
       iter_stop = time(NULL);
       fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
-            iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
+            iter,diis_iter-1,replace_diis_iter,ecepa,ecepa-Eold,nrm,(int)iter_stop-(int)iter_start);
       fflush(outfile);
       iter++;
-      if (iter==1) emp2 = eccsd;
+      if (iter==1) emp2 = ecepa;
       if (iter==1 && options.get_bool("SCS_MP2"))  SCS_MP2();
   }
   times(&total_tmstime);
@@ -550,35 +389,37 @@ double eccsd2 = 0.0;
   psio.reset();
 
   if (iter==maxiter){
-     throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
+     throw PsiException("  CEPA iterations did not converge.",__FILE__,__LINE__);
   }
 
-  if (options.get_bool("SCS_CCSD")) SCS_CCSD();
+  if (options.get_bool("SCS_CEPA")) SCS_CEPA();
 
   fprintf(outfile,"\n");
-  fprintf(outfile,"  CCSD iterations converged!\n");
+  fprintf(outfile,"  %s iterations converged!\n",cepa_type);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS SCS-MP2 correlation energy:  %20.12lf\n",emp2_os);
-  fprintf(outfile,"        SS SCS-MP2 correlation energy:  %20.12lf\n",emp2_ss);
-  fprintf(outfile,"        SCS-MP2 correlation energy:     %20.12lf\n",emp2_os+emp2_ss);
-  fprintf(outfile,"      * SCS-MP2 total energy:           %20.12lf\n",emp2_os+emp2_ss+escf);
+  fprintf(outfile,"        OS SCS-MP2 correlation energy:     %20.12lf\n",emp2_os);
+  fprintf(outfile,"        SS SCS-MP2 correlation energy:     %20.12lf\n",emp2_ss);
+  fprintf(outfile,"        SCS-MP2 correlation energy:        %20.12lf\n",emp2_os+emp2_ss);
+  fprintf(outfile,"      * SCS-MP2 total energy:              %20.12lf\n",emp2_os+emp2_ss+escf);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS MP2 correlation energy:      %20.12lf\n",emp2_os/emp2_os_fac);
-  fprintf(outfile,"        SS MP2 correlation energy:      %20.12lf\n",emp2_ss/emp2_ss_fac);
-  fprintf(outfile,"        MP2 correlation energy:         %20.12lf\n",emp2);
-  fprintf(outfile,"      * MP2 total energy:               %20.12lf\n",emp2+escf);
+  fprintf(outfile,"        OS MP2 correlation energy:         %20.12lf\n",emp2_os/emp2_os_fac);
+  fprintf(outfile,"        SS MP2 correlation energy:         %20.12lf\n",emp2_ss/emp2_ss_fac);
+  fprintf(outfile,"        MP2 correlation energy:            %20.12lf\n",emp2);
+  fprintf(outfile,"      * MP2 total energy:                  %20.12lf\n",emp2+escf);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS SCS-CCSD correlation energy: %20.12lf\n",eccsd_os);
-  fprintf(outfile,"        SS SCS-CCSD correlation energy: %20.12lf\n",eccsd_ss);
-  fprintf(outfile,"        SCS-CCSD correlation energy:    %20.12lf\n",eccsd_os+eccsd_ss);
-  fprintf(outfile,"      * SCS-CCSD total energy:          %20.12lf\n",eccsd_os+eccsd_ss+escf);
+  if (cepa_level>=0){
+     fprintf(outfile,"        OS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_os/ecepa_os_fac);
+     fprintf(outfile,"        SS %s correlation energy:     %20.12lf\n",cepa_type,ecepa_ss/ecepa_ss_fac);
+     fprintf(outfile,"        %s correlation energy:        %20.12lf\n",cepa_type,ecepa);
+     fprintf(outfile,"      * %s total energy:              %20.12lf\n",cepa_type,ecepa+escf);
+  }else{
+     fprintf(outfile,"        OS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_os/ecepa_os_fac);
+     fprintf(outfile,"        SS %s correlation energy:        %20.12lf\n",cepa_type,ecepa_ss/ecepa_ss_fac);
+     fprintf(outfile,"        %s correlation energy:           %20.12lf\n",cepa_type,ecepa);
+     fprintf(outfile,"      * %s total energy:                 %20.12lf\n",cepa_type,ecepa+escf);
+  }
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS CCSD correlation energy:     %20.12lf\n",eccsd_os/eccsd_os_fac);
-  fprintf(outfile,"        SS CCSD correlation energy:     %20.12lf\n",eccsd_ss/eccsd_ss_fac);
-  fprintf(outfile,"        CCSD correlation energy:        %20.12lf\n",eccsd);
-  fprintf(outfile,"      * CCSD total energy:              %20.12lf\n",eccsd+escf);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Total time for CCSD iterations: %10.2lf s (user)\n",user_stop-user_start);
+  fprintf(outfile,"  Total time for %s iterations: %10.2lf s (user)\n",cepa_type,user_stop-user_start);
   fprintf(outfile,"                                  %10.2lf s (system)\n",sys_stop-sys_start);
   fprintf(outfile,"                                  %10d s (total)\n",(int)time_stop-(int)time_start);
   fprintf(outfile,"\n");
@@ -597,7 +438,7 @@ double eccsd2 = 0.0;
   can be read into cpu memory.
 
 ===================================================================*/
-void CoupledCluster::DefineTilingCPU(){
+void CoupledPair::DefineTilingCPU(){
   long int i,v = nvirt;
   long int o = ndoccact;
   long int ov2 = o*v*v;
@@ -688,7 +529,7 @@ void CoupledCluster::DefineTilingCPU(){
   allocate cpu memory
 
 ===================================================================*/
-void CoupledCluster::AllocateMemory(Options&options){
+void CoupledPair::AllocateMemory(Options&options){
 
   long int i,o=ndoccact;
   long int v=nvirt;
@@ -696,23 +537,8 @@ void CoupledCluster::AllocateMemory(Options&options){
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  available memory =                        %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
-  fprintf(outfile,"  minimum memory requirements for CCSD =    %9.2lf mb\n",
+  fprintf(outfile,"  minimum memory requirements for %s =    %9.2lf mb\n",cepa_type,
          8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
-  if (options.get_bool("COMPUTE_TRIPLES")){
-     fprintf(outfile,"  minimum memory requirements for CCSD(T) = %9.2lf mb\n",
-            8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v));
-     int nthreads = 1;
-     #ifdef _OPENMP
-         nthreads = omp_get_max_threads();
-     #endif
-     if (options["NUM_THREADS"].has_changed())
-        nthreads = options.get_int("NUM_THREADS");
-     if (nthreads>1){
-        fprintf(outfile,"     --explicitly threading on %2i threads = %9.2lf mb\n",
-               nthreads,8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v));
-     }
-  }
-
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
@@ -779,7 +605,7 @@ void CoupledCluster::AllocateMemory(Options&options){
   memset((void*)diisvec,'\0',(maxdiis+1)*sizeof(double));
 }
 
-void CoupledCluster::CPU_t1_vmeai(CCTaskParams params){
+void CoupledPair::CPU_t1_vmeai(CCTaskParams params){
   long int o = ndoccact;
   long int v = nvirt;
   long int i,a,m,e,id,one=1;
@@ -806,7 +632,7 @@ void CoupledCluster::CPU_t1_vmeai(CCTaskParams params){
   psio.reset();
 }
 
-void CoupledCluster::CPU_t1_vmeni(CCTaskParams params){
+void CoupledPair::CPU_t1_vmeni(CCTaskParams params){
   long int m,e,n,a,id;
   long int o=ndoccact;
   long int v=nvirt;
@@ -837,7 +663,7 @@ void CoupledCluster::CPU_t1_vmeni(CCTaskParams params){
   psio.reset();
 }
 
-void CoupledCluster::CPU_t1_vmaef(CCTaskParams params){
+void CoupledPair::CPU_t1_vmaef(CCTaskParams params){
   long int m,e,i,f,a,id;
   long int o=ndoccact;
   long int v=nvirt;
@@ -902,121 +728,8 @@ void CoupledCluster::CPU_t1_vmaef(CCTaskParams params){
 
 }
 
-void CoupledCluster::CPU_I1ab(CCTaskParams params){
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int b,m,n,e,a,id=0;
-  // build I1(a,b)
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempv;
-  }
- 
-  for (m=0,id=0; m<o; m++){
-      for (e=0; e<v; e++){
-          for (n=0; n<o; n++){
-              for (b=0; b<v; b++){
-                  tempt[id++] = tb[e*v*o*o+b*o*o+m*o+n] + t1[e*o+m]*t1[b*o+n];
-              }
-          }
-      }
-  }
-  for (m=0,id=0; m<o; m++){
-      for (e=0; e<v; e++){
-          for (n=0; n<o; n++){
-              for (b=0; b<v; b++){
-                  tempv[id] =(-2.*integrals[id++]+integrals[m*o*v*v+b*o*v+n*v+e]);
-              }
-          }
-      }
-  }
-  helper_->GPUTiledDGEMM_NoThread('n','t',v,v,o*o*v,1.0,tempv,v,tempt,v,0.0,I1,v,0);
-
-  // add the singles parts to I1(a,b). n^4
-  double sum=0.;
-  psio->open(PSIF_ABCI2,PSIO_OPEN_OLD);
-  psio_address addr;
-  addr = PSIO_ZERO;
-
-  // test swapping indices on t1: this will make the out-of-core 
-  // integral sort at the beginning MUCH easier
-  long int i,j,l,k,c,d;
-  for (i=0; i<o; i++){
-      F_DCOPY(v,t1+i,o,tempt+i*v,1);
-  }
-
-  // try tiling dgemv bc ov^3 might be too large.
-  long int v2tilesize,nv2tiles,lastv2tile;
-  nv2tiles=1L;
-  v2tilesize=v*v/1L;
-  if (nv2tiles*v2tilesize<v*v) v2tilesize++;
-  while(v2tilesize*o*v>maxelem){
-     nv2tiles++;
-     v2tilesize = v*v/nv2tiles;
-     if (nv2tiles*v2tilesize<v*v) v2tilesize++;
-  }
-  lastv2tile = v*v - (nv2tiles-1L)*v2tilesize;
-
-  for (i=0; i<nv2tiles-1; i++){
-      psio->read(PSIF_ABCI2,"E2abci2",(char*)&integrals[0],v2tilesize*v*o*sizeof(double),addr,&addr);
-      F_DGEMV('t',o*v,v2tilesize,-1.0,integrals,o*v,tempt,1,1.0,I1+i*v2tilesize,1);
-  }
-  i=nv2tiles-1;
-  psio->read(PSIF_ABCI2,"E2abci2",(char*)&integrals[0],lastv2tile*v*o*sizeof(double),addr,&addr);
-  F_DGEMV('t',o*v,lastv2tile,-1.0,integrals,o*v,tempt,1,1.0,I1+i*v2tilesize,1);
-
-
-  psio->close(PSIF_ABCI2,1);
-
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempv;
-  }
-
-  for (l=0,id=0; l<o; l++){
-      for (c=0; c<v; c++){
-          for (k=0; k<o; k++){
-              for (d=0; d<v; d++){
-                  tempt[id++] = tb[d*v*o*o+c*o*o+l*o+k];
-              }
-          }
-      }
-  }
-  // use I1(a,b) for doubles residual:
-  helper_->GPUTiledDGEMM_NoThread('t','n',v,o*o*v,v,1.0,I1,v,tempt,v,0.0,tempv,v,0);
-  //F_DGEMM('t','n',v,o*o*v,v,1.0,I1,v,tempt,v,0.0,tempv,v);
-
-  // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  for (a=0,id=0; a<v; a++)
-  for (b=0; b<v; b++){
-  for (i=0; i<o; i++)
-  for (j=0; j<o; j++)
-      tempt[id++] += tempv[j*v*v*o+a*v*o+i*v+b]+tempv[i*v*v*o+b*v*o+j*v+a];
-  }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
-
-  // use I1(a,b) for singles residual - 1st contribution to w1. (n^3)
-  //helper_->GPUTiledDGEMM('n','n',o,v,v,1.0,t1,o,I1,v,1.0,w1,o);
-  F_DGEMM('n','n',o,v,v,1.0,t1,o,I1,v,1.0,w1,o);
-
-  psio.reset();
-}
-
-
 // CPU_I2p_abci required ov^3 storage.  by refactorizing, we reduce storage to o^3v, but increase cost by 2o^2v^3
-void CoupledCluster::CPU_I2p_abci_refactored_term1(CCTaskParams params){
+void CoupledPair::CPU_I2p_abci_refactored_term1(CCTaskParams params){
   long int o = ndoccact;
   long int v = nvirt;
   long int a,b,c,i,j,id=0;
@@ -1054,188 +767,6 @@ void CoupledCluster::CPU_I2p_abci_refactored_term1(CCTaskParams params){
   psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_R2,1);
   psio.reset();
-
-}
-void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params){
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int a,b,c,i,j,id=0;
-  long int ov2 = o*v*v;
-  long int o2v = o*o*v;
-
-  boost::shared_ptr<PSIO> psio(new PSIO());
-
-  // now build and use 2 new intermediates:
-  psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_AKJC2,"E2akjc2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_AKJC2,1);
-  helper_->GPUTiledDGEMM_NoThread('n','n',o,o2v,v,-1.0,t1,o,tempv,v,0.0,tempt,o,0);
-  helper_->GPUTiledDGEMM_NoThread('n','n',o2v,v,o,1.0,tempt,o2v,t1,o,0.0,tempv,o2v,0);
-
-  // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempv,1,tempt,1);
-  for (a=0; a<v; a++){
-  for (b=0; b<v; b++){
-  for (i=0; i<o; i++){
-      F_DAXPY(o,1.0,tempv+a*v*o*o+b*o*o+i*o,1,tempt+b*v*o*o+a*o*o+i,o);
-  }}}
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
-
-  psio.reset();
-}
-void CoupledCluster::CPU_I2p_abci_refactored_term3(CCTaskParams params){
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int a,b,c,i,j,id=0;
-  long int ov2 = o*v*v;
-  long int o2v = o*o*v;
-
-  boost::shared_ptr<PSIO> psio(new PSIO());
-
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-  helper_->GPUTiledDGEMM_NoThread('t','t',o2v,o,v,-1.0,tempv,v,t1,o,0.0,tempt,o2v,0);
-  // TODO: this was one of the ones the gpu version was screwing up...
-  // it seems that it only has  problems with cuda 3.2, not cuda 4.0
-  helper_->GPUTiledDGEMM_NoThread('t','n',v,o2v,o,1.0,t1,o,tempt,o,0.0,tempv,v,0);
-  //F_DGEMM('t','n',v,o2v,o,1.0,t1,o,tempt,o,0.0,tempv,v);
-  // the other way...
-  //F_DGEMM('t','n',o2v,v,o,1.0,tempt,o,t1,o,0.0,tempv,o2v);
-  //helper_->GPUTiledDGEMM('t','n',o2v,v,o,1.0,tempt,o,t1,o,0.0,tempv,o2v);
-
-
-  // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  for (a=0,id=0; a<v; a++){
-  for (b=0; b<v; b++){
-  for (i=0; i<o; i++){
-  for (j=0; j<o; j++){
-      tempt[id++] += tempv[i*v*v*o+j*v*v+b*v+a] + tempv[j*v*v*o+i*v*v+a*v+b];
-      //tempt[id++] += tempv[a*o*o*v+i*v*o+j*v+b] + tempv[b*o*o*v+j*v*o+i*v+a];
-  }}}}
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
-  psio.reset();
-}
-
-void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
-
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int m,j,e,f,i,a,b;//,one=1;
-  long int ov2 = o*v*v;
-  long int id=0;
-
-  // build I1(i,a). n^4
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-  F_DCOPY(o*o*v*v,integrals,1,tempv,1);
-  for (i=0; i<o; i++){
-      for (a=0; a<v; a++){
-          for (m=0; m<o; m++){
-              for (e=0; e<v; e++){
-                  tempv[i*v*v*o+a*v*o+m*v+e] -= 0.5*integrals[i*o*v*v+e*o*v+m*v+a];
-              }
-          }
-      }
-  }
-  for (i=0; i<o; i++) F_DCOPY(v,t1+i,o,tempt+i*v,1);
-  F_DGEMV('t',o*v,o*v,2.0,tempv,o*v,tempt,1,0.0,I1,1);
-  //helper_->GPUTiledDGEMM('t','n',o*v,1,o*v,2.0,tempv,o*v,tempt,o*v,0.0,I1,o*v);
-  //F_DGEMM('t','n',o*v,1,o*v,2.0,tempv,o*v,tempt,o*v,0.0,I1,o*v);
-
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempv;
-  }
-
-  // use I1(i,a) -> w1
-  id=0;
-  for (m=0; m<o; m++){
-      for (e=0; e<v; e++){
-          for (j=0; j<o; j++){
-              for (f=0; f<v; f++){
-                  tempt[id++] = 2*tb[e*o*o*v+f*o*o+m*o+j]-tb[e*v*o*o+f*o*o+j*o+m];
-              }
-          }
-      }
-  }
-  F_DGEMV('n',o*v,o*v,1.0,tempt,o*v,I1,1,0.0,tempv,1);
-  //helper_->GPUTiledDGEMM('n','n',o*v,1,o*v,1.0,tempt,o*v,I1,o*v,0.0,tempv,o*v);
-  //F_DGEMM('n','n',o*v,1,o*v,1.0,tempt,o*v,I1,o*v,0.0,tempv,o*v);
-  for (i=0; i<o; i++){
-      F_DAXPY(v,1.0,tempv+i*v,1,w1+i,o);
-  }
-
-  // build I1'(i,j)
-  helper_->GPUTiledDGEMM_NoThread('t','n',o,o,ov2,1.0,tempt,ov2,integrals,ov2,0.0,I1p,o,0);
-  //F_DGEMM('t','n',o,o,ov2,1.0,tempt,ov2,integrals,ov2,0.0,I1p,o);
-  
-  // only n^4
-  psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&tempt[0],o*o*o*v*sizeof(double));
-  psio->close(PSIF_IJAK,1);
-  id=0;
-  for (i=0; i<o; i++){
-  for (j=0; j<o; j++){
-  for (e=0; e<v; e++){
-  for (m=0; m<o; m++){
-      //tempv[id++] = 2.*E2ijak[i*o*o*v+m*o*v+j*v+e] - E2ijak[m*o*o*v+i*o*v+j*v+e];
-      tempv[id++] = 2.*tempt[i*o*o*v+m*o*v+j*v+e] - tempt[m*o*o*v+i*o*v+j*v+e];
-  }}}}
-  F_DGEMV('t',o*v,o*o,1.0,tempv,o*v,t1,1,1.0,I1p,1);
-  //helper_->GPUTiledDGEMM('t','n',o*o,1,o*v,1.0,tempv,o*v,t1,o*v,1.0,I1p,o*o);
-  //F_DGEMM('t','n',o*o,1,o*v,1.0,tempv,o*v,t1,o*v,1.0,I1p,o*o);
-
-  // use I1'(i,j) for singles residual. (n^3)
-  //helper_->GPUTiledDGEMM('n','n',o,v,o,-1.0,I1p,o,t1,o,1.0,w1,o);
-  F_DGEMM('n','n',o,v,o,-1.0,I1p,o,t1,o,1.0,w1,o);
-
-  // build I1(i,j)
-  //helper_->GPUTiledDGEMM('n','n',o,o,v,1.0,t1,o,I1,v,1.0,I1p,o);
-  F_DGEMM('n','n',o,o,v,1.0,t1,o,I1,v,1.0,I1p,o);
-
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempv;
-  }
-
-  for (m=0,id=0; m<o; m++){
-      for (e=0; e<v; e++){
-          for (j=0; j<o; j++){
-              for (f=0; f<v; f++){
-                  tempt[id++] = tb[e*o*o*v+f*o*o+m*o+j];
-              }
-          }
-      }
-  }
-  //helper_->GPUTiledDGEMM_NoThread('n','t',o,ov2,o,-1.0,I1p,o,tempt,ov2,0.0,tempv,o,0);
-  helper_->GPUTiledDGEMM('n','t',o,ov2,o,-1.0,I1p,o,tempt,ov2,0.0,tempv,o);
-
-  // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  for (a=0,id=0; a<v; a++)
-  for (b=0; b<v; b++){
-  for (i=0; i<o; i++)
-  for (j=0; j<o; j++)
-      tempt[id++] += tempv[a*o*o*v+j*v*o+b*o+i] + tempv[b*o*o*v+i*v*o+a*o+j];
-  }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
-
-  psio.reset();
 }
 
 /*================================================================
@@ -1243,23 +774,47 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
    update amplitudes
 
 ================================================================*/
-void CoupledCluster::UpdateT1(long int iter){
+void CoupledPair::UpdateT1(long int iter){
 
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
   long int i,j,a,b;
   long int id=0;
-  double tnew,dia;
+  double tnew,dia,energy;
+
+  double fac = 1.0;
+  if (cepa_level == 0)       fac = 0.0;
+  else if (cepa_level == -1) fac = 1.0;
+  else if (cepa_level == -2) fac = 1.0/o;
+  else if (cepa_level == -3) fac = 1.0-(2.0*o-2.0)*(2.0*o-3.0) / (2.0*o*(2.0*o-1.0));
+  energy = ecepa * fac;
+
+
   if (iter<1){
      memset((void*)t1,'\0',o*v*sizeof(double));
      memset((void*)w1,'\0',o*v*sizeof(double));
   }
   else{
-     for (a=o; a<rs; a++){
-         for (i=0; i<o; i++){
+     for (i=0; i<o; i++){
+
+         if (cepa_level == 1){
+            energy = 0.0;
+            for (long int k=0; k<o; k++){
+                energy += (pair_energy[i*o+k]);
+            }
+         }else if (cepa_level == 2){
+            energy = pair_energy[i*o+i];
+         }else if (cepa_level == 3){
+            energy = -pair_energy[i*o+i];
+            for (long int k=0; k<o; k++){
+                energy += 2.0*(pair_energy[i*o+k]);
+            }
+         }
+
+         for (a=o; a<rs; a++){
              dia = -eps[i]+eps[a];
-             tnew = - (w1[(a-o)*o+i])/dia;
+             tnew = - (w1[(a-o)*o+i])/(dia-energy);
              w1[(a-o)*o+i] = tnew;
          }
      }
@@ -1269,7 +824,7 @@ void CoupledCluster::UpdateT1(long int iter){
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   F_DCOPY(o*v,w1,1,t1,1);
 }
-void CoupledCluster::SCS_CCSD(){
+void CoupledPair::SCS_CEPA(){
 
   long int v = nvirt;
   long int o = ndoccact;
@@ -1295,20 +850,19 @@ void CoupledCluster::SCS_CCSD(){
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   jaib = iajb + (i-j)*v*(1-v*o);
-                  osenergy += integrals[iajb]*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+                  osenergy += integrals[iajb]*(tb[ijab]);
                   ssenergy += integrals[iajb]*(tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
-                  ssenergy += integrals[iajb]*(t1[(a-o)*o+i]*t1[(b-o)*o+j]-t1[(b-o)*o+i]*t1[(a-o)*o+j]);
                   ijab++;
               }
           }
       }
   }
-  eccsd_os = eccsd_os_fac * osenergy;
-  eccsd_ss = eccsd_ss_fac * ssenergy;
+  ecepa_os = ecepa_os_fac * osenergy;
+  ecepa_ss = ecepa_ss_fac * ssenergy;
 
   psio.reset();
 }
-void CoupledCluster::SCS_MP2(){
+void CoupledPair::SCS_MP2(){
 
   long int v = nvirt;
   long int o = ndoccact;
@@ -1331,7 +885,6 @@ void CoupledCluster::SCS_MP2(){
       for (b=o; b<rs; b++){
           for (i=0; i<o; i++){
               for (j=0; j<o; j++){
-
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   jaib = iajb + (i-j)*v*(1-v*o);
                   osenergy += integrals[iajb]*tb[ijab];
@@ -1346,7 +899,45 @@ void CoupledCluster::SCS_MP2(){
 
   psio.reset();
 }
-double CoupledCluster::CheckEnergy(){
+void CoupledPair::PairEnergy(){
+
+  if (cepa_level<1) return;
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  double ta,tnew,dijab,da,dab,dabi;
+  long int iajb,jaib,ijab=0;
+  double energy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempt;
+  }
+  for (i=0; i<o; i++){
+      for (j=0; j<o; j++){
+          energy=0.0;
+          for (a=o; a<rs; a++){
+              for (b=o; b<rs; b++){
+
+                  ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  energy += integrals[iajb]*(2.0*tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+              }
+          }
+          pair_energy[i*o+j] = energy;
+      }
+  }
+
+  psio.reset();
+}
+double CoupledPair::CheckEnergy(){
 
   long int v = nvirt;
   long int o = ndoccact;
@@ -1372,7 +963,7 @@ double CoupledCluster::CheckEnergy(){
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   jaib = iajb + (i-j)*v*(1-v*o);
-                  energy += (2.*integrals[iajb]-integrals[jaib])*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+                  energy += (2.*integrals[iajb]-integrals[jaib])*(tb[ijab]);
                   ijab++;
               }
           }
@@ -1383,13 +974,13 @@ double CoupledCluster::CheckEnergy(){
 
   return energy;
 }
-void CoupledCluster::UpdateT2(long int iter){
+void CoupledPair::UpdateT2(long int iter){
 
   long int v = nvirt;
   long int o = ndoccact;
   long int rs = nmo;
   long int i,j,a,b;
-  double ta,tnew,dijab,da,dab,dabi;
+  double ta,tnew,dijab,di,dij,dija,energy;
   long int iajb,jaib,ijab=0;
   //double energy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1399,23 +990,48 @@ void CoupledCluster::UpdateT2(long int iter){
   // we still have the residual in memory in tempv
   //psio->open(PSIF_R2,PSIO_OPEN_OLD);
   //psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  for (a=o; a<rs; a++){
-      da = eps[a];
-      for (b=o; b<rs; b++){
-          dab = da + eps[b];
-          for (i=0; i<o; i++){
-              dabi = dab - eps[i];
-              for (j=0; j<o; j++){
+
+  double fac = 1.0;
+  if (cepa_level == 0)       fac = 0.0;
+  else if (cepa_level == -1) fac = 1.0;
+  else if (cepa_level == -2) fac = 1.0/o;
+  else if (cepa_level == -3) fac = 1.0-(2.0*o-2.0)*(2.0*o-3.0) / (2.0*o*(2.0*o-1.0));
+  energy = ecepa * fac;
+
+  for (i=0; i<o; i++){
+      di = - eps[i];
+      for (j=0; j<o; j++){
+          dij = di-eps[j];
+
+
+          if (cepa_level == 1){
+             energy = 0.0;
+             for (long int k=0; k<o; k++){
+                 energy += 0.5*(pair_energy[i*o+k]+pair_energy[j*o+k]);
+             }
+          }else if (cepa_level == 2){
+             energy = pair_energy[i*o+j];
+          }else if (cepa_level == 3){
+             energy = -pair_energy[i*o+j];
+             for (long int k=0; k<o; k++){
+                 energy += (pair_energy[i*o+k]+pair_energy[j*o+k]);
+             }
+          }
+          
+
+
+          for (a=o; a<rs; a++){
+              dija = dij + eps[a];
+              for (b=o; b<rs; b++){
+                  dijab = dija + eps[b];
+
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                  //jaib = iajb + (i-j)*v*(1-v*o);
 
-                  dijab = dabi-eps[j];
 
-                  tnew = - (integrals[iajb] + tempv[ijab])/dijab;
+                  ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                  tnew = - (integrals[iajb] + tempv[ijab])/(dijab-energy);
                   tempt[ijab] = tnew;
-                  //energy += (2.*integrals[iajb]-integrals[jaib])*(tnew+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
-                  ijab++;
               }
           }
       }
@@ -1452,7 +1068,7 @@ void CoupledCluster::UpdateT2(long int iter){
    diis functions
 
 ================================================================*/
-void CoupledCluster::DIIS(double*c,long int nvec,long int n){
+void CoupledPair::DIIS(double*c,long int nvec,long int n){
   long int i,j,k;
   doublereal sum,dum;
   integer*ipiv,nvar;
@@ -1502,7 +1118,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n){
   free(ipiv);
   psio.reset();
 }
-void CoupledCluster::DIISOldVector(long int iter,int diis_iter,int replace_diis_iter){
+void CoupledPair::DIISOldVector(long int iter,int diis_iter,int replace_diis_iter){
   long int j,o = ndoccact;
   long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
@@ -1539,7 +1155,7 @@ void CoupledCluster::DIISOldVector(long int iter,int diis_iter,int replace_diis_
 
   free(oldvector);
 }
-double CoupledCluster::DIISErrorVector(int diis_iter,int replace_diis_iter,int iter){
+double CoupledPair::DIISErrorVector(int diis_iter,int replace_diis_iter,int iter){
   double nrm;
   long int i,j,o = ndoccact;
   long int arraysize,v = nvirt;
@@ -1570,7 +1186,7 @@ double CoupledCluster::DIISErrorVector(int diis_iter,int replace_diis_iter,int i
   // return convergence
   return nrm;
 }
-void CoupledCluster::DIISNewAmplitudes(int diis_iter){
+void CoupledPair::DIISNewAmplitudes(int diis_iter){
   long int o = ndoccact;
   long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
@@ -1616,7 +1232,7 @@ void CoupledCluster::DIISNewAmplitudes(int diis_iter){
 /**
  *  Build and use I2ijkl
  */
-void CoupledCluster::I2ijkl(CCTaskParams params){
+void CoupledPair::I2ijkl(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
@@ -1634,12 +1250,12 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
               for (j=0; j<o; j++){
-                  tempt[id++] += t1[a*o+i]*t1[b*o+j];
+                  //tempt[id++] += t1[a*o+i]*t1[b*o+j];
               }
           }
       }
   }
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  /*psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_KLCD,1);
   for (j=0; j<o; j++){
@@ -1648,16 +1264,17 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
               F_DCOPY(v,integrals+j*o*v*v+b*o*v+i*v,1,tempv+j*o*v*v+i*v*v+b*v,1);
           }
       }
-  }
+  }*/
   psio->open(PSIF_IJKL,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJKL,"E2ijkl",(char*)&integrals[0],o*o*o*o*sizeof(double));
-
   psio->close(PSIF_IJKL,1);
-  helper_->GPUTiledDGEMM('n','n',o*o,o*o,v*v,1.0,tempt,o*o,tempv,v*v,1.0,integrals,o*o);
+
+  /*helper_->GPUTiledDGEMM('n','n',o*o,o*o,v*v,1.0,tempt,o*o,tempv,v*v,1.0,integrals,o*o);
   psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&tempv[0],o*o*o*v*sizeof(double));
   psio->close(PSIF_IJAK,1);
-  helper_->GPUTiledDGEMM_NoThread('n','n',o,o*o*o,v,2.0,t1,o,tempv,v,1.0,integrals,o,0);
+  helper_->GPUTiledDGEMM_NoThread('n','n',o,o*o*o,v,2.0,t1,o,tempv,v,1.0,integrals,o,0);*/
+
   helper_->GPUTiledDGEMM('n','n',o*o,v*v,o*o,0.5,integrals,o*o,tempt,o*o,0.0,tempv,o*o);
 
   // contribute to residual
@@ -1679,45 +1296,16 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
 /**
  *  Build and use I2'iajk
  */
-void CoupledCluster::I2piajk(CCTaskParams params){
+void CoupledPair::I2piajk(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-  }else{
-     F_DCOPY(o*o*v*v,tb,1,tempt,1);
-  }
-
-  for (a=0,id=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tempt[id++] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
   psio->open(PSIF_IJAK2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJAK2,"E2ijak2",(char*)&tempv[0],o*o*o*v*sizeof(double));
   psio->close(PSIF_IJAK2,1);
-  //F_DCOPY(o*o*o*v,E2ijak2,1,tempv,1);
-
-  addr = PSIO_ZERO;
-  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
-  for (j=0; j<novtiles-1; j++){
-      psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],ovtilesize*v*v*sizeof(double),addr,&addr);
-      helper_->GPUTiledDGEMM('n','n',o*o,ovtilesize,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*o*o*ovtilesize,o*o);
-  }
-  j=novtiles-1;
-  psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],lastovtile*v*v*sizeof(double),addr,&addr);
-  helper_->GPUTiledDGEMM('n','n',o*o,lastovtile,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*o*o*ovtilesize,o*o);
-  psio->close(PSIF_ABCI,1);
 
   helper_->GPUTiledDGEMM_NoThread('n','n',o*o*v,v,o,-1.0,tempv,o*o*v,t1,o,0.0,tempt,o*o*v,0);
 
@@ -1739,7 +1327,7 @@ void CoupledCluster::I2piajk(CCTaskParams params){
 /**
  *  Use Vabcd1
  */
-void CoupledCluster::Vabcd1(CCTaskParams params){
+void CoupledPair::Vabcd1(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
@@ -1751,15 +1339,6 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
      psio->close(PSIF_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
-  }
-  for (a=0,id=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tempt[id++] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
   }
   for (i=0; i<o; i++){
       for (j=i; j<o; j++){
@@ -1805,7 +1384,7 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
 /**
  *  Use Vabcd2
  */
-void CoupledCluster::Vabcd2(CCTaskParams params){
+void CoupledPair::Vabcd2(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   int sg,sg2;
   o = ndoccact;
@@ -1823,7 +1402,7 @@ void CoupledCluster::Vabcd2(CCTaskParams params){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
               for (j=0; j<o; j++){
-                  tempt[id++] += t1[a*o+i]*t1[b*o+j];
+                  //tempt[id++] += t1[a*o+i]*t1[b*o+j];
               }
           }
       }
@@ -1872,119 +1451,17 @@ void CoupledCluster::Vabcd2(CCTaskParams params){
 /**
  *  Build and use I2iabj
  */
-void CoupledCluster::I2iabj(CCTaskParams params){
+void CoupledPair::I2iabj(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempv;
-  }
-
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  tempt[id++] = tb[b*v*o*o+a*o*o+j*o+i]+2.*t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-
   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_KLCD,1);
   F_DCOPY(o*o*v*v,integrals,1,tempv,1);
-  helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,-0.5,tempt,o*v,integrals,o*v,1.0,tempv,o*v);
-
-
-  // o^2v^3 contribution to intermediate
-  psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&integrals[0],o*o*o*v*sizeof(double));
-  psio->close(PSIF_IJAK,1);
-  helper_->GPUTiledDGEMM_NoThread('n','n',o*o*v,v,o,-1.0,integrals,o*o*v,t1,o,0.0,tempt,o*o*v,0);
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  tempv[id++] += tempt[a*o*o*v+i*o*v+j*v+b];
-              }
-          }
-      }
-  }
-  // contribute to intermediate
-  psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
-  psio->write_entry(PSIF_TEMP,"temporary",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_TEMP,1);
-
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-
-  F_DCOPY(o*o*v*v,tempt,1,tempv,1);
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  tempv[id++] -= 0.5*tempt[i*v*v*o+a*v*o+j*v+b];
-              }
-          }
-      }
-  }
-  //memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
-
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempt;
-  }
-
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  integrals[i*v*v*o+a*v*o+j*v+b] = tb[b*v*o*o+a*o*o+j*o+i];
-              }
-          }
-      }
-  }
-  helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,1.0,integrals,o*v,tempv,o*v,0.0,tempt,o*v);
-
-  // o^2v^3 piece of intermediate
-  addr = PSIO_ZERO;
-  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
-
-  for (j=0; j<nov2tiles-1; j++){
-      psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],ov2tilesize*v*sizeof(double),addr,&addr);
-      //helper_->GPUTiledDGEMM_NoThread('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o,0);
-      helper_->GPUTiledDGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o);
-  }
-  j=nov2tiles-1;
-  psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],lastov2tile*v*sizeof(double),addr,&addr);
-  //helper_->GPUTiledDGEMM_NoThread('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o,0);
-  helper_->GPUTiledDGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o);
-  psio->close(PSIF_ABCI,1);
-  for (i=0,id=0; i<o; i++){
-      for (a=0; a<v; a++){
-          for (b=0; b<v; b++){
-              for (j=0; j<o; j++){
-                  tempt[i*o*v*v+b*o*v+j*v+a] += tempv[id++];
-              }
-          }
-      }
-  }
-
-  // contribute to intermediate
-  psio->open(PSIF_TEMP,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_TEMP,"temporary",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
-  psio->close(PSIF_TEMP,0);
 
   // use I2iabj
   if (t2_on_disk){
@@ -2028,98 +1505,18 @@ void CoupledCluster::I2iabj(CCTaskParams params){
 /**
  *  Build and use I2iajb
  */
-void CoupledCluster::I2iajb(CCTaskParams params){
+void CoupledPair::I2iajb(CCTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio_address addr;
 
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempv;
-  }
-
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  integrals[id++] = tb[b*o*o*v+a*o*o+j*o+i] + 2.*t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  tempv[id++] = tempt[i*v*v*o+a*v*o+j*v+b];
-              }
-          }
-      }
-  }
-
   psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_AKJC2,"E2akjc2",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_AKJC2,1);
-  helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,-0.5,integrals,o*v,tempv,o*v,1.0,tempt,o*v);
-
-  // o^2v^3 work
-  addr = PSIO_ZERO;
-  psio->open(PSIF_ABCI4,PSIO_OPEN_OLD);
-
-  for (j=0; j<nov2tiles-1; j++){
-      psio->read(PSIF_ABCI4,"E2abci4",(char*)&integrals[0],ov2tilesize*v*sizeof(double),addr,&addr);
-      //helper_->GPUTiledDGEMM_NoThread('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o,0);
-      helper_->GPUTiledDGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o);
-  }
-  j=nov2tiles-1;
-  psio->read(PSIF_ABCI4,"E2abci4",(char*)&integrals[0],lastov2tile*v*sizeof(double),addr,&addr);
-  //helper_->GPUTiledDGEMM_NoThread('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o,0);
-  helper_->GPUTiledDGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o);
-  psio->close(PSIF_ABCI4,1);
-
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  tempt[id++] += tempv[i*o*v*v+a*v*o+b*o+j];
-              }
-          }
-      }
-  }
-
-  // stick o^3v^2 work on first tile
-  psio->open(PSIF_IJAK2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_IJAK2,"E2ijak2",(char*)&integrals[0],o*o*o*v*sizeof(double));
-  psio->close(PSIF_IJAK2,1);
-  // TODO: this was a problem with cuda 3.2 vs 4.0
-  helper_->GPUTiledDGEMM_NoThread('t','n',o*o*v,v,o,-1.0,integrals,o,t1,o,0.0,tempv,o*o*v,0);
-  //F_DGEMM('t','n',o*o*v,v,o,-1.0,integrals,o,t1,o,0.0,tempv,o*o*v);
-  for (i=0,id=0; i<o; i++){
-      for (b=0; b<v; b++){
-          for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  //tempt[id++] += tempv[a*o*o*v+i*o*v+j*v+b];
-                  tempt[id++] += tempv[a*o*o*v+i*o*v+b*o+j];
-              }
-          }
-      }
-  }
-
-  // contribute to intermediate
-  //psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
-  //psio->write_entry(PSIF_TEMP,"temporary",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  //psio->close(PSIF_TEMP,1);
 
   // use I2iajb
-
   if (t2_on_disk){
      psio->open(PSIF_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
@@ -2136,9 +1533,6 @@ void CoupledCluster::I2iajb(CCTaskParams params){
           }
       }
   }
-  //psio->open(PSIF_TEMP,PSIO_OPEN_OLD);
-  //psio->read_entry(PSIF_TEMP,"temporary",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  //psio->close(PSIF_TEMP,1);
 
   helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,-1.0,tempt,o*v,integrals,o*v,0.0,tempv,o*v);
 
@@ -2158,7 +1552,6 @@ void CoupledCluster::I2iajb(CCTaskParams params){
   psio->close(PSIF_R2,1);
 
   // use I2iajb
-
   if (t2_on_disk){
      psio->open(PSIF_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_T2,"t2",(char*)&integrals[0],o*o*v*v*sizeof(double));
@@ -2192,14 +1585,14 @@ void CoupledCluster::I2iajb(CCTaskParams params){
   }
   psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_R2,1);
-
   psio.reset();
+
 }
 
 /**
  *  Tasks:
  */
-void CoupledCluster::DefineTasks(){
+void CoupledPair::DefineTasks(){
   CCTasklist = new CCTask[1000];
   CCParams   = new CCTaskParams[1000];
   long int o = ndoccact;
@@ -2212,84 +1605,60 @@ void CoupledCluster::DefineTasks(){
   ncctasks=0;
 
   // I2iabj
-  CCTasklist[ncctasks].func      = &psi::CoupledCluster::I2iabj;
+  CCTasklist[ncctasks].func      = &psi::CoupledPair::I2iabj;
   CCTasklist[ncctasks].flopcount = 2*(3*o*o*o*v*v*v+o*o*v*v*v+o*o*o*v*v);
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
 
   // I2iajb
-  CCTasklist[ncctasks].func      = &psi::CoupledCluster::I2iajb;
+  CCTasklist[ncctasks].func      = &psi::CoupledPair::I2iajb;
   CCTasklist[ncctasks].flopcount = 2.*(3.*o*o*o*v*v*v);
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
 
   // I2ijkl ... n^6, so probably worth tiling at some point 
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::I2ijkl;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::I2ijkl;
   CCTasklist[ncctasks].flopcount = 2.*(2.*o*o*o*o*v*v+1.*o*o*o*o*v);
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
 
   // I2pijak:
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::I2piajk;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::I2piajk;
   CCTasklist[ncctasks].flopcount = 2.*(1.*o*o*o*v*v*v+1.*o*o*o*v*v);
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
  
   // used to be cpu functions
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_t1_vmeni;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmeni;
   CCTasklist[ncctasks].flopcount = 2.*o*o*o*v*v;
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
 
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_t1_vmaef;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmaef;
   CCTasklist[ncctasks].flopcount = 2.*o*o*v*v*v;
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
 
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_I2p_abci_refactored_term1;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
   CCTasklist[ncctasks].flopcount = 2.*(o*o*v*v*v);
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
 
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_I2p_abci_refactored_term2;
-  CCTasklist[ncctasks].flopcount = 2.*(2.*o*o*o*v*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_I2p_abci_refactored_term3;
-  CCTasklist[ncctasks].flopcount = 2.*(2.*o*o*o*v*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_I1ab;
-  CCTasklist[ncctasks].flopcount = 2.*(2.*o*o*v*v*v+1.*o*v*v*v+1.*o*v*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_t1_vmeai;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmeai;
   CCTasklist[ncctasks].flopcount = 2.*o*o*v*v;
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
   CCParams[ncctasks++].ktile = -999;
 
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::CPU_I1pij_I1ia_lessmem;
-  CCTasklist[ncctasks].flopcount = 2.*(2.*o*o*v*v+2.*o*o*o*v*v+1.*o*o*o*v+2.*o*o*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
   // tiles of Vabcd1:
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::Vabcd1;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::Vabcd1;
   CCTasklist[ncctasks].flopcount = 2.*o*(o+1)/2.*v*(v+1)/2*v*(v+1)/2.;
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;
@@ -2298,7 +1667,7 @@ void CoupledCluster::DefineTasks(){
   // tiles of Vabcd2: 
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
-  CCTasklist[ncctasks].func        = &psi::CoupledCluster::Vabcd2;
+  CCTasklist[ncctasks].func        = &psi::CoupledPair::Vabcd2;
   CCTasklist[ncctasks].flopcount = 2.*o*(o+1)/2.*tilesize*v*(v+1)/2.;
   CCParams[ncctasks].mtile = -999;
   CCParams[ncctasks].ntile = -999;

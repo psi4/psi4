@@ -6,6 +6,7 @@ import math
 import warnings
 import pickle
 import copy
+import physconst
 from driver import *
 from molecule import *
 from text import *
@@ -242,7 +243,7 @@ def n_body(name, **kwargs):
         PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
         for n in Ns:
             for k in range(len(energies_full[n])):
-                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_full[n][k],psi_hartree2kcalmol*energies_full[n][k]))
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_full[n][k],physconst.psi_hartree2kcalmol*energies_full[n][k]))
         PsiMod.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
@@ -250,7 +251,7 @@ def n_body(name, **kwargs):
         PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
         for n in Ns:
             for k in range(len(energies_mon[n])):
-                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_mon[n][k],psi_hartree2kcalmol*energies_mon[n][k]))
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_mon[n][k],physconst.psi_hartree2kcalmol*energies_mon[n][k]))
         PsiMod.print_out('\n')
              
     if bsse == 'both':
@@ -258,7 +259,7 @@ def n_body(name, **kwargs):
         PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "Delta E [H]", "Delta E [kcal mol^-1]"))
         for n in Ns:
             for k in range(len(energies_mon[n])):
-                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_full[n][k] - energies_mon[n][k],psi_hartree2kcalmol*(energies_full[n][k] - energies_mon[n][k])))
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_full[n][k] - energies_mon[n][k],physconst.psi_hartree2kcalmol*(energies_full[n][k] - energies_mon[n][k])))
         PsiMod.print_out('\n')
              
     PsiMod.print_out('    ==> N-Body Interaction Energy Analysis: N-Body Energies <==\n\n')
@@ -275,7 +276,7 @@ def n_body(name, **kwargs):
                 E = energies_full[n][k]
                 for l in range(len(combos[n][k])):
                     E -= energies_full[1][combos[n][k][l]-1]
-                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,psi_hartree2kcalmol*E))
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,physconst.psi_hartree2kcalmol*E))
                 En += E
             energies_n_full[n] = En
         for n in Ns:
@@ -284,7 +285,7 @@ def n_body(name, **kwargs):
             nn = molecule.nfragments() - 2
             kk = n - 2
             energies_n_full[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
-            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_full[n],psi_hartree2kcalmol*energies_n_full[n]))
+            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_full[n],physconst.psi_hartree2kcalmol*energies_n_full[n]))
         PsiMod.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
@@ -299,7 +300,7 @@ def n_body(name, **kwargs):
                 E = energies_mon[n][k]
                 for l in range(len(combos[n][k])):
                     E -= energies_mon[1][combos[n][k][l]-1]
-                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,psi_hartree2kcalmol*E))
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,physconst.psi_hartree2kcalmol*E))
                 En += E
             energies_n_mon[n] = En
         for n in Ns:
@@ -308,7 +309,7 @@ def n_body(name, **kwargs):
             nn = molecule.nfragments() - 2
             kk = n - 2
             energies_n_mon[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
-            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_mon[n],psi_hartree2kcalmol*energies_n_mon[n]))
+            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_mon[n],physconst.psi_hartree2kcalmol*energies_n_mon[n]))
         PsiMod.print_out('\n')
 
     if bsse == 'both':
@@ -324,7 +325,7 @@ def n_body(name, **kwargs):
                 for l in range(len(combos[n][k])):
                     E -= energies_full[1][combos[n][k][l]-1]
                     E += energies_mon[1][combos[n][k][l]-1]
-                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,psi_hartree2kcalmol*E))
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,physconst.psi_hartree2kcalmol*E))
                 En += E
             energies_n_bsse[n] = En
         for n in Ns:
@@ -333,7 +334,7 @@ def n_body(name, **kwargs):
             nn = molecule.nfragments() - 2
             kk = n - 2
             energies_n_bsse[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
-            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_bsse[n],psi_hartree2kcalmol*energies_n_bsse[n]))
+            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_bsse[n],physconst.psi_hartree2kcalmol*energies_n_bsse[n]))
         PsiMod.print_out('\n')
 
     PsiMod.print_out('    ==> N-Body Interaction Energy Analysis: Non-Additivities <==\n\n')
@@ -347,7 +348,7 @@ def n_body(name, **kwargs):
             if n == 1:
                 continue
             E = energies_n_full[Ns[k]] - energies_n_full[Ns[k+1]]
-            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, psi_hartree2kcalmol*E))
+            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, physconst.psi_hartree2kcalmol*E))
         PsiMod.print_out('\n')
 
     if bsse == 'off' or bsse == 'both':
@@ -359,7 +360,7 @@ def n_body(name, **kwargs):
             if n == 1:
                 continue
             E = energies_n_mon[Ns[k]] - energies_n_mon[Ns[k+1]]
-            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, psi_hartree2kcalmol*E))
+            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, physconst.psi_hartree2kcalmol*E))
         PsiMod.print_out('\n')
 
     if bsse == 'both':
@@ -371,7 +372,7 @@ def n_body(name, **kwargs):
             if n == 1:
                 continue
             E = energies_n_bsse[Ns[k]] - energies_n_bsse[Ns[k+1]]
-            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, psi_hartree2kcalmol*E))
+            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, physconst.psi_hartree2kcalmol*E))
         PsiMod.print_out('\n')
 
     # Put everything back the way it was
@@ -1087,9 +1088,9 @@ def database(name, db_name, **kwargs):
             ERXN[db_rxn] = 0.0
             for i in range(len(ACTV[db_rxn])):
                 ERXN[db_rxn] += ERGT[ACTV[db_rxn][i]] * RXNM[db_rxn][ACTV[db_rxn][i]]
-            error = psi_hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
+            error = physconst.psi_hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
         
-            tables += """\n%23s   %8.4f %8.4f   %8.4f""" % (db_rxn, BIND[db_rxn], psi_hartree2kcalmol*ERXN[db_rxn], error)
+            tables += """\n%23s   %8.4f %8.4f   %8.4f""" % (db_rxn, BIND[db_rxn], physconst.psi_hartree2kcalmol*ERXN[db_rxn], error)
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
 
