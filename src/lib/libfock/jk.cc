@@ -2143,6 +2143,7 @@ void DFJK::manage_JK_disk()
         block_K(&Qmn_->pointer()[0],naux);
     } 
     psio_->close(unit_,1);
+    Qmn_.reset();
 }
 void DFJK::manage_wK_core()
 {
@@ -2172,6 +2173,8 @@ void DFJK::manage_wK_disk()
         block_wK(&Qlmn_->pointer()[0],&Qrmn_->pointer()[0],naux);
     } 
     psio_->close(unit_,1);
+    Qlmn_.reset();
+    Qrmn_.reset();
 }
 void DFJK::block_J(double** Qmnp, int naux)
 {
