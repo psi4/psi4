@@ -1143,12 +1143,14 @@ void DFJK::compute_JK()
     max_nocc_ = max_nocc();
     max_rows_ = max_rows();
 
-    initialize_temps();
-    if (is_core_) 
-        manage_JK_core();
-    else
-        manage_JK_disk();
-    free_temps();
+    if (do_J_ || do_K_) {
+        initialize_temps();
+        if (is_core_) 
+            manage_JK_core();
+        else
+            manage_JK_disk();
+        free_temps();
+    }
 
     if (do_wK_) {
         initialize_w_temps();
@@ -2125,8 +2127,10 @@ void DFJK::manage_JK_core()
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
 
-        block_J(&Qmn_->pointer()[Q],naux);
-        block_K(&Qmn_->pointer()[Q],naux);
+        if (do_J_) 
+            block_J(&Qmn_->pointer()[Q],naux);
+        if (do_K_) 
+            block_K(&Qmn_->pointer()[Q],naux);
     } 
 }
 void DFJK::manage_JK_disk()
@@ -2139,8 +2143,10 @@ void DFJK::manage_JK_disk()
         psio_address addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
         psio_->read(unit_,"(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
 
-        block_J(&Qmn_->pointer()[0],naux);
-        block_K(&Qmn_->pointer()[0],naux);
+        if (do_J_) 
+            block_J(&Qmn_->pointer()[0],naux);
+        if (do_K_) 
+            block_K(&Qmn_->pointer()[0],naux);
     } 
     psio_->close(unit_,1);
     Qmn_.reset();
