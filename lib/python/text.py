@@ -1,5 +1,6 @@
 import PsiMod
 import sys
+import physconst
 from psiexceptions import *
 
 class Table:
@@ -80,7 +81,7 @@ class Table:
         import copy
         return copy.deepcopy(self)
 
-    def absolute_to_relative(self, Factor = 627.51):
+    def absolute_to_relative(self, Factor = physconst.psi_hartree2kcalmol):
         import copy
 
         if len(self.data) == 0:
@@ -97,7 +98,7 @@ class Table:
                 #print datarow[1][col]
                 datarow[1][col] = (datarow[1][col] - current_min[col]) * Factor
 
-    def scale(self, Factor = 627.51):
+    def scale(self, Factor = physconst.psi_hartree2kcalmol):
 
         if len(self.data) == 0:
             return

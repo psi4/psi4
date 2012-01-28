@@ -72,6 +72,13 @@ def run_mp2_5(name, **kwargs):
     return e_mp25
 
 def run_plugin_ccsd_serial(name, **kwargs):
+
+    # override symmetry
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(1)
+    molecule.update_geometry()
     plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
     PsiMod.plugin_load("%s" % (plugfile))
     run_scf("scf",**kwargs)
