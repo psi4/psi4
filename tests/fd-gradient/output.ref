@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -19,6 +21,9 @@
 
 --------------------------------------------------------------------------
 #! SCF STO-3G finite-difference tests
+
+memory 250 mb
+
 molecule h2o {
   symmetry c1
   O
@@ -69,13 +74,12 @@ gradient('scf', dertype=0)
 fd_grad = PsiMod.reference_wavefunction().gradient() 
 
 compare_matrices(fd_grad, anal_grad, 8, "5-point finite-difference vs. analytic gradient to 10^-8 (C2v)") #TEST
-
-clean()
-
 --------------------------------------------------------------------------
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -86,7 +90,7 @@ clean()
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -110,7 +114,7 @@ clean()
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801466202085710
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -123,6 +127,7 @@ clean()
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -139,11 +144,11 @@ clean()
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898570
+  Initial RHF energy:   -54.63426083487279
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -180,14 +185,14 @@ clean()
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277951   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949073   -1.67848e+00   2.60800e-01 DIIS
-   @RHF iter   3:   -74.96324209064443   -3.17455e-02   3.36189e-02 DIIS
-   @RHF iter   4:   -74.96459579416396   -1.35370e-03   9.22393e-03 DIIS
-   @RHF iter   5:   -74.96465753906593   -6.17449e-05   1.74105e-03 DIIS
-   @RHF iter   6:   -74.96466250922853   -4.97016e-06   5.74970e-04 DIIS
-   @RHF iter   7:   -74.96466254315344   -3.39249e-08   4.82594e-05 DIIS
-   @RHF iter   8:   -74.96466254315349   -5.68434e-14   2.10555e-08 DIIS
+   @RHF iter   1:   -73.25301168566624   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149650876848   -1.67848e+00   2.60800e-01 DIIS
+   @RHF iter   3:   -74.96324208529289   -3.17456e-02   3.36189e-02 DIIS
+   @RHF iter   4:   -74.96459578982672   -1.35370e-03   9.22393e-03 DIIS
+   @RHF iter   5:   -74.96465753478962   -6.17450e-05   1.74105e-03 DIIS
+   @RHF iter   6:   -74.96466250496037   -4.97017e-06   5.74971e-04 DIIS
+   @RHF iter   7:   -74.96466253888528   -3.39249e-08   4.82594e-05 DIIS
+   @RHF iter   8:   -74.96466253888525    2.84217e-14   2.11282e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -209,25 +214,25 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315349
+  @RHF Final Energy:   -74.96466253888525
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3624
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3624
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
+     X:    -0.0000      Y:    -0.0000      Z:     0.6566     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
+     X:    -0.0000      Y:    -0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
@@ -237,8 +242,8 @@ Total time:
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -297,9 +302,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.129476880270
-           H          0.000000000000    -1.494186636402     1.027446024469
-           H          0.000000000000     1.494186636402     1.027446024469
+           O          0.000000000000    -0.000000000000    -0.129476890157
+           H          0.000000000000    -1.494186750504     1.027446102928
+           H          0.000000000000     1.494186750504     1.027446102928
 
 
 
@@ -307,50 +312,50 @@ Total time:
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000     0.000000000000     2.743013181779
-       2        0.000000000000     1.883302690231    -1.371506590889
-       3        0.000000000000    -1.883302690231    -1.371506590889
+       1        0.000000000000     0.000000000000     2.743012762845
+       2        0.000000000000     1.883302402599    -1.371506381423
+       3        0.000000000000    -1.883302402599    -1.371506381423
 
 
   -One-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000     0.000000000000    -5.962875049132
-       2        0.000000000000    -3.908821022548     2.981437524566
-       3        0.000000000000     3.908821022548     2.981437524566
+       1        0.000000000000     0.000000000000    -5.962874726175
+       2       -0.000000000000    -3.908820931674     2.981437363087
+       3        0.000000000000     3.908820931674     2.981437363087
 
 
   -Lagrangian contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000    -0.000000000000     0.303451767836
-       2       -0.000000000000     0.158667993463    -0.151725883918
-       3        0.000000000000    -0.158667993463    -0.151725883918
+       1       -0.000000000000    -0.000000000000     0.303451759056
+       2        0.000000000000     0.158668005652    -0.151725879528
+       3        0.000000000000    -0.158668005652    -0.151725879528
 
 
   -Two-electron contribution to gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1        0.000000000000    -0.000000000000     2.918158339468
-       2       -0.000000000000     1.847470421991    -1.459079169734
-       3       -0.000000000000    -1.847470421991    -1.459079169734
+       1       -0.000000000000    -0.000000000000     2.918158348299
+       2        0.000000000000     1.847470537949    -1.459079174149
+       3       -0.000000000000    -1.847470537949    -1.459079174149
 
 
   -Total gradient:
      Atom            X                  Y                   Z
     ------   -----------------  -----------------  -----------------
-       1       -0.000000000000    -0.000000000000     0.001748239951
-       2        0.000000000000    -0.019379916863    -0.000874119975
-       3        0.000000000000     0.019379916863    -0.000874119975
+       1        0.000000000000     0.000000000000     0.001748144025
+       2       -0.000000000000    -0.019379985474    -0.000874072012
+       3        0.000000000000     0.019379985474    -0.000874072012
 
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.06 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -382,8 +387,8 @@ Total time:
   //    Loading displacement 1 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -394,7 +399,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -405,9 +410,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.054279931502     0.041811401668     0.000000000000
-           H          0.054279931502    -0.956252935259     0.000000000000
-           H         -0.915741834414     0.292675649009     0.000000000000
+           O          0.054279931494     0.041811401678     0.000000000000
+           H          0.054279931494    -0.956252935397     0.000000000000
+           H         -0.915741834279     0.292675648982     0.000000000000
 
     Number of unique atoms: 3
 
@@ -418,7 +423,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801497552207296
+  Nuclear repulsion =    8.801496880086468
 
   Charge       = 0
   Multiplicity = 1
@@ -431,6 +436,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -447,11 +453,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7025904267E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63424620687556
+  Initial RHF energy:   -54.63424645276738
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -488,15 +494,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25300864294861   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93148547109081   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333344995   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778884   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937926   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009911   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403143   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403174   -3.12639e-13   1.18601e-07 DIIS
-   @RHF iter   9:   -74.96465389403173    1.42109e-14   1.39797e-08 DIIS
+   @RHF iter   1:   -73.25300867583661   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93148543037074   -1.67848e+00   2.60802e-01 DIIS
+   @RHF iter   3:   -74.96323332810209   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713345521   -1.35381e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888510670   -6.17517e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465385583457   -4.97073e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465388976696   -3.39324e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465388976725   -2.84217e-13   1.18604e-07 DIIS
+   @RHF iter   9:   -74.96465388976722    2.84217e-14   1.39070e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -518,7 +524,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465389403173
+  @RHF Final Energy:   -74.96465388976722
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -536,13 +542,13 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -550,8 +556,8 @@ Total time:
   //    Loading displacement 2 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -562,7 +568,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -573,9 +579,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.054070201503     0.042082271596     0.000000000000
-           H          0.054070201503    -0.959853403458     0.000000000000
-           H         -0.912203537130     0.291977214870     0.000000000000
+           O          0.054070201511     0.042082271586     0.000000000000
+           H          0.054070201511    -0.959853403320     0.000000000000
+           H         -0.912203537265     0.291977214897     0.000000000000
 
     Number of unique atoms: 3
 
@@ -586,7 +592,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801497552207296
+  Nuclear repulsion =    8.801496880086470
 
   Charge       = 0
   Multiplicity = 1
@@ -599,6 +605,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -615,11 +622,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7025904267E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63424620687564
+  Initial RHF energy:   -54.63424645276740
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -656,15 +663,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25300864294866   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93148547109092   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333345018   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778891   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937933   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009920   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403146   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403184   -3.83693e-13   1.18603e-07 DIIS
-   @RHF iter   9:   -74.96465389403180    4.26326e-14   1.41818e-08 DIIS
+   @RHF iter   1:   -73.25300867583664   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93148543037074   -1.67848e+00   2.60802e-01 DIIS
+   @RHF iter   3:   -74.96323332810211   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713345531   -1.35381e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888510663   -6.17517e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465385583460   -4.97073e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465388976701   -3.39324e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465388976725   -2.41585e-13   1.18611e-07 DIIS
+   @RHF iter   9:   -74.96465388976725    0.00000e+00   1.39831e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -686,7 +693,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465389403180
+  @RHF Final Energy:   -74.96465388976725
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -704,13 +711,13 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.10 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -718,8 +725,8 @@ Total time:
   //    Loading displacement 3 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -730,7 +737,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -741,9 +748,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068737541067
-           H          0.000000000000    -0.790689573744     0.545457329170
-           H          0.000000000000     0.790689573744     0.545457329170
+           O          0.000000000000     0.000000000000    -0.068737541050
+           H          0.000000000000    -0.790689573744     0.545457329036
+           H          0.000000000000     0.790689573744     0.545457329036
 
     Number of unique atoms: 3
 
@@ -754,7 +761,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.791217360265589
+  Nuclear repulsion =    8.791216689717064
 
   Charge       = 0
   Multiplicity = 1
@@ -767,6 +774,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -783,11 +791,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7105722993E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7105727976E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812006
+  Initial RHF energy:   -54.63765038333517
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -824,14 +832,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236330   -1.86156e+01   0.00000e+00  
-   @RHF iter   2:   -74.93065163215218   -1.67740e+00   2.60806e-01 DIIS
-   @RHF iter   3:   -74.96322356409721   -3.25719e-02   3.40086e-02 DIIS
-   @RHF iter   4:   -74.96459714196185   -1.37358e-03   9.27942e-03 DIIS
-   @RHF iter   5:   -74.96465984832905   -6.27064e-05   1.74800e-03 DIIS
-   @RHF iter   6:   -74.96466497418814   -5.12586e-06   5.83706e-04 DIIS
-   @RHF iter   7:   -74.96466500877627   -3.45881e-08   4.87986e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -5.68434e-14   1.96703e-08 DIIS
+   @RHF iter   1:   -73.25324854505995   -1.86156e+01   0.00000e+00 
+   @RHF iter   2:   -74.93065159044102   -1.67740e+00   2.60806e-01 DIIS
+   @RHF iter   3:   -74.96322355838055   -3.25720e-02   3.40086e-02 DIIS
+   @RHF iter   4:   -74.96459713726567   -1.37358e-03   9.27942e-03 DIIS
+   @RHF iter   5:   -74.96465984369455   -6.27064e-05   1.74800e-03 DIIS
+   @RHF iter   6:   -74.96466496956182   -5.12587e-06   5.83706e-04 DIIS
+   @RHF iter   7:   -74.96466500415002   -3.45882e-08   4.87987e-05 DIIS
+   @RHF iter   8:   -74.96466500415009   -7.10543e-14   1.96800e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -845,7 +853,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   6A      0.563349     7A      0.691150  
+	   6A      0.563348     7A      0.691150  
 
 	Final Occupation by Irrep:
 	          A 
@@ -853,31 +861,31 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500415009
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0224
+     X:     0.0000      Y:     0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.3660
+     X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.13 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -885,8 +893,8 @@ Total time:
   //    Loading displacement 4 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -897,7 +905,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -908,9 +916,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068294897553
-           H          0.000000000000    -0.790689573744     0.541944792278
-           H          0.000000000000     0.790689573744     0.541944792278
+           O          0.000000000000    -0.000000000000    -0.068294897570
+           H          0.000000000000    -0.790689573744     0.541944792413
+           H          0.000000000000     0.790689573744     0.541944792413
 
     Number of unique atoms: 3
 
@@ -921,7 +929,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.811719164003161
+  Nuclear repulsion =    8.811718490323456
 
   Charge       = 0
   Multiplicity = 1
@@ -934,6 +942,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -950,11 +959,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6951295202E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6951300188E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527610
+  Initial RHF energy:   -54.63086750183680
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -991,14 +1000,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439036   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275245   -1.67955e+00   2.60796e-01 DIIS
-   @RHF iter   3:   -74.96325235946672   -3.09342e-02   3.32305e-02 DIIS
-   @RHF iter   4:   -74.96458629515658   -1.33394e-03   9.16818e-03 DIIS
-   @RHF iter   5:   -74.96464708767149   -6.07925e-05   1.73410e-03 DIIS
-   @RHF iter   6:   -74.96465190510284   -4.81743e-06   5.66246e-04 DIIS
-   @RHF iter   7:   -74.96465193838502   -3.32822e-08   4.77315e-05 DIIS
-   @RHF iter   8:   -74.96465193838507   -5.68434e-14   2.27308e-08 DIIS
+   @RHF iter   1:   -73.25277200746832   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231810301539   -1.67955e+00   2.60796e-01 DIIS
+   @RHF iter   3:   -74.96325235448241   -3.09343e-02   3.32305e-02 DIIS
+   @RHF iter   4:   -74.96458629118024   -1.33394e-03   9.16818e-03 DIIS
+   @RHF iter   5:   -74.96464708375548   -6.07926e-05   1.73410e-03 DIIS
+   @RHF iter   6:   -74.96465190119466   -4.81744e-06   5.66247e-04 DIIS
+   @RHF iter   7:   -74.96465193447698   -3.32823e-08   4.77315e-05 DIIS
+   @RHF iter   8:   -74.96465193447695    2.84217e-14   2.27182e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1020,7 +1029,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838507
+  @RHF Final Energy:   -74.96465193447695
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -1038,13 +1047,13 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.15 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -1052,8 +1061,8 @@ Total time:
   //    Loading displacement 5 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1064,7 +1073,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1076,8 +1085,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.792553220511     0.543701060724
-           H          0.000000000000     0.792553220511     0.543701060724
+           H          0.000000000000    -0.792553220368     0.543701060724
+           H          0.000000000000     0.792553220368     0.543701060724
 
     Number of unique atoms: 3
 
@@ -1088,7 +1097,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.788215765827669
+  Nuclear repulsion =    8.788215095736605
 
   Charge       = 0
   Multiplicity = 1
@@ -1101,6 +1110,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -1117,11 +1127,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7125949335E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7125954317E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405512
+  Initial RHF energy:   -54.63936676894843
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1158,14 +1168,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438205   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335174   -1.67699e+00   2.60689e-01 DIIS
-   @RHF iter   3:   -74.96308170178375   -3.22440e-02   3.38410e-02 DIIS
-   @RHF iter   4:   -74.96445237771688   -1.37068e-03   9.27477e-03 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   1.75540e-03 DIIS
-   @RHF iter   6:   -74.96452042966443   -5.10897e-06   5.83082e-04 DIIS
-   @RHF iter   7:   -74.96452046394977   -3.42853e-08   4.85397e-05 DIIS
-   @RHF iter   8:   -74.96452046394975    1.42109e-14   2.04457e-08 DIIS
+   @RHF iter   1:   -73.25385041701868   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083762166521   -1.67699e+00   2.60689e-01 DIIS
+   @RHF iter   3:   -74.96308169593793   -3.22441e-02   3.38410e-02 DIIS
+   @RHF iter   4:   -74.96445237289647   -1.37068e-03   9.27477e-03 DIIS
+   @RHF iter   5:   -74.96451531593605   -6.29430e-05   1.75540e-03 DIIS
+   @RHF iter   6:   -74.96452042491461   -5.10898e-06   5.83082e-04 DIIS
+   @RHF iter   7:   -74.96452045919995   -3.42853e-08   4.85398e-05 DIIS
+   @RHF iter   8:   -74.96452045919995    0.00000e+00   2.04789e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1187,31 +1197,31 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96452046394975
+  @RHF Final Energy:   -74.96452045919995
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.3635
+     X:    -0.0000      Y:     0.0000      Z:    -0.3635
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
+     X:    -0.0000      Y:     0.0000      Z:     0.6556     Total:     0.6556
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
+     X:    -0.0000      Y:     0.0000      Z:     1.6662     Total:     1.6662
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.18 seconds =       0.00 minutes
+	user time   =       0.22 seconds =       0.00 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -1219,8 +1229,8 @@ Total time:
   //    Loading displacement 6 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1231,7 +1241,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1242,9 +1252,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.788825926977     0.543701060724
-           H          0.000000000000     0.788825926977     0.543701060724
+           O          0.000000000000    -0.000000000000    -0.068516219310
+           H          0.000000000000    -0.788825927119     0.543701060724
+           H          0.000000000000     0.788825927119     0.543701060724
 
     Number of unique atoms: 3
 
@@ -1255,7 +1265,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814745429922915
 
   Charge       = 0
   Multiplicity = 1
@@ -1268,6 +1278,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -1284,11 +1295,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6930923948E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6930928934E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701518
+  Initial RHF energy:   -54.62913728390145
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1325,14 +1336,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318660   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418393   -1.67997e+00   2.60914e-01 DIIS
-   @RHF iter   3:   -74.96339101002461   -3.12555e-02   3.33988e-02 DIIS
-   @RHF iter   4:   -74.96472799861236   -1.33699e-03   9.17350e-03 DIIS
-   @RHF iter   5:   -74.96478857522615   -6.05766e-05   1.72697e-03 DIIS
-   @RHF iter   6:   -74.96479341033003   -4.83510e-06   5.66972e-04 DIIS
-   @RHF iter   7:   -74.96479344389275   -3.35627e-08   4.79764e-05 DIIS
-   @RHF iter   8:   -74.96479344389269    5.68434e-14   2.18008e-08 DIIS
+   @RHF iter   1:   -73.25216800632492   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213547442406   -1.67997e+00   2.60914e-01 DIIS
+   @RHF iter   3:   -74.96339100517147   -3.12555e-02   3.33988e-02 DIIS
+   @RHF iter   4:   -74.96472799476254   -1.33699e-03   9.17350e-03 DIIS
+   @RHF iter   5:   -74.96478857143600   -6.05767e-05   1.72697e-03 DIIS
+   @RHF iter   6:   -74.96479340654776   -4.83511e-06   5.66973e-04 DIIS
+   @RHF iter   7:   -74.96479344011041   -3.35627e-08   4.79764e-05 DIIS
+   @RHF iter   8:   -74.96479344011050   -8.52651e-14   2.18202e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1354,40 +1365,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96479344389269
+  @RHF Final Energy:   -74.96479344011050
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:     0.0000      Y:    -0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3614
+     X:     0.0000      Y:     0.0000      Z:    -0.3614
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
+     X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
+     X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1398,7 +1409,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1422,7 +1433,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801466202085710
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -1435,6 +1446,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -1451,11 +1463,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898570
+  Initial RHF energy:   -54.63426083487272
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1492,14 +1504,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277951   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949073   -1.67848e+00   2.60800e-01 DIIS
-   @RHF iter   3:   -74.96324209064443   -3.17455e-02   3.36189e-02 DIIS
-   @RHF iter   4:   -74.96459579416396   -1.35370e-03   9.22393e-03 DIIS
-   @RHF iter   5:   -74.96465753906593   -6.17449e-05   1.74105e-03 DIIS
-   @RHF iter   6:   -74.96466250922853   -4.97016e-06   5.74970e-04 DIIS
-   @RHF iter   7:   -74.96466254315344   -3.39249e-08   4.82594e-05 DIIS
-   @RHF iter   8:   -74.96466254315349   -5.68434e-14   2.10555e-08 DIIS
+   @RHF iter   1:   -73.25301168566615   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149650876839   -1.67848e+00   2.60800e-01 DIIS
+   @RHF iter   3:   -74.96324208529288   -3.17456e-02   3.36189e-02 DIIS
+   @RHF iter   4:   -74.96459578982673   -1.35370e-03   9.22393e-03 DIIS
+   @RHF iter   5:   -74.96465753478954   -6.17450e-05   1.74105e-03 DIIS
+   @RHF iter   6:   -74.96466250496022   -4.97017e-06   5.74971e-04 DIIS
+   @RHF iter   7:   -74.96466253888516   -3.39249e-08   4.82594e-05 DIIS
+   @RHF iter   8:   -74.96466253888525   -8.52651e-14   2.11748e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1521,46 +1533,46 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315349
+  @RHF Final Energy:   -74.96466253888525
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3624
+     X:     0.0000      Y:     0.0000      Z:    -0.3624
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
+     X:     0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
+     X:     0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.23 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 -------------------------------------------------------------
 
   Computing gradient from energies (fd_1_0).
 	Using 3-point formula.
-	Energy without displacement:  -74.9646625432
+	Energy without displacement:  -74.9646625389
 	Check energies below for precision!
 	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
 
 	 Coord      Energy(-)        Energy(+)        Force
-	    0    -74.9646538940   -74.9646538940    -0.0000000000
-	    1    -74.9646650088   -74.9646519384     0.0013070391
-	    2    -74.9645204639   -74.9647934439    -0.0272979943
+	    0    -74.9646538898   -74.9646538898    -0.0000000000
+	    1    -74.9646650042   -74.9646519345     0.0013069673
+	    2    -74.9645204592   -74.9647934401    -0.0272980911
 
 	Gradient written to file11.
 	Gradent saved to wavefunction.
@@ -1595,8 +1607,8 @@ Total time:
   //    Loading displacement 1 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1607,7 +1619,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1618,9 +1630,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.054384815351     0.041676036599     0.000000000000
-           H          0.054384815351    -0.954452649306     0.000000000000
-           H         -0.917511301065     0.293023704932     0.000000000000
+           O          0.054384815335     0.041676036619     0.000000000000
+           H          0.054384815335    -0.954452649581     0.000000000000
+           H         -0.917511300795     0.293023704879     0.000000000000
 
     Number of unique atoms: 3
 
@@ -1631,7 +1643,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801591603990364
+  Nuclear repulsion =    8.801590931847988
 
   Charge       = 0
   Multiplicity = 1
@@ -1644,6 +1656,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -1660,11 +1673,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7018419620E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7018424606E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63420305929719
+  Initial RHF energy:   -54.63420330520294
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1701,15 +1714,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25299961285062   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93145223513734   -1.67845e+00   2.60806e-01 DIIS
-   @RHF iter   3:   -74.96320706100352   -3.17548e-02   3.36226e-02 DIIS
-   @RHF iter   4:   -74.96456116777892   -1.35411e-03   9.22427e-03 DIIS
-   @RHF iter   5:   -74.96462293943462   -6.17717e-05   1.74144e-03 DIIS
-   @RHF iter   6:   -74.96462791182623   -4.97239e-06   5.75089e-04 DIIS
-   @RHF iter   7:   -74.96462794578082   -3.39546e-08   4.82762e-05 DIIS
-   @RHF iter   8:   -74.96462794578203   -1.20792e-12   2.33158e-07 DIIS
-   @RHF iter   9:   -74.96462794578200    2.84217e-14   2.21538e-08 DIIS
+   @RHF iter   1:   -73.25299964574209   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93145219442333   -1.67845e+00   2.60806e-01 DIIS
+   @RHF iter   3:   -74.96320705566623   -3.17549e-02   3.36227e-02 DIIS
+   @RHF iter   4:   -74.96456116345607   -1.35411e-03   9.22427e-03 DIIS
+   @RHF iter   5:   -74.96462293517276   -6.17717e-05   1.74144e-03 DIIS
+   @RHF iter   6:   -74.96462790757241   -4.97240e-06   5.75090e-04 DIIS
+   @RHF iter   7:   -74.96462794152710   -3.39547e-08   4.82763e-05 DIIS
+   @RHF iter   8:   -74.96462794152824   -1.13687e-12   2.33152e-07 DIIS
+   @RHF iter   9:   -74.96462794152828   -4.26326e-14   2.22911e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1731,40 +1744,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96462794578200
+  @RHF Final Energy:   -74.96462794152828
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:    -0.8089      Y:    -0.6199      Z:     0.0000
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.2908      Y:     0.2165      Z:    -0.0000
+     X:     0.2908      Y:     0.2165      Z:     0.0000
 
   Dipole Moment: (a.u.)
-     X:    -0.5181      Y:    -0.4034      Z:    -0.0000     Total:     0.6566
+     X:    -0.5181      Y:    -0.4034      Z:     0.0000     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:    -1.3169      Y:    -1.0253      Z:    -0.0000     Total:     1.6690
+     X:    -1.3169      Y:    -1.0253      Z:     0.0000     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.25 seconds =       0.00 minutes
-	system time =       0.08 seconds =       0.00 minutes
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.07 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1775,7 +1788,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1786,9 +1799,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.054279931502     0.041811401668     0.000000000000
-           H          0.054279931502    -0.956252935259     0.000000000000
-           H         -0.915741834414     0.292675649009     0.000000000000
+           O          0.054279931494     0.041811401678     0.000000000000
+           H          0.054279931494    -0.956252935397     0.000000000000
+           H         -0.915741834279     0.292675648982     0.000000000000
 
     Number of unique atoms: 3
 
@@ -1799,7 +1812,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801497552207296
+  Nuclear repulsion =    8.801496880086468
 
   Charge       = 0
   Multiplicity = 1
@@ -1812,6 +1825,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -1828,11 +1842,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7025904267E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63424620687556
+  Initial RHF energy:   -54.63424645276738
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -1869,15 +1883,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25300864294861   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93148547109081   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333344995   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778884   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937926   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009911   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403143   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403174   -3.12639e-13   1.18601e-07 DIIS
-   @RHF iter   9:   -74.96465389403173    1.42109e-14   1.39797e-08 DIIS
+   @RHF iter   1:   -73.25300867583661   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93148543037074   -1.67848e+00   2.60802e-01 DIIS
+   @RHF iter   3:   -74.96323332810209   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713345521   -1.35381e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888510670   -6.17517e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465385583457   -4.97073e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465388976696   -3.39324e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465388976725   -2.84217e-13   1.18604e-07 DIIS
+   @RHF iter   9:   -74.96465388976722    2.84217e-14   1.39070e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1899,7 +1913,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465389403173
+  @RHF Final Energy:   -74.96465388976722
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -1917,22 +1931,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.27 seconds =       0.00 minutes
-	system time =       0.09 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1943,7 +1957,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -1954,9 +1968,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.054070201503     0.042082271596     0.000000000000
-           H          0.054070201503    -0.959853403458     0.000000000000
-           H         -0.912203537130     0.291977214870     0.000000000000
+           O          0.054070201511     0.042082271586     0.000000000000
+           H          0.054070201511    -0.959853403320     0.000000000000
+           H         -0.912203537265     0.291977214897     0.000000000000
 
     Number of unique atoms: 3
 
@@ -1967,7 +1981,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801497552207296
+  Nuclear repulsion =    8.801496880086470
 
   Charge       = 0
   Multiplicity = 1
@@ -1980,6 +1994,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -1996,11 +2011,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7025899282E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7025904267E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63424620687564
+  Initial RHF energy:   -54.63424645276740
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2037,15 +2052,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25300864294866   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93148547109092   -1.67848e+00   2.60802e-01 DIIS
-   @RHF iter   3:   -74.96323333345018   -3.17479e-02   3.36198e-02 DIIS
-   @RHF iter   4:   -74.96458713778891   -1.35380e-03   9.22402e-03 DIIS
-   @RHF iter   5:   -74.96464888937933   -6.17516e-05   1.74115e-03 DIIS
-   @RHF iter   6:   -74.96465386009920   -4.97072e-06   5.75000e-04 DIIS
-   @RHF iter   7:   -74.96465389403146   -3.39323e-08   4.82636e-05 DIIS
-   @RHF iter   8:   -74.96465389403184   -3.83693e-13   1.18603e-07 DIIS
-   @RHF iter   9:   -74.96465389403180    4.26326e-14   1.41818e-08 DIIS
+   @RHF iter   1:   -73.25300867583664   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93148543037074   -1.67848e+00   2.60802e-01 DIIS
+   @RHF iter   3:   -74.96323332810211   -3.17479e-02   3.36198e-02 DIIS
+   @RHF iter   4:   -74.96458713345531   -1.35381e-03   9.22402e-03 DIIS
+   @RHF iter   5:   -74.96464888510663   -6.17517e-05   1.74115e-03 DIIS
+   @RHF iter   6:   -74.96465385583460   -4.97073e-06   5.75000e-04 DIIS
+   @RHF iter   7:   -74.96465388976701   -3.39324e-08   4.82636e-05 DIIS
+   @RHF iter   8:   -74.96465388976725   -2.41585e-13   1.18611e-07 DIIS
+   @RHF iter   9:   -74.96465388976725    0.00000e+00   1.39831e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2067,7 +2082,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465389403180
+  @RHF Final Energy:   -74.96465388976725
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -2085,13 +2100,13 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.30 seconds =       0.01 minutes
+	user time   =       0.37 seconds =       0.01 minutes
 	system time =       0.09 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -2099,8 +2114,8 @@ Total time:
   //    Loading displacement 4 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2111,7 +2126,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2122,9 +2137,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.053965355222     0.042217775913     0.000000000000
-           H          0.053965355222    -0.961653586106     0.000000000000
-           H         -0.910434704297     0.291626845676     0.000000000000
+           O          0.053965355239     0.042217775893     0.000000000000
+           H          0.053965355239    -0.961653585831     0.000000000000
+           H         -0.910434704567     0.291626845729     0.000000000000
 
     Number of unique atoms: 3
 
@@ -2135,7 +2150,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801591603990364
+  Nuclear repulsion =    8.801590931847988
 
   Charge       = 0
   Multiplicity = 1
@@ -2148,6 +2163,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -2164,11 +2180,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7018419620E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7018424606E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63420305929718
+  Initial RHF energy:   -54.63420330520291
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2205,15 +2221,15 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25299961285062   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93145223513731   -1.67845e+00   2.60806e-01 DIIS
-   @RHF iter   3:   -74.96320706100349   -3.17548e-02   3.36226e-02 DIIS
-   @RHF iter   4:   -74.96456116777892   -1.35411e-03   9.22427e-03 DIIS
-   @RHF iter   5:   -74.96462293943455   -6.17717e-05   1.74144e-03 DIIS
-   @RHF iter   6:   -74.96462791182614   -4.97239e-06   5.75089e-04 DIIS
-   @RHF iter   7:   -74.96462794578090   -3.39548e-08   4.82762e-05 DIIS
-   @RHF iter   8:   -74.96462794578194   -1.03739e-12   2.33162e-07 DIIS
-   @RHF iter   9:   -74.96462794578201   -7.10543e-14   2.20910e-08 DIIS
+   @RHF iter   1:   -73.25299964574208   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93145219442323   -1.67845e+00   2.60806e-01 DIIS
+   @RHF iter   3:   -74.96320705566600   -3.17549e-02   3.36227e-02 DIIS
+   @RHF iter   4:   -74.96456116345593   -1.35411e-03   9.22427e-03 DIIS
+   @RHF iter   5:   -74.96462293517256   -6.17717e-05   1.74144e-03 DIIS
+   @RHF iter   6:   -74.96462790757231   -4.97240e-06   5.75090e-04 DIIS
+   @RHF iter   7:   -74.96462794152698   -3.39547e-08   4.82763e-05 DIIS
+   @RHF iter   8:   -74.96462794152812   -1.13687e-12   2.33164e-07 DIIS
+   @RHF iter   9:   -74.96462794152818   -5.68434e-14   2.22475e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2235,7 +2251,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96462794578201
+  @RHF Final Energy:   -74.96462794152818
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -2253,22 +2269,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2279,7 +2295,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2290,9 +2306,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.068958862824
-           H          0.000000000000    -0.790689573744     0.547213597616
-           H          0.000000000000     0.790689573744     0.547213597616
+           O          0.000000000000     0.000000000000    -0.068958862790
+           H          0.000000000000    -0.790689573744     0.547213597348
+           H          0.000000000000     0.790689573744     0.547213597348
 
     Number of unique atoms: 3
 
@@ -2303,7 +2319,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.780972773315739
+  Nuclear repulsion =    8.780972104331346
 
   Charge       = 0
   Multiplicity = 1
@@ -2316,6 +2332,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -2332,11 +2349,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7183276036E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7183281018E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64103586596605
+  Initial RHF energy:   -54.64103611051066
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2373,14 +2390,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25348255989455   -1.86124e+01   0.00000e+00  
-   @RHF iter   2:   -74.92978324661517   -1.67630e+00   2.60814e-01 DIIS
-   @RHF iter   3:   -74.96319679296995   -3.34135e-02   3.43995e-02 DIIS
-   @RHF iter   4:   -74.96459035007685   -1.39356e-03   9.33464e-03 DIIS
-   @RHF iter   5:   -74.96465402675778   -6.36767e-05   1.75494e-03 DIIS
-   @RHF iter   6:   -74.96465931125809   -5.28450e-06   5.92450e-04 DIIS
-   @RHF iter   7:   -74.96465934653118   -3.52731e-08   4.93498e-05 DIIS
-   @RHF iter   8:   -74.96465934653115    2.84217e-14   1.83288e-08 DIIS
+   @RHF iter   1:   -73.25348259240199   -1.86124e+01   0.00000e+00 
+   @RHF iter   2:   -74.92978320391138   -1.67630e+00   2.60814e-01 DIIS
+   @RHF iter   3:   -74.96319678688988   -3.34136e-02   3.43996e-02 DIIS
+   @RHF iter   4:   -74.96459034502327   -1.39356e-03   9.33465e-03 DIIS
+   @RHF iter   5:   -74.96465402176668   -6.36767e-05   1.75494e-03 DIIS
+   @RHF iter   6:   -74.96465930627534   -5.28451e-06   5.92451e-04 DIIS
+   @RHF iter   7:   -74.96465934154845   -3.52731e-08   4.93498e-05 DIIS
+   @RHF iter   8:   -74.96465934154848   -2.84217e-14   1.82779e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2402,40 +2419,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465934653115
+  @RHF Final Energy:   -74.96465934154848
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0257
+     X:     0.0000      Y:    -0.0000      Z:     1.0257
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:    -0.3695
+     X:    -0.0000      Y:     0.0000      Z:    -0.3695
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
+     X:    -0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
+     X:    -0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       0.43 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:08 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2446,7 +2463,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2457,9 +2474,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068737541067
-           H          0.000000000000    -0.790689573744     0.545457329170
-           H          0.000000000000     0.790689573744     0.545457329170
+           O          0.000000000000     0.000000000000    -0.068737541050
+           H          0.000000000000    -0.790689573744     0.545457329036
+           H          0.000000000000     0.790689573744     0.545457329036
 
     Number of unique atoms: 3
 
@@ -2470,7 +2487,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.791217360265589
+  Nuclear repulsion =    8.791216689717064
 
   Charge       = 0
   Multiplicity = 1
@@ -2483,6 +2500,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -2499,11 +2517,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7105722993E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7105727976E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812006
+  Initial RHF energy:   -54.63765038333517
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2540,14 +2558,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236330   -1.86156e+01   0.00000e+00  
-   @RHF iter   2:   -74.93065163215218   -1.67740e+00   2.60806e-01 DIIS
-   @RHF iter   3:   -74.96322356409721   -3.25719e-02   3.40086e-02 DIIS
-   @RHF iter   4:   -74.96459714196185   -1.37358e-03   9.27942e-03 DIIS
-   @RHF iter   5:   -74.96465984832905   -6.27064e-05   1.74800e-03 DIIS
-   @RHF iter   6:   -74.96466497418814   -5.12586e-06   5.83706e-04 DIIS
-   @RHF iter   7:   -74.96466500877627   -3.45881e-08   4.87986e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -5.68434e-14   1.96703e-08 DIIS
+   @RHF iter   1:   -73.25324854505995   -1.86156e+01   0.00000e+00 
+   @RHF iter   2:   -74.93065159044102   -1.67740e+00   2.60806e-01 DIIS
+   @RHF iter   3:   -74.96322355838055   -3.25720e-02   3.40086e-02 DIIS
+   @RHF iter   4:   -74.96459713726567   -1.37358e-03   9.27942e-03 DIIS
+   @RHF iter   5:   -74.96465984369455   -6.27064e-05   1.74800e-03 DIIS
+   @RHF iter   6:   -74.96466496956182   -5.12587e-06   5.83706e-04 DIIS
+   @RHF iter   7:   -74.96466500415002   -3.45882e-08   4.87987e-05 DIIS
+   @RHF iter   8:   -74.96466500415009   -7.10543e-14   1.96800e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2561,7 +2579,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   6A      0.563349     7A      0.691150  
+	   6A      0.563348     7A      0.691150  
 
 	Final Occupation by Irrep:
 	          A 
@@ -2569,40 +2587,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500415009
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0224
+     X:     0.0000      Y:     0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.3660
+     X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2613,7 +2631,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2624,9 +2642,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068294897553
-           H          0.000000000000    -0.790689573744     0.541944792278
-           H          0.000000000000     0.790689573744     0.541944792278
+           O          0.000000000000    -0.000000000000    -0.068294897570
+           H          0.000000000000    -0.790689573744     0.541944792413
+           H          0.000000000000     0.790689573744     0.541944792413
 
     Number of unique atoms: 3
 
@@ -2637,7 +2655,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.811719164003161
+  Nuclear repulsion =    8.811718490323456
 
   Charge       = 0
   Multiplicity = 1
@@ -2650,6 +2668,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -2666,11 +2685,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6951295202E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6951300188E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527610
+  Initial RHF energy:   -54.63086750183680
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2707,14 +2726,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439036   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275245   -1.67955e+00   2.60796e-01 DIIS
-   @RHF iter   3:   -74.96325235946672   -3.09342e-02   3.32305e-02 DIIS
-   @RHF iter   4:   -74.96458629515658   -1.33394e-03   9.16818e-03 DIIS
-   @RHF iter   5:   -74.96464708767149   -6.07925e-05   1.73410e-03 DIIS
-   @RHF iter   6:   -74.96465190510284   -4.81743e-06   5.66246e-04 DIIS
-   @RHF iter   7:   -74.96465193838502   -3.32822e-08   4.77315e-05 DIIS
-   @RHF iter   8:   -74.96465193838507   -5.68434e-14   2.27308e-08 DIIS
+   @RHF iter   1:   -73.25277200746832   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231810301539   -1.67955e+00   2.60796e-01 DIIS
+   @RHF iter   3:   -74.96325235448241   -3.09343e-02   3.32305e-02 DIIS
+   @RHF iter   4:   -74.96458629118024   -1.33394e-03   9.16818e-03 DIIS
+   @RHF iter   5:   -74.96464708375548   -6.07926e-05   1.73410e-03 DIIS
+   @RHF iter   6:   -74.96465190119466   -4.81744e-06   5.66247e-04 DIIS
+   @RHF iter   7:   -74.96465193447698   -3.32823e-08   4.77315e-05 DIIS
+   @RHF iter   8:   -74.96465193447695    2.84217e-14   2.27182e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2736,7 +2755,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838507
+  @RHF Final Energy:   -74.96465193447695
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -2754,22 +2773,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2780,7 +2799,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2791,9 +2810,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068073575796
-           H          0.000000000000    -0.790689573744     0.540188523833
-           H          0.000000000000     0.790689573744     0.540188523833
+           O          0.000000000000     0.000000000000    -0.068073575830
+           H          0.000000000000    -0.790689573744     0.540188524101
+           H          0.000000000000     0.790689573744     0.540188524101
 
     Number of unique atoms: 3
 
@@ -2804,7 +2823,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.821976109952320
+  Nuclear repulsion =    8.821975434705648
 
   Charge       = 0
   Multiplicity = 1
@@ -2817,6 +2836,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -2833,11 +2853,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6874422788E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6874427775E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62747017439054
+  Initial RHF energy:   -54.62747042162648
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -2874,14 +2894,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25252947040769   -1.86251e+01   0.00000e+00  
-   @RHF iter   2:   -74.93311655666180   -1.68059e+00   2.60793e-01 DIIS
-   @RHF iter   3:   -74.96325435792120   -3.01378e-02   3.28435e-02 DIIS
-   @RHF iter   4:   -74.96456863392784   -1.31428e-03   9.11215e-03 DIIS
-   @RHF iter   5:   -74.96462848336269   -5.98494e-05   1.72715e-03 DIIS
-   @RHF iter   6:   -74.96463315104670   -4.66768e-06   5.57537e-04 DIIS
-   @RHF iter   7:   -74.96463318370553   -3.26588e-08   4.72144e-05 DIIS
-   @RHF iter   8:   -74.96463318370562   -8.52651e-14   2.44099e-08 DIIS
+   @RHF iter   1:   -73.25252950367792   -1.86251e+01   0.00000e+00 
+   @RHF iter   2:   -74.93311651790609   -1.68059e+00   2.60793e-01 DIIS
+   @RHF iter   3:   -74.96325435330583   -3.01378e-02   3.28435e-02 DIIS
+   @RHF iter   4:   -74.96456863031426   -1.31428e-03   9.11215e-03 DIIS
+   @RHF iter   5:   -74.96462847980854   -5.98495e-05   1.72715e-03 DIIS
+   @RHF iter   6:   -74.96463314750036   -4.66769e-06   5.57538e-04 DIIS
+   @RHF iter   7:   -74.96463318015921   -3.26588e-08   4.72144e-05 DIIS
+   @RHF iter   8:   -74.96463318015925   -4.26326e-14   2.43772e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2903,40 +2923,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96463318370562
+  @RHF Final Energy:   -74.96463318015925
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0125
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.3554
+     X:    -0.0000      Y:     0.0000      Z:    -0.3554
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6571     Total:     0.6571
+     X:    -0.0000      Y:     0.0000      Z:     0.6571     Total:     0.6571
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6702     Total:     1.6702
+     X:    -0.0000      Y:     0.0000      Z:     1.6702     Total:     1.6702
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.42 seconds =       0.01 minutes
+	user time   =       0.52 seconds =       0.01 minutes
 	system time =       0.13 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2947,7 +2967,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -2959,8 +2979,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.794416867278     0.543701060724
-           H          0.000000000000     0.794416867278     0.543701060724
+           H          0.000000000000    -0.794416866993     0.543701060724
+           H          0.000000000000     0.794416866993     0.543701060724
 
     Number of unique atoms: 3
 
@@ -2971,7 +2991,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.774994752436060
+  Nuclear repulsion =    8.774994084360847
 
   Charge       = 0
   Multiplicity = 1
@@ -2984,6 +3004,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -3000,11 +3021,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7223583086E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7223588066E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64445492366320
+  Initial RHF energy:   -54.64445516756825
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3041,14 +3062,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25468418559763   -1.86102e+01   0.00000e+00  
-   @RHF iter   2:   -74.93015880275311   -1.67547e+00   2.60580e-01 DIIS
-   @RHF iter   3:   -74.96290992140165   -3.27511e-02   3.40653e-02 DIIS
-   @RHF iter   4:   -74.96429783045267   -1.38791e-03   9.32601e-03 DIIS
-   @RHF iter   5:   -74.96436200206639   -6.41716e-05   1.77000e-03 DIIS
-   @RHF iter   6:   -74.96436725366604   -5.25160e-06   5.91307e-04 DIIS
-   @RHF iter   7:   -74.96436728830990   -3.46439e-08   4.88177e-05 DIIS
-   @RHF iter   8:   -74.96436728830993   -2.84217e-14   1.97962e-08 DIIS
+   @RHF iter   1:   -73.25468421798541   -1.86102e+01   0.00000e+00 
+   @RHF iter   2:   -74.93015876010011   -1.67547e+00   2.60580e-01 DIIS
+   @RHF iter   3:   -74.96290991506559   -3.27512e-02   3.40653e-02 DIIS
+   @RHF iter   4:   -74.96429782515315   -1.38791e-03   9.32601e-03 DIIS
+   @RHF iter   5:   -74.96436199683062   -6.41717e-05   1.77000e-03 DIIS
+   @RHF iter   6:   -74.96436724843873   -5.25161e-06   5.91307e-04 DIIS
+   @RHF iter   7:   -74.96436728308257   -3.46438e-08   4.88177e-05 DIIS
+   @RHF iter   8:   -74.96436728308257    0.00000e+00   1.97421e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3062,7 +3083,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   6A      0.560881     7A      0.690461  
+	   6A      0.560881     7A      0.690460  
 
 	Final Occupation by Irrep:
 	          A 
@@ -3070,40 +3091,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96436728830993
+  @RHF Final Energy:   -74.96436728308257
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:     0.0000      Y:    -0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3646
+     X:     0.0000      Y:     0.0000      Z:    -0.3646
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6545     Total:     0.6545
+     X:     0.0000      Y:     0.0000      Z:     0.6545     Total:     0.6545
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6635     Total:     1.6635
+     X:     0.0000      Y:     0.0000      Z:     1.6635     Total:     1.6635
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.55 seconds =       0.01 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 10 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3114,7 +3135,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3126,8 +3147,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.792553220511     0.543701060724
-           H          0.000000000000     0.792553220511     0.543701060724
+           H          0.000000000000    -0.792553220368     0.543701060724
+           H          0.000000000000     0.792553220368     0.543701060724
 
     Number of unique atoms: 3
 
@@ -3138,7 +3159,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.788215765827669
+  Nuclear repulsion =    8.788215095736605
 
   Charge       = 0
   Multiplicity = 1
@@ -3151,6 +3172,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -3167,11 +3189,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7125949335E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7125954317E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405512
+  Initial RHF energy:   -54.63936676894843
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3208,14 +3230,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438205   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335174   -1.67699e+00   2.60689e-01 DIIS
-   @RHF iter   3:   -74.96308170178375   -3.22440e-02   3.38410e-02 DIIS
-   @RHF iter   4:   -74.96445237771688   -1.37068e-03   9.27477e-03 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   1.75540e-03 DIIS
-   @RHF iter   6:   -74.96452042966443   -5.10897e-06   5.83082e-04 DIIS
-   @RHF iter   7:   -74.96452046394977   -3.42853e-08   4.85397e-05 DIIS
-   @RHF iter   8:   -74.96452046394975    1.42109e-14   2.04457e-08 DIIS
+   @RHF iter   1:   -73.25385041701868   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083762166521   -1.67699e+00   2.60689e-01 DIIS
+   @RHF iter   3:   -74.96308169593793   -3.22441e-02   3.38410e-02 DIIS
+   @RHF iter   4:   -74.96445237289647   -1.37068e-03   9.27477e-03 DIIS
+   @RHF iter   5:   -74.96451531593605   -6.29430e-05   1.75540e-03 DIIS
+   @RHF iter   6:   -74.96452042491461   -5.10898e-06   5.83082e-04 DIIS
+   @RHF iter   7:   -74.96452045919995   -3.42853e-08   4.85398e-05 DIIS
+   @RHF iter   8:   -74.96452045919995    0.00000e+00   2.04789e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3237,40 +3259,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96452046394975
+  @RHF Final Energy:   -74.96452045919995
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.3635
+     X:    -0.0000      Y:     0.0000      Z:    -0.3635
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
+     X:    -0.0000      Y:     0.0000      Z:     0.6556     Total:     0.6556
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
+     X:    -0.0000      Y:     0.0000      Z:     1.6662     Total:     1.6662
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:45 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.47 seconds =       0.01 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.58 seconds =       0.01 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 11 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:45 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3281,7 +3303,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3292,9 +3314,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.788825926977     0.543701060724
-           H          0.000000000000     0.788825926977     0.543701060724
+           O          0.000000000000    -0.000000000000    -0.068516219310
+           H          0.000000000000    -0.788825927119     0.543701060724
+           H          0.000000000000     0.788825927119     0.543701060724
 
     Number of unique atoms: 3
 
@@ -3305,7 +3327,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814745429922915
 
   Charge       = 0
   Multiplicity = 1
@@ -3318,6 +3340,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -3334,11 +3357,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6930923948E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6930928934E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701518
+  Initial RHF energy:   -54.62913728390145
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3375,14 +3398,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318660   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418393   -1.67997e+00   2.60914e-01 DIIS
-   @RHF iter   3:   -74.96339101002461   -3.12555e-02   3.33988e-02 DIIS
-   @RHF iter   4:   -74.96472799861236   -1.33699e-03   9.17350e-03 DIIS
-   @RHF iter   5:   -74.96478857522615   -6.05766e-05   1.72697e-03 DIIS
-   @RHF iter   6:   -74.96479341033003   -4.83510e-06   5.66972e-04 DIIS
-   @RHF iter   7:   -74.96479344389275   -3.35627e-08   4.79764e-05 DIIS
-   @RHF iter   8:   -74.96479344389269    5.68434e-14   2.18008e-08 DIIS
+   @RHF iter   1:   -73.25216800632492   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213547442406   -1.67997e+00   2.60914e-01 DIIS
+   @RHF iter   3:   -74.96339100517147   -3.12555e-02   3.33988e-02 DIIS
+   @RHF iter   4:   -74.96472799476254   -1.33699e-03   9.17350e-03 DIIS
+   @RHF iter   5:   -74.96478857143600   -6.05767e-05   1.72697e-03 DIIS
+   @RHF iter   6:   -74.96479340654776   -4.83511e-06   5.66973e-04 DIIS
+   @RHF iter   7:   -74.96479344011041   -3.35627e-08   4.79764e-05 DIIS
+   @RHF iter   8:   -74.96479344011050   -8.52651e-14   2.18202e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3404,40 +3427,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96479344389269
+  @RHF Final Energy:   -74.96479344011050
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:     0.0000      Y:    -0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3614
+     X:     0.0000      Y:     0.0000      Z:    -0.3614
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
+     X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
+     X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       0.61 seconds =       0.01 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 12 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3448,7 +3471,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3460,8 +3483,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.786962280210     0.543701060724
-           H          0.000000000000     0.786962280210     0.543701060724
+           H          0.000000000000    -0.786962280495     0.543701060724
+           H          0.000000000000     0.786962280495     0.543701060724
 
     Number of unique atoms: 3
 
@@ -3472,7 +3495,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.828055514235816
+  Nuclear repulsion =    8.828054838056744
 
   Charge       = 0
   Multiplicity = 1
@@ -3485,6 +3508,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -3501,11 +3525,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6833536103E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6833541092E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62399578631823
+  Initial RHF energy:   -54.62399603420909
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3542,14 +3566,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25131932777830   -1.86273e+01   0.00000e+00  
-   @RHF iter   2:   -74.93275460837243   -1.68144e+00   2.61030e-01 DIIS
-   @RHF iter   3:   -74.96352838159915   -3.07738e-02   3.31808e-02 DIIS
-   @RHF iter   4:   -74.96484890953502   -1.32053e-03   9.12347e-03 DIIS
-   @RHF iter   5:   -74.96490834689126   -5.94374e-05   1.71313e-03 DIIS
-   @RHF iter   6:   -74.96491305061319   -4.70372e-06   5.59088e-04 DIIS
-   @RHF iter   7:   -74.96491308381158   -3.31984e-08   4.76907e-05 DIIS
-   @RHF iter   8:   -74.96491308381167   -8.52651e-14   2.25037e-08 DIIS
+   @RHF iter   1:   -73.25131936116951   -1.86273e+01   0.00000e+00 
+   @RHF iter   2:   -74.93275456957282   -1.68144e+00   2.61030e-01 DIIS
+   @RHF iter   3:   -74.96352837724842   -3.07738e-02   3.31808e-02 DIIS
+   @RHF iter   4:   -74.96484890617680   -1.32053e-03   9.12348e-03 DIIS
+   @RHF iter   5:   -74.96490834359139   -5.94374e-05   1.71313e-03 DIIS
+   @RHF iter   6:   -74.96491304732092   -4.70373e-06   5.59088e-04 DIIS
+   @RHF iter   7:   -74.96491308051942   -3.31985e-08   4.76907e-05 DIIS
+   @RHF iter   8:   -74.96491308051944   -1.42109e-14   2.24536e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3563,7 +3587,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   6A      0.567426     7A      0.695559  
+	   6A      0.567426     7A      0.695558  
 
 	Final Occupation by Irrep:
 	          A 
@@ -3571,40 +3595,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96491308381167
+  @RHF Final Energy:   -74.96491308051944
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0191
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.3603
+     X:     0.0000      Y:     0.0000      Z:    -0.3603
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6588     Total:     0.6588
+     X:     0.0000      Y:     0.0000      Z:     0.6588     Total:     0.6588
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6745     Total:     1.6745
+     X:     0.0000      Y:     0.0000      Z:     1.6745     Total:     1.6745
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.17 seconds =       0.00 minutes
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //   Loading displacement 13 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3615,7 +3639,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3639,7 +3663,7 @@ Total time:
 
   Running in c1 symmetry.
 
-  Nuclear repulsion =    8.801466202085710
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -3652,6 +3676,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -3668,11 +3693,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898570
+  Initial RHF energy:   -54.63426083487272
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3709,14 +3734,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277951   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949073   -1.67848e+00   2.60800e-01 DIIS
-   @RHF iter   3:   -74.96324209064443   -3.17455e-02   3.36189e-02 DIIS
-   @RHF iter   4:   -74.96459579416396   -1.35370e-03   9.22393e-03 DIIS
-   @RHF iter   5:   -74.96465753906593   -6.17449e-05   1.74105e-03 DIIS
-   @RHF iter   6:   -74.96466250922853   -4.97016e-06   5.74970e-04 DIIS
-   @RHF iter   7:   -74.96466254315344   -3.39249e-08   4.82594e-05 DIIS
-   @RHF iter   8:   -74.96466254315349   -5.68434e-14   2.10555e-08 DIIS
+   @RHF iter   1:   -73.25301168566615   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149650876839   -1.67848e+00   2.60800e-01 DIIS
+   @RHF iter   3:   -74.96324208529288   -3.17456e-02   3.36189e-02 DIIS
+   @RHF iter   4:   -74.96459578982673   -1.35370e-03   9.22393e-03 DIIS
+   @RHF iter   5:   -74.96465753478954   -6.17450e-05   1.74105e-03 DIIS
+   @RHF iter   6:   -74.96466250496022   -4.97017e-06   5.74971e-04 DIIS
+   @RHF iter   7:   -74.96466253888516   -3.39249e-08   4.82594e-05 DIIS
+   @RHF iter   8:   -74.96466253888525   -8.52651e-14   2.11748e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3738,46 +3763,46 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315349
+  @RHF Final Energy:   -74.96466253888525
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3624
+     X:     0.0000      Y:     0.0000      Z:    -0.3624
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
+     X:     0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
+     X:     0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.54 seconds =       0.01 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 -------------------------------------------------------------
 
   Computing gradient from energies (fd_1_0).
 	Using 5-point formula.
-	Energy without displacement:  -74.9646625432
+	Energy without displacement:  -74.9646625389
 	Check energies below for precision!
 	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
 
 	 Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force
-	    0    -74.9646279458    -74.9646538940    -74.9646538940    -74.9646279458     -0.0000000000
-	    1    -74.9646593465    -74.9646650088    -74.9646519384    -74.9646331837      0.0013066717
-	    2    -74.9643672883    -74.9645204639    -74.9647934439    -74.9649130838     -0.0273007340
+	    0    -74.9646279415    -74.9646538898    -74.9646538898    -74.9646279415     -0.0000000000
+	    1    -74.9646593415    -74.9646650042    -74.9646519345    -74.9646331802      0.0013065999
+	    2    -74.9643672831    -74.9645204592    -74.9647934401    -74.9649130805     -0.0273008308
 
 	Gradient written to file11.
 	Gradent saved to wavefunction.
@@ -3806,8 +3831,8 @@ Total time:
   //    Loading displacement 1 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3818,7 +3843,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3829,9 +3854,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068737541067
-           H          0.000000000000    -0.790689573744     0.545457329170
-           H          0.000000000000     0.790689573744     0.545457329170
+           O          0.000000000000     0.000000000000    -0.068737541050
+           H          0.000000000000    -0.790689573744     0.545457329036
+           H         -0.000000000000     0.790689573744     0.545457329036
 
     Number of unique atoms: 2
 
@@ -3841,7 +3866,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.791217360265589
+  Nuclear repulsion =    8.791216689717068
 
   Charge       = 0
   Multiplicity = 1
@@ -3854,6 +3879,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -3870,11 +3896,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7105722993E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7105727976E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812002
+  Initial RHF energy:   -54.63765038333515
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -3914,14 +3940,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236329   -1.86156e+01   0.00000e+00  
-   @RHF iter   2:   -74.93065163215209   -1.67740e+00   3.98388e-01 DIIS
-   @RHF iter   3:   -74.96322356409721   -3.25719e-02   5.19489e-02 DIIS
-   @RHF iter   4:   -74.96459714196186   -1.37358e-03   1.41745e-02 DIIS
-   @RHF iter   5:   -74.96465984832908   -6.27064e-05   2.67011e-03 DIIS
-   @RHF iter   6:   -74.96466497418820   -5.12586e-06   8.91625e-04 DIIS
-   @RHF iter   7:   -74.96466500877628   -3.45881e-08   7.45411e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -4.26326e-14   3.00111e-08 DIIS
+   @RHF iter   1:   -73.25324854505990   -1.86156e+01   0.00000e+00 
+   @RHF iter   2:   -74.93065159044104   -1.67740e+00   3.98388e-01 DIIS
+   @RHF iter   3:   -74.96322355838055   -3.25720e-02   5.19489e-02 DIIS
+   @RHF iter   4:   -74.96459713726554   -1.37358e-03   1.41745e-02 DIIS
+   @RHF iter   5:   -74.96465984369451   -6.27064e-05   2.67011e-03 DIIS
+   @RHF iter   6:   -74.96466496956180   -5.12587e-06   8.91626e-04 DIIS
+   @RHF iter   7:   -74.96466500415002   -3.45882e-08   7.45412e-05 DIIS
+   @RHF iter   8:   -74.96466500415002    0.00000e+00   2.98969e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -3935,7 +3961,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   4A1     0.563349     2B2     0.691150  
+	   4A1     0.563348     2B2     0.691150  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -3943,40 +3969,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500415002
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0224
+     X:     0.0000      Y:     0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.57 seconds =       0.01 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	user time   =       0.70 seconds =       0.01 minutes
+	system time =       0.17 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3987,7 +4013,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -3998,9 +4024,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068294897553
-           H          0.000000000000    -0.790689573744     0.541944792278
-           H          0.000000000000     0.790689573744     0.541944792278
+           O         -0.000000000000     0.000000000000    -0.068294897570
+           H          0.000000000000    -0.790689573744     0.541944792413
+           H         -0.000000000000     0.790689573744     0.541944792413
 
     Number of unique atoms: 2
 
@@ -4010,7 +4036,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.811719164003161
+  Nuclear repulsion =    8.811718490323457
 
   Charge       = 0
   Multiplicity = 1
@@ -4023,6 +4049,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -4039,11 +4066,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6951295202E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6951300188E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527602
+  Initial RHF energy:   -54.63086750183676
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4083,14 +4110,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439027   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275244   -1.67955e+00   3.98372e-01 DIIS
-   @RHF iter   3:   -74.96325235946669   -3.09342e-02   5.07604e-02 DIIS
-   @RHF iter   4:   -74.96458629515648   -1.33394e-03   1.40046e-02 DIIS
-   @RHF iter   5:   -74.96464708767155   -6.07925e-05   2.64889e-03 DIIS
-   @RHF iter   6:   -74.96465190510274   -4.81743e-06   8.64955e-04 DIIS
-   @RHF iter   7:   -74.96465193838496   -3.32822e-08   7.29110e-05 DIIS
-   @RHF iter   8:   -74.96465193838502   -5.68434e-14   3.47412e-08 DIIS
+   @RHF iter   1:   -73.25277200746827   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231810301532   -1.67955e+00   3.98372e-01 DIIS
+   @RHF iter   3:   -74.96325235448235   -3.09343e-02   5.07604e-02 DIIS
+   @RHF iter   4:   -74.96458629118023   -1.33394e-03   1.40046e-02 DIIS
+   @RHF iter   5:   -74.96464708375544   -6.07926e-05   2.64889e-03 DIIS
+   @RHF iter   6:   -74.96465190119467   -4.81744e-06   8.64956e-04 DIIS
+   @RHF iter   7:   -74.96465193447689   -3.32822e-08   7.29110e-05 DIIS
+   @RHF iter   8:   -74.96465193447690   -1.42109e-14   3.46465e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4112,40 +4139,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838502
+  @RHF Final Energy:   -74.96465193447690
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0158
+     X:    -0.0000      Y:     0.0000      Z:     1.0158
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3589
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
+     X:    -0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
+     X:    -0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.59 seconds =       0.01 minutes
-	system time =       0.19 seconds =       0.00 minutes
+	user time   =       0.73 seconds =       0.01 minutes
+	system time =       0.18 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4156,7 +4183,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4168,8 +4195,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.792553220511     0.543701060724
-           H          0.000000000000     0.792553220511     0.543701060724
+           H          0.000000000000    -0.792553220368     0.543701060724
+           H         -0.000000000000     0.792553220368     0.543701060724
 
     Number of unique atoms: 2
 
@@ -4179,7 +4206,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.788215765827671
+  Nuclear repulsion =    8.788215095736607
 
   Charge       = 0
   Multiplicity = 1
@@ -4192,6 +4219,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -4208,11 +4236,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7125949335E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7125954317E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405509
+  Initial RHF energy:   -54.63936676894848
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4252,14 +4280,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438209   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335180   -1.67699e+00   3.98209e-01 DIIS
-   @RHF iter   3:   -74.96308170178371   -3.22440e-02   5.16930e-02 DIIS
-   @RHF iter   4:   -74.96445237771694   -1.37068e-03   1.41674e-02 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   2.68141e-03 DIIS
-   @RHF iter   6:   -74.96452042966447   -5.10897e-06   8.90672e-04 DIIS
-   @RHF iter   7:   -74.96452046394978   -3.42853e-08   7.41457e-05 DIIS
-   @RHF iter   8:   -74.96452046394973    5.68434e-14   3.11180e-08 DIIS
+   @RHF iter   1:   -73.25385041701873   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083762166522   -1.67699e+00   3.98209e-01 DIIS
+   @RHF iter   3:   -74.96308169593796   -3.22441e-02   5.16931e-02 DIIS
+   @RHF iter   4:   -74.96445237289650   -1.37068e-03   1.41674e-02 DIIS
+   @RHF iter   5:   -74.96451531593605   -6.29430e-05   2.68141e-03 DIIS
+   @RHF iter   6:   -74.96452042491468   -5.10898e-06   8.90673e-04 DIIS
+   @RHF iter   7:   -74.96452045919993   -3.42853e-08   7.41457e-05 DIIS
+   @RHF iter   8:   -74.96452045919995   -1.42109e-14   3.11158e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4281,7 +4309,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96452046394973
+  @RHF Final Energy:   -74.96452045919995
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -4294,27 +4322,27 @@ Total time:
      X:     0.0000      Y:     0.0000      Z:     0.6556     Total:     0.6556
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6663     Total:     1.6663
+     X:     0.0000      Y:     0.0000      Z:     1.6662     Total:     1.6662
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.62 seconds =       0.01 minutes
-	system time =       0.20 seconds =       0.00 minutes
+	user time   =       0.77 seconds =       0.01 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4325,7 +4353,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4336,9 +4364,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.788825926977     0.543701060724
-           H          0.000000000000     0.788825926977     0.543701060724
+           O         -0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000    -0.788825927119     0.543701060724
+           H         -0.000000000000     0.788825927119     0.543701060724
 
     Number of unique atoms: 2
 
@@ -4348,7 +4376,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814745429922915
 
   Charge       = 0
   Multiplicity = 1
@@ -4361,6 +4389,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -4377,11 +4406,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6930923948E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6930928934E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701524
+  Initial RHF energy:   -54.62913728390147
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4421,14 +4450,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318667   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418405   -1.67997e+00   3.98553e-01 DIIS
-   @RHF iter   3:   -74.96339101002467   -3.12555e-02   5.10175e-02 DIIS
-   @RHF iter   4:   -74.96472799861243   -1.33699e-03   1.40128e-02 DIIS
-   @RHF iter   5:   -74.96478857522624   -6.05766e-05   2.63798e-03 DIIS
-   @RHF iter   6:   -74.96479341033007   -4.83510e-06   8.66064e-04 DIIS
-   @RHF iter   7:   -74.96479344389280   -3.35627e-08   7.32851e-05 DIIS
-   @RHF iter   8:   -74.96479344389275    5.68434e-14   3.33021e-08 DIIS
+   @RHF iter   1:   -73.25216800632492   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213547442403   -1.67997e+00   3.98553e-01 DIIS
+   @RHF iter   3:   -74.96339100517145   -3.12555e-02   5.10175e-02 DIIS
+   @RHF iter   4:   -74.96472799476254   -1.33699e-03   1.40128e-02 DIIS
+   @RHF iter   5:   -74.96478857143603   -6.05767e-05   2.63798e-03 DIIS
+   @RHF iter   6:   -74.96479340654778   -4.83511e-06   8.66065e-04 DIIS
+   @RHF iter   7:   -74.96479344011044   -3.35627e-08   7.32852e-05 DIIS
+   @RHF iter   8:   -74.96479344011050   -5.68434e-14   3.33601e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4450,40 +4479,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96479344389275
+  @RHF Final Energy:   -74.96479344011050
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3614
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
+     X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
+     X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.64 seconds =       0.01 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       0.80 seconds =       0.01 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4494,7 +4523,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4505,9 +4534,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O         -0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
     Number of unique atoms: 2
 
@@ -4517,7 +4546,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801466202085710
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -4530,6 +4559,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -4546,11 +4576,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898565
+  Initial RHF energy:   -54.63426083487271
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4590,14 +4620,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277945   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949069   -1.67848e+00   3.98379e-01 DIIS
-   @RHF iter   3:   -74.96324209064436   -3.17455e-02   5.13537e-02 DIIS
-   @RHF iter   4:   -74.96459579416394   -1.35370e-03   1.40898e-02 DIIS
-   @RHF iter   5:   -74.96465753906583   -6.17449e-05   2.65950e-03 DIIS
-   @RHF iter   6:   -74.96466250922849   -4.97016e-06   8.78281e-04 DIIS
-   @RHF iter   7:   -74.96466254315339   -3.39249e-08   7.37174e-05 DIIS
-   @RHF iter   8:   -74.96466254315332    7.10543e-14   3.22428e-08 DIIS
+   @RHF iter   1:   -73.25301168566617   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149650876840   -1.67848e+00   3.98379e-01 DIIS
+   @RHF iter   3:   -74.96324208529282   -3.17456e-02   5.13537e-02 DIIS
+   @RHF iter   4:   -74.96459578982669   -1.35370e-03   1.40898e-02 DIIS
+   @RHF iter   5:   -74.96465753478954   -6.17450e-05   2.65950e-03 DIIS
+   @RHF iter   6:   -74.96466250496022   -4.97017e-06   8.78282e-04 DIIS
+   @RHF iter   7:   -74.96466253888516   -3.39249e-08   7.37174e-05 DIIS
+   @RHF iter   8:   -74.96466253888522   -5.68434e-14   3.22550e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4619,7 +4649,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315332
+  @RHF Final Energy:   -74.96466253888522
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -4637,27 +4667,27 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.67 seconds =       0.01 minutes
-	system time =       0.22 seconds =       0.00 minutes
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.20 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 -------------------------------------------------------------
 
   Computing gradient from energies (fd_1_0).
 	Using 3-point formula.
-	Energy without displacement:  -74.9646625432
+	Energy without displacement:  -74.9646625389
 	Check energies below for precision!
 	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
 
 	 Coord      Energy(-)        Energy(+)        Force
-	    0    -74.9646650088   -74.9646519384     0.0013070391
-	    1    -74.9645204639   -74.9647934439    -0.0272979943
+	    0    -74.9646650042   -74.9646519345     0.0013069673
+	    1    -74.9645204592   -74.9647934401    -0.0272980911
 
 	Gradient written to file11.
 	Gradent saved to wavefunction.
@@ -4686,8 +4716,8 @@ Total time:
   //    Loading displacement 1 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4698,7 +4728,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4709,9 +4739,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068958862824
-           H          0.000000000000    -0.790689573744     0.547213597616
-           H          0.000000000000     0.790689573744     0.547213597616
+           O         -0.000000000000     0.000000000000    -0.068958862790
+           H          0.000000000000    -0.790689573744     0.547213597348
+           H         -0.000000000000     0.790689573744     0.547213597348
 
     Number of unique atoms: 2
 
@@ -4721,7 +4751,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.780972773315737
+  Nuclear repulsion =    8.780972104331346
 
   Charge       = 0
   Multiplicity = 1
@@ -4734,6 +4764,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -4750,11 +4781,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7183276036E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7183281018E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64103586596603
+  Initial RHF energy:   -54.64103611051068
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4794,14 +4825,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25348255989454   -1.86124e+01   0.00000e+00  
-   @RHF iter   2:   -74.92978324661512   -1.67630e+00   3.98400e-01 DIIS
-   @RHF iter   3:   -74.96319679296984   -3.34135e-02   5.25462e-02 DIIS
-   @RHF iter   4:   -74.96459035007679   -1.39356e-03   1.42589e-02 DIIS
-   @RHF iter   5:   -74.96465402675769   -6.36767e-05   2.68071e-03 DIIS
-   @RHF iter   6:   -74.96465931125798   -5.28450e-06   9.04983e-04 DIIS
-   @RHF iter   7:   -74.96465934653114   -3.52732e-08   7.53831e-05 DIIS
-   @RHF iter   8:   -74.96465934653112    1.42109e-14   2.78868e-08 DIIS
+   @RHF iter   1:   -73.25348259240201   -1.86124e+01   0.00000e+00 
+   @RHF iter   2:   -74.92978320391148   -1.67630e+00   3.98400e-01 DIIS
+   @RHF iter   3:   -74.96319678688995   -3.34136e-02   5.25462e-02 DIIS
+   @RHF iter   4:   -74.96459034502337   -1.39356e-03   1.42589e-02 DIIS
+   @RHF iter   5:   -74.96465402176671   -6.36767e-05   2.68071e-03 DIIS
+   @RHF iter   6:   -74.96465930627542   -5.28451e-06   9.04983e-04 DIIS
+   @RHF iter   7:   -74.96465934154848   -3.52731e-08   7.53831e-05 DIIS
+   @RHF iter   8:   -74.96465934154851   -2.84217e-14   2.79240e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4823,7 +4854,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465934653112
+  @RHF Final Energy:   -74.96465934154851
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -4841,22 +4872,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.69 seconds =       0.01 minutes
-	system time =       0.23 seconds =       0.00 minutes
+	user time   =       0.86 seconds =       0.01 minutes
+	system time =       0.21 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4867,7 +4898,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -4878,9 +4909,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068737541067
-           H          0.000000000000    -0.790689573744     0.545457329170
-           H          0.000000000000     0.790689573744     0.545457329170
+           O          0.000000000000     0.000000000000    -0.068737541050
+           H          0.000000000000    -0.790689573744     0.545457329036
+           H         -0.000000000000     0.790689573744     0.545457329036
 
     Number of unique atoms: 2
 
@@ -4890,7 +4921,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.791217360265589
+  Nuclear repulsion =    8.791216689717070
 
   Charge       = 0
   Multiplicity = 1
@@ -4903,6 +4934,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -4919,11 +4951,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7105722993E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7105727976E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63765013812002
+  Initial RHF energy:   -54.63765038333518
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -4963,14 +4995,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25324851236329   -1.86156e+01   0.00000e+00  
-   @RHF iter   2:   -74.93065163215209   -1.67740e+00   3.98388e-01 DIIS
-   @RHF iter   3:   -74.96322356409721   -3.25719e-02   5.19489e-02 DIIS
-   @RHF iter   4:   -74.96459714196186   -1.37358e-03   1.41745e-02 DIIS
-   @RHF iter   5:   -74.96465984832908   -6.27064e-05   2.67011e-03 DIIS
-   @RHF iter   6:   -74.96466497418820   -5.12586e-06   8.91625e-04 DIIS
-   @RHF iter   7:   -74.96466500877628   -3.45881e-08   7.45411e-05 DIIS
-   @RHF iter   8:   -74.96466500877632   -4.26326e-14   3.00111e-08 DIIS
+   @RHF iter   1:   -73.25324854505992   -1.86156e+01   0.00000e+00 
+   @RHF iter   2:   -74.93065159044104   -1.67740e+00   3.98388e-01 DIIS
+   @RHF iter   3:   -74.96322355838059   -3.25720e-02   5.19489e-02 DIIS
+   @RHF iter   4:   -74.96459713726561   -1.37358e-03   1.41745e-02 DIIS
+   @RHF iter   5:   -74.96465984369458   -6.27064e-05   2.67011e-03 DIIS
+   @RHF iter   6:   -74.96466496956187   -5.12587e-06   8.91626e-04 DIIS
+   @RHF iter   7:   -74.96466500415005   -3.45882e-08   7.45412e-05 DIIS
+   @RHF iter   8:   -74.96466500415002    2.84217e-14   2.99779e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -4984,7 +5016,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   4A1     0.563349     2B2     0.691150  
+	   4A1     0.563348     2B2     0.691150  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -4992,40 +5024,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466500877632
+  @RHF Final Energy:   -74.96466500415002
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     1.0224
+     X:     0.0000      Y:     0.0000      Z:     1.0224
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3660
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
+     X:     0.0000      Y:     0.0000      Z:     0.6564     Total:     0.6564
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
+     X:     0.0000      Y:     0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.72 seconds =       0.01 minutes
-	system time =       0.23 seconds =       0.00 minutes
+	user time   =       0.89 seconds =       0.01 minutes
+	system time =       0.22 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5036,7 +5068,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5047,9 +5079,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068294897553
-           H          0.000000000000    -0.790689573744     0.541944792278
-           H          0.000000000000     0.790689573744     0.541944792278
+           O         -0.000000000000     0.000000000000    -0.068294897570
+           H          0.000000000000    -0.790689573744     0.541944792413
+           H         -0.000000000000     0.790689573744     0.541944792413
 
     Number of unique atoms: 2
 
@@ -5059,7 +5091,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.811719164003161
+  Nuclear repulsion =    8.811718490323452
 
   Charge       = 0
   Multiplicity = 1
@@ -5072,6 +5104,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -5088,11 +5121,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6951295202E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6951300188E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63086725527602
+  Initial RHF energy:   -54.63086750183680
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5132,14 +5165,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25277197439027   -1.86219e+01   0.00000e+00  
-   @RHF iter   2:   -74.93231814275244   -1.67955e+00   3.98372e-01 DIIS
-   @RHF iter   3:   -74.96325235946669   -3.09342e-02   5.07604e-02 DIIS
-   @RHF iter   4:   -74.96458629515648   -1.33394e-03   1.40046e-02 DIIS
-   @RHF iter   5:   -74.96464708767155   -6.07925e-05   2.64889e-03 DIIS
-   @RHF iter   6:   -74.96465190510274   -4.81743e-06   8.64955e-04 DIIS
-   @RHF iter   7:   -74.96465193838496   -3.32822e-08   7.29110e-05 DIIS
-   @RHF iter   8:   -74.96465193838502   -5.68434e-14   3.47412e-08 DIIS
+   @RHF iter   1:   -73.25277200746829   -1.86219e+01   0.00000e+00 
+   @RHF iter   2:   -74.93231810301535   -1.67955e+00   3.98372e-01 DIIS
+   @RHF iter   3:   -74.96325235448234   -3.09343e-02   5.07604e-02 DIIS
+   @RHF iter   4:   -74.96458629118027   -1.33394e-03   1.40046e-02 DIIS
+   @RHF iter   5:   -74.96464708375547   -6.07926e-05   2.64889e-03 DIIS
+   @RHF iter   6:   -74.96465190119464   -4.81744e-06   8.64956e-04 DIIS
+   @RHF iter   7:   -74.96465193447689   -3.32822e-08   7.29110e-05 DIIS
+   @RHF iter   8:   -74.96465193447692   -2.84217e-14   3.46499e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5161,7 +5194,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96465193838502
+  @RHF Final Energy:   -74.96465193447692
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5179,22 +5212,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.24 seconds =       0.00 minutes
+	user time   =       0.92 seconds =       0.02 minutes
+	system time =       0.23 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5205,7 +5238,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5216,9 +5249,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068073575796
-           H          0.000000000000    -0.790689573744     0.540188523833
-           H          0.000000000000     0.790689573744     0.540188523833
+           O          0.000000000000     0.000000000000    -0.068073575830
+           H          0.000000000000    -0.790689573744     0.540188524101
+           H         -0.000000000000     0.790689573744     0.540188524101
 
     Number of unique atoms: 2
 
@@ -5228,7 +5261,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.821976109952324
+  Nuclear repulsion =    8.821975434705649
 
   Charge       = 0
   Multiplicity = 1
@@ -5241,6 +5274,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -5257,11 +5291,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6874422788E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6874427775E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62747017439059
+  Initial RHF energy:   -54.62747042162648
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5301,14 +5335,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25252947040772   -1.86251e+01   0.00000e+00  
-   @RHF iter   2:   -74.93311655666184   -1.68059e+00   3.98368e-01 DIIS
-   @RHF iter   3:   -74.96325435792133   -3.01378e-02   5.01692e-02 DIIS
-   @RHF iter   4:   -74.96456863392788   -1.31428e-03   1.39190e-02 DIIS
-   @RHF iter   5:   -74.96462848336267   -5.98494e-05   2.63827e-03 DIIS
-   @RHF iter   6:   -74.96463315104671   -4.66768e-06   8.51652e-04 DIIS
-   @RHF iter   7:   -74.96463318370553   -3.26588e-08   7.21212e-05 DIIS
-   @RHF iter   8:   -74.96463318370553    0.00000e+00   3.72047e-08 DIIS
+   @RHF iter   1:   -73.25252950367796   -1.86251e+01   0.00000e+00 
+   @RHF iter   2:   -74.93311651790607   -1.68059e+00   3.98368e-01 DIIS
+   @RHF iter   3:   -74.96325435330586   -3.01378e-02   5.01693e-02 DIIS
+   @RHF iter   4:   -74.96456863031430   -1.31428e-03   1.39190e-02 DIIS
+   @RHF iter   5:   -74.96462847980850   -5.98495e-05   2.63827e-03 DIIS
+   @RHF iter   6:   -74.96463314750038   -4.66769e-06   8.51653e-04 DIIS
+   @RHF iter   7:   -74.96463318015927   -3.26589e-08   7.21212e-05 DIIS
+   @RHF iter   8:   -74.96463318015927    0.00000e+00   3.71669e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5330,7 +5364,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96463318370553
+  @RHF Final Energy:   -74.96463318015927
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5348,22 +5382,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.77 seconds =       0.01 minutes
-	system time =       0.25 seconds =       0.00 minutes
+	user time   =       0.95 seconds =       0.02 minutes
+	system time =       0.23 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5374,7 +5408,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5386,8 +5420,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.794416867278     0.543701060724
-           H          0.000000000000     0.794416867278     0.543701060724
+           H          0.000000000000    -0.794416866993     0.543701060724
+           H         -0.000000000000     0.794416866993     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5397,7 +5431,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.774994752436060
+  Nuclear repulsion =    8.774994084360845
 
   Charge       = 0
   Multiplicity = 1
@@ -5410,6 +5444,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -5426,11 +5461,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7223583086E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7223588066E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.64445492366322
+  Initial RHF energy:   -54.64445516756834
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5470,14 +5505,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25468418559758   -1.86102e+01   0.00000e+00  
-   @RHF iter   2:   -74.93015880275313   -1.67547e+00   3.98042e-01 DIIS
-   @RHF iter   3:   -74.96290992140163   -3.27511e-02   5.20356e-02 DIIS
-   @RHF iter   4:   -74.96429783045272   -1.38791e-03   1.42457e-02 DIIS
-   @RHF iter   5:   -74.96436200206642   -6.41716e-05   2.70371e-03 DIIS
-   @RHF iter   6:   -74.96436725366601   -5.25160e-06   9.03236e-04 DIIS
-   @RHF iter   7:   -74.96436728830987   -3.46439e-08   7.45703e-05 DIIS
-   @RHF iter   8:   -74.96436728830993   -5.68434e-14   3.01955e-08 DIIS
+   @RHF iter   1:   -73.25468421798544   -1.86102e+01   0.00000e+00 
+   @RHF iter   2:   -74.93015876010018   -1.67547e+00   3.98042e-01 DIIS
+   @RHF iter   3:   -74.96290991506571   -3.27512e-02   5.20357e-02 DIIS
+   @RHF iter   4:   -74.96429782515322   -1.38791e-03   1.42457e-02 DIIS
+   @RHF iter   5:   -74.96436199683065   -6.41717e-05   2.70372e-03 DIIS
+   @RHF iter   6:   -74.96436724843869   -5.25161e-06   9.03237e-04 DIIS
+   @RHF iter   7:   -74.96436728308261   -3.46439e-08   7.45703e-05 DIIS
+   @RHF iter   8:   -74.96436728308262   -1.42109e-14   3.03002e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5491,7 +5526,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   4A1     0.560881     2B2     0.690461  
+	   4A1     0.560881     2B2     0.690460  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -5499,40 +5534,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96436728830993
+  @RHF Final Energy:   -74.96436728308262
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:    -0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3646
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6545     Total:     0.6545
+     X:    -0.0000      Y:    -0.0000      Z:     0.6545     Total:     0.6545
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6635     Total:     1.6635
+     X:    -0.0000      Y:    -0.0000      Z:     1.6635     Total:     1.6635
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       0.26 seconds =       0.00 minutes
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.24 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5543,7 +5578,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5555,8 +5590,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.792553220511     0.543701060724
-           H          0.000000000000     0.792553220511     0.543701060724
+           H          0.000000000000    -0.792553220368     0.543701060724
+           H         -0.000000000000     0.792553220368     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5566,7 +5601,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.788215765827671
+  Nuclear repulsion =    8.788215095736605
 
   Charge       = 0
   Multiplicity = 1
@@ -5579,6 +5614,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -5595,11 +5631,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7125949335E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7125954317E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63936652405509
+  Initial RHF energy:   -54.63936676894854
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5639,14 +5675,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25385038438209   -1.86145e+01   0.00000e+00  
-   @RHF iter   2:   -74.93083766335180   -1.67699e+00   3.98209e-01 DIIS
-   @RHF iter   3:   -74.96308170178371   -3.22440e-02   5.16930e-02 DIIS
-   @RHF iter   4:   -74.96445237771694   -1.37068e-03   1.41674e-02 DIIS
-   @RHF iter   5:   -74.96451532069419   -6.29430e-05   2.68141e-03 DIIS
-   @RHF iter   6:   -74.96452042966447   -5.10897e-06   8.90672e-04 DIIS
-   @RHF iter   7:   -74.96452046394978   -3.42853e-08   7.41457e-05 DIIS
-   @RHF iter   8:   -74.96452046394973    5.68434e-14   3.11180e-08 DIIS
+   @RHF iter   1:   -73.25385041701878   -1.86145e+01   0.00000e+00 
+   @RHF iter   2:   -74.93083762166519   -1.67699e+00   3.98209e-01 DIIS
+   @RHF iter   3:   -74.96308169593800   -3.22441e-02   5.16931e-02 DIIS
+   @RHF iter   4:   -74.96445237289653   -1.37068e-03   1.41674e-02 DIIS
+   @RHF iter   5:   -74.96451531593614   -6.29430e-05   2.68141e-03 DIIS
+   @RHF iter   6:   -74.96452042491468   -5.10898e-06   8.90673e-04 DIIS
+   @RHF iter   7:   -74.96452045919995   -3.42853e-08   7.41457e-05 DIIS
+   @RHF iter   8:   -74.96452045919997   -2.84217e-14   3.12938e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5668,7 +5704,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96452046394973
+  @RHF Final Energy:   -74.96452045919997
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -5681,27 +5717,27 @@ Total time:
      X:     0.0000      Y:     0.0000      Z:     0.6556     Total:     0.6556
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6663     Total:     1.6663
+     X:     0.0000      Y:     0.0000      Z:     1.6662     Total:     1.6662
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.82 seconds =       0.01 minutes
-	system time =       0.27 seconds =       0.00 minutes
+	user time   =       1.01 seconds =       0.02 minutes
+	system time =       0.25 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5712,7 +5748,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5724,8 +5760,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.788825926977     0.543701060724
-           H          0.000000000000     0.788825926977     0.543701060724
+           H          0.000000000000    -0.788825927119     0.543701060724
+           H         -0.000000000000     0.788825927119     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5735,7 +5771,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.814746104065893
+  Nuclear repulsion =    8.814745429922914
 
   Charge       = 0
   Multiplicity = 1
@@ -5748,6 +5784,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -5764,11 +5801,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6930923948E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6930928934E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62913703701524
+  Initial RHF energy:   -54.62913728390151
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5808,14 +5845,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25216797318667   -1.86230e+01   0.00000e+00  
-   @RHF iter   2:   -74.93213551418405   -1.67997e+00   3.98553e-01 DIIS
-   @RHF iter   3:   -74.96339101002467   -3.12555e-02   5.10175e-02 DIIS
-   @RHF iter   4:   -74.96472799861243   -1.33699e-03   1.40128e-02 DIIS
-   @RHF iter   5:   -74.96478857522624   -6.05766e-05   2.63798e-03 DIIS
-   @RHF iter   6:   -74.96479341033007   -4.83510e-06   8.66064e-04 DIIS
-   @RHF iter   7:   -74.96479344389280   -3.35627e-08   7.32851e-05 DIIS
-   @RHF iter   8:   -74.96479344389275    5.68434e-14   3.33021e-08 DIIS
+   @RHF iter   1:   -73.25216800632499   -1.86230e+01   0.00000e+00 
+   @RHF iter   2:   -74.93213547442409   -1.67997e+00   3.98553e-01 DIIS
+   @RHF iter   3:   -74.96339100517152   -3.12555e-02   5.10175e-02 DIIS
+   @RHF iter   4:   -74.96472799476260   -1.33699e-03   1.40128e-02 DIIS
+   @RHF iter   5:   -74.96478857143607   -6.05767e-05   2.63798e-03 DIIS
+   @RHF iter   6:   -74.96479340654781   -4.83511e-06   8.66065e-04 DIIS
+   @RHF iter   7:   -74.96479344011047   -3.35627e-08   7.32852e-05 DIIS
+   @RHF iter   8:   -74.96479344011048   -1.42109e-14   3.33865e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5837,40 +5874,40 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96479344389275
+  @RHF Final Energy:   -74.96479344011048
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3614
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
+     X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
+     X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.84 seconds =       0.01 minutes
-	system time =       0.27 seconds =       0.00 minutes
+	user time   =       1.04 seconds =       0.02 minutes
+	system time =       0.26 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5881,7 +5918,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -5893,8 +5930,8 @@ Total time:
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
            O          0.000000000000     0.000000000000    -0.068516219310
-           H          0.000000000000    -0.786962280210     0.543701060724
-           H          0.000000000000     0.786962280210     0.543701060724
+           H          0.000000000000    -0.786962280495     0.543701060724
+           H         -0.000000000000     0.786962280495     0.543701060724
 
     Number of unique atoms: 2
 
@@ -5904,7 +5941,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.828055514235817
+  Nuclear repulsion =    8.828054838056744
 
   Charge       = 0
   Multiplicity = 1
@@ -5917,6 +5954,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -5933,11 +5971,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.6833536103E-01.
+  Minimum eigenvalue in the overlap matrix is 3.6833541092E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.62399578631825
+  Initial RHF energy:   -54.62399603420910
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -5977,14 +6015,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25131932777838   -1.86273e+01   0.00000e+00  
-   @RHF iter   2:   -74.93275460837255   -1.68144e+00   3.98729e-01 DIIS
-   @RHF iter   3:   -74.96352838159922   -3.07738e-02   5.06845e-02 DIIS
-   @RHF iter   4:   -74.96484890953508   -1.32053e-03   1.39363e-02 DIIS
-   @RHF iter   5:   -74.96490834689136   -5.94374e-05   2.61685e-03 DIIS
-   @RHF iter   6:   -74.96491305061315   -4.70372e-06   8.54021e-04 DIIS
-   @RHF iter   7:   -74.96491308381164   -3.31985e-08   7.28487e-05 DIIS
-   @RHF iter   8:   -74.96491308381161    2.84217e-14   3.44434e-08 DIIS
+   @RHF iter   1:   -73.25131936116952   -1.86273e+01   0.00000e+00 
+   @RHF iter   2:   -74.93275456957281   -1.68144e+00   3.98729e-01 DIIS
+   @RHF iter   3:   -74.96352837724849   -3.07738e-02   5.06846e-02 DIIS
+   @RHF iter   4:   -74.96484890617688   -1.32053e-03   1.39363e-02 DIIS
+   @RHF iter   5:   -74.96490834359142   -5.94374e-05   2.61685e-03 DIIS
+   @RHF iter   6:   -74.96491304732098   -4.70373e-06   8.54022e-04 DIIS
+   @RHF iter   7:   -74.96491308051948   -3.31985e-08   7.28488e-05 DIIS
+   @RHF iter   8:   -74.96491308051951   -2.84217e-14   3.43769e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -5998,7 +6036,7 @@ Total time:
 
 	Virtual:                                                              
 
-	   4A1     0.567426     2B2     0.695559  
+	   4A1     0.567426     2B2     0.695558  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
@@ -6006,7 +6044,7 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96491308381161
+  @RHF Final Energy:   -74.96491308051951
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
@@ -6024,22 +6062,22 @@ Total time:
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.86 seconds =       0.01 minutes
-	system time =       0.28 seconds =       0.00 minutes
+	user time   =       1.08 seconds =       0.02 minutes
+	system time =       0.26 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
-*** tstart() called on mac10147
-*** at Sat Dec 17 16:20:09 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:46 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -6050,7 +6088,7 @@ Total time:
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    250 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -6061,9 +6099,9 @@ Total time:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000     0.000000000000    -0.068516219310
+           O         -0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
     Number of unique atoms: 2
 
@@ -6073,7 +6111,7 @@ Total time:
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801466202085710
+  Nuclear repulsion =    8.801465529972067
 
   Charge       = 0
   Multiplicity = 1
@@ -6086,6 +6124,7 @@ Total time:
   SCF Algorithm Type is PK.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
@@ -6102,11 +6141,11 @@ Total time:
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Minimum eigenvalue in the overlap matrix is 3.7028400642E-01.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -54.63426058898565
+  Initial RHF energy:   -54.63426083487273
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -6146,14 +6185,14 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -73.25301165277945   -1.86188e+01   0.00000e+00  
-   @RHF iter   2:   -74.93149654949069   -1.67848e+00   3.98379e-01 DIIS
-   @RHF iter   3:   -74.96324209064436   -3.17455e-02   5.13537e-02 DIIS
-   @RHF iter   4:   -74.96459579416394   -1.35370e-03   1.40898e-02 DIIS
-   @RHF iter   5:   -74.96465753906583   -6.17449e-05   2.65950e-03 DIIS
-   @RHF iter   6:   -74.96466250922849   -4.97016e-06   8.78281e-04 DIIS
-   @RHF iter   7:   -74.96466254315339   -3.39249e-08   7.37174e-05 DIIS
-   @RHF iter   8:   -74.96466254315332    7.10543e-14   3.22428e-08 DIIS
+   @RHF iter   1:   -73.25301168566619   -1.86188e+01   0.00000e+00 
+   @RHF iter   2:   -74.93149650876843   -1.67848e+00   3.98379e-01 DIIS
+   @RHF iter   3:   -74.96324208529285   -3.17456e-02   5.13537e-02 DIIS
+   @RHF iter   4:   -74.96459578982665   -1.35370e-03   1.40898e-02 DIIS
+   @RHF iter   5:   -74.96465753478952   -6.17450e-05   2.65950e-03 DIIS
+   @RHF iter   6:   -74.96466250496024   -4.97017e-06   8.78282e-04 DIIS
+   @RHF iter   7:   -74.96466253888518   -3.39249e-08   7.37174e-05 DIIS
+   @RHF iter   8:   -74.96466253888522   -4.26326e-14   3.23677e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -6175,45 +6214,45 @@ Total time:
 
   Energy converged.
 
-  @RHF Final Energy:   -74.96466254315332
+  @RHF Final Energy:   -74.96466253888522
 
   ==> Properties <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.3624
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
+     X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
+     X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:46 2012
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.89 seconds =       0.01 minutes
-	system time =       0.29 seconds =       0.00 minutes
+	user time   =       1.11 seconds =       0.02 minutes
+	system time =       0.27 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 -------------------------------------------------------------
 
   Computing gradient from energies (fd_1_0).
 	Using 5-point formula.
-	Energy without displacement:  -74.9646625432
+	Energy without displacement:  -74.9646625389
 	Check energies below for precision!
 	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
 
 	 Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force
-	    0    -74.9646593465    -74.9646650088    -74.9646519384    -74.9646331837      0.0013066717
-	    1    -74.9643672883    -74.9645204639    -74.9647934439    -74.9649130838     -0.0273007340
+	    0    -74.9646593415    -74.9646650042    -74.9646519345    -74.9646331802      0.0013065999
+	    1    -74.9643672831    -74.9645204592    -74.9647934401    -74.9649130805     -0.0273008308
 
 	Gradient written to file11.
 	Gradent saved to wavefunction.

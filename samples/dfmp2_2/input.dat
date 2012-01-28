@@ -2,12 +2,12 @@
 #! Results are tabulated using the built in table functions by using the default options and by specifiying the format.
 
 # This will remove the 32 file in each iteration of the for loop 
-psioh = PsiMod.IOManager().shared_object()
-psioh.set_specific_retention(32,False)
+psi4_io.set_specific_retention(32,False)
+
+memory 250 mb
 
 
 molecule h2 {
-   symmetry c1
    0 1
    H
    H 1 0.9
@@ -16,8 +16,8 @@ molecule h2 {
 set {
    scf_type   df
    guess      sad
-   d_converge 12
-   e_converge 12
+   d_convergence 12
+   e_convergence 12
 }
 
 # This is a table that uses just the default parameters
@@ -35,11 +35,11 @@ basissets = ["cc-pVDZ", "cc-pVTZ"]
 for basisset in basissets:
     set basis        $basisset
     jkbasis = basisset + "-jkfit"
-    set ri_basis_scf $jkbasis
+    set df_basis_scf $jkbasis
     ribasis = basisset + "-ri"
-    set ri_basis_mp2 $ribasis
-    edfscf = scf()
-    edfmp2 = dfmp2()
+    set df_basis_mp2 $ribasis
+    edfmp2 = energy('dfmp2')
+    edfscf = get_variable('SCF TOTAL ENERGY')
     # Store the computed values in the tables
     table[basisset]     = [edfscf, edfmp2]
     longtable[basisset] = [edfscf, edfmp2]
@@ -51,4 +51,3 @@ print_out("\nSummary of results\n")
 print str(table)
 print_out("\nAnd again, but more precision\n")
 print str(longtable)
-

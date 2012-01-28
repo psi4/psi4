@@ -1,5 +1,7 @@
 #! 6-31G H2O Test FCI Energy Point
 
+memory 250 mb
+
 
 molecule h2o {
    O       .0000000000         .0000000000        -.0742719254
@@ -9,17 +11,9 @@ units bohr
 }
 
 set globals {
-  wfn detci
-  fci true 
   basis 6-31G
-}
-
-set detci {
   icore 0
 }
 
-thisenergy = energy('detci')
-
-
-clean()
+thisenergy = energy('fci')
 

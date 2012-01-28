@@ -1,6 +1,7 @@
 import PsiMod
 import shutil
 import os
+import subprocess
 import re
 import input
 from molecule import *
@@ -20,7 +21,7 @@ def run_scf_gradient(name, **kwargs):
     run_scf(name, **kwargs)
     PsiMod.deriv()
 
-def run_mcscf(**kwargs):
+def run_mcscf(name, **kwargs):
 
     return PsiMod.mcscf()
 
@@ -67,8 +68,8 @@ def scf_helper(name, **kwargs):
         # Are we in a DF algorithm here?
         scf_type = PsiMod.get_option('SCF_TYPE')
         guess_type = PsiMod.get_option('GUESS')
-        ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-        ri_ints = PsiMod.get_option("RI_INTS_IO")
+        df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+        df_ints = PsiMod.get_option("DF_INTS_IO")
 
         # Which basis is the final one
         basis = PsiMod.get_option('BASIS')
@@ -76,8 +77,8 @@ def scf_helper(name, **kwargs):
         # Setup initial SCF
         PsiMod.set_local_option('SCF','BASIS',guessbasis)
         if (scf_type == 'DF'):
-            PsiMod.set_local_option('SCF','RI_BASIS_SCF','cc-pvdz-ri')
-            PsiMod.set_global_option('RI_INTS_IO','none')
+            PsiMod.set_local_option('SCF','DF_BASIS_SCF','cc-pvdz-ri')
+            PsiMod.set_global_option('DF_INTS_IO','none')
 
         # Print some info about the guess
         PsiMod.print_out('\n')
@@ -95,8 +96,8 @@ def scf_helper(name, **kwargs):
         PsiMod.set_local_option('SCF','GUESS','READ')
         PsiMod.set_local_option('SCF','BASIS',basis)
         if (scf_type == 'DF'):
-            PsiMod.set_local_option('SCF','RI_BASIS_SCF',ri_basis_scf)
-            PsiMod.set_global_option('RI_INTS_IO',ri_ints)
+            PsiMod.set_local_option('SCF','DF_BASIS_SCF',df_basis_scf)
+            PsiMod.set_global_option('DF_INTS_IO',df_ints)
 
         # Print the banner for the standard operation
         PsiMod.print_out('\n')
@@ -145,62 +146,57 @@ def run_mp2_gradient(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
 
-def run_ccsd(name, **kwargs):
+def run_ccenergy(name, **kwargs):
 
-    if (name.lower() == 'ccsd'):
-        PsiMod.set_global_option('WFN', 'CCSD')
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
+   elif (name.lower() == 'cc2'):
+       PsiMod.set_global_option('WFN', 'CC2')
+   elif (name.lower() == 'cc3'):
+       PsiMod.set_global_option('WFN', 'CC3')
+   elif (name.lower() == 'eom-ccsd'):
+       PsiMod.set_global_option('WFN', 'EOM_CCSD')
+   # Call a plain energy('ccenergy') and have full control over options,
+   # incl. wfn
+   elif(name.lower() == 'ccenergy'):
+       pass
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf("scf", **kwargs)
+   # Bypass routine scf if user did something special to get it to converge
+   if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+       run_scf("scf", **kwargs)
 
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    returnvalue = PsiMod.ccenergy()
+   PsiMod.transqt2()
+   PsiMod.ccsort()
+   returnvalue = PsiMod.ccenergy()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
 
-    return returnvalue
+   return returnvalue
 
-def run_cc3(name, **kwargs):
+def run_cc_gradient(name, **kwargs):
 
-    if (name.lower() == 'cc3'):
-        PsiMod.set_global_option('WFN', 'CC3')
+   PsiMod.set_global_option('DERTYPE', 'FIRST')
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf("scf", **kwargs)
+   run_ccenergy(name, **kwargs)
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
 
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    returnvalue = PsiMod.ccenergy()
+   PsiMod.cchbar()
+   PsiMod.cclambda()
+   PsiMod.ccdensity()
+   PsiMod.deriv()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-
-    return returnvalue
-
-def run_ccsd_gradient(name, **kwargs):
-
-    run_ccsd(name, **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
-
-    PsiMod.cchbar()
-    PsiMod.cclambda()
-    PsiMod.ccdensity()
-    PsiMod.deriv()
-
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-
-def run_ccsd_t(name, **kwargs):
-
-    PsiMod.set_global_option('WFN', 'CCSD_T')
-
-    # The new CCEnergyWavefunction object that is used to wrap ccenergy
-    # automatically handles cctriples.
-    return run_ccsd(name, **kwargs)
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
+       PsiMod.set_global_option('DERTYPE', 'NONE')
+       PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_bccd(name, **kwargs):
 
@@ -231,26 +227,42 @@ def run_bccd_t(name, **kwargs):
 
     return PsiMod.cctriples()
 
-def run_ccsd_response(name, **kwargs):
+def run_cc_response(name, **kwargs):
 
-    PsiMod.set_global_option('WFN', 'CCSD')
-    run_ccsd("ccsd", **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
+    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+
+    if (name.lower() == 'ccsd'):
+      PsiMod.set_global_option('WFN', 'CCSD')
+      run_ccenergy("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'CCSD')
+    elif (name.lower() == 'cc2'):
+      PsiMod.set_global_option('WFN', 'CC2')
+      run_ccenergy("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'CC2')
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
 
-#    PsiMod.set_global_option('WFN', 'SCF')
-#    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
 
-    # ccsd_response has return value?
+def run_eom_cc(name, **kwargs):
 
-def run_eom_ccsd(name, **kwargs):
-
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
-
-    run_ccsd("ccsd", **kwargs)
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    if (name.lower() == "eom-ccsd"):
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+      run_ccenergy("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    elif (name.lower() == "eom-cc2"):
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
+      run_ccenergy("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
+    elif (name.lower() == "eom-cc3"):
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
+      run_ccenergy("cc3", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
 
     PsiMod.cchbar()
     returnvalue = PsiMod.cceom()
@@ -260,44 +272,81 @@ def run_eom_ccsd(name, **kwargs):
 
     return returnvalue
 
+def run_eom_cc_gradient(name, **kwargs):
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+
+    if (name.lower() == "eom-ccsd"):
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+      energy = run_eom_cc(name, **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+
+    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    PsiMod.set_global_option('ZETA', 'FALSE')
+    PsiMod.cclambda()
+    PsiMod.set_global_option('XI', 'TRUE')
+    PsiMod.ccdensity()
+    PsiMod.set_global_option('ZETA', 'TRUE')
+    PsiMod.cclambda()
+    PsiMod.set_global_option('XI', 'FALSE')
+    PsiMod.ccdensity()
+    PsiMod.deriv()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
+
+def run_adc(name, **kwargs):
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+      molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    PsiMod.scf()
+
+    return PsiMod.adc()
+
 def run_detci(name, **kwargs):
 
     if (name.lower() == 'zapt'):
         PsiMod.set_global_option('WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
-           PsiMod.set_global_option('SAVE_MPN2', 2)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
         else:
-           PsiMod.set_global_option('SAVE_MPN2', 1)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'mp'):
         PsiMod.set_global_option('WFN', 'DETCI')
         PsiMod.set_global_option('MPN', 'TRUE')
 
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        PsiMod.set_global_option('MAX_NUM_VECS', maxnvect)
         if ((level+1)%2):
-           PsiMod.set_global_option('SAVE_MPN2', 2)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 2)
         else:
-           PsiMod.set_global_option('SAVE_MPN2', 1)
+           PsiMod.set_global_option('MPN_ORDER_SAVE', 1)
     elif (name.lower() == 'fci'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('FCI', 'TRUE')
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('FCI', 'TRUE')
     elif (name.lower() == 'cisd'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 2)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 2)
     elif (name.lower() == 'cisdt'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 3)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 3)
     elif (name.lower() == 'cisdtq'):
-	    PsiMod.set_global_option('WFN', 'DETCI')
-	    PsiMod.set_global_option('EX_LVL', 4)
+            PsiMod.set_global_option('WFN', 'DETCI')
+            PsiMod.set_global_option('EX_LEVEL', 4)
     elif (name.lower() == 'ci'):
         PsiMod.set_global_option('WFN', 'DETCI')
         level = kwargs['level']
-        PsiMod.set_global_option('EX_LVL', level)
+        PsiMod.set_global_option('EX_LEVEL', level)
     # Call a plain energy('detci') and have full control over options
     elif(name.lower() == 'detci'):
         pass
@@ -314,14 +363,14 @@ def run_detci(name, **kwargs):
         PsiMod.revoke_global_option_changed('WFN')
         PsiMod.set_global_option('MPN', 'FALSE')
         PsiMod.revoke_global_option_changed('MPN')
-        PsiMod.set_global_option('MAXNVECT', 12)
-        PsiMod.revoke_global_option_changed('MAXNVECT')
-        PsiMod.set_global_option('SAVE_MPN2', 0)
-        PsiMod.revoke_global_option_changed('SAVE_MPN2')
+        PsiMod.set_global_option('MAX_NUM_VECS', 12)
+        PsiMod.revoke_global_option_changed('MAX_NUM_VECS')
+        PsiMod.set_global_option('MPN_ORDER_SAVE', 0)
+        PsiMod.revoke_global_option_changed('MPN_ORDER_SAVE')
         PsiMod.set_global_option('FCI', 'FALSE')
         PsiMod.revoke_global_option_changed('FCI')
-        PsiMod.set_global_option('EX_LVL', 2)
-        PsiMod.revoke_global_option_changed('EX_LVL')
+        PsiMod.set_global_option('EX_LEVEL', 2)
+        PsiMod.revoke_global_option_changed('EX_LEVEL')
 
     return returnvalue
 
@@ -399,20 +448,20 @@ def run_mp2c(name, **kwargs):
     monomerB.set_name("monomerB")
 
     ri = PsiMod.get_option('SCF_TYPE')
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
 
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_local_option("SCF","SAPT","2-dimer")
     PsiMod.print_out("\n")
     banner('Dimer HF')
     PsiMod.print_out("\n")
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
     PsiMod.print_out("\n")
     banner('Dimer DFMP2')
     PsiMod.print_out("\n")
     e_dimer_mp2 = PsiMod.dfmp2()
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     activate(monomerA)
     if (ri == "DF"):
@@ -441,15 +490,15 @@ def run_mp2c(name, **kwargs):
     banner('Monomer B DFMP2')
     PsiMod.print_out("\n")
     e_monomerB_mp2 = PsiMod.dfmp2()
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
 
     PsiMod.IO.change_file_namespace(121,"monomerA","dimer")
     PsiMod.IO.change_file_namespace(122,"monomerB","dimer")
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     PsiMod.set_local_option("SAPT","SAPT_LEVEL","MP2C")
     PsiMod.print_out("\n")
     banner("MP2C")
@@ -477,7 +526,7 @@ def run_sapt(name, **kwargs):
         monomerA.set_name("monomerA")
         monomerB = molecule.extract_subsets(2,1)
         monomerB.set_name("monomerB")
-    elif (sapt_basis == "monomer"): 
+    elif (sapt_basis == "monomer"):
         molecule.update_geometry()
         monomerA = molecule.extract_subsets(1)
         monomerA.set_name("monomerA")
@@ -485,7 +534,7 @@ def run_sapt(name, **kwargs):
         monomerB.set_name("monomerB")
 
     ri = PsiMod.get_option('SCF_TYPE')
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
 
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_local_option("SCF","SAPT","2-dimer")
@@ -493,10 +542,10 @@ def run_sapt(name, **kwargs):
     banner('Dimer HF')
     PsiMod.print_out("\n")
     if (sapt_basis == "dimer"):
-        PsiMod.set_global_option('RI_INTS_IO','SAVE')
+        PsiMod.set_global_option('DF_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
     if (sapt_basis == "dimer"):
-        PsiMod.set_global_option('RI_INTS_IO','LOAD')
+        PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     activate(monomerA)
     if (ri == "DF" and sapt_basis == "dimer"):
@@ -517,23 +566,27 @@ def run_sapt(name, **kwargs):
     banner('Monomer B HF')
     PsiMod.print_out("\n")
     e_monomerB = scf_helper('RHF',**kwargs)
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
 
     PsiMod.IO.change_file_namespace(121,"monomerA","dimer")
     PsiMod.IO.change_file_namespace(122,"monomerB","dimer")
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     if (name.lower() == 'sapt0'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2")
     elif (name.lower() == 'sapt2+'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+")
+    elif (name.lower() == 'sapt2+(3)'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", False)
     elif (name.lower() == 'sapt2+3'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", True)
     PsiMod.print_out("\n")
     banner(name.upper())
     PsiMod.print_out("\n")
@@ -555,16 +608,16 @@ def run_sapt_ct(name, **kwargs):
     monomerBm.set_name("monomerBm")
 
     ri = PsiMod.get_option('SCF_TYPE')
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
 
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_local_option("SCF","SAPT","2-dimer")
     PsiMod.print_out("\n")
     banner('Dimer HF')
     PsiMod.print_out("\n")
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     activate(monomerA)
     if (ri == "DF"):
@@ -585,7 +638,7 @@ def run_sapt_ct(name, **kwargs):
     banner('Monomer B HF (Dimer Basis)')
     PsiMod.print_out("\n")
     e_monomerB = scf_helper('RHF',**kwargs)
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
 
     activate(monomerAm)
     PsiMod.IO.set_default_namespace("monomerAm")
@@ -605,16 +658,20 @@ def run_sapt_ct(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","E_CONVERGENCE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGENCE",10e-10)
     if (name.lower() == 'sapt0-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2")
     elif (name.lower() == 'sapt2+-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+")
+    elif (name.lower() == 'sapt2+(3)-ct'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", False)
     elif (name.lower() == 'sapt2+3-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+        PsiMod.set_local_option("SAPT","DO_THIRD_ORDER", True)
     PsiMod.print_out("\n")
     banner('SAPT Charge Transfer')
     PsiMod.print_out("\n")
@@ -645,6 +702,138 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out(line1)
     PsiMod.print_out(line2)
     PsiMod.print_out(line3)
+    PsiMod.set_variable("SAPT CT ENERGY",CT)
 
     return CT
 
+def run_mrcc(name, **kwargs):
+
+    # TODO: Check to see if we really need to run the SCF code.
+    run_scf(name, **kwargs)
+
+    # The parse_arbitrary_order method provides us the following information
+    # We require that level be provided. level is a dictionary
+    # of settings to be passed to PsiMod.mrcc
+    if kwargs.has_key('level') == False:
+        raise ValidationError("level parameter was not provided.")
+
+    level = kwargs['level']
+
+    # Fullname is the string we need to search for in iface
+    fullname = level['fullname']
+
+    # User can provide 'keep' to the method.
+    # When provided, to not delete the MRCC scratch directory.
+    keep = False
+    if (kwargs.has_key('keep')):
+        keep = kwargs['keep']
+
+    # Save current directory location
+    current_directory = os.getcwd()
+
+    # Need to move to the scratch directory, perferrably into a separate directory in that location
+    psi_io = PsiMod.IOManager.shared_object()
+    os.chdir(psi_io.get_default_path())
+
+    # Make new directory specifically for mrcc
+    mrcc_tmpdir = "mrcc_" + str(os.getpid())
+    if kwargs.has_key('path'):
+        mrcc_tmpdir = kwargs['path']
+
+    # Check to see if directory already exists, if not, create.
+    if os.path.exists(mrcc_tmpdir) == False:
+        os.mkdir(mrcc_tmpdir)
+
+    # Move into the new directory
+    os.chdir(mrcc_tmpdir)
+
+    # Generate integrals and input file (dumps files to the current directory)
+    PsiMod.mrcc(level)
+
+    # Load the fort.56 file
+    # and dump a copy into the outfile
+    PsiMod.print_out("\n===== Begin fort.56 input for MRCC ======\n")
+    PsiMod.print_out(open('fort.56', 'r').read())
+    PsiMod.print_out("===== End   fort.56 input for MRCC ======\n")
+
+    # Close output file
+    PsiMod.close_outfile()
+
+    # Modify the environment:
+    #    PGI Fortan prints warning to screen if STOP is used
+    os.environ['NO_STOP_MESSAGE'] = "1"
+
+    # Obtain user's OMP_NUM_THREADS so that we don't blow it away.
+    omp_num_threads_found = os.environ.has_key("OMP_NUM_THREADS")
+    if omp_num_threads_found == True:
+        omp_num_threads_user = os.environ['OMP_NUM_THREADS']
+
+    # If the user provided MRCC_OMP_NUM_THREADS set the environ to it
+    if PsiMod.has_option_changed('MRCC_OMP_NUM_THREADS') == True:
+        os.environ['OMP_NUM_THREADS'] = str(PsiMod.get_option('MRCC_OMP_NUM_THREADS'))
+
+    # Call dmrcc, directing all screen output to the output file
+    try:
+        if PsiMod.outfile_name() == "stdout":
+            retcode = subprocess.call("dmrcc", shell=True)
+        else:
+            retcode = subprocess.call("dmrcc >> " + current_directory + "/" + PsiMod.outfile_name(), shell=True)
+
+        if retcode < 0:
+            print >>sys.stderr, "MRCC was terminated by signal", -retcode
+            exit(1)
+        elif retcode > 0:
+            print >>sys.stderr, "MRCC errored", retcode
+            exit(1)
+
+    except OSError, e:
+        print >>sys.stderr, "Execution failed:", e
+        exit(1)
+
+    # Restore the OMP_NUM_THREADS that the user set.
+    if omp_num_threads_found == True:
+        if PsiMod.has_option_changed('MRCC_OMP_NUM_THREADS') == True:
+            os.environ['OMP_NUM_THREADS'] = omp_num_threads_user
+
+    # Scan iface file and grab the file energy.
+    e = 0.0
+    for line in file("iface"):
+        if fullname in line:
+            fields = line.split()
+            e = float(fields[5])
+
+    PsiMod.set_variable("CURRENT ENERGY", e)
+    PsiMod.set_variable(fullname + " ENERGY", e)
+
+    # Load the iface file
+    iface = open('iface', 'r')
+    iface_contents = iface.read()
+
+    # Delete mrcc tempdir
+    os.chdir("..")
+    try:
+        # Delete unless we're told not to
+        if (keep == False and kwargs.has_key('path') == False):
+            shutil.rmtree(mrcc_tmpdir)
+    except OSerror, e:
+        print >>sys.stderr, "Unable to remove MRCC temporary directory", e
+        exit(1)
+
+    # Revert to previous current directory location
+    os.chdir(current_directory)
+
+    # Reopen output file
+    PsiMod.reopen_outfile()
+
+    # If we're told to keep the files or the user provided a path, do nothing.
+    if (keep != False or kwargs.has_key('path')):
+        PsiMod.print_out("\nMRCC scratch files have been kept.\n")
+        PsiMod.print_out("They can be found in " + mrcc_tmpdir)
+
+    # Dump iface contents to output
+    PsiMod.print_out("\n")
+    banner("Full results from MRCC")
+    PsiMod.print_out("\n")
+    PsiMod.print_out(iface_contents)
+
+    return e

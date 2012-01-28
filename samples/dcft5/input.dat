@@ -2,6 +2,8 @@
 #! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
 #! Four-virtual integrals are handled in the MO Basis.
 
+memory 250 mb
+
 
 molecule ne {
     1 2
@@ -9,7 +11,7 @@ molecule ne {
 }
 
 set globals {
-    convergence 11
+    r_convergence 11
     reference   uhf
     ao_basis    none
     algorithm   twostep
@@ -21,7 +23,4 @@ energy('dcft')
 
 set algorithm simultaneous
 energy('dcft')
-
-
-clean()
 

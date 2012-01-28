@@ -199,7 +199,9 @@ IntegralTransform::backtransform_tpdm_restricted()
                                 TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+            sort_so_tpdm(&K, h, n*rowsPerBucket, thisBucketRows, (h==0 && n==0));
+            // Not needed!
+//            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
         }
         dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
         dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);

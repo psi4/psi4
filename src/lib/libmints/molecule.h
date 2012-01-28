@@ -9,6 +9,7 @@
 #include "typedefs.h"
 
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
+#define DEFAULT_SYM_TOL 1.0E-8
 
 #include <boost/shared_ptr.hpp>  // something is going on requiring this header
 
@@ -67,11 +68,11 @@ protected:
     bool fix_orientation_;
     /// Move to center of mass or not?
     bool move_to_com_;
-    /// Whether the user specified the charge, or default was used
-    bool charge_specified_;
-    /// Whether the user spefified the multiplicity, or default was used
-    bool multiplicity_specified_;
 
+    /// Whether the charge was given by the user
+    bool charge_specified_;
+    /// Whether the multiplicity was specified by the user
+    bool multiplicity_specified_;
     /// The molecular charge
     int molecular_charge_;
     /// The multiplicity (defined as 2Ms + 1)
@@ -122,8 +123,12 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
-    /// Old previous symmetry frame (so one can fix to it, if desired)
-    Matrix *old_symmetry_frame_;
+    ///// Old previous symmetry frame (so one can fix to it, if desired)
+    //Matrix *old_symmetry_frame_;
+
+    /// Reinterpret the coord entries or not
+    /// Default is true, except for findif
+    bool reinterpret_coordentries_;
 
 public:
     Molecule();
@@ -176,6 +181,10 @@ public:
                   const char *symb = "", double mass = 0.0,
                   double charge = 0.0, int lineno = -1);
 
+    /// Whether the multiplicity was given by the user
+    bool multiplicity_specified() const { return multiplicity_specified_; }
+    /// Whether the charge was given by the user
+    bool charge_specified() const { return charge_specified_; }
     /// The number of fragments in the molecule
     int nfragments() const { return fragments_.size();}
     /// Get molecule name
@@ -183,9 +192,9 @@ public:
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
-    const int natom() const { return atoms_.size(); }
+    int natom() const { return atoms_.size(); }
     /// Number of all atoms (includes dummies)
-    const int nallatom() const { return full_atoms_.size(); }
+    int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
     const double& Z(int atom) const;
     /// Nuclear charge of atom
@@ -238,6 +247,9 @@ public:
     int atom_at_position2(Vector3&, double tol = 0.05) const;
     /// @}
 
+    /// Do we reinterpret coordentries during a call to update_geometry?
+    void set_reinterpret_coordentry(bool rc);
+
     /// Returns the geometry in a Matrix
     Matrix geometry() const;
     /// Returns the full (dummies included) in a Matrix
@@ -270,6 +282,11 @@ public:
     void rotate(const Matrix& R);
     void rotate_full(const Matrix& R);
 
+    /**
+     * Reinterpret the fragments for reals/ghosts and build the atom list
+     */
+    void reinterpret_coordentries();
+
     /// Computes center of mass of molecule (does not translate molecule)
     Vector3 center_of_mass() const;
     /// Computes nuclear repulsion energy
@@ -296,16 +313,19 @@ public:
     /// Compute inertia tensor.
     Matrix* inertia_tensor() const;
 
-    /// Returns true if the user specified the charge
-    bool charge_specified() const { return charge_specified_; }
-    /// Returns true if the user specified the multiplicity
-    bool multiplicity_specified() const { return multiplicity_specified_; }
-
     /// Print the molecule
     void print() const;
 
+    /// Print the molecule in the same format that the user provided
+    void print_in_input_format() const;
+
     /// Print the molecule in Bohr
     void print_in_bohr() const;
+
+    ///Print the geometrical parameters of the molecule
+    void print_distances() const;
+    void print_bond_angles() const;
+    void print_dihedrals() const;
 
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;
@@ -341,30 +361,33 @@ public:
     ///
     /// Symmetry
     /// @{
-    bool has_symmetry_element(Vector3& op, double tol) const;
+    bool has_symmetry_element(Vector3& op, double tol=DEFAULT_SYM_TOL) const;
     boost::shared_ptr<PointGroup> point_group() const;
     void set_point_group(boost::shared_ptr<PointGroup> pg);
     /// Does the molecule have an inversion center at origin
-    bool has_inversion(Vector3& origin, double tol = 0.05) const;
+    bool has_inversion(Vector3& origin, double tol=DEFAULT_SYM_TOL) const;
     /// Is a plane?
-    bool is_plane(Vector3& origin, Vector3& uperp, double tol = 0.05) const;
+    bool is_plane(Vector3& origin, Vector3& uperp, double tol=DEFAULT_SYM_TOL) const;
     /// Is an axis?
-    bool is_axis(Vector3& origin, Vector3& axis, int order, double tol=0.05) const;
+    bool is_axis(Vector3& origin, Vector3& axis, int order, double tol=DEFAULT_SYM_TOL) const;
     /// Is the molecule linear, or planar?
-    void is_linear_planar(bool& linear, bool& planar, double tol) const;
+    void is_linear_planar(bool& linear, bool& planar, double tol=DEFAULT_SYM_TOL) const;
     /// Find computational molecular point group, user can override this with the "symmetry" keyword
-    boost::shared_ptr<PointGroup> find_point_group(double tol=1.0e-8) const;
+    boost::shared_ptr<PointGroup> find_point_group(double tol=DEFAULT_SYM_TOL) const;
     /// Override symmetry from outside the molecule string
     void reset_point_group(const std::string& pgname);
     /// Find highest molecular point group
-    boost::shared_ptr<PointGroup> find_highest_point_group(double tol=1.0e-8) const;
+    boost::shared_ptr<PointGroup> find_highest_point_group(double tol=DEFAULT_SYM_TOL) const;
+    /// Determine symmetry reference frame. If noreorient is set, this is the rotation matrix
+    /// applied to the geometry in update_geometry.
+    boost::shared_ptr<Matrix> symmetry_frame(double tol=DEFAULT_SYM_TOL);
     /// Release symmetry information
     void release_symmetry_information();
     /// Initialize molecular specific symemtry information
     /// Uses the point group object obtain by calling point_group()
-    void form_symmetry_information(double tol=1.0e-8);
+    void form_symmetry_information(double tol=DEFAULT_SYM_TOL);
     /// Returns the symmetry label
-    const char *sym_label();
+    std::string sym_label();
     /// Returns the irrep labels
     char **irrep_labels();
     const std::string& symmetry_from_input() const { return symmetry_from_input_; }
@@ -489,11 +512,11 @@ public:
     bool is_variable(const std::string &str) const;
 
     /// Sets the molecular charge
-    void set_molecular_charge(int charge) {molecular_charge_ = charge;}
+    void set_molecular_charge(int charge) {charge_specified_ = true; molecular_charge_ = charge;}
     /// Gets the molecular charge
     int molecular_charge() const;
     /// Sets the multiplicity (defined as 2Ms + 1)
-    void set_multiplicity(int mult) { multiplicity_ = mult; }
+    void set_multiplicity(int mult) { multiplicity_specified_ = true; multiplicity_ = mult; }
     /// Get the multiplicity (defined as 2Ms + 1)
     int multiplicity() const;
     /// Sets the geometry units

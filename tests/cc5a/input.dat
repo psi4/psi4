@@ -1,10 +1,6 @@
 #! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
-refnuc   =  135.0921284884196   #TEST
-refscf   = -205.422369155359    #TEST
-refccsd  =   -0.345263564418438 #TEST
-ref_t    =   -0.007645878508210 #TEST
-reftotal = -205.775278598298456 #TEST
+memory 250 mb
 
 molecule C4NH4 {
   -1 1
@@ -21,21 +17,23 @@ molecule C4NH4 {
 }
 
 set globals {
-  wfn         ccsd_t
   docc        [10, 1, 4, 3]
-  basis       STO-3G
+  basis       cc-pVDZ
   freeze_core true
-  convergence 10
-  e_converge  10
-  d_converge  10
+  r_convergence 10
+  e_convergence  10
 }
 
 energy('ccsd(t)')
+
+refnuc   =  135.092128488419604 #TEST
+refscf   = -208.153697555165110 #TEST
+refccsd  =   -0.731388084971396 #TEST
+ref_t    =   -0.030675386522182 #TEST
+reftotal = -208.915761026658572 #TEST
 
 compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),        9, "Nuclear repulsion energy")  #TEST
 compare_values(refscf,   get_variable("SCF total energy"),              9, "SCF energy")                   #TEST
 compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")            #TEST
 compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")             #TEST
 compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")                 #TEST
-
-clean()

@@ -61,12 +61,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
 {
     // Implement set/get functions to customize any of this stuff.  Delayed initialization
     // is possible in case any of these variables need to be changed before setup.
-    printTei_      = print_ > 5;
-    useIWL_        = outputType_ == IWLAndDPD || outputType_ == IWLOnly;
-    useDPD_        = outputType_ == IWLAndDPD || outputType_ == DPDOnly;
-    iwlAAIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
-    iwlABIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
-    iwlBBIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
+    memory_ = Process::environment.get_memory();
 
     labels_  = Process::environment.molecule()->irrep_labels();
     nirreps_ = wfn->nirrep();
@@ -78,6 +73,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
     openpi_  = wfn->soccpi();
     frzcpi_  = wfn->frzcpi();
     frzvpi_  = wfn->frzvpi();
+    frozen_core_energy_ = 0.0;
 
     common_moinfo_initialize();
 
@@ -142,15 +138,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     keepHtTpdm_(true),
     tpdmAlreadyPresorted_(false)
 {
-//    wfn_           = NULL;
-//    _Ca            = NULL;
-//    _Cb            = NULL;
-    printTei_      = print_ > 5;
-    useIWL_        = outputType_ == IWLAndDPD || outputType_ == IWLOnly;
-    useDPD_        = outputType_ == IWLAndDPD || outputType_ == DPDOnly;
-    iwlAAIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
-    iwlABIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
-    iwlBBIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
+    memory_ = Process::environment.get_memory();
 
     nirreps_ = c->nirrep();
     nmo_     = c->ncol() + i->ncol() + a->ncol() + v->ncol();
@@ -161,6 +149,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     openpi_  = Dimension(nirreps_); // This is the restricted constructor, there are no unpaired electrons
     frzcpi_  = c->colspi();
     frzvpi_  = v->colspi();
+    frozen_core_energy_ = 0.0;
 
     // Need to smash together the C's only for them to be ripped apart elsewhere.
     std::vector<SharedMatrix > Cs;
@@ -179,7 +168,17 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
 void
 IntegralTransform::initialize()
 {
+    print_         = Process::environment.options.get_int("PRINT");
+    printTei_      = print_ > 5;
+    useIWL_        = outputType_ == IWLAndDPD || outputType_ == IWLOnly;
+    useDPD_        = outputType_ == IWLAndDPD || outputType_ == DPDOnly;
+    iwlAAIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
+    iwlABIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
+    iwlBBIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
+
     process_spaces();
+
+    tpdm_buffer_ = 0;
 
     // Set up the DPD library
     // TODO implement caching of files
@@ -188,7 +187,6 @@ IntegralTransform::initialize()
     cacheFiles_ = init_int_array(PSIO_MAXUNIT);
     cacheList_  = init_int_matrix(numIndexArrays, numIndexArrays);
     int currentActiveDPD = psi::dpd_default;
-    memory_ = Process::environment.get_memory();
     dpd_init(myDPDNum_, nirreps_, memory_, 0, cacheFiles_,
             cacheList_, NULL, numSpaces, spaceArray_);
 
@@ -273,6 +271,8 @@ IntegralTransform::~IntegralTransform()
         free(cacheFiles_);
         free(zeros_);
     }
+    if(tpdm_buffer_)
+        delete [] tpdm_buffer_;
 }
 
 void IntegralTransform::check_initialized()

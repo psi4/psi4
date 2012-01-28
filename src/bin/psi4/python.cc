@@ -1,7 +1,7 @@
-#include <libmints/mints.h>
-
-#include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
+#include <boost/python/list.hpp>
+#include <boost/python/dict.hpp>
+#include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <cstdio>
@@ -9,6 +9,7 @@
 #include <map>
 #include <iomanip>
 
+#include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
@@ -69,20 +70,48 @@ namespace psi {
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
+    namespace adc        { PsiReturnType adc(Options&);       }
+    namespace mrcc       { PsiReturnType mrcc(Options&, const boost::python::dict&); }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &, int irrep=-1);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_hessian_0(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       //PsiReturnType fd_2_0(Options &, const boost::python::list&);
       PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&, int irrep=-1);
+      PsiReturnType fd_hessian_0(Options &, const boost::python::list&);
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
+}
+
+void py_close_outfile()
+{
+    if (outfile != stdout) {
+        fclose(outfile);
+        outfile = NULL;
+    }
+}
+
+void py_reopen_outfile()
+{
+    if (outfile_name == "stdout")
+        outfile = stdout;
+    else {
+        outfile = fopen(outfile_name.c_str(), "a");
+        if (outfile == NULL)
+            throw PSIEXCEPTION("PSI4: Unable to reopen output file.");
+    }
+}
+
+std::string py_get_outfile_name()
+{
+    return outfile_name;
 }
 
 void py_psi_prepare_options_for_module(std::string const & name)
@@ -161,6 +190,12 @@ double py_psi_mcscf()
         return 0.0;
 }
 
+PsiReturnType py_psi_mrcc(const boost::python::dict& level)
+{
+    py_psi_prepare_options_for_module("MRCC");
+    return mrcc::mrcc(Process::environment.options, level);
+}
+
 std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
@@ -177,6 +212,12 @@ std::vector< SharedMatrix > py_psi_fd_geoms_freq_0(int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_0(Process::environment.options, irrep);
+}
+
+std::vector< SharedMatrix > py_psi_fd_geoms_hessian_0()
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_geoms_hessian_0(Process::environment.options);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_freq_1(int irrep)
@@ -201,6 +242,12 @@ PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_freq_0(Process::environment.options, energies, irrep);
+}
+
+PsiReturnType py_psi_fd_hessian_0(const boost::python::list& energies)
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_hessian_0(Process::environment.options, energies);
 }
 
 PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
@@ -369,6 +416,13 @@ double py_psi_psimrcc()
     return 0.0;
 }
 
+double py_psi_adc()
+{
+  py_psi_prepare_options_for_module("ADC");
+  adc::adc(Process::environment.options);
+  return 0.0;
+}
+
 char const* py_psi_version()
 {
     return PSI_VERSION;
@@ -408,7 +462,7 @@ void py_psi_print_out(std::string s)
  * @return whether key describes a convergence threshold or not
  */
 bool specifies_convergence(std::string const & key){
-    return (key.find("CONV") != key.npos);
+    return ((key.find("CONV") != key.npos) || (key.find("TOL") != key.npos));
 }
 
 bool check_for_basis(std::string const & name, std::string const & type)
@@ -529,6 +583,13 @@ bool py_psi_set_global_option_double(std::string const & key, double value)
     return true;
 }
 
+bool py_psi_set_global_option_python(std::string const & key, boost::python::object& obj)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_global_python(nonconst_key, obj);
+    return true;
+}
+
 bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
@@ -591,7 +652,7 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
     return true;
 }
 
-void py_psi_set_option_python(const string& key, boost::python::object& obj)
+void py_psi_set_local_option_python(const string& key, boost::python::object& obj)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options[nonconst_key];
@@ -724,16 +785,6 @@ SharedMatrix py_psi_get_gradient()
     }
 }
 
-void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
-{
-    Process::environment.set_potential(potential);
-}
-
-boost::shared_ptr<ExternalPotential> py_psi_get_active_potential()
-{
-    return Process::environment.potential();
-}
-
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -854,8 +905,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
-    def("set_active_potential", py_psi_set_active_potential);
-    def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("get_gradient", py_psi_get_gradient);
     def("set_gradient", py_psi_set_gradient);
@@ -882,7 +931,9 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
-    def("set_option_python", py_psi_set_option_python);
+    def("set_global_option_python", py_psi_set_global_option_python);
+    def("set_local_option_python", py_psi_set_local_option_python);
+
     def("get_global_option_list", py_psi_get_global_option_list);
 
     // Get the option; letting liboptions decide whether to use global or local
@@ -916,6 +967,10 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Returns the location where the Psi4 source is located.
     def("psi_top_srcdir", py_psi_top_srcdir);
 
+    def("close_outfile", py_close_outfile);
+    def("reopen_outfile", py_reopen_outfile);
+    def("outfile_name", py_get_outfile_name);
+
     // modules
     def("mints", py_psi_mints);
     def("deriv", py_psi_deriv);
@@ -931,14 +986,17 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("lmp2", py_psi_lmp2);
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
+    def("mrcc", py_psi_mrcc);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
     def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1);
+    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0);
     def("fd_1_0", py_psi_fd_1_0);
     //def("fd_2_0", py_psi_fd_2_0);
     def("fd_freq_0", py_psi_fd_freq_0);
     def("fd_freq_1", py_psi_fd_freq_1);
+    def("fd_hessian_0", py_psi_fd_hessian_0);
     def("sapt", py_psi_sapt);
     def("psimrcc", py_psi_psimrcc);
     def("optking", py_psi_optking);
@@ -954,6 +1012,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccresponse", py_psi_ccresponse);
     def("cceom", py_psi_cceom);
     def("omp2", py_psi_omp2);
+    def("adc", py_psi_adc);
     def("opt_clean", py_psi_opt_clean);
 
     // Define library classes
@@ -995,6 +1054,13 @@ void Python::finalize()
     Py_Finalize();
 }
 
+#define PY_TRY(ptr, command)  \
+     if(!(ptr = command)){    \
+         PyErr_Print();       \
+         exit(1);             \
+     } 
+
+
 void Python::run(FILE *input)
 {
     using namespace boost::python;
@@ -1030,9 +1096,9 @@ void Python::run(FILE *input)
 
         // Add PSI library python path
         PyObject *path, *sysmod, *str;
-        sysmod = PyImport_ImportModule("sys");
-        path = PyObject_GetAttrString(sysmod, "path");
-        str = PyString_FromString(psiDataDirWithPython.c_str());
+        PY_TRY(sysmod , PyImport_ImportModule("sys"));
+        PY_TRY(path   , PyObject_GetAttrString(sysmod, "path"));
+        PY_TRY(str    , PyString_FromString(psiDataDirWithPython.c_str()));
         PyList_Append(path, str);
         Py_DECREF(str);
         Py_DECREF(path);
@@ -1061,10 +1127,14 @@ void Python::run(FILE *input)
             PyRun_SimpleString(s);
 
             // Process the input file
-            PyObject *input = PyImport_ImportModule("input");
-            PyObject *function = PyObject_GetAttrString(input, "process_input");
-            PyObject *pargs = Py_BuildValue("(s)", file.str().c_str());
-            PyObject *ret = PyEval_CallObject(function, pargs);
+            PyObject *input;
+            PY_TRY(input, PyImport_ImportModule("input") );
+            PyObject *function;
+            PY_TRY(function, PyObject_GetAttrString(input, "process_input"));
+            PyObject *pargs;
+            PY_TRY(pargs, Py_BuildValue("(s)", file.str().c_str()) );
+            PyObject *ret;
+            PY_TRY( ret, PyEval_CallObject(function, pargs) );
 
             char *val;
             PyArg_Parse(ret, "s", &val);
@@ -1096,6 +1166,7 @@ void Python::run(FILE *input)
     }
 
     if (s)
-        free(s);
+      free(s);
+    Process::environment.reference_wavefunction().reset();
     py_psi_plugin_close_all();
 }

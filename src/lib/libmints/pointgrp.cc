@@ -49,6 +49,8 @@
  *      June, 1993
  */
 
+#include <boost/algorithm/string.hpp>
+
 #include <cstdlib>
 #include <cstring>
 #include <ctype.h>
@@ -59,76 +61,133 @@
 using namespace std;
 using namespace psi;
 
+namespace psi {
+namespace PointGroups
+{
+void similar(unsigned char bits, unsigned char* sim, char& cnt)
+{
+    static unsigned char cs[3] = { CsX, CsY, CsZ };
+    static unsigned char c2v[3] = { C2vZ, C2vY, C2vX };
+    static unsigned char c2h[3] = { C2hZ, C2hY, C2hX };
+    static unsigned char c2[3]  = { C2Z, C2Y, C2X };
+    static unsigned char d2h[3] = { D2h, 0, 0 };
+    static unsigned char d2[3]  = { D2, 0, 0 };
+    static unsigned char ci[3]  = { Ci, 0, 0 };
+    static unsigned char c1[3]  = { C1, 0, 0 };
+
+    switch (bits) {
+    case CsX:
+    case CsY:
+    case CsZ:
+        memcpy(sim, cs, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case C2vZ:
+    case C2vY:
+    case C2vX:
+        memcpy(sim, c2v, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case C2hZ:
+    case C2hY:
+    case C2hX:
+        memcpy(sim, c2h, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case C2Z:
+    case C2Y:
+    case C2X:
+        memcpy(sim, c2, sizeof(char)*3);
+        cnt = 3;
+        break;
+    case D2h:
+        memcpy(sim, d2h, sizeof(char)*1);
+        cnt = 1;
+        break;
+    case Ci:
+        memcpy(sim, ci, sizeof(char)*1);
+        cnt = 1;
+        break;
+    case C1:
+        memcpy(sim, c1, sizeof(char)*1);
+        cnt = 1;
+        break;
+    case D2:
+        memcpy(sim, d2, sizeof(char)*1);
+        cnt = 1;
+        break;
+    default:
+        throw PSIEXCEPTION("Should not have reaced here.");
+    }
+}
+} } // end namespace
+
 ////////////////////////////////////////////////////////////////////////
 
 PointGroup::PointGroup()
-    : symb(0)
 {
     set_symbol("c1");
-    frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
-PointGroup::PointGroup(const char *s)
-    : symb(0)
+PointGroup::PointGroup(const std::string& s)
 {
-    set_symbol(s);
-    frame(0,0) = frame(1,1) = frame(2,2) = 1;
+    if (full_name_to_bits(s, bits_) == false)
+        throw PSIEXCEPTION("PointGroup: Unknown point group name provided.");
+    set_symbol(bits_to_basic_name(bits_));
     origin_[0] = origin_[1] = origin_[2] =0;
 }
 
-PointGroup::PointGroup(const char *s, SymmetryOperation& so)
-    : symb(0)
-{
-    set_symbol(s);
-    frame = so;
-    origin_[0] = origin_[1] = origin_[2] =0;
-}
-
-PointGroup::PointGroup(const char *s, SymmetryOperation& so,
+PointGroup::PointGroup(const std::string& s,
                        const Vector3& origin)
-    : symb(0)
 {
-    set_symbol(s);
-    frame = so;
+    if (full_name_to_bits(s, bits_) == false)
+        throw PSIEXCEPTION("PointGroup: Unknown point group name provided.");
+    set_symbol(bits_to_basic_name(bits_));
+    origin_ = origin;
+}
+
+PointGroup::PointGroup(unsigned char bits)
+    : bits_(bits)
+{
+    set_symbol(bits_to_basic_name(bits));
+    origin_[0] = origin_[1] = origin_[2] =0;
+}
+
+PointGroup::PointGroup(unsigned char bits, const Vector3 & origin)
+    : bits_(bits)
+{
+    set_symbol(bits_to_basic_name(bits));
     origin_ = origin;
 }
 
 PointGroup::PointGroup(const PointGroup& pg)
-    : symb(0)
 {
     *this = pg;
 }
 
 PointGroup::PointGroup(const boost::shared_ptr<PointGroup>& pg)
-    : symb(0)
 {
     *this = *pg.get();
 }
 
 PointGroup::~PointGroup()
 {
-    if (symb) { delete[] symb; symb=0; }
 }
 
 PointGroup&
 PointGroup::operator=(const PointGroup& pg)
 {
     set_symbol(pg.symb);
-    frame = pg.frame;
     origin_ = pg.origin_;
     return *this;
 }
 
 void
-PointGroup::set_symbol(const char *sym)
+PointGroup::set_symbol(const std::string& sym)
 {
-    if (sym) {
-        if (symb) delete[] symb;
-        int len;
-        symb = new char[(len=strlen(sym))+1];
-                for (int i=0; i<len; i++) symb[i] = (char) tolower(sym[i]);
-        symb[len] = '\0';
+    if (sym.length()) {
+        symb = sym;
     } else {
         set_symbol("c1");
     }
@@ -137,22 +196,70 @@ PointGroup::set_symbol(const char *sym)
 CharacterTable
 PointGroup::char_table() const
 {
-    CharacterTable ret(symb,frame);
+    CharacterTable ret(bits_);
     return ret;
 }
 
 int
 PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
 {
-    if (strcmp(symb,grp->symb)) return 0;
-
-    for (int i=0; i < 3; i++) {
-        for (int j=0; j < 3; j++) {
-            if (fabs(frame(i,j) - grp->frame(i,j)) > tol) return 0;
-        }
-    }
+    if (symb != grp->symb)
+        return 0;
 
     return 1;
+}
+
+bool PointGroup::full_name_to_bits(const std::string& pg, unsigned char &bits)
+{
+    bool retvalue = true;
+
+    if (boost::iequals(pg, "C1"))
+        bits = PointGroups::C1;
+    else if (boost::iequals(pg, "Ci"))
+        bits = PointGroups::Ci;
+    else if (boost::iequals(pg, "C2(x)") || boost::iequals(pg, "C2x") || boost::iequals(pg, "C2_x"))
+        bits = PointGroups::C2X;
+    else if (boost::iequals(pg, "C2(y)") || boost::iequals(pg, "C2y") || boost::iequals(pg, "C2_y"))
+        bits = PointGroups::C2Y;
+    else if (boost::iequals(pg, "C2(z)") || boost::iequals(pg, "C2z") || boost::iequals(pg, "C2_z"))
+        bits = PointGroups::C2Z;
+    else if (boost::iequals(pg, "Cs(x)") || boost::iequals(pg, "Csx") || boost::iequals(pg, "Cs_x"))
+        bits = PointGroups::CsX;
+    else if (boost::iequals(pg, "Cs(y)") || boost::iequals(pg, "Csy") || boost::iequals(pg, "Cs_y"))
+        bits = PointGroups::CsY;
+    else if (boost::iequals(pg, "Cs(z)") || boost::iequals(pg, "Csz") || boost::iequals(pg, "Cs_z"))
+        bits = PointGroups::CsZ;
+    else if (boost::iequals(pg, "D2"))
+        bits = PointGroups::D2;
+    else if (boost::iequals(pg, "C2v(X)") || boost::iequals(pg, "C2vx") || boost::iequals(pg, "C2v_x"))
+        bits = PointGroups::C2vX;
+    else if (boost::iequals(pg, "C2v(Y)") || boost::iequals(pg, "C2vy") || boost::iequals(pg, "C2v_y"))
+        bits = PointGroups::C2vY;
+    else if (boost::iequals(pg, "C2v(Z)") || boost::iequals(pg, "C2vz") || boost::iequals(pg, "C2v_z"))
+        bits = PointGroups::C2vZ;
+    else if (boost::iequals(pg, "C2h(X)") || boost::iequals(pg, "C2hx") || boost::iequals(pg, "C2h_x"))
+        bits = PointGroups::C2hX;
+    else if (boost::iequals(pg, "C2h(Y)") || boost::iequals(pg, "C2hy") || boost::iequals(pg, "C2h_y"))
+        bits = PointGroups::C2hY;
+    else if (boost::iequals(pg, "C2h(Z)") || boost::iequals(pg, "C2hz") || boost::iequals(pg, "C2h_z"))
+        bits = PointGroups::C2hZ;
+    else if (boost::iequals(pg, "D2h"))
+        bits = PointGroups::D2h;
+
+    // Ok, the user gave us Cs, C2v, C2h, C2, but no directionality
+    else if (boost::iequals(pg, "Cs"))
+        bits = PointGroups::CsX;
+    else if (boost::iequals(pg, "C2v"))
+        bits = PointGroups::C2vZ;
+    else if (boost::iequals(pg, "C2h"))
+        bits = PointGroups::C2hZ;
+    else if (boost::iequals(pg, "C2"))
+        bits = PointGroups::C2Z;
+
+    else
+        retvalue = false;
+
+    return retvalue;
 }
 
 const char* PointGroup::bits_to_full_name(unsigned char bits)
@@ -191,6 +298,7 @@ const char* PointGroup::bits_to_full_name(unsigned char bits)
     case PointGroups::D2h:
         return "D2h";
     default:
+        fprintf(stderr, "Unrecognized point group bits: %d\n", bits);
         throw PSIEXCEPTION("Unrecognized point group bits");
     }
 }
@@ -223,6 +331,7 @@ const char* PointGroup::bits_to_basic_name(unsigned char bits)
     case PointGroups::D2h:
         return "d2h";
     default:
+        fprintf(stderr, "Unrecognized point group bits: %d\n", bits);
         throw PSIEXCEPTION("Unrecognized point group bits");
     }
 }
@@ -230,7 +339,7 @@ const char* PointGroup::bits_to_basic_name(unsigned char bits)
 void
 PointGroup::print(FILE *out) const
 {
-    fprintf(outfile, "PointGroup: %s\n", symb);
+    fprintf(outfile, "PointGroup: %s\n", symb.c_str());
 }
 
 /////////////////////////////////////////////////////////////////////////////

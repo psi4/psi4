@@ -166,61 +166,23 @@ IntegralTransform::presort_so_tei()
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
 
-//        IWL *iwl = new IWL(psio_.get(), soIntFile, tolerance_, 1, 1);
-
-//        Label *lblptr = iwl->labels();
-//        Value *valptr = iwl->values();
-//        int lastbuf   = iwl->last_buffer();
-
-//        for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
-//            int labelIndex = 4*index;
-//            int p = abs((int) lblptr[labelIndex++]);
-//            int q = (int) lblptr[labelIndex++];
-//            int r = (int) lblptr[labelIndex++];
-//            int s = (int) lblptr[labelIndex++];
-//            double value = (double) valptr[index];
-//            idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-//            if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
-//                build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
-//                                   aFzcOp, bFzcOp, aD, bD, aFock, bFock);
-//        } /* end loop through current buffer */
-
-//        /* Now run through the rest of the buffers in the file */
-//        while(!lastbuf){
-//            iwl->fetch();
-//            lastbuf = iwl->last_buffer();
-//            for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
-//                int labelIndex = 4*index;
-//                int p = abs((int) lblptr[labelIndex++]);
-//                int q = (int) lblptr[labelIndex++];
-//                int r = (int) lblptr[labelIndex++];
-//                int s = (int) lblptr[labelIndex++];
-//                double value = (double) valptr[index];
-//                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-//                if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
-//                    build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
-//                                       aFzcOp, bFzcOp, aD, bD, aFock, bFock);
-//            } /* end loop through current buffer */
-//        } /* end loop over reading buffers */
-//        iwl->set_keep_flag(1);
-
         DPDFillerFunctor dpdfiller(&I,n,bucketMap,bucketOffset, false, true);
         NullFunctor null;
         IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, tolerance_, 1, 1);
         // In the functors below, we only want to build the Fock matrix on the first pass
         if(transformationType_ == Restricted){
+            FrozenCoreAndFockRestrictedFunctor fock(aD, aFzcD,aFock,aFzcOp);
+            if(n)
+                iwl_integrals(iwl, dpdfiller, null);
+            else
+                iwl_integrals(iwl, dpdfiller, fock);
+        }else{
             FrozenCoreAndFockUnrestrictedFunctor fock(aD, bD, aFzcD, bFzcD,
                                                       aFock, bFock, aFzcOp, bFzcOp);
             if(n)
-                iwl_integrals(iwl, dpdfiller, fock);
-            else
                 iwl_integrals(iwl, dpdfiller, null);
-        }else{
-            FrozenCoreAndFockRestrictedFunctor fock(aD, aFzcD,aFock,aFzcOp);
-            if(n)
-                iwl_integrals(iwl, dpdfiller, fock);
             else
-                iwl_integrals(iwl, dpdfiller, null);
+                iwl_integrals(iwl, dpdfiller, fock);
         }
         delete iwl;
 
@@ -255,6 +217,18 @@ IntegralTransform::presort_so_tei()
     if(print_)
         fprintf(outfile, "\tTransforming the one-electron integrals and constructing Fock matrices\n");
     if(transformationType_ == Restricted){
+
+        // Compute frozen core energy
+        size_t pq = 0;
+        frozen_core_energy_ = 0.0;
+
+        for(int p=0; p < nso_; p++) {
+            for(int q=0; q <= p ; q++, pq++) {
+                double prefact = p == q ? 1.0 : 2.0;
+                frozen_core_energy_ += prefact * aFzcD[pq] * (aoH[pq] + aFzcOp[pq]);
+            }
+        }
+
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
             double **pCa = Ca_->pointer(h);
             trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
@@ -292,6 +266,18 @@ IntegralTransform::presort_so_tei()
 
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FOCK, nTriMo_, aFock);
     }else{
+
+        // Compute frozen-core energy
+        size_t pq = 0;
+        frozen_core_energy_ = 0.0;
+        for(int p=0; p < nso_; p++) {
+            for(int q=0; q <= p; q++, pq++) {
+                double prefact = p == q ? 0.5 : 1.0;
+                frozen_core_energy_ += prefact * aFzcD[pq] * (aoH[pq] + aFzcOp[pq]);
+                frozen_core_energy_ += prefact * bFzcD[pq] * (aoH[pq] + bFzcOp[pq]);
+            }
+        }
+
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
             double **pCa = Ca_->pointer(h);
             trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));

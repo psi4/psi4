@@ -3,13 +3,15 @@
 #! Four-virtual integrals are handled in the MO Basis.
 #! The reference DCFT energy is taken from the JCP 133 174122 (2010) paper
 
+memory 250 mb
+
 
 molecule ne {
     Ne
 }
 
 set globals {
-    convergence 11
+    r_convergence 11
     reference   uhf
     ao_basis    none
     algorithm   twostep
@@ -21,7 +23,4 @@ energy('dcft')
 
 #set algorithm simultaneous
 #energy('dcft')
-
-
-clean()
 

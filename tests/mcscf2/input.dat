@@ -1,7 +1,9 @@
 #! TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
 
-nucenergy =   68.259512887939   #TEST
-refenergy = -224.359390149846   #TEST
+memory 250 mb
+
+nucenergy =   68.2595076754  #TEST
+refenergy = -224.3593901378  #TEST
 
 molecule ozone {
    O
@@ -13,18 +15,16 @@ set basis cc-pVDZ
 
 set mcscf {
     reference   twocon
-    e_converge  11
+    e_convergence  11
     ci_diis     on
-    d_converge  11
-    ndiis       4
+    d_convergence  11
+    diis_max_vecs 4
     docc        [10, 1]
     socc        [ 0, 2]
     maxiter     120
 }
 
-thisenergy = run_mcscf()
+thisenergy = energy('mcscf')
 
 compare_values(nucenergy, ozone.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 10, "Reference energy")                               #TEST
-
-clean()

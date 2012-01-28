@@ -1,5 +1,7 @@
 #! ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
 
+memory 250 mb
+
 refnuc   =  18.9152665531957    #TEST
 refscf   = -92.1955565653       #TEST
 refccsd  =  -0.281342908547054  #TEST
@@ -14,15 +16,14 @@ molecule CN {
 
 set globals {
   reference rohf
-  wfn ccsd_t
   basis cc-pVDZ
   docc [4, 0, 1, 1]
   socc [1, 0, 0, 0]
   freeze_core true
   
-  convergence 10
-  e_converge 10
-  d_converge 10
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
 }
 
 energy('ccsd(t)')
@@ -32,5 +33,3 @@ compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy
 compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
 compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
 compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
-
-clean()

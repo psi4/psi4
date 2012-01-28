@@ -1,0 +1,21 @@
+#! EOM-CC2/cc-pVDZ on H$@@2$O$@@2$ with two excited states in each irrep
+
+memory 250 mb
+
+molecule h2o2 {
+  0 1
+  O
+  O 1 1.39
+  H 1 0.94 2 102.3
+  H 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  wfn eom_cc2
+  basis "cc-pVDZ"
+  freeze_core true
+  states_per_irrep [2, 2]
+  properties true
+}
+
+energy('eom-cc2')

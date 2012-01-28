@@ -9,10 +9,10 @@ def get_memory():
     return PsiMod.get_memory()
 
 def set_num_threads(nthread):
-    PsiMod.set_n_threads(nthread)
+    PsiMod.set_nthread(nthread)
 
 def get_num_threads():
-    return PsiMol.get_n_threads()
+    return PsiMol.nthread()
 
 def success(label):
     print '\t{0:.<66}PASSED'.format(label)

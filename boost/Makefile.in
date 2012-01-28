@@ -1,0 +1,17 @@
+srcdir = @srcdir@
+
+all: default
+default: boost.compiled
+
+install:
+
+# Steps taken:
+#  1. If directory boost_1_48_0 does not exist, untar the source file.
+#  2. Build Boost with the components we need and move the libraries to a
+#     central location (bin.v2/libs)
+#  3. Touch the target file so that the above dependencies will be fulfilled.
+boost.compiled:
+	if [ ! -d boost_1_48_0 ]; then tar zxf $(srcdir)/boost_1_48_0.tar.gz; fi
+	(cd boost_1_48_0 && ./bootstrap.sh --with-libraries=filesystem,python,regex,serialization,system,thread && ./b2 && cd bin.v2/libs && find . -name '*.a' -exec cp {} . \;)
+	touch boost.compiled
+

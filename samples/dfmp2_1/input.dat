@@ -1,6 +1,8 @@
 #! Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy
 #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
+memory 250 mb
+
 
 molecule formic_dim {
    0 1
@@ -10,26 +12,25 @@ molecule formic_dim {
    H  -2.979488  -0.258829   0.000000
    H  -0.498833   1.107195   0.000000
    --
+   0 1
    C   1.888896   0.179692   0.000000
    O   1.493280  -1.073689   0.000000
    O   1.170435   1.166590   0.000000
    H   2.979488   0.258829   0.000000
    H   0.498833  -1.107195   0.000000
-   symmetry c1
    units angstrom 
    no_reorient
 }
 
 set globals {
    basis cc-pvdz
-   ri_basis_scf cc-pvdz-jkfit
-   ri_basis_mp2 cc-pvdz-ri
+   df_basis_scf cc-pvdz-jkfit
+   df_basis_mp2 cc-pvdz-ri
+   # not necessary to specify df_basis* for Dunning basis sets
    scf_type df
    guess sad
-   d_converge 11
+   d_convergence 11
 }
 
 e_cp = cp('dfmp2')
 
-
-clean()

@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-alpha])
+define([psi_version],[4.0.0-beta1])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -85,7 +85,7 @@ CXXDBG='-g' AC_SUBST(CXXDBG)
 CXXOPT='-O2' AC_SUBST(CXXOPT)
 CXXDEF='' AC_SUBST(CXXDEF)
 CXXOTH='' AC_SUBST(CXXOTH)
-CXXINC='$(CPPFLAGS) $(PSICPPFLAGS)' AC_SUBST(CXXINC)
+CXXINC='$(CPPFLAGS) $(PSICPPFLAGS) $(PYTHON_INCLUDE)' AC_SUBST(CXXINC)
 
 ########
 ## PSI-specific options
@@ -112,16 +112,6 @@ AC_ARG_WITH(max-am-deriv2,[  --with-max-am-deriv2    maximum AM in ERI second de
   LIBDERIV_NEW_AM2=$((2*($withval)))
 ])
 AC_SUBST(LIBDERIV_NEW_AM2)
-
-# Options for libr12
-LIBR12_NEW_AM=6
-LIBR12_OPT_AM=6
-AC_ARG_WITH(max-am-r12,[  --with-max-am-r12       maximum AM in R12 integrals],[
-  LIBR12_NEW_AM=$((2*($withval)))
-  LIBR12_OPT_AM=$((2*($withval)))
-])
-AC_SUBST(LIBR12_NEW_AM)
-AC_SUBST(LIBR12_OPT_AM)
 
 PSI_INTEGRALS_STANDARD=1
 AC_ARG_WITH(integrals-standard,[  --with-integrals-standard     specifies the standard for the basis normalization, etc.
@@ -665,13 +655,20 @@ AC_CHECK_LIB(m,exit,CXXLIBS="$CXXLIBS -lm")
 AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
+BOOST_ROOT='$(top_objdir)/boost/boost_1_48_0'
+BOOST_INC='$(BOOST_ROOT)'
+BOOST_LIB='$(BOOST_ROOT)/bin.v2/libs'
+AC_SUBST(BOOST_ROOT)
+AC_SUBST(BOOST_INC)
+AC_SUBST(BOOST_LIB)
+
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
+  PSICPPFLAGS='-I. -I$(BOOST_INC) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
   AC_SUBST(PSICPPFLAGS)
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
 else
-  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
+  PSICPPFLAGS='-I. -I$(BOOST_INC) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
   AC_SUBST(PSICPPFLAGS)
 fi
 AC_SUBST(CPPFLAGS)
@@ -881,9 +878,11 @@ FFLAGS='$(FDBG) $(FOPT) $(FOTH) $(FSTATIC)' AC_SUBST(FFLAGS)
 
 ########
 ## Output
-######## #src/lib/libbasis/Makefile
+######## 
 
-AC_CONFIG_FILES([include/Makefile
+AC_CONFIG_FILES([
+          boost/Makefile
+          include/Makefile
           Makefile lib/Makefile src/Makefile
           src/lib/Makefile src/lib/MakeRules src/lib/MakeVars
           src/util/Makefile src/util/MakeRules src/util/MakeVars
@@ -911,22 +910,15 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libint/Makefile
           src/lib/libint/MakeVars
           src/lib/libint/libint_config.h
-          src/lib/libr12/Makefile
-          src/lib/libr12/MakeVars
-          src/lib/libr12/libr12_config.h
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
+          src/lib/libdist_matrix/Makefile
+          src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
-          src/lib/libboost_python/Makefile
-          src/lib/libboost_regex/Makefile
-          src/lib/libboost_thread/Makefile
-          src/lib/libboost_filesystem/Makefile
-          src/lib/libboost_system/Makefile
-          src/lib/libboost_serialization/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
           src/lib/libplugin/Makefile
@@ -938,7 +930,6 @@ AC_CONFIG_FILES([include/Makefile
 
           src/bin/psi4/Makefile
           src/bin/response/Makefile
-          src/bin/cusp/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
@@ -947,10 +938,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
-          src/bin/cphf/Makefile
           src/bin/ccsort/Makefile
-          src/bin/mvo/Makefile
-          src/bin/geom/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
           src/bin/ccresponse/Makefile
@@ -962,19 +950,27 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/scf/Makefile
           src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
-          src/bin/df-mp2/Makefile
+          src/bin/mrcc/Makefile
+          src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
           src/bin/optking/Makefile
-          src/bin/df-cc/Makefile
+          src/bin/dfcc/Makefile
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
+          src/bin/adc/Makefile
 
           tests/Makefile
           tests/MakeVars
           tests/MakeRules
           tests/runtest.pl
+          tests/tu1-h2o-energy/Makefile
+          tests/tu2-ch2-energy/Makefile
+          tests/tu3-h2o-opt/Makefile
+          tests/tu4-h2o-freq/Makefile
+          tests/tu5-sapt/Makefile
+          tests/tu6-cp-ne2/Makefile
           tests/dcft1/Makefile
           tests/dcft2/Makefile
           tests/dcft3/Makefile
@@ -999,6 +995,10 @@ AC_CONFIG_FILES([include/Makefile
           tests/fd-freq-energy/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
+          tests/sapt2/Makefile
+          tests/sapt3/Makefile
+          tests/sapt4/Makefile
+          tests/sapt5/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
           tests/pywrap_db1/Makefile
@@ -1029,37 +1029,66 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc4/Makefile
           tests/cc4a/Makefile
           tests/cc5a/Makefile
+          tests/cc6/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
+          tests/cc8b/Makefile
+          tests/cc8c/Makefile
           tests/cc9/Makefile
+          tests/cc9a/Makefile
+          tests/cc10/Makefile
+          tests/cc11/Makefile
           tests/cc12/Makefile
           tests/cc13/Makefile
+          tests/cc13a/Makefile
           tests/cc15/Makefile
           tests/cc16/Makefile
           tests/cc17/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
           tests/cc22/Makefile
+          tests/cc24/Makefile
+          tests/cc25/Makefile
+          tests/cc26/Makefile
+          tests/cc27/Makefile
           tests/cc28/Makefile
           tests/cc29/Makefile
           tests/cc30/Makefile
           tests/cc31/Makefile
           tests/cc32/Makefile
           tests/cc33/Makefile
+          tests/cc34/Makefile
           tests/cc35/Makefile
+          tests/cc36/Makefile
+          tests/cc37/Makefile
+          tests/cc38/Makefile
+          tests/cc39/Makefile
+          tests/cc40/Makefile
+          tests/cc41/Makefile
+          tests/cc42/Makefile
+          tests/cc43/Makefile
+          tests/cc44/Makefile
+          tests/cc45/Makefile
+          tests/cc49/Makefile
+          tests/cc50/Makefile
+          tests/cc51/Makefile
           tests/cc52/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
+          tests/psimrcc-sp1/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile
           tests/mints4/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
+          tests/pubchem1/Makefile
+          tests/props1/Makefile
           tests/props2/Makefile
           tests/dft1/Makefile
           tests/mom/Makefile
+          tests/frac/Makefile
           tests/plugin_aointegrals/Makefile
           tests/plugin_aointegrals/input.dat
           tests/plugin_aointegrals/aointegrals.cc

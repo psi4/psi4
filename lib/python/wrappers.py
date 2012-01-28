@@ -5,6 +5,7 @@ import input
 import math
 import warnings
 import pickle
+import copy
 from driver import *
 from molecule import *
 from text import *
@@ -13,6 +14,378 @@ from collections import defaultdict
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **kwargs):
     return funcarg(**kwargs)
+
+def n_body(name, **kwargs):
+
+    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    if not('name' in kwargs) and name:
+        kwargs['name'] = name.lower()
+
+    # Establish function to call
+    if not('n_body_func' in kwargs):
+        if ('func' in kwargs):
+            kwargs['n_body_func'] = kwargs['func']
+            del kwargs['func'] 
+        else:
+            kwargs['n_body_func'] = energy
+    func = kwargs['n_body_func']
+    if not func:
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper n_body.' % (func.__name__))
+    if (func is db):
+        raise ValidationError('Wrapper n_body is unhappy to be calling function \'%s\'.' % (func.__name__))
+
+    # Make sure the molecule the user provided is the active one
+    if (kwargs.has_key('molecule')):
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
+    # N-body run configuration
+    bsse = 'on'
+    if 'bsse' in kwargs:
+        bsse = kwargs['bsse']
+    
+    max_n_body = molecule.nfragments()
+    if 'max_n_body' in kwargs:
+        max_n_body = kwargs['max_n_body']
+
+    do_total = False
+    if 'do_total' in kwargs:
+        do_total = kwargs['do_total']
+
+    external = None
+    external_indices = []
+    if 'external' in kwargs:
+        external = kwargs['external']
+        external_indices = [molecule.nfragments()]
+        if 'external_monomers' in kwargs:
+            external_indices = kwargs['external_monomers']
+
+    # Check input args
+    if not bsse == 'off' and not bsse == 'on' and not bsse == 'both':
+        raise ValidationError('n_body: bsse argument is one of on, off, or both')
+    if max_n_body < 1:
+        raise ValidationError('n_body: max_n_body must be at least 1')
+    if max_n_body > molecule.nfragments():
+        raise ValidationError('n_body: max_n_body must be <= to the number of fragments in the molecule')
+    
+    # Set to save RI integrals for repeated full-basis computations
+    ri_ints_io = PsiMod.get_option('DF_INTS_IO')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
+    psioh = PsiMod.IOManager.shared_object()
+    psioh.set_specific_retention(97, True)
+
+    # Tell 'em what you're gonna tell 'em
+    has_external = 'No'
+    if (external):
+        has_external = 'Yes'
+    PsiMod.print_out('\n')
+    PsiMod.print_out('    ==> N-Body Interaction Energy Analysis <==\n\n')
+    PsiMod.print_out('        BSSE Treatment:              %s\n' % (bsse))
+    PsiMod.print_out('        Maximum N-Body Interactions: %d\n' % (max_n_body))
+    PsiMod.print_out('        Compute Total Energy:        %s\n' % (do_total))
+    PsiMod.print_out('        External Field:              %s\n' % (has_external))
+    if (external):
+        PsiMod.print_out('        External Field Monomers:     ' )
+        for k in external_indices:
+            PsiMod.print_out('%-3d ' % (k))
+        PsiMod.print_out('\n')
+    PsiMod.print_out('\n')
+
+    # Run the total molecule, if required
+    energies_full = {}
+    energies_mon = {}
+    N = molecule.nfragments()
+    Etotal = 0.0
+    if do_total or max_n_body == molecule.nfragments():
+        PsiMod.print_out('    => Total Cluster Energy <=\n')
+        # Full cluster always gets the external field
+        if (external):
+            PsiMod.set_global_option_python("EXTERN", external)
+        Etotal = call_function_in_1st_argument(func, **kwargs)
+        if (external):
+            PsiMod.set_global_option_python("EXTERN", None)
+        energies_full[N] = []
+        energies_full[N].append(Etotal)
+        energies_mon[N] = []
+        energies_mon[N].append(Etotal)
+        PsiMod.set_global_option('DF_INTS_IO','LOAD')
+        PsiMod.clean()
+
+    max_effective = max_n_body;
+    if (max_effective == N):
+        max_effective = N - 1
+            
+    # Build the combos for indexing purposes
+    Ns = []
+    if (max_n_body == N or do_total):
+        Ns.append(N)
+    for n in range(max_effective,0,-1):
+        Ns.append(n)
+
+    combos = {} 
+    for n in Ns:
+
+        combos[n] = []
+
+        # Loop through combinations in lexical order #            
+
+        # initialize the reals list
+        reals = []
+        #setup first combination [3,2,1] lexical ordering
+        #fragments indexing is 1's based, bloody hell
+        for index in range(n,0,-1):
+            reals.append(index)
+        #start loop through lexical promotion
+        counter = 0;
+        while True:
+
+            counter = counter + 1
+
+            # Append the current combo
+            combos[n].append(copy.deepcopy(reals))
+
+            #reset rank
+            rank = 0;
+            
+            #look for lexical promotion opportunity
+            #i.e.: [4 2 1] has a promotion opportunity at 
+            # index 1 to produce [4 3 1] 
+            for k in range(n - 2, -1, -1):
+                if (reals[k] != reals[k + 1] + 1):
+                    rank = k + 1;
+                    break
+
+            #do the promotion
+            reals[rank] = reals[rank] + 1;
+
+            #demote the right portion of the register
+            val = 1
+            for k in range(n-1,rank,-1):
+                reals[k] = val
+                val = val + 1
+            
+            #boundary condition is promotion into
+            #[nfrag+1 nfrag-1 ...]
+            if (reals[0] > N):
+                break
+
+    # Hack for external
+    externNone = PsiMod.ExternalPotential()
+    
+    # Run the clusters in the full basis
+    if bsse == 'on' or bsse == 'both':
+        for n in range(max_effective,0,-1):
+            energies_full[n] = []
+            clusters = extract_clusters(molecule, True, n)
+            for k in range(len(clusters)):
+                activate(clusters[k])
+                # Do the external field for this cluster or not?
+                if (external):
+                    do_extern = False
+                    for mon in combos[n][k]:
+                        if (mon in external_indices):
+                            do_extern = True
+                            break
+                    if do_extern:
+                        PsiMod.set_global_option_python("EXTERN", external)
+                PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Full Basis) <=\n' %(n,k+1))
+                energies_full[n].append(call_function_in_1st_argument(func, **kwargs))
+                # Turn the external field off
+                if (external):
+                    PsiMod.set_global_option_python("EXTERN", externNone)
+                PsiMod.set_global_option('DF_INTS_IO','LOAD')
+                PsiMod.clean()
+            
+    # Run the clusters in the minimal cluster bases
+    PsiMod.set_global_option('DF_INTS_IO','NONE')
+    if bsse == 'off' or bsse == 'both':
+        for n in range(max_effective,0,-1):
+            energies_mon[n] = []
+            clusters = extract_clusters(molecule, False, n)
+            for k in range(len(clusters)):
+                activate(clusters[k])
+                # Do the external field for this cluster or not?
+                if (external):
+                    do_extern = False
+                    for mon in combos[n][k]:
+                        if (mon in external_indices):
+                            do_extern = True
+                            break
+                    if do_extern:
+                        PsiMod.set_global_option_python("EXTERN", external)
+                PsiMod.print_out('\n    => Cluster (N-Body %4d, Combination %4d) Energy (Cluster Basis) <=\n' %(n,k+1))
+                energies_mon[n].append(call_function_in_1st_argument(func, **kwargs))
+                # Turn the external field off
+                if (external):
+                    PsiMod.set_global_option_python("EXTERN", externNone)
+                PsiMod.clean()
+
+    # Report the energies
+    PsiMod.print_out('\n    ==> N-Body Interaction Energy Analysis: Combination Definitions <==\n\n')
+
+    PsiMod.print_out('     %6s %6s | %-24s\n' % ("N-Body", "Combo", "Monomers"))
+    for n in Ns:
+        for k in range(len(combos[n])):
+            PsiMod.print_out('     %6d %6d | ' % (n,k+1))
+            for l in combos[n][k]: 
+                PsiMod.print_out('%-3d ' %(l))
+            PsiMod.print_out('\n')
+    PsiMod.print_out('\n')
+
+    PsiMod.print_out('    ==> N-Body Interaction Energy Analysis: Total Energies <==\n\n')
+
+    if bsse == 'on' or bsse == 'both':
+        PsiMod.print_out('     => Full Basis Set Results <=\n\n')
+        PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        for n in Ns:
+            for k in range(len(energies_full[n])):
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_full[n][k],627.509*energies_full[n][k]))
+        PsiMod.print_out('\n')
+
+    if bsse == 'off' or bsse == 'both':
+        PsiMod.print_out('     => Cluster Basis Set Results <=\n\n')
+        PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        for n in Ns:
+            for k in range(len(energies_mon[n])):
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_mon[n][k],627.509*energies_mon[n][k]))
+        PsiMod.print_out('\n')
+             
+    if bsse == 'both':
+        PsiMod.print_out('     => BSSE Results <=\n\n')
+        PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "Delta E [H]", "Delta E [kcal mol^-1]"))
+        for n in Ns:
+            for k in range(len(energies_mon[n])):
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,energies_full[n][k] - energies_mon[n][k],627.509*(energies_full[n][k] - energies_mon[n][k])))
+        PsiMod.print_out('\n')
+             
+    PsiMod.print_out('    ==> N-Body Interaction Energy Analysis: N-Body Energies <==\n\n')
+
+    if bsse == 'on' or bsse == 'both':
+        PsiMod.print_out('     => Full Basis Set Results <=\n\n')
+        PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        energies_n_full = {}
+        for n in Ns:
+            if n == 1:
+                continue
+            En = 0.0
+            for k in range(len(energies_full[n])):
+                E = energies_full[n][k]
+                for l in range(len(combos[n][k])):
+                    E -= energies_full[1][combos[n][k][l]-1]
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,627.509*E))
+                En += E
+            energies_n_full[n] = En
+        for n in Ns:
+            if n == 1:
+                continue
+            nn = molecule.nfragments() - 2
+            kk = n - 2
+            energies_n_full[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
+            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_full[n],627.509*energies_n_full[n]))
+        PsiMod.print_out('\n')
+
+    if bsse == 'off' or bsse == 'both':
+        PsiMod.print_out('     => Cluster Basis Set Results <=\n\n')
+        PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "E [H]", "E [kcal mol^-1]"))
+        energies_n_mon = {}
+        for n in Ns:
+            if n == 1:
+                continue
+            En = 0.0
+            for k in range(len(energies_mon[n])):
+                E = energies_mon[n][k]
+                for l in range(len(combos[n][k])):
+                    E -= energies_mon[1][combos[n][k][l]-1]
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,627.509*E))
+                En += E
+            energies_n_mon[n] = En
+        for n in Ns:
+            if n == 1:
+                continue
+            nn = molecule.nfragments() - 2
+            kk = n - 2
+            energies_n_mon[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
+            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_mon[n],627.509*energies_n_mon[n]))
+        PsiMod.print_out('\n')
+
+    if bsse == 'both':
+        PsiMod.print_out('     => BSSE Results <=\n\n')
+        PsiMod.print_out('     %6s %6s %24s %24s\n' % ("N-Body", "Combo", "Delta E [H]", "Delta E [kcal mol^-1]"))
+        energies_n_bsse = {}
+        for n in Ns:
+            if n == 1:
+                continue
+            En = 0.0
+            for k in range(len(energies_mon[n])):
+                E = energies_full[n][k] - energies_mon[n][k]
+                for l in range(len(combos[n][k])):
+                    E -= energies_full[1][combos[n][k][l]-1]
+                    E += energies_mon[1][combos[n][k][l]-1]
+                PsiMod.print_out('     %6d %6d %24.16E %24.16E\n' % (n,k+1,E,627.509*E))
+                En += E
+            energies_n_bsse[n] = En
+        for n in Ns:
+            if n == 1:
+                continue
+            nn = molecule.nfragments() - 2
+            kk = n - 2
+            energies_n_bsse[n] /= (math.factorial(nn) / (math.factorial(kk) * math.factorial(nn - kk)))
+            PsiMod.print_out('     %6d %6s %24.16E %24.16E\n' % (n,'Total',energies_n_bsse[n],627.509*energies_n_bsse[n]))
+        PsiMod.print_out('\n')
+
+    PsiMod.print_out('    ==> N-Body Interaction Energy Analysis: Non-Additivities <==\n\n')
+
+    if bsse == 'on' or bsse == 'both':
+        energies_n_full[1] = 0.0
+        PsiMod.print_out('     => Full Basis Set Results <=\n\n')
+        PsiMod.print_out('     %6s %24s %24s\n' % ("N-Body", "E [H]", "E [kcal mol^-1]"))
+        for k in range(len(Ns)):
+            n = Ns[k];
+            if n == 1:
+                continue
+            E = energies_n_full[Ns[k]] - energies_n_full[Ns[k+1]]
+            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, 627.509*E))
+        PsiMod.print_out('\n')
+
+    if bsse == 'off' or bsse == 'both':
+        energies_n_mon[1] = 0.0
+        PsiMod.print_out('     => Cluster Basis Set Results <=\n\n')
+        PsiMod.print_out('     %6s %24s %24s\n' % ("N-Body", "E [H]", "E [kcal mol^-1]"))
+        for k in range(len(Ns)):
+            n = Ns[k];
+            if n == 1:
+                continue
+            E = energies_n_mon[Ns[k]] - energies_n_mon[Ns[k+1]]
+            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, 627.509*E))
+        PsiMod.print_out('\n')
+
+    if bsse == 'both':
+        energies_n_bsse[1] = 0.0
+        PsiMod.print_out('     => BSSE Results <=\n\n')
+        PsiMod.print_out('     %6s %24s %24s\n' % ("N-Body", "Delta E [H]", "Delta E [kcal mol^-1]"))
+        for k in range(len(Ns)):
+            n = Ns[k];
+            if n == 1:
+                continue
+            E = energies_n_bsse[Ns[k]] - energies_n_bsse[Ns[k+1]]
+            PsiMod.print_out('     %6s %24.16E %24.16E\n' % (n, E, 627.509*E))
+        PsiMod.print_out('\n')
+
+    # Put everything back the way it was
+    PsiMod.set_global_option('DF_INTS_IO',ri_ints_io)
+    psioh.set_specific_retention(97, False)
+    PsiMod.clean()
+    activate(molecule) 
+
+    if bsse == 'on' or bsse == 'both':
+        return energies_n_full[Ns[0]]
+    else:
+        return energies_n_mon[Ns[0]]
+
+nbody = n_body
 
 ###################
 ##  Start of cp  ##
@@ -49,8 +422,11 @@ def cp(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    df_ints_io = PsiMod.get_option('DF_INTS_IO')
+    PsiMod.set_global_option('DF_INTS_IO','SAVE')
+    psioh = PsiMod.IOManager.shared_object()
+    psioh.set_specific_retention(97, True)
+
     activate(molecule) 
     molecule.update_geometry()
 
@@ -59,7 +435,9 @@ def cp(name, **kwargs):
     PsiMod.print_out("\n")
     e_dimer = call_function_in_1st_argument(func, **kwargs)
     #e_dimer = energy(name, **kwargs)
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+
+    PsiMod.clean()  
+    PsiMod.set_global_option('DF_INTS_IO','LOAD')
 
     # All monomers with ghosts
     monomers = extract_clusters(molecule, True, 1)
@@ -74,9 +452,9 @@ def cp(name, **kwargs):
         e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
         #e_monomer_full.append(energy(name,**kwargs))
         cluster_n = cluster_n + 1
-        
+        PsiMod.clean()  
 
-    PsiMod.set_global_option('RI_INTS_IO','NONE')
+    PsiMod.set_global_option('DF_INTS_IO','NONE')
     if (check_bsse): 
         # All monomers without ghosts
         monomers = extract_clusters(molecule, False, 1)
@@ -93,7 +471,9 @@ def cp(name, **kwargs):
             #e_monomer_bsse.append(energy(name,**kwargs))
             cluster_n = cluster_n + 1
 
-    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+    PsiMod.set_global_option('DF_INTS_IO',df_ints_io)
+    psioh.set_specific_retention(97, False)
+
     activate(molecule) 
         
     if (check_bsse != True):
@@ -248,11 +628,11 @@ def database(name, db_name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
-    user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-    user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
-    user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
-    user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
-    user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
+    user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+    user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
+    user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
+    user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
+    user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
 
     b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
     user_reference = PsiMod.get_option('REFERENCE')
@@ -531,16 +911,16 @@ def database(name, db_name, **kwargs):
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
-        if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
-        if not((user_ri_basis_mp2 == "") or (user_ri_basis_mp2 == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_MP2', '%s')\n""" % (user_ri_basis_mp2)
-        if not((user_ri_basis_cc == "") or (user_ri_basis_cc == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_CC', '%s')\n""" % (user_ri_basis_cc)
-        if not((user_ri_basis_sapt == "") or (user_ri_basis_sapt == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_SAPT', '%s')\n""" % (user_ri_basis_sapt)
-        if not((user_ri_basis_elst == "") or (user_ri_basis_elst == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_ELST', '%s')\n""" % (user_ri_basis_elst)
+        if not((user_df_basis_scf == "") or (user_df_basis_scf == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_SCF', '%s')\n""" % (user_df_basis_scf)
+        if not((user_df_basis_mp2 == "") or (user_df_basis_mp2 == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_MP2', '%s')\n""" % (user_df_basis_mp2)
+        if not((user_df_basis_cc == "") or (user_df_basis_cc == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_CC', '%s')\n""" % (user_df_basis_cc)
+        if not((user_df_basis_sapt == "") or (user_df_basis_sapt == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_SAPT', '%s')\n""" % (user_df_basis_sapt)
+        if not((user_df_basis_elst == "") or (user_df_basis_elst == 'NONE')):
+            commands += """PsiMod.set_global_option('DF_BASIS_ELST', '%s')\n""" % (user_df_basis_elst)
         commands += """molecule = PsiMod.get_active_molecule()\n"""
         commands += """molecule.update_geometry()\n"""
 
@@ -864,11 +1244,11 @@ def complete_basis_set(name, **kwargs):
     # Must collect (here) and set (below) basis sets after every new molecule activation
     b_user_basis = PsiMod.has_global_option_changed('BASIS')
     user_basis = PsiMod.get_option('BASIS')
-    #user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-    #user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
-    #user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
-    #user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
-    #user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
+    #user_df_basis_scf = PsiMod.get_option('DF_BASIS_SCF')
+    #user_df_basis_mp2 = PsiMod.get_option('DF_BASIS_MP2')
+    #user_df_basis_cc = PsiMod.get_option('DF_BASIS_CC')
+    #user_df_basis_sapt = PsiMod.get_option('DF_BASIS_SAPT')
+    #user_df_basis_elst = PsiMod.get_option('DF_BASIS_ELST')
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
     user_wfn = PsiMod.get_option('WFN')
 

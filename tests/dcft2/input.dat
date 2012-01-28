@@ -2,11 +2,13 @@
 #! two-step update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the MO Basis.
 
-refnuc      =  0.66147156125000 #TEST
-refscf      = -5.71032245823757 #TEST
-refmp2      = -5.76128209224412 #TEST
-refdcftscf  = -5.62714230597787 #TEST
-refdcft     = -5.77531659915098 #TEST
+memory 250 mb
+
+refnuc      =  0.66147151073750 #TEST
+refscf      = -5.71032245823742 #TEST
+refmp2      = -5.76128209224125 #TEST
+refdcftscf  = -5.62714230598082 #TEST
+refdcft     = -5.77531659914793 #TEST
 
 molecule he2 {
     He
@@ -14,7 +16,7 @@ molecule he2 {
 }
 
 set globals {
-    convergence 11
+    r_convergence 11
     reference   uhf
     ao_basis    none
     algorithm   twostep
@@ -28,6 +30,3 @@ compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 10, "SCF Energy");     
 compare_values(refmp2, get_variable("MP2 ENERGY"), 8, "MP2 Energy");                   #TEST
 compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy");                #TEST
 compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy");     #TEST
-
-clean()
-

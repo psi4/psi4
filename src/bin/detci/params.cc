@@ -51,10 +51,10 @@ void get_parameters(Options &options)
  *        X = now it's an internal parameter, not in read_options
  */
 
-  Parameters.ex_lvl = options.get_int("EX_LVL");
-  Parameters.cc_ex_lvl = options.get_int("CC_EX_LVL");
-  Parameters.val_ex_lvl = options.get_int("VAL_EX_LVL");
-  Parameters.cc_val_ex_lvl = options.get_int("CC_VAL_EX_LVL");
+  Parameters.ex_lvl = options.get_int("EX_LEVEL");
+  Parameters.cc_ex_lvl = options.get_int("CC_EX_LEVEL");
+  Parameters.val_ex_lvl = options.get_int("VAL_EX_LEVEL");
+  Parameters.cc_val_ex_lvl = options.get_int("CC_VAL_EX_LEVEL");
 
   Parameters.cc_a_val_ex_lvl = -1;
   Parameters.cc_b_val_ex_lvl = -1;
@@ -62,7 +62,7 @@ void get_parameters(Options &options)
   Parameters.num_roots = options.get_int("NUM_ROOTS");
 
   Parameters.istop = options["ISTOP"].to_integer();
-  Parameters.print_ciblks = options["PRINT_CIBLKS"].to_integer();
+  Parameters.print_ciblks = options["CIBLKS_PRINT"].to_integer();
 
   // CDS-TODO: We might override the default for PRINT by command line
   // (or similar mechanism) in CASSCF, etc.
@@ -78,7 +78,7 @@ void get_parameters(Options &options)
 
   Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
 
-  Parameters.ref_sym = options.get_int("REF_SYM");
+  Parameters.ref_sym = options.get_int("REFERENCE_SYM");
 
   Parameters.oei_file = PSIF_OEI;  /* always need fzc operator */
   Parameters.tei_file = PSIF_MO_TEI;
@@ -171,11 +171,11 @@ void get_parameters(Options &options)
   if (options["MAXITER"].has_changed()) {
     Parameters.maxiter = options.get_int("MAXITER");
   }
-  if (options["CONVERGENCE"].has_changed()) {
-    Parameters.convergence = options.get_double("CONVERGENCE");
+  if (options["R_CONVERGENCE"].has_changed()) {
+    Parameters.convergence = options.get_double("R_CONVERGENCE");
   }
-  if (options["E_CONVERGE"].has_changed()) {
-    Parameters.energy_convergence = options.get_double("E_CONVERGE");
+  if (options["E_CONVERGENCE"].has_changed()) {
+    Parameters.energy_convergence = options.get_double("E_CONVERGENCE");
   }
 
   Parameters.multp = Process::environment.molecule()->multiplicity();
@@ -217,8 +217,8 @@ void get_parameters(Options &options)
   Parameters.h0block_coupling_size = options.get_int("H0_BLOCK_COUPLING_SIZE");
   Parameters.h0block_coupling = options["H0_BLOCK_COUPLING"].to_integer();
 
-  Parameters.nprint = options.get_int("NPRINT");
-  Parameters.cc_nprint = options.get_int("CC_NPRINT");
+  Parameters.nprint = options.get_int("NUM_DETS_PRINT");
+  Parameters.cc_nprint = options.get_int("NUM_AMPS_PRINT");
   Parameters.fzc = options["DETCI_FREEZE_CORE"].to_integer();
 
   if (options["FCI"].has_changed())
@@ -233,7 +233,7 @@ void get_parameters(Options &options)
   Parameters.mixed4 = options["MIXED4"].to_integer();
   Parameters.r4s = options["R4S"].to_integer();
   Parameters.repl_otf = options["REPL_OTF"].to_integer();
-  Parameters.calc_ssq = options["CALC_SSQ"].to_integer();
+  Parameters.calc_ssq = options["S_SQUARED"].to_integer();
 
   if (options["MPN"].has_changed())
     Parameters.mpn = options["MPN"].to_integer();
@@ -262,9 +262,9 @@ void get_parameters(Options &options)
     Parameters.nodfile = FALSE;
   }
 
-  Parameters.save_mpn2 = options.get_int("SAVE_MPN2");
+  Parameters.save_mpn2 = options.get_int("MPN_ORDER_SAVE");
   Parameters.perturbation_parameter =
-    options.get_double("PERTURBATION_PARAMETER");
+    options.get_double("PERTURB_MAGNITUDE");
 
   if (Parameters.perturbation_parameter <= 1.0 &&
       Parameters.perturbation_parameter >= -1.0) Parameters.z_scale_H = 1;
@@ -277,8 +277,8 @@ void get_parameters(Options &options)
   if (options["MPN_SCHMIDT"].has_changed())
     Parameters.mpn_schmidt = options["MPN_SCHMIDT"].to_integer();
 
-  if (options["WIGNER"].has_changed())
-    Parameters.wigner = options["WIGNER"].to_integer();
+  if (options["MPN_WIGNER"].has_changed())
+    Parameters.wigner = options["MPN_WIGNER"].to_integer();
 
   Parameters.a_ras3_max = options.get_int("A_RAS3_MAX");
   Parameters.b_ras3_max = options.get_int("B_RAS3_MAX");
@@ -308,8 +308,8 @@ void get_parameters(Options &options)
 
   Parameters.icore = options.get_int("ICORE");
 
-  if (options["HD_AVE"].has_changed()) {
-    std::string line1 = options.get_str("HD_AVE");
+  if (options["HD_AVG"].has_changed()) {
+    std::string line1 = options.get_str("HD_AVG");
     if (line1 == "HD_EXACT")    Parameters.hd_ave = HD_EXACT;
     if (line1 == "HD_KAVE")     Parameters.hd_ave = HD_KAVE;
     if (line1 == "ORB_ENER")    Parameters.hd_ave = ORB_ENER;
@@ -326,8 +326,8 @@ void get_parameters(Options &options)
     fprintf(outfile, "Warning: HD_OTF FALSE has not been tested recently\n");
   }
 
-  if (options["NODFILE"].has_changed())
-    Parameters.nodfile = options["NODFILE"].to_integer();
+  if (options["NO_DFILE"].has_changed())
+    Parameters.nodfile = options["NO_DFILE"].to_integer();
   if (Parameters.num_roots > 1) Parameters.nodfile = FALSE;
 
   Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
@@ -397,9 +397,9 @@ void get_parameters(Options &options)
   Parameters.lse_collapse = options.get_int("LSE_COLLAPSE");
   if (Parameters.lse_collapse < 1) Parameters.lse_collapse = 3;
 
-  Parameters.lse_tolerance = options.get_int("LSE_TOLERANCE");
+  Parameters.lse_tolerance = options.get_double("LSE_TOLERANCE");
 
-  Parameters.maxnvect = options.get_int("MAXNVECT");
+  Parameters.maxnvect = options.get_int("MAX_NUM_VECS");
 
   if (Parameters.maxnvect == 0 &&
       Parameters.diag_method == METHOD_DAVIDSON_LIU_SEM) {
@@ -469,15 +469,15 @@ void get_parameters(Options &options)
   Parameters.opdm_print = options["OPDM_PRINT"].to_integer();
   // Make this an internal parameter
   // errcod = ip_data("OPDM_FILE","%d",&(Parameters.opdm_file),0);
-  Parameters.opdm_wrtnos = options["WRTNOS"].to_integer();
-  // Make this an internal parameter, essentially same as WRTNOS
+  Parameters.opdm_wrtnos = options["NAT_ORBS_WRITE"].to_integer();
+  // Make this an internal parameter, essentially same as NAT_ORBS_WRITE
   // errcod = ip_boolean("OPDM_DIAG",&(Parameters.opdm_diag),0);
-  Parameters.opdm_ave = options["OPDM_AVE"].to_integer();
+  Parameters.opdm_ave = options["OPDM_AVG"].to_integer();
   // Make an internal parameter
   // errcod = ip_data("ORBSFILE","%d",&(Parameters.opdm_orbsfile),0);
 
   // User numbering starts from 1, but internal numbering starts from 0
-  Parameters.opdm_orbs_root = options.get_int("ORBS_ROOT");
+  Parameters.opdm_orbs_root = options.get_int("NAT_ORBS_WRITE_ROOT");
   Parameters.opdm_orbs_root -= 1;
   if (Parameters.opdm_orbs_root < 0) Parameters.opdm_orbs_root = 0;
 
@@ -504,8 +504,8 @@ void get_parameters(Options &options)
   else
     Parameters.transdens = 0;
 
-  if (options["TRANSITION_DENSITY"].has_changed())
-    Parameters.transdens = options["TRANSITION_DENSITY"].to_integer();
+  if (options["TDM"].has_changed())
+    Parameters.transdens = options["TDM"].to_integer();
   if (Parameters.transdens && !options["TDM_WRITE"].has_changed())
     Parameters.tdm_write = 1;
 
@@ -525,7 +525,7 @@ void get_parameters(Options &options)
 
   if (Parameters.dipmom == 1) Parameters.opdm = 1;
 
-  Parameters.root = options.get_int("ROOT");
+  Parameters.root = options.get_int("FOLLOW_ROOT");
   Parameters.root -= 1;
   if (Parameters.root < 0) Parameters.root = 0;
 
@@ -569,16 +569,16 @@ void get_parameters(Options &options)
     Parameters.h0blocksize = Parameters.h0guess_size = 1;
 
 
-  Parameters.nthreads = options.get_int("NTHREADS");
+  Parameters.nthreads = options.get_int("NUM_THREADS");
   if (Parameters.nthreads < 1) Parameters.nthreads = 1;
 
-  Parameters.export_ci_vector = options["EXPORT_VECTOR"].to_integer();
+  Parameters.export_ci_vector = options["VECS_WRITE"].to_integer();
 
   Parameters.num_export = 0;
   if (Parameters.export_ci_vector) {
     Parameters.num_export = 1;
-    if (options["NUM_EXPORT"].has_changed())
-      Parameters.num_export = options.get_int("NUM_EXPORT");
+    if (options["NUM_VECS_WRITE"].has_changed())
+      Parameters.num_export = options.get_int("NUM_VECS_WRITE");
     if (Parameters.num_export > Parameters.num_roots) {
       fprintf(outfile, "Warning: can't export %d roots if %d requested\n",
               Parameters.num_export, Parameters.num_roots);
@@ -665,8 +665,8 @@ void get_parameters(Options &options)
   }
 
   /* Does the user request a state-averaged calculation? */
-  if (options["AVERAGE_STATES"].has_changed()) {
-    i = options["AVERAGE_STATES"].size();
+  if (options["AVG_STATES"].has_changed()) {
+    i = options["AVG_STATES"].size();
     if (i < 1 || i > Parameters.num_roots) {
       fprintf(outfile,"Invalid number of states to average (%d)\n", i);
       exit(1);
@@ -676,9 +676,9 @@ void get_parameters(Options &options)
     Parameters.average_weights = init_array(i);
     Parameters.average_num = i;
     for (i=0;i<Parameters.average_num;i++) {
-      Parameters.average_states[i] = options["AVERAGE_STATES"][i].to_integer();
+      Parameters.average_states[i] = options["AVG_STATES"][i].to_integer();
       if (Parameters.average_states[i] < 1) {
-        fprintf(outfile,"AVERAGE_STATES start numbering from 1.\n");
+        fprintf(outfile,"AVG_STATES start numbering from 1.\n");
         fprintf(outfile,"Invalid state number %d\n",
           Parameters.average_states[i]);
         exit(1);
@@ -687,20 +687,20 @@ void get_parameters(Options &options)
       Parameters.average_weights[i] = 1.0/((double)Parameters.average_num);
     }
 
-    if (options["AVERAGE_WEIGHTS"].has_changed()) {
-      if (options["AVERAGE_WEIGHTS"].size() != Parameters.average_num) {
+    if (options["AVG_WEIGHTS"].has_changed()) {
+      if (options["AVG_WEIGHTS"].size() != Parameters.average_num) {
         fprintf(outfile,"Mismatched number of average weights (%d)\n", i);
         exit(0);
       }
       for (i=0; i<Parameters.average_num; i++) {
         Parameters.average_weights[i] =
-          options["AVERAGE_WEIGHTS"][i].to_double();
+          options["AVG_WEIGHTS"][i].to_double();
       }
     }
 
     if (Parameters.average_num > 1) Parameters.opdm_ave = 1;
 
-    if ((!options["ROOT"].has_changed()) && (Parameters.average_num==1)) {
+    if ((!options["FOLLOW_ROOT"].has_changed()) && (Parameters.average_num==1)) {
       Parameters.root = Parameters.average_states[0];
     }
   }
@@ -768,8 +768,8 @@ void get_parameters(Options &options)
     Parameters.average_weights[i] /= junk;
   }
 
-  Parameters.cc_export = options["CC_EXPORT"].to_integer();
-  Parameters.cc_import = options["CC_IMPORT"].to_integer();
+  Parameters.cc_export = options["CC_VECS_WRITE"].to_integer();
+  Parameters.cc_import = options["CC_VECS_READ"].to_integer();
   Parameters.cc_fix_external = options["CC_FIX_EXTERNAL"].to_integer();
   Parameters.cc_fix_external_min = options.get_int("CC_FIX_EXTERNAL_MIN");
   Parameters.cc_variational = options["CC_VARIATIONAL"].to_integer();
@@ -780,7 +780,7 @@ void get_parameters(Options &options)
   /* DIIS only kicks in for CC anyway, no need to prefix with CC_ */
   Parameters.diis = options["DIIS"].to_integer();
   /* Iteration to turn on DIIS */
-  Parameters.diis_start = options.get_int("DIIS_START");
+  Parameters.diis_start = options.get_int("DIIS_START_ITER");
   /* Do DIIS every n iterations */
   Parameters.diis_freq = options.get_int("DIIS_FREQ");
   Parameters.diis_min_vecs = options.get_int("DIIS_MIN_VECS");
@@ -831,13 +831,13 @@ void print_parameters(void)
 
    fprintf(outfile, "\n");
    fprintf(outfile, "PARAMETERS: \n");
-   fprintf(outfile, "   EX LVL        =   %6d      H0 BLOCKSIZE =   %6d\n",
+   fprintf(outfile, "   EX LEVEL      =   %6d      H0 BLOCKSIZE =   %6d\n",
       Parameters.ex_lvl, Parameters.h0blocksize);
-   fprintf(outfile, "   VAL EX LVL    =   %6d      H0 GUESS SIZE=   %6d\n",
+   fprintf(outfile, "   VAL EX LEVEL  =   %6d      H0 GUESS SIZE=   %6d\n",
       Parameters.val_ex_lvl, Parameters.h0guess_size);
    fprintf(outfile, "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n",
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
-   fprintf(outfile, "   NPRINT        =   %6d\n", Parameters.nprint);
+   fprintf(outfile, "   NUM PRINT     =   %6d\n", Parameters.nprint);
    fprintf(outfile, "   MAXITER       =   %6d      FREEZE CORE  =   %6s\n",
       Parameters.maxiter, Parameters.fzc ? "yes" : "no");
    fprintf(outfile, "   NUM ROOTS     =   %6d      ICORE        =   %6d\n",
@@ -846,10 +846,10 @@ void print_parameters(void)
       Parameters.print_lvl, Parameters.fci ? "yes" : "no");
    if (Parameters.have_special_conv)
       fprintf(outfile,
-         "   CONV          =   %8.2g    MIXED        =   %6s\n",
+         "   R CONV        =   %8.2g    MIXED        =   %6s\n",
          Parameters.special_conv, Parameters.mixed ? "yes" : "no");
    else
-      fprintf(outfile, "   CONV          =   %6.2e      MIXED        =   %6s\n",
+      fprintf(outfile, "   R CONV        =   %6.2e      MIXED        =   %6s\n",
          Parameters.convergence, Parameters.mixed ? "yes" : "no");
 
    fprintf(outfile, "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
@@ -925,7 +925,7 @@ void print_parameters(void)
 
    fprintf(outfile, "   S             =   %.4lf      Ms0          =   %6s\n",
       Parameters.S, Parameters.Ms0 ? "yes" : "no");
-   fprintf(outfile, "   MAXNVECT      =   %6d\n", Parameters.maxnvect);
+   fprintf(outfile, "   MAX NUM VECS  =   %6d\n", Parameters.maxnvect);
    fprintf(outfile, "   RESTART       =   %6s\n",
       Parameters.restart ? "yes" : "no");
    fprintf(outfile, "   GUESS VECTOR  =  ");
@@ -967,7 +967,7 @@ void print_parameters(void)
       fprintf(outfile, "   REF SYM       =   %6d\n", Parameters.ref_sym);
 
    fprintf(outfile, "   COLLAPSE SIZE =   %6d", Parameters.collapse_size);
-   fprintf(outfile, "      HD AVE       =");
+   fprintf(outfile, "      HD AVG       =");
    switch (Parameters.hd_ave) {
      case HD_EXACT:
        fprintf(outfile," %11s\n", "HD_EXACT");
@@ -995,15 +995,15 @@ void print_parameters(void)
            Parameters.hd_otf ? "yes" : "no", Parameters.nodfile ? "yes":"no");
    fprintf(outfile, "   MPN           =   %6s      MPN SCHMIDT  =   %6s\n",
            Parameters.mpn ? "yes":"no", Parameters.mpn_schmidt ? "yes":"no");
-   fprintf(outfile, "   ZAPTN         =   %6s      WIGNER       =   %6s\n",
+   fprintf(outfile, "   ZAPTN         =   %6s      MPN WIGNER   =   %6s\n",
            Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
-   fprintf(outfile, "   PERT Z        =   %1.4f      ROOT         =   %6d\n",
+   fprintf(outfile, "   PERT Z        =   %1.4f    FOLLOW ROOT  =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
-   fprintf(outfile, "   NTHREADS      =   %6d\n",
+   fprintf(outfile, "   NUM THREADS   =   %6d\n",
            Parameters.nthreads);
-   fprintf(outfile, "   EXPORT VECTOR =   %6s      NUM EXPORT   =   %6d\n",
+   fprintf(outfile, "   VECS WRITE    =   %6s      NUM VECS WRITE =   %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);
-   fprintf(outfile, "   FILTER_GUESS  =   %6s      SF_RESTRICT  =   %6s\n",
+   fprintf(outfile, "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
            Parameters.filter_guess ?  "yes":"no",
            Parameters.sf_restrict ? "yes":"no");
    if (Parameters.cc && Parameters.diis) {
@@ -1019,7 +1019,7 @@ void print_parameters(void)
       Parameters.first_hd_tmp_unit, Parameters.first_c_tmp_unit,
       Parameters.first_s_tmp_unit, Parameters.first_d_tmp_unit);
 
-   fprintf(outfile, "\n   EX_ALLOW      = ");
+   fprintf(outfile, "\n   EX ALLOW      = ");
    for (i=0;i<Parameters.ex_lvl;i++) {
      fprintf(outfile, "%2d ", Parameters.ex_allow[i]);
    }
@@ -1078,7 +1078,7 @@ void set_ras_parms(void)
      if (Parameters.print_lvl) {
        fprintf(outfile, "Note: Calculation requested is a full CI.\n");
        fprintf(outfile,
-               "Resetting EX_LVL to %d and turning on all excitations\n\n",
+               "Resetting EX_LEVEL to %d and turning on all excitations\n\n",
                Parameters.ex_lvl);
      }
 

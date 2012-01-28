@@ -1,11 +1,13 @@
 #! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
 #! After the computation, the checkpoint file is renamed, using the PSIO handler.
 
-refnuc   =   2.645886245000000 #TEST
-refscf   = -25.103546873615137 #TEST
-refccsd  =  -0.100265803802460 #TEST
-ref_t    =  -0.002090933428780 #TEST
-reftotal = -25.205903610846349 #TEST
+memory 250 mb
+
+refnuc   =   2.64588604295000 #TEST
+refscf   = -25.10354689697916 #TEST
+refccsd  =  -0.10026580394658 #TEST
+ref_t    =  -0.00209093345229 #TEST
+reftotal = -25.20590363437792 #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -13,14 +15,12 @@ molecule bh {
 }
 
 set {
-   wfn ccsd_t
    docc [3, 0, 0, 0]
    basis cc-pvqz
    freeze_core true
-   dertype none
-   convergence 10
-   e_converge 10
-   d_converge 10
+   r_convergence 10
+   e_convergence 10
+   d_convergence 10
 }
 
 energy('ccsd(t)')
@@ -32,9 +32,6 @@ compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contri
 compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
 
 #Here's a demonstration of how to print an manipulate the files used by Psi
-psioh = PsiMod.IOManager.shared_object()
-psioh.print_out()
+psi4_io.print_out()
 PsiMod.IO.change_file_namespace(32, 'bh', 'cool')
-psioh.print_out()
-
-clean()
+psi4_io.print_out()

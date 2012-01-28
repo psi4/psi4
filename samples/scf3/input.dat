@@ -1,5 +1,7 @@
-#! UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations
+
 #! are specified explicitly.
+
+memory 250 mb
 
 
 molecule ch2 {
@@ -12,7 +14,7 @@ molecule ch2 {
     a1 = 125.0
 }
 
-set global {
+set globals {
     reference uhf
     basis     6-31G**
     docc      [2, 0, 0, 1]
@@ -25,5 +27,3 @@ psioh.set_specific_retention(32, False)
 
 thisenergy = energy('scf')
 
-
-clean()

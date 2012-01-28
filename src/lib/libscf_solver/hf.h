@@ -27,6 +27,7 @@ class Matrix;
 class Vector;
 class SimpleVector;
 class TwoBodySOInt;
+class JK;
 namespace scf {
 
 class PseudospectralHF;
@@ -102,10 +103,11 @@ protected:
     /// The value below which integrals are neglected
     double integral_threshold_;
 
+    /// The soon to be ubiquitous JK object
+    boost::shared_ptr<JK> jk_;
 
     /// The SO integral generator.  Only ever constructed if needed
     boost::shared_ptr<TwoBodySOInt> eri_;
-
     /// Pseudospectral stuff
     boost::shared_ptr<PseudospectralHF> pseudospectral_;
     /// DF stuff
@@ -121,6 +123,11 @@ protected:
     bool MOM_started_;
     /// MOM performed?
     bool MOM_performed_;
+
+    /// Are we to fractionally occupy?
+    bool frac_enabled_;
+    /// Frac started? (Same thing as frac_performed_)
+    bool frac_performed_;
 
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
@@ -148,9 +155,6 @@ public:
     /// Nuclear contributions
     Vector nuclear_dipole_contribution_;
     Vector nuclear_quadrupole_contribution_;
-    //
-    /// Set the amount of information to print
-    void set_print(const int n) {print_ = n;}
 
     /// The number of iterations needed to reach convergence
     int iterations_needed() {return iterations_needed_;}
@@ -171,12 +175,6 @@ protected:
     /// Perform casting of basis set if desired.
     SharedMatrix dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
 
-    /// UHF Atomic Density Matrix for SAD
-    /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
-    void getUHFAtomicDensity(boost::shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
-    // Computes the C and D matrix in place for SAD Atomic UHF
-    void atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D);
-
     /// Common initializer
     void common_init();
 
@@ -190,6 +188,11 @@ protected:
     void MOM();
     /// Start the MOM algorithm (requires one iteration worth of setup)
     void MOM_start();
+
+    /// Fractional occupation UHF/UKS
+    void frac();
+    /// Renormalize orbitals to 1.0 before saving to chkpt
+    void frac_renormalize();
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
@@ -210,9 +213,6 @@ protected:
 
     /// Do any needed integral setup
     virtual void integrals();
-
-    /// The amout of information to print
-    int print_;
 
     /// The number of electrons
     int nelectron_;

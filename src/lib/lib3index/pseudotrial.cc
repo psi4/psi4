@@ -152,9 +152,9 @@ void PseudoTrial::form_grid()
 {
 
     if (options_.get_str("PS_GRID_FILE") != "") {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, dealias_, options_.get_str("PS_GRID_FILE"), options_));
+        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, options_.get_str("PS_GRID_FILE"), options_));
     } else {
-        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, dealias_, options_));
+        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, options_));
     }
 
     grid_->print();

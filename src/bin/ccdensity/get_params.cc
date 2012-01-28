@@ -34,18 +34,29 @@ void get_params( Options& options)
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
+  params.calc_xi = options.get_bool("XI");
+  if(params.calc_xi) {
+    params.ground = 0;
+    params.restart = 0;
+  }
+
+  params.use_zeta = options.get_bool("ZETA");
+  if(params.use_zeta) {
+    params.ground = 0;
+    params.restart = 1;
+  }
+
   /* For EOM-CCSD Zeta calcs to use ROHF refs for now */
   if(params.wfn == "EOM_CCSD" && params.ref==0 && params.use_zeta) params.ref = 1;
 
   params.tolerance = 1e-14;
-  tol = options.get_int("TOLERANCE");
-  params.tolerance = 1.0*pow(10.0,(double) -tol);
+  params.tolerance = options.get_double("INTS_TOLERANCE");
 
   params.memory = Process::environment.get_memory();
   //fndcor(&(params.memory),infile,outfile);
 
 //  params.cachelev = 2;
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
 
   //params.aobasis = 0;
   params.aobasis = options.get_bool("AO_BASIS");
@@ -78,7 +89,8 @@ void get_params( Options& options)
   if(params.transition)
     params.relax_opdm = 0;
 
-  params.relax_opdm = options.get_bool("RELAX_OPDM");
+  if(options["OPDM_RELAX"].has_changed())
+    params.relax_opdm = options.get_bool("OPDM_RELAX");
   if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
     fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
     params.relax_opdm = 0;
@@ -88,13 +100,14 @@ void get_params( Options& options)
     params.connect_xi = 0;
   else
     params.connect_xi = 1;
-  params.connect_xi = options.get_bool("CONNECT_XI");
-
+  if(options["XI_CONNECT"].has_changed()) 
+    params.connect_xi = options.get_bool("XI_CONNECT");
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");
   fprintf(outfile, "\tWave function    = %6s\n", params.wfn.c_str() );
   fprintf(outfile, "\tReference wfn    = %5s\n", (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+  fprintf(outfile, "\tDertype          = %d\n", params.dertype);
   fprintf(outfile, "\tTolerance        = %3.1e\n", params.tolerance);
   fprintf(outfile, "\tCache Level      = %1d\n", params.cachelev);
   fprintf(outfile, "\tAO Basis         = %s\n",

@@ -1,3 +1,7 @@
+#! CCSD/sto-3g optical rotation calculation (length gauge only) at two frequencies on methyloxirane
+
+memory 250 mb
+
 molecule smo { #structure from Pederson et al., CPL
   C     0.210991841737     0.047663662717     0.483960886619
   C    -0.960965312103     0.688519555303    -0.115848688934
@@ -13,17 +17,11 @@ noreorient
 }
 
 set {
-  wfn ccsd
-  dertype response
   property rotation
-  freeze_core true
-  omega [633, 355]
-  omega_units nm
-  mu_irreps [0, 0, 0]
   gauge length
+  omega [633, 355, nm]
+  freeze_core true
   basis STO-3G
 }
 
 response('ccsd')
-
-clean()

@@ -3,16 +3,29 @@
 namespace psi { namespace sapt {
 
 SAPT0::SAPT0(Options& options, boost::shared_ptr<PSIO> psio, 
-  boost::shared_ptr<Chkpt> chkpt) : SAPT(options, psio, chkpt)
+  boost::shared_ptr<Chkpt> chkpt) : SAPT(options, psio, chkpt),
+  e_elst10_(0.0),
+  e_exch10_(0.0),
+  e_exch10_s2_(0.0),
+  e_ind20_(0.0),
+  e_exch_ind20_(0.0),
+  e_disp20_(0.0),
+  e_exch_disp20_(0.0),
+  e_disp20_ss_(0.0),
+  e_disp20_os_(0.0),
+  e_exch_disp20_ss_(0.0),
+  e_exch_disp20_os_(0.0),
+  e_sapt0_(0.0),
+  e_sapt0_scs_(0.0)
 {
   print_header();
 
   maxiter_ = options_.get_int("MAXITER");
-  e_conv_ = options_.get_double("E_CONVERGE");
-  d_conv_ = options_.get_double("D_CONVERGE");
+  e_conv_ = options_.get_double("E_CONVERGENCE");
+  d_conv_ = options_.get_double("D_CONVERGENCE");
   no_response_ = options_.get_bool("NO_RESPONSE");
   aio_cphf_ = options_.get_bool("AIO_CPHF");
-  aio_dfints_ = options_.get_bool("AIO_DFINTS");
+  aio_dfints_ = options_.get_bool("AIO_DF_INTS");
 
   wBAR_ = NULL;
   wABS_ = NULL;
@@ -119,64 +132,73 @@ void SAPT0::print_header()
 void SAPT0::print_results()
 {
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
-  double SOS = options_.get_double("SCALE_OS");
-  double SSS = options_.get_double("SCALE_SS");
+  double SOS = options_.get_double("SAPT_OS_SCALE");
+  double SSS = options_.get_double("SAPT_SS_SCALE");
   e_sapt0_scs_ = eHF_ + SOS*(e_disp20_os_ + e_exch_disp20_os_) 
     + SSS*(e_disp20_ss_ + e_exch_disp20_ss_);
   double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
-
-  fprintf(outfile,"\n    SAPT Results  \n");
-  fprintf(outfile,"  ------------------------------------------------------------------\n");
-  fprintf(outfile,"    E_HF             %16.8lf mH %16.8lf kcal mol^-1\n",
-    eHF_*1000.0,eHF_*627.5095);
-  fprintf(outfile,"    Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_elst10_*1000.0,e_elst10_*627.5095);
-  fprintf(outfile,"    Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_*1000.0,e_exch10_*627.5095);
-  fprintf(outfile,"    Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
-  if (no_response_) {
-    fprintf(outfile,"    Ind20            %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind20_*1000.0,e_ind20_*627.5095);
-    fprintf(outfile,"    Exch-Ind20       %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
-    fprintf(outfile,"    delta HF         %16.8lf mH %16.8lf kcal mol^-1\n",
-      dHF*1000.0,dHF*627.5095);
-  } else {
-    fprintf(outfile,"    Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind20_*1000.0,e_ind20_*627.5095);
-    fprintf(outfile,"    Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
-    fprintf(outfile,"    delta HF,r       %16.8lf mH %16.8lf kcal mol^-1\n",
-      dHF*1000.0,dHF*627.5095);
-  }
-  fprintf(outfile,"    Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_*1000.0,e_disp20_*627.5095);
-  fprintf(outfile,"    Disp20 (SS)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_ss_*1000.0,e_disp20_ss_*627.5095);
-  fprintf(outfile,"    Disp20 (OS)      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_os_*1000.0,e_disp20_os_*627.5095);
-  fprintf(outfile,"    Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_disp20_*1000.0,e_exch_disp20_*627.5095);
-  fprintf(outfile,"    Exch-Disp20 (SS) %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_disp20_ss_*1000.0,e_exch_disp20_ss_*627.5095);
-  fprintf(outfile,"    Exch-Disp20 (OS) %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_exch_disp20_os_*1000.0,e_exch_disp20_os_*627.5095);
-
-  fprintf(outfile,"    Same-Spin Scale      %11.3E\n", SSS);
-  fprintf(outfile,"    Opposite-Spin Scale  %11.3E\n\n", SOS);
-
-
-  fprintf(outfile,"    Total SAPT0      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt0_*1000.0,e_sapt0_*627.5095);
-  fprintf(outfile,"    Total SCS-SAPT0  %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt0_scs_*1000.0,e_sapt0_scs_*627.5095);
 
   double tot_elst = e_elst10_;
   double tot_exch = e_exch10_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF;
   double tot_disp = e_disp20_ + e_exch_disp20_;
   double tot_scs_disp = e_sapt0_scs_ - eHF_;
+
+  fprintf(outfile,"\n    SAPT Results  \n");
+  fprintf(outfile,"  -----------------------------------------------------------------------\n");
+  fprintf(outfile,"    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_elst*1000.0,tot_elst*627.5095);
+  fprintf(outfile,"      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_elst10_*1000.0,e_elst10_*627.5095);
+  fprintf(outfile,"    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_exch*1000.0,tot_exch*627.5095);
+  fprintf(outfile,"      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch10_*1000.0,e_exch10_*627.5095);
+  fprintf(outfile,"      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
+  fprintf(outfile,"    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_ind*1000.0,tot_ind*627.5095);
+  if (no_response_) {
+    fprintf(outfile,"      Ind20            %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_ind20_*1000.0,e_ind20_*627.5095);
+    fprintf(outfile,"      Exch-Ind20       %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
+    fprintf(outfile,"      delta HF         %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      dHF*1000.0,dHF*627.5095);
+  } else {
+    fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_ind20_*1000.0,e_ind20_*627.5095);
+    fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
+    fprintf(outfile,"      delta HF,r       %16.8lf mH %16.8lf kcal mol^-1\n\n",
+      dHF*1000.0,dHF*627.5095);
+  }
+  fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_disp*1000.0,tot_disp*627.5095);
+  fprintf(outfile,"      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_disp20_*1000.0,e_disp20_*627.5095);
+  fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_exch_disp20_*1000.0,e_exch_disp20_*627.5095);
+  fprintf(outfile,"    SCS Dispersion     %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_scs_disp*1000.0,tot_scs_disp*627.5095);
+  fprintf(outfile,"      Disp20 (SS)      %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_disp20_ss_*1000.0,e_disp20_ss_*627.5095);
+  fprintf(outfile,"      Disp20 (OS)      %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_disp20_os_*1000.0,e_disp20_os_*627.5095);
+  fprintf(outfile,"      Exch-Disp20 (SS) %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch_disp20_ss_*1000.0,e_exch_disp20_ss_*627.5095);
+  fprintf(outfile,"      Exch-Disp20 (OS) %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_exch_disp20_os_*1000.0,e_exch_disp20_os_*627.5095);
+
+  fprintf(outfile,"    Same-Spin Scale        %11.3E\n", SSS);
+  fprintf(outfile,"    Opposite-Spin Scale    %11.3E\n\n", SOS);
+
+  fprintf(outfile,"    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
+    eHF_*1000.0,eHF_*627.5095);
+  fprintf(outfile,"    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_sapt0_*1000.0,e_sapt0_*627.5095);
+  fprintf(outfile,"    Total SCS-SAPT0    %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_sapt0_scs_*1000.0,e_sapt0_scs_*627.5095);
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;

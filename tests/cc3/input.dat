@@ -1,0 +1,30 @@
+#! CCSD/6-31G** H2O vibrational frequencies via gradients
+
+memory 250 mb
+
+molecule h2o {
+  0 1
+  O    0.0000000000    0.0000000000   -0.1249068318
+  H    0.0000000000    1.4309636584    0.9911810316
+  H    0.0000000000   -1.4309636584    0.9911810316
+  units bohr
+}
+
+set globals {
+  basis 6-31G**
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+frequencies('scf', dertype=1)
+
+#refnuc   = 9.077238846804       #TEST
+#refscf   = -76.0219978763       #TEST
+#refccsd  = -0.208990979379479   #TEST
+#reftotal = -76.230988855677879  #TEST
+#
+#compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          9, "Nuclear repulsion energy")  #TEST
+#compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy")                #TEST
+#compare_values(refccsd,  get_variable("CCSD correlation energy"), 7, "CCSD contribution")         #TEST
+#compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")              #TEST

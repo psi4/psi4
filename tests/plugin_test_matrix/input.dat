@@ -1,3 +1,5 @@
+memory 250 mb
+
 molecule n2 {
   N
   N 1 R
@@ -13,6 +15,3 @@ set {
 }
 
 plugin("plugin_test_matrix.so")
-
-clean()
-

@@ -87,22 +87,22 @@ void DFHF::common_init()
 
     // If the user doesn't spec a basis name, pick it yourself
     // TODO: Verify that the basis assign does not messs this up
-    if (options_.get_str("RI_BASIS_SCF") == "") {
-        primary_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-JKFIT", "RI_BASIS_SCF");
+    if (options_.get_str("DF_BASIS_SCF") == "") {
+        primary_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-JKFIT", "DF_BASIS_SCF");
         fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-JKFIT\n\n", options_.get_str("BASIS").c_str());
     }
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "RI_BASIS_SCF");
+    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
     parser.reset();
 
     if (print_) {
-        fprintf(outfile, "  ==> Auxiliary Basis: %s <==\n\n", options_.get_str("RI_BASIS_SCF").c_str());
+        fprintf(outfile, "  ==> Auxiliary Basis: %s <==\n\n", options_.get_str("DF_BASIS_SCF").c_str());
         auxiliary_->print_by_level(outfile, print_);
     }
 
     timer_on("Schwarz");
-    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("INTS_TOLERANCE")));
     timer_off("Schwarz");
 
     if (print_ > 1) {
@@ -114,7 +114,7 @@ void DFHF::common_init()
         double ntri_shell_savings = 1.0 - ntri_shell / (double) ntri_shell_naive;
         double ntri_fun_savings   = 1.0 - ntri_fun / (double) ntri_fun_naive;
 
-        fprintf(outfile, "  Schwarz Cutoff is %8.3E\n", options_.get_double("SCHWARZ_CUTOFF"));
+        fprintf(outfile, "  Schwarz Cutoff is %8.3E\n", options_.get_double("INTS_TOLERANCE"));
         fprintf(outfile, "   -Shell Pairs:    %12d of %12d remain, %3.0f%% savings\n",
             ntri_shell, ntri_shell_naive, 100.0*ntri_shell_savings);
         fprintf(outfile, "   -Function Pairs: %12d of %12d remain, %3.0f%% savings\n\n",
@@ -153,9 +153,9 @@ void DFHF::common_init()
     }
 
     if (print_) {
-        if (options_.get_str("RI_INTS_IO") == "LOAD") {
+        if (options_.get_str("DF_INTS_IO") == "LOAD") {
             fprintf(outfile, "  Will attempt to load (Q|mn) integrals from File %d.\n\n", unit_);
-        } else if (options_.get_str("RI_INTS_IO") == "SAVE") {
+        } else if (options_.get_str("DF_INTS_IO") == "SAVE") {
             fprintf(outfile, "  Will save (Q|mn) integrals to File %d.\n\n", unit_);
         }
     }
@@ -215,7 +215,7 @@ void DFHF::initialize()
 void DFHF::initialize_JK_disk()
 {
     // Try to load
-    if (options_.get_str("RI_INTS_IO") == "LOAD") {
+    if (options_.get_str("DF_INTS_IO") == "LOAD") {
         Jinv_.reset();
         return;
     }
@@ -441,10 +441,10 @@ void DFHF::initialize_JK_disk()
     // ==> Thread setup <== //
     int nthread = 1;
     #ifdef _OPENMP
-        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
+        if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
             nthread = omp_get_max_threads();
         } else {
-            nthread = options_.get_int("RI_INTS_NUM_THREADS");
+            nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
     #endif
 
@@ -544,10 +544,10 @@ void DFHF::initialize_JK_core()
 
     int nthread = 1;
     #ifdef _OPENMP
-        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
+        if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
             nthread = omp_get_max_threads();
         } else {
-            nthread = options_.get_int("RI_INTS_NUM_THREADS");
+            nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
     #endif
     int rank = 0;
@@ -557,7 +557,7 @@ void DFHF::initialize_JK_core()
     double** Qmnp = Qmn_->pointer();
 
     // Try to load
-    if (options_.get_str("RI_INTS_IO") == "LOAD") {
+    if (options_.get_str("DF_INTS_IO") == "LOAD") {
         psio_->open(unit_,PSIO_OPEN_OLD);
         psio_->read_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->close(unit_, 1);
@@ -665,7 +665,7 @@ void DFHF::initialize_JK_core()
     //Qmn_->print();
 
     // Save if needed
-    if (options_.get_str("RI_INTS_IO") == "SAVE") {
+    if (options_.get_str("DF_INTS_IO") == "SAVE") {
         psio_->open(unit_,PSIO_OPEN_NEW);
         psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->close(unit_, 1);
@@ -684,10 +684,10 @@ void DFHF::initialize_J_core()
 
     int nthread = 1;
     #ifdef _OPENMP
-        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
+        if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
             nthread = omp_get_max_threads();
         } else {
-            nthread = options_.get_int("RI_INTS_NUM_THREADS");
+            nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
     #endif
     int rank = 0;
@@ -697,7 +697,7 @@ void DFHF::initialize_J_core()
     double** Qmnp = Qmn_->pointer();
 
     // Save if needed
-    if (options_.get_str("RI_INTS_IO") == "LOAD") {
+    if (options_.get_str("DF_INTS_IO") == "LOAD") {
         psio_->open(unit_,PSIO_OPEN_OLD);
         psio_->read_entry(unit_, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->close(unit_, 1);
@@ -760,7 +760,7 @@ void DFHF::initialize_J_core()
     // No transformation!
 
     // Save if needed
-    if (options_.get_str("RI_INTS_IO") == "SAVE") {
+    if (options_.get_str("DF_INTS_IO") == "SAVE") {
         psio_->open(unit_,PSIO_OPEN_NEW);
         psio_->write_entry(unit_, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->close(unit_, 1);

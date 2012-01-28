@@ -1,5 +1,7 @@
 #! SCF DZ allene geometry optimzation, with Cartesian input
 
+memory 250 mb
+
 
 molecule allene {
   H -2.0  0.0  1.0
@@ -13,12 +15,10 @@ molecule allene {
 
 set global {
   basis DZ
-  e_converge 10
-  d_converge 10
+  e_convergence 10
+  d_convergence 10
   dertype none
 }
 
 thisenergy = optimize('scf')
 
-
-clean()

@@ -22,6 +22,7 @@
 #define PSIF_EVEC 263
 #define PSIF_R2 264
 #define PSIF_TEMP 265
+#define PSIF_T2 267
 
 
 // psi headers
@@ -63,6 +64,12 @@ class CoupledCluster{
     ~CoupledCluster();
 
     /**
+      * Flag to indicate if t2 is stored in core memory or 
+      * needs to be read from disk.  Default false.
+      */
+    bool t2_on_disk;
+
+    /**
       * Define CCSD Tasks.  most diagrams are designated as
       * independent tasks.  some will be tiled out as 
       * separate tasks either so we can do them with limited
@@ -73,6 +80,8 @@ class CoupledCluster{
     /**
       * CCSD Tasks parameters.  for terms that are tiled, the
       * let the task know which tile it should be working on.
+      * NOTE: the tiling is really meant for the parallel
+      * code, not this one.
      */
     struct CCTaskParams{
         int mtile,ntile,ktile;
@@ -88,16 +97,11 @@ class CoupledCluster{
         double flopcount;
     };
     CCTask*CCTasklist,*CCSubTasklist1,*CCSubTasklist2;
-    /**
-      * master and slave functions
-     */
-    void worker();
-    void master();
 
     /**
       * this function solves the CCSD equations (requires a minimum of 4o^2v^2 memory)
      */
-    PsiReturnType CCSDIterations();
+    PsiReturnType CCSDIterations(Options&options);
   
     /**
       * delete temporary files
@@ -111,11 +115,6 @@ class CoupledCluster{
       * grab parameters, transform/sort integrals
      */
     void Initialize(Options &options);
-
-    /**
-      * transform integrals
-     */
-    void Transformation();
 
     /**
       * allocate memory, define tiling of gigantic diragrams
@@ -134,12 +133,11 @@ class CoupledCluster{
     void CPU_I1pij_I1ia_lessmem(CCTaskParams params);
 
     /**
-      * this diagram was required ov^3 storage for an
+      * this diagram required ov^3 storage for an
       * intermediate in the Piecuch CPC.  this formulation
       * only requires o^3v storage...at the expense of
       * 4 extra O(N^5) terms.
       */
-    void CPU_I2p_abci_refactored(CCTaskParams params);
     void CPU_I2p_abci_refactored_term1(CCTaskParams params);
     void CPU_I2p_abci_refactored_term2(CCTaskParams params);
     void CPU_I2p_abci_refactored_term3(CCTaskParams params);
@@ -150,49 +148,22 @@ class CoupledCluster{
     void UpdateT1(long int iter);
 
     /**
-      * Update t2 - returns the energy for that iteration
+      * Update t2
       */
-    double UpdateT2(long int iter);
+    void UpdateT2(long int iter);
+    /**
+      * Get the energy for that iteration. If there is a diis extrapolation,
+      * the energy is evaluated after that step.
+      */
+    double CheckEnergy();
 
     /**
-      * some N^6 CC diagrams.  most of these can be
-      * tiled accross multiple nodes. TODO: I2ijkl needs
-      * to be parallelized still.
+      * the N^6 CC diagrams.
       */
     void I2ijkl(CCTaskParams params);
     void I2piajk(CCTaskParams params);
-    void I2piajk_tiled(CCTaskParams params);
     void Vabcd1(CCTaskParams params);
-    void Vabcd1_tiled(CCTaskParams params);
     void Vabcd2(CCTaskParams params);
-    void Vabcd2_tiled(CCTaskParams params);
-
-    /**
-      * one of the really evil N^6 diagrams. forming the
-      * intermediate costs you 2o^3v^3.  using it costs
-      * o^3v^3.  can be tiled accross multiple nodes.
-      */
-    long int niabjtasks,niabjtiles,iabjtilesize,lastiabjtile;
-    void Distribute_I2iabj(CCTaskParams params);
-    void I2iabj_BuildIntermediate(CCTaskParams params);
-    void I2iabj_BuildIntermediate1(CCTaskParams params);
-    void I2iabj_BuildIntermediate2(CCTaskParams params);
-    void I2iabj_UseIntermediate(CCTaskParams params);
-
-    /**
-      * the other really evil N^6 diagram. forming the
-      * intermediate costs you o^3v^3.  using it costs
-      * 2o^3v^3.  can be tiled accross multiple nodes.
-      */
-    long int niajbtasks,niajbtiles,iajbtilesize,lastiajbtile;
-    void Distribute_I2iajb(CCTaskParams params);
-    void I2iajb_BuildIntermediate(CCTaskParams params);
-    void I2iajb_UseIntermediate1(CCTaskParams params);
-    void I2iajb_UseIntermediate2(CCTaskParams params);
-
-    /**
-      * older versions of the above o^3v^3 ones.
-      */
     void I2iabj(CCTaskParams params);
     void I2iajb(CCTaskParams params);
 
@@ -216,23 +187,22 @@ class CoupledCluster{
     double escf,enuc,efzc,emp2,eccsd,et;
 
     /**
-      * integral arrays.  i don't actually use any of these anymore, but
-      * my code will probably scream at me if i remove them
+      * workspace buffers.
       */
-    double*E2ijak,*E2abci,*E2ijkl,*E2akjc_2,*E2klcd_1,*Symabcd1,*Symabcd2;
-    double*E2ijak3,*E2ijak2,*E2ijakCopy,*integrals;
+    double*integrals,*tempt,*tempv;
 
     /**
-      * extra buffers.  i don't wb or tempu anymore, but
-      * my code will probably scream at me if i remove them
+      * t1 and t2
       */
-    double*tempu,*tb,*wb,*w1,*I1,*I1p,*t1;
-    double*tempt,*tempv,energy;
+    double*tb,*t1;
 
     /**
-      * define tiling.  right now, tilesizes give us gemms we
-      * can do in memory.  TODO: this will control parallelization
-      * as well.
+      * the singles residual and a couple of tiny intermediates
+      */
+    double *w1,*I1,*I1p;
+
+    /**
+      * define tiling.
       */
     void DefineTilingCPU();
     long int ovtilesize,lastovtile,lastov2tile,ov2tilesize;
@@ -243,6 +213,18 @@ class CoupledCluster{
      * helper class definied in gpuhelper.h
      */
     boost::shared_ptr<GPUHelper> helper_;
+
+    /**
+      *  SCS-MP2 function and variables
+      */
+    void SCS_MP2();
+    double emp2_os,emp2_ss,emp2_os_fac,emp2_ss_fac;
+
+    /**
+      *  SCS-CCSD function and variables
+      */
+    void SCS_CCSD();
+    double eccsd_os,eccsd_ss,eccsd_os_fac,eccsd_ss_fac;
 
 };
 };

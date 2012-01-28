@@ -1,3 +1,7 @@
+#! CCSD/cc-pVDZ dipole polarizability at two frequencies
+
+memory 250 mb
+
 molecule hof {
           O          -0.947809457408    -0.132934425181     0.000000000000
           H          -1.513924046286     1.610489987673     0.000000000000
@@ -7,13 +11,8 @@ noreorient
 }
 
 set {
-    wfn ccsd
-    dertype response
     basis cc-pVDZ
-    mu_irreps = [0, 0, 1]
-    omega = [0.05, 0.1]
-    omega_units = au
+    omega = [0.05, 0.1, au]
 }
 
 response('ccsd')
-clean()

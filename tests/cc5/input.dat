@@ -1,5 +1,7 @@
 #! RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion
 
+memory 250 mb
+
 refnuc   =  135.0921284884196    #TEST
 refscf   = -208.2159793502       #TEST
 refccsd  =   -0.884280512675734  #TEST
@@ -21,15 +23,14 @@ molecule C4NH4 {
 }
 
 set globals {
-  wfn         ccsd_t
   docc        [10, 1, 4, 3]
   basis       aug-cc-pVTZ
   freeze_core true
   dertype     none
 
-  convergence 10
-  e_converge  10
-  d_converge  10
+  r_convergence 10
+  e_convergence  10
+  d_convergence  10
 }
 
 energy('ccsd(t)')
@@ -39,5 +40,3 @@ compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy
 compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
 compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
 compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
-
-clean()

@@ -1,7 +1,9 @@
 #! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
-nucenergy =   2.645886245000000 #TEST
-refenergy = -25.10354687361508  #TEST
+memory 500 mb
+
+nucenergy =   2.64588604295000  #TEST
+refenergy =  -25.1035468969791  #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -11,12 +13,10 @@ molecule bh {
 set globals = {
     scf_type   direct
     basis      cc-pVQZ
-    e_converge 10
+    e_convergence 10
 }
 
 thisenergy = energy('scf')
 
 compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
-
-clean()

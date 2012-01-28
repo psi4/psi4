@@ -1,13 +1,15 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
+                              PSI 4.0.0-beta1 Driver
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
     W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
-    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
                          Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
@@ -20,8 +22,10 @@
 --------------------------------------------------------------------------
 #! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
-nucenergy =   2.645886245000000 #TEST
-refenergy = -25.10354687361508  #TEST
+memory 500 mb
+
+nucenergy =   2.64588604295000  #TEST
+refenergy =  -25.1035468969791  #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -31,19 +35,19 @@ molecule bh {
 set globals = {
     scf_type   direct
     basis      cc-pVQZ
-    e_converge 10
+    e_convergence 10
 }
 
 thisenergy = energy('scf')
 
 compare_values(nucenergy, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
-
-clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on ganymede-2.local
-*** at Wed Sep 28 13:33:49 2011
+  Memory set to 500.000 MiB by Python script.
+
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:37:47 2012
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -52,9 +56,9 @@ clean()
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
-                        1 Threads,    256 MiB Core
+                        1 Threads,    500 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -76,7 +80,7 @@ clean()
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    2.645886245000000
+  Nuclear repulsion =    2.645886042950000
 
   Charge       = 0
   Multiplicity = 1
@@ -89,6 +93,7 @@ clean()
   SCF Algorithm Type is DIRECT.
   DIIS enabled.
   MOM disabled.
+  Fractional occupation disabled.
   Guess Type is CORE.
   Energy threshold   = 1.00e-10
   Density threshold  = 1.00e-08
@@ -105,11 +110,11 @@ clean()
 
   ==> Pre-Iterations <==
 
-  Minimum eigenvalue in the overlap matrix is 2.2491303034E-04.
+  Minimum eigenvalue in the overlap matrix is 2.2491309807E-04.
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -17.89704446761155
+  Initial RHF energy:   -17.89704451327391
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -130,20 +135,20 @@ clean()
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -21.36587420250880   -3.46883e+00   0.00000e+00  
+   @RHF iter   1:   -21.36587411641844   -3.46883e+00   0.00000e+00 
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    0 ]
-   @RHF iter   2:   -24.32286591788735   -2.95699e+00   1.06508e-01 DIIS
-   @RHF iter   3:   -25.09010771875276   -7.67242e-01   8.83240e-02 DIIS
-   @RHF iter   4:   -25.10256044193867   -1.24527e-02   7.37456e-03 DIIS
-   @RHF iter   5:   -25.10349578204929   -9.35340e-04   2.82015e-03 DIIS
-   @RHF iter   6:   -25.10354617790925   -5.03959e-05   7.92311e-04 DIIS
-   @RHF iter   7:   -25.10354686888312   -6.90974e-07   8.06119e-05 DIIS
-   @RHF iter   8:   -25.10354687354956   -4.66645e-09   5.14642e-06 DIIS
-   @RHF iter   9:   -25.10354687361091   -6.13483e-11   2.54088e-07 DIIS
-   @RHF iter  10:   -25.10354687361504   -4.12470e-12   1.29318e-07 DIIS
-   @RHF iter  11:   -25.10354687361518   -1.42109e-13   2.76593e-08 DIIS
+   @RHF iter   2:   -24.32286591603425   -2.95699e+00   1.06508e-01 DIIS
+   @RHF iter   3:   -25.09010774219343   -7.67242e-01   8.83240e-02 DIIS
+   @RHF iter   4:   -25.10256046534490   -1.24527e-02   7.37456e-03 DIIS
+   @RHF iter   5:   -25.10349580541530   -9.35340e-04   2.82015e-03 DIIS
+   @RHF iter   6:   -25.10354620127335   -5.03959e-05   7.92311e-04 DIIS
+   @RHF iter   7:   -25.10354689224705   -6.90974e-07   8.06119e-05 DIIS
+   @RHF iter   8:   -25.10354689691362   -4.66657e-09   5.14642e-06 DIIS
+   @RHF iter   9:   -25.10354689697489   -6.12737e-11   2.54097e-07 DIIS
+   @RHF iter  10:   -25.10354689697905   -4.16023e-12   1.29274e-07 DIIS
+   @RHF iter  11:   -25.10354689697914   -8.17124e-14   2.81163e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -162,7 +167,7 @@ clean()
 	   7A1     0.408508     1A2     0.408508     8A1     0.498906  
 	   9A1     0.694962    10A1     0.760301     4B2     0.858235  
 	   4B1     0.858235     5B2     1.013777     5B1     1.013777  
-	  11A1     1.210558     6B1     1.219679     6B2     1.219679  
+	  11A1     1.210558     6B2     1.219679     6B1     1.219679  
 	  12A1     1.221072     2A2     1.221072     7B2     1.316383  
 	   7B1     1.316383    13A1     1.341361     3A2     1.341361  
 	  14A1     1.348576    15A1     1.473935     8B2     1.532751  
@@ -174,15 +179,15 @@ clean()
 	  12B2     3.739854    12B1     3.739854    22A1     3.809173  
 	   6A2     3.809173    23A1     3.897341     7A2     3.897341  
 	  24A1     3.908670    13B2     3.947554    13B1     3.947554  
-	  14B1     3.949190    14B2     3.949190    15B2     4.001132  
+	  14B2     3.949190    14B1     3.949190    15B2     4.001132  
 	  15B1     4.001132    25A1     4.099324     8A2     4.099324  
 	  26A1     4.138267    27A1     5.032926    28A1     5.283525  
 	  16B2     5.505709    16B1     5.505709    17B2     6.418822  
 	  17B1     6.418822    29A1     7.300731    18B2     7.574075  
-	  18B1     7.574075    30A1     7.596982     9A2     7.596982  
-	  31A1     8.191050    32A1     8.448402    10A2     8.448402  
+	  18B1     7.574075     9A2     7.596982    30A1     7.596982  
+	  31A1     8.191050    10A2     8.448402    32A1     8.448402  
 	  19B2     8.895755    19B1     8.895755    20B2     9.775047  
-	  20B1     9.775047    33A1     9.801553    34A1    11.149103  
+	  20B1     9.775047    33A1     9.801553    34A1    11.149102  
 	  35A1    17.128233  
 
 	Final Occupation by Irrep:
@@ -191,31 +196,32 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:   -25.10354687361518
+  @RHF Final Energy:   -25.10354689697914
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.9388
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0281
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.9107     Total:     0.9107
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.3148     Total:     2.3148
 
 
-  Saving occupied orbitals to File 100.
+  Saving occupied orbitals to File 180.
 
-*** tstop() called on ganymede-2.local at Wed Sep 28 13:34:33 2011
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:38:02 2012
 Module time:
-	user time   =      44.23 seconds =       0.74 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =         44 seconds =       0.73 minutes
+	user time   =      14.83 seconds =       0.25 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
 Total time:
-	user time   =      44.23 seconds =       0.74 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =         44 seconds =       0.73 minutes
+	user time   =      14.83 seconds =       0.25 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =         15 seconds =       0.25 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

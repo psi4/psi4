@@ -1,0 +1,30 @@
+#! ROHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+
+memory 250 mb
+
+molecule ch2 {
+  0 3
+  C
+  H 1 1.1
+  H 1 1.1 2 109.0
+}
+
+set globals {
+  reference rohf
+  basis cc-pvdz
+}
+
+gradient('ccsd')
+analytic_grad = PsiMod.get_gradient()
+
+gradient('ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+compare_matrices(analytic_grad, findif_grad, 5, "ROHF-CCSD finite-diff.  (3-pt.) vs. analytic gradient to 10^-5") #TEST
+
+set findif points 5
+
+gradient('ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+compare_matrices(analytic_grad, findif_grad, 6, "ROHF-CCSD finite-diff.  (5-pt.) vs. analytic gradient to 10^-5") #TEST

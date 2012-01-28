@@ -14,6 +14,8 @@
 #include <vector>
 #include <utility>
 
+#include <libmints/mints.h>
+
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -21,13 +23,13 @@
 #include <libparallel/parallel.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <liboptions/python.h>
 #include <psifiles.h>
+#include <libfock/jk.h>
 #include "integralfunctors.h"
 #include "pseudospectral.h"
 #include "pkintegrals.h"
 #include "df.h"
-
-#include <libmints/mints.h>
 
 #include "hf.h"
 
@@ -44,8 +46,7 @@ namespace psi { namespace scf {
 HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt),
       nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6),
-      print_(1)
+      nuclear_quadrupole_contribution_(6)
 {
     common_init();
 }
@@ -53,8 +54,7 @@ HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> 
 HF::HF(Options& options, boost::shared_ptr<PSIO> psio)
     : Wavefunction(options, psio),
       nuclear_dipole_contribution_(3),
-      nuclear_quadrupole_contribution_(6),
-      print_(1)
+      nuclear_quadrupole_contribution_(6)
 {
     common_init();
 }
@@ -68,7 +68,7 @@ void HF::common_init()
     // This quantity is needed fairly soon
     nirrep_ = factory_->nirrep();
 
-    integral_threshold_ = 0.0;
+    integral_threshold_ = options_.get_double("INTS_TOLERANCE");
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
@@ -205,7 +205,7 @@ void HF::common_init()
     if (perturb_h_) {
         string perturb_with;
 
-        lambda_ = options_.get_double("LAMBDA");
+        lambda_ = options_.get_double("PERTURB_MAGNITUDE");
 
         if (options_["PERTURB_WITH"].has_changed()) {
             perturb_with = options_.get_str("PERTURB_WITH");
@@ -249,9 +249,9 @@ void HF::common_init()
 
     // Allocate memory for DIISmin_diis_vectors_
     //  First, did the user request a different number of diis vectors?
-    min_diis_vectors_ = options_.get_int("MIN_DIIS_VECTORS");
-    max_diis_vectors_ = options_.get_int("MAX_DIIS_VECTORS");
-    diis_start_ = options_.get_int("START_DIIS_ITER");
+    min_diis_vectors_ = options_.get_int("DIIS_MIN_VECS");
+    max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
+    diis_start_ = options_.get_int("DIIS_START");
     diis_enabled_ = options_.get_bool("DIIS");
 
     // Don't perform DIIS if less than 2 vectors requested, or user requested a negative number
@@ -266,6 +266,9 @@ void HF::common_init()
     MOM_excited_ = (options_["MOM_OCC"].size() != 0 && MOM_enabled_);
     MOM_started_ = false;
     MOM_performed_ = false;
+
+    frac_enabled_ = (options_.get_int("FRAC_START") != 0);
+    frac_performed_ = false;
 
     print_header();
 }
@@ -303,7 +306,7 @@ void HF::integrals()
         pseudospectral_ = boost::shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
         density_fitted_ = true;
     }else if (scf_type_ == "DF"){
-        df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
+        //df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
         if (print_ && Communicator::world->me() == 0)
@@ -313,6 +316,25 @@ void HF::integrals()
         for (int i=0; i<Communicator::world->nthread(); ++i)
              aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral->eri()));
         eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
+    }
+
+    // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
+    if (scf_type_ == "DF") {
+        // Build the JK from options, symmetric type
+        jk_ = JK::build_JK(options_, true);
+        // Tell the JK to print
+        jk_->set_print(print_);
+        // Give the JK 70% of the memory
+        jk_->set_memory((ULI)(0.7*(Process::environment.get_memory() / 8L)));
+        // Tell the JK to do erf integrals if needed 
+        jk_->set_do_wK((options_.get_double("DFT_OMEGA") != 0.0) 
+            && (options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS"));
+        // Tell the JK to do erf integrals if needed 
+        jk_->set_omega(options_.get_double("DFT_OMEGA"));
+        // Initialize
+        jk_->initialize(); 
+        // Print the header
+        jk_->print_header();
     }
 }
 
@@ -325,6 +347,9 @@ void HF::finalize()
     df_.reset();
     pseudospectral_.reset();
     eri_.reset();
+
+    // TODO: This will be the only one
+    jk_.reset();
 
     // Clean up after DIIS
     if(initialized_diis_manager_)
@@ -358,62 +383,63 @@ void HF::find_occupation()
     // Don't mess with the occ, MOM's got it!
     if (MOM_started_) {
         MOM();
-        return;
-    }
-
-    std::vector<std::pair<double, int> > pairs_a;
-    std::vector<std::pair<double, int> > pairs_b;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs_a.push_back(make_pair(epsilon_a_->get(h, i), h));
-    }
-    for (int h=0; h<epsilon_b_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
-            pairs_b.push_back(make_pair(epsilon_b_->get(h, i), h));
-    }
-    sort(pairs_a.begin(),pairs_a.end());
-    sort(pairs_b.begin(),pairs_b.end());
-
-    if(!input_docc_ && !input_socc_){
-        memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
-        for (int i=0; i<nalpha_; ++i)
-            nalphapi_[pairs_a[i].second]++;
-    }
-    if(!input_docc_ && !input_socc_){
-        memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
-        for (int i=0; i<nbeta_; ++i)
-            nbetapi_[pairs_b[i].second]++;
-    }
-
-    int old_socc[8];
-    int old_docc[8];
-    for(int h = 0; h < nirrep_; ++h){
-        old_socc[h] = soccpi_[h];
-        old_docc[h] = doccpi_[h];
-    }
-
-    for (int h = 0; h < nirrep_; ++h) {
-        soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
-        doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
-    }
-
-    bool occ_changed = false;
-    for(int h = 0; h < nirrep_; ++h){
-        if( old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]){
-            occ_changed = true;
-            break;
+    } else {
+        std::vector<std::pair<double, int> > pairs_a;
+        std::vector<std::pair<double, int> > pairs_b;
+        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+                pairs_a.push_back(make_pair(epsilon_a_->get(h, i), h));
         }
-    }
+        for (int h=0; h<epsilon_b_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
+                pairs_b.push_back(make_pair(epsilon_b_->get(h, i), h));
+        }
+        sort(pairs_a.begin(),pairs_a.end());
+        sort(pairs_b.begin(),pairs_b.end());
 
-    // If print > 2 (diagnostics), print always
-    if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
-        if (Communicator::world->me() == 0)
-            fprintf(outfile, "\tOccupation by irrep:\n");
-        print_occupation();
+        if(!input_docc_ && !input_socc_){
+            memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
+            for (int i=0; i<nalpha_; ++i)
+                nalphapi_[pairs_a[i].second]++;
+        }
+        if(!input_docc_ && !input_socc_){
+            memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
+            for (int i=0; i<nbeta_; ++i)
+                nbetapi_[pairs_b[i].second]++;
+        }
+
+        int old_socc[8];
+        int old_docc[8];
+        for(int h = 0; h < nirrep_; ++h){
+            old_socc[h] = soccpi_[h];
+            old_docc[h] = doccpi_[h];
+        }
+
+        for (int h = 0; h < nirrep_; ++h) {
+            soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
+            doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
+        }
+
+        bool occ_changed = false;
+        for(int h = 0; h < nirrep_; ++h){
+            if( old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]){
+                occ_changed = true;
+                break;
+            }
+        }
+
+        // If print > 2 (diagnostics), print always
+        if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
+            if (Communicator::world->me() == 0)
+                fprintf(outfile, "\tOccupation by irrep:\n");
+            print_occupation();
+        }
+        // Start MOM if needed (called here because we need the nocc
+        // to be decided by Aufbau ordering prior to MOM_start)
+        MOM_start();
     }
-    // Start MOM if needed (called here because we need the nocc
-    // to be decided by Aufbau ordering prior to MOM_start)
-    MOM_start();
+    // Do fractional orbital normalization here.
+    frac();
 }
 
 void HF::print_header()
@@ -438,7 +464,7 @@ void HF::print_header()
     molecule_->print();
 
     if (Communicator::world->me() == 0) {
-        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol());
+        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol().c_str());
 
         fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
         fprintf(outfile, "  Charge       = %d\n", charge_);
@@ -454,6 +480,7 @@ void HF::print_header()
             fprintf(outfile, "  Excited-state MOM enabled.\n");
         else
             fprintf(outfile, "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
+        fprintf(outfile, "  Fractional occupation %s.\n", frac_enabled_ ? "enabled" : "disabled");
         fprintf(outfile, "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
         fprintf(outfile, "  Energy threshold   = %3.2e\n", energy_threshold_);
         fprintf(outfile, "  Density threshold  = %3.2e\n", density_threshold_);
@@ -544,15 +571,31 @@ void HF::form_H()
         }
     }
 
-    if (options_.get_bool("EXTERN")) {
-        boost::shared_ptr<ExternalPotential> external = Process::environment.potential();
+    // If an external field exists, add it to the one-electron Hamiltonian
+    boost::python::object pyExtern = dynamic_cast<PythonDataType*>(options_["EXTERN"].get())->to_python();
+    boost::shared_ptr<ExternalPotential> external = boost::python::extract<boost::shared_ptr<ExternalPotential> >(pyExtern);
+    if (external) {
+        if (H_->nirrep() != 1)
+            throw PSIEXCEPTION("SCF: External Fields are not consistent with symmetry. Set symmetry c1.");
         if (print_) {
+            external->set_print(print_);
             external->print();
         }
         SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
         if (print_ > 3)
             Vprime->print();
         V_->add(Vprime);
+
+
+        // Extra nuclear repulsion
+        double enuc2 = external->computeNuclearEnergy(molecule_);
+        if (print_) {
+            fprintf(outfile, "  Old nuclear repulsion        = %20.15f\n", nuclearrep_);
+            fprintf(outfile, "  Additional nuclear repulsion = %20.15f\n", enuc2);
+            fprintf(outfile, "  Total nuclear repulsion      = %20.15f\n\n", nuclearrep_ + enuc2);
+        }
+        nuclearrep_ += enuc2;
+
     }
 
     H_->copy(T_);
@@ -602,7 +645,7 @@ void HF::form_Shalf()
     // ==> CANONICAL ORTHOGONALIZATION <== //
 
     // Decide symmetric or canonical
-    double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
+    double S_cutoff = options_.get_double("S_TOLERANCE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
         if (print_ && (Communicator::world->me() == 0))
@@ -902,6 +945,7 @@ void HF::guess()
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
+        E_ = compute_initial_E();
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
@@ -1179,7 +1223,7 @@ double HF::compute_energy()
     MOM_performed_ = false;
     diis_performed_ = false;
     // Neither of these are idempotent
-    if ((options_.get_str("GUESS") == "SAD") || (options_.get_str("GUESS") == "READ"))
+    if (options_.get_str("GUESS") == "SAD" || options_.get_str("GUESS") == "READ")
         iteration_ = -1;
     else
         iteration_ = 0;
@@ -1271,6 +1315,10 @@ double HF::compute_energy()
             if(status != "") status += "/";
             status += "DAMP";
         }
+        if(frac_performed_){
+            if(status != "") status += "/";
+            status += "FRAC";
+        }
 
         if (Communicator::world->me() == 0) {
             fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
@@ -1299,6 +1347,9 @@ double HF::compute_energy()
         // If a an excited MOM is requested but not started, don't stop yet
         if (MOM_excited_ && !MOM_started_) converged = false;
 
+        // If a fractional occupation is requested but not started, don't stop yet
+        if (frac_enabled_ && !frac_performed_) converged = false;
+
         // Call any postiteration callbacks
         call_postiteration_callbacks();
 
@@ -1308,6 +1359,7 @@ double HF::compute_energy()
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
+    frac_renormalize();
 
     if (converged) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
@@ -1336,6 +1388,12 @@ double HF::compute_energy()
             if (print_ >= 2) {
                 oe->add("QUADRUPOLE");
                 oe->add("MULLIKEN_CHARGES");
+            }
+
+            if (print_ >= 3) {
+                oe->add("LOWDIN_CHARGES");
+                oe->add("MAYER_INDICES");
+                oe->add("WIBERG_LOWDIN_INDICES");
             }
 
             if (Communicator::world->me() == 0)

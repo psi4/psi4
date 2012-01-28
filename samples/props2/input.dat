@@ -2,8 +2,9 @@
 #! Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy
 #! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
 #! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
-
-
+ 
+memory 250 mb
+ 
 molecule dimer {
 0 1
 C
@@ -38,16 +39,16 @@ Rvals = [ 4.0, 5.0 ]
 
 set globals {
     BASIS sto-3g
-    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DF_BASIS_SCF cc-pVDZ-JKFIT
     DIIS True
-    MIN_DIIS_VECTORS 5
-    MAX_DIIS_VECTORS 9
+    DIIS_MIN_VECS 5
+    DIIS_MAX_VECS 9
     MAXITER 1000
-    E_CONVERGE 11
-    D_CONVERGE 11
+    E_CONVERGENCE 11
+    D_CONVERGENCE 11
     GUESS SAD
     SCF_TYPE DF
-    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DF_BASIS_SCF cc-pVDZ-JKFIT
     REFERENCE RHF
 }
 
@@ -77,7 +78,7 @@ for R in Rvals:
     oe.add("DIPOLE")
     oe.add("QUADRUPOLE")
     oe.compute()
-
+    
 
     clean()
 

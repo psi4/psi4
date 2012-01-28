@@ -1,0 +1,97 @@
+#! SCF STO-3G finite-difference tests
+
+memory 250 mb
+
+molecule h2o {
+  symmetry c1
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals {
+  basis sto-3g
+  d_convergence 11
+}
+
+# Test against Analytic second derivatives from PSI3 (for now).
+
+# psi3 3-point formula: #A1 force constants
+#  0.3546775  -0.2277549
+# -0.2277549   0.4721543
+#
+#B2 force constant
+#  0.7296851
+
+# *** Test frequencies by 3-pt formula in C1.
+set globals { points 3 }
+
+frequencies('scf')
+
+
+# *** Test frequencies by 5-pt formula in C1.
+molecule h2o {
+  symmetry c1
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals { points 5 }
+
+frequencies('scf')
+
+
+clean()
+
+# *** Test frequencies by 3-pt formula in C2v.
+molecule h2o {
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals { points 3 }
+
+frequencies('scf')
+
+
+# *** Test frequencies by 5-pt formula in C2v.
+molecule h2o {
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals { points 5 }
+
+frequencies('scf')
+
+
+# *** Test frequencies by 5-pt formula for A1 irrep only.
+
+molecule h2o {
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals { points 5 }
+
+frequencies('scf', irrep=1)
+
+
+clean()
+
+# *** Test frequencies by 5-pt formula for B2 irrep only.
+
+molecule h2o {
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals { points 5 }
+frequencies('scf', irrep=4)
+
+
