@@ -255,7 +255,7 @@ void UKS::integrals()
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
-    }
+    
 }
 void UKS::form_V()
 {
