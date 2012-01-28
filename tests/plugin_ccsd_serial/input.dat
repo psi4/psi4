@@ -9,7 +9,6 @@ molecule h2o {
 O
 H 1 1.0 
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 set {
@@ -19,7 +18,7 @@ set {
 }
 energy("plugin_ccsd_serial")
 
-compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                     #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                             #TEST
-compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy")            #TEST 
-compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"),     8, "CCSD(T) correlation energy") #TEST
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                 #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                             #TEST
+compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy")        #TEST 
+compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"), 8, "CCSD(T) correlation energy") #TEST
