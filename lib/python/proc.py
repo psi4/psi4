@@ -748,7 +748,7 @@ def run_mrcc(name, **kwargs):
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
-    PsiMod.mrcc(level)
+    PsiMod.mrcc_generate_input(level)
 
     # Load the fort.56 file
     # and dump a copy into the outfile
