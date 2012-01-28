@@ -347,9 +347,6 @@ void HF::integrals()
                 }
                 jk_->set_omega(omega); 
             }   
-
-        // Tell the JK to do erf integrals if needed 
-        jk_->set_omega(options_.get_double("DFT_OMEGA"));
         }
 
         // Initialize
