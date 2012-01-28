@@ -20,6 +20,7 @@ protected:
   double e_disp21_;
   double e_disp22sdq_;
   double e_disp22t_;
+  double e_est_disp22t_;
   double e_sapt2p_;
 
   void gARARxtARBS(int, const char *, const char, int, const char *, 

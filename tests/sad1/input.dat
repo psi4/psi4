@@ -3,9 +3,11 @@
 #! specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The
 #! test is first performed in C2v symmetry, and then in C1.
 
-Nref  =   8.841020805217546  #TEST
+memory 250 mb
+
+Nref  =   8.841020130083360  #TEST
 E1ref = -75.973425           #TEST
-Eref  = -76.01678948412534   #TEST
+Eref  = -76.01678947133706   #TEST
 
 molecule h2o {
     O
@@ -23,13 +25,13 @@ set globals {
 set docc       [3, 0, 1, 1]
 
 set maxiter    1
-set e_converge 0
-set d_converge 0
+set e_convergence 0
+set d_convergence 0
 E1 = energy('scf')
 
 set maxiter    50
-set e_converge 11
-set d_converge 11
+set e_convergence 11
+set d_convergence 11
 E = energy('scf')
 
 molecule h2o_c1 {
@@ -44,13 +46,13 @@ set basis cc-pvdz
 set docc [5]
 
 set maxiter 1
-set e_converge 0
-set d_converge 0
+set e_convergence 0
+set d_convergence 0
 E1_c1 = energy('scf')
 
 set maxiter 50
-set e_converge 11
-set d_converge 11
+set e_convergence 11
+set d_convergence 11
 E_c1 = energy('scf')
 
 compare_values(Nref, h2o_c1.nuclear_repulsion_energy(), 9, "C1  SAD Nuclear Repulsion Energy") #TEST
@@ -59,6 +61,3 @@ compare_values(Nref, h2o.nuclear_repulsion_energy(), 9, "C2v SAD Nuclear Repulsi
 #compare_values(E1ref, E1,    1, "C2v SAD Iteration 1 Energy")                                  #TEST
 compare_values(Eref, E_c1, 9, "C1  SAD Iteration N Energy")                                    #TEST
 compare_values(Eref, E,    9, "C2v SAD Iteration N Energy")                                    #TEST
-
-clean()
-

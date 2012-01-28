@@ -1,5 +1,7 @@
 #! H2O CISD/6-31G** Optimize Geometry by Energies
 
+memory 250 mb
+
 
 molecule h2o {
     O
@@ -8,14 +10,10 @@ molecule h2o {
 }
 
 set globals {
-  wfn detci
   basis 6-31G**
-  conv_max_force 0.000001
-  conv_max_disp  0.0001
+  max_force_g_convergence 0.000001
+  max_disp_g_convergence  0.0001
 }
 
-thisenergy = optimize('detci', dertype = 0)
-
-
-clean()
+thisenergy = optimize('cisd', dertype = 0)
 

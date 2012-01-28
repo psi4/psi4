@@ -1,3 +1,7 @@
+#! DFT Functional Test
+
+memory 250 mb
+
 E11 = -74.9493412744 #TEST
 E12 = -75.3196957567 #TEST
 E13 = -75.3185459160 #TEST
@@ -25,10 +29,11 @@ H 1 1.0 2 104.5
 set globals {
 print 2
 basis sto-3g
+
 guess core
 scf_type direct
 dft_order_spherical 29 
-dft_n_radial 100
+dft_num_radial 100
 reference rks
 }
 
@@ -73,6 +78,7 @@ H 1 1.0 2 104.5
 }
 
 set basis sto-3g
+# Must be reset in each new molecule
 set dft_functional b_x
 V31 = energy('scf')
 compare_values(E31,V31, 3, "UKS  1 2   B97 Energy") #TEST
@@ -112,6 +118,3 @@ compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
 set dft_functional wB97X 
 V44 = energy('scf')
 compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
-
-clean()
-

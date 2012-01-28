@@ -1,3 +1,5 @@
+memory 250 mb
+
 #! Test individual integral objects for correctness.
 print_stdout(' Case Study Test of Integrals')
 
@@ -9,7 +11,7 @@ molecule h2o {
 
 
 
-set {
+set globals {
   basis sto-3g
 }
 
@@ -21,7 +23,7 @@ Li = mints.so_angular_momentum()
 
 
 
-set {
+set globals {
   basis 6-311G**
 }
 
@@ -33,7 +35,7 @@ Li = mints.so_angular_momentum()
 
 
 
-set {
+set globals {
   basis cc-pVTZ
 }
 
@@ -46,7 +48,7 @@ Li = mints.so_angular_momentum()
 
 
 
-set {
+set globals {
   basis sto-3g
 }
 
@@ -58,7 +60,7 @@ Pi = mints.so_nabla()
 
 
 
-set {
+set globals {
   basis 6-311G**
 }
 
@@ -70,7 +72,7 @@ Pi = mints.so_nabla()
 
 
 
-set {
+set globals {
   basis cc-pVTZ
 }
 
@@ -81,6 +83,3 @@ Pi = mints.so_nabla()
 
 
 
-
-# There shouldn't be anything to clean
-clean()

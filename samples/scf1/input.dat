@@ -1,5 +1,7 @@
 #! RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
+memory 500 mb
+
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -9,10 +11,8 @@ molecule bh {
 set globals = {
     scf_type   direct
     basis      cc-pVQZ
-    e_converge 10
+    e_convergence 10
 }
 
 thisenergy = energy('scf')
 
-
-clean()

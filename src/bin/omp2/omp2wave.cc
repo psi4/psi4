@@ -39,45 +39,43 @@ OMP2Wave::~OMP2Wave()
 void OMP2Wave::common_init()
 {
  
-	exp_tol_Eod=options_.get_int("e_convergence");
-	exp_tol_t2=options_.get_int("a_convergence");
-        exp_tol_grad=options_.get_int("g_convergence");
-	exp_mograd_max=options_.get_int("mg_convergence");
-        cc_maxiter=options_.get_int("cc_maxiter");
-	mo_maxiter=options_.get_int("mo_maxiter");
-	print_=options_.get_int("print"); 
-	cachelev=options_.get_int("cachelev"); 
-	num_vecs=options_.get_int("num_vecs");
-	exp_cutoff=options_.get_int("cutoff");
-	memory=options_.get_int("memory"); 
+	tol_Eod=options_.get_double("E_CONVERGENCE");
+	tol_t2=options_.get_double("R_CONVERGENCE");
+    tol_grad=options_.get_double("RMS_MOGRAD_CONVERGENCE");
+	mograd_max=options_.get_double("MAX_MOGRAD_CONVERGENCE");
+        cc_maxiter=options_.get_int("CC_MAXITER");
+	mo_maxiter=options_.get_int("MO_MAXITER");
+	print_=options_.get_int("PRINT"); 
+	cachelev=options_.get_int("CACHELEVEL"); 
+	num_vecs=options_.get_int("DIIS_MAX_VECS");
+	exp_cutoff=options_.get_int("CUTOFF");
+	memory=options_.get_int("MEMORY"); 
 	
-	step_max=options_.get_double("mo_step_max");
-	lshift_parameter=options_.get_double("lshift_parameter");
-	os_scale=options_.get_double("os_scale");
-	ss_scale=options_.get_double("ss_scale");
-	sos_scale=options_.get_double("sos_scale");
-	sos_scale2=options_.get_double("sos_scale2");
+	step_max=options_.get_double("MO_STEP_MAX");
+	lshift_parameter=options_.get_double("LEVEL_SHIFT");
+	os_scale=options_.get_double("MP2_OS_SCALE");
+	ss_scale=options_.get_double("MP2_SS_SCALE");
+	sos_scale=options_.get_double("SOS_SCALE");
+	sos_scale2=options_.get_double("SOS_SCALE2");
 	
-	//wfn=options_.get_str("wfn");
-	level_shift=options_.get_str("level_shift");
-	//lineq=options_.get_str("lineq");
-	orth_type=options_.get_str("orth_type");
-	//stability=options_.get_str("stability");
-	opt_method=options_.get_str("opt_method");
-	hess_type=options_.get_str("hess_type");
-	omp2_orb_energy=options_.get_str("omp2_orb_energy");
-	natorb=options_.get_str("natorb");
-	reference=options_.get_str("reference");
-	do_scs=options_.get_str("do_scs");
-	do_sos=options_.get_str("do_sos");
-	write_mo_coeff=options_.get_str("write_mo");
-	read_mo_coeff=options_.get_str("read_mo");
+	//wfn=options_.get_str("WFN");
+    if (options_["LEVEL_SHIFT"].has_changed()) {
+	  level_shift="TRUE";
+    }
+	//lineq=options_.get_str("LINEQ");
+	orth_type=options_.get_str("ORTH_TYPE");
+	//stability=options_.get_str("STABILITY");
+	opt_method=options_.get_str("OPT_METHOD");
+	hess_type=options_.get_str("HESS_TYPE");
+	omp2_orb_energy=options_.get_str("OMP2_ORBS_PRINT");
+	natorb=options_.get_str("NAT_ORBS");
+	reference=options_.get_str("REFERENCE");
+	do_scs=options_.get_str("DO_SCS");
+	do_sos=options_.get_str("DO_SOS");
+	write_mo_coeff=options_.get_str("MO_WRITE");
+	read_mo_coeff=options_.get_str("MO_READ");
 	
-	tol_Eod = pow(10.0,-exp_tol_Eod);
-	tol_grad = pow(10.0,-exp_tol_grad);
-	mograd_max = pow(10.0,-exp_mograd_max);
 	cutoff = pow(10.0,-exp_cutoff);
-	tol_t2 = pow(10.0,-exp_tol_t2);
 	
 	
 	if (print_ > 0) options_.print();
@@ -85,30 +83,30 @@ void OMP2Wave::common_init()
 	get_moinfo();
 	
 	// Memory allocation
-	HmoA = shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirreps, mopi, mopi));
-	HmoB = shared_ptr<Matrix>(new Matrix("MO-basis beta one-electron ints", nirreps, mopi, mopi));
-	FockA = shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirreps, mopi, mopi));
-	FockB = shared_ptr<Matrix>(new Matrix("MO-basis beta Fock matrix", nirreps, mopi, mopi));
-	gamma1corrA = shared_ptr<Matrix>(new Matrix("MO-basis alpha correlation OPDM", nirreps, mopi, mopi));
-	gamma1corrB = shared_ptr<Matrix>(new Matrix("MO-basis beta correlation OPDM", nirreps, mopi, mopi));
-	g1symmA = shared_ptr<Matrix>(new Matrix("MO-basis alpha OPDM", nirreps, mopi, mopi));
-	g1symmB = shared_ptr<Matrix>(new Matrix("MO-basis beta OPDM", nirreps, mopi, mopi));
-	GFockA = shared_ptr<Matrix>(new Matrix("MO-basis alpha generalized Fock matrix", nirreps, mopi, mopi));
-	GFockB = shared_ptr<Matrix>(new Matrix("MO-basis beta generalized Fock matrix", nirreps, mopi, mopi));
-	UorbA = shared_ptr<Matrix>(new Matrix("Alpha MO rotation matrix", nirreps, mopi, mopi));
-	UorbB = shared_ptr<Matrix>(new Matrix("Beta MO rotation matrix", nirreps, mopi, mopi));
-	KorbA = shared_ptr<Matrix>(new Matrix("K alpha MO rotation", nirreps, mopi, mopi)); 
-	KorbB = shared_ptr<Matrix>(new Matrix("K beta MO rotation", nirreps, mopi, mopi)); 
-	KsqrA = shared_ptr<Matrix>(new Matrix("K^2 alpha MO rotation", nirreps, mopi, mopi)); 
-	KsqrB = shared_ptr<Matrix>(new Matrix("K^2 beta MO rotation", nirreps, mopi, mopi)); 
-	HG1A = shared_ptr<Matrix>(new Matrix("Alpha h*g1symm", nirreps, mopi, mopi));
-	HG1B = shared_ptr<Matrix>(new Matrix("Beta h*g1symm", nirreps, mopi, mopi));
-	WorbA = shared_ptr<Matrix>(new Matrix("Alpha MO gradient matrix", nirreps, mopi, mopi));
-	WorbB = shared_ptr<Matrix>(new Matrix("Beta MO gradient matrix", nirreps, mopi, mopi));
-	GooA = shared_ptr<Matrix>(new Matrix("Alpha Goo intermediate", nirreps, aoccpiA, aoccpiA));
-	GooB = shared_ptr<Matrix>(new Matrix("Beta Goo intermediate", nirreps, aoccpiB, aoccpiB));
-	GvvA = shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirreps, avirtpiA, avirtpiA));
-	GvvB = shared_ptr<Matrix>(new Matrix("Beta Gvv intermediate", nirreps, avirtpiB, avirtpiB));
+	HmoA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha one-electron ints", nirreps, mopi, mopi));
+	HmoB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta one-electron ints", nirreps, mopi, mopi));
+	FockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha Fock matrix", nirreps, mopi, mopi));
+	FockB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta Fock matrix", nirreps, mopi, mopi));
+	gamma1corrA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha correlation OPDM", nirreps, mopi, mopi));
+	gamma1corrB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta correlation OPDM", nirreps, mopi, mopi));
+	g1symmA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha OPDM", nirreps, mopi, mopi));
+	g1symmB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta OPDM", nirreps, mopi, mopi));
+	GFockA = boost::shared_ptr<Matrix>(new Matrix("MO-basis alpha generalized Fock matrix", nirreps, mopi, mopi));
+	GFockB = boost::shared_ptr<Matrix>(new Matrix("MO-basis beta generalized Fock matrix", nirreps, mopi, mopi));
+	UorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO rotation matrix", nirreps, mopi, mopi));
+	UorbB = boost::shared_ptr<Matrix>(new Matrix("Beta MO rotation matrix", nirreps, mopi, mopi));
+	KorbA = boost::shared_ptr<Matrix>(new Matrix("K alpha MO rotation", nirreps, mopi, mopi)); 
+	KorbB = boost::shared_ptr<Matrix>(new Matrix("K beta MO rotation", nirreps, mopi, mopi)); 
+	KsqrA = boost::shared_ptr<Matrix>(new Matrix("K^2 alpha MO rotation", nirreps, mopi, mopi)); 
+	KsqrB = boost::shared_ptr<Matrix>(new Matrix("K^2 beta MO rotation", nirreps, mopi, mopi)); 
+	HG1A = boost::shared_ptr<Matrix>(new Matrix("Alpha h*g1symm", nirreps, mopi, mopi));
+	HG1B = boost::shared_ptr<Matrix>(new Matrix("Beta h*g1symm", nirreps, mopi, mopi));
+	WorbA = boost::shared_ptr<Matrix>(new Matrix("Alpha MO gradient matrix", nirreps, mopi, mopi));
+	WorbB = boost::shared_ptr<Matrix>(new Matrix("Beta MO gradient matrix", nirreps, mopi, mopi));
+	GooA = boost::shared_ptr<Matrix>(new Matrix("Alpha Goo intermediate", nirreps, aoccpiA, aoccpiA));
+	GooB = boost::shared_ptr<Matrix>(new Matrix("Beta Goo intermediate", nirreps, aoccpiB, aoccpiB));
+	GvvA = boost::shared_ptr<Matrix>(new Matrix("Alpha Gvv intermediate", nirreps, avirtpiA, avirtpiA));
+	GvvB = boost::shared_ptr<Matrix>(new Matrix("Beta Gvv intermediate", nirreps, avirtpiB, avirtpiB));
 
         Molecule& mol = *reference_wavefunction_->molecule().get();
         CharacterTable ct = mol.point_group()->char_table();
@@ -565,8 +563,8 @@ fprintf(outfile,"\n Diagonalizing one-particle response density matrix... \n");
 fprintf(outfile,"\n");
 fflush(outfile);
  
-      SharedMatrix Udum = shared_ptr<Matrix>(new Matrix("Udum", nirreps, mopi, mopi));
-      SharedVector diag = shared_ptr<Vector>(new Vector("Natural orbital occupation numbers", nirreps, mopi));
+      SharedMatrix Udum = boost::shared_ptr<Matrix>(new Matrix("Udum", nirreps, mopi, mopi));
+      SharedVector diag = boost::shared_ptr<Vector>(new Vector("Natural orbital occupation numbers", nirreps, mopi));
 
       // Diagonalizing Alpha-OPDM
       Udum->zero();

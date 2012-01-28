@@ -23,7 +23,7 @@ void get_params()
   params.print_lvl = options.get_int("PRINT");
 
   // TODO find memory from driver
-  params.cachelev = options.get_int("CACHELEV"); 
+  params.cachelev = options.get_int("CACHELEVEL"); 
   params.cachelev = 0;
 
   junk = options.get_str("REFERENCE");
@@ -54,9 +54,9 @@ void get_params()
   }
 
   if (params.print_lvl > 2) params.num_evecs_print = 5;
-  params.num_evecs_print = options.get_int("NUM_EVECS_PRINT");
+  params.num_evecs_print = options.get_int("NUM_VECS_PRINT");
 
-  params.rotation_method = options.get_int("ROTATION_METHOD");
+  params.rotation_method = options.get_int("ROTATION_SCHEME");
 
   params.scale = 0.5;
   params.scale = options.get_double("SCALE");

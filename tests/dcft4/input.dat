@@ -3,6 +3,8 @@
 #! Four-virtual integrals are handled in the MO Basis.
 #! The reference DCFT energy is taken from the JCP 133 174122 (2010) paper
 
+memory 250 mb
+
 refscf      = -128.48877555174076 #TEST
 refmp2      = -128.67634273661755 #TEST
 refdcftscf  = -128.29060244088066 #TEST
@@ -13,7 +15,7 @@ molecule ne {
 }
 
 set globals {
-    convergence 11
+    r_convergence 11
     reference   uhf
     ao_basis    none
     algorithm   twostep
@@ -32,6 +34,3 @@ compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy 
 
 #compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (simultaneous)");                #TEST
 #compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (simultaneous)");     #TEST
-
-clean()
-

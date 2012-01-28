@@ -1,0 +1,21 @@
+#! RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
+
+memory 250 mb
+
+molecule h2o {
+  0 1
+  H
+  O 1 0.9
+  H 2 0.9 1 104.0
+}
+
+set {
+  wfn eom_cc2
+  basis "cc-pVDZ"
+  states_per_irrep [2, 2, 2, 2]
+}
+
+energy('eom-cc2')
+
+
+

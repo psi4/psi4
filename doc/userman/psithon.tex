@@ -1,16 +1,106 @@
-\section{Psithon} \label{psithon}
- 
+\section{Psithon} \label{sec:psithon}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
+
 To allow arbitrarily complex computations to be performed, \PSIfour was built
 upon the Python interpreter. However, to make the input syntax simpler, some
 pre-processing of the input file is performed before it is interpreted,
 resulting in Python syntax that is customized for \PSI, termed Psithon.  In
 this section we will describe the essential features of the Psithon language.
 \PSIfour is distributed with an extensive test suite, described in section
-\ref{test_suite}; the input files for these test cases can be found in the
+\ref{sec:test_suite}; the input files for these test cases can be found in the
 samples subdirectory of the top-level \PSIfour source directory, and should
 serve as useful examples.
 
-\subsection{Molecule Specification}
+\subsection{Scratch Files, Default Variables and the \psirc File} \label{sec:psirc}
+For convenience, the Python interpreter will execute the contents of the
+\psirc file in the current user's home area (if present) before performing any
+tasks in the input file.  This allows frequently used python variables to be
+automatically defined in all input files.  For example, if we repeatedly make
+use of the universal gravitational constant, the following line could be placed
+in the \psirc file
+\begin{verbatim}
+UGC = 6.67384E-11 # m^3 / kg^-1 s^-2
+\end{verbatim}
+which would make the variable {\tt UGC} available in all \PSIfour input files.
+For convenience, the physical constants used within the \PSIfour code (which
+are obtained from the 3rd edition of the IUPAC Green
+book\cite{Cohen:GreenBook:2008}) are also automatically loaded as Psithon
+variables (before \psirc is loaded, so that \psirc values can be overridden by
+the user); table \ref{tab:physconst} shows these variables.
+\begin{table}[h!]
+    \caption{The physical constants used within \PSIfour, which are automatically
+             made available within all \PSIfour input files.}
+    \label{tab:physconst}
+    \setlength{\tabcolsep}{1pt}
+    \small
+    \begin{tabular}{lll}
+        \hline
+        \hline
+        Name & Value & Description \\
+        \hline
+        \input{physconst}
+        \hline
+        \hline
+    \end{tabular}
+\end{table}
+The ``psi\_'' prefix is to prevent clashes with user-defined variables in
+\PSIfour input files.
+
+Another important use of the \psirc file is to control the
+handling of scratch files.  \PSIfour has a number of utilities that manage
+input and output (I/O) of quantities to and from the hard disk.  Most
+quantities, such as molecular integrals, are intermediates that are not of
+interest to the user and can be deleted after the computation finishes, but
+pertinent details of computations are also written to a checkpoint file and
+might be useful in subsequent computations.  All files are sequentially
+numbered and are written to /tmp, then deleted at the end of the computation,
+unless otherwise instructed by the user.
+
+A Python callable handle to the \PSIfour I/O management routines is available,
+and is called {\tt psi4\_io}.  To instruct the I/O manager to send all files to
+another location, say /scratch/user, add the following command to the \psirc
+file (note the trailing ``/''):
+
+\begin{verbatim}
+psi4_io.set_default_path('/scratch/user/')
+\end{verbatim}
+
+For batch jobs running through a queue, it might be more convenient to use an
+environmental variable (in this case \$MYSCRATCH) to set the scratch directory;
+the following code will do that:
+
+\begin{verbatim}
+scratch_dir = os.environ.get('MYSCRATCH')
+if scratch_dir:
+    psi4_io.set_default_path(scratch_dir + '/')
+\end{verbatim}
+
+Individual files can be send to specific locations.  For example, file 32 is
+the checkpoint file that the user might want to retain in the working directory
+({\it i.e.}, where \PSIfour was launched from) for restart purposes.  This is
+accomplished by the commands below:
+
+\begin{verbatim}
+psi4_io.set_specific_path(32, './')
+psi4_io.set_specific_retention(32, True)
+\end{verbatim}
+
+To circumvent difficulties with running multiple jobs in the same scratch, the
+process ID (PID) of the \PSIfour instance is incorporated into the full file
+name; therefore, it is safe to use the same scratch directory for calculations
+running simultaneously.
+
+To override any of these defaults for selected jobs, simply place the
+appropriate commands from the snippets above in the input file itself.  During
+excecution, the \psirc defaults will be loaded in first, but then the commands
+in the input file will be executed.  Executing \PSIfour with the {\tt -m} (for
+messy) flag will prevent files being deleted at the end of the run:
+
+\begin{verbatim}
+psi4 -m
+\end{verbatim}
+
+\subsection{Molecule Specification} \label{sec:MoleculeSpecification}
 \PSIfour has a very flexible input parser that allows the user to provide
 geometries as Cartesian coordinates, Z-matrix variables, or a combination of
 both. The use of fixed values and variables are supported for both. For
@@ -63,11 +153,11 @@ molecule{
 Blank lines are ignored and, unlike regular Python syntax, indentation within
 the {\tt molecule} block does not matter, although the {\tt molecule} keyword itself must
 be aligned within the input according to standard Python syntax. For more
-examples of geometry specification, see the mints1 input file in the samples
+examples of geometry specification, see the {\tt mints1} input file in the samples
 folder. It is also possible to mix Cartesian and Z-matrix geometry
 specifications, as demonstrated in the {\tt mints4} sample input file.
 
-\subsection{Multiple Molecules}
+\subsubsection{Multiple Molecules}
 
 To facilitate more elaborate computations, it is possible to provide a name for
 each molecule, and tell \PSIfour which one should be used in a given
@@ -111,7 +201,7 @@ set basis cc-pvdz
 set reference rhf
 energy('scf')
 
-activate{h}
+activate(h)
 set basis cc-pvdz
 set reference uhf
 energy('scf')
@@ -120,22 +210,162 @@ Note that whenever the molecule is changed, the basis set must be specified
 again. The following section provides more details about the job control
 keywords used in the above examples.
 
-\subsection{Additional Keywords}
+\subsubsection{Additional Keywords}\label{sec:MoleculeKeywords}
 
 In addition to specifying the geometry, additional information can be provided
 in the {\tt molecule} block. If two integers are encountered on any line of the
 {\tt molecule} block, they are interpreted as the molecular charge and multiplicity
-($2\times M_s + 1$), respectively; these values can also be specified using the
-{\tt set} keywords in the input, as described in the next section. The symmetry can
-be specified by a line reading ``symmetry {\it symbol}'', where {\it symbol} is
+($2\times M_s + 1$), respectively.  The symmetry can be specified by a line reading
+\texttt{symmetry \slshape symbol}, where \texttt{\slshape symbol} is
 the Sch\"onflies symbol of the (Abelian) point group to use for the
-computation. This need not be specified, as the molecular symmetry is
-automatically detected by \PSIfour.  Certain computations require that the
-molecule is not reoriented; this can be achieved by adding either
-``no\_reorient'' or ``noreorient''. By default, \AA ngstr\"om units are used;
-this is changed by adding a line that reads ``units {\it spec}'', where {\it
-spec} is one of ``ang'', ``angstrom'', ``bohr'', ``au'', or ``a.u.''. As an
-example, the following specifies
+computation; see section \ref{sec:Symmetry} for more details. This need not be
+specified, as the molecular symmetry is automatically detected by \PSIfour.
+Certain computations require that the molecule is not reoriented; this can be
+achieved by adding either {\tt no\_reorient} or {\tt noreorient}. By default,
+\AA ngstr\"om units are used; this is changed by adding a line that reads
+\texttt{units \slshape spec}, where \texttt{\slshape spec} is one of {\tt ang},
+{\tt angstrom}, {\tt a.u.}, {\tt au}, or {\tt bohr}.
+
+\subsection{Geometries from the PubChem Database}
+
+Obtaining rough starting guess geometries can be burdensome.  The Z-matrix
+coordinate system was designed to provide chemists with an intuitive method for
+guessing structures in terms of bond lengths and angles.  While Z-matrix input is
+intuitive for small molecules with few degrees of freedom, it quickly becomes
+laborious as the system size grows.  To obtain a reasonable starting guess
+geometry, \PSIfour can take a chemical name as input; this is then used
+to attempt to retrieve Cartesian coordinates from the PubChem database.\cite{PubChem}
+
+For example, to run a computation on benzene, we can use the following molecule specification:
+
+\begin{Snippet}
+molecule benzene {
+    pubchem:benzene
+}
+\end{Snippet}
+
+If the computer is connected to the internet, the above code will instruct
+\PSIfour to search PubChem for a starting structure.  The search is actually
+performed for compounds whose name {\it contains} ``benzene'', so multiple
+entries will be returned.  If the name provided (``benzene'' in the above
+example) exactly matches one of the results, that entry will be used.  If no
+exact match is found the results, along with a unique chemical identifier
+(CID), are printed to the output file, prompting the user to provide a more
+specific name.  For example, if we know that we want to run a computation on a
+compound whose name(s) contain ``benzene'', but we're not sure of the exact IUPAC
+name, the following input can be used:
+\begin{Snippet}
+molecule benzene {
+    pubchem:benzene*
+}
+\end{Snippet}
+Appending the ``*'' prevents an exact match from being found and, at the time
+of writing, the following results are displayed in the output file:
+{\small
+\begin{Snippet}
+     Chemical ID     IUPAC Name
+              241   benzene
+             7371   benzenesulfonic acid
+            91526   benzenesulfonate
+              244   phenylmethanol
+              727   1,2,3,4,5,6-hexachlorocyclohexane
+              240   benzaldehyde
+            65723   benzenesulfonohydrazide
+            74296   N-phenylbenzenesulfonamide
+              289   benzene-1,2-diol
+              243   benzoic acid
+             7370   benzenesulfonamide
+           636822   1,2,4-trimethoxy-5-[(E)-prop-1-enyl]benzene
+             7369   benzenesulfonyl chloride
+            12932   N-[2-di(propan-2-yloxy)phosphinothioylsulfanylethyl]benzenesulfonamide
+             7505   benzonitrile
+            78438   N-[anilino(phenyl)phosphoryl]aniline
+            12581   3-phenylpropanenitrile
+           517327   sodium benzenesulfonate
+           637563   1-methoxy-4-[(E)-prop-1-enyl]benzene
+           252325   [(E)-prop-1-enyl]benzene
+\end{Snippet}
+}
+Note that some of these results do not contain the string ``benzene''; these
+compounds have synonyms containing that text.  We can now replace the
+``benzene*'' in the input file with one of the above compounds using either the
+IUPAC name or the CID provided in the list, {\it viz}:
+\begin{Snippet}
+molecule benzene {
+    pubchem:637563
+}
+
+ or
+
+molecule benzene {
+    pubchem:1-methoxy-4-[(E)-prop-1-enyl]benzene
+}
+\end{Snippet}
+
+Some of the structures in the database are quite loosely optimized and do not
+have the correct symmetry.  Before starting the computation, \PSIfour will
+check to see if the molecule is close to having each of the possible
+symmetries, and will adjust the structure accordingly so that the maximum
+symmetry is utilized.
+
+The standard keywords, described in section \ref{sec:MoleculeKeywords}, can be
+used in conjuction to specify charge, multiplicity, symmetry to use, {\it etc.} .
+
+\subsection{Symmetry} \label{sec:Symmetry}
+
+For efficiency, \PSIfour can utilize the largest Abelian subgroup of the full
+point group of the molecule.  Concomitantly a number of quantities, such as
+\optionname{SOCC}{GLOBALS} and \optionname{DOCC}{GLOBALS}, are arrays whose entries pertain to irreducible
+representations (irreps) of the molecular point group.  Ordering of irreps
+follows the convention used in Cotton's {\it Chemical Applications of Group
+Theory}, as detailed in Table \ref{tab:IrrepOrdering}.  We refer to this
+convention as ``Cotton Ordering'' hereafter.
+\begin{table}[h]
+   \begin{center}
+   \caption{The ordering of irreducible representations (irreps) used in \PSIfour.}
+   \label{tab:IrrepOrdering}
+   \begin{tabular}{llllllllllll}
+   \hline
+   \hline
+   \multicolumn{3}{c}{Point Group} &&  \multicolumn{8}{c}{Irrep Order} \\
+   \hline
+   &\pg{C}{1}  && & \pg{A}{}  \\
+   &\pg{C}{i}  && & \pg{A}{g} & \pg{A}{u}  \\
+   &\pg{C}{2}  && & \pg{A}{}  & \pg{B}{}   \\
+   &\pg{C}{s}  && & \pg{A'}{} & \pg{A''}{} \\
+   &\pg{D}{2}  && & \pg{A}{}  & \pg{B}{1}  & \pg{B}{2}  & \pg{B}{3} \\
+   &\pg{C}{2v} && & \pg{A}{1} & \pg{A}{2}  & \pg{B}{1}  & \pg{B}{2} \\
+   &\pg{C}{2h} && & \pg{A}{g} & \pg{B}{g}  & \pg{A}{u}  & \pg{B}{u} \\
+   &\pg{D}{2h} && & \pg{A}{g} & \pg{B}{1g} & \pg{B}{2g} & \pg{B}{3g} & \pg{A}{u} & \pg{B}{1u} & \pg{B}{2u} & \pg{B}{3u}\\
+   \hline
+   \hline
+   \end{tabular}
+   \end{center}
+\end{table}
+
+For example, water (\pg{C}{2v} symmetry) has 3 doubly occupied \pg{A}{1}
+orbitals, as well as 1 each of \pg{B}{1} and \pg{B}{2} symmetry; the
+corresponding \optionname{DOCC}{GLOBALS} array is therefore:
+\begin{verbatim}
+  DOCC = [3, 0, 1, 1]
+\end{verbatim}
+
+Although \PSIfour will detect the symmetry automatically, and use the largest
+possible Abelian subgroup, the user might want to run in a lower point group.
+To do this the {\tt symmetry} keyword can be used when inputting the molecule
+(see section \ref{sec:MoleculeSpecification}).  In most cases the standard
+Sch\"onflies symbol (one of {\tt c1}, {\tt c2}, {\tt ci}, {\tt cs}, {\tt d2},
+{\tt c2h}, {\tt c2v}, {\tt d2h}) will suffice.
+For certain computations, the user might want to specify which particular
+subgroup is to be used by appending a unique axis specifier.  For example when
+running a computation on a molecule with \pg{D}{2h} symmetry in \pg{C}{2v}, the
+\pg{C}{2} axis can be chosen as either the $x$, the $y$, or the $z$; these can
+be specified by requesing the symmetry as c2vx, c2vy, or c2vz, respectively.
+Likewise the {\tt c2x}, {\tt c2y}, {\tt c2z}, {\tt c2hx}, {\tt c2hy}, and {\tt c2hz}
+labels are valid.  For \pg{C}{s} symmetry the labels {\tt csx}, {\tt csy}, and
+{\tt csz} request the $yz$, $xz$, and $xy$ planes be used as the mirror plane,
+respectively.  If no unique axis is specified, \PSIfour will choose an appropriate
+subgroup.
 
 \subsection{Non-Covalently Bonded Molecule Fragments}
 
@@ -143,10 +373,10 @@ example, the following specifies
 intermolecular forces, including counterpoise corrections and symmetry adapted
 perturbation theory methods. These require the definition of which fragments
 are interacting within the complex. \PSIfour provides a very simple mechanism
-for doing so; simply define the complex’s geometry using the standard
+for doing so; simply define the complex's geometry using the standard
 Cartesian, Z-matrix, or mixture thereof, specifications and then place two
 dashes between nonbonded fragements. For example, to study the interaction
-energy of ethane and ethyne molecules, we could use the following molecule
+energy of ethane and ethyne molecules, we can use the following molecule
 block:
 \begin{Snippet}
 molecule{
@@ -160,25 +390,25 @@ molecule{
   --
   0 1
   C 0.000000 0.000000 2.900503
-  C 0.000000 0.000000 1.693240 
+  C 0.000000 0.000000 1.693240
   H 0.000000 0.000000 0.627352
   H 0.000000 0.000000 3.963929
 }
 \end{Snippet}
 In this case, the charge and multiplicity of each interacting fragment is
 explicitly specified. If the charge and multiplicity are specified for the
-first fragement, it is assumed to be the same for all fragments. When
+first fragment, it is assumed to be the same for all fragments. When
 considering interacting fragments, the overall charge is simply the sum of all
-fragement charges, and any unpaired electrons are assumed to be coupled to
+fragment charges, and any unpaired electrons are assumed to be coupled to
 yield the highest possible $M_s$ value.
 
 \subsection{Job Control}
 \PSIfour comprises a number of modules, written in C++, that each perform
 specific tasks and are callable directly from the Python front end. Each module
-recognizes specific keywords in the input file, detailed in chapter B, which
+recognizes specific keywords in the input file, detailed in Appendix \ref{keywords}, which
 control its function. The keywords can be made global, or scoped to apply to
 certain specific modules. The following examples demonstrate some of the ways
-that global variables can be specified:
+that global keywords can be specified:
 \begin{Snippet}
 set globals basis cc-pVDZ
 
@@ -224,15 +454,18 @@ set{
 }
 \end{Snippet}
 For arguments that require an array input, standard Python list syntax should
-be used, viz:
+be used, viz.:
 \begin{Snippet}
 set{
   docc = [3, 0, 1, 1]
 }
 \end{Snippet}
-Any of the above keywords specifications can be scoped to individual modules,
-by adding the name of the module after the {\tt set} keyword. Ommiting the module
-name, or using the name ``global'' or ``globals'' will result in the keyword being
+List / matrix inputs may span multiple lines, as long as the opening ``['' is
+on the same line as the name of the keyword.
+
+Any of the above keyword specifications can be scoped to individual modules,
+by adding the name of the module after the {\tt set} keyword. Omitting the module
+name, or using the name {\tt global} or {\tt globals} will result in the keyword being
 applied to all modules. For example, in the following input
 \begin{Snippet}
 molecule{
@@ -250,10 +483,10 @@ set scf print 1
 energy('ccsd')
 \end{Snippet}
 the basis set is set to cc-pVDZ throughout, the SCF code will have a print
-level of 1 and the ccenergy code, which performs coupled cluster computations,
+level of 1 and the \PSIccenergy code, which performs coupled cluster computations,
 will use a print level of 3. In this example a full CCSD computation is
-performed by running the SCF code first, and then the coupled cluster modules;
-the energy Python helper function ensures that this is performed correctly.
+performed by running the SCF code first, then the coupled cluster modules;
+the {\tt energy()} Python helper function ensures that this is performed correctly.
 Note that the Python interpreter executes commands in the order they appear in
 the input file, so if the last four commands in the above example were to read
 \begin{Snippet}
@@ -262,19 +495,70 @@ energy('ccsd')
 set ccenergy print 3
 set scf print 1
 \end{Snippet}
-the commands that set the print level would be inneffective, as they would be
-processed after the CCSD computation completes. In addition to specifying
-charge and multiplicity in the {\tt molecule} block, they can be set through {\tt set}
-commands:
+the commands that set the print level would be ineffective, as they would be
+processed after the CCSD computation completes.
+
+\subsection{Assigning Basis Sets} \label{sec:PsithonBasisSets}
+While the above syntax will suffice for specifying basis sets in most cases,
+the user may need to assign basis sets to specific atoms.  To achieve this, a
+{\tt basis} block can be used.  We use a snippet from the {\tt mints2} sample
+input file, which performs a benzene SCF computation, to demonstrate this
+feature.
+
 \begin{Snippet}
-set charge 1 # A cation
-set multp 3  # A triplet electronic state
+basis {
+   assign DZ
+   assign C 3-21G
+   assign H1 sto-3g
+   assign C1 sto-3g
+}
 \end{Snippet}
+
+The first line in this block assigns the DZ basis set to all atoms.  The next
+line then assigns 3-21G to all carbon atoms, leaving the hydrogens with the DZ
+basis set.  On the third line, the hydrogen atoms which have been specifically
+labelled as H1 aregiven the STO-3G basis set, leaving the unlabelled hydrogen
+atoms with the DZ basis set.  Likewise, the fourth line assigns the STO-3G
+basis set to just the carbon atoms labelled C1.  This bizzare example was
+constructed to demonstrate the syntax, but the flexibility of the basis set
+specification is advantageous, for example, when selectivily omitting diffuse
+functions to make computations more tractable.
+
+In the above example the basis sets have been assigned asymmetrically, reducing
+the effective symmetry from \pg{D}{6h} to \pg{C}{2v}; \PSIfour will detect this
+automatically and run in the appropriate point group.  The same syntax can be
+used to specify basis sets other than that used to define orbitals.  For
+example,
+
+\begin{Snippet}
+set df_basis_mp2 cc-pvdz-ri
+
+ or
+
+basis {
+   assign cc-pVDZ-RI df_basis_mp2
+}
+\end{Snippet}
+are both equivalent ways to set the auxiliary basis set for density fitted MP2
+computations.  To assign the aug-cc-pVDZ-RI to carbon atoms, the following
+command is used:
+\begin{Snippet}
+basis {
+   assign C aug-cc-pVDZ-RI df_basis_mp2
+}
+\end{Snippet}
+
+When Dunning's correlation consistent basis sets (cc-pV$X$Z), and core-valence
+and diffuse variants thereof, are being used the SCF and DF-MP2 codes will
+chose the appropriate auxilliary basis set automatically, unless instructed
+otherwise by setting theauxiliary basis set in the input.  Finally, we note
+that the {\tt basis} block may also be used for defining basis sets, as
+detailed in section \ref{sec:BasisSetSpecification}.
 
 \subsection{Memory Specification}
 By default, \PSIfour assumes that 256 Mb of memory are available. While this is
 enough for many computations, many of the algorithms will perform better if
-more is available. To specify memory, the memory should be used. The following
+more is available. To specify memory, the {\tt memory} keyword should be used. The following
 lines are all equivalent methods for specifying that 2 Gb of RAM is available
 to \PSIfour:
 \begin{Snippet}
@@ -288,6 +572,93 @@ memory 2000 Mb
 
 memory 2000000 Kb
 \end{Snippet}
+One convenient way to override the \PSIfour default memory is to place a memory
+command in the \psirc file, as detailed in section \ref{sec:psirc}.
+
+\subsection{Threading}
+\label{sec:threading}
+
+Most new modules in \PSIfour are designed to run efficiently on SMP architectures
+via application of several thread models. The de facto standard for \PSIfour
+involves using threaded BLAS/LAPACK (particularly Intel's excellent MKL package)
+for most tensor-like operations, OpenMP for more general operations, and Boost
+Threads for some special-case operations. Note: Using OpenMP alone is a really
+bad idea. The developers make little to no effort to explicitly parallelize
+operations which are already easily threaded by MKL or other threaded BLAS. Less
+than 20\% of the threaded code in \PSIfour uses OpenMP, the rest is handled by
+parallel DGEMM and other library routines. From this point forward, it is
+assumed that you have compiled PSI4 with OpenMP and MKL (Note that it is
+possible to use g++ or another compiler, and yet still link against MKL).
+
+Control of threading in \PSIfour can be accomplished at a variety of levels,
+ranging from global environment variables to direct control of thread count in
+the input file, to even directives specific to each model. This hierarchy is
+explained below. Note that each deeper level trumps all previous levels.
+
+\flushleft \textbf{(1) OpenMP/MKL Environment Variables}
+
+The easiest/least visible way to thread \PSIfour is to set the standard OpenMP/MKL
+environment variables. For instance, in tcsh:
+\begin{Snippet}
+setenv OMP_NUM_THREADS 4
+setenv MKL_NUM_THREADS 4
+\end{Snippet}
+\PSIfour then detects these value via the API routines in \texttt{<omp.h>} and
+\texttt{<mkl.h>}, and runs all applicable code with 4 threads. These environment
+variables are typically defined in a \texttt{.tcshrc} or \texttt{.bashrc}.
+
+\flushleft \textbf{(2) The -n Command Line Flag}
+
+To change the number of threads at runtime, the \texttt{-n} flag may be used. An
+example is:
+\begin{Snippet}
+psi4 -i input.dat -o output.dat -n 4
+\end{Snippet}
+which will run on four threads.
+
+\flushleft \textbf{(3) Setting Thread Numbers in an Input}
+
+For more explicit control, the Process::environment class in \PSIfour can
+override the number of threads set by environment variables. This functionality
+is accessed via the \texttt{set\_num\_threads} Psithon function, which controls
+both MKL and OpenMP thread numbers. The number of threads may be changed
+multiple times in a \PSIfour input file. An example input for this feature is:
+
+\begin{Snippet}
+# A bit small-ish, but you get the idea
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 90.0
+}
+
+set scf {
+basis cc-pvdz
+scf_type df
+}
+
+# Run from 1 to 4 threads, for instance, to record timings
+for nthread in range(1,5):
+    set_num_threads(nthread)
+    energy('scf')
+\end{Snippet}
+
+\flushleft \textbf{(4) Method-Specific Control}
+
+Even more control is possible in certain circumstances. For instance, the
+threaded generation of AO density-fitted integrals involves a memory requirement
+proportional to the number of threads. This requirement may exceed the total
+memory of a small-memory node if all threads are involved in the generation of
+these integrals. For general DF algorithms, the user may specify:
+
+\begin{Snippet}
+set MODULE_NAME df_ints_num_threads n
+\end{Snippet}
+
+to explicitly control the number of threads used for integral formation. Setting
+this variable to 0 (the default) uses the number of threads specified by the
+\texttt{set\_num\_threads()} Psithon method or the default environmental variables.
 
 \subsection{Return Values and \PSI Variables}
 
@@ -313,21 +684,31 @@ set basis cc-pvdz
 set reference uhf
 h_energy = energy('scf')
 
-D_e = 627.51*(2*h_energy - h2_energy)
+D_e = psi_hartree2kcalmol*(2*h_energy - h2_energy)
 print"De=%f"%D_e
 \end{Snippet}
-The {\tt energy} function returns the final result of the computation, which we
+The {\tt energy()} function returns the final result of the computation, which we
 assign to a Python variable. The two energies are then converted to a
-dissociation energy, and printed to the output file, using standard Python
+dissociation energy and printed to the output file using standard Python
 notation. Sometimes there are multiple quantities of interest; these can be
-accessed through the {\tt get\_variable} function. For example, after performing a
+accessed through the {\tt get\_variable()} function. For example, after performing a
 density fitted MP2 computation, both the spin component scaled energy and the
 unscaled MP2 energy are made available:
 \begin{Snippet}
-e_mp2=get_variable('DF-MP2ENERGY')
-e_scs_mp2=get_variable('SCS-DF-MP2ENERGY')
+e_mp2=get_variable('DF-MP2 TOTAL ENERGY')
+e_scs_mp2=get_variable('SCS-DF-MP2 TOTAL ENERGY')
 \end{Snippet}
-Refer to Appendix \ref{variableslist} for a listing of the variables set by each module.
+
+Each module and the Python driver set \PSI variables over the course of
+a calculation.  The values for all can be printed in the output file
+with the input file command \texttt{print\_variables()} . Note that
+\PSI variables accumulate over a \PSIfour instance and are not cleared by
+\texttt{clean()}. So if you run in a single input file a STO-3G FCI
+followed by a aug-cc-pVQZ SCF followed by a \texttt{print\_variables()}
+command, the last will include both {\tt SCF TOTAL ENERGY} and
+{\tt FCI TOTAL ENERGY}. Don't get excited that you got a high-quality calculation
+cheaply. Refer to Appendix \ref{variableslist} for a listing of the
+variables set by each module.
 
 \subsection{Loops}
 Python provides many control structures, which can be used within \PSIfour
@@ -339,9 +720,9 @@ for basis_set in basis_sets:
     set basis = $basis_set
     energy('scf')
 \end{Snippet}
-The declaration of basis\_sets is completely standard Python, as is the next
+The declaration of {\tt basis\_sets} is completely standard Python, as is the next
 line, which iterates over the list. However, because the Psithon preprocessor
-wraps strings in quotes by default, we have to tell it that basis\_sets is a
+wraps strings in quotes by default, we have to tell it that {\tt basis\_sets} is a
 Python variable, not a string, by prefixing it with a dollar sign. The geometry
 specification supports delayed initialization of variable, which permits
 potential energy scans. As an example, we can scan both the angle and bond
@@ -357,21 +738,21 @@ Rvals=[0.9,1.0,1.1]
 Avals=range(102,106,2)
 
 set basis cc-pvdz
-set scf e_converge=11
-forR in Rvals:
+set scf e_convergence=11
+for R in Rvals:
     h2o.R = R
     for A in Avals:
         h2o.A = A
-        scf()
+        energy('scf')
 \end{Snippet}
-The declarations of Rvals and Avals are both completely standard Python syntax.
-Having named our molecule ``h2o'' we can then set the values of R and A within
+The declarations of {\tt Rvals} and {\tt Avals} are both completely standard Python syntax.
+Having named our molecule {\tt h2o} we can then set the values of {\tt R} and {\tt A} within
 the loops. Note that we do not need the dollar sign to access the Python
 variable in this example; that is required only when using Python variables
 with the {\tt set} keyword.
 
 \subsection{Tables of Results}
-The results of computations can be compactly tabulated with the Table Psithon
+The results of computations can be compactly tabulated with the {\tt Table()} Psithon
 function. For example, in the following potential energy surface scan for water
 \begin{Snippet}
 molecule h2o {
@@ -392,9 +773,9 @@ for R in Rvals:
     for A in Avals:
         h2o.A = A
         energy('dfmp2')
-        escf = get_variable('SCF ENERGY')
-        edfmp2 = get_variable('DF-MP2 ENERGY')
-        escsmp2 = get_variable('SCS-DF-MP2 ENERGY')
+        escf = get_variable('SCF TOTAL ENERGY')
+        edfmp2 = get_variable('DF-MP2 TOTAL ENERGY')
+        escsmp2 = get_variable('SCS-DF-MP2 TOTAL ENERGY')
         table[R][A] = [escf, escsmp2, edfmp2]
 
 print table
@@ -409,4 +790,4 @@ table is converted from absolute energies to relative energies (in kcal mol$^{-1
 on line 26, before being printed again. The relative energies are reported with
 respect to the lowest value in each column. More examples of how to control the
 formatting of the tables can be found in the sample input files provided; see
-section \ref{test_suite} for a complete listing.
+Appendix \ref{sec:test_suite} for a complete listing.

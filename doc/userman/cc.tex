@@ -1,14 +1,62 @@
-\subsection{Coupled Cluster Methods} \label{cc}
+\subsection{Coupled Cluster Methods} \label{sec:cc}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 The coupled cluster approach is one of the most accurate and reliable quantum
 chemical techniques for including the effects of electron correlation.
-\PSIthree\ is capable of computing energies, analytic gradients, and
-linear response properties using a number of coupled cluster models.
-Table \ref{table:ccsummary} summarizes these capabilities.  This section
-describes how to carry out coupled cluster calculations within \PSIthree.
+Instead of the linear expansion of the wavefunction used by configuation
+interaction, coupled cluster uses an exponential expansion,
+\begin{eqnarray}
+\ket{\Psi} &=& e^{\hat{T}} \ket{\Phi_0} \\ \nonumber
+           &=& \left( 1 + {\hat{T}} + \frac{1}{2} {\hat{T}}^2
+                  + \frac{1}{3!}{\hat{T}}^3 + \cdots \right) \ket{\Phi_0},
+\label{eq:CCexpansion}
+\end{eqnarray}
+where the cluster operator ${\hat{T}}$ is written as a sum of operators that
+generate singly-excited, doubly-excited, etc., determinants:
+\begin{equation}
+{\hat{T}} = {\hat{T}_1} + {\hat{T}_2} + {\hat{T}_3} + \cdots + {\hat{T}_N},
+\end{equation}
+with
+\begin{eqnarray}
+{\hat T}_1 \ket{\Phi_0} &=& \sum_{i}^{\rm occ} 
+  \sum_a^{\rm vir} t_i^a \ket{\Phi_i^a}, \\
+{\hat T}_2 \ket{\Phi_0} &=& \sum_{i<j}^{\rm occ} \sum_{a<b}^{\rm vir} 
+  t_{ij}^{ab} \ket{\Phi_{ij}^{ab}}, 
+\end{eqnarray}
+etc.  The popular coupled cluster singles and doubles (CCSD) model
+\cite{Purvis:1982} truncates the expansion at ${\hat{T}} = {\hat{T}_1}
++ {\hat{T}_2}$.  This model has the same number of parameters as
+configuration interaction singles and doubles (CISD) but improves upon
+it by approximately accounting for higher-order terms using products
+of lower-order terms (e.g., the term ${\hat{T}_2}^2$ approximately
+accounts for quadruple excitations).  The inclusion of such products
+makes coupled-cluster methods {\em size extensive}, meaning that the
+quality of the computation should not degrade for larger molecules.
+The computational cost for CCSD scales as ${\cal{O}}(o^2 v^4)$, where
+$o$ is the number of occupied orbitals and $v$ is the number of virtual
+orbitals.
+
+Improving upon CCSD, the CCSD(T) method \cite{Raghavachari:1989} includes
+a perturbative estimate of the energy contributed by the ${\hat{T}_3}$
+operator.  The computational cost of this additional term scales as
+${\cal{O}}(o^3 v^4)$, making it rather expensive for molecules with more than
+a dozen heavy atoms or so.  However, when this method is affordable, it
+provides very high quality results in most cases.
+
+\PSIfour\ is capable of computing energies and analytic gradients for a
+number of coupled cluster models.  It can also compute linear response
+properties (such as static or frequency-dependent polarizability,
+or optical rotation angles) for some models.  Excited states can
+also be computed by the CC2 and CC3 models, or by EOM-CCSD.  Table
+\ref{table:ccsummary} summarizes these capabilities.  This section
+describes how to carry out coupled cluster calculations within \PSIfour.
+For higher-order coupled-cluster methods like CCSDT and CCSDTQ, \PSIfour\
+can interface to K{\'a}llay's MRCC code (see Section \ref{sec:mrcc}).
+
+
 \begin{table}[h]
 \begin{center}
-\caption{Current coupled cluster capabilities of \PSIthree.}
+\caption{Current coupled cluster capabilities of \PSIfour.}
 \label{table:ccsummary}
 \begin{tabular}{cccccc}
 \hline
@@ -21,171 +69,262 @@ ROHF      & CC2     & Y & N & Y & N  \\
 RHF       & CCSD    & Y & Y & Y & Y  \\
 RHF       & CCSD(T) & Y & N & --& -- \\
 ROHF      & CCSD    & Y & Y & Y & N  \\
-ROHF      & CCSD(T) & N & N & --& -- \\
+ROHF      & CCSD(T) & Y & N & --& -- \\
 UHF       & CCSD    & Y & Y & Y & N  \\
-UHF       & CCSD(T) & Y & Y$^*$ & --& -- \\
+UHF       & CCSD(T) & Y & Y & --& -- \\
+RHF       & CC3     & Y & N & Y & N  \\
+UHF       & CC3     & Y & N & Y & N  \\
+ROHF      & CC3     & Y & N & Y & N  \\
 Brueckner & CCD     & Y & N & N & N  \\
 Brueckner & CCD(T)  & Y & N & --& -- \\
 \hline
 \hline
 \end{tabular}
 \end{center}
-{\footnotesize $^*$CCSD(T) gradients implemented via an experimental code.
-A more efficient and robust implementation will appear in the next
-release.}
 \end{table}
+
+The following wavefunctions are currently recognized by \PSIfour\ as arguments
+to functions like {\tt energy()}: {\tt ccsd}, {\tt ccsd(t)}, {\tt cc2}, {\tt
+cc3}, {\tt bccd} (CCD with Brueckner orbitals), {\tt bccd(t)} (CCD(T) with
+Brueckner orbitals), {\tt eom-ccsd}, {\tt eom-cc2} (CC2 for excited states),
+{\tt eom-cc3} (CC3 for excited states).  Response properties can be obtained
+by calling the function {\tt response()} (instead of, for example, {\tt
+energy()}), e.g., {\tt response(\qq{ccsd}\qq)}.  There are many sample
+coupled cluster inputs provided in {\tt psi4/samples}.
 
 \subsubsection{Basic Keywords}
 
-To compute a ground-state CCSD or CCSD(T) energy at a fixed geometry,
-the following keywords are common:
-\begin{description}
-\item[WFN = string]\mbox{}\\
-Acceptable values are {\tt ccsd}, {\tt ccsd\_t} [for CCSD(T)], {\tt bccd} 
-(for Brueckner-orbital-based CCD), or {\tt bccd\_t} [for 
-Brueckner-orbital-based CCSD(T)] There is no default.
-\item[REFERENCE = string]\mbox{}\\
-Acceptable values are {\tt reference = rhf}, {\tt rohf}, or {\tt uhf}.
-There is no default.
-\item[JOBTYPE = string]\mbox{}\\
-Acceptable values are {\tt sp}, {\tt opt}, {\tt freq}, {\tt oeprop}, or 
-{\tt response}.  There is no default. 
-\item[CONVERGENCE = integer]\mbox{}\\
-Sets the order of magnitude on the convergence of the CC wave function,
-perturbed wave function, and/or lambda parameters.  The root-mean-square of
-the difference in amplitude vectors from consecutive iterations is used to
-determine the convergence.  The default is 7.
-\item[MAXITER = integer]\mbox{}\\
-The maximum number of iterations allowed for solving the CC amplitude or
-lambda amplitude equations.  Defaults to 50.
-\item[MEMORY = (real MB)]\mbox{}\\
-Specified the amount of core memory to be used, in MB.  Defaults to 256.
-Other units (e.g., KB or GB) are also allowed.
-\item[BRUECKNER\_CONV = integer]\mbox{}\\
-Specifies the order of magnitude convergence required for the Brueckner
-orbitals.  The convergence is determined based on the largest T1
-amplitude.
-\item[AO\_BASIS = string]\mbox{}\\
-Specifies the algorithm to be used in computing the contribution of the
-four-virtual-index integrals ($\langle ab||cd\rangle$) to the CC amplitude
-equations.  If {\tt AO\_BASIS=NONE}, the MO-basis integrals will be used;
-if {\tt AO\_BASIS=DISK}, the AO-basis integrals, stored on disk, will be
-used; if {\tt AO\_BASIS=DIRECT}, the AO-basis integrals will be computed on
-the fly as necessary.  NB: The {\tt AO\_BASIS=DIRECT} option is not fully
-implemented and should only be used by experts.  Default is {\tt NONE}.
-Note: The developers recommend use of this keyword only as a last resort
-because it significantly slows the calculation. The current algorithms for
-handling the MO-basis four-virtual-index integrals have been significantly
-improved and are preferable to the AO-based approach.
-\item[FREEZE\_CORE = boolean]\mbox{}\\
-Specifies whether core orbitals (which are determined automatically) are to
-be excluded from the correlated calculations.  Default is {\tt FALSE}.
-\item[RESTART = boolean]\mbox{}\\ Determine whether previous amplitude
-vectors may be used as guesses in a given CC calculation.  Defaults to
-{\tt TRUE}. For geometry optimizations, Brueckner calculations, etc. the
-iterative solution of the CC amplitude equations may benefit considerably
-by reusing old vectors as initial guesses.  Assuming that the MO phases
-remain the same between updates, the CC codes will, by default, re-use
-old vectors, unless the user sets {\tt RESTART = false}.
-\item[PRINT = integer]\mbox{}\\
-The desired print level for detailed output.  Setting this to 2 is a good
-idea for larger calculations so that the progress of the calculation may be
-easily followed.  Defaults to 0.
-\item[CACHELEV = integer]\mbox{}\\
-Sets the level of automated cacheing of four-index quantities in the CC
-modules.   These modules are capable of keeping in core as much as
-possible, various four-index quantities categorized by the number of
-virtual/unoccupied-orbital indices they contain.  Setting {\tt CACHELEV=0}
-will cache nothing (wise and sometimes necessary for very large CC 
-calculations), {\tt CACHELEV=1} will keep quantities with up to one virtual
-index in core (e.g., integrals of the form $\langle ij||ka\rangle$), {\tt
-CACHELEV=2} will keep quantities with up two two virtual indices in core
-(e.g., integrals of the form $\langle ij||ab \rangle$ or $\hat{T}_2$
-amplitudes), {\tt CACHELEV=3} will keep three-virtual-index quantities in
-core, and {\tt CACHELEV=4} will keep everything in core.  Note that the
-cache behavior is tempered by the {\tt MEMORY} keyword, and items will be
-deleted from the cache (in an order determined based on the {\tt CACHETYEP}
-keyword) as additional memory is required in a given calculation.
-\item[CACHETYPE = string]\mbox{}\\
-Specifies the type of cache to be used, either {\tt LOW} or {\tt LRU}.  If
-{\tt CACHETYPE=LOW}, then elements are deleted from the cache based on a
-predefined order of priority.  If {\tt CACHETYPE=LRU}, then elements are
-deleted from the cache based on a ``least recently used'' criterion: the
-least recently used item is the first to be deleted.  The {\tt LOW}
-criterion has been developed only ccenergy codes.  The default is {\tt LRU}
-for all CC modules except {\tt ccenergy}.
-\item[NUM\_AMPS = integer]\mbox{}\\
-Specifies the number of wave function amplitudes to print at the end of the
-energy calculation.  Defaults to 10.
-\item[PRINT\_MP2\_AMPS = boolean]\mbox{}\\
-Specifies if the initial guess (MP2) amplitudes should be printed in the
-output file.  Defaults to {\tt FALSE}.
-\end{description}
+A complete list of keywords related to coupled-cluster computations is
+provided in Appendix \ref{keywords}, with the majority of the relevant
+keywords appearing in Appendix \ref{kw-CCENERGY}.  For a standard ground-state 
+CCSD or CCSD(T) computation, the following keywords are common:
+
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{REFERENCE}{CCENERGY} & Reference wavefunction type \\
+         & {\bf Possible Values:} RHF, ROHF, UHF \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} RHF\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{R-CONVERGENCE}{CCENERGY} 
+         & Convergence criterion for wavefunction (change) in CC amplitude
+         equations. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} double &  {\bf Default:} 1e-7\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{MAXITER}{CCENERGY}
+         & Maximum number of iterations to solve the CC equations \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 50\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{BRUECKNER-ORBS-R-CONVERGENCE}{CCENERGY} \\
+         & Convergence criterion for Breuckner orbitals. The convergence
+           is determined based on the largest $T_1$ amplitude. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} double &  {\bf Default:} 1e-5\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{RESTART}{CCENERGY} 
+         & Do restart the coupled-cluster iterations from old $t_1$ and
+         $t_2$ amplitudes?  For geometry optimizations, Brueckner
+         calculations, etc. the iterative solution of the CC amplitude 
+         equations may benefit considerably by reusing old vectors as initial 
+         guesses.  Assuming that the MO phases remain the same between 
+         updates, the CC codes will, by default, re-use old vectors, unless 
+         the user sets {\tt RESTART = false}. 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} true\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{CACHELEVEL}{CCENERGY} 
+         & Cacheing level for libdpd governing the storage of amplitudes,
+    integrals, and intermediates in the CC procedure. A value of 0 retains
+    no quantities in cache, while a level of 6 attempts to store all
+    quantities in cache.  For particularly large calculations, a value of
+    0 may help with certain types of memory problems.  The default is 2,
+    which means that all four-index quantites with up to two virtual-orbital
+    indices (e.g., $\langle ij | ab \rangle>$ integrals) may be held in the
+    cache.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 2\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{CACHETYPE}{CCENERGY} 
+         & Selects the priority type for maintaining the automatic memory
+    cache used by the libdpd codes. A value of LOW selects a "low priority"
+    scheme in which the deletion of items from the cache is based on
+    pre-programmed priorities. A value of LRU selects a "least recently used"
+    scheme in which the oldest item in the cache will be the first one
+    deleted. \\
+         & {\bf Possible Values:} LOW, LRU \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} LOW\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{NUM-AMPS-PRINT}{CCENERGY}
+         & Number of important $t_1$ and $t_2$ amplitudes to print
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 10\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{MP2-AMPS-PRINT}{CCENERGY}
+         & Do print the MP2 amplitudes which are the starting guesses for RHF
+           and UHF reference functions?
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
 
 \subsubsection{Larger Calculations}
 
-Here are a few recommendations for carrying out large-basis-set coupled cluster calculations with \PSIthree: 
+Here are a few recommendations for carrying out large-basis-set coupled
+cluster calculations with \PSIfour: 
 \begin{enumerate}
-\item Set the {\tt MEMORY} keyword to 90\% of the available physical
-memory, at most.  There is a small amount of overhead associated with the
+\item In most cases it is reasonable to set the {\tt MEMORY} keyword to 90\% of 
+the available physical memory, at most.  There is a small amount of overhead 
+associated with the
 coupled cluster modules that is not accounted for by the internal CC memory
 handling routines.  Thus, the user should {\em not} sepcify the entire
-physical memory of the system, or swapping is likely.
-\item Set the {\tt CACHELEV} keyword to 0.  This will turn off cacheing,
-which, for very large calculations, can lead to heap fragmentation and
-memory faults, even when sufficient physical memory exists.
-\item Set the {\tt PRINT} keyword to 2.  This will help narrow where
-memory bottlenecks or other errors exist in the event of a crash.
+physical memory of the system, or swapping is likely.  However, for especially large
+calculations, it is better to set the {\tt MEMORY} keyword to a value less than 16 GB.
+\item Set the \optionname{CACHELEVEL}{CCENERGY} keyword to \optionval{0}.
+This will turn off cacheing, which, for very large calculations, can
+lead to heap fragmentation and memory faults, even when sufficient
+physical memory exists.
+\item Set the \optionname{PRINT}{GLOBALS} keyword to \optionval{2}.  This 
+will help narrow where memory bottlenecks or other errors exist in the 
+event of a crash.
 \end{enumerate}
 
 \subsubsection{Excited State Coupled Cluster Calculations}
 
+A complete list of keywords related to 
+coupled cluster linear response is provided in Appendices \ref{kw-CCEOM}
+and \ref{ekw-CCEOM}.
 The most important keywords associated with EOM-CC calculations are:
-\begin{description}
-\item[STATES\_PER\_IRREP = (integer array)]\mbox{}\\
-Specifies the desired number of excited states per irreducible representation 
-for both EOM-CC and CC-LR calculations.  Note that the irreps in this
-keyword denote the final state symmetry, not the symmetry of the transition.  
-\item[PRINT\_SINGLES = boolean]\mbox{}\\
-Specifies whether information regarding the iterative solution to the
-single-excitation EOM-CC problem (normally used to obtain guesses for a
-ful EOM-CCSD calculation) will be printed.
-\item[RESIDUAL\_TOL = integer]\mbox{}\\
-Specifies the order of magnitude cutoff used to determine the convergence of 
-the Davidson algorithm residuals in the EOM-CC iterative procedure.
-\item[EVAL\_TOL = integer]\mbox{}\\
-Specifies the order of magnitude cutoff used to determine the convergence
-of the final eigenvalues in the EOM-CC iterative procedure.
-\item[EOM\_GUESS = (mixed array)]\mbox{}\\ Specifies a set
-of single-excitation guess vectors for the EOM-CC procedure.  This is
-especially useful for converging to difficult states.  The {\tt EOM\_GUESS}
-keyword is an array, each element of which includes an occupied orbital
-index (in coupled cluster ordering), a virtual orbital index, a weighting
-factor, and a spin (0 for $\alpha$ and 1 for $\beta$).  The guess vector
-will be normalized after it is read, so only the relative magnitudes of the
-weight factors are important.
-\item[JOBTYPE = string]\mbox{}\\
-A value of {\tt oeprop} will result in the calculation of oscillator 
-strengths, rotational strengths, and dipole moments for an RHF reference
-and all but the rotational strengths for an ROHF or UHF reference.
-\end{description}
+
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{STATES-PER-IRREP}{CCEOM}
+         & The number of electronic states to computed, per irreducible
+         representation.  Irreps denote the final state symmetry, not the
+         symmetry of the transtion.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} none\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{E-CONVERGENCE}{CCEOM}
+         & Convergence criterion for excitation energy (change) in the
+         Davidson algorithm for CC-EOM.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} double &  {\bf Default:} 1e-8\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{SINGLES-PRINT}{CCEOM}
+         & Do print information on the iterative solution to the
+         single-excitation EOM-CC problem used as a guess to full EOM-CC?
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false \\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{SCHMIDT-ADD-RESIDUAL-TOLERANCE}{CCEOM} \\
+         & Minimum absolute value above which a guess vector to a root is
+         added to the Davidson algorithm in the EOM-CC iterative procedure.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} double &  {\bf Default:} 1e-3 \\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{EOM-GUESS}{CCEOM}
+         & Specifies a set of single-excitation guess vectors for the EOM-CC 
+         procedure.  If \optionname{EOM-GUESS}{CCEOM} = \optionval{SINGLES}, 
+         the guess will be taken from the singles-singles block of the 
+         similarity-transformed Hamiltonian, Hbar.  If
+         \optionname{EOM-GUESS}{CCEOM} = \optionval{DISK}, guess vectors from 
+         a previous computation will be read from disk.  If 
+         \optionname{EOM-GUESS}{CCEOM} = \optionval{INPUT}, guess vectors 
+         will be specified in user input.  The latter method is not 
+         currently available. \\
+         & {\bf Possible Values:} SINGLES, DISK, INPUT \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} SINGLES \\
+         & & \\
+\end{tabular*}
+
 
 \subsubsection{Linear Response (CCLR) Calculations}
-The most important keywords associated with CC-LR calculations are:
-\begin{description}
-\item[JOBTYPE = string]\mbox{}\\
-A value of {\tt RESPONSE} will invoke the linear-response programs.
-\item[PROPERTY = string]\mbox{}\\
-This leyword specifies the type or response
-property desired.  Acceptable values are {\tt POLARIZABILITY} (default) for
-dipole-polarizabilities and {\tt ROTATION} for specific rotations.
-\item[OMEGA = real or (real UNITS)]\mbox{}
-Specifies the desired frequency of the incident radiation field in CCLR
-calculations.  Acceptable units are {\tt HZ}, {\tt NM}, and {\tt EV}.  If
-given without units, atomic units (Hartrees) are assumed.
-\item[MU\_IRREPS = (integer array)]\mbox{}\\
-Specifies the irreducible representations associated with the $x$-, $y$-,
-and $z$-axes.  This may be determined from the standard Cotton tables. 
-Eventually this will be determined automatically by the program, so this
-keyword will go away.
-\end{description}
+Linear response computations are invoked like {\tt response(\qq{ccsd}\qq)}
+or {\tt response(\qq{cc2}\qq)}.  A complete list of keywords related to
+coupled cluster linear response is provided in Appendix \ref{kw-CCRESPONSE}.
+
+The most important keywords associated with CC-LR calculations are as follows.
+
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{PROPERTY}{CCRESPONSE}
+         & The response property desired.  Acceptable values are {\tt
+         POLARIZABILITY} (default) for dipole-polarizabilities,
+         {\tt ROTATION} for specific rotations, {\tt ROA} for Raman
+         Optical Activity, and {\tt ALL} for all of the above. \\
+         & {\bf Possible Values:} POLARIZABILITY, ROTATION, ROA, ALL \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} POLARIZABILITY \\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{OMEGA}{CCRESPONSE}
+         & Array that specifies the desired frequencies of the incident 
+         radiation field in CCLR calculations.  If only one element is given,
+         the units will be assumed to be atomic units.  If more than one
+         element is given, then the units must be specified as the final
+         element of the array.  Acceptable units are {\tt HZ}, {\tt NM}, 
+         {\tt EV}, and {\tt AU}.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} 0 \\
+         & & \\
+\end{tabular*} 
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{GAUGE}{CCRESPONSE}
+         & Specifies the choice of representation of the electric dipole operator.
+         Acceptable values are {\tt LENGTH} for the usual length-gauge representation,
+         {\tt VELOCITY} for the modified velocity-gauge representation in which the 
+         static-limit optical rotation tensor is subtracted from the frequency-dependent 
+         tensor, or {\tt BOTH}.  Note that, for optical rotation calculations, only the
+         choices of {\tt VELOCITY} or {\tt BOTH} will yield origin-independent results. \\
+         & {\bf Possible Values:} LENGTH, VELOCITY, BOTH \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} LENGTH \\
+         & & \\
+\end{tabular*}
+
+
+
+

@@ -743,6 +743,11 @@ public:
     void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
     /// @}
 
+    /// @{
+    /// General SVD, such that A = USV'. U, S, and V must be allocated by the caller.
+    void svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V);
+    /// @}
+
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
      *
@@ -824,6 +829,8 @@ public:
     /// Swap cols i and j
     void swap_columns(int h, int i, int j);
 
+    /*! Average off-diagonal elements */
+    void hermitivitize();
     /*! Copy lower triangle to upper triangle */
     void copy_lower_to_upper();
     /*! Copy upper triangle to lower triangle */

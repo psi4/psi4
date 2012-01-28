@@ -1,16 +1,18 @@
-# Maximum Overlap Method (MOM) Test
-#
-# MOM is designed to stabilize SCF convergence
-# and to target excited Slater determinants directly.
+#! Maximum Overlap Method (MOM) Test.
+#!
+#! MOM is designed to stabilize SCF convergence
+#! and to target excited Slater determinants directly.
 #
 # The latter is somewhat dicey, you never know what 
 # you are going to find.
 
-Enuc = 8.801466202085710 #TEST
-E0 = -76.02141846024246 #TEST 
-E56_singlet = -75.27755061182117 #TEST
-E46_singlet = -75.09192778268627 #TEST
-E56_triplet = -75.79200708284641 # TEST 
+memory 250 mb
+
+Enuc        =   8.80146552997207 #TEST
+E0          = -76.02141844515498 #TEST 
+E56_singlet = -75.27755067036694 #TEST
+E46_singlet = -75.09192785217635 #TEST
+E56_triplet = -75.79200709963571 #TEST 
 
 # Standard water molecule
 molecule water {
@@ -38,10 +40,10 @@ compare_values(Enuc, water.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Ene
 #
 #  Total Energy -76.021418
 
-set {
+set globals {
 basis cc-pvdz
-e_converge 12
-d_converge 10
+e_convergence 12
+d_convergence 10
 reference rhf
 }
 
@@ -52,7 +54,7 @@ compare_values(E0, E, 9, "Ground State SCF Energy") #TEST
 
 # Total Energy -75.277551
 
-set {
+set globals {
 reference rhf
 # Give the ground-state orbitals 10 iterations to settle
 mom_start 10
@@ -69,7 +71,7 @@ compare_values(E56_singlet, E, 9, "AB 1B1 -> AB 4A1 SCF Energy") #TEST
 
 # Total Energy -75.091928
 
-set {
+set globals {
 reference rhf
 mom_start 10
 # Annihilate absolute orbital 4 (the HOMO - 1)
@@ -88,7 +90,7 @@ compare_values(E46_singlet, E, 9, "AB 3A1 -> AB 4A1 SCF Energy") #TEST
 
 # Total Energy -75.792007 
 
-set {
+set globals {
 # Use UHF for spin-flip
 reference uhf
 mom_start 10
@@ -100,6 +102,3 @@ mom_vir [6]
 
 E = energy('scf')
 compare_values(E56_triplet, E, 9, "B 1B1 -> A 4A1 SCF Energy") #TEST
-
-clean()
-

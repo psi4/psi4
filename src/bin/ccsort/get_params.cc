@@ -60,6 +60,12 @@ void get_params(Options & options)
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
+  // Allow user to force semicanonical
+  if(options["SEMICANONICAL"].has_changed()) {
+   params.semicanonical = options.get_bool("SEMICANONICAL");
+   params.ref = 2;
+  }
+
   junk = options.get_str("DERTYPE");
   if(junk=="NONE") params.dertype = 0;
   else if(junk=="FIRST") params.dertype = 1;
@@ -162,10 +168,9 @@ void get_params(Options & options)
   params.keep_TEIFile = options.get_bool("KEEP_TEIFILE");
   params.keep_OEIFile = options.get_bool("KEEP_OEIFILE");
 
-  tol = options.get_int("TOLERANCE");
-  params.tolerance = 1.0*pow(10.0,(double) -tol);
+  params.tolerance = options.get_double("INTS_TOLERANCE");
   params.memory = Process::environment.get_memory();
-  params.cachelev = options.get_int("CACHELEV");
+  params.cachelev = options.get_int("CACHELEVEL");
   params.local = options.get_bool("LOCAL");
 
   /* grab the field frequencies from input -- a few different units are converted to E_h */

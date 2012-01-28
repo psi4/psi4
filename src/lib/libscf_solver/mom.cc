@@ -52,7 +52,7 @@ void HF::MOM_start()
     //
     // Build Ca_old_ matrices
     Ca_old_ = SharedMatrix(new Matrix("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_));
-    if (!restricted()) {
+    if (!same_a_b_orbs()) {
         Cb_old_ = SharedMatrix(new Matrix("C Beta Old (SO Basis)", nirrep_, nsopi_, nmopi_));
     } else {
         Cb_old_ = Ca_old_;
@@ -65,6 +65,8 @@ void HF::MOM_start()
     if (!options_["MOM_OCC"].size()) return;      
    
     // If we're here, its an exciting MOM
+    fprintf(outfile, "\n");
+    print_orbitals(); 
     fprintf(outfile, "\n  ==> MOM Excited-State Iterations <==\n\n");
     
     // Reset iterations and DIIS (will automagically restart)
@@ -656,7 +658,7 @@ void HF::MOM()
     }   
    
     // Beta
-    if (restricted()) return;
+    if (same_a_b_orbs()) return;
   
     for (int h = 0; h < nirrep_; h++) {
     

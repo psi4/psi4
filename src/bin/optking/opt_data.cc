@@ -120,9 +120,17 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   fprintf(outfile, "\t----------------------------------------------------------\n");
 
   // why are these if's here asks RAK?
+  // on the suspicion that I may have put the if's here, LAB answers. It's probably not set up correctly at
+  //    the moment, but these statements allow all 5 possible measures of optimization progress to be
+  //    reported on each opt iter while also, through the if statement, differentiating which measures are
+  //    being used in this job to test for convergence.
   if ( fabs(Opt_params.conv_max_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
   else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", max_force, Opt_params.conv_max_force,
        ((max_force < Opt_params.conv_max_force) ? "yes" : "no"));
+
+  //if ( fabs(Opt_params.conv_rms_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", rms_force);
+  //else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", rms_force, Opt_params.conv_rms_force,
+  //     ((rms_force < Opt_params.conv_rms_force) ? "yes" : "no"));
 
   if ( fabs(Opt_params.conv_max_DE)   < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
   else fprintf(outfile, "\tEnergy Change    %10.1e %14.1e %11s\n", DE, Opt_params.conv_max_DE,
@@ -131,6 +139,10 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   if ( fabs(Opt_params.conv_max_disp) < 1.0e-15 ) fprintf(outfile, "\tMAX Displacement %10.1e\n", max_disp);
   else fprintf(outfile, "\tMAX Displacement %10.1e %14.1e %11s\n", max_disp, Opt_params.conv_max_disp,
        ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
+
+  //if ( fabs(Opt_params.conv_rms_disp) < 1.0e-15 ) fprintf(outfile, "\tMAX Displacement %10.1e\n", rms_disp);
+  //else fprintf(outfile, "\tMAX Displacement %10.1e %14.1e %11s\n", rms_disp, Opt_params.conv_rms_disp,
+  //     ((rms_disp < Opt_params.conv_rms_disp) ? "yes" : "no"));
 
   fprintf(outfile, "\t----------------------------------------------------------\n");
   printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
@@ -567,7 +579,11 @@ bool OPT_DATA::previous_step_report(void) const {
 void OPT_DATA::increase_trust_radius(void) const {
   // don't let step_limit get larger than 1.0 au
   std::string module = "OPTKING";
+#if defined(OPTKING_PACKAGE_PSI)
+  std::string key = "INTRAFRAG_STEP_LIMIT";
+#elif defined(OPTKING_PACKAGE_QCHEM)
   std::string key = "INTRAFRAGMENT_STEP_LIMIT";
+#endif
   double max = Opt_params.intrafragment_step_limit_max;
   if (Opt_params.intrafragment_step_limit != max) {
     double new_val = Opt_params.intrafragment_step_limit * 2;
@@ -583,7 +599,11 @@ void OPT_DATA::increase_trust_radius(void) const {
 
 void OPT_DATA::decrease_trust_radius(void) const {
   std::string module = "OPTKING";
+#if defined(OPTKING_PACKAGE_PSI)
+  std::string key = "INTRAFRAG_STEP_LIMIT";
+#elif defined(OPTKING_PACKAGE_QCHEM)
   std::string key = "INTRAFRAGMENT_STEP_LIMIT";
+#endif
   double min = Opt_params.intrafragment_step_limit_min;
   if (Opt_params.intrafragment_step_limit != min) {
     double new_val = Opt_params.intrafragment_step_limit / 4;

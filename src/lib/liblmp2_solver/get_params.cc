@@ -35,52 +35,45 @@ void LMP2::params() {
     /* Default glob.reference is RHF */
     reference_ = options_.get_str("REFERENCE");
 
-    ri_lmp2_ = options_.get_bool("RI_LMP2");
+    ri_lmp2_ = options_.get_bool("DF_LMP2");
 
     print_ = options_.get_int("PRINT");
 
     maxiter_ = options_.get_int("MAXITER");
 
-    iconv = options_.get_int("ENERGY_CONV");
+    econv_ = options_.get_double("E_CONVERGENCE");
     std::cout << "e_conv = " << iconv << std::endl;
-    econv_ = 1.0*pow(10.0,(double) -iconv);
 
-    iconv = options_.get_int("SCREENING");
-    escreen_ = 1.0*pow(10, (double) -iconv);
+    escreen_ = options_.get_double("INTS_TOLERANCE");
 
     screen_int_ = options_.get_bool("SCREEN_INTS");
 
-    rconv = options_.get_int("RMS_CONV");
-    rmsconv_ = 1.0*pow(10.0,(double) -rconv);
+    rmsconv_ = options_.get_double("R_CONVERGENCE");
 
-    fs = options_.get_int("FSKIP");
-    fskip_ = 1.0*pow(10.0,(double) -fs);
+    fskip_ = options_.get_double("FOCK_TOLERANCE");
 
     diis_ = options_.get_bool("DIIS");
 
-    diis_start_ = options_.get_int("DIISSTART");
+    diis_start_ = options_.get_int("DIIS_START_ITER");
     if(diis_start_ < 3) {
     if (me_ == 0) {
       fprintf(outfile, "\n\t*** WARNING ***\n");
-      fprintf(outfile, "\tDIISSTART can not be less than 3\n");
-      fprintf(outfile, "\tReseting DIISSTART to 3\n");
+      fprintf(outfile, "\tDIIS_START_ITER can not be less than 3\n");
+      fprintf(outfile, "\tReseting DIIS_START_ITER to 3\n");
       fprintf(outfile, "\t***************\n");
     }
     diis_start_ = 3;
     }
-    max_diis_vectors_ = options_.get_int("NDIIS");
+    max_diis_vectors_ = options_.get_int("DIIS_MAX_VECS");
 
     cutoff_ = options_.get_double("LOCAL_CUTOFF");
-    neglect_dp_ = options_.get_bool("NEGLECT_DP");
-    dp_cutoff_ = options_.get_double("DISTANT_PAIR");
+    neglect_dp_ = options_.get_bool("NEGLECT_DISTANT_PAIR");
+    dp_cutoff_ = options_.get_double("DISTANT_PAIR_CUTOFF");
 
-//    schwarz_tol = options_.get_int("SCHWARTZ_TOL");
-//    tol = 1.0*pow(10.0,(double) -schwarz_tol);
+//    scs_scale_os = options_.get_double("MP2_OS_SCALE");
+//    scs_scale_ss = options_.get_double("MP2_SS_SCALE");
 
-//    scs_scale_os = options_.get_double("SCALE_OS");
-//    scs_scale_ss = options_.get_double("SCALE_SS");
-
-    only_print_domains_ = options_.get_bool("DOMAIN_PRINT");
+    only_print_domains_ = options_.get_bool("DOMAIN_PRINT_EXIT");
 
     print_params();
 
@@ -108,7 +101,7 @@ void LMP2::print_params() const {
         fprintf(outfile, "  DIIS \t\t\t= %s\n", diis_ ? "Yes" : "No");
         if (diis_) {
             fprintf(outfile, "  DIIS Start \t\t= %d\n", diis_start_);
-            fprintf(outfile, "  Max DIIS Matricies \t= %d\n", max_diis_vectors_);
+            fprintf(outfile, "  Max DIIS Matrices \t= %d\n", max_diis_vectors_);
         }
         fprintf(outfile, "\n  ===================================\n");
     }

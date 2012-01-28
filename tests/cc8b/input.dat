@@ -1,0 +1,37 @@
+#! ROHF-CCSD cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the 
+#! CN radical, with Cartesian input.
+
+memory 250 mb
+
+molecule CN {
+  units bohr
+  0 2
+  C  0.000000000000      0.000000000000      1.195736583480
+  N  0.000000000000      0.000000000000     -1.024692078304
+}
+
+set globals {
+  reference rohf
+  wfn ccsd
+  basis cc-pVDZ
+  docc [4, 0, 1, 1]
+  socc [1, 0, 0, 0]
+  freeze_core true
+  semicanonical true
+  
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+energy('ccsd')
+
+refnuc   =  18.91526655319571   #TEST
+refscf   = -92.195556565277684  #TEST
+refccsd  =  -0.281342909117434  #TEST
+reftotal = -92.476899474397527  #TEST
+
+compare_values(refnuc,   CN.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        7, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 7, "CCSD contribution")        #TEST
+compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")             #TEST

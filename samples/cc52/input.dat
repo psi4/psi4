@@ -1,3 +1,7 @@
+#! CCSD Response for H2O2
+
+memory 250 mb
+
 molecule h2o2 {
     O        -0.054730547952    -1.312218696095    -0.093235962587
     O         0.054730547952     1.312218696095    -0.093235962587
@@ -5,23 +9,14 @@ molecule h2o2 {
     H        -0.662345455220     1.720870706405     1.479722385924
 units bohr
 noreorient
-#  o
-#  o 1 1.39
-#  h 1 0.94 2 102.3
-#  h 2 0.94 1 102.3 3 -50.0
 }
 
 set {
-  wfn ccsd
-  dertype response
   property roa
   freeze_core false
-  omega [589]
-  omega_units nm
-  mu_irreps [1, 1, 0]
+  omega [589, nm]
   gauge length
   basis cc-pVDZ
 }
 
 response('ccsd')
-clean()

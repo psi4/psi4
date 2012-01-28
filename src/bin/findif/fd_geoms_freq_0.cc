@@ -9,7 +9,7 @@
      [which is same as : [f(2,0) + f(-2,0) - 2f(0,0)]/(4h^2)
   3-point - off-diagonal
     O(1/h^2): new-way: [f(1,1)+f(-1,-1)+2f(0,0) -f(1,0) -f(-1,0) -f(0,1) -f(0,-1)]/(2h^2)
-  
+
   5-point formula - diagonal
     O(1/h^4): [-f(-2,0) + 16f(-1,0) + 16f(1,0) - f(2,0) - 30f(0,0)] / (12h^2)
   5-point formula - off-diagonal
@@ -236,7 +236,7 @@ std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int freq_irrep_onl
           disp_geoms.push_back(geom8);
         } // pts == 5
       } // m, salc_j
-    } // i, salc_i 
+    } // i, salc_i
   } // h, irreps
 
   // put reference geometry list in list

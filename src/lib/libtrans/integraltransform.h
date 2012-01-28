@@ -150,6 +150,9 @@ class IntegralTransform{
         /// The level of printing used during transformations
         int get_print() const {return print_;}
 
+        /// Returns the frozen-core energy
+        double get_frozen_core_energy() const { return frozen_core_energy_; }
+
         /// Set the library to keep or delete the half-transformed integrals in DPD form after processing
         void set_keep_ht_ints(bool val) {keepHtInts_ = val;}
         /// Whether the library will keep or delete the half-transformed integrals in DPD form after processing
@@ -193,7 +196,8 @@ class IntegralTransform{
         void process_spaces();
         void presort_mo_tpdm_restricted();
         void presort_mo_tpdm_unrestricted();
-        void sort_so_tpdm(const dpdbuf4 *B, size_t first_row, size_t num_rows);
+        void setup_tpdm_buffer(const dpdbuf4 *D);
+        void sort_so_tpdm(const dpdbuf4 *B, int irrep, size_t first_row, size_t num_rows, bool first_run);
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
                        int *order, bool backtransform = false, double scale = 0.0);
@@ -201,6 +205,12 @@ class IntegralTransform{
         // Has this instance been initialized yet?
         bool initialized_;
 
+        // The number of SO tpdm elements in each SO shell quartet
+        std::vector<size_t> tpdm_buffer_sizes_;
+        // The buffer used in sorting the SO basis tpdm
+        double *tpdm_buffer_;
+        // Frozen core energy
+        double frozen_core_energy_;
         // The wavefunction object, containing the orbital infomation
         boost::shared_ptr<Wavefunction> wfn_;
         // Pointer to the PSIO object to use for file I/O

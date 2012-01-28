@@ -1,5 +1,7 @@
 #! He2+ FCI/cc-pVDZ Transition Dipole Moment
 
+memory 250 mb
+
 
 
 molecule he2p {
@@ -10,9 +12,7 @@ symmetry c2v
 }
 
 set {
-wfn detci
 reference rohf
-fci true
 basis cc-pVDZ 
 docc [1,0,0,0]
 socc [1,0,0,0]
@@ -20,7 +20,5 @@ dipmom true
 num_roots 2
 }
 
-thisenergy = energy('detci')
+thisenergy = energy('fci')
 
-
-clean()

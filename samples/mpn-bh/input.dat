@@ -1,6 +1,8 @@
 #! MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against 
 #! M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
 
+memory 250 mb
+
 # Test MP(10) at its equilibrium geometry
 
 
@@ -26,8 +28,7 @@ molecule bh {
     H 1 1.25347
 }
 
+set basis aug-cc-pVDZ
+
 thisenergy = energy('mp19')
-
-
-clean()
 

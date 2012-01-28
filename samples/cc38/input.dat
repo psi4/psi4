@@ -1,0 +1,16 @@
+#! RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
+
+memory 250 mb
+
+molecule hof {
+  0 1
+  O
+  H 1 0.97
+  F 1 0.97 2 103.0
+}
+
+set {
+  basis "cc-pVDZ"
+}
+
+response('cc2')

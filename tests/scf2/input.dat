@@ -1,11 +1,11 @@
 #! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
-#! This compuation runs in C1 symmetry, which is currently required for RI-SCF.
 
-nucenergy =   8.801466202085710  #TEST
-refenergy = -76.05098621944234   #TEST
+memory 250 mb
+
+nucenergy =   8.80146552997207  #TEST
+refenergy = -76.05098620307962  #TEST
 
 molecule h2o {
-    symmetry c1
     O
     H 1 1.0
     H 1 1.0 2 104.5
@@ -14,13 +14,10 @@ molecule h2o {
 set globals {
   basis        cc-pVTZ
   scf_type     df
-  ri_basis_scf cc-pVTZ-JKFIT
-  e_converge   10
+  e_convergence   10
 }
 
 thisenergy = energy('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
-
-clean()

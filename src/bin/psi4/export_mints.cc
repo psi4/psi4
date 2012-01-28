@@ -11,6 +11,12 @@ using namespace boost;
 using namespace boost::python;
 using namespace psi;
 
+boost::shared_ptr<Vector> py_nuclear_dipole(shared_ptr<Molecule> mol)
+{
+    //SharedMolecule mol = Process::environment.molecule();
+    return DipoleInt::nuclear_contribution(mol);
+}
+
 boost::shared_ptr<MatrixFactory> get_matrix_factory()
 {
     // We need a valid molecule with a valid point group to create a matrix factory.
@@ -39,6 +45,8 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
 
 void export_mints()
 {
+    def("nuclear_dipole", py_nuclear_dipole);
+
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
     // is going to contain boost::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
@@ -60,6 +68,7 @@ void export_mints()
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
 
+
     class_<Vector, boost::shared_ptr<Vector> >( "Vector").
             def(init<int>()).
             def("get", vector_getitem_1(&Vector::get)).
@@ -67,6 +76,7 @@ void export_mints()
             def("set", vector_setitem_1(&Vector::set)).
             def("set", vector_setitem_2(&Vector::set)).
             def("print_out", &Vector::print_out).
+            def("scale", &Vector::scale).
             def("dim", &Vector::dim).
             def("__getitem__", vector_getitem_1(&Vector::pyget)).
             def("__setitem__", vector_setitem_1(&Vector::pyset)).
@@ -240,7 +250,8 @@ void export_mints()
             def("unit", &SymmetryOperation::unit).
             def("E", &SymmetryOperation::E).
             def("i", &SymmetryOperation::i).
-            def("sigma_h", &SymmetryOperation::sigma_h).
+            def("sigma_xy", &SymmetryOperation::sigma_xy).
+            def("sigma_yz", &SymmetryOperation::sigma_yz).
             def("sigma_xz", &SymmetryOperation::sigma_xz).
             //        def("sigma_yz", &SymmetryOperation::sigma_yz).
             def("rotate_n", intFunction(&SymmetryOperation::rotation)).
@@ -250,10 +261,10 @@ void export_mints()
             def("transpose", &SymmetryOperation::transpose);
 
     class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup").
-            def(init<const char*>()).
-            def("symbol", &PointGroup::symbol).
+            def(init<const std::string&>()).
+            def("symbol", &PointGroup::symbol);
             //def("origin", &PointGroup::origin).
-            def("set_symbol", &PointGroup::set_symbol);
+//            def("set_symbol", &PointGroup::set_symbol);
 
     typedef void (Molecule::*matrix_set_geometry)(const Matrix &);
 
@@ -261,6 +272,7 @@ void export_mints()
             def("set_geometry", matrix_set_geometry(&Molecule::set_geometry)).
             def("set_name", &Molecule::set_name).
             def("name", &Molecule::name).
+            def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry).
             def("fix_orientation", &Molecule::set_orientation_fixed).
             //def("fix_com", &Molecule::set_com_fixed).
             def("init_with_checkpoint", &Molecule::init_with_chkpt).
@@ -271,6 +283,7 @@ void export_mints()
             def("multiplicity", &Molecule::multiplicity).
             def("nfragments", &Molecule::nfragments).
             def("print_out", &Molecule::print).
+            def("print_in_input_format", &Molecule::print_in_input_format).
             def("save_xyz", &Molecule::save_xyz).
             def("save_string_xyz", &Molecule::save_string_xyz).
             def("update_geometry", &Molecule::update_geometry).
@@ -315,6 +328,8 @@ void export_mints()
             def("set_variable", &Molecule::set_variable).
             def("get_variable", &Molecule::get_variable).
             def("update_geometry", &Molecule::update_geometry).
+            def("set_molecular_charge", &Molecule::set_molecular_charge).
+            def("set_multiplicity", &Molecule::set_multiplicity).
             def("set_basis_all_atoms", &Molecule::set_basis_all_atoms).
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol).
             def("set_basis_by_label", &Molecule::set_basis_by_label).
@@ -352,6 +367,13 @@ void export_mints()
             def("clear", &ExternalPotential::clear).
             def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix).
             def("print_out", &ExternalPotential::py_print);
+
+    class_<DFChargeFitter, boost::shared_ptr<DFChargeFitter>, boost::noncopyable>("DFChargeFitter").
+            def("setPrimary", &DFChargeFitter::setPrimary).
+            def("setAuxiliary", &DFChargeFitter::setAuxiliary).
+            def("setD", &DFChargeFitter::setD).
+            def("d", &DFChargeFitter::d).
+            def("fit", &DFChargeFitter::fit);
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).
             def("nso", &Wavefunction::nso).

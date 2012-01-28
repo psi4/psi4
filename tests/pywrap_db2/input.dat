@@ -1,5 +1,7 @@
 #! Database calculation with psi4-generated input. Should not be used as a model
 #! input file but as a canary to avoid breaking database/input parser dependencies.
+
+memory 250 mb
  
 refenergy = -40.195693876290                                                                          #TEST
 
@@ -39,20 +41,20 @@ PsiMod.IO.set_default_namespace("dimer")
 PsiMod.set_memory(256000000)
 
 PsiMod.set_global_option('BASIS', '6-31+G*')
-PsiMod.set_global_option('CONVERGENCE', 11)
+PsiMod.set_global_option('R_CONVERGENCE', 11)
 PsiMod.set_global_option('GUESS', 'CORE')
 PsiMod.set_global_option('JOBTYPE', 'SP')
 PsiMod.set_global_option('PRINT', 1)
 PsiMod.set_global_option('REFERENCE', 'RHF')
-PsiMod.set_global_option('RI_BASIS_MP2', 'CC-PVDZ-RI')
-PsiMod.set_global_option('RI_BASIS_SAPT', 'CC-PVDZ-RI')
-PsiMod.set_global_option('RI_BASIS_SCF', 'CC-PVDZ-JKFIT')
+PsiMod.set_global_option('DF_BASIS_MP2', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SAPT', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SCF', 'CC-PVDZ-JKFIT')
 PsiMod.set_global_option('SCF_TYPE', 'DF')
 
 PsiMod.set_global_option('BASIS', '6-31+G*')
-PsiMod.set_global_option('RI_BASIS_SCF', 'CC-PVDZ-JKFIT')
-PsiMod.set_global_option('RI_BASIS_MP2', 'CC-PVDZ-RI')
-PsiMod.set_global_option('RI_BASIS_SAPT', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SCF', 'CC-PVDZ-JKFIT')
+PsiMod.set_global_option('DF_BASIS_MP2', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SAPT', 'CC-PVDZ-RI')
 molecule = PsiMod.get_active_molecule()
 molecule.update_geometry()
 
@@ -89,5 +91,3 @@ PsiMod.print_out('\nDATABASE RESULT: computation 80955 for reagent BASIC-ch4-rea
 PsiMod.set_variable('NATOM', molecule.natom())
 
 compare_values(refenergy, electronic_energy, 5, 'Optimized reference energy for sown BASIC reagent')  #TEST
-
-clean()

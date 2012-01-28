@@ -1,5 +1,7 @@
 #! 6-31G** H2O Test CISD Energy Point
 
+memory 250 mb
+
 
 molecule h2o {
     O
@@ -7,17 +9,27 @@ molecule h2o {
     H 1 1.00 2 103.1
 }
 
+# Perform a detci calc using helper function
+set globals {
+  basis 6-31G**
+  hd_avg hd_kave
+}
+
+thisenergy = energy('cisd')
+
+
+clean()
+
+# Perform same detci calc setting all options explicitly
 set globals {
   wfn detci
   basis 6-31G**
 }
 
 set detci {
-  hd_ave hd_kave
+  hd_avg hd_kave
+  ex_level 2
 }
 
 thisenergy = energy('detci')
-
-
-clean()
 

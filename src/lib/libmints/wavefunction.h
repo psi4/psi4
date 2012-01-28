@@ -84,6 +84,8 @@ protected:
 
     /// Debug flag
     unsigned int debug_;
+    /// Print flag
+    unsigned int print_;
 
     /// Whether this wavefunction was obtained using density fitting
     bool density_fitted_;
@@ -198,7 +200,8 @@ public:
     void init_with_chkpt();
 
     /// Is this a restricted wavefunction?
-    virtual bool restricted() const { return true; }
+    virtual bool same_a_b_orbs() const = 0;
+    virtual bool same_a_b_dens() const = 0;
 
     /// Returns the molecule object that pertains to this wavefunction.
     boost::shared_ptr<Molecule> molecule() const;
@@ -260,7 +263,7 @@ public:
      * exit, the alpha and beta Fock matrices correspond to those in the semicanonical
      * basis, and there are distinct alpha and beta C and epsilons, also in the
      * semicanonical basis. */
-    void semicanonicalize();
+    virtual void semicanonicalize();
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
@@ -367,6 +370,13 @@ public:
 
     /// Returns the wavefunction name
     const std::string& name() const { return name_; }
+
+
+    // Set the print flag level
+    void set_print(unsigned int print) { print_ = print; }
+
+    // Set the debug flag level
+    void set_debug(unsigned int debug) { debug_ = debug; }
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;

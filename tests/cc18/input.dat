@@ -1,9 +1,6 @@
-# RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
+#! RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
 
-refnuc = 46.780362058359806 #TEST
-refscf = -174.41843300162472 #TEST
-refccsd = -0.368843103062227 #TEST
-reftotal = -174.787276104686754 #TEST
+memory 250 mb
 
 molecule hof {
           O          -0.947809457408    -0.132934425181     0.000000000000
@@ -14,15 +11,15 @@ noreorient
 }
 
 set {
-    wfn ccsd
-    dertype response
-    basis cc-pVDZ
-    mu_irreps = [0, 0, 1]
+   basis cc-pVDZ
 }
 
 response('ccsd')
 
-clean()
+refnuc = 46.780362058359806     #TEST
+refscf = -174.41843300162472    #TEST
+refccsd = -0.368843103062227    #TEST
+reftotal = -174.787276104686754 #TEST
 
 compare_values(refnuc, hof.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
 compare_values(refscf, get_variable("SCF total energy"),         9, "SCF energy")               #TEST

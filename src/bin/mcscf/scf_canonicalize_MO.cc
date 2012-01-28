@@ -65,7 +65,7 @@ void SCF::canonicalize_MO()
   }
   
   fprintf(outfile,"\n\n  Orbitals are canonicalized as:");
-  if(options_.get_bool("USE_FAVG") || options_.get_bool("CANONICALIZE_INACTIVE_FAVG"))
+  if(options_.get_bool("FAVG") || options_.get_bool("CANONICALIZE_INACTIVE_FAVG"))
     fprintf(outfile,"\n  inactive (docc + uocc) : Fock(avg)");
   else
     fprintf(outfile,"\n  inactive (docc + uocc) : Fock(core)");

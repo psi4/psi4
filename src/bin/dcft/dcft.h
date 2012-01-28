@@ -29,6 +29,9 @@ public:
     ~DCFTSolver();
 
     double compute_energy();
+    virtual bool same_a_b_orbs() const { return false; }
+    virtual bool same_a_b_dens() const { return false; }
+
 protected:
     IntegralTransform *_ints;
 
@@ -51,6 +54,7 @@ protected:
     void build_G();
     void build_tensors();
     void build_denominators();
+    void update_fock();
     void dump_density();
     void mulliken_charges();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
@@ -147,6 +151,10 @@ protected:
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
     SharedMatrix so_h_;
+    /// The alpha Fock matrix (without Tau contribution) in the SO basis
+    SharedMatrix F0a_;
+    /// The beta Fock matrix (without Tau contribution) in the SO basis
+    SharedMatrix F0b_;
     /// The alpha Fock matrix in the SO basis
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
@@ -173,6 +181,10 @@ protected:
     SharedMatrix g_tau_a_;
     /// The beta external potential in the SO basis
     SharedMatrix g_tau_b_;
+    /// The alpha external potential in the MO basis (only needed in two-step algorithm)
+    SharedMatrix moG_tau_a_;
+    /// The beta external potential in the MO basis (only needed in two-step algorithm)
+    SharedMatrix moG_tau_b_;
     /// The alpha SCF error vector
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector

@@ -19,7 +19,7 @@ ADC::rhf_construct_sigma(int irrep, int root)
 {
     char lbl[32];
     dpdfile2 B, S, D, E, Bt, C;
-    dpdbuf4 A, V, K, X, Y, Z, BT, XT;
+    dpdbuf4 A, V, K, Z, BT, XT;
             
     sprintf(lbl, "S^(%d)_[%d]12", root, irrep);
     dpd_file2_init(&S, PSIF_ADC_SEM, irrep, ID('O'), ID('V'), lbl);
@@ -55,29 +55,17 @@ ADC::rhf_construct_sigma(int irrep, int root)
     dpd_buf4_close(&V);
 
     dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-    sprintf(lbl, "XOOVV_[%d]1234", irrep);
-    dpd_buf4_init(&X, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
-    // XOVOV_{jiab} <-- \sum_{c} <jc|ab> b_{ic}
-    dpd_contract424(&V, &B, &X, 1, 1, 1, 1, 0);
-    dpd_buf4_close(&V);
-    
-    sprintf(lbl, "ZOOVV_[%d]1234", irrep);
-    dpd_buf4_copy(&X, PSIF_ADC_SEM, lbl);
-    dpd_buf4_close(&X);
-
-    sprintf(lbl, "YOOVV_[%d]1234", irrep);
-    dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
-    dpd_buf4_init(&Y, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
-    // YOVOV_{ijab} <-- \sum_{k} <ij|ak> b_{kb}
-    dpd_contract424(&V, &B, &Y, 3, 0, 0, 1, 0);
-    dpd_buf4_close(&V);
-    
     sprintf(lbl, "ZOOVV_[%d]1234", irrep);
     dpd_buf4_init(&Z, PSIF_ADC_SEM, irrep, ID("[O,O]"), ID("[V,V]"), ID("[O,O]"), ID("[V,V]"), 0, lbl);
-    // Z_{ijab} <-- X_{jiab} - Y_{ijab}
-    dpd_buf4_axpy(&Y, &Z, -1.0);
-    dpd_buf4_close(&Y);
-
+    // ZOVOV_{jiab} <--  \sum_{c} <jc|ab> b_{ic}
+    dpd_contract424(&V, &B, &Z, 1, 1, 1,  1, 0);
+    dpd_buf4_close(&V);
+    
+    dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,O]"), ID("[O,O]"), ID("[V,O]"), 0, "MO Ints <OO|VO>");
+    // ZOVOV_{ijab} <-- - \sum_{k} <ij|ak> b_{kb}
+    dpd_contract424(&V, &B, &Z, 3, 0, 0, -1, 1);
+    dpd_buf4_close(&V);
+    
     // B_{iajb} <-- (2Z_{ijab}-Z_{ijba}+2Z_{jiab}-Z_{jiba}) / (\omega+e_i-e_a+e_j-e_b)
     sprintf(lbl, "BOOVV_[%d]1234", irrep);
     dpd_buf4_scmcopy(&Z, PSIF_ADC_SEM, lbl, 2.0);
@@ -93,7 +81,7 @@ ADC::rhf_construct_sigma(int irrep, int root)
     dpd_buf4_close(&A);
  
     dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V,V]"), 0, "MO Ints <OV|VV>");
-    // \Sigma_{ia} <-- \sum_{jbc} B_{jicb} <ja|cb>
+    // \sigma_{ia} <-- \sum_{jbc} B_{jicb} <ja|cb>
     dpd_contract442(&Z, &V, &S, 1, 1, 1, 1);
     dpd_buf4_close(&V);
     

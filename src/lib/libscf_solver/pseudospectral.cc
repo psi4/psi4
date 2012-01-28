@@ -63,7 +63,7 @@ void PseudospectralHF::common_init()
     // Build auxiliary basis from options
     boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "RI_BASIS_SCF");
+    auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "DF_BASIS_SCF");
     parser.reset();
 
     // Build a fitting metric object
@@ -71,7 +71,7 @@ void PseudospectralHF::common_init()
     Jinv_->form_cholesky_factor();
 
     // Build a Schwarz sieve object
-    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("INTS_TOLERANCE")));
 
     // Build a set of thread-local integrators
     int nthread = 1;
@@ -180,7 +180,7 @@ void PseudospectralHF::form_J_DF_RHF()
 
     // TODO use larger blocks than this, DGEMM will be inefficient, even on 1 thread
     #pragma omp parallel for firstprivate(allocated) private(thread) schedule(guided) num_threads(nthread)
-    for (unsigned long int PQ = 0; PQ < npairs; PQ++) {
+    for (long int PQ = 0; PQ < npairs; PQ++) {
         if (!allocated) {
             #ifdef _OMP
                 thread = omp_get_thread_num();
@@ -256,7 +256,7 @@ void PseudospectralHF::form_J_DF_RHF()
 
     // TODO use larger blocks than this, DGEMM will be inefficient, even on 1 thread
     #pragma omp parallel for firstprivate(allocated) private(thread) schedule(guided) num_threads(nthread)
-    for (unsigned long int PQ = 0; PQ < npairs; PQ++) {
+    for (long int PQ = 0; PQ < npairs; PQ++) {
         if (!allocated) {
             #ifdef _OMP
                 thread = omp_get_thread_num();
@@ -348,7 +348,7 @@ void PseudospectralHF::form_K_PS_RHF()
     double** Qp = Q->pointer();
 
     #pragma omp parallel for schedule(guided) num_threads(nthread)
-    for (unsigned long int P = 0L; P < P_; P++) {
+    for (long int P = 0L; P < P_; P++) {
 
         int thread = 0;
         #ifdef _OMP

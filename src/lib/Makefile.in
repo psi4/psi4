@@ -2,10 +2,9 @@
 .PHONY:	default all install depend clean dclean targetclean
 
 subdirs = libciomr libchkpt libqt libpsio libiwl libdpd \
-          libint libderiv libr12 libutil liboptions lib3index libfunctional \
-          libmints libtrans libparallel libscf_solver liblmp2_solver libboost_python \
-          libboost_regex libboost_thread libdiis libsapt_solver \
-          libboost_filesystem libboost_system libboost_serialization libplugin \
+          libint libderiv libutil liboptions libdist_matrix lib3index libfunctional \
+          libmints libtrans libparallel libfock libscf_solver liblmp2_solver \
+          libdiis libsapt_solver libplugin \
           libdfcc_solver libmoinfo libsmartptr libyeti
 
 all: default
@@ -13,49 +12,43 @@ all: default
 default:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making in $${dir} ...; $(MAKE) default) || exit 1; \
+            (cd $${dir} && echo ... Making in $${dir} ... && $(MAKE) default) || exit 1; \
           done
 
 install:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install) || exit 1; \
+            (cd $${dir} && echo ... Making install in $${dir} ... && $(MAKE) install) || exit 1; \
           done
 
 install_inc:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install_inc) || exit 1; \
-          done
-
-install_man:
-	for dir in $(subdirs); \
-          do \
-            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install_man) || exit 1; \
+            (cd $${dir} && echo ... Making install in $${dir} ... && $(MAKE) install_inc) || exit 1; \
           done
 
 depend:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making depend in $${dir} ...; $(MAKE) depend) || exit 1; \
+            (cd $${dir} && echo ... Making depend in $${dir} ... && $(MAKE) depend) || exit 1; \
           done
 
 clean:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making clean in $${dir} ...; $(MAKE) clean) || exit 1; \
+            (cd $${dir} && echo ... Making clean in $${dir} ... && $(MAKE) clean) || exit 1; \
           done
 
 dclean:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making dclean in $${dir} ...; $(MAKE) dclean) || exit 1; \
+            (cd $${dir} && echo ... Making dclean in $${dir} ... && $(MAKE) dclean) || exit 1; \
           done
 
 targetclean:
 	for dir in $(subdirs); \
           do \
-            (cd $${dir}; echo ... Making clean in $${dir} ...; $(MAKE) targetclean) || exit 1; \
+            (cd $${dir} && echo ... Making clean in $${dir} ... && $(MAKE) targetclean) || exit 1; \
           done
 
 
