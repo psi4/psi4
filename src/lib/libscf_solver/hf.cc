@@ -1326,6 +1326,8 @@ double HF::compute_energy()
             fflush(outfile);
         }
 
+        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
+
         timer_on("Form C");
         form_C();
         timer_off("Form C");

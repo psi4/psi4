@@ -2216,6 +2216,8 @@ void DFJK::block_K(double** Qmnp, int naux)
 
         int nbf = C_left_ao_[N]->rowspi()[0];
         int nocc = C_left_ao_[N]->colspi()[0];
+
+        if (!nocc) continue;
         
         double** Clp  = C_left_ao_[N]->pointer();
         double** Crp  = C_right_ao_[N]->pointer();
@@ -2292,6 +2294,8 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
 
         int nbf = C_left_ao_[N]->rowspi()[0];
         int nocc = C_left_ao_[N]->colspi()[0];
+        
+        if (!nocc) continue;
         
         double** Clp  = C_left_ao_[N]->pointer();
         double** Crp  = C_right_ao_[N]->pointer();
