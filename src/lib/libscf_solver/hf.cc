@@ -16,6 +16,7 @@
 
 #include <libmints/mints.h>
 
+#include <libfunctional/superfunctional.h>
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -25,6 +26,7 @@
 #include <libqt/qt.h>
 #include <liboptions/python.h>
 #include <psifiles.h>
+#include <libfock/jk.h>
 #include "integralfunctors.h"
 #include "pseudospectral.h"
 #include "pkintegrals.h"
@@ -305,7 +307,7 @@ void HF::integrals()
         pseudospectral_ = boost::shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
         density_fitted_ = true;
     }else if (scf_type_ == "DF"){
-        df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
+        //df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
         if (print_ && Communicator::world->me() == 0)
@@ -315,6 +317,42 @@ void HF::integrals()
         for (int i=0; i<Communicator::world->nthread(); ++i)
              aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral->eri()));
         eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
+    }
+
+    // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
+    if (scf_type_ == "DF") {
+        // Build the JK from options, symmetric type
+        jk_ = JK::build_JK(options_, true);
+        // Tell the JK to print
+        jk_->set_print(print_);
+        // Give the JK 70% of the memory
+        jk_->set_memory((ULI)(0.7*(Process::environment.get_memory() / 8L)));
+
+        // DFT sometimes needs custom stuff
+        if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
+
+            // Need a temporary functional
+            boost::shared_ptr<psi::functional::SuperFunctional> functional = 
+                psi::functional::SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),1,1);
+            
+            // K matrices
+            jk_->set_do_K(functional->isHybrid());
+            // wK matrices 
+            jk_->set_do_wK(functional->isRangeCorrected());
+            // w Value
+            if (functional->isRangeCorrected()) {
+                double omega = functional->getOmega();
+                if (options_["DFT_OMEGA"].has_changed()) {
+                    omega = options_.get_double("OMEGA"); 
+                }
+                jk_->set_omega(omega); 
+            }   
+        }
+
+        // Initialize
+        jk_->initialize(); 
+        // Print the header
+        jk_->print_header();
     }
 }
 
@@ -327,6 +365,9 @@ void HF::finalize()
     df_.reset();
     pseudospectral_.reset();
     eri_.reset();
+
+    // TODO: This will be the only one
+    jk_.reset();
 
     // Clean up after DIIS
     if(initialized_diis_manager_)
@@ -1303,6 +1344,8 @@ double HF::compute_energy()
             fflush(outfile);
         }
 
+        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
+
         timer_on("Form C");
         form_C();
         timer_off("Form C");
@@ -1374,7 +1417,7 @@ double HF::compute_energy()
             }
 
             if (Communicator::world->me() == 0)
-                fprintf(outfile, "\n  ==> Properties <==\n");
+                fprintf(outfile, "\n  ==> Properties <==\n\n");
             oe->compute();
         }
 
