@@ -224,7 +224,7 @@ protected:
     void sieve();    
     void remove_zero_points();
     void remove_distant_points(double Rcut);
-    void block(int max_points, int min_points);
+    void block(int max_points, int min_points, double max_radius);
 
 public:
     MolecularGrid(boost::shared_ptr<Molecule> molecule);
@@ -234,7 +234,7 @@ public:
     SharedMatrix standard_orientation(boost::shared_ptr<Molecule> mol);
     /// Build the grid 
     void buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms, const std::string& nuclear_scheme, 
-        boost::shared_ptr<BasisExtents> extents, int max_points, int min_points);
+        boost::shared_ptr<BasisExtents> extents, int max_points, int min_points, double max_radius);
 
     /// Legacy method to GridBlock object. You do not own this.
     boost::shared_ptr<GridBlock> fullGrid();

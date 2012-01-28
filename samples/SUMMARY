@@ -1,3 +1,9 @@
+adc1:         ADC/6-31G** on H$@@2$O
+
+
+adc2:         ADC/aug-cc-pVDZ on two water molecules that are distant from 1000 angstroms from each other
+
+
 castup1:      Test of SAD/Cast-up (mainly not dying due to file weirdness)
 
 
@@ -5,6 +11,9 @@ cc1:          RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
 
 cc10:         ROHF-CCSD cc-pVDZ energy for the $^2\Sigma^+$ state of the CN radical
+
+
+cc11:         Frozen-core CCSD(ROHF)/cc-pVDZ on CN radical with disk-based AO algorithm
 
 
 cc12:         Single point energies of multiple excited states with EOM-CCSD
@@ -28,7 +37,16 @@ cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis $\
 cc17:         Single point energies of multiple excited states with EOM-CCSD
 
 
+cc18:         RHF-CCSD-LR/cc-pVDZ static polarizability of HOF
+
+
+cc19:         CCSD/cc-pVDZ dipole polarizability at two frequencies
+
+
 cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
+
+
+cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH$@@2$.
 
 
 cc24:         Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
@@ -43,16 +61,37 @@ cc26:         Single point gradient of 2-1A1 state of H2O with EOM-CCSD
 cc27:         Single point gradient of 1-1B2 state of H2O with EOM-CCSD
 
 
+cc28:         CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z-mat H$@@2$O$@@2$
+
+
+cc29:         CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H$@@2$O$@@2$
+
+
 cc3:          CCSD/6-31G** H2O vibrational frequencies via gradients
+
+
+cc30:         CCSD/sto-3g optical rotation calculation (length gauge only) at two frequencies on methyloxirane
+
+
+cc31:         CCSD/sto-3g optical rotation calculation (both gauges) at two frequencies on methyloxirane
+
+
+cc32:         CC3/cc-pVDZ H$@@2$O R$@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
+
+
+cc33:         CC3(UHF)/cc-pVDZ H$@@2$O R$@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
 
 
 cc34:         RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
 
 
-cc36:         cc36: RHF-CC2/cc-pVDZ energy of H2O.
+cc35:         CC3(ROHF)/cc-pVDZ H$@@2$O R$@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
 
 
-cc37:         cc36: UHF-CC2/cc-pVDZ energy of H2O+.
+cc36:         CC2(RHF)/cc-pVDZ energy of H2O.
+
+
+cc37:         CC2(UHF)/cc-pVDZ energy of H2O+.
 
 
 cc38:         RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
@@ -82,16 +121,31 @@ cc44:         Test case for some of the PSI4 out-of-core codes.  The code is giv
 cc45:         RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
 
+cc46:         EOM-CC2/cc-pVDZ on H$@@2$O$@@2$ with two excited states in each irrep
+
+
+cc49:         EOM-CC3(UHF) on CH radical with user-specified basis and properties for particular root
+
+
 cc4a:         RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. This version tests the FROZEN_DOCC option explicitly
 
 
 cc5:          RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion
 
 
+cc50:         EOM-CC3(ROHF) on CH radical with user-specified basis and properties for particular root
+
+
+cc51:         EOM-CC3/cc-pVTZ on H$@@2$O
+
+
 cc52:         CCSD Response for H2O2
 
 
 cc5a:         RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
+
+
+cc6:          Frozen-core CCSD(T)/cc-pVDZ on C$@@4$H$@@4$N anion with disk ao algorithm
 
 
 cc8:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
@@ -160,6 +214,9 @@ dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 dft1:         DFT Functional Test
 
 
+dft2:         DFT Functional Test
+
+
 fci-dipole:   6-31G H2O Test FCI Energy Point
 
 
@@ -214,6 +271,9 @@ mints3:       Test individual integral objects for correctness.
 mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification, using variables, for the benzene-hydronium complex.  Atoms can be placed using ZMatrix coordinates, whether they belong to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries because the former define absolute positions, while the latter are relative.
 
 
+mom:          Maximum Overlap Method (MOM) Test. MOM is designed to stabilize SCF convergence and to target excited Slater determinants directly.
+
+
 mp2_1:        All-electron MP2 6-31G** geometry optimization of water
 
 
@@ -263,6 +323,9 @@ psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using
 
 
 pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
+
+
+pywrap_alias:  Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
 
 
 pywrap_all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
