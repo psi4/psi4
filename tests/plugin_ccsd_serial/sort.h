@@ -11,9 +11,7 @@ namespace psi{
     double val;
   };
   void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
-  void OutOfCoreSortTriples(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
   void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
-  void SortTriples(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
   int integral_comp(const void *a,const void *b);
 
 
