@@ -17,7 +17,6 @@
 #include"gpuhelper.h"
 #include"gpuonly.h"
 
-
 using namespace psi;
 using namespace boost;
 

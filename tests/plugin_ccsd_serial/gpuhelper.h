@@ -1,22 +1,7 @@
 #ifndef GPUHELPER_H
 #define GPUHELPER_H
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<math.h>
-
-// psi headers
-#include <libplugin/plugin.h>
-#include"psi4-dec.h"
-#include<boost/shared_ptr.hpp>
 #include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
 
 #define NUMTHREADS 8
 #define MAXBLOCKS 65535
@@ -26,7 +11,6 @@ template<class T> class shared_ptr;
 }
 
 namespace psi{
-
 
 class GPUHelper{
   public:

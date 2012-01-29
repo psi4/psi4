@@ -1,18 +1,6 @@
-#include"psi4-dec.h"
-#include<psifiles.h>
-#include<libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<lib3index/dftensor.h>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
 #include<libmints/wavefunction.h>
 #include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
 #include<libpsio/psio.hpp>
-#include<libciomr/libciomr.h>
 #include<sys/times.h>
 #ifdef _OPENMP
     #include<omp.h>
@@ -20,11 +8,12 @@
 
 #include"blas.h"
 #include"cepa.h"
-#include"sort.h"
-
 
 using namespace psi;
-using namespace boost;
+
+namespace psi{
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+};
 
 // position in a symmetric packed matrix
 long int Position(long int i,long int j){
@@ -35,30 +24,6 @@ long int Position(long int i,long int j){
 }
 
 namespace psi{
-
-  /*!
-   ** PSIO_GET_ADDRESS(): Given a starting page/offset and a shift length
-   ** (in bytes), return the page/offset of the next position in the file.
-   ** \ingroup PSIO
-   */
-
-  psio_address psio_get_address(psio_address start, long int shift) {
-    psio_address address;
-    long int bytes_left;
-
-    bytes_left = PSIO_PAGELEN - start.offset; /* Bytes remaining on fpage */
-
-    if (shift >= bytes_left) { /* Shift to later page */
-      address.page = start.page + (shift - bytes_left)/PSIO_PAGELEN+ 1;
-      address.offset = shift - bytes_left -(address.page - start.page- 1)
-          *PSIO_PAGELEN;
-    } else { /* Block starts on current page */
-      address.page = start.page;
-      address.offset = start.offset + shift;
-    }
-
-    return address;
-  }
 
 CoupledPair::CoupledPair()
 {}
@@ -302,7 +267,7 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
       // evaluate cc diagrams
       if (iter>0){
          memset((void*)w1,'\0',o*v*sizeof(double));
-         for (int i=0; i<ncctasks; i++) {
+         for (int i=0; i<ncepatasks; i++) {
              (*this.*CepaTasklist[i].func)(CepaParams[i]);
          }
       }
@@ -1537,76 +1502,76 @@ void CoupledPair::DefineTasks(){
   long int niabjranks,niajbranks;
   niabjranks=niajbranks=1;
 
-  ncctasks=0;
+  ncepatasks=0;
 
   // I2iabj
-  CepaTasklist[ncctasks].func      = &psi::CoupledPair::I2iabj;
-  CepaTasklist[ncctasks].flopcount = 2*(3*o*o*o*v*v*v+o*o*v*v*v+o*o*o*v*v);
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func      = &psi::CoupledPair::I2iabj;
+  CepaTasklist[ncepatasks].flopcount = 2*(3*o*o*o*v*v*v+o*o*v*v*v+o*o*o*v*v);
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
   // I2iajb
-  CepaTasklist[ncctasks].func      = &psi::CoupledPair::I2iajb;
-  CepaTasklist[ncctasks].flopcount = 2.*(3.*o*o*o*v*v*v);
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func      = &psi::CoupledPair::I2iajb;
+  CepaTasklist[ncepatasks].flopcount = 2.*(3.*o*o*o*v*v*v);
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
   // I2ijkl ... n^6, so probably worth tiling at some point 
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::I2ijkl;
-  CepaTasklist[ncctasks].flopcount = 2.*(2.*o*o*o*o*v*v+1.*o*o*o*o*v);
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::I2ijkl;
+  CepaTasklist[ncepatasks].flopcount = 2.*(2.*o*o*o*o*v*v+1.*o*o*o*o*v);
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
   // I2pijak:
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::I2piajk;
-  CepaTasklist[ncctasks].flopcount = 2.*(1.*o*o*o*v*v*v+1.*o*o*o*v*v);
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::I2piajk;
+  CepaTasklist[ncepatasks].flopcount = 2.*(1.*o*o*o*v*v*v+1.*o*o*o*v*v);
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
  
   // used to be cpu functions
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmeni;
-  CepaTasklist[ncctasks].flopcount = 2.*o*o*o*v*v;
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_t1_vmeni;
+  CepaTasklist[ncepatasks].flopcount = 2.*o*o*o*v*v;
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmaef;
-  CepaTasklist[ncctasks].flopcount = 2.*o*o*v*v*v;
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_t1_vmaef;
+  CepaTasklist[ncepatasks].flopcount = 2.*o*o*v*v*v;
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
-  CepaTasklist[ncctasks].flopcount = 2.*(o*o*v*v*v);
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
+  CepaTasklist[ncepatasks].flopcount = 2.*(o*o*v*v*v);
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmeai;
-  CepaTasklist[ncctasks].flopcount = 2.*o*o*v*v;
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_t1_vmeai;
+  CepaTasklist[ncepatasks].flopcount = 2.*o*o*v*v;
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
   // tiles of Vabcd1:
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::Vabcd1;
-  CepaTasklist[ncctasks].flopcount = 2.*o*(o+1)/2.*v*(v+1)/2*v*(v+1)/2.;
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::Vabcd1;
+  CepaTasklist[ncepatasks].flopcount = 2.*o*(o+1)/2.*v*(v+1)/2*v*(v+1)/2.;
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 
   // tiles of Vabcd2: 
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
-  CepaTasklist[ncctasks].func        = &psi::CoupledPair::Vabcd2;
-  CepaTasklist[ncctasks].flopcount = 2.*o*(o+1)/2.*tilesize*v*(v+1)/2.;
-  CepaParams[ncctasks].mtile = -999;
-  CepaParams[ncctasks].ntile = -999;
-  CepaParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::Vabcd2;
+  CepaTasklist[ncepatasks].flopcount = 2.*o*(o+1)/2.*tilesize*v*(v+1)/2.;
+  CepaParams[ncepatasks].mtile = -999;
+  CepaParams[ncepatasks].ntile = -999;
+  CepaParams[ncepatasks++].ktile = -999;
 }
 
 
