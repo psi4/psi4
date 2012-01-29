@@ -38,9 +38,6 @@
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
 
-// gpu helper class 
-#include"gpuhelper.h"
-
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -83,20 +80,20 @@ class CoupledPair{
       * NOTE: the tiling is really meant for the parallel
       * code, not this one.
      */
-    struct CCTaskParams{
+    struct CepaTaskParams{
         int mtile,ntile,ktile;
     };
-    CCTaskParams*CCParams,*CCSubParams1,*CCSubParams2;
+    CepaTaskParams*CepaParams,*CCSubParams1,*CCSubParams2;
     /**
       * CEPA Tasks. this struct contains a pointer to
       * the task function, and some other stupid info
       * like how many flops the task will take.
      */
-    struct CCTask{
-        void(psi::CoupledPair::*func)(CCTaskParams);
+    struct CepaTask{
+        void(psi::CoupledPair::*func)(CepaTaskParams);
         double flopcount;
     };
-    CCTask*CCTasklist,*CCSubTasklist1,*CCSubTasklist2;
+    CepaTask*CepaTasklist,*CCSubTasklist1,*CCSubTasklist2;
 
     /**
       * this function solves the CEPA equations (requires a minimum of 3o^2v^2 memory)
@@ -120,9 +117,9 @@ class CoupledPair{
       * do on the cpu while the gpu worked.  maybe we'll do that
       * again eventually.
       */
-    void CPU_t1_vmeai(CCTaskParams params);
-    void CPU_t1_vmeni(CCTaskParams params);
-    void CPU_t1_vmaef(CCTaskParams params);
+    void CPU_t1_vmeai(CepaTaskParams params);
+    void CPU_t1_vmeni(CepaTaskParams params);
+    void CPU_t1_vmaef(CepaTaskParams params);
 
     /**
       * this diagram required ov^3 storage for an
@@ -130,7 +127,7 @@ class CoupledPair{
       * only requires o^3v storage...at the expense of
       * 4 extra O(N^5) terms.
       */
-    void CPU_I2p_abci_refactored_term1(CCTaskParams params);
+    void CPU_I2p_abci_refactored_term1(CepaTaskParams params);
 
     /**
       * Update t1
@@ -162,12 +159,12 @@ class CoupledPair{
     /**
       * the N^6 CC diagrams.
       */
-    void I2ijkl(CCTaskParams params);
-    void I2piajk(CCTaskParams params);
-    void Vabcd1(CCTaskParams params);
-    void Vabcd2(CCTaskParams params);
-    void I2iabj(CCTaskParams params);
-    void I2iajb(CCTaskParams params);
+    void I2ijkl(CepaTaskParams params);
+    void I2piajk(CepaTaskParams params);
+    void Vabcd1(CepaTaskParams params);
+    void Vabcd2(CepaTaskParams params);
+    void I2iabj(CepaTaskParams params);
+    void I2iajb(CepaTaskParams params);
 
     /**
       * DIIS stuff
@@ -210,11 +207,6 @@ class CoupledPair{
     long int ovtilesize,lastovtile,lastov2tile,ov2tilesize;
     long int tilesize,lasttile,maxelem;
     long int ntiles,novtiles,nov2tiles;
-
-    /**
-     * helper class definied in gpuhelper.h
-     */
-    boost::shared_ptr<GPUHelper> helper_;
 
     /**
       *  SCS-MP2 function and variables
