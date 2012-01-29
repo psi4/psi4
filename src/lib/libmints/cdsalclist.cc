@@ -347,6 +347,35 @@ SharedMatrix CdSalcList::matrix()
     return temp;
 }
 
+SharedMatrix CdSalcList::matrix_irrep(int h)
+{
+    // cdsalcpi_ does not get updated after projected out translation and rotations
+    // why?  if it ever is, I can use it.
+    //SharedMatrix temp(new Matrix("Cartesian/SALC transformation", cdsalcpi_[h], 3*molecule_->natom()));
+
+    int cnt = 0;
+    for (int i=0; i<ncd(); ++i)
+        if (salcs_[i].irrep() == h) ++cnt;
+
+    SharedMatrix temp(new Matrix("Cartesian/SALC transformation", cnt, 3*molecule_->natom()));
+
+    cnt = 0;
+    for (int i=0; i<ncd(); ++i) {
+        if (salcs_[i].irrep() == h) {
+            int nc = salcs_[i].ncomponent();
+            for (int c=0; c<nc; ++c) {
+                int a       = salcs_[i].component(c).atom;
+                int xyz     = salcs_[i].component(c).xyz;
+                double coef = salcs_[i].component(c).coef;
+                temp->set(cnt, 3*a+xyz, coef);
+            }
+            ++cnt;
+        }
+    }
+
+    return temp;
+}
+
 void CdSalcList::print() const
 {
     fprintf(outfile, "  Cartesian Displacement SALCs\n  By SALC:\n");
@@ -368,5 +397,87 @@ void CdSalcList::print() const
     }
     fprintf(outfile, "\n");
 }
+
+// Generate and return those translations or rotations that
+// have been projected out
+/*
+SharedMatrix CdSalcList::matrix_projected_out() const
+{
+    int natom = molecule_->natom();
+
+    Matrix constraints("COM & Rotational Constraints", 6, 3*natom);
+
+    SharedMatrix pI(molecule_->inertia_tensor());
+    Vector ev(3);
+    Matrix X(3, 3);
+    pI->diagonalize(X, ev);
+
+molecule_->inertia_tensor()->print();
+
+    // Pull out data to local variables to reduce memory lookup
+    double X00 = X(0, 0), X01 = X(0, 1), X02 = X(0, 2);
+    double X10 = X(1, 0), X11 = X(1, 1), X12 = X(1, 2);
+    double X20 = X(2, 0), X21 = X(2, 1), X22 = X(2, 2);
+
+    double tval0, tval1, tval2;
+    for (int i=0; i < natom; ++i) {
+        // Local lookups
+        double atomx = molecule_->x(i);
+        double atomy = molecule_->y(i);
+        double atomz = molecule_->z(i);
+        double smass = sqrt(molecule_->mass(i));
+
+        // COM constraints
+        if (project_out_translations_) {
+            constraints(0, 3*i+0) = smass;
+            constraints(1, 3*i+1) = smass;
+            constraints(2, 3*i+2) = smass;
+        }
+
+        // Rotational constraints
+        if (project_out_rotations_) {
+            tval0 = (atomx * X00) + (atomy * X10) + (atomz * X20);
+            tval1 = (atomx * X01) + (atomy * X11) + (atomz * X21);
+            tval2 = (atomx * X02) + (atomy * X12) + (atomz * X22);
+
+            constraints(3, 3*i+0) = (tval1 * X02 - tval2 * X01) * smass;
+            constraints(3, 3*i+1) = (tval1 * X12 - tval2 * X11) * smass;
+            constraints(3, 3*i+2) = (tval1 * X22 - tval2 * X21) * smass;
+
+            constraints(4, 3*i+0) = (tval2 * X00 - tval0 * X02) * smass;
+            constraints(4, 3*i+1) = (tval2 * X10 - tval0 * X12) * smass;
+            constraints(4, 3*i+2) = (tval2 * X20 - tval0 * X22) * smass;
+
+            constraints(5, 3*i+0) = (tval0 * X01 - tval1 * X00) * smass;
+            constraints(5, 3*i+1) = (tval0 * X11 - tval1 * X10) * smass;
+            constraints(5, 3*i+2) = (tval0 * X21 - tval1 * X20) * smass;
+        }
+    }
+
+    // Remove NULL constraint (if present) and normalize the rest of them
+    std::vector<int> non_zero;
+    for (int i=0; i<6; ++i) {
+        double normval = C_DDOT(3*natom, constraints[0][i], 1, constraints[0][i], 1);
+        if (normval > 1.0E-10) {
+            constraints.scale_row(0, i, 1.0 / sqrt(normval));
+            non_zero.push_back(i);
+        }
+        else
+            constraints.scale_row(0, i, 0.0);
+    }
+
+    // modifying the above code slightly to only allocate the necessary number of rows
+    SharedMatrix constraints_ortho(new Matrix("Orthogonalized COM & Rotational constraints",
+        non_zero.size(), 3*natom));
+
+    for (int i=0; i<non_zero.size(); ++i)
+        constraints_ortho->schmidt_add(0, i, constraints[0][non_zero[i]]);
+
+    //constraints_ortho->print();
+
+    return constraints_ortho;
+}
+*/
+
 
 }

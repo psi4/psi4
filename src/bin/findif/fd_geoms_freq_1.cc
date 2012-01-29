@@ -39,7 +39,7 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int freq_irrep_onl
   fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
 
   // build vectors that list indices of salcs for each irrep
-  std::vector< std::vector<int> > salcs_pi; // salcs per irrep
+  std::vector< std::vector<int> > salcs_pi;
   for (int h=0; h<Nirrep; ++h)
     salcs_pi.push_back( std::vector<int>() );
   for (int i=0; i<Nsalc_all; ++i)
@@ -58,18 +58,17 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int freq_irrep_onl
   for (int h=0; h<Nirrep; ++h)
     fprintf(outfile,"\t\t Irrep %d: %d\n", h+1, (int) salcs_pi[h].size());
 
-  // Determine number of displacements
-  std::vector<int> Ndisp_pi (Nirrep);
-
   // Now remove irreps that are not requested
   if (freq_irrep_only >= Nirrep || freq_irrep_only < -1)
     throw PsiException("FINDIF: Irrep value not in valid range.",__FILE__,__LINE__);
-
-  if (freq_irrep_only != -1) {
+  else if (freq_irrep_only != -1) {
     for (int h=0; h<Nirrep; ++h)
       if (h != freq_irrep_only)
         salcs_pi[h].clear();
   }
+
+  // Determine number of displacements
+  std::vector<int> Ndisp_pi (Nirrep);
 
   // displacements for symmetric coordinates
   if (pts == 3)
@@ -89,7 +88,7 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int freq_irrep_onl
   for (int h=0; h<Nirrep; ++h)
     Ndisp_all += Ndisp_pi[h];
 
-  fprintf(outfile,"\tNumber of displacements (including reference) is %d.\n", Ndisp_all);
+  fprintf(outfile,"\tNumber of geometries (including reference) is %d.\n", Ndisp_all+1);
   fprintf(outfile,"\tNumber of displacements per irrep:\n");
   for (int h=0; h<Nirrep; ++h)
     fprintf(outfile,"\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);
