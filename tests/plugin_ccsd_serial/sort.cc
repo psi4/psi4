@@ -15,11 +15,9 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<math.h>
-#include"globals.h"
 #include"ccsd.h"
 #include"sort.h"
 #include"blas.h"
-
 
 using namespace psi;
 using namespace boost;
