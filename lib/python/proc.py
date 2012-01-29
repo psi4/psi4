@@ -36,10 +36,6 @@ def scf_helper(name, **kwargs):
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
 
-    # why is the cast_up keyword doubled
-    if (kwargs.has_key('cast_up')):
-        cast = kwargs.pop('cast_up')
-
     precallback = None
     if (kwargs.has_key('precallback')):
         precallback = kwargs.pop('precallback')
