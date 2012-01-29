@@ -1022,19 +1022,6 @@ void Molecule::reinterpret_coordentries()
     }
 }
 
-<<<<<<< HEAD
-    //fprintf(outfile,"Geometry bf reorientation.\n");
-    //Matrix min = full_geometry();
-    //min.print_out();
-
-    if (move_to_com_)
-        move_to_com();
-    /* not sure if we need this capability
-    else if (old_com_vector_) { // check if older com has been set
-        translate(*old_com_vector_);
-        printf("translating with old frame\n");
-    } */
-=======
 void Molecule::update_geometry()
 {
     if (fragments_.size() == 0)
@@ -1045,7 +1032,6 @@ void Molecule::update_geometry()
 
     if (move_to_com_)
         move_to_com();
->>>>>>> b1e50de3efb5e7b869cc2d8bcd521645ef30a42b
 
     // If the no_reorient command was given, don't reorient
     if (fix_orientation_ == false) {
