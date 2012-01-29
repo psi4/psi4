@@ -22,7 +22,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList salc_list(mol, fact, 0xF, true, true);
+  CdSalcList salc_list(mol, fact);
   int Nirrep = salc_list.nirrep();
 
   // *** Build vectors that list indices of salcs for each irrep
@@ -84,7 +84,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   }
 
   // *** Generate complete list of gradients from unique ones.
-  fprintf(outfile,"\tGenerating complete list of displacements from unique ones.\n\n");
+  fprintf(outfile,"  Generating complete list of displacements from unique ones.\n\n");
 
   boost::shared_ptr<PointGroup> pg = mol->point_group();
   CharacterTable ct = mol->point_group()->char_table();
@@ -93,11 +93,11 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   // atom_map, how atoms are mapped to other atoms by operations
   int **atom_map = compute_atom_map(mol);
   if (print_lvl >= 3) {
-    fprintf(outfile,"The atom map:\n");
+    fprintf(outfile,"\tThe atom map:\n");
     for (int i=0; i<Natom; ++i) {
-      fprintf(outfile,"\t %d : ", i);
+      fprintf(outfile,"\t %d : ", i+1);
       for (int j=0; j<order; ++j)
-        fprintf(outfile,"%4d", atom_map[i][j]);
+        fprintf(outfile,"%4d", atom_map[i][j]+1);
       fprintf(outfile,"\n");
     }
     fprintf(outfile,"\n");
@@ -117,10 +117,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   // Extract the asymmetric gradients, one at a time and determine the gradient of the
   // non-computed displacements.
 
-  //double tval;
   int disp_cnt = Ndisp_pi[0]; // step through original list of gradients for non-symmetric ones
-
-//  SharedMatrix zero_grad(new Matrix(Natom, 3));
 
   for (int h=1; h<Nirrep; ++h) { // loop over asymmetric irreps
 
@@ -146,62 +143,82 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
     // Get 3x3 matrix representation of operation.
     SymmetryOperation so = ct.symm_operation(op_disp);
 
-fprintf(outfile,"SO\n");
-for (int xyz=0; xyz<3; ++xyz)
-  fprintf(outfile,"\t %10.5lf %10.5lf %10.5lf\n", so[xyz][0], so[xyz][1], so[xyz][2]);
-
     // Loop over coordinates of that irrep.
-    for (int coord=0; coord<Ndisp_pi[h]; ++coord) {
+    for (int coord=0; coord<salcs_pi[h].size(); ++coord) {
 
+      // Read the - displacement and generate the +
       gradients.push_back( (SharedMatrix) extract< SharedMatrix >(grad_list[disp_cnt]) );
 
-fprintf(outfile,"Original displaced gradient:\n");
-gradients[disp_cnt]->print();
+      SharedMatrix new_grad(new Matrix(Natom, 3));
 
       for (int atom=0; atom<Natom; ++atom) {
-
         int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
 
-        SharedMatrix new_grad(new Matrix(Natom, 3));
-
-        for (int xyz=0; xyz<3; ++xyz) {
+        for (int xyz2=0; xyz2<3; ++xyz2) { // target xyz
           double tval = 0.0;
-          for (int xyz2=0; xyz2<3; ++xyz2)
-            tval += so(xyz, xyz2) * gradients[disp_cnt]->get(atom,xyz2);
-          new_grad->set(atom2, xyz, tval);
+          for (int xyz=0; xyz<3; ++xyz)   // original xyz
+            tval += so(xyz2, xyz) * gradients.back()->get(atom,xyz);
+          new_grad->set(atom2, xyz2, tval);
         }
-
-        gradients.push_back(new_grad);
       }
-      ++disp_cnt; //step through original gradient list
-fprintf(outfile,"Transformed displaced gradient:\n");
-gradients.back()->print();
-    }
+      ++disp_cnt;
 
-  } // end loop over irreps
+      // if pts == 5, then read -1 displacement, generate +1 and insert it so order is -2,-1,+1,+2
+      if (pts == 5) {
+        gradients.push_back( (SharedMatrix) extract< SharedMatrix >(grad_list[disp_cnt]) );
+
+        SharedMatrix new_grad2(new Matrix(Natom, 3));
+
+        for (int atom=0; atom<Natom; ++atom) {
+          int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
+
+          for (int xyz2=0; xyz2<3; ++xyz2) { // target xyz
+            double tval = 0.0;
+            for (int xyz=0; xyz<3; ++xyz)   // original xyz
+              tval += so(xyz2, xyz) * gradients.back()->get(atom,xyz);
+            new_grad2->set(atom2, xyz2, tval);
+          }
+        }
+        ++disp_cnt;
+
+        gradients.push_back(new_grad2); // put +1 gradient in list
+      } // end extra gradient for 5-pt. formula
+
+      gradients.push_back(new_grad); // put +1 (3pt.) or +2 (5pt.) gradient in list
+    } // end coord
+  }
 
   delete_atom_map(atom_map, mol);
 
   // Fix number of displacements for full list.
   for (int h=0; h<Nirrep; ++h) {
     if (pts == 3)
-      Ndisp_pi[0] = 2 * salcs_pi[0].size();
+      Ndisp_pi[h] = 2 * salcs_pi[h].size();
     else if (pts == 5)
-      Ndisp_pi[0] = 4 * salcs_pi[0].size();
+      Ndisp_pi[h] = 4 * salcs_pi[h].size();
   }
-  Ndisp_all = 0;
-  for (int h=0; h<Nirrep; ++h)
+
+  int disp_irr_start[8];
+  disp_irr_start[0] = 0;
+  Ndisp_all = Ndisp_pi[0];
+  for (int h=1; h<Nirrep; ++h) {
     Ndisp_all += Ndisp_pi[h];
+    disp_irr_start[h] = disp_irr_start[h-1] + Ndisp_pi[h-1];
+  }
 
   // Mass-weight all the gradients g_xm = 1/sqrt(m) g_x
-/*  divide by masses in B matrix instead
   for (int i=0; i<Ndisp_all; ++i) {
     double **disp = gradients[i]->pointer();
     for (int a=0; a<Natom; ++a)
       for (int xyz=0; xyz<3; ++xyz)
         disp[a][xyz] /= sqrt(mol->mass(a));
   }
-*/
+
+  if (print_lvl >= 3) {
+    fprintf(outfile,"\tAll mass-weighted gradients\n");
+    for (int i=0; i<gradients.size(); ++i)
+      gradients[i]->print();
+  }
 
   char **irrep_lbls = mol->irrep_labels();
   double **H_irr[8];
@@ -210,30 +227,49 @@ gradients.back()->print();
 
   for (int h=0; h<Nirrep; ++h) {
 
+    if (salcs_pi[h].size() == 0) continue;
+
     // To store gradients in SALC displacement coordinates.
-    double **grads_adapted = block_matrix(Ndisp_pi[h], 3*Natom);
+    double **grads_adapted = block_matrix(Ndisp_pi[h], salcs_pi[h].size());
     
     // Build B matrix / sqrt(masses).
     SharedMatrix B_irr_shared = salc_list.matrix_irrep(h);
     double **B_irr = B_irr_shared->pointer();
 
-    for (int salc=0; salc<salcs_pi[h].size(); ++salc)
-      for (int a=0; a<Natom; ++a)
-        for (int xyz=0; xyz<3; ++xyz)
-          B_irr[salc][3*a+xyz] /= sqrt(mol->mass(a));
-
     // Compute forces in internal coordinates, g_q = G_inv B u g_x
     // In this case, B = c * masses^(1/2).  =>  G=I.
     // Thus, g_q = c * g_x / sqrt(masses) or B g_x = g_q.
-
-    for (int disp=0; disp<Ndisp_pi[h]; ++h)
+    for (int disp=0; disp<Ndisp_pi[h]; ++disp)
       for (int salc=0; salc<salcs_pi[h].size(); ++salc)
         for (int a=0; a<Natom; ++a)
           for (int xyz=0; xyz<3; ++xyz)
-            grads_adapted[disp][salc] += B_irr[salc][3*a+xyz] * gradients[disp]->get(a,xyz);
+            grads_adapted[disp][salc] += B_irr[salc][3*a+xyz] *
+              gradients[disp_irr_start[h]+disp]->get(a,xyz);
 
-    //C_DGEMM('n', 't', Ndisp_pi[h], dim_q, 3*Natom, 1.0, g_x[0], 3*Natom,
-    //  B_irr[0], 3*Natom, 0, g_q[0], dim_q);
+  if (print_lvl >= 3) {
+    fprintf(outfile,"Gradients in B-matrix coordinates\n");
+    for (int disp=0; disp<Ndisp_pi[h]; ++disp) {
+      fprintf(outfile," disp %d: ", disp);
+      for (int salc=0; salc<salcs_pi[h].size(); ++salc)
+        fprintf(outfile, "%15.10lf", grads_adapted[disp][salc]);
+      fprintf(outfile,"\n");
+    }
+  }
+
+  /* Test forces by recomputed cartesian, mass-weighted gradient: // B^t f_q = f_x
+  fprintf(outfile,"Test gradients - recomputed\n");
+  for (int disp=0; disp<Ndisp_pi[h]; ++disp) {
+    fprintf(outfile, "g_x %d : \n", disp);
+    for (int a=0; a<Natom; ++a) {
+      for (int xyz=0; xyz<3; ++xyz) {
+        double tval = 0;
+        for (int salc=0; salc<salcs_pi[h].size(); ++salc)
+          tval += B_irr[salc][3*a+xyz] * grads_adapted[disp][salc];
+        fprintf(outfile,"%15.10lf", tval);
+      }
+      fprintf(outfile,"\n");
+    }
+  }*/
 
     //** Construct force constant matrix from finite differences of forces
     H_irr[h] = init_matrix(salcs_pi[h].size(),salcs_pi[h].size());
@@ -245,12 +281,12 @@ gradients.back()->print();
           H_irr[h][i][j] = (grads_adapted[2*i+1][j] - grads_adapted[2*i][j]) / (2.0 * disp_size);
 
     }
-    else if (pts == 5) { // fj(i-2) - fj(i+2) - 8fj(i-1) + 8fj(i+1)  / (12h)
+    else if (pts == 5) { // fj(i-2) - 8fj(i-1) + 8fj(i+1) - fj(i+2) / (12h)
 
       for (int i=0; i<salcs_pi[h].size(); ++i)
         for (int j=0; j<salcs_pi[h].size(); ++j)
-          H_irr[h][i][j] = (  1.0 * grads_adapted[4*i][j]   - 1.0 * grads_adapted[4*i+1][j]
-                            - 8.0 * grads_adapted[4*i+2][j] + 8.0 * grads_adapted[4*i+3][j] )
+          H_irr[h][i][j] = (  1.0 * grads_adapted[4*i][j]   - 8.0 * grads_adapted[4*i+1][j]
+                            + 8.0 * grads_adapted[4*i+2][j] - 1.0 * grads_adapted[4*i+3][j] )
                             / (12.0 * disp_size);
 
     }
@@ -258,7 +294,7 @@ gradients.back()->print();
     if (print_lvl >= 3) {
       fprintf(outfile, "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
       fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
-      mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), outfile);
+      mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), outfile); fflush(outfile);
     }
 
     // diagonalize force constant matrix
@@ -320,12 +356,6 @@ gradients.back()->print();
   // Build Bu^-1/2 matrix for the whole Hessian
   SharedMatrix B_shared = salc_list.matrix();
   double **B = B_shared->pointer();
-
-  // un mass-weighted below
-  //for (int i=0; i<Nsalc_all; ++i) 
-    //for (int a=0; a<Natom; ++a)
-      //for (int xyz=0; xyz<3; ++xyz)
-        //B[i][3*a+xyz] *= sqrt(mol->mass(a));
 
   double **Hx = block_matrix(3*Natom, 3*Natom);
 

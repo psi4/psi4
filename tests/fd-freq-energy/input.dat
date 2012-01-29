@@ -30,12 +30,15 @@ anal_freqs.set(0, 2, 4391.065) #TEST
 
 # Frequencies by 3-pt formula in C1 point group.
 set globals { points 3 }
+set findif {print 3}
 
-frequencies('scf',dertype=1)
+frequencies('scf',dertype=0)
 
 fd_freqs = PsiMod.reference_wavefunction().frequencies()                                 #TEST
 compare_vectors(anal_freqs, fd_freqs, 1,                                                 #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1) ")  #TEST
+
+exit()
 
 # Frequencies by 5-pt formula in C1 point group.
 molecule h2o {

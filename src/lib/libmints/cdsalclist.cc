@@ -349,9 +349,17 @@ SharedMatrix CdSalcList::matrix()
 
 SharedMatrix CdSalcList::matrix_irrep(int h)
 {
-    SharedMatrix temp(new Matrix("Cartesian/SALC transformation", cdsalcpi_[h], 3*molecule_->natom()));
+    // cdsalcpi_ does not get updated after projected out translation and rotations
+    // why?  if it ever is, I can use it.
+    //SharedMatrix temp(new Matrix("Cartesian/SALC transformation", cdsalcpi_[h], 3*molecule_->natom()));
 
     int cnt = 0;
+    for (int i=0; i<ncd(); ++i)
+        if (salcs_[i].irrep() == h) ++cnt;
+
+    SharedMatrix temp(new Matrix("Cartesian/SALC transformation", cnt, 3*molecule_->natom()));
+
+    cnt = 0;
     for (int i=0; i<ncd(); ++i) {
         if (salcs_[i].irrep() == h) {
             int nc = salcs_[i].ncomponent();
