@@ -491,17 +491,15 @@ def frequencies(name, **kwargs):
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_1(irrep)
 
-        PsiMod.get_active_molecule().fix_orientation(True)
-        PsiMod.get_active_molecule().fix_com(True)
-        PsiMod.get_active_molecule().reinterpret_coordentry(False)
+        molecule.reinterpret_coordentry(False)
+        molecule.fix_orientation(True)
 
         ndisp = len(displacements)
+        print " %d displacements needed." % ndisp
 
         #print displacements to output.dat
         #for n, displacement in enumerate(displacements):
         #  displacement.print_out();
-
-        print " %d displacements needed." % ndisp
 
         gradients = []
         for n, displacement in enumerate(displacements):
@@ -512,8 +510,8 @@ def frequencies(name, **kwargs):
             # Print information to the screen
             print "    displacement %d" % (n+1)
 
-            # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacement)
+            # Load in displacement into the active molecule (xyz coordinates only)
+            molecule.set_geometry(displacement)
 
             # Perform the gradient calculation
             func(lowername, **kwargs)
@@ -531,7 +529,6 @@ def frequencies(name, **kwargs):
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
-        PsiMod.get_active_molecule().fix_com(False)
         # But not this one, it always goes back to True
         PsiMod.get_active_molecule().reinterpret_coordentry(True)
 
@@ -543,7 +540,6 @@ def frequencies(name, **kwargs):
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
         PsiMod.get_active_molecule().fix_orientation(True)
-        PsiMod.get_active_molecule().fix_com(True)
         PsiMod.get_active_molecule().reinterpret_coordentry(False)
 
         ndisp = len(displacements)
@@ -578,7 +574,6 @@ def frequencies(name, **kwargs):
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
-        PsiMod.get_active_molecule().fix_com(False)
         # But not this one, it always goes back to True
         PsiMod.get_active_molecule().reinterpret_coordentry(True)
 

@@ -103,6 +103,7 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
 }
 
 // displaces from a reference geometry: geom += salclist[salc_i] * disp_i * disp_size
+// disp_size is in mass-weighted coordinates; cartesian displacment is DX/sqrt(mass)
 void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int disp_factor, double disp_size) {
 
@@ -125,6 +126,7 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
 
 // displaces from a reference geometry.
 // geom += salclist[salc_i] * disp_i * disp_size + salclist[salc_j] * disp_j * disp_size
+// disp_size is in mass-weighted coordinates; cartesian displacment is DX/sqrt(mass)
 void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size) {
 
@@ -153,6 +155,18 @@ void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   }
 
   return;
+}
+
+// it's assumed columns are cartesian dimensions
+void mass_weight_columns_plus_one_half(SharedMatrix B) {
+  const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
+  double u;
+
+  for (int col=0; col<B->ncol(); ++col) {
+    u = sqrt(mol->mass(col/3));
+    for (int row=0; row<B->nrow(); ++row)
+      B->set(row, col, B->get(row,col) * u);
+  }
 }
 
 }}
