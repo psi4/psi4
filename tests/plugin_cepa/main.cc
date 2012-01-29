@@ -1,12 +1,4 @@
-#include "psi4-dec.h"
 #include <libplugin/plugin.h>
-#include <libparallel/parallel.h>
-#include <liboptions/liboptions.h>
-#include <libmints/mints.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.hpp>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
 
 #include "cepa.h" 
 

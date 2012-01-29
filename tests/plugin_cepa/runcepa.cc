@@ -1,18 +1,5 @@
 #include"psi4-dec.h"
-#include<libplugin/plugin.h>
-#include<libdpd/dpd.h>
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include<libpsio/psio.hpp>
 #include<libciomr/libciomr.h>
-#include<cstdio>
-#include<cstdlib>
 
 #include"cepa.h"
 

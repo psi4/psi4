@@ -1,16 +1,7 @@
-#include"psi4-dec.h"
-#include<libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include<libmints/mints.h>
-#include<libpsio/psio.hpp>
-#include<libciomr/libciomr.h>
-
 #include"ccsd.h"
 #include"blas.h"
 
 using namespace psi;
-using namespace boost;
 
 namespace psi{
   void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);

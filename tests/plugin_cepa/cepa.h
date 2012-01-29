@@ -1,42 +1,21 @@
 #ifndef CEPA_H
 #define CEPA_H
 
-#include<stdio.h>
-#include<stdlib.h>
-#include<math.h>
-
 // output files
-#define PSIF_IJAK  250
-#define PSIF_IJAK2  266
-#define PSIF_ABCI  251
-#define PSIF_ABCI2 252
+#define PSIF_IJAK  251
+#define PSIF_IJAK2 252
 #define PSIF_ABCI3 253
-#define PSIF_ABCI4 254
-#define PSIF_ABCI5 255
-#define PSIF_ABCD1 256
-#define PSIF_ABCD2 257
-#define PSIF_AKJC2 259
-#define PSIF_KLCD  260
-#define PSIF_IJKL  261
-#define PSIF_OVEC 262
-#define PSIF_EVEC 263
-#define PSIF_R2 264
-#define PSIF_TEMP 265
-#define PSIF_T2 267
-
-
-// psi headers
-#include"psi4-dec.h"
-#include <libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
+#define PSIF_ABCI5 254
+#define PSIF_ABCD1 255
+#define PSIF_ABCD2 256
+#define PSIF_AKJC2 257
+#define PSIF_KLCD  258
+#define PSIF_IJKL  259
+#define PSIF_OVEC  260
+#define PSIF_EVEC  261
+#define PSIF_R2    262
+#define PSIF_TEMP  263
+#define PSIF_T2    264
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -46,14 +25,6 @@ long int Position(long int i,long int j);
 
 // gpu cepa class
 namespace psi{
-
-  class GPUHelper;
-
-  /**
-    * get the address of an element somewhere in a file.
-   */
-  psio_address psio_get_address(psio_address start, long int shift);
-
 
 class CoupledPair{
   public:
@@ -73,7 +44,7 @@ class CoupledPair{
       * memory or for distribution among many processors 
      */
     void DefineTasks();
-    long int ncctasks;
+    long int ncepatasks;
     /**
       * CEPA Tasks parameters.  for terms that are tiled, the
       * let the task know which tile it should be working on.
@@ -157,7 +128,7 @@ class CoupledPair{
     double*pair_energy;
 
     /**
-      * the N^6 CC diagrams.
+      * the N^6 CEPA diagrams.
       */
     void I2ijkl(CepaTaskParams params);
     void I2piajk(CepaTaskParams params);
