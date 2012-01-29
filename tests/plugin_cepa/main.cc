@@ -8,11 +8,14 @@
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 
-#include "globals.h"
 #include "cepa.h" 
-#include "runcepa.h"
 
 INIT_PLUGIN
+
+// gpu ccsd class
+namespace psi{
+  void RunCoupledPair(Options &options);
+};
 
 namespace psi{ namespace plugin_cepa{
 extern "C" int 

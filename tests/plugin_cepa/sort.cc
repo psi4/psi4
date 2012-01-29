@@ -15,7 +15,6 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<math.h>
-#include"globals.h"
 #include"cepa.h"
 #include"sort.h"
 #include"blas.h"
