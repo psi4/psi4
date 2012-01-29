@@ -107,6 +107,7 @@ void RKSPotential::buildPotential(SharedMatrix D_USO, SharedMatrix C_USO, boost:
     double rhoaxq      = 0.0;
     double rhoayq      = 0.0;
     double rhoazq      = 0.0;
+
     boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
     double *restrict QTp = QT->pointer();
     const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
@@ -251,7 +252,7 @@ void RKSPotential::buildPotential(SharedMatrix D_USO, SharedMatrix C_USO, boost:
         fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
         fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
     }
-    
+
     // V_AO_->V_USO_
     timer_on("AO2USO");
     AO2USO();
