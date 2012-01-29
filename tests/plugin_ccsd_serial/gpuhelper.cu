@@ -9,14 +9,13 @@
 #include<libchkpt/chkpt.h>
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
-
-#include"globals.h"
-#include"blas.h"
-#include"gpuhelper.h"
-#include"gpuonly.h"
 #ifdef _OPENMP
   #include<omp.h>
 #endif
+
+#include"blas.h"
+#include"gpuhelper.h"
+#include"gpuonly.h"
 
 
 using namespace psi;

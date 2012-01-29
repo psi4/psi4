@@ -1,16 +1,20 @@
 #include"psi4-dec.h"
-#include"ccsd.h"
-#include <libplugin/plugin.h>
+#include<libplugin/plugin.h>
 #include<boost/shared_ptr.hpp>
 #include<liboptions/liboptions.h>
-#include <libmints/mints.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
+#include<libmints/mints.h>
+#include<libpsio/psio.hpp>
+#include<libciomr/libciomr.h>
+
+#include"ccsd.h"
 #include"blas.h"
-#include"sort.h"
 
 using namespace psi;
 using namespace boost;
+
+namespace psi{
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+};
 
 namespace psi{
 PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
