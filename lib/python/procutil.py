@@ -5,6 +5,14 @@ import input
 from psiexceptions import *
 
 
+# Re-builds kwargs with only lowercase keyword names. Should be called by every
+#   function that could be called directly by the user
+def kwargs_lower(kwargs):
+    caseless_kwargs = {}
+    for key, value in kwargs.iteritems():
+        caseless_kwargs[key.lower()] = value
+    return caseless_kwargs
+
 def get_psifile(fileno, pidspace=str(os.getpid())):
     psioh = PsiMod.IOManager.shared_object()
     psio = PsiMod.IO.shared_object()
