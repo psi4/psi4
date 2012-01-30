@@ -11,12 +11,15 @@ from driver import *
 from molecule import *
 from text import *
 from collections import defaultdict
+from procutil import *
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **kwargs):
     return funcarg(**kwargs)
 
 def n_body(name, **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -393,6 +396,8 @@ nbody = n_body
 ###################
 
 def cp(name, **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
@@ -586,6 +591,8 @@ def database(name, db_name, **kwargs):
             molecular systems.
     """
 
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
     #hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
@@ -643,7 +650,7 @@ def database(name, db_name, **kwargs):
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
     symmetry_override = 0
-    if re.match(r'^sapt', name, re.IGNORECASE):
+    if re.match(r'^sapt', lowername):
         try:
             database.ACTV_SA
         except AttributeError:
@@ -688,11 +695,11 @@ def database(name, db_name, **kwargs):
             kwargs['db_mode'] = 'continuous'
     db_mode = kwargs['db_mode']
 
-    if re.match(r'^continuous$', db_mode.lower()):
+    if (db_mode.lower() == 'continuous'):
         pass
-    elif re.match(r'^sow$', db_mode.lower()):
+    elif (db_mode.lower() == 'sow'):
         pass
-    elif re.match(r'^reap$', db_mode.lower()):
+    elif (db_mode.lower() == 'reap'):
         if(kwargs.has_key('linkage')):
             db_linkage = kwargs['linkage']
         else:
@@ -761,7 +768,7 @@ def database(name, db_name, **kwargs):
     if(kwargs.has_key('benchmark')):
         db_benchmark = kwargs['benchmark']
 
-        if re.match(r'^default$', db_benchmark, re.IGNORECASE):
+        if (db_benchmark.lower() == 'default'):
             pass
         else:
             try:
@@ -782,21 +789,21 @@ def database(name, db_name, **kwargs):
         db_subset = kwargs['subset']
 
     if isinstance(db_subset, basestring):
-        if re.match(r'^small$', db_subset, re.IGNORECASE):
+        if (db_subset.lower() == 'small'):
             try:
                 database.HRXN_SM
             except AttributeError:
                 raise ValidationError('Special subset \'small\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_SM
-        elif re.match(r'^large$', db_subset, re.IGNORECASE):
+        elif (db_subset.lower() == 'large'):
             try:
                 database.HRXN_LG
             except AttributeError:
                 raise ValidationError('Special subset \'large\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_LG
-        elif re.match(r'^equilibrium$', db_subset, re.IGNORECASE):
+        elif (db_subset.lower() == 'equilibrium'):
             try:
                 database.HRXN_EQ
             except AttributeError:
@@ -830,7 +837,7 @@ def database(name, db_name, **kwargs):
     PsiMod.print_out("\n")
 
     #   write index of calcs to output file
-    if re.match('continuous', db_mode.lower()):
+    if (db_mode.lower() == 'continuous'):
         instructions  = """\n    The database single-job procedure has been selected through mode='continuous'.\n"""
         instructions +=   """    Calculations for the reagents will proceed in the order below and will be followed\n"""
         instructions +=   """    by summary results for the database.\n\n"""
@@ -841,7 +848,7 @@ def database(name, db_name, **kwargs):
         PsiMod.print_out(instructions)
 
     #   write sow/reap instructions and index of calcs to output file and reap input file
-    if re.match('sow', db_mode.lower()):
+    if (db_mode.lower() == 'sow'):
         instructions  = """\n    The database sow/reap procedure has been selected through mode='sow'. In addition\n"""
         instructions +=   """    to this output file (which contains no quantum chemical calculations), this job\n"""
         instructions +=   """    has produced a number of input files (%s-*.in) for individual database members\n""" % (dbse)
@@ -939,7 +946,7 @@ def database(name, db_name, **kwargs):
         # continuous: defines necessary commands, executes energy(method) call, and collects results into dictionary
         # sow: opens individual reagent input file, writes the necessary commands, and writes energy(method) call
         # reap: opens individual reagent output file, collects results into a dictionary
-        if re.match('continuous', db_mode.lower()):
+        if (db_mode.lower() == 'continuous'):
             exec banners
             exec GEOS[rgt]
             exec commands
@@ -955,7 +962,7 @@ def database(name, db_name, **kwargs):
             PsiMod.set_global_option("REFERENCE", user_reference)
             PsiMod.clean()
             
-        elif re.match('sow', db_mode.lower()):
+        elif (db_mode.lower() == 'sow'):
             freagent = open('%s.in' % (rgt), 'w')
             freagent.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
             freagent.write(banners)
@@ -978,7 +985,7 @@ def database(name, db_name, **kwargs):
                 freagent.write("""'%s'), '%s'))\n""" % (envv.upper(), envv.upper()))
             freagent.close()
 
-        elif re.match('reap', db_mode.lower()):
+        elif (db_mode.lower() == 'reap'):
             ERGT[rgt] = 0.0
             for envv in db_tabulate:
                VRGT[rgt][envv] = 0.0
@@ -1016,7 +1023,7 @@ def database(name, db_name, **kwargs):
                 freagent.close()
 
     #   end sow after writing files 
-    if re.match('sow', db_mode.lower()):
+    if (db_mode.lower() == 'sow'):
         return 0.0
 
     # Reap all the necessary reaction computations
@@ -1205,6 +1212,9 @@ def complete_basis_set(name, **kwargs):
     * delta2_scheme = --> highest_1 <-- | corl_xtpl_helgaker_2
     """
 
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
         kwargs['name'] = name.lower()
@@ -1262,7 +1272,7 @@ def complete_basis_set(name, **kwargs):
 
     # Establish method for correlation energy
     if (kwargs.has_key('name')):
-        if re.match(r'^scf$', kwargs['name'].lower()):
+        if (lowername == 'scf'):
             pass
         else:
             do_corl = 1
@@ -1817,7 +1827,7 @@ def validate_scheme_args(functionname, **largs):
     ZSET = []
 
     # Mode where function fills out a form NEED with the computations needed to fulfill its call
-    if re.match(r'^requisition$', largs['mode'].lower()):
+    if (largs['mode'].lower() == 'requisition'):
         mode = largs['mode'].lower()
 
         if(largs.has_key('wfnname')):
@@ -1841,7 +1851,7 @@ def validate_scheme_args(functionname, **largs):
             raise ValidationError('Call to \'%s\' has keyword \'basiszeta\' missing.' % (functionname))
 
     # Mode where function reads the now-filled-in energies from that same form and performs the sp, xtpl, delta, etc.
-    elif re.match(r'^evaluate$', largs['mode'].lower()):
+    elif (largs['mode'].lower() == 'evaluate'):
         mode = largs['mode'].lower()
 
         if(largs.has_key('needname')):

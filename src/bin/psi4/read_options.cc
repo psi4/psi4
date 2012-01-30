@@ -2096,18 +2096,23 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAG_DIST_INV", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("H_BOND_CONNECT", 4.3);
-//      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
-//      will append or overwrite the criteria set here. -*/
-//      options.add_str("G_CONVERGENCE", "QCHEM", "GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT QCHEM NWCHEM NWCHEM_LOOSE NWCHEM_TIGHT MOLPRO PSI3 CFOUR");
-      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
+      will append or overwrite the criteria set here. -*/
+      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM NWCHEM_LOOSE NWCHEM_TIGHT");
+      /*- Convergence criterion for geometry optmization: maximum force (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
-      /*- QCHEM optimization criteria: rms force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: rms force (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
-      /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: maximum energy change. 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
-      /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: maximum displacement (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
-      /*- QCHEM optimization criteria: rms displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: rms displacement (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);

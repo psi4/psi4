@@ -1,0 +1,47 @@
+#! SCF DZ finite difference frequencies by energies for C4NH4
+
+memory 250 mb
+
+molecule c4nh4 {
+  units angstrom
+  -1 1
+    C         0.000000000000     0.000000000000     1.119905811674
+    N         0.000000000000     0.000000000000     2.310087277449
+    C         0.000000000000     0.000000000000    -0.231085072523
+    C        -0.781617287494     0.000000000000    -1.483869398827
+    C         0.781617287494     0.000000000000    -1.483869398827
+    H        -1.274488047821    -0.899961499592    -1.835960153318
+    H        -1.274488047821     0.899961499592    -1.835960153318
+    H         1.274488047821     0.899961499592    -1.835960153318
+    H         1.274488047821    -0.899961499592    -1.835960153318
+}
+
+
+
+
+
+
+# Compute all frequencies by 3-pt formula.
+set globals {
+  basis dz
+  d_convergence 11
+}
+
+frequencies('scf', dertype=1)
+
+
+# Compute A2 frequencies by 5-pt formula.
+set findif {
+ points 5
+ disp_size 0.01
+}
+
+frequencies('scf', dertype=1, irrep=2)
+
+
+# Compute B2 frequencies by 5-pt formula.
+
+frequencies('scf', dertype=1, irrep=4)
+
+
+clean()
