@@ -4,9 +4,11 @@ import input
 import math
 from molecule import * 
 from driver import * 
+from procutil import *
 
 # Scan from +1 electron to -1 electron
 def frac_traverse(mol, **kwargs):
+    kwargs = procutil.kwargs_lower(kwargs)
 
     # The molecule is required, and should be the neutral species
     mol.update_geometry()
@@ -205,6 +207,7 @@ def frac_traverse(mol, **kwargs):
 
 # Pull all the electrons out, one at a time 
 def frac_nuke(mol, **kwargs):
+    kwargs = procutil.kwargs_lower(kwargs)
 
     # The molecule is required, and should be the neutral species
     mol.update_geometry()
