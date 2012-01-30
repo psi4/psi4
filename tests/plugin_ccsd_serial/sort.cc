@@ -145,6 +145,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   ULI totalnabcd1=0;
   ULI nabcd2=0;
   ULI totalnabcd2=0;
+
   fprintf(outfile,"        Initial sort.....");fflush(outfile);
   /**
     * first buffer (read in when Buf was initialized)
@@ -154,14 +155,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       q = (ULI) lblptr[idx++];
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
-
-      //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-      // NOTE: these lines aren't necessary with transqt()
-      if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-      p -= fstact;
-      q -= fstact;
-      r -= fstact;
-      s -= fstact;
 
       pq   = Position(p,q);
       rs   = Position(r,s);
@@ -299,15 +292,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
           q = (ULI) lblptr[idx++];
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
-
-          //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-
-          // NOTE: these lines aren't necessary with transqt()
-          if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-          p -= fstact;
-          q -= fstact;
-          r -= fstact;
-          s -= fstact;
 
           pq   = Position(p,q);
           rs   = Position(r,s);

@@ -77,12 +77,16 @@ set globals {
   points 3
 }
 
-frequencies('scf')
+set findif {print 3}
+
+frequencies('scf',dertype=0,irrep=2)
 fd_freqs = PsiMod.reference_wavefunction().frequencies()
 clean()
 
-compare_vectors(anal_freqs, fd_freqs, 1, "Finite-difference frequencies with 3-pt. formula to 0.1 cm^-1")
+compare_vectors(a2_freqs, fd_freqs, 1, "Finite-difference frequencies with 3-pt. formula to 0.1 cm^-1")
 del fd_freqs
+
+exit()
 
 
 # *** Test frequencies by 5-pt formula for A1 irrep only.

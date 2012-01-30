@@ -140,14 +140,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
 
-      //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-      // NOTE: these lines aren't necessary with transqt()
-      if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-      p -= fstact;
-      q -= fstact;
-      r -= fstact;
-      s -= fstact;
-
       pq   = Position(p,q);
       rs   = Position(r,s);
       pqrs = Position(pq,rs);
@@ -268,15 +260,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
           q = (ULI) lblptr[idx++];
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
-
-          //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-
-          // NOTE: these lines aren't necessary with transqt()
-          if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-          p -= fstact;
-          q -= fstact;
-          r -= fstact;
-          s -= fstact;
 
           pq   = Position(p,q);
           rs   = Position(r,s);
