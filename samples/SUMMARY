@@ -55,7 +55,7 @@ cc24:         Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
 cc25:         Single point gradient of 1-2B2 state of H2O+ with EOM-CCSD
 
 
-cc26:         Single point gradient of 2-1A1 state of H2O with EOM-CCSD
+cc26:         Single-point gradient, analytic and via finite-differences of 2-1A1 state of H2O with EOM-CCSD
 
 
 cc27:         Single point gradient of 1-1B2 state of H2O with EOM-CCSD
@@ -235,10 +235,16 @@ fci-tdm:      He2+ FCI/cc-pVDZ Transition Dipole Moment
 fci-tdm-2:    BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
 
-fd-freq-energy:  SCF STO-3G finite-difference tests
+fd-freq-energy:  SCF STO-3G finite-difference frequencies from energies
 
 
 fd-freq-energy-large:  SCF DZ finite difference frequencies by energies for C4NH4
+
+
+fd-freq-gradient:  STO-3G frequencies for H2O by finite-differences of gradients
+
+
+fd-freq-gradient-large:  SCF DZ finite difference frequencies by energies for C4NH4
 
 
 fd-gradient:  SCF STO-3G finite-difference tests

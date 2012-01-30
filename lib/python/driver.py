@@ -62,6 +62,7 @@ procedures = {
 
 def energy(name, **kwargs):
     lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
@@ -82,6 +83,7 @@ def energy(name, **kwargs):
 
 def gradient(name, **kwargs):
     lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
     dertype = 1
 
     # Order of precedence:
@@ -145,11 +147,11 @@ def gradient(name, **kwargs):
     if (kwargs.has_key('mode')) and (dertype == 0):
         opt_mode = kwargs['mode']
 
-    if re.match(r'^continuous$', opt_mode.lower()):
+    if (opt_mode.lower() == 'continuous'):
         pass
-    elif re.match(r'^sow$', opt_mode.lower()):
+    elif (opt_mode.lower() == 'sow'):
         pass
-    elif re.match(r'^reap$', opt_mode.lower()):
+    elif (opt_mode.lower() == 'reap'):
         if(kwargs.has_key('linkage')):
             opt_linkage = kwargs['linkage']
         else:
@@ -182,7 +184,7 @@ def gradient(name, **kwargs):
             opt_iter = kwargs['opt_iter'] + 1
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
-        if re.match('sow', opt_mode.lower()):
+        if (opt_mode.lower() == 'sow'):
             instructionsO  =   """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
             instructionsO +=     """    to this output file (which contains no quantum chemical calculations), this job\n"""
             instructionsO +=     """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))
@@ -229,7 +231,7 @@ def gradient(name, **kwargs):
             banners += """banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n+1)
             banners += """PsiMod.print_out('\\n')\n\n"""
 
-            if re.match('continuous', opt_mode.lower()):
+            if (opt_mode.lower() == 'continuous'):
                 # Print information to output.dat
                 PsiMod.print_out("\n")
                 banner("Loading displacement %d of %d" % (n+1, ndisp))
@@ -239,10 +241,6 @@ def gradient(name, **kwargs):
 
                 # Load in displacement into the active molecule
                 PsiMod.get_active_molecule().set_geometry(displacement)
-
-                ## Wrap any positional arguments into kwargs (for intercalls among wrappers)
-                #if not('name' in kwargs) and name:
-                #    kwargs['name'] = lowername
 
                 # Perform the energy calculation
                 #E = func(lowername, **kwargs)
@@ -254,7 +252,7 @@ def gradient(name, **kwargs):
                 energies.append(E)
 
             # S/R: Write each displaced geometry to an input file
-            elif re.match('sow', opt_mode.lower()):
+            elif (opt_mode.lower() == 'sow'):
                 PsiMod.get_active_molecule().set_geometry(displacement)
 
                 # S/R: Prepare molecule, options, and kwargs
@@ -271,7 +269,7 @@ def gradient(name, **kwargs):
                 freagent.close()
 
             # S/R: Read energy from each displaced geometry output file and save in energies array
-            elif re.match('reap', opt_mode.lower()):
+            elif (opt_mode.lower() == 'reap'):
                 E = 0.0
                 exec banners
 
@@ -302,10 +300,10 @@ def gradient(name, **kwargs):
                 energies.append(E)
 
         # S/R: Quit sow after writing files
-        if re.match('sow', opt_mode.lower()):
+        if (opt_mode.lower() == 'sow'):
             return 0.0
 
-        if re.match('reap', opt_mode.lower()):
+        if (opt_mode.lower() == 'reap'):
             PsiMod.set_variable('CURRENT ENERGY', energies[-1])
 
         # Obtain the gradient
@@ -316,6 +314,7 @@ def gradient(name, **kwargs):
 
 def response(name, **kwargs):
     lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
@@ -331,6 +330,9 @@ def response(name, **kwargs):
         raise ValidationError('Response method %s not available.' %(lowername))
 
 def optimize(name, **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
+
     n = 0
     if (kwargs.has_key('opt_iter')):
         n = kwargs['opt_iter']
@@ -451,6 +453,7 @@ def parse_arbitrary_order(name):
 
 def frequencies(name, **kwargs):
     lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
@@ -582,4 +585,7 @@ def frequencies(name, **kwargs):
 
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
+
