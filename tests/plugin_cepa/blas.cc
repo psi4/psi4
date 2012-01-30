@@ -1,6 +1,6 @@
 #include"blas.h"
 #include<stdlib.h>
-#include<stdio.h>
+
 /**
  * fortran-ordered dgemv
  */
