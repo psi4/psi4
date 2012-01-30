@@ -147,6 +147,7 @@ public:
 
     char needed_irreps() const { return needed_irreps_; }
     int nirrep(void) const { return nirrep_; }
+    int cdsalcpi(int h) const {return cdsalcpi_[h]; }
     bool project_out_translations() const { return project_out_translations_; }
     bool project_out_rotations() const { return project_out_rotations_; }
 
@@ -155,6 +156,8 @@ public:
     const CdSalcWRTAtom& atom_salc(int i) const { return atom_salcs_[i]; }
 
     SharedMatrix matrix();
+    SharedMatrix matrix_irrep(int h); // return only salcs of a given irrep
+    //SharedMatrix matrix_projected_out() const;
 
     void print() const;
 };

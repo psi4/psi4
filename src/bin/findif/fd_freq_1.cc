@@ -14,26 +14,22 @@ using namespace boost::python;
 
 namespace psi { namespace findif {
 
-//int iE1(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
-// int irrep, int ii, int jj, int disp_i, int disp_j);
-
 PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, int freq_irrep_only) {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
+  int print_lvl = options.get_int("PRINT");
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
   CdSalcList salc_list(mol, fact);
   int Nirrep = salc_list.nirrep();
-  int Nsalc_all = salc_list.ncd();
-  double tval;
 
   // *** Build vectors that list indices of salcs for each irrep
   std::vector< std::vector<int> > salcs_pi;
   for (int h=0; h<Nirrep; ++h)
     salcs_pi.push_back( std::vector<int>() );
-  for (int i=0; i<Nsalc_all; ++i)
+  for (int i=0; i<salc_list.ncd(); ++i)
     salcs_pi[salc_list[i].irrep()].push_back(i);
 
   // Now remove irreps that are not requested
@@ -43,13 +39,24 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
         salcs_pi[h].clear();
   }
 
-  // Count displacements.
+  // Determine total num of salcs and where each irrep starts
+  int Nsalc_all = salcs_pi[0].size();
+  int salc_irr_start[8];
+  salc_irr_start[0] = 0;
+  for (int h=1; h<Nirrep; ++h) {
+    Nsalc_all += salcs_pi[h].size();
+    salc_irr_start[h] = salc_irr_start[h-1] + salcs_pi[h-1].size();
+  }
+
+  // ** Count displacements
+  // symmetric displacements:
   std::vector<int> Ndisp_pi (Nirrep);
   if (pts == 3)
     Ndisp_pi[0] = 2 * salcs_pi[0].size();
   else if (pts == 5)
     Ndisp_pi[0] = 4 * salcs_pi[0].size();
 
+  // asymmetric displacements:
   for (int h=1; h<Nirrep; ++h) {
     if (pts == 3)
       Ndisp_pi[h] = salcs_pi[h].size();
@@ -63,33 +70,36 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   fprintf(outfile,"\n-------------------------------------------------------------\n\n");
 
   fprintf(outfile, "  Computing second-derivative from gradients using projected, \n");
-  fprintf(outfile, "  symmetry-adapted, cartesian coordinates (fd_freq_1).\n");
+  fprintf(outfile, "  symmetry-adapted, cartesian coordinates (fd_freq_1).\n\n");
 
-  fprintf(outfile,"\tNumber of displacements per irrep:\n");
-  for (int h=0; h<Nirrep; ++h)
-    fprintf(outfile,"\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);
+  fprintf(outfile, "  %d gradients passed in, including the reference geometry.\n", (int) len(grad_list));
 
-  fprintf(outfile, "\t%d gradients passed in, including the reference geometry.\n", (int) len(grad_list));
-  // We are passing in the reference geometry at the moment; though we are not using
+  // We are passing in the reference geometry at the moment, though we are not using
   // its gradient.  Could be removed later.
+
   if ((int) len(grad_list) != Ndisp_all+1) { // last gradient is the reference, non-displaced one
     fprintf(outfile,"gradients.size() is %d\n", (int) len(grad_list));
     fprintf(outfile,"Ndisp_all is %d\n", Ndisp_all);
-    throw PsiException("FINDIF: Incorrect number of gradients passed in!",__FILE__,__LINE__);  }
+    throw PsiException("FINDIF: Incorrect number of gradients passed in!",__FILE__,__LINE__);
+  }
 
-  fprintf(outfile,"\tGenerating complete list of displacements from unique ones.\n");
-  fflush(outfile);
+  // *** Generate complete list of gradients from unique ones.
+  fprintf(outfile,"  Generating complete list of displacements from unique ones.\n\n");
 
-  // *** Generate complete list of displacements from unique ones
   boost::shared_ptr<PointGroup> pg = mol->point_group();
   CharacterTable ct = mol->point_group()->char_table();
   int order = ct.order();
 
-  int **atom_map = compute_atom_map(mol);  // how atoms are mapped to other atoms by operations
-  fprintf(outfile,"atom map:\n");
-  for (int i=0; i<Natom; ++i) {
-    for (int j=0; j<order; ++j)
-      fprintf(outfile,"%4d", atom_map[i][j]);
+  // atom_map, how atoms are mapped to other atoms by operations
+  int **atom_map = compute_atom_map(mol);
+  if (print_lvl >= 3) {
+    fprintf(outfile,"\tThe atom map:\n");
+    for (int i=0; i<Natom; ++i) {
+      fprintf(outfile,"\t %d : ", i+1);
+      for (int j=0; j<order; ++j)
+        fprintf(outfile,"%4d", atom_map[i][j]+1);
+      fprintf(outfile,"\n");
+    }
     fprintf(outfile,"\n");
   }
 
@@ -98,133 +108,213 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& grad_list, 
   for (int i=0; i<Ndisp_pi[0]; ++i)
     gradients.push_back( (SharedMatrix) extract< SharedMatrix >(grad_list[i]) );
 
-  if (options.get_int("PRINT") > 2) {
+  if (print_lvl >= 3) {
     fprintf(outfile,"\tSymmetric gradients\n");
     for (int i=0; i<gradients.size(); ++i)
       gradients[i]->print();
   }
 
-  int disp_cnt = Ndisp_pi[0]; // step through current list, for non-symmetric gradients
+  // Extract the asymmetric gradients, one at a time and determine the gradient of the
+  // non-computed displacements.
 
-//  SharedMatrix zero_grad(new Matrix(Natom, 3));
+  int disp_cnt = Ndisp_pi[0]; // step through original list of gradients for non-symmetric ones
 
   for (int h=1; h<Nirrep; ++h) { // loop over asymmetric irreps
-    int op_disp; // operation that takes + displacement to - displacement
+
     if (Ndisp_pi[h] == 0) continue;
 
     IrreducibleRepresentation gamma = ct.gamma(h);
 
-    fprintf(outfile,"Characters for irrep %d\n", h);
-    for (int i=0; i<order; ++i)
-      fprintf(outfile," %10.5lf", gamma.character(i));
-    fprintf(outfile,"\n");
+    if (print_lvl >= 3) {
+      fprintf(outfile,"Characters for irrep %d\n", h);
+      for (int i=0; i<order; ++i)
+        fprintf(outfile," %5.1lf", gamma.character(i));
+      fprintf(outfile,"\n");
+    }
 
-    for (op_disp=0; op_disp<order; ++op_disp) //Find operation that takes + to - displacement.
+    // Find operation that takes + to - displacement.
+    int op_disp;
+    for (op_disp=0; op_disp<order; ++op_disp)
       if (gamma.character(op_disp) == -1)
         break;
     fprintf(outfile,"\tOperation %d takes plus displacements of irrep %s to minus ones.\n",
       op_disp+1, gamma.symbol());
 
-    SymmetryOperation so = ct.symm_operation(op_disp); // get 3x3 matrix representation of operation
-
-fprintf(outfile,"So\n");
-for (int xyz=0; xyz<3; ++xyz)
-  fprintf(outfile,"\t %10.5lf %10.5lf %10.5lf\n", so[xyz][0], so[xyz][1], so[xyz][2]);
+    // Get 3x3 matrix representation of operation.
+    SymmetryOperation so = ct.symm_operation(op_disp);
 
     // Loop over coordinates of that irrep.
-    for (int coord=0; coord<Ndisp_pi[h]; ++coord) {
+    for (int coord=0; coord<salcs_pi[h].size(); ++coord) {
 
+      // Read the - displacement and generate the +
       gradients.push_back( (SharedMatrix) extract< SharedMatrix >(grad_list[disp_cnt]) );
 
-      fprintf(outfile,"Original displaced gradient:\n");
-      gradients[disp_cnt]->print();
+      SharedMatrix new_grad(new Matrix(Natom, 3));
 
       for (int atom=0; atom<Natom; ++atom) {
-
         int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
 
-        SharedMatrix new_grad(new Matrix(Natom, 3));
-
-        tval = 0.0;
-        for (int xyz=0; xyz<3; ++xyz) {
-          for (int xyz2=0; xyz2<3; ++xyz2)
-            tval += so(xyz, xyz2) * gradients[disp_cnt]->get(atom,xyz2);
-          new_grad->set(atom2, xyz, tval);
+        for (int xyz2=0; xyz2<3; ++xyz2) { // target xyz
+          double tval = 0.0;
+          for (int xyz=0; xyz<3; ++xyz)   // original xyz
+            tval += so(xyz2, xyz) * gradients.back()->get(atom,xyz);
+          new_grad->set(atom2, xyz2, tval);
         }
+      }
+      ++disp_cnt;
 
-        gradients.push_back(new_grad);
+      // if pts == 5, then read -1 displacement, generate +1 and insert it so order is -2,-1,+1,+2
+      if (pts == 5) {
+        gradients.push_back( (SharedMatrix) extract< SharedMatrix >(grad_list[disp_cnt]) );
+
+        SharedMatrix new_grad2(new Matrix(Natom, 3));
+
+        for (int atom=0; atom<Natom; ++atom) {
+          int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
+
+          for (int xyz2=0; xyz2<3; ++xyz2) { // target xyz
+            double tval = 0.0;
+            for (int xyz=0; xyz<3; ++xyz)   // original xyz
+              tval += so(xyz2, xyz) * gradients.back()->get(atom,xyz);
+            new_grad2->set(atom2, xyz2, tval);
+          }
+        }
+        ++disp_cnt;
+
+        gradients.push_back(new_grad2); // put +1 gradient in list
+      } // end extra gradient for 5-pt. formula
+
+      gradients.push_back(new_grad); // put +1 (3pt.) or +2 (5pt.) gradient in list
+    } // end coord
+  }
+
+  delete_atom_map(atom_map, mol);
+
+  // Fix number of displacements for full list.
+  for (int h=0; h<Nirrep; ++h) {
+    if (pts == 3)
+      Ndisp_pi[h] = 2 * salcs_pi[h].size();
+    else if (pts == 5)
+      Ndisp_pi[h] = 4 * salcs_pi[h].size();
+  }
+
+  int disp_irr_start[8];
+  disp_irr_start[0] = 0;
+  Ndisp_all = Ndisp_pi[0];
+  for (int h=1; h<Nirrep; ++h) {
+    Ndisp_all += Ndisp_pi[h];
+    disp_irr_start[h] = disp_irr_start[h-1] + Ndisp_pi[h-1];
+  }
+
+  // Mass-weight all the gradients g_xm = 1/sqrt(m) g_x
+  for (int i=0; i<Ndisp_all; ++i) {
+    double **disp = gradients[i]->pointer();
+    for (int a=0; a<Natom; ++a)
+      for (int xyz=0; xyz<3; ++xyz)
+        disp[a][xyz] /= sqrt(mol->mass(a));
+  }
+
+  if (print_lvl >= 3) {
+    fprintf(outfile,"\tAll mass-weighted gradients\n");
+    for (int i=0; i<gradients.size(); ++i)
+      gradients[i]->print();
+  }
+
+  char **irrep_lbls = mol->irrep_labels();
+  double **H_irr[8];
+
+  std::vector<VIBRATION *> modes;
+
+  for (int h=0; h<Nirrep; ++h) {
+
+    if (salcs_pi[h].size() == 0) continue;
+
+    // To store gradients in SALC displacement coordinates.
+    double **grads_adapted = block_matrix(Ndisp_pi[h], salcs_pi[h].size());
+    
+    // Build B matrix / sqrt(masses).
+    SharedMatrix B_irr_shared = salc_list.matrix_irrep(h);
+    double **B_irr = B_irr_shared->pointer();
+
+    // Compute forces in internal coordinates, g_q = G_inv B u g_x
+    // In this case, B = c * masses^(1/2).  =>  G=I.
+    // Thus, g_q = c * g_x / sqrt(masses) or B g_x = g_q.
+    for (int disp=0; disp<Ndisp_pi[h]; ++disp)
+      for (int salc=0; salc<salcs_pi[h].size(); ++salc)
+        for (int a=0; a<Natom; ++a)
+          for (int xyz=0; xyz<3; ++xyz)
+            grads_adapted[disp][salc] += B_irr[salc][3*a+xyz] *
+              gradients[disp_irr_start[h]+disp]->get(a,xyz);
+
+  if (print_lvl >= 3) {
+    fprintf(outfile,"Gradients in B-matrix coordinates\n");
+    for (int disp=0; disp<Ndisp_pi[h]; ++disp) {
+      fprintf(outfile," disp %d: ", disp);
+      for (int salc=0; salc<salcs_pi[h].size(); ++salc)
+        fprintf(outfile, "%15.10lf", grads_adapted[disp][salc]);
+      fprintf(outfile,"\n");
+    }
+  }
+
+  /* Test forces by recomputed cartesian, mass-weighted gradient: // B^t f_q = f_x
+  fprintf(outfile,"Test gradients - recomputed\n");
+  for (int disp=0; disp<Ndisp_pi[h]; ++disp) {
+    fprintf(outfile, "g_x %d : \n", disp);
+    for (int a=0; a<Natom; ++a) {
+      for (int xyz=0; xyz<3; ++xyz) {
+        double tval = 0;
+        for (int salc=0; salc<salcs_pi[h].size(); ++salc)
+          tval += B_irr[salc][3*a+xyz] * grads_adapted[disp][salc];
+        fprintf(outfile,"%15.10lf", tval);
       }
-      if (pts == 5) { // There are 2 displacements.  Do the second one too.
-        ;
-      }
-      ++disp_cnt; //step through original gradient list
-      fprintf(outfile,"Transformed displaced gradient:\n");
-      gradients.back()->print();
+      fprintf(outfile,"\n");
+    }
+  }*/
+
+    //** Construct force constant matrix from finite differences of forces
+    H_irr[h] = init_matrix(salcs_pi[h].size(),salcs_pi[h].size());
+
+    if (pts == 3) { // Hij = fj(i+1) - fj(i-1) / (2h)
+
+      for (int i=0; i<salcs_pi[h].size(); ++i)
+        for (int j=0; j<salcs_pi[h].size(); ++j)
+          H_irr[h][i][j] = (grads_adapted[2*i+1][j] - grads_adapted[2*i][j]) / (2.0 * disp_size);
+
+    }
+    else if (pts == 5) { // fj(i-2) - 8fj(i-1) + 8fj(i+1) - fj(i+2) / (12h)
+
+      for (int i=0; i<salcs_pi[h].size(); ++i)
+        for (int j=0; j<salcs_pi[h].size(); ++j)
+          H_irr[h][i][j] = (  1.0 * grads_adapted[4*i][j]   - 8.0 * grads_adapted[4*i+1][j]
+                            + 8.0 * grads_adapted[4*i+2][j] - 1.0 * grads_adapted[4*i+3][j] )
+                            / (12.0 * disp_size);
+
     }
 
-    // Compute forces in internal coordinates.
-    // g_q = - (BuBt)^-1 B u f_x.
-    // Gradients should be mass-weighted.
-    // In mass-weighted coordinates, B vectors are orthonormal.
-    // Instead of mass-weighting gradients, I'll just divide the masses into B before multiplying.
-    // g_q = c * f_x / sqrt(masses)
-
-    // Build Bu^1/2 matrix for this irrep (or mass-weight gradients)
-/*
-    double **B_irr = block_matrix(dim_q, 3*Natom);
-  
-    for (int i=0; i<salcs_pi[h].size(); ++i) {
-      int salc_i = salcs_pi[h][i];
-      for (int c=0; c<salc_list[salc_i].ncomponent(); ++c) {
-        int a          = salc_list[salc_i].component(c).atom;
-        int xyz        = salc_list[salc_i].component(c).xyz;
-        double coef    = salc_list[salc_i].component(c).coef;
-        B_irr[i][3*a+xyz] = coef / sqrt(mol->mass(a));
-      }
-    }
-
-    disp_start = 0;
-    for (int i=0; i<h; ++i)
-      disp_start += Ndisp_pi[i];
-
-    // put gradients for this irrep in block_matrix
-    double **g_x = block_matrix(Ndisp_pi[h], 3*Natom);
-
-    for (int disp=disp_start; disp<Ndisp_pi[h]; ++disp) {
-      for (int a=0; a<Natom; ++a)
-        for (int xyz=0; xyz<3; ++xyz)
-          g_x[disp][3*a+xyz] = gradients[disp]->get(h, a, xyz); // irrep necessary ?
-    }
-
-    // compute g_q ; gradients in internal coordinates B g_x^t = g_q^t -> g_x B^t = g_q
-    double **g_q = block_matrix(Ndisp_pi[h], dim_q);
-
-    C_DGEMM('n', 't', Ndisp_pi[h], dim_q, 3*Natom, 1.0, g_x[0], 3*Natom,
-      B_irr[0], 3*Natom, 0, g_q[0], dim_q);
-
-    free_block(g_x);
-    free_block(B_irr);
-
-    // Compute Hessian via finite differences
-*/
-
-//assume pts = 3 for the moment
-/*
-    if (options.get_int("PRINT") > 3) {
-      fprintf(outfile, "\tForce Constants for irrep %d in mass-weighted, ", h+1);
+    if (print_lvl >= 3) {
+      fprintf(outfile, "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
       fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
-      mat_print(H_irr, salcs_pi[h].size(), salcs_pi[h].size(), outfile);
+      mat_print(H_irr[h], salcs_pi[h].size(), salcs_pi[h].size(), outfile); fflush(outfile);
     }
 
     // diagonalize force constant matrix
-    int dim = salcs_pi[h].size(); 
+    int dim = salcs_pi[h].size();
     double *evals= init_array(dim);
     double **evects = block_matrix(dim, dim);
 
-    sq_rsp(dim, dim, H_irr, evals, 3, evects, 1e-14);
+    sq_rsp(dim, dim, H_irr[h], evals, 3, evects, 1e-14);
+
+    // Bu^1/2 * evects -> normal mode
+    double **normal_irr = block_matrix(3*Natom, dim);
+    C_DGEMM('t', 'n', 3*Natom, dim, dim, 1.0, B_irr[0], 3*Natom, evects[0],
+      dim, 0, normal_irr[0], dim);
+
+    if (print_lvl >= 2) {
+      fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      eivout(normal_irr, evals, 3*Natom, dim, outfile);
+    }
 
     for (int i=0; i<salcs_pi[h].size(); ++i) {
-      // copy eigenvector into row
       double *v = init_array(3*Natom);
       for (int x=0; x<3*Natom; ++x)
         v[x] = normal_irr[x][i];
@@ -234,117 +324,90 @@ for (int xyz=0; xyz<3; ++xyz)
 
     free(evals);
     free_block(evects);
-    free_block(H_irr);
     free_block(normal_irr);
-
-    free_block(g_q);
-
-    //disp_start += Ndisp_pi[h];
-*/
   }
 
-  delete_atom_map(atom_map, mol);
-
-  if (options.get_int("PRINT") > 2) {
-    fprintf(outfile, "Non-symmetric gradients all.\n");
-    if (options.get_int("PRINT") > 2)
-      for (int i=Ndisp_pi[0]; i<gradients.size(); ++i)
-        gradients[i]->print();
-  }
-
-/*
+  // This print function also saves frequencies in wavefunction.
   print_vibrations(modes);
 
   for (int i=0; i<modes.size(); ++i)
     delete modes[i];
   modes.clear();
-*/
+
+  // Build complete hessian for transformation to cartesians
+  double **H = block_matrix(Nsalc_all, Nsalc_all);
+
+  for (int h=0; h<Nirrep; ++h)
+    for (int i=0; i<salcs_pi[h].size(); ++i) {
+      int start = salc_irr_start[h];
+      for (int j=0; j<=i; ++j)
+        H[start + i][start + j] = H[start + j][start + i] = H_irr[h][i][j];
+    }
+
+  for (int h=0; h<Nirrep; ++h)
+    if (salcs_pi[h].size()) free_block(H_irr[h]);
+
+  // Transform Hessian into cartesian coordinates
+  if (print_lvl >= 3) {
+    fprintf(outfile, "\n\tFull force constant matrix in mass-weighted SALCS.\n");
+    mat_print(H, Nsalc_all, Nsalc_all, outfile);
+  }
+
+  // Build Bu^-1/2 matrix for the whole Hessian
+  SharedMatrix B_shared = salc_list.matrix();
+  double **B = B_shared->pointer();
+
+  double **Hx = block_matrix(3*Natom, 3*Natom);
+
+  // Hx = Bt H B
+  for (int i=0; i<Nsalc_all; ++i)
+    for (int j=0; j<Nsalc_all; ++j)
+      for (int x1=0; x1<3*Natom; ++x1)
+        for (int x2=0; x2 <= x1; ++x2)
+          Hx[x1][x2] += B[i][x1] * H[i][j] * B[j][x2];
+
+  for (int x1=0; x1<3*Natom; ++x1)
+    for (int x2=0; x2 < x1; ++x2)
+      Hx[x2][x1] = Hx[x1][x2];
+
+  free_block(H);
+
+  if (print_lvl >= 3) {
+    fprintf(outfile, "\n\tForce Constants in mass-weighted cartesian coordinates.\n");
+    mat_print(Hx, 3*Natom, 3*Natom, outfile);
+  }
+
+  // Un-mass-weight Hessian
+  for (int x1=0; x1<3*Natom; ++x1)
+    for (int x2=0; x2<3*Natom; ++x2)
+      Hx[x1][x2] *= sqrt(mol->mass(x1/3)) * sqrt(mol->mass(x2/3));
+
+  if (print_lvl >= 3) {
+    fprintf(outfile, "\n\tForce Constants in cartesian coordinates.\n");
+    mat_print(Hx, 3*Natom, 3*Natom, outfile);
+  }
+
+  FILE *of_Hx = fopen("psi.file15.dat","w");
+  fprintf(of_Hx,"%5d", Natom);
+  fprintf(of_Hx,"%5d\n", 6*Natom);
+
+  int cnt = -1;
+  for (int i=0; i<3*Natom; ++i) {
+    for (int j=0; j<3*Natom; ++j) {
+      fprintf(of_Hx, "%20.10lf", Hx[i][j]);
+      if (++cnt == 2) {
+        fprintf(of_Hx,"\n");
+        cnt = -1;
+      }
+    }
+  }
+
+  fclose(of_Hx);
+  free_block(Hx);
+
+  fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return Success;
-}
-
-/* iE1() returns index for the energy of a displacement, according to the order
-generated in fd_geoms_freq_1()
-ii and jj are coordinates, displaced by quantized steps disp_i and disp_j
-disp_i,disp_j are {-1,0,+1} for a three-point formula
-disp_j,disp_j are {-2,-1,0,+1,+2} for a five-point formula
-It is assumed that ii >= jj .
-For diagonal displacements disp_j=0 and jj is arbitrary/meaningless.
-*/
-
-int iE1(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
-  int irrep, int ii, int jj, int disp_i, int disp_j) {
-
-  int ndiag_this_irrep;
-  int rval=-1;
-
-  // compute starting location of displacements for this irrep
-  int start_irr = 0;
-  for (int h=0; h<irrep; ++h)
-    start_irr += Ndisp_pi[h];
-
-  if (pts == 3) {
-    if (disp_j == 0) {  // diagonal; all diagonals at beginning of irrep 
-      if (irrep == 0) {
-        if (disp_i == -1)
-          rval = 2*ii;   // f(-1, 0)
-        else if (disp_i == +1)
-          rval = 2*ii+1; // f(+1, 0)
-      }
-      else if (disp_i == -1 || disp_i == +1)
-        rval = start_irr + ii;     // f(+1,0) = f(-1, 0)
-    }
-    else {    // off_diagonal
-      if (irrep == 0)
-        ndiag_this_irrep = 2 * salcs_pi[0].size();
-      else
-        ndiag_this_irrep = salcs_pi[irrep].size();
-
-      int ij_pair = 2 * ((ii*(ii-1))/2 + jj);
-
-      if      (disp_i == +1 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair;
-      else if (disp_i == -1 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair + 1;
-    }
-  }
-  else if (pts == 5) {
-    if (disp_j == 0) {   // diagonal 
-      if (irrep == 0) {
-        if (disp_i == -2)      rval = start_irr + 4*ii;     // f(-2, 0)
-        else if (disp_i == -1) rval = start_irr + 4*ii+1;   // f(-1, 0)
-        else if (disp_i ==  1) rval = start_irr + 4*ii+2;   // f(+1, 0)
-        else if (disp_i ==  2) rval = start_irr + 4*ii+3;   // f(+2, 0)
-      }
-      else { // irrep != 0
-        if      (disp_i == -2 || disp_i == 2) rval = start_irr + 2*ii;     // f(-2, 0)
-        else if (disp_i == -1 || disp_i == 1) rval = start_irr + 2*ii+1;   // f(-1, 0)
-      }
-    }
-    else {   //off-diagonal
-      if (irrep == 0)
-        ndiag_this_irrep = 4 * salcs_pi[0].size() ;
-      else
-        ndiag_this_irrep = 2 * salcs_pi[irrep].size() ;
-
-      int ij_pair = 8 * ((ii*(ii-1))/2 + jj);
-
-      if      (disp_i == -1 && disp_j == -2) rval = start_irr + ndiag_this_irrep + ij_pair;
-      else if (disp_i == -2 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair+1;
-      else if (disp_i == -1 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair+2;
-      else if (disp_i == +1 && disp_j == -1) rval = start_irr + ndiag_this_irrep + ij_pair+3;
-      else if (disp_i == -1 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair+4;
-      else if (disp_i == +1 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair+5;
-      else if (disp_i == +2 && disp_j == +1) rval = start_irr + ndiag_this_irrep + ij_pair+6;
-      else if (disp_i == +1 && disp_j == +2) rval = start_irr + ndiag_this_irrep + ij_pair+7;
-    }
-  }
-
-  if (rval < 0) {
-    fprintf(outfile,"Problem finding displaced energy.\n");
-    throw PsiException("FINDIF: Problem finding displaced energy.",__FILE__,__LINE__);
-  }
-  //fprintf(outfile,"irrep: %d, ii: %d, jj: %d, disp_i: %d, disp_j: %d, rval: %d \n",
-  //  irrep, ii, jj, disp_i, disp_j, rval);
-  return rval;
 }
 
 }}

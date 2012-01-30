@@ -123,7 +123,6 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
-
     /// Reinterpret the coord entries or not
     /// Default is true, except for findif
     bool reinterpret_coordentries_;

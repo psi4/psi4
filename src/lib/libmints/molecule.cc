@@ -159,6 +159,7 @@ Molecule::Molecule():
     multiplicity_specified_(false),
     charge_specified_(false),
     atom_to_unique_(0),
+    //old_symmetry_frame_(0)
     reinterpret_coordentries_(true)
 {
 }
@@ -167,6 +168,8 @@ Molecule::~Molecule()
 {
     clear();
     release_symmetry_information();
+    //if (old_symmetry_frame_)
+    //  delete old_symmetry_frame_;
 }
 
 Molecule& Molecule::operator=(const Molecule& other)
@@ -2451,6 +2454,7 @@ void Molecule::set_orientation_fixed(bool _fix) {
     }
 }
 
+/* we may not need this capability
 void Molecule::set_com_fixed(bool _fix) {
 
     if (_fix) {
@@ -2474,4 +2478,5 @@ void Molecule::set_com_fixed(bool _fix) {
         move_to_com_ = true;
     }
 }
+*/
 

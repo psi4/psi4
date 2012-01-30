@@ -50,21 +50,21 @@ void KS::common_init()
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 
-    //Build the superfunctional
-    int block_size = options_.get_int("DFT_MAX_POINTS");
+    // Build the superfunctional
+    int block_size = options_.get_int("DFT_BLOCK_MAX_POINTS");
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
 
-    // Temporary print, to make sure we're in the right spot
-    fprintf(outfile,"  Selected Functional is %s.\n\n",functional_->getName().c_str());
-
-    //Grab the properties object for this basis
-    if (functional_->isRangeCorrected()) {
-
-        if (options_["DFT_OMEGA"].has_changed()) {
-            functional_->setOmega(options_.get_double("DFT_OMEGA"));
-        }
-
+    // Let the user to spec a custom range-separation omega
+    if (options_["DFT_OMEGA"].has_changed() && functional_->isRangeCorrected()) {
+        functional_->setOmega(options_.get_double("DFT_OMEGA"));
     }
+
+    // Print some info on the DFT functional
+    fprintf(outfile,"  ==> KS-DFT <==\n\n"); 
+    fprintf(outfile,"   Selected Functional is %s.\n",functional_->getName().c_str());
+    if (functional_->isRangeCorrected()) 
+        fprintf(outfile,"   Range-separation omega is %11.3E.\n", functional_->getOmega());  
+    fprintf(outfile,"\n");
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
@@ -133,7 +133,9 @@ void RKS::form_G()
         const std::vector<SharedMatrix> & wK = jk_->wK();
         J_ = J[0];
         J_->scale(2.0);
-        K_ = K[0];
+        if (functional_->isHybrid()) {
+            K_ = K[0];
+        }
         if (functional_->isRangeCorrected()) {
             wK_ = wK[0];
         }
@@ -253,7 +255,7 @@ void UKS::integrals()
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
-    }
+    }    
 }
 void UKS::form_V()
 {
@@ -292,11 +294,13 @@ void UKS::form_G()
         const std::vector<SharedMatrix> & wK = jk_->wK();
         J_->copy(J[0]);
         J_->add(J[1]);
-        Ka_ = K[0];
-        Kb_ = K[0];
+        if (functional_->isHybrid()) {
+            Ka_ = K[0];
+            Kb_ = K[1];
+        }
         if (functional_->isRangeCorrected()) {
             wKa_ = wK[0];
-            wKb_ = wK[0];
+            wKb_ = wK[1];
         }
         Ga_->copy(J_);
         Gb_->copy(J_);
