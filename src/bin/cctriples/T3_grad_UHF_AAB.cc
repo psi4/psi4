@@ -64,8 +64,6 @@ extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps,
       double ***WABc, ***VABc;
       double ***XABc, ***Y1, ***Y2;
       double **Z;
-      double ***WIJk = (double ***) malloc(nirreps * sizeof(double **));
-      double ***VIJk = (double ***) malloc(nirreps * sizeof(double **));
 
       nirreps = moinfo.nirreps;
       aoccpi = moinfo.aoccpi; 
@@ -76,6 +74,9 @@ extern void T3_UHF_AAB_abc(double ***W, double ***V, int disc, int nirreps,
       bvirtpi = moinfo.bvirtpi;
       bocc_off = moinfo.bocc_off;
       bvir_off = moinfo.bvir_off;
+
+      double ***WIJk = (double ***) malloc(nirreps * sizeof(double **));
+      double ***VIJk = (double ***) malloc(nirreps * sizeof(double **));
 
       dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
       dpd_file2_init(&fij, CC_OEI, 0, 2, 2, "fij");
