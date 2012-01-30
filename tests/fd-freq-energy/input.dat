@@ -1,4 +1,4 @@
-#! SCF STO-3G finite-difference tests
+#! SCF STO-3G finite-difference frequencies from energies
 
 memory 250 mb
 
@@ -14,29 +14,33 @@ set globals {
   d_convergence 11
 }
 
-# Test against Analytic second derivatives from PSI3 (for now).
-anal_freqs = PsiMod.Vector(3)   #TEST
-anal_freqs.set(0, 0, 2170.046)  #TEST
-anal_freqs.set(0, 1, 4140.002)  #TEST
-anal_freqs.set(0, 2, 4391.067)  #TEST
+# Test against Analytic second derivatives from PSI3. #TEST
+anal_freqs = PsiMod.Vector(3)  #TEST
+anal_freqs.set(0, 0, 2170.045) #TEST
+anal_freqs.set(0, 1, 4140.001) #TEST
+anal_freqs.set(0, 2, 4391.065) #TEST
 
-# psi3 3-point formula: #A1 force constants
-#  0.3546775  -0.2277549
-# -0.2277549   0.4721543
-#
-#B2 force constant
-#  0.7296851
+# PSI3 3-point formula:  #TEST
+# A1 force constants     #TEST
+#  0.3546775  -0.2277549 #TEST
+# -0.2277549   0.4721543 #TEST
+#                        #TEST
+# B2 force constant      #TEST
+#  0.7296851             #TEST
 
-# *** Test frequencies by 3-pt formula in C1.
+# Frequencies by 3-pt formula in C1 point group.
 set globals { points 3 }
+set findif {print 3}
 
-frequencies('scf')
+frequencies('scf',dertype=0)
 
 fd_freqs = PsiMod.reference_wavefunction().frequencies()                                 #TEST
 compare_vectors(anal_freqs, fd_freqs, 1,                                                 #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1) ")  #TEST
 
-# *** Test frequencies by 5-pt formula in C1.
+exit()
+
+# Frequencies by 5-pt formula in C1 point group.
 molecule h2o {
   symmetry c1
   O
@@ -46,7 +50,7 @@ molecule h2o {
 
 set globals { points 5 }
 
-frequencies('scf')
+frequencies('scf',dertype=1)
 
 fd_freqs = PsiMod.reference_wavefunction().frequencies()                                  #TEST
 compare_vectors(anal_freqs, fd_freqs, 3,                                                  #TEST
@@ -54,7 +58,7 @@ compare_vectors(anal_freqs, fd_freqs, 3,                                        
 
 clean()
 
-# *** Test frequencies by 3-pt formula in C2v.
+# Frequencies by 3-pt formula in C2v.
 molecule h2o {
   O
   H 1 0.9894093
@@ -63,13 +67,13 @@ molecule h2o {
 
 set globals { points 3 }
 
-frequencies('scf')
+frequencies('scf',dertype=1)
 
 fd_freqs = PsiMod.reference_wavefunction().frequencies()                                 #TEST
 compare_vectors(anal_freqs, fd_freqs, 1,                                                 #TEST
  "Analytic vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C2v) ") #TEST
 
-# *** Test frequencies by 5-pt formula in C2v.
+# Frequencies by 5-pt formula in C2v.
 molecule h2o {
   O
   H 1 0.9894093
@@ -78,14 +82,13 @@ molecule h2o {
 
 set globals { points 5 }
 
-frequencies('scf')
+frequencies('scf',dertype=1)
 
 fd_freqs = PsiMod.reference_wavefunction().frequencies()                                   #TEST
 compare_vectors(anal_freqs, fd_freqs, 3,                                                   #TEST
  "Analytic vs. Finite-difference (5-pt.) frequencies from energies to 0.001 cm^-1 (C2v) ") #TEST
 
-# *** Test frequencies by 5-pt formula for A1 irrep only.
-
+# Frequencies by 5-pt formula for A1 irrep only.
 molecule h2o {
   O
   H 1 0.9894093
@@ -94,18 +97,20 @@ molecule h2o {
 
 set globals { points 5 }
 
-frequencies('scf', irrep=1)
+a1_freqs = PsiMod.Vector(2)          #TEST
+a1_freqs.set(0, 0, anal_freqs[0])    #TEST
+a1_freqs.set(0, 1, anal_freqs[1])    #TEST
+
+frequencies('scf', dertype=1, irrep=1)
 
 fd_freqs = PsiMod.reference_wavefunction().frequencies()                      #TEST
-a1_freqs = PsiMod.Vector(2)                                                   #TEST
-a1_freqs.set(0, 0, anal_freqs[0])                                             #TEST
-a1_freqs.set(0, 1, anal_freqs[1])                                             #TEST
 compare_vectors(a1_freqs, fd_freqs, 3, "A1 frequencies only (5-pt. formula)") #TEST
+
+del a1_freqs #TEST
 
 clean()
 
-# *** Test frequencies by 5-pt formula for B2 irrep only.
-
+# Frequencies by 5-pt formula for B2 irrep only.
 molecule h2o {
   O
   H 1 0.9894093
@@ -113,10 +118,16 @@ molecule h2o {
 }
 
 set globals { points 5 }
-frequencies('scf', irrep=4)
 
-b2_freqs = PsiMod.Vector(1)                                                   #TEST
-b2_freqs.set(0, 0, anal_freqs[2])                                             #TEST
+b2_freqs = PsiMod.Vector(1)       #TEST
+b2_freqs.set(0, 0, anal_freqs[2]) #TEST
+
+frequencies('scf', dertype=1, irrep=4)
+
 fd_freqs = PsiMod.reference_wavefunction().frequencies()                      #TEST
 compare_vectors(b2_freqs, fd_freqs, 3, "B2 frequencies only (5-pt. formula)") #TEST
+
+del b2_freqs   #TEST
+del anal_freqs #TEST
+clean()
 

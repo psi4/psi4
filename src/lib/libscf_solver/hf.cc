@@ -16,6 +16,7 @@
 
 #include <libmints/mints.h>
 
+#include <libfunctional/superfunctional.h>
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
@@ -326,11 +327,28 @@ void HF::integrals()
         jk_->set_print(print_);
         // Give the JK 70% of the memory
         jk_->set_memory((ULI)(0.7*(Process::environment.get_memory() / 8L)));
-        // Tell the JK to do erf integrals if needed 
-        jk_->set_do_wK((options_.get_double("DFT_OMEGA") != 0.0) 
-            && (options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS"));
-        // Tell the JK to do erf integrals if needed 
-        jk_->set_omega(options_.get_double("DFT_OMEGA"));
+
+        // DFT sometimes needs custom stuff
+        if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
+
+            // Need a temporary functional
+            boost::shared_ptr<psi::functional::SuperFunctional> functional = 
+                psi::functional::SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),1,1);
+            
+            // K matrices
+            jk_->set_do_K(functional->isHybrid());
+            // wK matrices 
+            jk_->set_do_wK(functional->isRangeCorrected());
+            // w Value
+            if (functional->isRangeCorrected()) {
+                double omega = functional->getOmega();
+                if (options_["DFT_OMEGA"].has_changed()) {
+                    omega = options_.get_double("DFT_OMEGA"); 
+                }
+                jk_->set_omega(omega); 
+            }   
+        }
+
         // Initialize
         jk_->initialize(); 
         // Print the header
@@ -1325,6 +1343,8 @@ double HF::compute_energy()
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
         }
+
+        Process::environment.globals["SCF ITERATION ENERGY"] = E_;
 
         timer_on("Form C");
         form_C();

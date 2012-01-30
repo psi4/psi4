@@ -1,16 +1,11 @@
-#include"psi4-dec.h"
 #include"ccsd.h"
-#include <libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include <libmints/mints.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
 #include"blas.h"
-#include"sort.h"
 
 using namespace psi;
-using namespace boost;
+
+namespace psi{
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+};
 
 namespace psi{
 PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
@@ -204,10 +199,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   }
   psio->close(PSIF_ABCI,1);
 
-  // transform (oo|ov), (ov|vv), and (ov|ov) integrals with libtrans
-  //Transformation(ccsd,Dab);
-  // sort integrals required for triples
-  //OutOfCoreSortTriples(ccsd->nfzc,ccsd->nfzv,ccsd->nmotemp,ccsd->ndoccact,ccsd->nvirt_no);
+  // transform (oo|ov), (ov|vv), and (ov|ov)
 
   // new orbital energies in truncated space
   F_DCOPY(nvirt_no,neweps,1,ccsd->eps+o,1);
@@ -301,50 +293,6 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   free(Dab);
 
   return Success;
-}
-
-void Transformation(boost::shared_ptr<psi::CoupledCluster>ccsd,double*Ca_motono){
-  /*shared_ptr<PSIO> psio(_default_psio_lib_);
-  std::vector<shared_ptr<MOSpace> > spaces;
-  shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
-
-  spaces.push_back(MOSpace::all);
-
-  boost::shared_ptr<Wavefunction> ref =
-       Process::environment.reference_wavefunction();
-
-  boost::shared_ptr<Matrix> Cc = ref->Ca_subset("SO","FROZEN_OCC");
-  boost::shared_ptr<Matrix> Ci = ref->Ca_subset("SO","ACTIVE_OCC");
-  boost::shared_ptr<Matrix> Ca = ref->Ca_subset("SO","ACTIVE_VIR");
-  boost::shared_ptr<Matrix> Cv = ref->Ca_subset("SO","FROZEN_VIR");
-
-  // create shared matrix to hold so->no transformation vectors
-  int*rowspi = new int[1];
-  int*colspi = new int[1];
-  int v = ccsd->nvirt;
-  rowspi[0] = ccsd->ndocc+ccsd->nvirt;
-  colspi[0] = ccsd->nvirt_no;
-  SharedMatrix Ca_sotono = SharedMatrix (new Matrix("SO to NO transformation",1,rowspi,colspi));
-  delete[] rowspi;
-  delete[] colspi;
-
-  // fill shared matrix with mo->no transformation vectors
-  double**Ca_sotono_pointer = Ca_sotono->pointer(0);
-  double**Ca_pointer        = Ca->pointer(0);
-
-  // construct so->no transformation matrix
-  F_DGEMM('t','n',Ca_sotono->colspi()[0],Ca_sotono->rowspi()[0],v,1.0,Ca_motono,v,&Ca_pointer[0][0],v,0.0,&Ca_sotono_pointer[0][0],Ca_sotono->colspi()[0]);
-
-  // so->no integral transformation
-  IntegralTransform ints(Cc,Ci,Ca_sotono,Cv, spaces, IntegralTransform::Restricted,
-           IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
-  dpd_set_default(ints.get_dpd_id());
-  int print = 4;
-  ints.set_print(print);
-  ints.set_keep_dpd_so_ints(1);
-  ints.set_keep_iwl_so_ints(1);
-  ints.initialize();
-  ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);*/
 }
 
 } // end of namespace
