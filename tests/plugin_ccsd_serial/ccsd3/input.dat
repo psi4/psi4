@@ -1,0 +1,33 @@
+#! CCSD(T) energy using MP2 natural orbitals for water (monomer in dimer basis) in aug-cc-pvdz
+molecule dimer {
+0 1
+O  -1.551007  -0.114520   0.000000
+H  -1.934259   0.762503   0.000000
+H  -0.599677   0.040712   0.000000
+--
+0 1
+O   1.350625   0.111469   0.000000
+H   1.680398  -0.373741  -0.758561
+H   1.680398  -0.373741   0.758561
+}
+
+memory 250 mb
+set {
+  r_convergence 1e-7
+  basis aug-cc-pvdz
+  freeze_core true
+  triples_use_nos true
+}
+
+activate(dimer)
+monoA = dimer.extract_subsets(1,2)
+
+energy("plugin_ccsd_serial")
+
+refscf     = -76.0412702882  # TEST
+refccsd    = -0.227694028575 # TEST
+refccsdt   = -0.232978044518 # TEST
+
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                             #TEST
+compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy")        #TEST 
+compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"), 8, "CCSD(T) correlation energy") #TEST

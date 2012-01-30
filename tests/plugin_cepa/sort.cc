@@ -1,28 +1,13 @@
-#include <libplugin/plugin.h>
-#include<psifiles.h>
 #include"psi4-dec.h"
-#include<boost/shared_ptr.hpp>
-#include<lib3index/dftensor.h>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
+#include<psifiles.h>
 #include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
+#include<libpsio/psio.hpp>
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<math.h>
-#include"globals.h"
 #include"cepa.h"
 #include"sort.h"
 #include"blas.h"
 
-
 using namespace psi;
-using namespace boost;
 
 namespace psi{
 
@@ -117,14 +102,8 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   psio->close(PSIF_IJAK,1);
   psio->open(PSIF_IJAK2,PSIO_OPEN_NEW);
   psio->close(PSIF_IJAK2,1);
-  psio->open(PSIF_ABCI,PSIO_OPEN_NEW);
-  psio->close(PSIF_ABCI,1);
-  psio->open(PSIF_ABCI2,PSIO_OPEN_NEW);
-  psio->close(PSIF_ABCI2,1);
   psio->open(PSIF_ABCI3,PSIO_OPEN_NEW);
   psio->close(PSIF_ABCI3,1);
-  psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
-  psio->close(PSIF_ABCI4,1);
   psio->open(PSIF_ABCI5,PSIO_OPEN_NEW);
   psio->close(PSIF_ABCI5,1);
   psio->open(PSIF_ABCD1,PSIO_OPEN_NEW);

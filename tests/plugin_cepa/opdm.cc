@@ -1,20 +1,8 @@
-#include"psi4-dec.h"
-#include"cepa.h"
-#include <cstdio>
-#include <cstdlib>
-#include <libplugin/plugin.h>
-#include <libmints/mints.h>
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
+#include<libmints/mints.h>
 #include"blas.h"
-#ifdef _OPENMP
-#include<omp.h>
-#endif
+#include"cepa.h"
 
 using namespace psi;
-using namespace boost;
 
 namespace psi{
 void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options);

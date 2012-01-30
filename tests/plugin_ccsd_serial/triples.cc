@@ -1,17 +1,10 @@
-#include"psi4-dec.h"
 #include"ccsd.h"
-#include <libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
 #include"blas.h"
 #ifdef _OPENMP
-#include<omp.h>
+   #include<omp.h>
 #endif
 
 using namespace psi;
-using namespace boost;
 
 namespace psi{
 PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
@@ -548,7 +541,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
      fprintf(outfile,"      * CCSD(T) total energy         %20.12lf\n",ccsd->eccsd+et+ccsd->escf);
   else{
      fprintf(outfile,"                                                 unscaled               scaled\n");
-     fprintf(outfile,"      * CCSD(T) total energy         %20.12lf %20.12lf\n",ccsd->eccsd+et,ccsd->eccsd+et*ccsd->scale_t+ccsd->escf);
+     fprintf(outfile,"      * CCSD(T) total energy         %20.12lf %20.12lf\n",ccsd->eccsd+et+ccsd->escf,ccsd->eccsd+et*ccsd->scale_t+ccsd->escf);
   }
   fflush(outfile);
   ccsd->et = et;
