@@ -1,0 +1,28 @@
+#! 6-31G** H2O CCSD(T) optimization by energies, with Z-Matrix input
+
+memory 250 mb
+molecule h2o {
+    o
+    h 1 0.97
+    h 1 0.97 2 103.0
+}
+
+set globals {
+  basis 6-31G**
+
+  r_convergence 10
+  e_convergence 10
+  d_convergence 10
+}
+
+optimize('plugin_ccsd_serial', dertype=0)
+
+refnuc   =  9.15610806663  #TEST
+refscf   = -76.0228425067  #TEST
+refccsd  = -0.211175597426 #TEST
+reftotal = -76.2340181041  #TEST
+
+compare_values(refnuc,   h2o.nuclear_repulsion_energy(),             3, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF total energy"),           7, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD(T) correlation energy"), 7, "CCSD(T) contribution")     #TEST
+compare_values(reftotal, get_variable("Current energy"),             7, "Total energy")             #TEST
