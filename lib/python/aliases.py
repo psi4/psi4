@@ -8,6 +8,7 @@ from driver import *
 from wrappers import *
 from molecule import *
 from text import *
+from procutil import *
 
 # Place in this file quickly defined procedures such as
 #   (1) aliases for complex methods
@@ -17,6 +18,8 @@ from text import *
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
 
 def sherrillgroup_gold_standard(name='mp2', **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     if not (kwargs.has_key('func_cbs')):  kwargs['func_cbs']                 = energy
 
@@ -35,6 +38,8 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
     return cbs(name, **kwargs)
 
 def run_mp2_5(name, **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     # Run detci calculation and collect conventional quantities
     energy('mp3', **kwargs)
@@ -72,15 +77,12 @@ def run_mp2_5(name, **kwargs):
     return e_mp25
 
 def run_plugin_ccsd_serial(name, **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
-    # override symmetry
-    molecule = PsiMod.get_active_molecule()
-    molecule.update_geometry()
-    molecule.reset_point_group('c1')
-    molecule.fix_orientation(1)
-    molecule.update_geometry()
     plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
     PsiMod.plugin_load("%s" % (plugfile))
+    PsiMod.set_global_option('WFN', 'CCSD')
     run_scf("scf",**kwargs)
     PsiMod.transqt2()
     PsiMod.plugin("plugin_ccsd_serial.so")
@@ -92,6 +94,8 @@ def run_plugin_ccsd_serial(name, **kwargs):
 #     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated
 #     procedure where different options are set for different qc steps.
 def run_plugin_omega(name, **kwargs):
+    lowername = name.lower()
+    kwargs = kwargs_lower(kwargs)
 
     plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
     PsiMod.plugin_load("%s" % (plugfile))
