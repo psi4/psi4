@@ -4,6 +4,7 @@ all: default
 default: boost.compiled
 
 install:
+clean:
 
 # Steps taken:
 #  1. If directory boost_1_48_0 does not exist, untar the source file.
