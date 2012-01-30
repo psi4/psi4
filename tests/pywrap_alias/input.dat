@@ -10,6 +10,7 @@ He 1 1.0
 
 set globals {
     basis 6-31g
+    g_convergence gau
 }
 
 set mp2 scs on
