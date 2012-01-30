@@ -17,6 +17,13 @@ struct OPT_PARAMS {
   double conv_max_DE;
   double conv_max_disp;
   double conv_rms_disp;
+  bool i_max_force;
+  bool i_rms_force;
+  bool i_max_DE;
+  bool i_max_disp;
+  bool i_rms_disp;
+  bool i_untampered;
+  std::string general_conv;
 
   double scale_connectivity;
 
