@@ -373,15 +373,11 @@ void CoupledPair::DefineTilingCPU(){
   ndoubles -= o*o*v*v+2L*(o*o*v*v+o*v)+2L*o*v+2*v*v+(o+v);
   if (t2_on_disk){
      ndoubles += o*o*v*v;
-     //fprintf(outfile,"\n");
-     //fprintf(outfile,"  Redefine tiling, assuming T2 is stored on disk:\n");
-     //fprintf(outfile,"\n");
   }else{
      fprintf(outfile,"\n");
      fprintf(outfile,"  Define tiling:\n");
      fprintf(outfile,"\n");
   }
-
 
   // if not enough space, check to see if keeping t2 on disk will help
   if (ndoubles<o*o*v*v){
@@ -619,17 +615,6 @@ void CoupledPair::CPU_t1_vmaef(CepaTaskParams params){
   }
   lasttile = v - (ntiles-1L)*tilesize;
 
-  /*tilesize=v;
-  for (i=1; i<=v; i++){
-      if (o>=(double)tilesize/i){
-         tilesize = v/i;
-         if (i*tilesize < v) tilesize++;
-         ntiles = i;
-         break;
-      }
-  }
-  lasttile = v - (ntiles-1)*tilesize;*/
-
   psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
   psio_address addr;
   addr = PSIO_ZERO;
@@ -646,7 +631,7 @@ void CoupledPair::CPU_t1_vmaef(CepaTaskParams params){
 
 }
 
-// CPU_I2p_abci required ov^3 storage.  by refactorizing, we reduce storage to o^3v, but increase cost by 2o^2v^3
+// a refactored version of I2p(ab,ci) that avoids ov^3 storage
 void CoupledPair::CPU_I2p_abci_refactored_term1(CepaTaskParams params){
   long int o = ndoccact;
   long int v = nvirt;
@@ -705,7 +690,6 @@ void CoupledPair::UpdateT1(long int iter){
   else if (cepa_level == -2) fac = 1.0/o;
   else if (cepa_level == -3) fac = 1.0-(2.0*o-2.0)*(2.0*o-3.0) / (2.0*o*(2.0*o-1.0));
   energy = ecepa * fac;
-
 
   if (iter<1){
      memset((void*)t1,'\0',o*v*sizeof(double));
@@ -954,10 +938,6 @@ void CoupledPair::UpdateT2(long int iter){
   }
 
   // error vectors for diis are in tempv:
-  //F_DCOPY(o*o*v*v,tempt,1,tempv,1);
-  //F_DAXPY(o*o*v*v,-1.0,tb,1,tempv,1);
-  //F_DCOPY(o*o*v*v,tempt,1,tb,1);
-
   if (t2_on_disk){
      psio->open(PSIF_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
@@ -975,8 +955,6 @@ void CoupledPair::UpdateT2(long int iter){
   }
 
   psio.reset();
-
-  //return energy;
 }
 
 /*================================================================
@@ -1162,15 +1140,6 @@ void CoupledPair::I2ijkl(CepaTaskParams params){
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
 
-  for (a=0,id=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  //tempt[id++] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
   psio->open(PSIF_IJKL,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJKL,"E2ijkl",(char*)&integrals[0],o*o*o*o*sizeof(double));
   psio->close(PSIF_IJKL,1);
@@ -1297,15 +1266,6 @@ void CoupledPair::Vabcd2(CepaTaskParams params){
      psio->close(PSIF_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
-  }
-  for (a=0,id=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  //tempt[id++] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
   }
   for (i=0; i<o; i++){
       for (j=i; j<o; j++){
@@ -1486,7 +1446,6 @@ void CoupledPair::I2iajb(CepaTaskParams params){
   psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_R2,1);
   psio.reset();
-
 }
 
 /**
@@ -1498,80 +1457,21 @@ void CoupledPair::DefineTasks(){
   long int o = ndoccact;
   long int v = nvirt;
 
-  // these will be used for the parallel version
-  long int niabjranks,niajbranks;
-  niabjranks=niajbranks=1;
-
   ncepatasks=0;
 
-  // I2iabj
-  CepaTasklist[ncepatasks].func      = &psi::CoupledPair::I2iabj;
-  CepaTasklist[ncepatasks].flopcount = 2*(3*o*o*o*v*v*v+o*o*v*v*v+o*o*o*v*v);
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2iabj;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2iajb;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2ijkl;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2piajk;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeni;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmaef;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeai;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::Vabcd1;
 
-  // I2iajb
-  CepaTasklist[ncepatasks].func      = &psi::CoupledPair::I2iajb;
-  CepaTasklist[ncepatasks].flopcount = 2.*(3.*o*o*o*v*v*v);
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
-
-  // I2ijkl ... n^6, so probably worth tiling at some point 
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::I2ijkl;
-  CepaTasklist[ncepatasks].flopcount = 2.*(2.*o*o*o*o*v*v+1.*o*o*o*o*v);
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
-
-  // I2pijak:
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::I2piajk;
-  CepaTasklist[ncepatasks].flopcount = 2.*(1.*o*o*o*v*v*v+1.*o*o*o*v*v);
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
- 
-  // used to be cpu functions
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_t1_vmeni;
-  CepaTasklist[ncepatasks].flopcount = 2.*o*o*o*v*v;
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
-
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_t1_vmaef;
-  CepaTasklist[ncepatasks].flopcount = 2.*o*o*v*v*v;
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
-
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
-  CepaTasklist[ncepatasks].flopcount = 2.*(o*o*v*v*v);
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
-
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::CPU_t1_vmeai;
-  CepaTasklist[ncepatasks].flopcount = 2.*o*o*v*v;
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
-
-  // tiles of Vabcd1:
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::Vabcd1;
-  CepaTasklist[ncepatasks].flopcount = 2.*o*(o+1)/2.*v*(v+1)/2*v*(v+1)/2.;
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
-
-  // tiles of Vabcd2: 
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
-  CepaTasklist[ncepatasks].func        = &psi::CoupledPair::Vabcd2;
-  CepaTasklist[ncepatasks].flopcount = 2.*o*(o+1)/2.*tilesize*v*(v+1)/2.;
-  CepaParams[ncepatasks].mtile = -999;
-  CepaParams[ncepatasks].ntile = -999;
-  CepaParams[ncepatasks++].ktile = -999;
+  CepaTasklist[ncepatasks++].func        = &psi::CoupledPair::Vabcd2;
 }
 
 
