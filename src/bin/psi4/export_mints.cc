@@ -274,7 +274,7 @@ void export_mints()
             def("name", &Molecule::name).
             def("reinterpret_coordentry", &Molecule::set_reinterpret_coordentry).
             def("fix_orientation", &Molecule::set_orientation_fixed).
-            def("fix_com", &Molecule::set_com_fixed).
+            //def("fix_com", &Molecule::set_com_fixed).
             def("init_with_checkpoint", &Molecule::init_with_chkpt).
             def("save_to_checkpoint", &Molecule::save_to_chkpt).
             def("init_with_io", &Molecule::init_with_psio).

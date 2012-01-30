@@ -1,24 +1,7 @@
-#include <libplugin/plugin.h>
-#include"psi4-dec.h"
-#include<boost/shared_ptr.hpp>
 #include<lib3index/dftensor.h>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<math.h>
-#include"globals.h"
 #include"ccsd.h"
-#include"sort.h"
 #include"blas.h"
-
 
 using namespace psi;
 using namespace boost;
