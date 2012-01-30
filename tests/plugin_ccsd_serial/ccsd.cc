@@ -27,7 +27,6 @@ using namespace boost;
 
 namespace psi{
   void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
-  void DensityFittedIntegrals();
 };
 
 // position in a symmetric packed matrix
@@ -82,7 +81,7 @@ void CoupledCluster::Initialize(Options &options){
      fzv     = ref->frzvpi();
   }
   if (nirreps>1){
-     throw PsiException("plugin_ccsd requires symmetry c1",__FILE__,__LINE__);
+     //throw PsiException("plugin_ccsd requires symmetry c1",__FILE__,__LINE__);
   }
   nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
   long int full=0;
@@ -141,7 +140,7 @@ void CoupledCluster::Initialize(Options &options){
 
   // quit if number of virtuals is less than number of doubly occupied
   if (nvirt<ndoccact){
-     throw PsiException("ndocc must be larger than nvirt",__FILE__,__LINE__);
+     throw PsiException("ndocc must be less than nvirt",__FILE__,__LINE__);
   }
 
   // so->mo tei transformation
@@ -152,259 +151,42 @@ void CoupledCluster::Initialize(Options &options){
 
   double time_start,user_start,sys_start,time_stop,user_stop,sys_stop;
 
-  // sort integrals and write them to disk (or generate df integrals)
-  if (!options.get_bool("DF_INTEGRALS")){
-     times(&total_tmstime);
-     time_start = time(NULL);
-     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
-     OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
-     //RandomIntegralFiles();
+  // sort integrals and write them to disk
+  times(&total_tmstime);
+  time_start = time(NULL);
+  user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+  sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-     times(&total_tmstime);
-     time_stop = time(NULL);
-     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
-     fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
-     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
-  }
-  else{
-     times(&total_tmstime);
-     time_start = time(NULL);
-     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
 
-     DensityFittedIntegrals();
+  times(&total_tmstime);
+  time_stop = time(NULL);
+  user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+  sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-     times(&total_tmstime);
-     time_stop = time(NULL);
-     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
-     fprintf(outfile,"  Time for density fitting:         %6.2lf s (user)\n",user_stop-user_start);
-     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
-  }
+  fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
+  fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
+  fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
 
-  // orbital energies
-  eps_test = ref->epsilon_a();
-  double*tempeps = eps_test->pointer();
+  // orbital energies:
   eps = (double*)malloc(nmo*sizeof(double));
-  F_DCOPY(nmo,tempeps+nfzc,1,eps,1);
+  int count=0;
+  for (int h=0; h<nirreps; h++){
+      eps_test = ref->epsilon_a();
+      for (int norb = fzc[h]; norb<docc[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
+      }
+  }
+  for (int h=0; h<nirreps; h++){
+      eps_test = ref->epsilon_a();
+      for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
+          eps[count++] = eps_test->get(h,norb);
+      }
+  }
   eps_test.reset();
 
   // by default, t2 will be held in core
   t2_on_disk = false;
-
-}
-void CoupledCluster::RandomIntegralFiles(){
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int dim = 4*o*o*v*v;
-  double*temp=(double*)malloc(dim*sizeof(double));
-  srand(time(NULL));
-  for (long int i=0; i<dim; i++) temp[i] = .00002*((double)rand()/RAND_MAX-1.0);
-
-  boost::shared_ptr<PSIO> psio(new PSIO());
-
-  psio_address addr = PSIO_ZERO;
-  long int count=0;
-  /*psio->open(PSIF_IJKL,PSIO_OPEN_NEW);
-  for (long int i=0; i<o*o*o*o; i++){
-      count++;
-      //temp[count++] = .01*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_IJKL,"E2ijkl",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_IJKL,"E2ijkl",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_IJKL,1);*/
-  psio->open(PSIF_IJAK,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*o*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_IJAK,"E2ijak",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_IJAK,"E2ijak",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_IJAK,1);
-  /*psio->open(PSIF_IJAK2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*o*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_IJAK2,"E2ijak2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_IJAK2,"E2ijak2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_IJAK2,1);*/
-  psio->open(PSIF_KLCD,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_KLCD,"E2klcd",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_KLCD,"E2klcd",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_KLCD,1);
-  /*psio->open(PSIF_AKJC2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*o*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_AKJC2,"E2akjc2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_AKJC2,"E2akjc2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_AKJC2,1);*/
-  psio->open(PSIF_ABCI,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI,"E2abci",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI,"E2abci",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI,1);
-return;
-
-
-
-  psio->open(PSIF_ABCI2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI2,"E2abci2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI2,"E2abci2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI2,1);
-  psio->open(PSIF_ABCI3,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI3,"E2abci3",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI3,"E2abci3",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI3,1);
-  psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI4,"E2abci4",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI4,"E2abci4",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI4,1);
-  psio->open(PSIF_ABCI5,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<o*v*v*v; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCI5,"E2abci5",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCI5,"E2abci5",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCI5,1);
-  psio->open(PSIF_ABCD1,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<v*(v+1)/2*v*(v+1)/2; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCD1,"E2abcd1",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCD1,"E2abcd1",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCD1,1);
-  psio->open(PSIF_ABCD2,PSIO_OPEN_NEW);
-  count=0;
-  addr = PSIO_ZERO;
-  for (long int i=0; i<v*(v+1)/2*v*(v+1)/2; i++){
-      count++;
-      //temp[count++] = .00002*((double)rand()/RAND_MAX-1.0);
-      if (count==dim){
-         psio->write(PSIF_ABCD2,"E2abcd2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-         count=0;
-      }
-  }
-  if (count>0){
-     psio->write(PSIF_ABCD2,"E2abcd2",(char*)&temp[0],count*sizeof(double),addr,&addr);
-     count=0;
-  }
-  psio->close(PSIF_ABCD2,1);
-
-  free(temp);
 }
 
 /*===================================================================
@@ -457,7 +239,6 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
      psio->write_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_T2,1);
   }
-double eccsd2 = 0.0;
 
   // cc diagrams split up as tasks
   DefineTasks();
@@ -674,7 +455,6 @@ void CoupledCluster::AllocateMemory(Options&options){
                nthreads,8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v));
      }
   }
-
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
