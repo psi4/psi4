@@ -20,18 +20,13 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#  cc-pvdz H2O Test CCSD(T) energies
-refnuc     = 8.80146552997   # TEST
-refscf     = -76.0214184452  # TEST
-refccsd    = -0.214295329669 # TEST
-refccsdt   = -0.217539266337 # TEST
+#! cc-pvdz H2O Test CCSD(T) energies
 
 molecule h2o {
 0 1
 O
 H 1 1.0 
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 set {
@@ -41,15 +36,20 @@ set {
 }
 energy("plugin_ccsd_serial")
 
-compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                     #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                             #TEST
-compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy")            #TEST 
-compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"),     8, "CCSD(T) correlation energy") #TEST
+refnuc     = 8.80146552997   # TEST
+refscf     = -76.0214184452  # TEST
+refccsd    = -0.214295329669 # TEST
+refccsdt   = -0.217539266337 # TEST
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                 #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                             #TEST
+compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy")        #TEST 
+compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"), 8, "CCSD(T) correlation energy") #TEST
 --------------------------------------------------------------------------
 /home/deprince/psi4/lib/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so loaded.
 
 *** tstart() called on ds8
-*** at Fri Jan 27 10:44:01 2012
+*** at Mon Jan 30 12:10:39 2012
 
 
          ---------------------------------------------------------
@@ -61,26 +61,25 @@ compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"),     8, "CCS
 
   ==> Geometry <==
 
-    Molecular point group: c1
+    Molecular point group: c2v
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.068516219310
+           O         -0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
-    Number of unique atoms: 3
+    Number of unique atoms: 2
 
     Atoms equivalency:
        unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
+       unique atom 1: 1 2 
 
-  Running in c1 symmetry.
+  Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801465529972067
+  Nuclear repulsion =    8.801465529972068
 
   Charge       = 0
   Multiplicity = 1
@@ -114,12 +113,15 @@ compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"),     8, "CCS
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.68914707059001
+  Initial RHF energy:   -58.68914707059002
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A         24      24       5       5       5       0
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
    -------------------------------------------------------
     Total      24      24       5       5       5       0
    -------------------------------------------------------
@@ -132,37 +134,44 @@ compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"),     8, "CCS
    Calculation information:
       Number of atoms:                   3
       Number of AO shells:              12
-      Number of SO shells:              12
+      Number of SO shells:               9
       Number of primitives:             32
       Number of atomic orbitals:        25
       Number of basis functions:        24
 
-      Number of irreps:                  1
-      Number of functions per irrep: [  24 ]
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
 
       Overlap, kinetic, potential, dipole, and quadrupole integrals
         stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 21643 non-zero two-electron integrals.
+      Computed 11412 non-zero two-electron integrals.
         Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.92345273387480   -1.02343e+01   0.00000e+00 
-   @RHF iter   2:   -69.87832927887149   -9.54877e-01   3.04234e-01 DIIS
-   @RHF iter   3:   -75.76505683712061   -5.88673e+00   2.85194e-01 DIIS
-   @RHF iter   4:   -75.99909055478027   -2.34034e-01   9.59782e-03 DIIS
-   @RHF iter   5:   -76.02109883592935   -2.20083e-02   4.49227e-03 DIIS
-   @RHF iter   6:   -76.02136729063042   -2.68455e-04   7.87994e-04 DIIS
-   @RHF iter   7:   -76.02141644684095   -4.91562e-05   2.80947e-04 DIIS
-   @RHF iter   8:   -76.02141833859486   -1.89175e-06   6.41107e-05 DIIS
-   @RHF iter   9:   -76.02141844395753   -1.05363e-07   1.03706e-05 DIIS
-   @RHF iter  10:   -76.02141844507094   -1.11341e-09   1.68991e-06 DIIS
-   @RHF iter  11:   -76.02141844515251   -8.15703e-11   3.55153e-07 DIIS
-   @RHF iter  12:   -76.02141844515485   -2.34479e-12   4.79819e-08 DIIS
+   @RHF iter   1:   -68.92345273387481   -1.02343e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.87832927887142   -9.54877e-01   5.29715e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76505683712060   -5.88673e+00   4.96564e-01 DIIS
+   @RHF iter   4:   -75.99909055478030   -2.34034e-01   1.67112e-02 DIIS
+   @RHF iter   5:   -76.02109883592945   -2.20083e-02   7.82169e-03 DIIS
+   @RHF iter   6:   -76.02136729063051   -2.68455e-04   1.37201e-03 DIIS
+   @RHF iter   7:   -76.02141644684096   -4.91562e-05   4.89170e-04 DIIS
+   @RHF iter   8:   -76.02141833859497   -1.89175e-06   1.11626e-04 DIIS
+   @RHF iter   9:   -76.02141844395760   -1.05363e-07   1.80568e-05 DIIS
+   @RHF iter  10:   -76.02141844507092   -1.11332e-09   2.94238e-06 DIIS
+   @RHF iter  11:   -76.02141844515253   -8.16129e-11   6.18399e-07 DIIS
+   @RHF iter  12:   -76.02141844515486   -2.33058e-12   8.35395e-08 DIIS
+   @RHF iter  13:   -76.02141844515492   -5.68434e-14   1.55138e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -171,34 +180,34 @@ compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"),     8, "CCS
 
 	Doubly Occupied:                                                      
 
-	   1A    -20.557846     2A     -1.316181     3A     -0.677073  
-	   4A     -0.558726     5A     -0.490383  
+	   1A1   -20.557846     2A1    -1.316181     1B2    -0.677073  
+	   3A1    -0.558726     1B1    -0.490383  
 
 	Virtual:                                                              
 
-	   6A      0.178011     7A      0.249490     8A      0.760274  
-	   9A      0.816118    10A      1.166182    11A      1.198611  
-	  12A      1.256467    13A      1.452518    14A      1.466082  
-	  15A      1.667951    16A      1.877148    17A      1.889827  
-	  18A      2.354901    19A      2.388286    20A      3.248786  
-	  21A      3.297834    22A      3.453879    23A      3.821364  
-	  24A      4.099041  
+	   4A1     0.178011     2B2     0.249490     3B2     0.760274  
+	   5A1     0.816118     6A1     1.166182     2B1     1.198611  
+	   4B2     1.256467     7A1     1.452518     1A2     1.466082  
+	   3B1     1.667951     8A1     1.877148     5B2     1.889827  
+	   6B2     2.354901     9A1     2.388286     4B1     3.248786  
+	   2A2     3.297834    10A1     3.453879    11A1     3.821364  
+	   7B2     4.099041  
 
 	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02141844515485
+  @RHF Final Energy:   -76.02141844515492
 
   ==> Properties <==
 
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.1947
+     X:     0.0000      Y:     0.0000      Z:    -0.1947
 
   Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.8244     Total:     0.8244
@@ -209,18 +218,18 @@ compare_values(refccsdt, get_variable("CCSD(T) CORRELATION ENERGY"),     8, "CCS
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds8 at Fri Jan 27 10:44:01 2012
+*** tstop() called on ds8 at Mon Jan 30 12:10:39 2012
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds8
-*** at Fri Jan 27 10:44:01 2012
+*** at Mon Jan 30 12:10:39 2012
 
 
 	**************************************************
@@ -233,7 +242,7 @@ Total time:
 
 	Input parameters:
 	-----------------
-	Wave function   =	SCF
+	Wave function   =	CCSD
 	Backtransform   =	No
 	Print Level     =	1
 	Print TEIs      =	No
@@ -245,40 +254,43 @@ Total time:
 	Cache Type      =	LRU
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 1
+	Number of irreps     = 4
 	Number of SOs        = 24
 	Number of MOs        = 24
-	Number of active MOs = 24
+	Number of active MOs = 23
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A	   24	    1	    4	    0	    19	    0
+	 A1	   11	    1	    2	    0	    8	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
 
 	Nuclear Rep. energy (chkpt) =      8.80146552997207
-	SCF energy          (chkpt) =    -76.02141844515485
+	SCF energy          (chkpt) =    -76.02141844515492
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
-	Frozen-core energy =    0.000000000000000
+	Frozen-core energy =  -61.221839796383044
 	Starting first half-transformation.
 	Sorting half-transformed integrals.
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on ds8 at Fri Jan 27 10:44:01 2012
+*** tstop() called on ds8 at Mon Jan 30 12:10:39 2012
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Reading options from the PLUGIN_CCSD_SERIAL block
 Calling plugin plugin_ccsd_serial.so.
 
 *** tstart() called on ds8
-*** at Fri Jan 27 10:44:01 2012
+*** at Mon Jan 30 12:10:39 2012
 
 
 
@@ -331,61 +343,61 @@ Calling plugin plugin_ccsd_serial.so.
   Begin singles and doubles coupled cluster iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2094101104   -0.0047177035    0.0285158255        0
-      2   2 1   -0.2137664714   -0.0043563611    0.0104932265        0
-      3   3 1   -0.2142711692   -0.0005046978    0.0029003712        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2094101103   -0.0047177034    0.0285158255        1
+      2   2 1   -0.2137664713   -0.0043563610    0.0104932265        0
+      3   3 1   -0.2142711691   -0.0005046978    0.0029003713        0
       4   4 1   -0.2142851976   -0.0000140285    0.0006939278        0
       5   5 1   -0.2142990002   -0.0000138026    0.0002280059        0
-      6   6 1   -0.2142958912    0.0000031090    0.0000766029        0
-      7   7 1   -0.2142955640    0.0000003272    0.0000189809        0
+      6   6 1   -0.2142958911    0.0000031090    0.0000766029        0
+      7   7 1   -0.2142955639    0.0000003272    0.0000189809        0
       8   8 1   -0.2142953680    0.0000001959    0.0000033964        0
-      9   8 2   -0.2142953152    0.0000000528    0.0000008394        0
-     10   8 3   -0.2142953319   -0.0000000167    0.0000001660        0
-     11   8 4   -0.2142953297    0.0000000022    0.0000000367        0
+      9   8 2   -0.2142953151    0.0000000528    0.0000008394        0
+     10   8 3   -0.2142953318   -0.0000000167    0.0000001660        0
+     11   8 4   -0.2142953296    0.0000000022    0.0000000367        0
 
   CCSD iterations converged!
 
-        OS SCS-MP2 correlation energy:       -0.184186591992
-        SS SCS-MP2 correlation energy:       -0.017067860073
-        SCS-MP2 correlation energy:          -0.201254452065
-      * SCS-MP2 total energy:               -76.222672897220
+        OS SCS-MP2 correlation energy:       -0.184186591999
+        SS SCS-MP2 correlation energy:       -0.017067860084
+        SCS-MP2 correlation energy:          -0.201254452083
+      * SCS-MP2 total energy:               -76.222672897238
 
-        OS MP2 correlation energy:           -0.153488826660
-        SS MP2 correlation energy:           -0.051203580218
-        MP2 correlation energy:              -0.204692406879
-      * MP2 total energy:                   -76.226110852034
+        OS MP2 correlation energy:           -0.153488826666
+        SS MP2 correlation energy:           -0.051203580253
+        MP2 correlation energy:              -0.204692406918
+      * MP2 total energy:                   -76.226110852073
 
-        OS SCS-CCSD correlation energy:      -0.214635013538
-        SS SCS-CCSD correlation energy:      -0.051179261662
-        SCS-CCSD correlation energy:         -0.265814275200
-      * SCS-CCSD total energy:              -76.287232720355
+        OS SCS-CCSD correlation energy:      -0.214635013404
+        SS SCS-CCSD correlation energy:      -0.051179261688
+        SCS-CCSD correlation energy:         -0.265814275092
+      * SCS-CCSD total energy:              -76.287232720247
 
-        OS CCSD correlation energy:          -0.169003947667
-        SS CCSD correlation energy:          -0.045291382002
-        CCSD correlation energy:             -0.214295329669
-      * CCSD total energy:                  -76.235713774824
+        OS CCSD correlation energy:          -0.169003947562
+        SS CCSD correlation energy:          -0.045291382025
+        CCSD correlation energy:             -0.214295329587
+      * CCSD total energy:                  -76.235713774742
 
-  Total time for CCSD iterations:       0.18 s (user)
-                                        0.20 s (system)
-                                           0 s (total)
+  Total time for CCSD iterations:       0.14 s (user)
+                                        0.24 s (system)
+                                           1 s (total)
 
-  Time per iteration:                   0.02 s (user)
+  Time per iteration:                   0.01 s (user)
                                         0.02 s (system)
-                                        0.00 s (total)
+                                        0.09 s (total)
 
-*** tstop() called on ds8 at Fri Jan 27 10:44:01 2012
+*** tstop() called on ds8 at Mon Jan 30 12:10:40 2012
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on ds8
-*** at Fri Jan 27 10:44:01 2012
+*** at Mon Jan 30 12:10:40 2012
 
 
         *******************************************************
@@ -413,19 +425,19 @@ Total time:
               80.0         0 s
               90.0         0 s
 
-        (T) energy                        -0.003243936668
+        (T) energy                        -0.003243936677
 
-        CCSD(T) correlation energy        -0.217539266337
-      * CCSD(T) total energy             -76.238957711492
+        CCSD(T) correlation energy        -0.217539266264
+      * CCSD(T) total energy             -76.238957711419
 
-*** tstop() called on ds8 at Fri Jan 27 10:44:01 2012
+*** tstop() called on ds8 at Mon Jan 30 12:10:40 2012
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.32 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

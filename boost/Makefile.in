@@ -5,6 +5,8 @@ default: boost.compiled
 
 install:
 
+clean:
+
 # Steps taken:
 #  1. If directory boost_1_48_0 does not exist, untar the source file.
 #  2. Build Boost with the components we need and move the libraries to a
