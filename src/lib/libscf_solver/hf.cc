@@ -343,7 +343,7 @@ void HF::integrals()
             if (functional->isRangeCorrected()) {
                 double omega = functional->getOmega();
                 if (options_["DFT_OMEGA"].has_changed()) {
-                    omega = options_.get_double("OMEGA"); 
+                    omega = options_.get_double("DFT_OMEGA"); 
                 }
                 jk_->set_omega(omega); 
             }   

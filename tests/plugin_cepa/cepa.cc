@@ -1,34 +1,19 @@
-#include"psi4-dec.h"
-#include<psifiles.h>
-#include <libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<lib3index/dftensor.h>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
 #include<libmints/wavefunction.h>
 #include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
-#include<libciomr/libciomr.h>
-
+#include<libpsio/psio.hpp>
 #include<sys/times.h>
-
-#include"density_fitting.h"
-#include"globals.h"
-#include"gpuhelper.h"
-#include"blas.h"
-#include"cepa.h"
-#include"sort.h"
-
 #ifdef _OPENMP
     #include<omp.h>
 #endif
 
+#include"blas.h"
+#include"cepa.h"
+
 using namespace psi;
-using namespace boost;
+
+namespace psi{
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+};
 
 // position in a symmetric packed matrix
 long int Position(long int i,long int j){
@@ -39,30 +24,6 @@ long int Position(long int i,long int j){
 }
 
 namespace psi{
-
-  /*!
-   ** PSIO_GET_ADDRESS(): Given a starting page/offset and a shift length
-   ** (in bytes), return the page/offset of the next position in the file.
-   ** \ingroup PSIO
-   */
-
-  psio_address psio_get_address(psio_address start, long int shift) {
-    psio_address address;
-    long int bytes_left;
-
-    bytes_left = PSIO_PAGELEN - start.offset; /* Bytes remaining on fpage */
-
-    if (shift >= bytes_left) { /* Shift to later page */
-      address.page = start.page + (shift - bytes_left)/PSIO_PAGELEN+ 1;
-      address.offset = shift - bytes_left -(address.page - start.page- 1)
-          *PSIO_PAGELEN;
-    } else { /* Block starts on current page */
-      address.page = start.page;
-      address.offset = start.offset + shift;
-    }
-
-    return address;
-  }
 
 CoupledPair::CoupledPair()
 {}
@@ -192,21 +153,6 @@ void CoupledPair::Initialize(Options &options){
   else if (cepa_level == -2) sprintf(cepa_type,"ACPF");
   else if (cepa_level == -3) sprintf(cepa_type,"AQCC");
 
-  /**
-    *  GPU helper class knows if we have gpus or not and how to use them
-    */
-  helper_ = boost::shared_ptr<GPUHelper>(new GPUHelper);
-
-  // get device parameters, allocate gpu memory and pinned cpu memory
-  helper_->ndoccact = ndoccact;
-  helper_->nvirt    = nvirt;
-  helper_->nmo      = nmo;
-
-  helper_->CudaInit(options);
-
-  // reduce available memory by the amount required by the helper class
-  memory -= helper_->max_mapped_memory;
-
   // quit if max_mapped_memory exceeds available memory
   if ((double)memory<0){
      throw PsiException("max_mapped_memory must be less than available memory",__FILE__,__LINE__);
@@ -225,38 +171,22 @@ void CoupledPair::Initialize(Options &options){
 
   double time_start,user_start,sys_start,time_stop,user_stop,sys_stop;
 
-  // sort integrals and write them to disk (or generate df integrals)
-  if (!options.get_bool("DF_INTEGRALS")){
-     times(&total_tmstime);
-     time_start = time(NULL);
-     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
-     OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
+  // sort integrals and write them to disk
+  times(&total_tmstime);
+  time_start = time(NULL);
+  user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+  sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-     times(&total_tmstime);
-     time_stop = time(NULL);
-     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
-     fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
-     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
-  }
-  else{
-     times(&total_tmstime);
-     time_start = time(NULL);
-     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
 
-     DensityFittedIntegrals();
+  times(&total_tmstime);
+  time_stop = time(NULL);
+  user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+  sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-     times(&total_tmstime);
-     time_stop = time(NULL);
-     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
-     fprintf(outfile,"  Time for density fitting:         %6.2lf s (user)\n",user_stop-user_start);
-     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
-  }
+  fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
+  fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
+  fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
 
   // orbital energies
   eps_test = ref->epsilon_a();
@@ -337,16 +267,8 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
       // evaluate cc diagrams
       if (iter>0){
          memset((void*)w1,'\0',o*v*sizeof(double));
-         for (int i=0; i<ncctasks; i++) {
-             double start = 0.0;
-             #ifdef _OPENMP
-                 start = omp_get_wtime();
-             #endif
-             (*this.*CCTasklist[i].func)(CCParams[i]);
-             double end = 0.0;
-             #ifdef _OPENMP
-                 end = omp_get_wtime();
-             #endif
+         for (int i=0; i<ncepatasks; i++) {
+             (*this.*CepaTasklist[i].func)(CepaParams[i]);
          }
       }
 
@@ -451,15 +373,11 @@ void CoupledPair::DefineTilingCPU(){
   ndoubles -= o*o*v*v+2L*(o*o*v*v+o*v)+2L*o*v+2*v*v+(o+v);
   if (t2_on_disk){
      ndoubles += o*o*v*v;
-     //fprintf(outfile,"\n");
-     //fprintf(outfile,"  Redefine tiling, assuming T2 is stored on disk:\n");
-     //fprintf(outfile,"\n");
   }else{
      fprintf(outfile,"\n");
      fprintf(outfile,"  Define tiling:\n");
      fprintf(outfile,"\n");
   }
-
 
   // if not enough space, check to see if keeping t2 on disk will help
   if (ndoubles<o*o*v*v){
@@ -605,7 +523,7 @@ void CoupledPair::AllocateMemory(Options&options){
   memset((void*)diisvec,'\0',(maxdiis+1)*sizeof(double));
 }
 
-void CoupledPair::CPU_t1_vmeai(CCTaskParams params){
+void CoupledPair::CPU_t1_vmeai(CepaTaskParams params){
   long int o = ndoccact;
   long int v = nvirt;
   long int i,a,m,e,id,one=1;
@@ -623,8 +541,6 @@ void CoupledPair::CPU_t1_vmeai(CCTaskParams params){
       F_DCOPY(v,t1+i,o,tempt+i*v,1);
   }
   F_DGEMV('n',o*v,o*v,-1.0,tempv,o*v,tempt,1,0.0,integrals,1);
-  //helper_->GPUTiledDGEMM('t','t',one,o*v,o*v,-1.0,tempt,o*v,tempv,o*v,0.0,integrals,one);
-  //F_DGEMM('t','t',one,o*v,o*v,-1.0,tempt,o*v,tempv,o*v,0.0,integrals,one);
   for (a=0; a<v; a++){
       F_DAXPY(o,1.0,integrals+a,v,w1+a*o,1);
   }
@@ -632,7 +548,7 @@ void CoupledPair::CPU_t1_vmeai(CCTaskParams params){
   psio.reset();
 }
 
-void CoupledPair::CPU_t1_vmeni(CCTaskParams params){
+void CoupledPair::CPU_t1_vmeni(CepaTaskParams params){
   long int m,e,n,a,id;
   long int o=ndoccact;
   long int v=nvirt;
@@ -657,13 +573,11 @@ void CoupledPair::CPU_t1_vmeni(CCTaskParams params){
   psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&tempv[0],o*o*o*v*sizeof(double));
   psio->close(PSIF_IJAK,1);
-  //helper_->GPUTiledDGEMM('t','n',o,v,o*o*v,-1.0,tempv,o*o*v,tempt,o*o*v,1.0,w1,o);
-  helper_->GPUTiledDGEMM_NoThread('t','n',o,v,o*o*v,-1.0,tempv,o*o*v,tempt,o*o*v,1.0,w1,o,0);
-  //F_DGEMM('t','n',o,v,o*o*v,-1.0,tempv,o*o*v,tempt,o*o*v,1.0,w1,o);
+  F_DGEMM('t','n',o,v,o*o*v,-1.0,tempv,o*o*v,tempt,o*o*v,1.0,w1,o);
   psio.reset();
 }
 
-void CoupledPair::CPU_t1_vmaef(CCTaskParams params){
+void CoupledPair::CPU_t1_vmaef(CepaTaskParams params){
   long int m,e,i,f,a,id;
   long int o=ndoccact;
   long int v=nvirt;
@@ -701,35 +615,24 @@ void CoupledPair::CPU_t1_vmaef(CCTaskParams params){
   }
   lasttile = v - (ntiles-1L)*tilesize;
 
-  /*tilesize=v;
-  for (i=1; i<=v; i++){
-      if (o>=(double)tilesize/i){
-         tilesize = v/i;
-         if (i*tilesize < v) tilesize++;
-         ntiles = i;
-         break;
-      }
-  }
-  lasttile = v - (ntiles-1)*tilesize;*/
-
   psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
   psio_address addr;
   addr = PSIO_ZERO;
 
   for (i=0; i<ntiles-1; i++){
       psio->read(PSIF_ABCI3,"E2abci3",(char*)&integrals[0],tilesize*ov2*sizeof(double),addr,&addr);
-      helper_->GPUTiledDGEMM_NoThread('n','n',o,tilesize,ov2,1.0,tempt,o,integrals,ov2,1.0,w1+i*tilesize*o,o,0);
+      F_DGEMM('n','n',o,tilesize,ov2,1.0,tempt,o,integrals,ov2,1.0,w1+i*tilesize*o,o);
   }
   i=ntiles-1;
   psio->read(PSIF_ABCI3,"E2abci3",(char*)&integrals[0],lasttile*ov2*sizeof(double),addr,&addr);
-  helper_->GPUTiledDGEMM_NoThread('n','n',o,lasttile,ov2,1.0,tempt,o,integrals,ov2,1.0,w1+i*tilesize*o,o,0);
+  F_DGEMM('n','n',o,lasttile,ov2,1.0,tempt,o,integrals,ov2,1.0,w1+i*tilesize*o,o);
   psio->close(PSIF_ABCI3,1);
   psio.reset();
 
 }
 
-// CPU_I2p_abci required ov^3 storage.  by refactorizing, we reduce storage to o^3v, but increase cost by 2o^2v^3
-void CoupledPair::CPU_I2p_abci_refactored_term1(CCTaskParams params){
+// a refactored version of I2p(ab,ci) that avoids ov^3 storage
+void CoupledPair::CPU_I2p_abci_refactored_term1(CepaTaskParams params){
   long int o = ndoccact;
   long int v = nvirt;
   long int a,b,c,i,j,id=0;
@@ -743,13 +646,11 @@ void CoupledPair::CPU_I2p_abci_refactored_term1(CCTaskParams params){
 
   for (i=0; i<nov2tiles-1; i++){
       psio->read(PSIF_ABCI5,"E2abci5",(char*)&integrals[0],v*ov2tilesize*sizeof(double),addr,&addr);
-      //helper_->GPUTiledDGEMM_NoThread('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o,0);
-      helper_->GPUTiledDGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
+      F_DGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
   }
   i=nov2tiles-1;
   psio->read(PSIF_ABCI5,"E2abci5",(char*)&integrals[0],v*lastov2tile*sizeof(double),addr,&addr);
-  //helper_->GPUTiledDGEMM_NoThread('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o,0);
-  helper_->GPUTiledDGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
+  F_DGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
   psio->close(PSIF_ABCI5,1);
 
   // contribute to residual
@@ -789,7 +690,6 @@ void CoupledPair::UpdateT1(long int iter){
   else if (cepa_level == -2) fac = 1.0/o;
   else if (cepa_level == -3) fac = 1.0-(2.0*o-2.0)*(2.0*o-3.0) / (2.0*o*(2.0*o-1.0));
   energy = ecepa * fac;
-
 
   if (iter<1){
      memset((void*)t1,'\0',o*v*sizeof(double));
@@ -1038,10 +938,6 @@ void CoupledPair::UpdateT2(long int iter){
   }
 
   // error vectors for diis are in tempv:
-  //F_DCOPY(o*o*v*v,tempt,1,tempv,1);
-  //F_DAXPY(o*o*v*v,-1.0,tb,1,tempv,1);
-  //F_DCOPY(o*o*v*v,tempt,1,tb,1);
-
   if (t2_on_disk){
      psio->open(PSIF_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
@@ -1059,8 +955,6 @@ void CoupledPair::UpdateT2(long int iter){
   }
 
   psio.reset();
-
-  //return energy;
 }
 
 /*================================================================
@@ -1232,7 +1126,7 @@ void CoupledPair::DIISNewAmplitudes(int diis_iter){
 /**
  *  Build and use I2ijkl
  */
-void CoupledPair::I2ijkl(CCTaskParams params){
+void CoupledPair::I2ijkl(CepaTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
@@ -1246,36 +1140,11 @@ void CoupledPair::I2ijkl(CCTaskParams params){
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
   }
 
-  for (a=0,id=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  //tempt[id++] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-  /*psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-  for (j=0; j<o; j++){
-      for (i=0; i<o; i++){
-          for (b=0; b<v; b++){
-              F_DCOPY(v,integrals+j*o*v*v+b*o*v+i*v,1,tempv+j*o*v*v+i*v*v+b*v,1);
-          }
-      }
-  }*/
   psio->open(PSIF_IJKL,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJKL,"E2ijkl",(char*)&integrals[0],o*o*o*o*sizeof(double));
   psio->close(PSIF_IJKL,1);
 
-  /*helper_->GPUTiledDGEMM('n','n',o*o,o*o,v*v,1.0,tempt,o*o,tempv,v*v,1.0,integrals,o*o);
-  psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&tempv[0],o*o*o*v*sizeof(double));
-  psio->close(PSIF_IJAK,1);
-  helper_->GPUTiledDGEMM_NoThread('n','n',o,o*o*o,v,2.0,t1,o,tempv,v,1.0,integrals,o,0);*/
-
-  helper_->GPUTiledDGEMM('n','n',o*o,v*v,o*o,0.5,integrals,o*o,tempt,o*o,0.0,tempv,o*o);
+  F_DGEMM('n','n',o*o,v*v,o*o,0.5,integrals,o*o,tempt,o*o,0.0,tempv,o*o);
 
   // contribute to residual
   psio->open(PSIF_R2,PSIO_OPEN_OLD);
@@ -1296,7 +1165,7 @@ void CoupledPair::I2ijkl(CCTaskParams params){
 /**
  *  Build and use I2'iajk
  */
-void CoupledPair::I2piajk(CCTaskParams params){
+void CoupledPair::I2piajk(CepaTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
@@ -1307,7 +1176,7 @@ void CoupledPair::I2piajk(CCTaskParams params){
   psio->read_entry(PSIF_IJAK2,"E2ijak2",(char*)&tempv[0],o*o*o*v*sizeof(double));
   psio->close(PSIF_IJAK2,1);
 
-  helper_->GPUTiledDGEMM_NoThread('n','n',o*o*v,v,o,-1.0,tempv,o*o*v,t1,o,0.0,tempt,o*o*v,0);
+  F_DGEMM('n','n',o*o*v,v,o,-1.0,tempv,o*o*v,t1,o,0.0,tempt,o*o*v);
 
   // contribute to residual
   psio->open(PSIF_R2,PSIO_OPEN_OLD);
@@ -1327,7 +1196,7 @@ void CoupledPair::I2piajk(CCTaskParams params){
 /**
  *  Use Vabcd1
  */
-void CoupledPair::Vabcd1(CCTaskParams params){
+void CoupledPair::Vabcd1(CepaTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
@@ -1356,11 +1225,11 @@ void CoupledPair::Vabcd1(CCTaskParams params){
   addr = PSIO_ZERO;
   for (j=0; j<ntiles-1; j++){
       psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],tilesize*v*(v+1)/2*sizeof(double),addr,&addr);
-      helper_->GPUTiledDGEMM('n','n',o*(o+1)/2,tilesize,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
+      F_DGEMM('n','n',o*(o+1)/2,tilesize,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
   }
   j=ntiles-1;
   psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],lasttile*v*(v+1)/2*sizeof(double),addr,&addr);
-  helper_->GPUTiledDGEMM('n','n',o*(o+1)/2,lasttile,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
+  F_DGEMM('n','n',o*(o+1)/2,lasttile,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
   psio->close(PSIF_ABCD1,1);
 
   // contribute to residual
@@ -1384,7 +1253,7 @@ void CoupledPair::Vabcd1(CCTaskParams params){
 /**
  *  Use Vabcd2
  */
-void CoupledPair::Vabcd2(CCTaskParams params){
+void CoupledPair::Vabcd2(CepaTaskParams params){
   long int id,i,j,a,b,o,v;
   int sg,sg2;
   o = ndoccact;
@@ -1397,15 +1266,6 @@ void CoupledPair::Vabcd2(CCTaskParams params){
      psio->close(PSIF_T2,1);
   }else{
      F_DCOPY(o*o*v*v,tb,1,tempt,1);
-  }
-  for (a=0,id=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  //tempt[id++] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
   }
   for (i=0; i<o; i++){
       for (j=i; j<o; j++){
@@ -1421,11 +1281,11 @@ void CoupledPair::Vabcd2(CCTaskParams params){
   addr = PSIO_ZERO;
   for (j=0; j<ntiles-1; j++){
       psio->read(PSIF_ABCD2,"E2abcd2",(char*)&integrals[0],tilesize*v*(v+1)/2*sizeof(double),addr,&addr);
-      helper_->GPUTiledDGEMM('n','n',o*(o+1)/2,tilesize,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
+      F_DGEMM('n','n',o*(o+1)/2,tilesize,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
   }
   j = ntiles-1;
   psio->read(PSIF_ABCD2,"E2abcd2",(char*)&integrals[0],lasttile*v*(v+1)/2*sizeof(double),addr,&addr);
-  helper_->GPUTiledDGEMM('n','n',o*(o+1)/2,lasttile,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
+  F_DGEMM('n','n',o*(o+1)/2,lasttile,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
   psio->close(PSIF_ABCD2,1);
 
   // contribute to residual
@@ -1451,7 +1311,7 @@ void CoupledPair::Vabcd2(CCTaskParams params){
 /**
  *  Build and use I2iabj
  */
-void CoupledPair::I2iabj(CCTaskParams params){
+void CoupledPair::I2iabj(CepaTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
@@ -1480,7 +1340,7 @@ void CoupledPair::I2iabj(CCTaskParams params){
       }
   }
 
-  helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,1.0,tempv,o*v,tempt,o*v,0.0,integrals,o*v);
+  F_DGEMM('n','n',o*v,o*v,o*v,1.0,tempv,o*v,tempt,o*v,0.0,integrals,o*v);
 
   // contribute to residual
   psio->open(PSIF_R2,PSIO_OPEN_OLD);
@@ -1505,7 +1365,7 @@ void CoupledPair::I2iabj(CCTaskParams params){
 /**
  *  Build and use I2iajb
  */
-void CoupledPair::I2iajb(CCTaskParams params){
+void CoupledPair::I2iajb(CepaTaskParams params){
   long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
@@ -1534,7 +1394,7 @@ void CoupledPair::I2iajb(CCTaskParams params){
       }
   }
 
-  helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,-1.0,tempt,o*v,integrals,o*v,0.0,tempv,o*v);
+  F_DGEMM('n','n',o*v,o*v,o*v,-1.0,tempt,o*v,integrals,o*v,0.0,tempv,o*v);
 
   // contribute to residual
   psio->open(PSIF_R2,PSIO_OPEN_OLD);
@@ -1569,7 +1429,7 @@ void CoupledPair::I2iajb(CCTaskParams params){
       }
   }
 
-  helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,-1.0,tempt,o*v,tempv,o*v,0.0,integrals,o*v);
+  F_DGEMM('n','n',o*v,o*v,o*v,-1.0,tempt,o*v,tempv,o*v,0.0,integrals,o*v);
 
   // contribute to residual
   psio->open(PSIF_R2,PSIO_OPEN_OLD);
@@ -1586,92 +1446,32 @@ void CoupledPair::I2iajb(CCTaskParams params){
   psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_R2,1);
   psio.reset();
-
 }
 
 /**
  *  Tasks:
  */
 void CoupledPair::DefineTasks(){
-  CCTasklist = new CCTask[1000];
-  CCParams   = new CCTaskParams[1000];
+  CepaTasklist = new CepaTask[1000];
+  CepaParams   = new CepaTaskParams[1000];
   long int o = ndoccact;
   long int v = nvirt;
 
-  // these will be used for the parallel version
-  long int niabjranks,niajbranks;
-  niabjranks=niajbranks=1;
+  ncepatasks=0;
 
-  ncctasks=0;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2iabj;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2iajb;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2ijkl;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::I2piajk;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeni;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmaef;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::CPU_t1_vmeai;
+  CepaTasklist[ncepatasks++].func  = &psi::CoupledPair::Vabcd1;
 
-  // I2iabj
-  CCTasklist[ncctasks].func      = &psi::CoupledPair::I2iabj;
-  CCTasklist[ncctasks].flopcount = 2*(3*o*o*o*v*v*v+o*o*v*v*v+o*o*o*v*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  // I2iajb
-  CCTasklist[ncctasks].func      = &psi::CoupledPair::I2iajb;
-  CCTasklist[ncctasks].flopcount = 2.*(3.*o*o*o*v*v*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  // I2ijkl ... n^6, so probably worth tiling at some point 
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::I2ijkl;
-  CCTasklist[ncctasks].flopcount = 2.*(2.*o*o*o*o*v*v+1.*o*o*o*o*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  // I2pijak:
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::I2piajk;
-  CCTasklist[ncctasks].flopcount = 2.*(1.*o*o*o*v*v*v+1.*o*o*o*v*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
- 
-  // used to be cpu functions
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmeni;
-  CCTasklist[ncctasks].flopcount = 2.*o*o*o*v*v;
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmaef;
-  CCTasklist[ncctasks].flopcount = 2.*o*o*v*v*v;
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_I2p_abci_refactored_term1;
-  CCTasklist[ncctasks].flopcount = 2.*(o*o*v*v*v);
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::CPU_t1_vmeai;
-  CCTasklist[ncctasks].flopcount = 2.*o*o*v*v;
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  // tiles of Vabcd1:
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::Vabcd1;
-  CCTasklist[ncctasks].flopcount = 2.*o*(o+1)/2.*v*(v+1)/2*v*(v+1)/2.;
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
-
-  // tiles of Vabcd2: 
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
-  CCTasklist[ncctasks].func        = &psi::CoupledPair::Vabcd2;
-  CCTasklist[ncctasks].flopcount = 2.*o*(o+1)/2.*tilesize*v*(v+1)/2.;
-  CCParams[ncctasks].mtile = -999;
-  CCParams[ncctasks].ntile = -999;
-  CCParams[ncctasks++].ktile = -999;
+  CepaTasklist[ncepatasks++].func        = &psi::CoupledPair::Vabcd2;
 }
 
 

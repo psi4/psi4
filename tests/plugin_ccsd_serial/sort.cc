@@ -1,28 +1,13 @@
-#include <libplugin/plugin.h>
-#include<psifiles.h>
 #include"psi4-dec.h"
-#include<boost/shared_ptr.hpp>
-#include<lib3index/dftensor.h>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
+#include<psifiles.h>
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
 
-#include<stdlib.h>
-#include<stdio.h>
-#include<math.h>
-#include"globals.h"
 #include"ccsd.h"
 #include"sort.h"
 #include"blas.h"
 
-
 using namespace psi;
-using namespace boost;
 
 namespace psi{
 
@@ -160,6 +145,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   ULI totalnabcd1=0;
   ULI nabcd2=0;
   ULI totalnabcd2=0;
+
   fprintf(outfile,"        Initial sort.....");fflush(outfile);
   /**
     * first buffer (read in when Buf was initialized)
@@ -169,14 +155,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       q = (ULI) lblptr[idx++];
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
-
-      //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-      // NOTE: these lines aren't necessary with transqt()
-      if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-      p -= fstact;
-      q -= fstact;
-      r -= fstact;
-      s -= fstact;
 
       pq   = Position(p,q);
       rs   = Position(r,s);
@@ -314,15 +292,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
           q = (ULI) lblptr[idx++];
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
-
-          //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-
-          // NOTE: these lines aren't necessary with transqt()
-          if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
-          p -= fstact;
-          q -= fstact;
-          r -= fstact;
-          s -= fstact;
 
           pq   = Position(p,q);
           rs   = Position(r,s);

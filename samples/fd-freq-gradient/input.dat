@@ -1,0 +1,40 @@
+#! STO-3G frequencies for H2O by finite-differences of gradients
+
+molecule h2o {
+  0 1
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals {
+  basis sto-3g
+  d_convergence 11
+}
+
+
+
+# Compute all frequencies with default 3-point formula.
+frequencies('scf', dertype=1)
+
+
+
+# Compute A1 frequencies only.
+frequencies('scf', dertype=1, irrep=1)
+
+
+
+# Compute B2 frequency only.
+frequencies('scf', dertype=1, irrep=4)
+
+
+
+# Compute all frequencies with 5-point formula.
+set findif { points 5 }
+
+frequencies('scf', dertype=1)
+
+
+
+clean()
+
