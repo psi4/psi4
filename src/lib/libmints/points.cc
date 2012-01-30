@@ -489,26 +489,26 @@ void PointFunctions::set_derivative(int derivative)
     int max_cart = (max_am + 1) * (max_am + 2) / 2;
  
     if (deriv_ >= 0) {
-        basis_values_["PHI"] = SharedMatrix (new Matrix("PHI", max_points_, primary_->nbf()));
+        basis_values_["PHI"] = SharedMatrix (new Matrix("PHI", max_points_, max_functions_));
         basis_temps_["PHI"] = SharedMatrix (new Matrix("PHI", max_points_, max_cart));
     } 
 
     if (deriv_ >= 1) {
-        basis_values_["PHI_X"] = SharedMatrix (new Matrix("PHI_X", max_points_, primary_->nbf()));
-        basis_values_["PHI_Y"] = SharedMatrix (new Matrix("PHI_Y", max_points_, primary_->nbf()));
-        basis_values_["PHI_Z"] = SharedMatrix (new Matrix("PHI_Z", max_points_, primary_->nbf()));
+        basis_values_["PHI_X"] = SharedMatrix (new Matrix("PHI_X", max_points_, max_functions_));
+        basis_values_["PHI_Y"] = SharedMatrix (new Matrix("PHI_Y", max_points_, max_functions_));
+        basis_values_["PHI_Z"] = SharedMatrix (new Matrix("PHI_Z", max_points_, max_functions_));
         basis_temps_["PHI_X"] = SharedMatrix (new Matrix("PHI_X", max_points_, max_cart));
         basis_temps_["PHI_Y"] = SharedMatrix (new Matrix("PHI_Y", max_points_, max_cart));
         basis_temps_["PHI_Z"] = SharedMatrix (new Matrix("PHI_Z", max_points_, max_cart));
     }
 
     if (deriv_ >= 2) {
-        basis_values_["PHI_XX"] = SharedMatrix (new Matrix("PHI_XX", max_points_, primary_->nbf()));
-        basis_values_["PHI_XY"] = SharedMatrix (new Matrix("PHI_XY", max_points_, primary_->nbf()));
-        basis_values_["PHI_XZ"] = SharedMatrix (new Matrix("PHI_XZ", max_points_, primary_->nbf()));
-        basis_values_["PHI_YY"] = SharedMatrix (new Matrix("PHI_YY", max_points_, primary_->nbf()));
-        basis_values_["PHI_YZ"] = SharedMatrix (new Matrix("PHI_YZ", max_points_, primary_->nbf()));
-        basis_values_["PHI_ZZ"] = SharedMatrix (new Matrix("PHI_ZZ", max_points_, primary_->nbf()));
+        basis_values_["PHI_XX"] = SharedMatrix (new Matrix("PHI_XX", max_points_, max_functions_));
+        basis_values_["PHI_XY"] = SharedMatrix (new Matrix("PHI_XY", max_points_, max_functions_));
+        basis_values_["PHI_XZ"] = SharedMatrix (new Matrix("PHI_XZ", max_points_, max_functions_));
+        basis_values_["PHI_YY"] = SharedMatrix (new Matrix("PHI_YY", max_points_, max_functions_));
+        basis_values_["PHI_YZ"] = SharedMatrix (new Matrix("PHI_YZ", max_points_, max_functions_));
+        basis_values_["PHI_ZZ"] = SharedMatrix (new Matrix("PHI_ZZ", max_points_, max_functions_));
         basis_temps_["PHI_XX"] = SharedMatrix (new Matrix("PHI_XX", max_points_, max_cart));
         basis_temps_["PHI_XY"] = SharedMatrix (new Matrix("PHI_XY", max_points_, max_cart));
         basis_temps_["PHI_XZ"] = SharedMatrix (new Matrix("PHI_XZ", max_points_, max_cart));
@@ -529,7 +529,7 @@ void PointFunctions::computePoints(boost::shared_ptr<BlockOPoints> block)
     int max_am = primary_->max_am();
     int max_cart = (max_am + 1) * (max_am + 2) / 2;
 
-    int nso = primary_->nbf();
+    int nso = max_functions_;
  
     int npoints = block->npoints();
     npoints_ = npoints;

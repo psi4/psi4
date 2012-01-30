@@ -1,18 +1,12 @@
-#include "psi4-dec.h"
-#include <libplugin/plugin.h>
-#include <libparallel/parallel.h>
-#include <liboptions/liboptions.h>
-#include <libmints/mints.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.hpp>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
+#include<libplugin/plugin.h>
 
-#include "globals.h"
 #include "ccsd.h" 
-#include "runcoupledcluster.h"
 
 INIT_PLUGIN
+
+namespace psi{
+  void RunCoupledCluster(Options &options);
+};
 
 namespace psi{ namespace plugin_ccsd_serial{
 extern "C" int 
@@ -26,7 +20,7 @@ read_options(std::string name, Options &options)
              to the output file. not used -*/
       options.add_int("DEBUG", 0);
       /*- default convergence of amplitudes-*/
-      options.add_double("CONVERGENCE", 1.0e-7);
+      options.add_double("R_CONVERGENCE", 1.0e-7);
       /*- default maximum iterations -*/
       options.add_int("MAXITER", 100);
       /*- default memory available (mb) -*/
@@ -35,8 +29,8 @@ read_options(std::string name, Options &options)
       options.add_int("DIIS_MAX_VECS", 8);
       /*- for GPU code, cap the amount of memory registerred with the GPU -*/
       options.add_int("MAX_MAPPED_MEMORY", 1000);
-      /*- do not compute triples by default */
-      options.add_bool("COMPUTE_TRIPLES", false);
+      /*- compute triples by default */
+      options.add_bool("COMPUTE_TRIPLES", true);
       /*- cutoff for occupation of MP2 NO orbitals in (T) -*/
       options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
       /*- triples by default use the full virtual space -*/

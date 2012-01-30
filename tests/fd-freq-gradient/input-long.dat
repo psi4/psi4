@@ -1,0 +1,62 @@
+#! illustrates explicit frequencies by finite-differences of gradients
+
+molecule h2o {
+  0 1
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals {
+  basis sto-3g
+  d_convergence 11
+}
+
+# Test against Analytic second derivatives from PSI3. #TEST
+anal_freqs = PsiMod.Vector(3)  #TEST
+anal_freqs.set(0, 0, 2170.045) #TEST
+anal_freqs.set(0, 1, 4140.001) #TEST
+anal_freqs.set(0, 2, 4391.065) #TEST
+a1_freqs = PsiMod.Vector(2)
+a1_freqs.set(0, 0, anal_freqs[0])
+a1_freqs.set(0, 1, anal_freqs[1])
+b2_freqs = PsiMod.Vector(1)
+b2_freqs.set(0, 0, anal_freqs[2])
+
+h2o.update_geometry()
+
+displacements = PsiMod.fd_geoms_freq_1(-1)
+
+h2o.reinterpret_coordentry(False)
+h2o.fix_orientation(True)        
+
+for n, displacement in enumerate(displacements):
+  displacements[n].print_out()
+
+ndisp = len(displacements)
+print " %d displacements needed." % ndisp
+gradients = []
+
+for n, displacement in enumerate(displacements):
+  PsiMod.print_out("\n")
+  banner("Loading displacement %d of %d" % (n+1, ndisp))
+  print "    displacement %d" % (n+1)
+
+  h2o.set_geometry(displacement)
+
+  gradient('scf')
+
+  G = PsiMod.get_gradient()
+  gradients.append(G)
+
+  PsiMod.clean()
+
+PsiMod.fd_freq_1(gradients, -1)
+fd_freqs = PsiMod.reference_wavefunction().frequencies()
+
+compare_vectors(anal_freqs, fd_freqs, 1,           #TEST
+ "Analytic vs. Finite-difference (3-pt.) frequencies from gradients to 0.1 cm^-1 (C1)")           #TEST
+
+del fd_freqs
+
+clean()

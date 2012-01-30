@@ -72,8 +72,10 @@ def run_mp2_5(name, **kwargs):
     return e_mp25
 
 def run_plugin_ccsd_serial(name, **kwargs):
+
     plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
     PsiMod.plugin_load("%s" % (plugfile))
+    PsiMod.set_global_option('WFN', 'CCSD')
     run_scf("scf",**kwargs)
     PsiMod.transqt2()
     PsiMod.plugin("plugin_ccsd_serial.so")
