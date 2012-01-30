@@ -1,6 +1,6 @@
 #include"psi4-dec.h"
 #include<psifiles.h>
-#include <libplugin/plugin.h>
+#include<libplugin/plugin.h>
 #include<boost/shared_ptr.hpp>
 #include<lib3index/dftensor.h>
 #include<liboptions/liboptions.h>
@@ -11,26 +11,24 @@
 #include<libmints/vector.h>
 #include<libchkpt/chkpt.h>
 #include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
+#include<libpsio/psio.hpp>
 #include<libciomr/libciomr.h>
-
 #include<sys/times.h>
-
-#include"density_fitting.h"
-#include"globals.h"
-#include"gpuhelper.h"
-#include"blas.h"
-#include"ccsd.h"
-#include"sort.h"
-
 #ifdef _OPENMP
     #include<omp.h>
 #endif
 
+#include"gpuhelper.h"
+#include"blas.h"
+#include"ccsd.h"
+
 using namespace psi;
 using namespace boost;
 
-
+namespace psi{
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+  void DensityFittedIntegrals();
+};
 
 // position in a symmetric packed matrix
 long int Position(long int i,long int j){
@@ -41,30 +39,6 @@ long int Position(long int i,long int j){
 }
 
 namespace psi{
-
-  /*!
-   ** PSIO_GET_ADDRESS(): Given a starting page/offset and a shift length
-   ** (in bytes), return the page/offset of the next position in the file.
-   ** \ingroup PSIO
-   */
-
-  psio_address psio_get_address(psio_address start, long int shift) {
-    psio_address address;
-    long int bytes_left;
-
-    bytes_left = PSIO_PAGELEN - start.offset; /* Bytes remaining on fpage */
-
-    if (shift >= bytes_left) { /* Shift to later page */
-      address.page = start.page + (shift - bytes_left)/PSIO_PAGELEN+ 1;
-      address.offset = shift - bytes_left -(address.page - start.page- 1)
-          *PSIO_PAGELEN;
-    } else { /* Block starts on current page */
-      address.page = start.page;
-      address.offset = start.offset + shift;
-    }
-
-    return address;
-  }
 
 CoupledCluster::CoupledCluster()
 {}

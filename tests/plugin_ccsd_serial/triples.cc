@@ -1,17 +1,10 @@
-#include"psi4-dec.h"
 #include"ccsd.h"
-#include <libplugin/plugin.h>
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
 #include"blas.h"
 #ifdef _OPENMP
-#include<omp.h>
+   #include<omp.h>
 #endif
 
 using namespace psi;
-using namespace boost;
 
 namespace psi{
 PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
