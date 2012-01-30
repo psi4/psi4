@@ -89,6 +89,7 @@ sub print_hash
  @RearrModules = grep { $_ ne "GLOBALS"} @RearrModules;
  unshift(@RearrModules, "GLOBALS");
  foreach my $Module (@RearrModules){
+     $Module =~ s/_/-/g; # Things like plugin_module_name will screw things up...
      push(@temp, $Module);
      printf OUT "\n\\subsection{%s}\\label{%s-%s}\n",$Module,$label_string, $Module;
      if (exists $ModuleDescriptions{$Module} and $print_description){
