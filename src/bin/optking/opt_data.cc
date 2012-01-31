@@ -120,7 +120,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 #if defined(OPTKING_PACKAGE_PSI)
   fprintf(outfile, "\n  ==> Convergence Check <==\n\n");
   fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
-  fprintf(outfile, "  Criteria marked as inactive (-), active & met (*), and active & unmet ( ).\n");
+  fprintf(outfile, "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
 
   fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
   if (g_iteration() == 1) fprintf(outfile, " ~");
@@ -137,19 +137,19 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   fprintf(outfile, "    Convergence Criteria");
   if (Opt_params.i_max_DE) { 
     fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*");
-  } else { fprintf(outfile, "             %1s", "-"); } 
+  } else { fprintf(outfile, "             %1s", "o"); } 
   if (Opt_params.i_max_force) { 
     fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*");
-  } else { fprintf(outfile, "             %1s", "-"); } 
+  } else { fprintf(outfile, "             %1s", "o"); } 
   if (Opt_params.i_rms_force) { 
     fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*");
-  } else { fprintf(outfile, "             %1s", "-"); } 
+  } else { fprintf(outfile, "             %1s", "o"); } 
   if (Opt_params.i_max_disp) { 
     fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*");
-  } else { fprintf(outfile, "             %1s", "-"); } 
+  } else { fprintf(outfile, "             %1s", "o"); } 
   if (Opt_params.i_rms_disp) { 
     fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*");
-  } else { fprintf(outfile, "             %1s", "-"); } 
+  } else { fprintf(outfile, "             %1s", "o"); } 
   if (g_iteration() == 1) fprintf(outfile, "  ~");
   fprintf(outfile, "\n");
 
@@ -158,11 +158,11 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   fprintf(outfile, "\n");
 
   fprintf(outfile, "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
-    DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "-"), 
-    max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "-"),
-    rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "-"),
-    max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "-"),
-    rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "-"));
+    DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
+    max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
+    rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
+    max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
+    rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
 
   fprintf(outfile, "  ---------------------------------------------------------------------------------------------\n\n");
   printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
@@ -208,7 +208,8 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
          )
       || (  // For un-modified Gaussian criteria, if max/rms forces/disp met or flat potential forces met, convergence!
                (Opt_params.i_untampered) 
-            && ( (Opt_params.general_conv == "GAU") || (Opt_params.general_conv == "GAU_TIGHT") || (Opt_params.general_conv == "GAU_VERYTIGHT") )
+            && ( (Opt_params.general_conv == "GAU") || (Opt_params.general_conv == "GAU_TIGHT") ||
+                 (Opt_params.general_conv == "GAU_VERYTIGHT") || (Opt_params.general_conv == "GAU_LOOSE") )
             && (    ( (max_force < Opt_params.conv_max_force) && (rms_force < Opt_params.conv_rms_force) &&
                       (max_disp  < Opt_params.conv_max_disp)  && (rms_disp  < Opt_params.conv_rms_disp) )
                  || (rms_force * 100 < Opt_params.conv_rms_force) )
