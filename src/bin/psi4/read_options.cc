@@ -2098,7 +2098,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("H_BOND_CONNECT", 4.3);
       /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
       will append or overwrite the criteria set here. -*/
-      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM NWCHEM_LOOSE NWCHEM_TIGHT");
+      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
       /*- Convergence criterion for geometry optmization: maximum force (internal coordinates, atomic units). 
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
