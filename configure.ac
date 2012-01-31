@@ -1041,6 +1041,7 @@ AC_CONFIG_FILES([
           tests/cc12/Makefile
           tests/cc13/Makefile
           tests/cc13a/Makefile
+          tests/cc14/Makefile
           tests/cc15/Makefile
           tests/cc16/Makefile
           tests/cc17/Makefile
