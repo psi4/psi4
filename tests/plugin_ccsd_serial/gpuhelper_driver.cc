@@ -1,22 +1,5 @@
-#include <libplugin/plugin.h>
-#include"psi4-dec.h"
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
-
-#include"globals.h"
 #include"blas.h"
 #include"gpuhelper.h"
-#ifdef _OPENMP
-  #include<omp.h>
-#endif
-
 
 using namespace psi;
 using namespace boost;
@@ -40,8 +23,6 @@ void GPUHelper::CudaInit(Options&options){
     CudaInitGPU(options);
   #endif
 }
-
-
 
 /**
   *  wrappers to gpu dgemm
