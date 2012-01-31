@@ -541,7 +541,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
      fprintf(outfile,"      * CCSD(T) total energy         %20.12lf\n",ccsd->eccsd+et+ccsd->escf);
   else{
      fprintf(outfile,"                                                 unscaled               scaled\n");
-     fprintf(outfile,"      * CCSD(T) total energy         %20.12lf %20.12lf\n",ccsd->eccsd+et,ccsd->eccsd+et*ccsd->scale_t+ccsd->escf);
+     fprintf(outfile,"      * CCSD(T) total energy         %20.12lf %20.12lf\n",ccsd->eccsd+et+ccsd->escf,ccsd->eccsd+et*ccsd->scale_t+ccsd->escf);
   }
   fflush(outfile);
   ccsd->et = et;
