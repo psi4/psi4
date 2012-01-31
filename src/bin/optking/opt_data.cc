@@ -63,6 +63,7 @@ OPT_DATA::~OPT_DATA() {
 bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double *dq =  g_dq_pointer();
   double max_disp = array_abs_max(dq, Nintco);
+  double rms_disp = array_rms(dq, Nintco);
 
   double DE;
   if (g_iteration() > 1)
@@ -114,23 +115,66 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   }
 
   double max_force = array_abs_max(f, Nintco);
+  double rms_force = array_rms(f, Nintco);
 
+#if defined(OPTKING_PACKAGE_PSI)
+  fprintf(outfile, "\n  ==> Convergence Check <==\n\n");
+  fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
+  fprintf(outfile, "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "    Convergence Criteria");
+  if (Opt_params.i_max_DE) { 
+    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*");
+  } else { fprintf(outfile, "             %1s", "o"); } 
+  if (Opt_params.i_max_force) { 
+    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*");
+  } else { fprintf(outfile, "             %1s", "o"); } 
+  if (Opt_params.i_rms_force) { 
+    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*");
+  } else { fprintf(outfile, "             %1s", "o"); } 
+  if (Opt_params.i_max_disp) { 
+    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*");
+  } else { fprintf(outfile, "             %1s", "o"); } 
+  if (Opt_params.i_rms_disp) { 
+    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*");
+  } else { fprintf(outfile, "             %1s", "o"); } 
+  if (g_iteration() == 1) fprintf(outfile, "  ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
+    DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
+    max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
+    rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
+    max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
+    rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------\n\n");
+  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
+
+#elif defined(OPTKING_PACKAGE_QCHEM)
   fprintf(outfile, "\n\tConvergence Check Cycle %4d: (using internal coordinates in au)\n", iteration);
   fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
   fprintf(outfile, "\t----------------------------------------------------------\n");
 
-  // why are these if's here asks RAK?
-  // on the suspicion that I may have put the if's here, LAB answers. It's probably not set up correctly at
-  //    the moment, but these statements allow all 5 possible measures of optimization progress to be
-  //    reported on each opt iter while also, through the if statement, differentiating which measures are
-  //    being used in this job to test for convergence.
   if ( fabs(Opt_params.conv_max_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
   else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", max_force, Opt_params.conv_max_force,
        ((max_force < Opt_params.conv_max_force) ? "yes" : "no"));
-
-  //if ( fabs(Opt_params.conv_rms_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", rms_force);
-  //else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", rms_force, Opt_params.conv_rms_force,
-  //     ((rms_force < Opt_params.conv_rms_force) ? "yes" : "no"));
 
   if ( fabs(Opt_params.conv_max_DE)   < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
   else fprintf(outfile, "\tEnergy Change    %10.1e %14.1e %11s\n", DE, Opt_params.conv_max_DE,
@@ -140,12 +184,9 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   else fprintf(outfile, "\tMAX Displacement %10.1e %14.1e %11s\n", max_disp, Opt_params.conv_max_disp,
        ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
 
-  //if ( fabs(Opt_params.conv_rms_disp) < 1.0e-15 ) fprintf(outfile, "\tMAX Displacement %10.1e\n", rms_disp);
-  //else fprintf(outfile, "\tMAX Displacement %10.1e %14.1e %11s\n", rms_disp, Opt_params.conv_rms_disp,
-  //     ((rms_disp < Opt_params.conv_rms_disp) ? "yes" : "no"));
-
   fprintf(outfile, "\t----------------------------------------------------------\n");
   printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
+#endif
 
   // return all forces to canonical place
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
@@ -153,20 +194,52 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
     free_array(f_backup);
   }
 
-  // convergence test is forces and either energy change or displacement
-  if ((max_force < Opt_params.conv_max_force) &&
-      ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
-
+// Test for convergence
 #if defined(OPTKING_PACKAGE_PSI)
+
+  // Q-Chem and Gaussian have convergence tests involving interplay among criteria.
+  //   The requirement of i_untampered means that if a user explicitly adds any of the
+  //   5 indiv. criteria on top of G_CONVERGENCE, it is required to be met.
+  if ( 
+         (  // For un-modified Q-Chem or Molpro (Baker) criteria, if forces and either energy change or displacement met, convergence!
+               (Opt_params.i_untampered) 
+            && ( (Opt_params.general_conv == "QCHEM") || (Opt_params.general_conv == "MOLPRO") )
+            && ( (max_force < Opt_params.conv_max_force) && ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)) )
+         )
+      || (  // For un-modified Gaussian criteria, if max/rms forces/disp met or flat potential forces met, convergence!
+               (Opt_params.i_untampered) 
+            && ( (Opt_params.general_conv == "GAU") || (Opt_params.general_conv == "GAU_TIGHT") ||
+                 (Opt_params.general_conv == "GAU_VERYTIGHT") || (Opt_params.general_conv == "GAU_LOOSE") )
+            && (    ( (max_force < Opt_params.conv_max_force) && (rms_force < Opt_params.conv_rms_force) &&
+                      (max_disp  < Opt_params.conv_max_disp)  && (rms_disp  < Opt_params.conv_rms_disp) )
+                 || (rms_force * 100 < Opt_params.conv_rms_force) )
+         )
+      || (  // Otherwise, for all criteria, if criterion not active or criterion met, convergence!
+            (!(Opt_params.i_max_DE) || (fabs(DE) < Opt_params.conv_max_DE)) &&
+            (!(Opt_params.i_max_force) || (max_force < Opt_params.conv_max_force)) &&
+            (!(Opt_params.i_rms_force) || (rms_force < Opt_params.conv_rms_force)) &&
+            (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
+            (!(Opt_params.i_rms_disp) || (rms_disp < Opt_params.conv_rms_disp))
+         )
+     ) {
+
     // This environment variable will store the number of iterations required 
     // for convergence; it allows the db() python utilities to collect this information
     psi::Process::environment.globals["OPTIMIZATION ITERATIONS"] = g_iteration();
-#endif
-
     return true; // structure is optimized!
   }
   else 
     return false;
+
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // convergence test is forces and either energy change or displacement
+  if ((max_force < Opt_params.conv_max_force) &&
+      ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
+    return true; // structure is optimized!
+  }
+  else 
+    return false;
+#endif
 }
 
 void OPT_DATA::summary(void) const {

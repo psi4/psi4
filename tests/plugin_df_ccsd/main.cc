@@ -1,6 +1,4 @@
-#include<libplugin/plugin.h>
-
-#include "ccsd.h" 
+#include <libplugin/plugin.h>
 
 INIT_PLUGIN
 
@@ -8,11 +6,11 @@ namespace psi{
   void RunCoupledCluster(Options &options);
 };
 
-namespace psi{ namespace plugin_ccsd_serial{
+namespace psi{ namespace plugin_df_ccsd{
 extern "C" int 
 read_options(std::string name, Options &options)
 {
-  if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
+  if (name == "PLUGIN_DF_CCSD"|| options.read_globals()) {
      /*- Wavefunction type !expert -*/
      options.add_str("WFN", "CCSD");
      /*- Convergence for the CC amplitudes-*/
@@ -48,11 +46,11 @@ read_options(std::string name, Options &options)
 }
 
 extern "C" PsiReturnType
-plugin_ccsd_serial(Options &options)
+plugin_df_ccsd(Options &options)
 {  
   RunCoupledCluster(options);
   return  Success;
-} // end plugin_ccsd
+}
 
 
 }} // end namespace psi

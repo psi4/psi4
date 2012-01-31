@@ -1644,43 +1644,36 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEMICANONICAL", true);
   }
   if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
-      /*- The amount of information printed
-             to the output file.  not used -*/
-      options.add_int("PRINT", 1);
-      /*- The amount of information printed
-             to the output file. not used -*/
-      options.add_int("DEBUG", 0);
-      /*- default convergence of amplitudes-*/
-      options.add_double("R_CONVERGENCE", 1.0e-7);
-      /*- default maximum iterations -*/
-      options.add_int("MAXITER", 100);
-      /*- default number of DIIS iterations -*/
-      options.add_int("DIIS_MAX_VECS", 8);
-      /*- for GPU code, cap the amount of memory registerred with the GPU -*/
-      options.add_int("MAX_MAPPED_MEMORY", 1000);
-      /*- compute triples by default */
-      options.add_bool("COMPUTE_TRIPLES", true);
-      /*- cutoff for occupation of MP2 NO orbitals in (T) -*/
-      options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
-      /*- triples by default use the full virtual space -*/
-      options.add_bool("TRIPLES_USE_NOS", false);
-      /*- number of threads for triples, not set by default -*/
-      options.add_int("NUM_THREADS", 1);
-      /*- generate density-fitted integrals so we can skip
-          transqt2() and OutOfCoreSort(). default false */
-      options.add_bool("DF_INTEGRALS",false);
-      /*- SCS MP2, default true -*/
-      options.add_bool("SCS_MP2", true);
-      /*- SCS CCSD, default true -*/
-      options.add_bool("SCS_CCSD", true);
-      /*- opposite-spin scaling factor -*/
-      options.add_double("MP2_SCALE_OS",1.20);
-      /*- same-spin scaling factor -*/
-      options.add_double("MP2_SCALE_SS",1.0/3.0);
-      /*- oppposite-spin scaling factor -*/
-      options.add_double("CC_SCALE_OS", 1.27);
-      /*- same-spin scaling factor -*/
-      options.add_double("CC_SCALE_SS",1.13);
+     /*- Wavefunction type !expert -*/
+     options.add_str("WFN", "CCSD");
+     /*- Convergence for the CC amplitudes-*/
+     options.add_double("R_CONVERGENCE", 1.0e-7);
+     /*- Maximum number of CC iterations -*/
+     options.add_int("MAXITER", 50);
+     /*- Desired number of DIIS vectors -*/
+     options.add_int("DIIS_MAX_VECS", 8);
+     /*- For GPU code, cap the amount of memory registerred with the GPU -*/
+     options.add_int("MAX_MAPPED_MEMORY", 1000);
+     /*- Compute triples contribution? */
+     options.add_bool("COMPUTE_TRIPLES", true);
+     /*- Use MP2 NOs to truncate virtual space for (T)? -*/
+     options.add_bool("TRIPLES_USE_NOS", false);
+     /*- Cutoff for occupation of MP2 NO orbitals in (T) -*/
+     options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
+     /*- Desired number of threads. This will override OMP_NUM_THREADS in (T) -*/
+     options.add_int("NUM_THREADS", 1);
+     /*- Do SCS-MP2? -*/
+     options.add_bool("SCS_MP2", false);
+     /*- Do SCS-CCSD? -*/
+     options.add_bool("SCS_CCSD", false);
+     /*- Opposite-spin scaling factor for SCS-MP2 -*/
+     options.add_double("MP2_SCALE_OS",1.20);
+     /*- Same-spin scaling factor for SCS-MP2 -*/
+     options.add_double("MP2_SCALE_SS",1.0/3.0);
+     /*- Oppposite-spin scaling factor for SCS-CCSD -*/
+     options.add_double("CC_SCALE_OS", 1.27);
+     /*- Same-spin scaling factor for SCS-CCSD -*/
+     options.add_double("CC_SCALE_SS",1.13);
   }
   if(name == "CIS"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
@@ -2096,18 +2089,23 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAG_DIST_INV", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("H_BOND_CONNECT", 4.3);
-//      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
-//      will append or overwrite the criteria set here. -*/
-//      options.add_str("G_CONVERGENCE", "QCHEM", "GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT QCHEM NWCHEM NWCHEM_LOOSE NWCHEM_TIGHT MOLPRO PSI3 CFOUR");
-      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
+      will append or overwrite the criteria set here. -*/
+      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
+      /*- Convergence criterion for geometry optmization: maximum force (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
-      /*- QCHEM optimization criteria: rms force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: rms force (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
-      /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: maximum energy change. 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
-      /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: maximum displacement (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
-      /*- QCHEM optimization criteria: rms displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: rms displacement (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);

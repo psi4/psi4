@@ -149,15 +149,101 @@ void set_params(void)
     if (s == "FORWARD")        Opt_params.IRC_direction = OPT_PARAMS::FORWARD;
     else if (s == "BACKWARD")  Opt_params.IRC_direction = OPT_PARAMS::BACKWARD;
 
-// QCHEM optimization criteria
-//  Opt_params.conv_max_force = 3.0e-4;
-//  Opt_params.conv_max_DE    = 1.0e-6;
-//  Opt_params.conv_max_disp  = 1.2e-3;
-    Opt_params.conv_max_force = options.get_double("MAX_FORCE_G_CONVERGENCE");
-    Opt_params.conv_rms_force = options.get_double("RMS_FORCE_G_CONVERGENCE");
-    Opt_params.conv_max_DE = options.get_double("MAX_ENERGY_G_CONVERGENCE");
-    Opt_params.conv_max_disp = options.get_double("MAX_DISP_G_CONVERGENCE");
-    Opt_params.conv_rms_disp = options.get_double("RMS_DISP_G_CONVERGENCE");
+// General optimization criteria
+    Opt_params.i_max_force = false;
+    Opt_params.i_rms_force = false;
+    Opt_params.i_max_DE = false;
+    Opt_params.i_max_disp = false;
+    Opt_params.i_rms_disp = false;
+    Opt_params.i_untampered = false;
+
+    Opt_params.general_conv = options.get_str("G_CONVERGENCE");
+    if (Opt_params.general_conv == "QCHEM") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 3.0e-4;  Opt_params.i_max_force = true;
+      Opt_params.conv_max_DE    = 1.0e-6;  Opt_params.i_max_DE = true;
+      Opt_params.conv_max_disp  = 1.2e-3;  Opt_params.i_max_disp = true;
+    }
+    else if (Opt_params.general_conv == "MOLPRO") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 3.0e-4;  Opt_params.i_max_force = true;
+      Opt_params.conv_max_DE    = 1.0e-6;  Opt_params.i_max_DE = true;
+      Opt_params.conv_max_disp  = 3.0e-4;  Opt_params.i_max_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 4.5e-4;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 3.0e-4;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 1.8e-3;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 1.2e-3;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU_TIGHT") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 1.5e-5;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 1.0e-5;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 6.0e-5;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 4.0e-5;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU_VERYTIGHT") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 2.0e-6;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 1.0e-6;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 6.0e-6;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 4.0e-6;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU_LOOSE") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 2.5e-3;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 1.7e-3;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 1.0e-2;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 6.7e-3;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "TURBOMOLE") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 1.0e-3;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 5.0e-4;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_DE    = 1.0e-6;  Opt_params.i_max_DE = true;
+      Opt_params.conv_max_disp  = 1.0e-3;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 5.0e-4;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "CFOUR") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_rms_force = 1.0e-4;  Opt_params.i_rms_force = true;
+    }
+    else if (Opt_params.general_conv == "NWCHEM_LOOSE") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 4.5e-3;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 3.0e-3;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 5.4e-3;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 3.6e-3;  Opt_params.i_rms_disp = true;
+    }
+
+// Specific optimization criteria
+    if (options["MAX_FORCE_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_max_force = true;
+      Opt_params.conv_max_force = fabs(options.get_double("MAX_FORCE_G_CONVERGENCE"));
+    }
+    if (options["RMS_FORCE_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_rms_force = true;
+      Opt_params.conv_rms_force = fabs(options.get_double("RMS_FORCE_G_CONVERGENCE"));
+    }
+    if (options["MAX_ENERGY_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_max_DE = true;
+      Opt_params.conv_max_DE = fabs(options.get_double("MAX_ENERGY_G_CONVERGENCE"));
+    }
+    if (options["MAX_DISP_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_max_disp = true;
+      Opt_params.conv_max_disp = fabs(options.get_double("MAX_DISP_G_CONVERGENCE"));
+    }
+    if (options["RMS_DISP_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_rms_disp = true;
+      Opt_params.conv_rms_disp = fabs(options.get_double("RMS_DISP_G_CONVERGENCE"));
+    }
 
 // Whether to test B matrix and derivative B matrix numerically
 //  Opt_params.test_B = false;
@@ -276,14 +362,8 @@ void set_params(void)
   i = rem_read(REM_GEOM_OPT2_TOL_GRADIENT);
   Opt_params.conv_max_force = i / 1.0e6; // default (300 -> 3e-4)
 
-  i = rem_read(REM_GEOM_OPT2_RMSTOL_GRADIENT);
-  Opt_params.conv_rms_force = i / 1.0e6; // default (300 -> 3e-4)
-
   i = rem_read(REM_GEOM_OPT2_TOL_DISPLACEMENT);
   Opt_params.conv_max_disp  = i / 1.0e6; // default (1200 -> 1.2e-3)
-
-  i = rem_read(REM_GEOM_OPT2_RMSTOL_DISPLACEMENT);
-  Opt_params.conv_rms_disp  = i / 1.0e6; // default (1200 -> 1.2e-3)
 
   i = rem_read(REM_GEOM_OPT2_TOL_ENERGY);
   Opt_params.conv_max_DE    = i / 1.0e8; // default (100 -> 1.0e-6)
