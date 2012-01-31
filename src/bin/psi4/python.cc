@@ -71,7 +71,10 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
     namespace adc        { PsiReturnType adc(Options&);       }
-    namespace mrcc       { PsiReturnType mrcc(Options&, const boost::python::dict&); }
+    namespace mrcc       {
+        PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
+        PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
+    }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -190,10 +193,16 @@ double py_psi_mcscf()
         return 0.0;
 }
 
-PsiReturnType py_psi_mrcc(const boost::python::dict& level)
+PsiReturnType py_psi_mrcc_generate_input(const boost::python::dict& level)
 {
     py_psi_prepare_options_for_module("MRCC");
-    return mrcc::mrcc(Process::environment.options, level);
+    return mrcc::mrcc_generate_input(Process::environment.options, level);
+}
+
+PsiReturnType py_psi_mrcc_load_densities(const boost::python::dict& level)
+{
+    py_psi_prepare_options_for_module("MRCC");
+    return mrcc::mrcc_load_ccdensities(Process::environment.options, level);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
@@ -986,7 +995,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("lmp2", py_psi_lmp2);
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
-    def("mrcc", py_psi_mrcc);
+    def("mrcc_generate_input", py_psi_mrcc_generate_input);
+    def("mrcc_load_densities", py_psi_mrcc_load_densities);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
@@ -1058,7 +1068,7 @@ void Python::finalize()
      if(!(ptr = command)){    \
          PyErr_Print();       \
          exit(1);             \
-     } 
+     }
 
 
 void Python::run(FILE *input)

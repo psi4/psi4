@@ -7,7 +7,7 @@ using namespace psi;
 namespace psi{
 void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options);
 double Normalize(long int o,long int v,double*t1,double*t2,int cepa_level);
-void BuildD1(long int o,long int v,double*t1,double*ta,double*tb,double c0,double*D1);
+void BuildD1(long int nfzc,long int o,long int v,long int nfzv,double*t1,double*ta,double*tb,double c0,double*D1);
 
 void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options){
 
@@ -27,8 +27,9 @@ void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options){
   double c0 = Normalize(o,v,cepa->t1,cepa->tb,cepa->cepa_level);
 
   // Build 1-RDM
-  double*D1 = (double*)malloc((o+v)*(o+v)*sizeof(double));
-  BuildD1(o,v,cepa->t1,cepa->integrals,cepa->tb,c0,D1);
+  int nmo = o+v+cepa->nfzc+cepa->nfzv;
+  double*D1 = (double*)malloc(nmo*nmo*sizeof(double));
+  BuildD1(cepa->nfzc,o,v,cepa->nfzv,cepa->t1,cepa->integrals,cepa->tb,c0,D1);
 
   // Call oeprop
   boost::shared_ptr<OEProp> oe(new OEProp());
@@ -43,18 +44,60 @@ void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options){
 
   // pass opdm to oeprop
   SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi()));
-  double** opdmap = opdm_a->pointer();
-  for (long int i=0; i<cepa->nfzc; i++){
-      for (long int j=0; j<cepa->nfzc; j++){
-          opdmap[i][j] = 0.0;
-      }
-      opdmap[i][i] = 1.0;
+
+  // mapping array for D1(c1) -> D1(symmetry)
+  int *irrepoffset = (int*)malloc(cepa->nirreps*sizeof(double));
+  irrepoffset[0] = 0;
+  for (int h=1; h<cepa->nirreps; h++){
+      irrepoffset[h] = irrepoffset[h-1] + cepa->orbs[h-1];
   }
-  for (long int i=0; i<o+v; i++){
-      for (long int j=0; j<o+v; j++){
-          opdmap[i+cepa->nfzc][j+cepa->nfzc] = D1[i*(o+v)+j];
+  int *reorder = (int*)malloc(nmo*sizeof(int));
+  int mo_offset = 0;
+  int count = 0;
+
+  // frozen core
+  for (int h=0; h<cepa->nirreps; h++){
+      int norbs = cepa->fzc[h];
+      for (int i=0; i<norbs; i++){
+          reorder[irrepoffset[h] + i] = count++;
       }
   }
+  // active doubly occupied
+  for (int h=0; h<cepa->nirreps; h++){
+      int norbs = cepa->docc[h]-cepa->fzc[h];
+      for (int i=0; i<norbs; i++){
+          reorder[irrepoffset[h] + i + cepa->fzc[h]] = count++;
+      }
+  }
+  // active virtual
+  for (int h=0; h<cepa->nirreps; h++){
+      int norbs = cepa->orbs[h]-cepa->fzv[h]-cepa->docc[h];
+      for (int i=0; i<norbs; i++){
+          reorder[irrepoffset[h] + i + cepa->docc[h]] = count++;
+      }
+  }
+  // frozen virtual
+  for (int h=0; h<cepa->nirreps; h++){
+      int norbs = cepa->fzv[h];
+      for (int i=0; i<norbs; i++){
+          reorder[irrepoffset[h] + i + cepa->orbs[h]-cepa->fzv[h]] = count++;
+      }
+  }
+
+  // pass opdm to oeprop (should be symmetry-tolerant)
+  for (int h=0; h<cepa->nirreps; h++){
+      double** opdmap = opdm_a->pointer(h);
+      for (int i=0; i<cepa->orbs[h]; i++) {
+          int ii = reorder[irrepoffset[h]+i];
+          for (int j=0; j<cepa->orbs[h]; j++){
+              int jj = reorder[irrepoffset[h]+j];
+              opdmap[i][j] = D1[ii*nmo+jj];
+          }
+      }
+  }
+  free(reorder);
+  free(irrepoffset);
+
   oe->set_Da_mo(opdm_a);
 
   std::stringstream oeprop_label;
@@ -152,11 +195,15 @@ void OPDM(boost::shared_ptr<psi::CoupledPair>cepa,Options&options){
 }
 
 // build the 1-electron density
-void BuildD1(long int o,long int v,double*t1,double*ta,double*tb,double c0,double*D1){
-  long int id,i,j,k,a,b,c,sg,p,count,sg2,nmo=o+v;
+void BuildD1(long int nfzc,long int o,long int v,long int nfzv,double*t1,double*ta,double*tb,double c0,double*D1){
+  long int id,i,j,k,a,b,c,sg,p,count,sg2,nmo=o+v+nfzc+nfzv;
   double sum;
-  memset((void*)D1,'\0',(o+v)*(o+v)*sizeof(double));
+  memset((void*)D1,'\0',nmo*nmo*sizeof(double));
   double*tempd = (double*)malloc(v*v*sizeof(double));
+
+  for (i=0; i<nfzc; i++){
+      D1[i*nmo+i] = 1.0;
+  }
 
   F_DCOPY(o*o*v*v,tb,1,ta,1);
   for (a=0,id=0; a<v; a++){
@@ -169,14 +216,13 @@ void BuildD1(long int o,long int v,double*t1,double*ta,double*tb,double c0,doubl
       }
   }
 
-
   // D(a,b)
   F_DGEMM('t','n',v,v,o*o*v,1.0,tb,o*o*v,tb,o*o*v,0.0,tempd,v);
   F_DGEMM('t','n',v,v,o*o*v,0.5,ta,o*o*v,ta,o*o*v,1.0,tempd,v);
   F_DGEMM('t','n',v,v,o,1,t1,o,t1,o,1.0,tempd,v);
   for (a=0; a<v; a++){
       for (b=0; b<v; b++){
-          D1[(a+o)*nmo+(b+o)] = tempd[a*v+b];
+          D1[(a+o+nfzc)*nmo+(b+o+nfzc)] = tempd[a*v+b];
       }
   }
  
@@ -186,9 +232,9 @@ void BuildD1(long int o,long int v,double*t1,double*ta,double*tb,double c0,doubl
   F_DGEMM('n','t',o,o,v,-1.0,t1,o,t1,o,1.0,tempd,o);
   for (i=0; i<o; i++){
       for (j=0; j<o; j++){
-          D1[i*nmo + j] = tempd[i*o+j];
+          D1[(i+nfzc)*nmo + j+nfzc] = tempd[i*o+j];
       }
-      D1[i*nmo+i] += 1.0;
+      D1[(i+nfzc)*nmo+i+nfzc] += 1.0;
   }
 
   // hmmm ... i could do this as a dgemv, but i'd have sort ta and tb
@@ -201,12 +247,11 @@ void BuildD1(long int o,long int v,double*t1,double*ta,double*tb,double c0,doubl
                   sum += t1[b*o+j]*ta[a*o*o*v+b*o*o+i*o+j];
               }
           }
-          D1[i*nmo+a+o] = D1[(a+o)*nmo+i] = sum;
+          D1[(i+nfzc)*nmo+a+o+nfzc] = D1[(a+o+nfzc)*nmo+i+nfzc] = sum;
       }
   }
 
   free(tempd);
-
 }
 
 // normalize the wave function and return the leading coefficient

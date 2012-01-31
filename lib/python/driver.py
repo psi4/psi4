@@ -463,9 +463,14 @@ def frequencies(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
+    types = [ "energy", "gradient", "hessian" ]
+
     dertype = 2
     if (kwargs.has_key('dertype')):
         dertype = kwargs['dertype']
+        if procedures[types[dertype]].has_key(lowername) == False:
+            print "Frequencies: dertype = %d for frequencies is not available, switching to automatic determination." % dertype
+            dertype = -1
 
     if (kwargs.has_key('irrep')):
         irrep = kwargs['irrep'] - 1 # externally, A1 irrep is 1; internally 0
@@ -479,12 +484,20 @@ def frequencies(name, **kwargs):
         func = kwargs['func']
         func_existed = True
 
+    if (kwargs.has_key('dertype') == False or dertype == -1):
+        if procedures['hessian'].has_key(lowername):
+            dertype = 2
+        elif procedures['gradient'].has_key(lowername):
+            dertype = 1
+        else:
+            dertype = 0
+
     # Does an analytic procedure exist for the requested method?
-    if (procedures['hessian'].has_key(lowername) and dertype == 2 and func_existed == False):
+    if (dertype == 2 and func_existed == False):
         # We have the desired method. Do it.
         procedures['hessian'][lowername](lowername, **kwargs)
         return PsiMod.reference_wavefunction().energy()
-    elif (procedures['gradient'].has_key(lowername) and dertype == 1 and func_existed == False):
+    elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
         info = "Performing finite difference by gradient calculations"
         print info
@@ -537,7 +550,7 @@ def frequencies(name, **kwargs):
 
     else: # Assume energy points
         # If not, perform finite difference of energies
-        info = "Performing finite difference calculations"
+        info = "Performing finite difference calculations by energies"
         print info
 
         # Obtain list of displacements
