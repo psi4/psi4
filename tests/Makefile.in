@@ -8,7 +8,7 @@ tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy tu3-h2o-opt tu4-h2o-freq tu5-sa
 #  This is probably not the final solution:
 maddness_subdirs = dfmp2_1 dfmp2_2
 
-cc_subdirs = cc1 cc2 cc4 cc4a cc5a cc6 cc8 cc8a cc8b cc8c cc9 cc9a cc10 cc11 \
+cc_subdirs = cc1 cc2 cc3 cc4 cc4a cc5a cc6 cc8 cc8a cc8b cc8c cc9 cc9a cc10 cc11 \
 cc12 cc13 cc13a cc15 cc16 cc17 cc18 cc19 cc22 cc24 cc25 cc26 cc27 cc28 \
 cc29 cc30 cc31 cc32 cc33 cc34 cc35 cc36 cc37 cc38 cc39 cc40 cc41 cc42 \
 cc43 cc44 cc45 cc49 cc50 cc51 cc52 # cc5 these should be restored when fixed
