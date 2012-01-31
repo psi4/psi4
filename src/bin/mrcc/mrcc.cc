@@ -4,19 +4,24 @@
 #include <libmints/mints.h>
 #include <libmints/view.h>
 #include <libpsio/psio.hpp>
+#include <libiwl/iwl.hpp>
 #include <libtrans/integraltransform.h>
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
 #include <vector>
 
-#include <physconst.h>
+#include <psifiles.h>
 
-#include <boost/foreach.hpp>
+#include <fstream>
+#include <algorithm>
+
 #include <boost/python.hpp>
 #include <boost/python/dict.hpp>
 
 namespace psi{ namespace mrcc {
+
+namespace {
 
 void write_oei_to_disk(FILE* fort55, SharedMatrix moH)
 {
@@ -66,7 +71,363 @@ void print_dim(const std::string& name, const Dimension& dim)
     fprintf(outfile, "]\n");
 }
 
-PsiReturnType mrcc(Options& options, const boost::python::dict& level)
+class DPDFillerFunctor {
+private:
+    dpdfile4 *file_;
+    dpdparams4 *params_;
+    int **bucket_map_;
+    int **bucket_offset_;
+    bool symmetrize_;
+    bool have_bra_ket_sym_;
+public:
+    DPDFillerFunctor(dpdfile4 *file, int **bucket_map,
+                     int **bucket_offset, bool symmetrize, bool have_bra_ket_sym):
+        file_(file), bucket_map_(bucket_map),
+        bucket_offset_(bucket_offset), symmetrize_(symmetrize),
+        have_bra_ket_sym_(have_bra_ket_sym)
+    {
+        params_ = file_->params;
+    }
+    void operator()(int this_bucket, int p, int q, int r, int s, double value)
+    {
+        if(symmetrize_){
+            // Symmetrize the quantity (used in density matrix processing)
+            if(p!=q) value *= 0.5;
+            if(r!=s) value *= 0.5;
+        }
+
+        bool bra_ket_different = !(p==r && q==s);
+
+        /* Get the orbital symmetries */
+        int p_sym = params_->psym[p];
+        int q_sym = params_->qsym[q];
+        int r_sym = params_->rsym[r];
+        int s_sym = params_->ssym[s];
+        int pq_sym = p_sym^q_sym;
+        int rs_sym = r_sym^s_sym;
+
+        /* The allowed (Mulliken) permutations are very simple in this case */
+        if(bucket_map_[p][q] == this_bucket) {
+            /* Get the row and column indices and assign the value */
+            int pq = params_->rowidx[p][q];
+            int rs = params_->colidx[r][s];
+            int offset = bucket_offset_[this_bucket][pq_sym];
+            if((pq-offset >= params_->rowtot[pq_sym]) || (rs >= params_->coltot[rs_sym]))
+                error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym);
+            file_->matrix[pq_sym][pq-offset][rs] += value;
+        }
+
+        /*
+         * We also add in the bra-ket transposed value, as a result of the matrix
+         * storage, but we need to make sure we don't duplicate "diagonal" values.
+         * We don't do this if the quantity does not have bra-ket symmetry, like
+         * in the Alpha-Beta TPDM.
+         */
+        if(bucket_map_[r][s] == this_bucket && bra_ket_different && have_bra_ket_sym_) {
+            int rs = params_->rowidx[r][s];
+            int pq = params_->colidx[p][q];
+            int offset = bucket_offset_[this_bucket][rs_sym];
+            if((rs-offset >= params_->rowtot[rs_sym])||(pq >= params_->coltot[pq_sym]))
+                error("MP Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym);
+            file_->matrix[rs_sym][rs-offset][pq] += value;
+        }
+    }
+
+private:
+    void error(const char *message, int p, int q, int r, int s,
+               int pq, int rs, int pq_sym, int rs_sym)
+    {
+
+        fprintf(outfile, "\n\tDPD Parameter Error in %s\n", message);
+        fprintf(outfile,"\t-------------------------------------------------\n");
+        fprintf(outfile,"\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
+        fprintf(outfile,"\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
+                pq,rs,pq_sym,rs_sym);
+        throw PsiException("DPD idx failure.", __FILE__, __LINE__);
+    }
+};
+
+class MRCCRestrictedReader
+{
+    enum { line_length = 45 };
+
+    FILE* ccdensities_;
+    const double tolerance_;
+    char *batch_;
+
+    SharedMatrix one_particle_;
+
+    off_t opdm_start_;
+
+    int* abs_mo_to_rel_;
+    int* abs_mo_to_irrep_;
+
+public:
+    MRCCRestrictedReader(FILE* ccdensities, const double tolerance, SharedMatrix one_particle)
+        : ccdensities_(ccdensities), tolerance_(tolerance), batch_(0), one_particle_(one_particle)
+    {
+        batch_ = new char[line_length*1000+1];
+
+        const Dimension& nmopi = one_particle_->rowspi();
+        int nmo = nmopi.sum();
+        abs_mo_to_rel_ = new int[nmo];
+        abs_mo_to_irrep_ = new int[nmo];
+
+        int count=0;
+        for (int h=0; h<nmopi.n(); ++h) {
+            for (int i=0; i<nmopi[h]; ++i) {
+                abs_mo_to_rel_[count] = i;
+                abs_mo_to_irrep_[count] = h;
+                count++;
+            }
+        }
+    }
+    ~MRCCRestrictedReader() {
+        delete[] abs_mo_to_irrep_;
+        delete[] abs_mo_to_rel_;
+        delete[] batch_;
+    }
+
+    template<typename Filler>
+    void operator()(Filler& filler, int bucket) {
+        // ensure we're at the beginning.
+        fseek(ccdensities_, 0, SEEK_CUR);
+
+        // each line in CCDENSITIES is 45 characters long.
+        // read in a batch of 1000 lines; add one for '\0'.
+        char *batch = new char[line_length*1000+1];
+
+        double value;
+        int p, q, r, s;
+
+        size_t readin=0;
+        size_t loops=0;
+        while ((readin = fread(batch, line_length, 1000, ccdensities_))  ) {
+            off_t offset = 0;
+
+            for (size_t i=0; i<readin; ++i) {
+                if (sscanf(batch+offset, "%lE %d %d %d %d\n", &value, &p, &q, &r, &s) != 5) {
+                    std::string line(batch+offset, line_length);
+                    fprintf(stderr, "Malformed line: %s\n", line.c_str());
+                    throw PSIEXCEPTION("MRCC interface: Unable to interpret line.");
+                }
+
+                if (r != 0 && s != 0) {
+                    if (p >= q && r >= s)
+                        if (fabs(value) > tolerance_)
+                            filler(bucket, p-1, q-1, r-1, s-1, value);
+                }
+                else
+                    one_particle_->set(abs_mo_to_irrep_[p-1], abs_mo_to_rel_[p-1], abs_mo_to_rel_[q-1], value);
+
+                offset += line_length;
+                loops++;
+            }
+        }
+    }
+};
+
+class DPDBucketFiller
+{
+    dpdfile4 *I_;
+
+    psio_address next_;
+
+    int nbucket_;
+    int **bucket_map_;
+    int **bucket_offset_;
+    int **bucket_row_dim_;
+    int **bucket_size_;
+public:
+    DPDBucketFiller(dpdfile4* I, size_t memory_limit)
+        : I_(I), next_(PSIO_ZERO)
+    {
+        memory_limit /= sizeof(double);
+        int nirrep = I_->params->nirreps;
+        int nump = 0, numq = 0;
+        for(int h=0; h < nirrep; ++h){
+            nump += I_->params->ppi[h];
+            numq += I_->params->qpi[h];
+        }
+        bucket_map_ = init_int_matrix(nump, numq);
+
+        /* Room for one bucket to begin with */
+        bucket_offset_ = (int **) malloc(sizeof(int *));
+        bucket_offset_[0] = init_int_array(nirrep);
+        bucket_row_dim_ = (int **) malloc(sizeof(int *));
+        bucket_row_dim_[0] = init_int_array(nirrep);
+        bucket_size_ = (int **) malloc(sizeof(int *));
+        bucket_size_[0] = init_int_array(nirrep);
+
+        /* Figure out how many passes we need and where each p,q goes */
+        nbucket_ = 1;
+        for(int h = 0; h < nirrep; ++h){
+            size_t row_length = (size_t) I_->params->coltot[h^(I_->my_irrep)];
+            for(int row=0; row < I_->params->rowtot[h]; ++row) {
+                if((memory_limit - row_length) >= 0){  // <-- This is aways true (unsigned - unsigned >= 0)
+                    memory_limit -= row_length;
+                    bucket_row_dim_[nbucket_-1][h]++;
+                    bucket_size_[nbucket_-1][h] += row_length;
+                }
+                else {
+                    nbucket_++;
+                    memory_limit = memory_limit - row_length;
+                    /* Make room for another bucket */
+                    bucket_offset_ = (int **) realloc((void *) bucket_offset_,
+                                                 nbucket_ * sizeof(int *));
+                    bucket_offset_[nbucket_-1] = init_int_array(nirrep);
+                    bucket_offset_[nbucket_-1][h] = row;
+
+                    bucket_row_dim_ = (int **) realloc((void *) bucket_row_dim_,
+                                                 nbucket_ * sizeof(int *));
+                    bucket_row_dim_[nbucket_-1] = init_int_array(nirrep);
+                    bucket_row_dim_[nbucket_-1][h] = 1;
+
+                    bucket_size_ = (int **) realloc((void *) bucket_size_,
+                                                    nbucket_ * sizeof(int *));
+                    bucket_size_[nbucket_-1] = init_int_array(nirrep);
+                    bucket_size_[nbucket_-1][h] = row_length;
+                }
+                int p = I_->params->roworb[h][row][0];
+                int q = I_->params->roworb[h][row][1];
+                bucket_map_[p][q] = nbucket_ - 1;
+            }
+        }
+    }
+
+    ~DPDBucketFiller() {
+        free_int_matrix(bucket_map_);
+
+        for(int n=0; n < nbucket_; ++n) {
+            free(bucket_offset_[n]);
+            free(bucket_row_dim_[n]);
+            free(bucket_size_[n]);
+        }
+        free(bucket_offset_);
+        free(bucket_row_dim_);
+        free(bucket_size_);
+    }
+
+    DPDFillerFunctor dpd_filler(bool symmetrize, bool have_bra_ket_sym) {
+        return DPDFillerFunctor(I_, bucket_map_, bucket_offset_, symmetrize, have_bra_ket_sym);
+    }
+
+    template<typename IntegralProcessor>
+    void operator()(IntegralProcessor& mrccreader) {
+        DPDFillerFunctor filler = dpd_filler(false, false);
+        next_ = PSIO_ZERO;
+        for(int n=0; n < nbucket_; ++n) { /* nbuckets = number of passes */
+            /* Prepare target matrix */
+            for(int h=0; h < I_->params->nirreps; h++) {
+                I_->matrix[h] = block_matrix(bucket_row_dim_[n][h], I_->params->coltot[h]);
+            }
+
+            mrccreader(filler, n);
+
+            for(int h=0; h < I_->params->nirreps; ++h) {
+                if(bucket_size_[n][h])
+                    _default_psio_lib_->write(I_->filenum, I_->label, (char *) I_->matrix[h][0],
+                                              bucket_size_[n][h]*((long int) sizeof(double)), next_, &next_);
+                free_block(I_->matrix[h]);
+            }
+        } /* end loop over buckets/passes */
+    }
+};
+
+/**
+  * Loads a RHF TPDM from CCDENSITIES into an IWL buffer.
+  * \param ccdensities File handle to process
+  * \param tolerance Any values below this are neglected
+  * \param active_mopi Dimension object of the MOs per irrep, needed to form OPDM matrix
+  * \param ints IntegralTransform object needed to determine DPD ID numbers.
+  */
+void load_restricted(FILE* ccdensities, double tolerance, const Dimension& active_mopi, IntegralTransform& ints)
+{
+    dpdfile4 I;
+    _default_psio_lib_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
+    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+
+    SharedMatrix one_particle(new Matrix("MO-basis OPDM", active_mopi, active_mopi));
+
+    DPDBucketFiller bucket(&I, Process::environment.get_memory());
+    // While MRCCRestricedReader is processing the two particle values it will
+    // go ahead and handle the one particle
+    MRCCRestrictedReader mrccreader(ccdensities, tolerance, one_particle);
+
+    // Do it
+    bucket(mrccreader);
+
+    one_particle->save(_default_psio_lib_, PSIF_MO_OPDM, Matrix::Full);
+
+    one_particle->print();
+    dpd_file4_print(&I, outfile);
+
+    dpd_file4_close(&I);
+    _default_psio_lib_->close(PSIF_TPDM_PRESORT, 1);
+}
+
+} // namespace anonymous
+
+PsiReturnType mrcc_load_ccdensities(Options& options, const boost::python::dict& level)
+{
+    tstart();
+
+    fprintf(outfile, "  PSI4 interface to MRCC:\n");
+
+    // Ensure the dict provided has everything we need.
+    if (!level.has_key("method") ||
+        !level.has_key("order") ||
+        !level.has_key("fullname"))
+        throw PSIEXCEPTION("MRCC interface: Provided dictionary is incomplete.");
+
+    int method  = boost::python::extract<int>(level.get("method"));
+    int exlevel = boost::python::extract<int>(level.get("order"));
+    std::string fullname = boost::python::extract<std::string>(level.get("fullname"));
+    bool pertcc = exlevel > 0 ? false : true;
+    exlevel = abs(exlevel);
+
+    fprintf(outfile, "    Loading gradient data for %s.\n\n", fullname.c_str());
+
+    // Currently, only do RHF case
+    if (options.get_str("REFERENCE") != "RHF")
+        throw PSIEXCEPTION("MRCC: Gradient interface only coded for RHF reference.");
+
+    // Check the reference.
+    bool restricted = true;
+
+    if (options.get_str("REFERENCE") == "UHF")
+        restricted = false;
+
+    if (pertcc && options.get_str("REFERENCE") == "ROHF")
+        throw PSIEXCEPTION("Perturbative methods not implemented for ROHF references.");
+
+    // Use libtrans to initialize DPD
+    boost::shared_ptr<Wavefunction> wave = Process::environment.reference_wavefunction();
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::all);
+    IntegralTransform ints(wave, spaces, restricted ? IntegralTransform::Restricted : IntegralTransform::Unrestricted);
+
+    // Use the IntegralTransform object's DPD instance, for convenience
+    dpd_set_default(ints.get_dpd_id());
+
+    // Obtain a single handle to the CCDENSITIES file
+    FILE* ccdensities = fopen("CCDENSITIES", "r");
+    if (ccdensities == NULL)
+        throw PSIEXCEPTION("MRCC interface: Unable to open CCDENSITIES. Did MRCC finish successfully?");
+
+    const Dimension active_mopi = wave->nmopi() - wave->frzcpi() - wave->frzvpi();
+    if (restricted) {
+        load_restricted(ccdensities, options.get_double("INTS_TOLERANCE"),
+                        active_mopi, ints);
+    }
+//    else
+//        load_unrestricted_tpdm(ccdensities);
+
+    tstop();
+    return Success;
+}
+
+PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& level)
 {
     tstart();
 

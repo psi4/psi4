@@ -188,6 +188,8 @@ class IntegralTransform{
         // Get the beta correlated to Pitzer ordering array, used in backtransforms
         const int *beta_corr_to_pitzer() const { return bCorrToPitzer_; }
 
+        int nirrep() const { return nirreps_; }
+
     protected:
         void check_initialized();
         void common_moinfo_initialize();

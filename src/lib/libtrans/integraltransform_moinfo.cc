@@ -361,7 +361,8 @@ IntegralTransform::process_eigenvectors()
         if(print_ > 5){
             fprintf(outfile, "Orbitals for space %c:-\n",moSpace->label());
             Ca->print();
-            Cb->print();
+            if (transformationType_ != Restricted)
+                Cb->print();
             fprintf(outfile, "\n\n");
         }
     }// End loop over spaces
