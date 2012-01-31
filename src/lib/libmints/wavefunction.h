@@ -226,21 +226,21 @@ public:
 
     static void initialize_singletons();
 
-    /// Returns the DOCC per irrep array. You DO NOT own this array.
+    /// Returns the DOCC per irrep array.
     const Dimension& doccpi() const { return doccpi_; }
-    /// Returns the SOCC per irrep array. You DO NOT own this array.
+    /// Returns the SOCC per irrep array.
     const Dimension& soccpi() const { return soccpi_; }
-    /// Returns the number of SOs per irrep array. You DO NOT own this array.
+    /// Returns the number of SOs per irrep array.
     const Dimension& nsopi() const { return nsopi_; }
-    /// Returns the number of MOs per irrep array. You DO NOT own this array.
+    /// Returns the number of MOs per irrep array.
     const Dimension& nmopi() const { return nmopi_; }
-    /// Returns the number of alpha electrons per irrep array. You DO NOT own this array.
+    /// Returns the number of alpha electrons per irrep array.
     const Dimension& nalphapi() const { return nalphapi_; }
-    /// Returns the number of beta electrons per irrep array. You DO NOT own this array.
+    /// Returns the number of beta electrons per irrep array.
     const Dimension& nbetapi() const { return nbetapi_; }
-    /// Returns the frozen core orbitals per irrep array. You DO NOT own this array.
+    /// Returns the frozen core orbitals per irrep array.
     const Dimension& frzcpi() const { return frzcpi_; }
-    /// Returns the frozen virtual orbitals per irrep array. You DO NOT own this array.
+    /// Returns the frozen virtual orbitals per irrep array.
     const Dimension& frzvpi() const { return frzvpi_; }
     /// Return the number of alpha electrons
     int nalpha() const { return nalpha_; }
