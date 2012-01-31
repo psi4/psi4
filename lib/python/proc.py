@@ -36,10 +36,6 @@ def scf_helper(name, **kwargs):
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
 
-    # why is the cast_up keyword doubled
-    if (kwargs.has_key('cast_up')):
-        cast = kwargs.pop('cast_up')
-
     precallback = None
     if (kwargs.has_key('precallback')):
         precallback = kwargs.pop('precallback')
@@ -749,7 +745,7 @@ def run_mrcc(name, **kwargs):
     os.chdir(mrcc_tmpdir)
 
     # Generate integrals and input file (dumps files to the current directory)
-    PsiMod.mrcc(level)
+    PsiMod.mrcc_generate_input(level)
 
     # Load the fort.56 file
     # and dump a copy into the outfile

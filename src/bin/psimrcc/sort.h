@@ -17,7 +17,9 @@ class CCMatrix;
 
 #include "matrix_types.h"
 
+#ifndef INDEX
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
+#endif
 #define four(i,j,k,l) INDEX(INDEX(i,j),INDEX(k,l))
 
 enum SortAlgorithm {out_of_core_sort,mrpt2_sort};

@@ -1,18 +1,12 @@
-#include "psi4-dec.h"
-#include <libplugin/plugin.h>
-#include <libparallel/parallel.h>
-#include <liboptions/liboptions.h>
-#include <libmints/mints.h>
-#include <libpsio/psio.h>
-#include <libchkpt/chkpt.hpp>
-#include <libqt/qt.h>
-#include <libciomr/libciomr.h>
+#include<libplugin/plugin.h>
 
-#include "globals.h"
 #include "ccsd.h" 
-#include "runcoupledcluster.h"
 
 INIT_PLUGIN
+
+namespace psi{
+  void RunCoupledCluster(Options &options);
+};
 
 namespace psi{ namespace plugin_ccsd_serial{
 extern "C" int 

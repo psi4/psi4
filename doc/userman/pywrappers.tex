@@ -98,10 +98,12 @@ or \pyoptionval{\qq equilibrium\qq}, the equilibrium geometries for a database c
 dissociation curves.
 \item \pyoptionname{subset} = \textsf{\qq BzBz\_S\qq} \textbar\; \textsf{\qq ArNe\qq} \textbar\; etc. \\
 For databases composed of dissociation curves, individual curves can be called by name.
-Consult the database python files for available molecular systems.
+Consult the database python files for available molecular systems. The choices for this keyword
+are case sensitive and must match the database python file.
 \item \pyoptionname{subset} = \pyoptionval{[1,2,5]} \textbar\; \pyoptionval{[\qq 1\qq, \qq 2\qq, \qq 5\qq]} \textbar\; \textsf{[\qq BzMe-3.5\qq, \qq MeMe-5.0\qq]} \textbar\; etc. \\
-Specify a list of database members to run. Consult the database python files for availables
-molecular systems.
+Specify a list of database members to run. Consult the database python files for available
+molecular systems. The choices for this keyword are case sensitive and must match the database
+python file.
 \end{itemize}
 \end{itemize}
 
@@ -523,7 +525,7 @@ A few miscellaneous notes are included below:
 \item All python keyword arguments are passed along to each function traversed in the
 python driver, so don't be concerned about separating them, grouping them or
 designating them for a nested job, e.g., db(opt(energy())). Where the same keyword is
-used my multiple python wrappers, the identity of the wrapper is prefixed to the keyword
+used by multiple python wrappers, the identity of the wrapper is prefixed to the keyword
 name, e.g., \pyoptionname{db\_mode} and \pyoptionname{opt\_mode}.
 \item Boolean keywords can be specified with any of \pyoptionval{\qq yes\qq}, 
 \pyoptionval{\qq true\qq}, \pyoptionval{\qq on\qq}, \pyoptionval{1}, \pyoptionval{\qq no\qq}, 
@@ -532,9 +534,8 @@ name, e.g., \pyoptionname{db\_mode} and \pyoptionname{opt\_mode}.
 can be specified with any of \pyoptionval{0}, \pyoptionval{\qq none\qq}, \pyoptionval{\qq energy\qq},
 \pyoptionval{1}, \pyoptionval{\qq first\qq}, \pyoptionval{\qq gradient\qq},
 \pyoptionval{2}, \pyoptionval{\qq second\qq}, \pyoptionval{\qq hessian\qq}.
-\item Keyword names (not options) are the last bastion of case sensitivity remaining
-in \PSIfour\ . The names in \pyoptionname{this\_formatting} must be lowercase. The keyword
-values in \pyoptionval{this\_formatting} can ususally be of any case, the exception being
-subset keywords in \texttt{database()} whose case structure must match the database file.
+\item Python keyword names and options are not sensitive to case, the exception being
+choices for the \pyoptionname{subset} keyword in \texttt{database()} whose case structure 
+must match the database file.
 \end{itemize}
 
