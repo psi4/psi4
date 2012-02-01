@@ -4,7 +4,7 @@ cc1: RHF-CCSD/6-31G** H2O geometry optimization via analytic gradients
 cc2: RHF-CCSD/6-31G** H2O geometry optimization via finite differences
   (all electron, MO-basis <ab|cd>)
 
-cc3:
+cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency analysis by finite-differences of gradients
 
 cc4: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>)
 

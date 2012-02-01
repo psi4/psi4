@@ -129,6 +129,7 @@ int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
   }
   if(core_total > dpd_memfree()) incore = 0;
 
+#ifdef DPD_DEBUG
   if (incore == 0) {
     switch(index) {
     case(pqsr): printf("Doing out-of-core pqsr sort.\n"); break; 
@@ -140,6 +141,7 @@ int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
     case(rspq): printf("Doing out-of-core rspq sort.\n"); break;
     }
   }
+#endif
 
 #ifdef ALL_BUF4_SORT_OOC
   switch(index) {
@@ -1634,6 +1636,7 @@ int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
         if(in_nbuckets == 1) in_rows_left = in_rows_per_bucket;
         else in_rows_left = InBuf->params->rowtot[Grs] % in_rows_per_bucket;
 
+#ifdef DPD_DEBUG
 	fprintf(stdout, "Gpq = %d\n", Gpq);
 	fprintf(stdout, "OutBuf.rowtot[Gpq]  = %d\n", OutBuf.params->rowtot[Gpq]);
 	fprintf(stdout, "OutBuf.coltot[Grs]  = %d\n", OutBuf.params->coltot[Grs]);
@@ -1646,6 +1649,7 @@ int dpd_buf4_sort(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 	fprintf(stdout, "in_rows_per_bucket  = %d\n", in_rows_per_bucket);
 	fprintf(stdout, "in_rows_left        = %d\n", in_rows_left);
 	fflush(stdout);
+#endif
 
         dpd_buf4_mat_irrep_init_block(&OutBuf, Gpq, out_rows_per_bucket);
         dpd_buf4_mat_irrep_init_block(InBuf, Grs, in_rows_per_bucket);
