@@ -19,15 +19,13 @@ dbse = 'CFLOW'
 # <<< Database Members >>>
 HRXN_SM = ['2Ae2Ae-3.8', 'BzBz_S-3.9']
 HRXN_LG = ['C70Bkycatch']
+
+# Polyenes
 Polyenes = []  #DOC equilibrium for linear polyene dimers for 2 through 16 monomer carbons
 Polyenes = ['2Ae2Ae-3.8', '4Ae4Ae-3.8', '6Ae6Ae-3.8', '8Ae8Ae-3.8', '10Ae10Ae-3.8', '12Ae12Ae-3.8', '14Ae14Ae-3.8', '16Ae16Ae-3.8',]
-#Arenes = []  #DOC equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
-#Arenes = ['BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.5',]
-Pulay = []  #DOC 5-point dissociation curve for bowl-in-bowl corannulene dimer
-Pulay = ['BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.73', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84',]
-Grimme60 = ['BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]  #DOC Grimme corannulene dimer, C60@buckybowl, and C60@buckycatcher
-Grimme70 = ['C70Bkycatch', 'C70Bkycatch_W', 'C70Bkycatch_T', ]  #DOC Grimme C70@buckycatcher at three orientations
 
+# Arenes
+# geometries are flexible; dist arrays may be filled with any positive intermonomer distance
 cBzBz = []  #DOC 5-point dissociation curve for benzene dimer
 dist = [3.7,3.8,3.9,4.0,4.1]
 for d in dist: cBzBz.append('BzBz_S-' + str(d))
@@ -46,23 +44,29 @@ for d in dist: c3Bz3Bz.append('3Bz3Bz_S-' + str(d))
 c4Bz3Bz = []  #DOC 5-point dissociation curve for tetracene-anthracene complex
 dist = [3.3,3.4,3.5,3.6,3.7]
 for d in dist: c4Bz3Bz.append('4Bz3Bz_S-' + str(d))
+Arenes = []  #DOC equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
+Arenes = ['BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.5',]
 temp = [cBzBz, c2BzBz, c2Bz2Bz, c3Bz2Bz, c3Bz3Bz, c4Bz3Bz]
-#cArenes = sum(temp, [])  #DOC 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
+cArenes = sum(temp, [])  #DOC 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
 
-#temp = [Polyenes, Arenes, ['BkybowlBkybowl-3.73'], Grimme60, ['C70Bkycatch'],]
-temp = [Polyenes, ['BkybowlBkybowl-3.73'], Grimme60, ['C70Bkycatch'],]
+# Pulay Buckyware
+cPulay = []  #DOC 4-point dissociation curve for bowl-in-bowl corannulene dimer
+cPulay = ['BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84',]
+temp = [cPulay, ['BkybowlBkybowl-3.73'],]
+Pulay = sum(temp, [])  #DOC Pulay bowl-in-bowl corannulene dimer dissociation curve and extra point
+
+# Grimme Buckyware
+Grimme60 = ['BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]  #DOC Grimme corannulene dimer, C60@buckybowl, and C60@buckycatcher
+Grimme70 = ['C70Bkycatch', 'C70Bkycatch_W', 'C70Bkycatch_T', ]  #DOC Grimme C70@buckycatcher at three orientations
+
+# Aggregates
+temp = [Polyenes, Arenes, ['BkybowlBkybowl-3.73'], Grimme60, ['C70Bkycatch'],]
 HRXN_EQ = sum(temp, [])
-
-#temp = [Polyenes, Arenes, Pulay, Grimme60]
-temp = [Polyenes, Pulay, Grimme60]
+temp = [Polyenes, Arenes, Pulay, Grimme60]
 Paper = sum(temp, [])  #DOC linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
-
-#temp = [Polyenes, cArenes, Pulay, Grimme60]
-temp = [Polyenes, Pulay, Grimme60]
+temp = [Polyenes, cArenes, Pulay, Grimme60]
 cPaper = sum(temp, [])  #DOC linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
-
-#temp = [Polyenes, cArenes, Pulay, Grimme60, Grimme70]
-temp = [Polyenes, Pulay, Grimme60, Grimme70]
+temp = [Polyenes, cArenes, Pulay, Grimme60, Grimme70]
 HRXN = sum(temp, [])
 
 # <<< Chemical Systems Involved >>>
@@ -184,52 +188,55 @@ for rxn in HRXN:
 
 # <<< Reference Values [kcal/mol] >>>
 BIND = {}
+nan = float('NaN')
 # Polyenes
 BIND['%s-%s'            % (dbse, '2Ae2Ae-3.8'            )] =    0.266
 BIND['%s-%s'            % (dbse, '4Ae4Ae-3.8'            )] =   -0.373
 BIND['%s-%s'            % (dbse, '6Ae6Ae-3.8'            )] =   -1.078
 BIND['%s-%s'            % (dbse, '8Ae8Ae-3.8'            )] =   -1.796
 BIND['%s-%s'            % (dbse, '10Ae10Ae-3.8'          )] =   -2.519
-BIND['%s-%s'            % (dbse, '12Ae12Ae-3.8'          )] =    0.000  # may exist, check with MSM
-BIND['%s-%s'            % (dbse, '14Ae14Ae-3.8'          )] =    0.000
-BIND['%s-%s'            % (dbse, '16Ae16Ae-3.8'          )] =    0.000
+BIND['%s-%s'            % (dbse, '12Ae12Ae-3.8'          )] =    nan    # may exist, check with MSM
+BIND['%s-%s'            % (dbse, '14Ae14Ae-3.8'          )] =    nan
+BIND['%s-%s'            % (dbse, '16Ae16Ae-3.8'          )] =    nan
 # Arenes
+for item in cArenes:  # backstop to allow arbitrary intermonomer geometries
+    BIND['%s-%s' % (dbse, item)] = nan 
 BIND['%s-%s'            % (dbse, 'BzBz_S-3.7'            )] =   -1.623
 BIND['%s-%s'            % (dbse, 'BzBz_S-3.8'            )] =   -1.765
 BIND['%s-%s'            % (dbse, 'BzBz_S-3.9'            )] =   -1.793  # BzBz minimum
 BIND['%s-%s'            % (dbse, 'BzBz_S-4.0'            )] =   -1.746
 BIND['%s-%s'            % (dbse, 'BzBz_S-4.1'            )] =   -1.651
-BIND['%s-%s'            % (dbse, '2BzBz_S-3.3'           )] =    0.000
-BIND['%s-%s'            % (dbse, '2BzBz_S-3.4'           )] =    0.000
-BIND['%s-%s'            % (dbse, '2BzBz_S-3.5'           )] =    0.000  # 2BzBz unconfirmed minimum
-BIND['%s-%s'            % (dbse, '2BzBz_S-3.6'           )] =    0.000
-BIND['%s-%s'            % (dbse, '2BzBz_S-3.7'           )] =    0.000
-BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.6'          )] =    0.000
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.3'           )] =    nan
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.4'           )] =    nan
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.5'           )] =    nan    # 2BzBz unconfirmed minimum
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.6'           )] =    nan
+BIND['%s-%s'            % (dbse, '2BzBz_S-3.7'           )] =    nan
+BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.6'          )] =    nan
 BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.7'          )] =   -4.314
 BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.8'          )] =   -4.384  # 2Bz2Bz minimum
 BIND['%s-%s'            % (dbse, '2Bz2Bz_S-3.9'          )] =   -4.283
-BIND['%s-%s'            % (dbse, '2Bz2Bz_S-4.0'          )] =    0.000
-BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.3'          )] =    0.000
+BIND['%s-%s'            % (dbse, '2Bz2Bz_S-4.0'          )] =    nan
+BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.3'          )] =    nan
 BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.4'          )] =   -7.607
 BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.5'          )] =   -7.802  # 3Bz2Bz minimum
 BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.6'          )] =   -7.680
-BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.7'          )] =    0.000
-BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.5'          )] =    0.000
-BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.6'          )] =    0.000
-BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.7'          )] =    0.000  # 3Bz3Bz unconfirmed minimum
-BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.8'          )] =    0.000
-BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.9'          )] =    0.000
-BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.3'          )] =    0.000
-BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.4'          )] =    0.000
-BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.5'          )] =    0.000  # 4Bz3Bz unconfirmed minimum
-BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.6'          )] =    0.000
-BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.7'          )] =    0.000
+BIND['%s-%s'            % (dbse, '3Bz2Bz_S-3.7'          )] =    nan
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.5'          )] =    nan
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.6'          )] =    nan
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.7'          )] =    nan    # 3Bz3Bz unconfirmed minimum
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.8'          )] =    nan
+BIND['%s-%s'            % (dbse, '3Bz3Bz_S-3.9'          )] =    nan
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.3'          )] =    nan
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.4'          )] =    nan
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.5'          )] =    nan    # 4Bz3Bz unconfirmed minimum
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.6'          )] =    nan
+BIND['%s-%s'            % (dbse, '4Bz3Bz_S-3.7'          )] =    nan
 # Pulay Buckyware
 BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.54'   )] =  -14.8
 BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.64'   )] =  -15.4
-BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.73'   )] =  -15.6  # bootstrapped, Pulay does not report
 BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.74'   )] =  -15.4
 BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.84'   )] =  -15.0
+BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.73'   )] =  -15.6  # bootstrapped, Pulay does not report
 # Grimme Buckyware
 BIND['%s-%s'            % (dbse, 'BkybowlBkybowl-3.63'   )] =  -17.0
 BIND['%s-%s'            % (dbse, 'C60Bkybowl'            )] =  -19.5
@@ -771,79 +778,48 @@ units angstrom
 }
 """)
 
-CFLOW_BzBz_S_3p9 = input.process_input("""
+for item in cBzBz:
+   distance = rxnpattern.match(item)
+   ffdistance = '%14.8f' % (float(distance.group(2)))
+   itemclean = dbse + '_' + re.sub('-', '_', re.sub(r'\.', 'p', item ))
+   vars()[itemclean] = input.process_input("""
 molecule dimer {
 0 1
-C        1.00000000     0.00000000    -0.39150000
-C        1.00000000     1.20507400     0.30425000
-C        1.00000000     1.20507400     1.69575000
-C        1.00000000     0.00000000     2.39150000
-C        1.00000000    -1.20507400     1.69575000
-C        1.00000000    -1.20507400     0.30425000
-H        1.00000000     0.00000000    -1.47150000
-H        1.00000000     2.14038200    -0.23575000
-H        1.00000000     2.14038200     2.23575000
-H        1.00000000     0.00000000     3.47150000
-H        1.00000000    -2.14038200     2.23575000
-H        1.00000000    -2.14038200    -0.23575000
+C        0.00000000    -0.39150000     0.00000000
+C        1.20507400     0.30425000     0.00000000
+C        1.20507400     1.69575000     0.00000000
+C        0.00000000     2.39150000     0.00000000
+C       -1.20507400     1.69575000     0.00000000
+C       -1.20507400     0.30425000     0.00000000
+H        0.00000000    -1.47150000     0.00000000
+H        2.14038200    -0.23575000     0.00000000
+H        2.14038200     2.23575000     0.00000000
+H        0.00000000     3.47150000     0.00000000
+H       -2.14038200     2.23575000     0.00000000
+H       -2.14038200    -0.23575000     0.00000000
 --
 0 1
-C        4.90000000     0.00000000    -0.39150000
-C        4.90000000    -1.20507400     0.30425000
-C        4.90000000    -1.20507400     1.69575000
-C        4.90000000     0.00000000     2.39150000
-C        4.90000000     1.20507400     1.69575000
-C        4.90000000     1.20507400     0.30425000
-H        4.90000000     0.00000000    -1.47150000
-H        4.90000000    -2.14038200    -0.23575000
-H        4.90000000    -2.14038200     2.23575000
-H        4.90000000     0.00000000     3.47150000
-H        4.90000000     2.14038200     2.23575000
-H        4.90000000     2.14038200    -0.23575000
+C        0.00000000    -0.39150000 %(ffdistance)s
+C       -1.20507400     0.30425000 %(ffdistance)s
+C       -1.20507400     1.69575000 %(ffdistance)s
+C        0.00000000     2.39150000 %(ffdistance)s
+C        1.20507400     1.69575000 %(ffdistance)s
+C        1.20507400     0.30425000 %(ffdistance)s
+H        0.00000000    -1.47150000 %(ffdistance)s
+H       -2.14038200    -0.23575000 %(ffdistance)s
+H       -2.14038200     2.23575000 %(ffdistance)s
+H        0.00000000     3.47150000 %(ffdistance)s
+H        2.14038200     2.23575000 %(ffdistance)s
+H        2.14038200    -0.23575000 %(ffdistance)s
 units angstrom
 }
-""")
+""" % vars() )
 
-CFLOW_2BzBz_S_3p5 = input.process_input("""
-molecule dimer {
-0 1
-C       -2.41591300    -0.70276500     0.00000000
-C       -1.23100600    -1.39300200     0.00000000
-C        0.00000000    -0.71089400     0.00000000
-C        0.00000000     0.71089400     0.00000000
-C       -1.23100600     1.39300200     0.00000000
-C       -2.41591300     0.70276500     0.00000000
-C        1.23100600    -1.39300200     0.00000000
-C        1.23100600     1.39300200     0.00000000
-C        2.41591300     0.70276500     0.00000000
-C        2.41591300    -0.70276500     0.00000000
-H        1.22889800    -2.47183700     0.00000000
-H       -3.35016300    -1.23782500     0.00000000
-H       -1.22889800    -2.47183700     0.00000000
-H       -1.22889800     2.47183700     0.00000000
-H       -3.35016300     1.23782500     0.00000000
-H        1.22889800     2.47183700     0.00000000
-H        3.35016300     1.23782500     0.00000000
-H        3.35016300    -1.23782500     0.00000000
---
-0 1
-C        0.00000000    -1.39150000     3.50000000
-C        1.20507400    -0.69575000     3.50000000
-C        1.20507400     0.69575000     3.50000000
-C        0.00000000     1.39150000     3.50000000
-C       -1.20507400     0.69575000     3.50000000
-C       -1.20507400    -0.69575000     3.50000000
-H        0.00000000    -2.47150000     3.50000000
-H        2.14038200    -1.23575000     3.50000000
-H        2.14038200     1.23575000     3.50000000
-H        0.00000000     2.47150000     3.50000000
-H       -2.14038200     1.23575000     3.50000000
-H       -2.14038200    -1.23575000     3.50000000
-units angstrom
-}
-""")
-
-CFLOW_2Bz2Bz_S_3p8 = input.process_input("""
+for item in c2BzBz:
+   distance = rxnpattern.match(item)
+   ffdistance = '%14.8f' % (float(distance.group(2)))
+   itemclean = dbse + '_' + re.sub('-', '_', re.sub(r'\.', 'p', item ))
+   vars()[itemclean] = input.process_input("""
 molecule dimer {
 0 1
 C       -2.41591300    -0.70276500     0.00000000
@@ -866,29 +842,76 @@ H        3.35016300     1.23782500     0.00000000
 H        3.35016300    -1.23782500     0.00000000
 --
 0 1
-C       -2.41591300    -0.70276500     3.80000000
-C       -1.23100600    -1.39300200     3.80000000
-C        0.00000000    -0.71089400     3.80000000
-C        0.00000000     0.71089400     3.80000000
-C       -1.23100600     1.39300200     3.80000000
-C       -2.41591300     0.70276500     3.80000000
-C        1.23100600    -1.39300200     3.80000000
-C        1.23100600     1.39300200     3.80000000
-C        2.41591300     0.70276500     3.80000000
-C        2.41591300    -0.70276500     3.80000000
-H        1.22889800    -2.47183700     3.80000000
-H       -3.35016300    -1.23782500     3.80000000
-H       -1.22889800    -2.47183700     3.80000000
-H       -1.22889800     2.47183700     3.80000000
-H       -3.35016300     1.23782500     3.80000000
-H        1.22889800     2.47183700     3.80000000
-H        3.35016300     1.23782500     3.80000000
-H        3.35016300    -1.23782500     3.80000000
+C        0.00000000    -1.39150000 %(ffdistance)s
+C        1.20507400    -0.69575000 %(ffdistance)s
+C        1.20507400     0.69575000 %(ffdistance)s
+C        0.00000000     1.39150000 %(ffdistance)s
+C       -1.20507400     0.69575000 %(ffdistance)s
+C       -1.20507400    -0.69575000 %(ffdistance)s
+H        0.00000000    -2.47150000 %(ffdistance)s
+H        2.14038200    -1.23575000 %(ffdistance)s
+H        2.14038200     1.23575000 %(ffdistance)s
+H        0.00000000     2.47150000 %(ffdistance)s
+H       -2.14038200     1.23575000 %(ffdistance)s
+H       -2.14038200    -1.23575000 %(ffdistance)s
 units angstrom
 }
-""")
+""" % vars() )
 
-CFLOW_3Bz2Bz_S_3p5 = input.process_input("""
+for item in c2Bz2Bz:
+   distance = rxnpattern.match(item)
+   ffdistance = '%14.8f' % (float(distance.group(2)))
+   itemclean = dbse + '_' + re.sub('-', '_', re.sub(r'\.', 'p', item ))
+   vars()[itemclean] = input.process_input("""
+molecule dimer {
+0 1
+C       -2.41591300    -0.70276500     0.00000000
+C       -1.23100600    -1.39300200     0.00000000
+C        0.00000000    -0.71089400     0.00000000
+C        0.00000000     0.71089400     0.00000000
+C       -1.23100600     1.39300200     0.00000000
+C       -2.41591300     0.70276500     0.00000000
+C        1.23100600    -1.39300200     0.00000000
+C        1.23100600     1.39300200     0.00000000
+C        2.41591300     0.70276500     0.00000000
+C        2.41591300    -0.70276500     0.00000000
+H        1.22889800    -2.47183700     0.00000000
+H       -3.35016300    -1.23782500     0.00000000
+H       -1.22889800    -2.47183700     0.00000000
+H       -1.22889800     2.47183700     0.00000000
+H       -3.35016300     1.23782500     0.00000000
+H        1.22889800     2.47183700     0.00000000
+H        3.35016300     1.23782500     0.00000000
+H        3.35016300    -1.23782500     0.00000000
+--
+0 1
+C       -2.41591300    -0.70276500 %(ffdistance)s
+C       -1.23100600    -1.39300200 %(ffdistance)s
+C        0.00000000    -0.71089400 %(ffdistance)s
+C        0.00000000     0.71089400 %(ffdistance)s
+C       -1.23100600     1.39300200 %(ffdistance)s
+C       -2.41591300     0.70276500 %(ffdistance)s
+C        1.23100600    -1.39300200 %(ffdistance)s
+C        1.23100600     1.39300200 %(ffdistance)s
+C        2.41591300     0.70276500 %(ffdistance)s
+C        2.41591300    -0.70276500 %(ffdistance)s
+H        1.22889800    -2.47183700 %(ffdistance)s
+H       -3.35016300    -1.23782500 %(ffdistance)s
+H       -1.22889800    -2.47183700 %(ffdistance)s
+H       -1.22889800     2.47183700 %(ffdistance)s
+H       -3.35016300     1.23782500 %(ffdistance)s
+H        1.22889800     2.47183700 %(ffdistance)s
+H        3.35016300     1.23782500 %(ffdistance)s
+H        3.35016300    -1.23782500 %(ffdistance)s
+units angstrom
+}
+""" % vars() )
+
+for item in c3Bz2Bz:
+   distance = rxnpattern.match(item)
+   ffdistance = '%14.8f' % (float(distance.group(2)))
+   itemclean = dbse + '_' + re.sub('-', '_', re.sub(r'\.', 'p', item ))
+   vars()[itemclean] = input.process_input("""
 molecule dimer {
 0 1
 C       -3.63206100    -0.70629600     0.00000000
@@ -917,29 +940,33 @@ H        4.56737900     1.23960400     0.00000000
 H        2.45137100     2.47594200     0.00000000
 --
 0 1
-C       -2.41591300    -0.70276500     3.50000000
-C       -1.23100600    -1.39300200     3.50000000
-C        0.00000000    -0.71089400     3.50000000
-C        0.00000000     0.71089400     3.50000000
-C       -1.23100600     1.39300200     3.50000000
-C       -2.41591300     0.70276500     3.50000000
-C        1.23100600    -1.39300200     3.50000000
-C        1.23100600     1.39300200     3.50000000
-C        2.41591300     0.70276500     3.50000000
-C        2.41591300    -0.70276500     3.50000000
-H        1.22889800    -2.47183700     3.50000000
-H       -3.35016300    -1.23782500     3.50000000
-H       -1.22889800    -2.47183700     3.50000000
-H       -1.22889800     2.47183700     3.50000000
-H       -3.35016300     1.23782500     3.50000000
-H        1.22889800     2.47183700     3.50000000
-H        3.35016300     1.23782500     3.50000000
-H        3.35016300    -1.23782500     3.50000000
+C       -2.41591300    -0.70276500 %(ffdistance)s
+C       -1.23100600    -1.39300200 %(ffdistance)s
+C        0.00000000    -0.71089400 %(ffdistance)s
+C        0.00000000     0.71089400 %(ffdistance)s
+C       -1.23100600     1.39300200 %(ffdistance)s
+C       -2.41591300     0.70276500 %(ffdistance)s
+C        1.23100600    -1.39300200 %(ffdistance)s
+C        1.23100600     1.39300200 %(ffdistance)s
+C        2.41591300     0.70276500 %(ffdistance)s
+C        2.41591300    -0.70276500 %(ffdistance)s
+H        1.22889800    -2.47183700 %(ffdistance)s
+H       -3.35016300    -1.23782500 %(ffdistance)s
+H       -1.22889800    -2.47183700 %(ffdistance)s
+H       -1.22889800     2.47183700 %(ffdistance)s
+H       -3.35016300     1.23782500 %(ffdistance)s
+H        1.22889800     2.47183700 %(ffdistance)s
+H        3.35016300     1.23782500 %(ffdistance)s
+H        3.35016300    -1.23782500 %(ffdistance)s
 units angstrom
 }
-""")
+""" % vars() )
 
-CFLOW_3Bz3Bz_S_3p7 = input.process_input("""
+for item in c3Bz3Bz:
+   distance = rxnpattern.match(item)
+   ffdistance = '%14.8f' % (float(distance.group(2)))
+   itemclean = dbse + '_' + re.sub('-', '_', re.sub(r'\.', 'p', item ))
+   vars()[itemclean] = input.process_input("""
 molecule dimer {
 0 1
 C       -3.63206100    -0.70629600     0.00000000
@@ -968,35 +995,39 @@ H        4.56737900     1.23960400     0.00000000
 H        2.45137100     2.47594200     0.00000000
 --
 0 1
-C       -3.63206100    -0.70629600     3.70000000
-C       -2.45292600    -1.39698600     3.70000000
-C       -1.21398000    -0.71604800     3.70000000
-C       -1.21398000     0.71604800     3.70000000
-C       -2.45292600     1.39698600     3.70000000
-C       -3.63206100     0.70629600     3.70000000
-C        0.00000000    -1.39478500     3.70000000
-C        0.00000000     1.39478500     3.70000000
-C        1.21398000     0.71604800     3.70000000
-C        1.21398000    -0.71604800     3.70000000
-C        2.45292600    -1.39698600     3.70000000
-H        2.45137100    -2.47594200     3.70000000
-C        3.63206100    -0.70629600     3.70000000
-C        3.63206100     0.70629600     3.70000000
-C        2.45292600     1.39698600     3.70000000
-H        0.00000000    -2.47562800     3.70000000
-H       -4.56737900    -1.23960400     3.70000000
-H       -2.45137100    -2.47594200     3.70000000
-H       -2.45137100     2.47594200     3.70000000
-H       -4.56737900     1.23960400     3.70000000
-H        0.00000000     2.47562800     3.70000000
-H        4.56737900    -1.23960400     3.70000000
-H        4.56737900     1.23960400     3.70000000
-H        2.45137100     2.47594200     3.70000000
+C       -3.63206100    -0.70629600 %(ffdistance)s
+C       -2.45292600    -1.39698600 %(ffdistance)s
+C       -1.21398000    -0.71604800 %(ffdistance)s
+C       -1.21398000     0.71604800 %(ffdistance)s
+C       -2.45292600     1.39698600 %(ffdistance)s
+C       -3.63206100     0.70629600 %(ffdistance)s
+C        0.00000000    -1.39478500 %(ffdistance)s
+C        0.00000000     1.39478500 %(ffdistance)s
+C        1.21398000     0.71604800 %(ffdistance)s
+C        1.21398000    -0.71604800 %(ffdistance)s
+C        2.45292600    -1.39698600 %(ffdistance)s
+H        2.45137100    -2.47594200 %(ffdistance)s
+C        3.63206100    -0.70629600 %(ffdistance)s
+C        3.63206100     0.70629600 %(ffdistance)s
+C        2.45292600     1.39698600 %(ffdistance)s
+H        0.00000000    -2.47562800 %(ffdistance)s
+H       -4.56737900    -1.23960400 %(ffdistance)s
+H       -2.45137100    -2.47594200 %(ffdistance)s
+H       -2.45137100     2.47594200 %(ffdistance)s
+H       -4.56737900     1.23960400 %(ffdistance)s
+H        0.00000000     2.47562800 %(ffdistance)s
+H        4.56737900    -1.23960400 %(ffdistance)s
+H        4.56737900     1.23960400 %(ffdistance)s
+H        2.45137100     2.47594200 %(ffdistance)s
 units angstrom
 }
-""")
+""" % vars() )
 
-CFLOW_4Bz3Bz_S_3p5 = input.process_input("""
+for item in c4Bz3Bz:
+   distance = rxnpattern.match(item)
+   ffdistance = '%14.8f' % (float(distance.group(2)))
+   itemclean = dbse + '_' + re.sub('-', '_', re.sub(r'\.', 'p', item ))
+   vars()[itemclean] = input.process_input("""
 molecule dimer {
 0 1
 C        0.69575000    -1.20507400     0.00000000
@@ -1031,33 +1062,33 @@ H       -1.23575000     9.37082600     0.00000000
 H        1.23575000     9.37082600     0.00000000
 --
 0 1
-C       -3.63206100    -0.70629600     3.50000000
-C       -2.45292600    -1.39698600     3.50000000
-C       -1.21398000    -0.71604800     3.50000000
-C       -1.21398000     0.71604800     3.50000000
-C       -2.45292600     1.39698600     3.50000000
-C       -3.63206100     0.70629600     3.50000000
-C        0.00000000    -1.39478500     3.50000000
-C        0.00000000     1.39478500     3.50000000
-C        1.21398000     0.71604800     3.50000000
-C        1.21398000    -0.71604800     3.50000000
-C        2.45292600    -1.39698600     3.50000000
-H        2.45137100    -2.47594200     3.50000000
-C        3.63206100    -0.70629600     3.50000000
-C        3.63206100     0.70629600     3.50000000
-C        2.45292600     1.39698600     3.50000000
-H        0.00000000    -2.47562800     3.50000000
-H       -4.56737900    -1.23960400     3.50000000
-H       -2.45137100    -2.47594200     3.50000000
-H       -2.45137100     2.47594200     3.50000000
-H       -4.56737900     1.23960400     3.50000000
-H        0.00000000     2.47562800     3.50000000
-H        4.56737900    -1.23960400     3.50000000
-H        4.56737900     1.23960400     3.50000000
-H        2.45137100     2.47594200     3.50000000
+C       -3.63206100    -0.70629600 %(ffdistance)s
+C       -2.45292600    -1.39698600 %(ffdistance)s
+C       -1.21398000    -0.71604800 %(ffdistance)s
+C       -1.21398000     0.71604800 %(ffdistance)s
+C       -2.45292600     1.39698600 %(ffdistance)s
+C       -3.63206100     0.70629600 %(ffdistance)s
+C        0.00000000    -1.39478500 %(ffdistance)s
+C        0.00000000     1.39478500 %(ffdistance)s
+C        1.21398000     0.71604800 %(ffdistance)s
+C        1.21398000    -0.71604800 %(ffdistance)s
+C        2.45292600    -1.39698600 %(ffdistance)s
+H        2.45137100    -2.47594200 %(ffdistance)s
+C        3.63206100    -0.70629600 %(ffdistance)s
+C        3.63206100     0.70629600 %(ffdistance)s
+C        2.45292600     1.39698600 %(ffdistance)s
+H        0.00000000    -2.47562800 %(ffdistance)s
+H       -4.56737900    -1.23960400 %(ffdistance)s
+H       -2.45137100    -2.47594200 %(ffdistance)s
+H       -2.45137100     2.47594200 %(ffdistance)s
+H       -4.56737900     1.23960400 %(ffdistance)s
+H        0.00000000     2.47562800 %(ffdistance)s
+H        4.56737900    -1.23960400 %(ffdistance)s
+H        4.56737900     1.23960400 %(ffdistance)s
+H        2.45137100     2.47594200 %(ffdistance)s
 units angstrom
 }
-""")
+""" % vars() )
 
 CFLOW_BkybowlBkybowl_3p54 = input.process_input("""
 molecule dimer {
