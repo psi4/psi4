@@ -4,7 +4,6 @@ all: default
 default: boost.compiled
 
 install:
-clean:
 
 clean:
 

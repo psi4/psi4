@@ -113,23 +113,6 @@ AC_ARG_WITH(max-am-deriv2,[  --with-max-am-deriv2    maximum AM in ERI second de
 ])
 AC_SUBST(LIBDERIV_NEW_AM2)
 
-PSI_INTEGRALS_STANDARD=1
-AC_ARG_WITH(integrals-standard,[  --with-integrals-standard     specifies the standard for the basis normalization, etc.
-                                The allowed values are cca and psi (default).],[
-case $withval in
-  psi)
-    PSI_INTEGRALS_STANDARD=0
-    ;;
-  cca)
-    PSI_INTEGRALS_STANDARD=1
-    ;;
-  *)
-    AC_MSG_WARN([did not recognize value $withval. will assume the default])
-    ;;
-esac
-])
-AC_DEFINE_UNQUOTED(PSI_INTEGRALS_STANDARD,$PSI_INTEGRALS_STANDARD)
-
 ########
 ## Check for programs
 ########
