@@ -929,6 +929,7 @@ AC_CONFIG_FILES([
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
+          src/bin/psi4/gitversion.py
           src/bin/response/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
@@ -1026,6 +1027,7 @@ AC_CONFIG_FILES([
           tests/mpn-bh/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
+          tests/cc3/Makefile
           tests/cc4/Makefile
           tests/cc4a/Makefile
           tests/cc5a/Makefile
@@ -1041,6 +1043,7 @@ AC_CONFIG_FILES([
           tests/cc12/Makefile
           tests/cc13/Makefile
           tests/cc13a/Makefile
+          tests/cc14/Makefile
           tests/cc15/Makefile
           tests/cc16/Makefile
           tests/cc17/Makefile
