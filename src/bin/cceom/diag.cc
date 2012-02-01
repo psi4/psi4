@@ -394,12 +394,11 @@ timer_off("INIT GUESS");
       G = block_matrix(L,L);
 
       /* reuse values from old G matrix */
-			/* if last step was restart, sigma is OK but recompute full G matrix */
-			if (ignore_G_old)
-			  already_sigma = 0;
-		  for (i=0; i<already_sigma; ++i)
-		    for (j=0; j<already_sigma; ++j)
-			    G[i][j] = G_old[i][j];
+      /* if last step was restart, sigma is OK but recompute full G matrix */
+      if (ignore_G_old) already_sigma = 0;
+      for (i=0; i<already_sigma; ++i)
+        for (j=0; j<already_sigma; ++j)
+          G[i][j] = G_old[i][j];
 
       for (i=0;i<L;++i) {
 
@@ -579,18 +578,18 @@ timer_off("INIT GUESS");
       timer_on("CALC RES");
 #endif /* timing */
 
-        /* rezero residual vector for each root */
-				if (params.full_matrix) {
-				  R0 = 0.0;
-					psio_write_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
-			  }
-        dpd_file2_scm(&RIA, 0.0);
-        dpd_buf4_scm(&RIjAb, 0.0);
-        if (params.eom_ref > 0) {
-          dpd_file2_scm(&Ria, 0.0);
-          dpd_buf4_scm(&RIJAB, 0.0);
-          dpd_buf4_scm(&Rijab, 0.0);
-        }
+      /* rezero residual vector for each root */
+      if (params.full_matrix) {
+        R0 = 0.0;
+        psio_write_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
+      }
+      dpd_file2_scm(&RIA, 0.0);
+      dpd_buf4_scm(&RIjAb, 0.0);
+      if (params.eom_ref > 0) {
+        dpd_file2_scm(&Ria, 0.0);
+        dpd_buf4_scm(&RIJAB, 0.0);
+        dpd_buf4_scm(&Rijab, 0.0);
+      }
 
         /* only one cc3 root can be sought */
         if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) )  {
@@ -610,7 +609,7 @@ timer_off("INIT GUESS");
             dpd_file2_axpbycz(&CME, &SIA, &RIA, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             dpd_file2_close(&CME);
             dpd_file2_close(&SIA);
-  
+
             sprintf(lbl, "%s %d", "CMnEf", i);
             dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, lbl);
             sprintf(lbl, "%s %d", "SIjAb", i);
@@ -619,15 +618,15 @@ timer_off("INIT GUESS");
             dpd_buf4_close(&CMnEf);
             dpd_buf4_close(&SIjAb);
 
-						if (params.full_matrix) {
+            if (params.full_matrix) {
               sprintf(lbl, "%s %d", "S0", i);
-							psio_read_entry(EOM_SIA, lbl, (char *) &(S0), sizeof(double));
+              psio_read_entry(EOM_SIA, lbl, (char *) &(S0), sizeof(double));
               sprintf(lbl, "%s %d", "C0", i);
-							psio_read_entry(EOM_CME, lbl, (char *) &(C0), sizeof(double));
-							psio_read_entry(EOM_R, "R0", (char *) &(R0), sizeof(double));
-							R0 += -1.0*lambda[k]*alpha[i][k]*C0 + alpha[i][k]*S0;
-							psio_write_entry(EOM_R, "R0", (char *) &(R0), sizeof(double));
-						}
+              psio_read_entry(EOM_CME, lbl, (char *) &(C0), sizeof(double));
+              psio_read_entry(EOM_R, "R0", (char *) &(R0), sizeof(double));
+              R0 += -1.0*lambda[k]*alpha[i][k]*C0 + alpha[i][k]*S0;
+              psio_write_entry(EOM_R, "R0", (char *) &(R0), sizeof(double));
+            }
           }
           else if (params.eom_ref == 1) { /* ROHF residual */
             sprintf(lbl, "%s %d", "SIA", i);
@@ -650,8 +649,7 @@ timer_off("INIT GUESS");
             dpd_file2_init(&Sia, EOM_Sia, C_irr, 0, 1, lbl);
             sprintf(lbl, "%s %d", "Cme", i);
             dpd_file2_init(&Cme, EOM_Cme, C_irr, 0, 1, lbl);
-            dpd_file2_axpbycz(&Cme, &Sia, &Ria,
-			      -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            dpd_file2_axpbycz(&Cme, &Sia, &Ria, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             dpd_file2_close(&Cme);
             dpd_file2_close(&Sia);
 
@@ -659,8 +657,7 @@ timer_off("INIT GUESS");
             dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d", "SIJAB", i);
             dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
-            dpd_buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, 
-			     -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            dpd_buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             dpd_buf4_close(&CMNEF);
             dpd_buf4_close(&SIJAB);
 
@@ -668,8 +665,7 @@ timer_off("INIT GUESS");
             dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d", "Sijab", i);
             dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, 2, 7, 2, 7, 0, lbl);
-            dpd_buf4_axpbycz(&Cmnef, &Sijab, &Rijab,
-			     -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            dpd_buf4_axpbycz(&Cmnef, &Sijab, &Rijab, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             dpd_buf4_close(&Cmnef);
             dpd_buf4_close(&Sijab);
           }
@@ -694,8 +690,7 @@ timer_off("INIT GUESS");
             dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, lbl);
             sprintf(lbl, "%s %d", "Cme", i);
             dpd_file2_init(&Cme, EOM_Cme, C_irr, 2, 3, lbl);
-            dpd_file2_axpbycz(&Cme, &Sia, &Ria,
-			      -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            dpd_file2_axpbycz(&Cme, &Sia, &Ria, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             dpd_file2_close(&Cme);
             dpd_file2_close(&Sia);
 
@@ -703,8 +698,7 @@ timer_off("INIT GUESS");
             dpd_buf4_init(&CMNEF, EOM_CMNEF, C_irr, 2, 7, 2, 7, 0, lbl);
             sprintf(lbl, "%s %d", "SIJAB", i);
             dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, lbl);
-            dpd_buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, 
-			     -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            dpd_buf4_axpbycz(&CMNEF, &SIJAB, &RIJAB, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             dpd_buf4_close(&CMNEF);
             dpd_buf4_close(&SIJAB);
 
@@ -712,8 +706,7 @@ timer_off("INIT GUESS");
             dpd_buf4_init(&Cmnef, EOM_Cmnef, C_irr, 12, 17, 12, 17, 0, lbl);
             sprintf(lbl, "%s %d", "Sijab", i);
             dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, 12, 17, 12, 17, 0, lbl);
-            dpd_buf4_axpbycz(&Cmnef, &Sijab, &Rijab,
-			     -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
+            dpd_buf4_axpbycz(&Cmnef, &Sijab, &Rijab, -1.0*lambda[k]*alpha[i][k], alpha[i][k], 1.0);
             dpd_buf4_close(&Cmnef);
             dpd_buf4_close(&Sijab);
           }
@@ -739,12 +732,11 @@ timer_off("INIT GUESS");
         if (params.eom_ref == 0) {
           dpd_buf4_sort(&RIjAb, EOM_TMP, pqsr, 0, 5, "RIjbA");
           dpd_buf4_init(&RIjbA, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
-					if (!params.full_matrix) {
-					  norm = norm_C_rhf(&RIA, &RIjAb, &RIjbA);
-					} else {
-					  psio_read_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
-					  norm = norm_C_rhf_full(R0, &RIA, &RIjAb, &RIjbA);
-					}
+          if (!params.full_matrix) norm = norm_C_rhf(&RIA, &RIjAb, &RIjbA);
+          else {
+            psio_read_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
+            norm = norm_C_rhf_full(R0, &RIA, &RIjAb, &RIjbA);
+          }
         }
         else norm = norm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb);
 
@@ -752,46 +744,39 @@ timer_off("INIT GUESS");
         fprintf(outfile,"Norm of residual vector %d  after precondition %18.13lf\n",k,norm);
 #endif
 
-        fprintf(outfile,"%22d%15.10lf%11.2e%12.2e",k+1,lambda[k],
-		lambda[k]-lambda_old[k], norm);
+        fprintf(outfile,"%22d%15.10lf%11.2e%12.2e",k+1,lambda[k], lambda[k]-lambda_old[k], norm);
 
         /* Check for convergence and add new vector if not converged */
         if ( (norm > eom_params.residual_tol) || (fabs(lambda[k]-lambda_old[k]) > eom_params.eval_tol) ) {
           fprintf(outfile,"%7s\n","N");
 
-	    if(params.eom_ref == 0) precondition_RHF(&RIA, &RIjAb, lambda[k]);
-	    else precondition(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, lambda[k]);
+          if(params.eom_ref == 0) precondition_RHF(&RIA, &RIjAb, lambda[k]);
+          else precondition(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, lambda[k]);
 
 	  if(params.eom_ref == 0) {
-
-	    /* if(params.local) {
-	       local_filter_T1(&RIA, 0);
-	       local_filter_T2(&RIjAb, 0);
-	       } */
 
             /* Normalize R */
             dpd_buf4_sort(&RIjAb, EOM_TMP, pqsr, 0, 5, "RIjbA");
             dpd_buf4_init(&RIjbA, EOM_TMP, C_irr, 0, 5, 0, 5, 0, "RIjbA");
 
-            if (!params.full_matrix) {
-              norm = norm_C_rhf(&RIA, &RIjAb, &RIjbA);
-					  } else {
-						  psio_read_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
-						  norm = norm_C_rhf_full(R0, &RIA, &RIjAb, &RIjbA);
-						}
+            if (!params.full_matrix) norm = norm_C_rhf(&RIA, &RIjAb, &RIjbA);
+            else {
+              psio_read_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
+              norm = norm_C_rhf_full(R0, &RIA, &RIjAb, &RIjbA);
+            }
             dpd_buf4_close(&RIjbA);
 
-						if (params.full_matrix) {
+            if (params.full_matrix) {
               R0 *= 1.0/norm;
-						  psio_write_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
-					  }
+              psio_write_entry(EOM_R, "R0", (char *) &R0, sizeof(double));
+            }
             dpd_file2_scm(&RIA, 1.0/norm);
             dpd_buf4_scm(&RIjAb, 1.0/norm);
-      }
-      else {
+          }
+          else {
             norm = norm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb);
             scm_C(&RIA, &Ria, &RIJAB, &Rijab, &RIjAb, 1.0/norm);
-      }
+          }
 
 #ifdef EOM_DEBUG
           fprintf(outfile,"Norm of residual vector af preconditioning %18.13lf\n",norm);
@@ -969,11 +954,11 @@ timer_off("INIT GUESS");
       fprintf(outfile,"                (eV)     (cm^-1)     (au)             (au)\n");
       for (i=0;i<eom_params.cs_per_irrep[C_irr];++i) {
         if (converged[i] == 1) {
-				  if (!params.full_matrix) totalE =lambda_old[i]+moinfo.eref+moinfo.ecc; 
-					else totalE =lambda_old[i]+moinfo.eref;
+          if (!params.full_matrix) totalE =lambda_old[i]+moinfo.eref+moinfo.ecc; 
+          else totalE =lambda_old[i]+moinfo.eref;
 
           // save a list of all converged energies in order by irrep and then energy
-		  eom_params.state_energies[num_converged_index] = totalE;
+          eom_params.state_energies[num_converged_index] = totalE;
           // Put this list in environment for testing - I don't like it much because it mixes all
           // the irreps together
           /*- strings so that variable-name psi variables get parsed in docs -*/
@@ -983,6 +968,63 @@ timer_off("INIT GUESS");
           s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";
           Process::environment.globals[s.str()] = totalE;
 					
+          fprintf(outfile,"EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n", ++num_converged_index,
+             lambda_old[i]* _hartree2ev, lambda_old[i]* _hartree2wavenumbers, lambda_old[i], totalE);
+
+          /* print out largest components of wavefunction */
+          fprintf(outfile, "\nLargest components of excited wave function #%d:\n", num_converged_index);
+          if(params.eom_ref == 0) {
+            sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
+            dpd_file2_init(&CME, CC_RAMPS, C_irr, 0, 1, lbl);
+            sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
+            dpd_buf4_init(&CMnEf, CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+
+            amp_write_RHF(&CME, &CMnEf, eom_params.amps_to_print);
+
+            dpd_file2_close(&CME);
+            dpd_buf4_close(&CMnEf);
+          }
+          else if (params.eom_ref == 1) {
+            sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
+            dpd_file2_init(&CME, CC_RAMPS, C_irr, 0, 1, lbl);
+            sprintf(lbl, "%s %d %d", "Ria", C_irr, i);
+            dpd_file2_init(&Cme, CC_RAMPS, C_irr, 0, 1, lbl);
+            sprintf(lbl, "%s %d %d", "RIJAB", C_irr, i);
+            dpd_buf4_init(&CMNEF, CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+            sprintf(lbl, "%s %d %d", "Rijab", C_irr, i);
+            dpd_buf4_init(&Cmnef, CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+            sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
+            dpd_buf4_init(&CMnEf, CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
+
+            amp_write_ROHF(&CME, &Cme, &CMNEF, &Cmnef, &CMnEf, eom_params.amps_to_print);
+
+            dpd_file2_close(&CME);
+            dpd_file2_close(&Cme);
+            dpd_buf4_close(&CMNEF);
+            dpd_buf4_close(&Cmnef);
+            dpd_buf4_close(&CMnEf);
+          }
+          else if (params.eom_ref == 2) {
+            sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
+            dpd_file2_init(&CME, CC_RAMPS, C_irr, 0, 1, lbl);
+            sprintf(lbl, "%s %d %d", "Ria", C_irr, i);
+            dpd_file2_init(&Cme, CC_RAMPS, C_irr, 2, 3, lbl);
+            sprintf(lbl, "%s %d %d", "RIJAB", C_irr, i);
+            dpd_buf4_init(&CMNEF, CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
+            sprintf(lbl, "%s %d %d", "Rijab", C_irr, i);
+            dpd_buf4_init(&Cmnef, CC_RAMPS, C_irr, 12, 17, 12, 17, 0, lbl);
+            sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
+            dpd_buf4_init(&CMnEf, CC_RAMPS, C_irr, 22, 28, 22, 28, 0, lbl);
+
+            amp_write_UHF(&CME, &Cme, &CMNEF, &Cmnef, &CMnEf, eom_params.amps_to_print);
+
+            dpd_file2_close(&CME);
+            dpd_file2_close(&Cme);
+            dpd_buf4_close(&CMNEF);
+            dpd_buf4_close(&Cmnef);
+            dpd_buf4_close(&CMnEf);
+          } // UHF
+
           // The 'key' or 'property' root is stored in eom_params.prop_sym and prop_root
           // by default it is the uppermost state but not necesarily
           if (C_irr == eom_params.prop_sym && i == eom_params.prop_root) {
@@ -990,134 +1032,17 @@ timer_off("INIT GUESS");
             Process::environment.globals["CURRENT ENERGY"] = totalE;
             fprintf(outfile,"\tPutting into environment CURRENT ENERGY:             %15.10lf\n", totalE);
             Process::environment.globals["CURRENT CORRELATION ENERGY"] = lambda_old[i]+moinfo.ecc;
-            fprintf(outfile,"\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n\n", lambda_old[i]+moinfo.ecc);
+            fprintf(outfile,"\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n", lambda_old[i]+moinfo.ecc);
           }
 
-          fprintf(outfile,"EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n",
-              ++num_converged_index,
-		  lambda_old[i]* _hartree2ev, lambda_old[i]* _hartree2wavenumbers,
-		  lambda_old[i], totalE);
-
-          /* print out largest components of wavefunction */
-	        fprintf(outfile, "\nLargest components of excited wave function #%d:\n",
-                num_converged_index);
-	      if(params.eom_ref == 0) {
-	        sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
-	        dpd_file2_init(&CME, CC_RAMPS, C_irr, 0, 1, lbl);
-	        sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
-	        dpd_buf4_init(&CMnEf, CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
-
-	        amp_write_RHF(&CME, &CMnEf, eom_params.amps_to_print);
-
-	        dpd_file2_close(&CME);
-	        dpd_buf4_close(&CMnEf);
-	      }
-          else if (params.eom_ref == 1) {
-	        sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
-	        dpd_file2_init(&CME, CC_RAMPS, C_irr, 0, 1, lbl);
-	        sprintf(lbl, "%s %d %d", "Ria", C_irr, i);
-	        dpd_file2_init(&Cme, CC_RAMPS, C_irr, 0, 1, lbl);
-	        sprintf(lbl, "%s %d %d", "RIJAB", C_irr, i);
-	        dpd_buf4_init(&CMNEF, CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
-	        sprintf(lbl, "%s %d %d", "Rijab", C_irr, i);
-	        dpd_buf4_init(&Cmnef, CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
-	        sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
-	        dpd_buf4_init(&CMnEf, CC_RAMPS, C_irr, 0, 5, 0, 5, 0, lbl);
-
-            amp_write_ROHF(&CME, &Cme, &CMNEF, &Cmnef, &CMnEf,
-              eom_params.amps_to_print);
-
-	        dpd_file2_close(&CME);
-	        dpd_file2_close(&Cme);
-	        dpd_buf4_close(&CMNEF);
-	        dpd_buf4_close(&Cmnef);
-	        dpd_buf4_close(&CMnEf);
-          }
-          else if (params.eom_ref == 2) {
-	        sprintf(lbl, "%s %d %d", "RIA", C_irr, i);
-	        dpd_file2_init(&CME, CC_RAMPS, C_irr, 0, 1, lbl);
-	        sprintf(lbl, "%s %d %d", "Ria", C_irr, i);
-	        dpd_file2_init(&Cme, CC_RAMPS, C_irr, 2, 3, lbl);
-	        sprintf(lbl, "%s %d %d", "RIJAB", C_irr, i);
-	        dpd_buf4_init(&CMNEF, CC_RAMPS, C_irr, 2, 7, 2, 7, 0, lbl);
-	        sprintf(lbl, "%s %d %d", "Rijab", C_irr, i);
-	        dpd_buf4_init(&Cmnef, CC_RAMPS, C_irr, 12, 17, 12, 17, 0, lbl);
-	        sprintf(lbl, "%s %d %d", "RIjAb", C_irr, i);
-	        dpd_buf4_init(&CMnEf, CC_RAMPS, C_irr, 22, 28, 22, 28, 0, lbl);
-
-            amp_write_UHF(&CME, &Cme, &CMNEF, &Cmnef, &CMnEf,
-              eom_params.amps_to_print);
-
-	        dpd_file2_close(&CME);
-	        dpd_file2_close(&Cme);
-	        dpd_buf4_close(&CMNEF);
-	        dpd_buf4_close(&Cmnef);
-	        dpd_buf4_close(&CMnEf);
-        }
-      }
-
-        /* for CC3 debugging  */
-        /*
-         sort_C(0, C_irr);
-         init_S1(0, C_irr);
-         init_S2(0, C_irr);
-
-         sigmaSS(0, C_irr);
-         sigmaSD(0, C_irr);
-         sigmaDS(0, C_irr);
-         sigmaDD(0, C_irr);
-
-         cc3_HC1(0, C_irr);
-         norm_HC1(0, C_irr);
-         cc3_HC1ET1(0, C_irr);
-
-         dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, "SIA 0");
-         dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, "Sia 0");
-         dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, "SIJAB 0");
-         dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, 12, 17, 12, 17, 0, "Sijab 0");
-         dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, "SIjAb 0");
-         norm = norm_C(&SIA, &Sia, &SIJAB, &Sijab, &SIjAb);
-         fprintf(outfile,"<Sigma(H CCSD)|Sigma(H CCSD)> = %15.10lf\n", norm*norm);
-         dpd_file2_close(&SIA);
-         dpd_file2_close(&Sia);
-         dpd_buf4_close(&SIJAB);
-         dpd_buf4_close(&Sijab);
-         dpd_buf4_close(&SIjAb);
-
-         sigmaCC3(0, C_irr,lambda_old[0]);
-
-         dpd_file2_init(&SIA, EOM_SIA, C_irr, 0, 1, "SIA 0");
-         dpd_file2_init(&Sia, EOM_Sia, C_irr, 2, 3, "Sia 0");
-         dpd_buf4_init(&SIJAB, EOM_SIJAB, C_irr, 2, 7, 2, 7, 0, "SIJAB 0");
-         dpd_buf4_init(&Sijab, EOM_Sijab, C_irr, 12, 17, 12, 17, 0, "Sijab 0");
-         dpd_buf4_init(&SIjAb, EOM_SIjAb, C_irr, 22, 28, 22, 28, 0, "SIjAb 0");
-         norm = norm_C(&SIA, &Sia, &SIJAB, &Sijab, &SIjAb);
-         fprintf(outfile,"<Sigma(H CC3)|Sigma(H CC3)>   = %15.10lf\n", norm*norm);
-         dpd_file2_close(&SIA);
-         dpd_file2_close(&Sia);
-         dpd_buf4_close(&SIJAB);
-         dpd_buf4_close(&Sijab);
-         dpd_buf4_close(&SIjAb);
-         */
-      }
-      /* psio_write_entry(CC_INFO, "CCEOM Energy",
-		       (char *) &(lambda_old[eom_params.prop_root-1]), sizeof(double));
-      i = moinfo.sym ^ C_irr;
-      psio_write_entry(CC_INFO, "CCEOM State Irrep", (char *) &i, sizeof(int));
-
-      fprintf(outfile,"\nCCEOM energy %.10lf and state irrep %d written to CC_INFO.\n",
-      lambda_old[eom_params.prop_root-1], i); */
-    }
+        } // converged[i] == 1
+      } // i
+    } // if num_converged > 0
     fprintf(outfile,"\n");
 
     free(lambda_old);
     free_block(alpha_old);
     free(converged);
-    /* I don't want to do this for local CC calculations -TDC */
-    /* if(!params.local) {
-      for(i=CC_TMP; i<CC_RAMPS; i++) psio_close(i,0);
-      for(i=CC_TMP; i<CC_RAMPS; i++) psio_open(i,0);
-    } */
   }
 
   /* Save the energy vector to checkpoint */
@@ -1136,26 +1061,26 @@ timer_off("INIT GUESS");
 
 void init_C0(int i) {
   char lbl[32];
-	double zip = 0.0;
+  double zip = 0.0;
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "C0", i);
     psio_write_entry(EOM_CME, lbl, (char *) &(zip), sizeof(double));
-	}
+  }
 }
 void init_S0(int i) {
   char lbl[32];
-	double zip = 0.0;
+  double zip = 0.0;
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "S0", i);
     psio_write_entry(EOM_SIA, lbl, (char *) &(zip), sizeof(double));
-	}
+  }
 }
 
 /* zeroes ith CME (and Cme) vectors on disk */
 void init_C1(int i, int C_irr ){
   dpdfile2 CME, Cme;
   char lbl[32];
-		double zip = 0.0;
+  double zip = 0.0;
   if (params.eom_ref == 0) {
     sprintf(lbl, "%s %d", "CME", i);
     dpd_file2_init(&CME, EOM_CME, C_irr, 0, 1, lbl);

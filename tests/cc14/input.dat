@@ -17,7 +17,7 @@ set {
   max_force_g_convergence 1.0e-6
   max_energy_g_convergence    7
   e_convergence 10
-  d_convergence 10
+  r_convergence 10
 }
 
 optimize('CCSD')
