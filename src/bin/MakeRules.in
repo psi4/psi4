@@ -59,9 +59,13 @@ install_target:: $(PSITARGET)
 	$(INSTALL_DATA) $< $(libdir)
 	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
 else
-$(PSITARGET): $(BINOBJ) $(PSILIBS)
+.PHONY: gitversion
+gitversion:
+	@$(PYTHON) gitversion.py
+
+$(PSITARGET): gitversion $(BINOBJ) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $^ $(END_EXPORT) $(FILTEREDLDLIBS)
+	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $(filter-out gitversion,$^ ) $(END_EXPORT) $(FILTEREDLDLIBS)
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(DESTDIR)$(bindir)
