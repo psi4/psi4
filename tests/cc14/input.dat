@@ -9,22 +9,24 @@ molecule ch2 {
   H 1 1.1 2 109.0
 }
 
-set globals {
+set {
   reference rohf
   basis cc-pvdz
+  # The next 3 options control the geometry optimization tolerances
+  max_disp_g_convergence  1e-6
+  max_force_g_convergence 1.0e-6
+  max_energy_g_convergence    7
+  e_convergence 10
+  d_convergence 10
 }
 
-gradient('ccsd')
-analytic_grad = PsiMod.get_gradient()
+optimize('CCSD')
 
-gradient('ccsd', dertype=0)
-findif_grad = PsiMod.get_gradient()
-
-compare_matrices(analytic_grad, findif_grad, 5, "ROHF-CCSD finite-diff.  (3-pt.) vs. analytic gradient to 10^-5") #TEST
-
-set findif points 5
-
-gradient('ccsd', dertype=0)
-findif_grad = PsiMod.get_gradient()
-
-compare_matrices(analytic_grad, findif_grad, 6, "ROHF-CCSD finite-diff.  (5-pt.) vs. analytic gradient to 10^-5") #TEST
+refnuc =   6.069997688500573                                                                    #TEST
+refscf = -38.921394733562281                                                                    #TEST
+refcor =  -0.120484098351036                                                                    #TEST
+reftot = -39.041878831913316                                                                    #TEST
+compare_values(refnuc, ch2.nuclear_repulsion_energy(),          5, "Nuclear repulsion energy")  #TEST
+compare_values(refscf, get_variable("SCF total energy"),        6, "SCF energy")                #TEST
+compare_values(refcor, get_variable("CCSD correlation energy"), 6, "CCSD contribution")         #TEST
+compare_values(reftot, get_variable("Current energy"),          6, "Total energy")              #TEST

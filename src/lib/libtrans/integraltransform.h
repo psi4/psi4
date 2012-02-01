@@ -293,6 +293,10 @@ class IntegralTransform{
         int print_;
         // Just an array of zeros! Used in the null MOSpace "transforms"
         int *zeros_;
+        // The alpha Pitzer->QT reordering array
+        int *aQT_;
+        // The alpha Pitzer->QT reordering array
+        int *bQT_;
         // The alpha correlated to Pitzer ordering arrays, used in backtransforms
         int *aCorrToPitzer_;
         // The beta correlated to Pitzer ordering arrays, used in backtransforms
