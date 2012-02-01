@@ -63,7 +63,7 @@ cc21:
 
 cc22: ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in 3B1 CH2.
 
-cc23:
+cc23: ROHF-EOM-CCSD/DZ analytic gradient lowest 2B1 state of H2O+ (A1 excitation)
 
 cc24: UHF-EOM-CCSD/DZ analytic gradient lowest 2B1 state of H2O+ (A1 excitation)
 
