@@ -287,8 +287,10 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
             iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
       fflush(outfile);
       iter++;
-      if (iter==1) emp2 = eccsd;
-      if (iter==1 && options.get_bool("SCS_MP2"))  SCS_MP2();
+      if (iter==1){ 
+         emp2 = eccsd;
+         SCS_MP2();
+      }
   }
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -300,28 +302,32 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
      throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
 
-  if (options.get_bool("SCS_CCSD")) SCS_CCSD();
+  SCS_CCSD();
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS SCS-MP2 correlation energy:  %20.12lf\n",emp2_os);
-  fprintf(outfile,"        SS SCS-MP2 correlation energy:  %20.12lf\n",emp2_ss);
-  fprintf(outfile,"        SCS-MP2 correlation energy:     %20.12lf\n",emp2_os+emp2_ss);
-  fprintf(outfile,"      * SCS-MP2 total energy:           %20.12lf\n",emp2_os+emp2_ss+escf);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        OS MP2 correlation energy:      %20.12lf\n",emp2_os/emp2_os_fac);
-  fprintf(outfile,"        SS MP2 correlation energy:      %20.12lf\n",emp2_ss/emp2_ss_fac);
+  if (options.get_bool("SCS_MP2")){
+     fprintf(outfile,"        OS SCS-MP2 correlation energy:  %20.12lf\n",emp2_os*emp2_os_fac);
+     fprintf(outfile,"        SS SCS-MP2 correlation energy:  %20.12lf\n",emp2_ss*emp2_ss_fac);
+     fprintf(outfile,"        SCS-MP2 correlation energy:     %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac);
+     fprintf(outfile,"      * SCS-MP2 total energy:           %20.12lf\n",emp2_os*emp2_os_fac+emp2_ss*emp2_ss_fac+escf);
+     fprintf(outfile,"\n");
+  }
+  fprintf(outfile,"        OS MP2 correlation energy:      %20.12lf\n",emp2_os);
+  fprintf(outfile,"        SS MP2 correlation energy:      %20.12lf\n",emp2_ss);
   fprintf(outfile,"        MP2 correlation energy:         %20.12lf\n",emp2);
   fprintf(outfile,"      * MP2 total energy:               %20.12lf\n",emp2+escf);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        OS SCS-CCSD correlation energy: %20.12lf\n",eccsd_os);
-  fprintf(outfile,"        SS SCS-CCSD correlation energy: %20.12lf\n",eccsd_ss);
-  fprintf(outfile,"        SCS-CCSD correlation energy:    %20.12lf\n",eccsd_os+eccsd_ss);
-  fprintf(outfile,"      * SCS-CCSD total energy:          %20.12lf\n",eccsd_os+eccsd_ss+escf);
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        OS CCSD correlation energy:     %20.12lf\n",eccsd_os/eccsd_os_fac);
-  fprintf(outfile,"        SS CCSD correlation energy:     %20.12lf\n",eccsd_ss/eccsd_ss_fac);
+  if (options.get_bool("SCS_CCSD")){
+     fprintf(outfile,"        OS SCS-CCSD correlation energy: %20.12lf\n",eccsd_os*eccsd_os_fac);
+     fprintf(outfile,"        SS SCS-CCSD correlation energy: %20.12lf\n",eccsd_ss*eccsd_ss_fac);
+     fprintf(outfile,"        SCS-CCSD correlation energy:    %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac);
+     fprintf(outfile,"      * SCS-CCSD total energy:          %20.12lf\n",eccsd_os*eccsd_os_fac+eccsd_ss*eccsd_ss_fac+escf);
+     fprintf(outfile,"\n");
+  }
+  fprintf(outfile,"        OS CCSD correlation energy:     %20.12lf\n",eccsd_os);
+  fprintf(outfile,"        SS CCSD correlation energy:     %20.12lf\n",eccsd_ss);
   fprintf(outfile,"        CCSD correlation energy:        %20.12lf\n",eccsd);
   fprintf(outfile,"      * CCSD total energy:              %20.12lf\n",eccsd+escf);
   fprintf(outfile,"\n");
@@ -1009,8 +1015,8 @@ void CoupledCluster::SCS_CCSD(){
           }
       }
   }
-  eccsd_os = eccsd_os_fac * osenergy;
-  eccsd_ss = eccsd_ss_fac * ssenergy;
+  eccsd_os = osenergy;
+  eccsd_ss = ssenergy;
 
   psio.reset();
 }
@@ -1047,8 +1053,8 @@ void CoupledCluster::SCS_MP2(){
           }
       }
   }
-  emp2_os = emp2_os_fac * osenergy;
-  emp2_ss = emp2_ss_fac * ssenergy;
+  emp2_os = osenergy;
+  emp2_ss = ssenergy;
 
   psio.reset();
 }
