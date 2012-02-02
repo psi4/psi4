@@ -310,6 +310,11 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     step_start = steps.size() - 1 - Opt_params.H_update_use_last;
     if (step_start < 0) step_start = 0;
   }
+
+  // Check to make sure that the last analytical second derivative isn't newer
+  if ( (step_this-step_start) > steps_since_last_H)
+    step_start = step_this - steps_since_last_H;
+
   fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start);
 
   double *f_old, *x_old, *q_old, *dq, *dg;
@@ -555,6 +560,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   if (!data_file_present) {
     fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n\n");
     iteration = 0;
+    steps_since_last_H = 0;
     consecutive_backsteps = 0;
   }
   else {
@@ -570,12 +576,14 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
 
     if ( (Nintco_old != Nintco) || (Ncart_old != Ncart) ) {
       iteration = 0;
+      steps_since_last_H = 0;
       consecutive_backsteps = 0;
       opt_io_close(0); // close and delete
     }
     else { // read in old optimization data
       opt_io_read_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
       opt_io_read_entry("iteration", (char *) &iteration, sizeof(int));
+      opt_io_read_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
       opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
       for (int i=0; i<iteration; ++i) {
@@ -588,6 +596,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   }
 
   ++iteration; // increment for current step
+  ++steps_since_last_H;
   // create memory for this, current step
   STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
   steps.push_back(one_step);
@@ -602,6 +611,7 @@ void OPT_DATA::write(void) {
   opt_io_write_entry("Ncart" , (char *) &Ncart , sizeof(int));
   opt_io_write_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
   opt_io_write_entry("iteration", (char *) &iteration, sizeof(int));
+  opt_io_write_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
   opt_io_write_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
   opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
 

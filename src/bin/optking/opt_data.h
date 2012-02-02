@@ -71,6 +71,7 @@ class OPT_DATA {
   double **H;        // Hessian matrix
   int iteration;     // num. of current iteration, 0, 1, 2, ...
                      // # of previous steps of data stored should be == iteration
+  int steps_since_last_H;   // number of steps since H has been computed
   int consecutive_backsteps; // # of consecutive steps backwards, if any
   double *rfo_eigenvector;  // for RFO root-following
   std::vector<STEP_DATA *> steps; 
@@ -188,9 +189,14 @@ class OPT_DATA {
     int nsteps(void) const { return steps.size(); }
 
     void decrement_iteration(void) { --iteration; }
+
     void increment_consecutive_backsteps(void) { ++consecutive_backsteps; }
     void reset_consecutive_backsteps(void) { consecutive_backsteps = 0; }
     int g_consecutive_backsteps(void) { return consecutive_backsteps; }
+
+    int g_steps_since_last_H(void) const { return steps_since_last_H; }
+    void reset_steps_since_last_H(void) { steps_since_last_H = 0; }
+    void increment_steps_since_last_H(void) { ++steps_since_last_H; }
 
     void erase_last_step(void) { // free last step
       delete steps.back();
