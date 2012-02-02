@@ -78,6 +78,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
+  /*- Frequency with which to compute the full Hessian in the course
+  of a geometry optimization. 0 means to compute the initial Hessian only, 1
+  means recompute every step, and N means recompute every N steps. The
+  default (-1) is to never compute the full Hessian. -*/
+  options.add_int("FULL_HESS_EVERY", -1);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -2118,7 +2123,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
       options.add_bool("TEST_DERIVATIVE_B", false);
-      /*- Do read Cartesian Hessian? -*/
+      /*- Do read Cartesian Hessian?  Only for experts - use FULL_HESS_EVERY instead. -*/
       options.add_bool("CART_HESS_READ", false);
       /*- IRC step size in bohr(amu)$^{1/2}$ -*/
       options.add_double("IRC_STEP_SIZE", 0.2);
