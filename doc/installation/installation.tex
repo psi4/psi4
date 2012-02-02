@@ -251,6 +251,8 @@ directory you want to use for your installation directory.
 --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div'
 --with-incdirs=-mkl}
 
+Note: it's {\tt -mkl}, not {\tt -lmkl}
+
 \noindent
 {\bf Compiling for Mac} \\
 To get the compilers needed, it's easiest to install XCode. However, XCode
@@ -565,6 +567,7 @@ http://math-atlas.sourceforge.net/}).  These work well on nearly
     (c) Linux with MKL 8.1 and {\tt icc/icpc/ifort} 9.1: 
   
     {\tt -}{\tt -with-libdirs=-L/usr/local/opt/intel/mkl/8.0.2/lib/32} {\tt -}{\tt -with-blas=-lmkl} {\tt -}{\tt -with-lapack=-lmkl\_lapack32}
+
 \end{itemize}
 
     (d) Linux on ia32 with MKL 10.1 and {\tt icc/icpc} 11.0:

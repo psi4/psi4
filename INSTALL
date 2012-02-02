@@ -186,6 +186,8 @@ installation directory.
 
    ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
 
+Note: it's -mkl, not -lmkl.
+
 * Compiling for Mac
 To get the compilers needed, it's easiest to install XCode. However, XCode
 does not provide a Fortran compiler. Although Fortran compilers are not needed
