@@ -640,6 +640,7 @@ AC_SUBST(CXXLIBS)
 
 # During Psi4 development we've used Boost 1.46, 1.47, and 1.48
 have_boost=0
+SAVE_CPPFLAGS=$CPPFLAGS
 AX_BOOST_BASE([1.46], [
     have_boost=1
 
@@ -671,6 +672,12 @@ AX_BOOST_BASE([1.46], [
 ],
 [
     have_boost=0
+])
+CPPFLAGS=$SAVE_CPPFLAGS
+
+AC_SUBST(have_boost)
+
+if test "x${have_boost}" == "x0"; then
     HAVE_BOOST=0
     AC_SUBST(HAVE_BOOST)
 
@@ -691,9 +698,7 @@ AX_BOOST_BASE([1.46], [
     AC_SUBST(BOOST_SERIALIZATION_LIB)
     AC_SUBST(BOOST_SYSTEM_LIB)
     AC_SUBST(BOOST_THREAD_LIB)
-])
-
-AC_SUBST(have_boost)
+fi
 
 if test "$HAVE_MADNESS" = "1"; then
   PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
