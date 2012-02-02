@@ -641,42 +641,34 @@ AC_SUBST(CXXLIBS)
 # During Psi4 development we've used Boost 1.46, 1.47, and 1.48
 have_boost=0
 SAVE_CPPFLAGS=$CPPFLAGS
-echo "${CPPFLAGS}"
 AX_BOOST_BASE([1.46], [
     have_boost=1
-    echo "${CPPFLAGS}"
 
     # Test the modules that we require
     AX_BOOST_FILESYSTEM()
     if test "x${ax_cv_boost_filesystem}" != "xyes"; then
         have_boost=0
     fi
-    echo "${CPPFLAGS}"
     AX_BOOST_PYTHON()
     if test "x${ac_cv_boost_python}" != "xyes"; then
         have_boost=0
     fi
-    echo "${CPPFLAGS}"
     AX_BOOST_REGEX()
     if test "x${ax_cv_boost_regex}" != "xyes"; then
         have_boost=0
     fi
-    echo "${CPPFLAGS}"
     AX_BOOST_SERIALIZATION()
     if test "x${ax_cv_boost_serialization}" != "xyes"; then
         have_boost=0
     fi
-    echo "${CPPFLAGS}"
     AX_BOOST_SYSTEM()
     if test "x${ax_cv_boost_system}" != "xyes"; then
         have_boost=0
     fi
-    echo "${CPPFLAGS}"
     AX_BOOST_THREAD()
     if test "x${ax_cv_boost_thread}" != "xyes"; then
         have_boost=0
     fi
-    echo "${CPPFLAGS}"
 ],
 [
     have_boost=0

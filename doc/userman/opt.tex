@@ -183,6 +183,47 @@
 %information on additional tools useful in vibrational frequency analysis
 %and coordinate transformation.
 
+\PSIfour\ carries out optimizations using a module called \PSIoptking.
+The optking program performs optimization of molecular geometries given
+nuclear gradients, and optionally second derivatives in cartesian
+coordinates. The default minimization algorithm employs redundant internal
+coordinates with an RFO step and a BFGS Hessian update.
+
+The principal literature references include the introduction of redundant
+internal coordinates in C. Peng, P.Y. Ayala, H.B. Schlegel, and M.J.
+Frisch, J. Comput. Chem., 17, 49 (1996). The general approach employed in
+this code is similar to the 'model Hessian plus RF method' described and
+tested in V. Bakken and T. Helgaker, J. Chem. Phys., 117, 9160 (2002).
+(However, for separated fragments, we have chosen not to employ their
+'extra-redundant' coordinates defined by their 'auxiliary interfragment'
+bonds.)
+
+\subsection{Hessian}
+If cartesian second derivatives have been computed, optking can read them
+and transform them into internal coordinates to make the initial Hessian.
+Otherwise, and initial empirical Hessian is determined according to either
+Schlegel, Theor. Chim. Acta, 66, 333 (1984) or Fischer and Almlof, J. Phys.
+Chem., 96, 9770 (1992). For interfragment coordinates, the initial guess
+can be computed using the Fischer formulas or a simple diagonal guess.
+Formulas for the Hessian updates, see Schlegel Ab Initio Methods in Quantum
+Chemistry (1987) and J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11
+(1994). 
+
+The Hessian may be updated every few iterations using the following
+keyword: \\
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         \optionname{FULL-HESS-EVERY}{GENERAL} & 
+  Frequency with which to compute the full Hessian in the course
+  of a geometry optimization. 0 means to compute the initial Hessian only,
+  1 means recompute every step, and N means recompute every N steps. The
+  default (-1) is to never compute the full Hessian.
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} -1\\
+         & & \\
+\end{tabular*}
+
+
 \subsection{Convergence Criteria}
 
 \PSIoptking\ monitors five quantities to evaluate the progress of a geometry 
@@ -237,7 +278,8 @@ The progress of a geometry optimization can be monitored by grepping \outputdat\
 tilde character ({\raise.17ex\hbox{$\scriptstyle\sim$}}). This produces a table like the one below that shows
 for each iteration the value for each of the five quantities and whether the criterion
 is active and fulfilled (\texttt{*}), active and unfulfilled (\texttt{\;\;}), or inactive (\texttt{o}).
-\begin{smallSnippet}
+\begin{scriptsize}
+\begin{Snippet}
 --------------------------------------------------------------------------------------------- ~
  Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp    ~
 --------------------------------------------------------------------------------------------- ~
@@ -248,7 +290,8 @@ is active and fulfilled (\texttt{*}), active and unfulfilled (\texttt{\;\;}), or
     3     -38.92540669   -1.11e-04      4.04e-03      2.46e-03 o    3.63e-02      2.12e-02 o  ~
     4     -38.92548668   -8.00e-05      2.30e-04 *    1.92e-04 o    1.99e-03      1.17e-03 o  ~
     5     -38.92548698   -2.98e-07 *    3.95e-05 *    3.35e-05 o    1.37e-04 *    1.05e-04 o  ~
-\end{smallSnippet}
+\end{Snippet}
+\end{scriptsize}
 
 The full list of keywords for \PSIoptking\ is provided in Appendix \ref{kw-OPTKING}.
 

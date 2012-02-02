@@ -376,7 +376,7 @@ the {\tt configure} script:
   options.  This is set to {\tt no} by default.
 \item {\tt -}{\tt -with-opt=options} --- Turn off compiler
   optimizations if {\tt no}.  This is set to {\tt yes} by default.
-\item {\tt -}{\tt --with-strict=yes} -- Turns on strict compiler warnings.
+\item {\tt -}{\tt --with-strict=yes} --- Turns on strict compiler warnings.
 \end{itemize}
 
 \noindent
@@ -409,6 +409,63 @@ the {\tt configure} script:
 \noindent
       {\tt ./configure PYTHON=/usr/bin/python2.6}
 \end{quotation}
+
+\noindent
+{\bf Boost Libraries:} \\
+   PSI4 can use a user-provided boost C++ library, or, alternatively,
+   comes bundled with boost 1.48.0, which PSI4 can automatically
+   build. By default, PSI4 will look in your include/library paths for
+   a compatible and complete boost installation (boost 1.46 or newer). A
+   boost installation in a nonstandard location can be specified by the
+   {\tt --with-boost=PATH} and {\tt --with-boost-libdir=PATH} configure flags. 
+   If a default or user-specified boost installation is found to be 
+   incomplete, incompatible, or nonexistent, boost 1.48.0 will be unpacked
+   automatically and built as part of the PSI4 build process.
+
+\noindent
+Required compiled Boost modules (all Boost 1.46.0 or later): \\
+\begin{itemize}
+\item Filesystem
+\item Python
+\item Regex
+\item Serialization
+\item System
+\item Thread
+\end{itemize}
+\noindent
+Relevant configure options: 
+\begin{itemize}
+\item {\tt -}{\tt --with-boost[=ARG]} --- use Boost library from a standard
+ location (ARG=yes), from the specified location (ARG=<path>), or disable
+ it (ARG=no) [ARG=yes]
+\item {\tt --with-boost-libdir=LIB\_DIR}  --- Force given directory for
+ boost libraries. Note that this will override
+ library path detection, so use this parameter only if default library
+ detection fails and you know exactly where your boost libraries are
+ located.
+\item {\tt --with-boost-filesystem[=special-lib]} --- use the Filesystem
+ library from boost - it is possible to specify a
+ certain library for the linker e.g., \\
+ {\tt --with-boost-filesystem=boost\_filesystem-gcc-mt}
+\item {\tt --with-boost-python} --- specify the boost python library or
+ suffix to use
+\item {\tt --with-boost-regex[=special-lib]} --- use the Regex library from
+ boost - it is possible to specify a certain library for the linker e.g., \\
+ {\tt --with-boost-regex=boost\_regex-gcc-mt-d-1\_33\_1}
+\item {\tt --with-boost-serialization[=special-lib]} --- use the
+ Serialization library from boost - it is possible to specify a
+ certain library for the linker e.g. \\
+ {\tt --with-boost-serialization=boost\_serialization-gcc-mt-d-1\_33\_1}
+\item {\tt --with-boost-system[=special-lib]} --- use the System library
+ from boost - it is possible to specify a certain
+ library for the linker e.g., \\ 
+ {\tt --with-boost-system=boost\_system-gcc-mt}
+\item {\tt --with-boost-thread[=special-lib]} --- 
+ use the Thread library from boost - it is possible to specify a certain
+ library for the linker e.g., \\
+ {\tt --with-boost-thread=boost\_thread-gcc-mt}
+\end{itemize}
+
 
 \subsection{Step 2: Compilation}
 
