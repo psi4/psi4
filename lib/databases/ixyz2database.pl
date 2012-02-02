@@ -140,7 +140,7 @@ print GPL_OUT "   \$bind = \"NaN\";\n\n";
 @HRXN = (1 .. $Nrxn);
 %BINDRXN = ();
 %TAGLRXN = ();
-foreach $rxn (@HRXN) { $BINDRXN{$rxn} = 0.0; }
+foreach $rxn (@HRXN) { $BINDRXN{$rxn} = "nan"; }
 foreach $rxn (@HRXN) { $TAGLRXN{$rxn} = "Reaction $rxn"; }
 
 if ($route != 3) {
@@ -211,7 +211,7 @@ foreach $filename (<*.$fext>) {
       $tagl = $text[1];
    }
    $TAGLRGT{$system} = $tagl;
-   $BINDRGT{$system} = 0.0;
+   $BINDRGT{$system} = "nan";
 
    if ($route == 3) {
 
@@ -487,6 +487,7 @@ elsif ($route == 3) {
 
 print SPY_OUT "# <<< Reference Values [kcal/mol] >>>\n";
 print SPY_OUT "BIND = {}\n";
+print SPY_OUT "nan = float('NaN')\n";
 if    ($route == 1) { foreach $rgt (@HRGT) { print SPY_OUT "BIND['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = %8.3f\n", $rgt . "\'", $BINDRGT{$rgt}; } }
 elsif ($route == 2) { foreach $rxn (@HRXN) { print SPY_OUT "BIND['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = %8.3f\n", $rxn . "\'", $BINDRXN{$rxn}; } }
 elsif ($route == 3) { foreach $rgt (@HRGT) { print SPY_OUT "BIND['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = %8.3f\n", $rgt . "\'", $BINDRGT{$rgt}; } }

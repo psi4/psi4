@@ -191,6 +191,13 @@ void set_params(void)
       Opt_params.conv_max_disp  = 6.0e-6;  Opt_params.i_max_disp = true;
       Opt_params.conv_rms_disp  = 4.0e-6;  Opt_params.i_rms_disp = true;
     }
+    else if (Opt_params.general_conv == "GAU_LOOSE") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 2.5e-3;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 1.7e-3;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 1.0e-2;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 6.7e-3;  Opt_params.i_rms_disp = true;
+    }
     else if (Opt_params.general_conv == "TURBOMOLE") {
       Opt_params.i_untampered = true;
       Opt_params.conv_max_force = 1.0e-3;  Opt_params.i_max_force = true;
@@ -209,20 +216,6 @@ void set_params(void)
       Opt_params.conv_rms_force = 3.0e-3;  Opt_params.i_rms_force = true;
       Opt_params.conv_max_disp  = 5.4e-3;  Opt_params.i_max_disp = true;
       Opt_params.conv_rms_disp  = 3.6e-3;  Opt_params.i_rms_disp = true;
-    }
-    else if (Opt_params.general_conv == "NWCHEM") {
-      Opt_params.i_untampered = true;
-      Opt_params.conv_max_force = 4.5e-4;  Opt_params.i_max_force = true;
-      Opt_params.conv_rms_force = 3.0e-4;  Opt_params.i_rms_force = true;
-      Opt_params.conv_max_disp  = 1.8e-3;  Opt_params.i_max_disp = true;
-      Opt_params.conv_rms_disp  = 1.2e-3;  Opt_params.i_rms_disp = true;
-    }
-    else if (Opt_params.general_conv == "NWCHEM_TIGHT") {
-      Opt_params.i_untampered = true;
-      Opt_params.conv_max_force = 1.5e-5;  Opt_params.i_max_force = true;
-      Opt_params.conv_rms_force = 1.0e-5;  Opt_params.i_rms_force = true;
-      Opt_params.conv_max_disp  = 6.0e-5;  Opt_params.i_max_disp = true;
-      Opt_params.conv_rms_disp  = 4.0e-5;  Opt_params.i_rms_disp = true;
     }
 
 // Specific optimization criteria
