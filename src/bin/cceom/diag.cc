@@ -1031,8 +1031,8 @@ timer_off("INIT GUESS");
             fprintf(outfile,"\n\tPutting into environment energy for root of R irrep %d and root %d.\n", C_irr+1, i+1);
             Process::environment.globals["CURRENT ENERGY"] = totalE;
             fprintf(outfile,"\tPutting into environment CURRENT ENERGY:             %15.10lf\n", totalE);
-            Process::environment.globals["CURRENT CORRELATION ENERGY"] = lambda_old[i]+moinfo.ecc;
-            fprintf(outfile,"\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n", lambda_old[i]+moinfo.ecc);
+//            Process::environment.globals["CURRENT CORRELATION ENERGY"] = lambda_old[i]+moinfo.ecc;
+//            fprintf(outfile,"\tPutting into environment CURRENT CORRELATION ENERGY: %15.10lf\n", lambda_old[i]+moinfo.ecc);
           }
 
         } // converged[i] == 1

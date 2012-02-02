@@ -333,6 +333,9 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
+    full_hess_every = PsiMod.get_global_option("FULL_HESS_EVERY")
+    steps_since_last_hessian = 0
+
     n = 0
     if (kwargs.has_key('opt_iter')):
         n = kwargs['opt_iter']
@@ -357,6 +360,28 @@ def optimize(name, **kwargs):
                 restartfile = kwargs.pop('opt_datafile')
                 if(PsiMod.me() == 0):
                     shutil.copy(restartfile, get_psifile(1))
+
+        # compute Hessian as requested; frequency wipes out gradient so stash it
+        if (full_hess_every > -1) and (n == 0):  # on first iteration, compute hessian if you are ever going to
+          G = PsiMod.get_gradient()
+          PsiMod.IOManager.shared_object().set_specific_retention(1, True)
+          PsiMod.IOManager.shared_object().set_specific_path(1, './')
+          frequencies(name, **kwargs)
+          steps_since_last_hessian = 0
+          PsiMod.set_gradient(G)
+          PsiMod.set_global_option("CART_HESS_READ", True)
+        elif steps_since_last_hessian == full_hess_every:
+          G = PsiMod.get_gradient()
+          PsiMod.IOManager.shared_object().set_specific_retention(1, True)
+          PsiMod.IOManager.shared_object().set_specific_path(1, './')
+          frequencies(name, **kwargs)
+          steps_since_last_hessian = 0
+          PsiMod.set_gradient(G)
+          PsiMod.set_global_option("CART_HESS_READ", True)
+        else:
+          PsiMod.set_global_option("CART_HESS_READ", False)
+
+        steps_since_last_hessian += 1
 
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
