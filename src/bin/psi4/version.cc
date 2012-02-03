@@ -17,7 +17,7 @@ void print_version(FILE *myout)
 
   // Are we using git? If so,what version string
 #ifdef GIT_VERSION
-  fprintf(myout, "\n                  Git: Rev " GIT_VERSION "\n");
+  fprintf(myout, "\n               Git: Rev " GIT_VERSION "\n");
 #endif
 
   fprintf(myout, "\n");
