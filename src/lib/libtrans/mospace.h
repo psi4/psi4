@@ -22,8 +22,8 @@ class MOSpace{
          *
          * The label associated with this space is 'o'
          */
-        #define MOSPACE_FRC 'o'
-        static boost::shared_ptr<MOSpace> frc;
+        #define MOSPACE_FZC 'o'
+        static boost::shared_ptr<MOSpace> fzc;
         /**
          * The MOSpace::occ space can be used to define the occupied space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -40,8 +40,8 @@ class MOSpace{
          *
          * The label associated with this space is 'v'
          */
-        #define MOSPACE_FRV 'v'
-        static boost::shared_ptr<MOSpace> frv;
+        #define MOSPACE_FZV 'v'
+        static boost::shared_ptr<MOSpace> fzv;
         /**
          * The MOSpace::vir space can be used to define the virtual space.  Frozen
          * orbitals are handled consistently with how the transformation object is
