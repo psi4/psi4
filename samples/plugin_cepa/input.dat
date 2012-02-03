@@ -23,10 +23,10 @@ molecule h2o {
 O
 H 1 1.0 
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 plugin_load('./plugin_cepa.so')
+PsiMod.set_global_option('WFN', 'CCSD')
 
 set {
   r_convergence 1e-7
