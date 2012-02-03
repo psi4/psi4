@@ -7,7 +7,7 @@ MODULE = false
 
 MAKE_MADNESS=@HAVE_MPI@
 
-LDLIBS += $(LAPACK) $(BLAS) -L$(BOOST_LIB) -lboost_python -lboost_regex -lboost_thread -lboost_filesystem -lboost_system -lboost_serialization -lpthread $(PYTHON_LDFLAGS)
+LDLIBS += $(LAPACK) $(BLAS) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SERIALIZATION_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 # gfortranbegin contains main, so we can't link it in or we'll get a linker freakout

@@ -1209,6 +1209,9 @@ void DFJK::initialize_JK_core()
     const std::vector<long int>& schwarz_fun_pairs = sieve_->function_pairs_reverse();
 
     int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
+
+    timer_on("JK: (A|mn)");
+
     //The integrals (A|mn)
     #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
     for (MU=0; MU < primary_->nshell(); ++MU) {
@@ -1239,12 +1242,18 @@ void DFJK::initialize_JK_core()
         }
     }
 
+    timer_off("JK: (A|mn)");
+
     delete []buffer;
     delete []eri;
+
+    timer_on("JK: (A|Q)^-1/2");
 
     boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true)); 
     Jinv->form_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
+
+    timer_off("JK: (A|Q)^-1/2");
 
     ULI max_cols = (memory_-three_memory-two_memory) / auxiliary_->nbf();
     if (max_cols < 1)
@@ -1259,6 +1268,9 @@ void DFJK::initialize_JK_core()
 
     int ncol = 0;
     int col = 0;
+
+    timer_on("JK: (Q|mn)");
+
     for (int block = 0; block < nblocks; block++) {
 
         ncol = max_cols;
@@ -1276,6 +1288,7 @@ void DFJK::initialize_JK_core()
         col += ncol;
     }
 
+    timer_off("JK: (Q|mn)");
     //Qmn_->print();
 
     if (df_ints_io_ == "SAVE") {
@@ -1488,6 +1501,9 @@ void DFJK::initialize_JK_disk()
     double** Amnp = Amn->pointer();
 
     // ==> Prestripe/Jinv <== // 
+
+    timer_on("JK: (A|Q)^-1");
+
     psio_->open(unit_,PSIO_OPEN_NEW);
     boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
@@ -1501,6 +1517,8 @@ void DFJK::initialize_JK_disk()
 
     // Synch up
     aio->synchronize();
+
+    timer_off("JK: (A|Q)^-1");
 
     // ==> Thread setup <== //
     int nthread = 1;
@@ -1526,6 +1544,9 @@ void DFJK::initialize_JK_disk()
         int mn_col_val = mn_col_b[block]; 
     
         // ==> (A|mn) integrals <== //
+
+        timer_on("JK: (A|mn)");
+
         #pragma omp parallel for schedule(guided) num_threads(nthread)
         for (int MUNU = MN_start_val; MUNU < MN_start_val + MN_col_val; MUNU++) {
 
@@ -1560,7 +1581,12 @@ void DFJK::initialize_JK_disk()
             }
         }
 
+        timer_off("JK: (A|mn)");
+
         // ==> (Q|mn) fitting <== //
+
+        timer_on("JK: (Q|mn)");
+
         for (int mn = 0; mn < mn_col_val; mn+=naux) {
             int cols = naux;
             if (mn + naux >= mn_col_val)
@@ -1572,12 +1598,19 @@ void DFJK::initialize_JK_disk()
             C_DGEMM('N','N',naux,cols,naux,1.0,Jinvp[0],naux,Amnp[0],naux,0.0,&Qmnp[0][mn],max_cols);
         }
 
+        timer_off("JK: (Q|mn)");
+
         // ==> Disk striping <== //
+
+        timer_on("JK: (Q|mn) Write");
+
         psio_address addr;
         for (int Q = 0; Q < naux; Q++) {
             addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + mn_start_val)*sizeof(double));
             psio_->write(unit_,"(Q|mn) Integrals", (char*)Qmnp[Q],mn_col_val*sizeof(double),addr,&addr);
         }
+
+        timer_off("JK: (Q|mn) Write");
     }
 
     // ==> Close out <== //
@@ -1633,6 +1666,9 @@ void DFJK::initialize_wK_core()
 
     int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
     //The integrals (A|mn)
+
+    timer_on("JK: (A|mn)^L");
+
     #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
     for (MU=0; MU < primary_->nshell(); ++MU) {
         #ifdef _OPENMP
@@ -1662,18 +1698,28 @@ void DFJK::initialize_wK_core()
         }
     }
 
+    timer_off("JK: (A|mn)^L");
+
     delete []buffer;
     delete []eri;
 
     // => Fitting <= //
+
+    timer_on("JK: (A|Q)^-1");
 
     // Fitting metric
     boost::shared_ptr<FittingMetric> Jinv(new FittingMetric(auxiliary_, true)); 
     Jinv->form_full_eig_inverse();
     double** Jinvp = Jinv->get_metric()->pointer();
 
+    timer_off("JK: (A|Q)^-1");
+
+    timer_on("JK: (Q|mn)^L");
+
     // Fitting in one GEMM (being a clever bastard)
     C_DGEMM('N','N',naux,ntri,naux,1.0,Jinvp[0],naux,Qmn2p[0],ntri,0.0,Qmnp[0],ntri);
+
+    timer_off("JK: (Q|mn)^L");
 
     // => Right Integrals <= //
 
@@ -1685,6 +1731,9 @@ void DFJK::initialize_wK_core()
     }
 
     //The integrals (A|w|mn)
+
+    timer_on("JK: (A|mn)^R");
+
     #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
     for (MU=0; MU < primary_->nshell(); ++MU) {
         #ifdef _OPENMP
@@ -1714,6 +1763,8 @@ void DFJK::initialize_wK_core()
         }
     }
     
+    timer_off("JK: (A|mn)^R");
+
     delete []buffer2;
     delete []eri2;
 
@@ -1967,6 +2018,9 @@ void DFJK::initialize_wK_disk()
         int mn_col_val = mn_col_b[block]; 
     
         // ==> (A|mn) integrals <== //
+
+        timer_on("JK: (A|mn)^L");
+
         #pragma omp parallel for schedule(guided) num_threads(nthread)
         for (int MUNU = MN_start_val; MUNU < MN_start_val + MN_col_val; MUNU++) {
 
@@ -2001,7 +2055,12 @@ void DFJK::initialize_wK_disk()
             }
         }
 
+        timer_off("JK: (A|mn)^L");
+
         // ==> (Q|mn) fitting <== //
+
+        timer_on("JK: (Q|mn)^L");
+
         for (int mn = 0; mn < mn_col_val; mn+=naux) {
             int cols = naux;
             if (mn + naux >= mn_col_val)
@@ -2013,12 +2072,20 @@ void DFJK::initialize_wK_disk()
             C_DGEMM('N','N',naux,cols,naux,1.0,Jinvp[0],naux,Amnp[0],naux,0.0,&Qmnp[0][mn],max_cols);
         }
 
+        timer_off("JK: (Q|mn)^L");
+
         // ==> Disk striping <== //
+
+        timer_on("JK: (Q|mn)^L Write");
+
         psio_address addr;
         for (int Q = 0; Q < naux; Q++) {
             addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + mn_start_val)*sizeof(double));
             psio_->write(unit_,"Left (Q|w|mn) Integrals", (char*)Qmnp[Q],mn_col_val*sizeof(double),addr,&addr);
         }
+
+        timer_off("JK: (Q|mn)^L Write");
+
     }
 
     Qmn_.reset();
@@ -2073,6 +2140,9 @@ void DFJK::initialize_wK_disk()
                      auxiliary_->shell(Qstart)->function_index()); 
 
         // Compute TEI tensor block (A|mn)
+
+        timer_on("JK: (Q|mn)^R");
+
         #pragma omp parallel for schedule(dynamic) num_threads(nthread)
         for (long int QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
 
@@ -2113,8 +2183,14 @@ void DFJK::initialize_wK_disk()
             }
         }    
 
+        timer_off("JK: (Q|mn)^R");
+
         // Dump block to disk
+        timer_on("JK: (Q|mn)^R Write");
+
         psio_->write(unit_,"Right (Q|w|mn) Integrals",(char*)Amn2p[0],sizeof(double)*nrows*ntri,next_AIA,&next_AIA);
+
+        timer_off("JK: (Q|mn)^R Write");
 
     }
     Amn2.reset();
@@ -2127,10 +2203,16 @@ void DFJK::manage_JK_core()
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
 
-        if (do_J_) 
+        if (do_J_) {
+            timer_on("JK: J");
             block_J(&Qmn_->pointer()[Q],naux);
-        if (do_K_) 
+            timer_off("JK: J");
+        }
+        if (do_K_) {
+            timer_on("JK: K");
             block_K(&Qmn_->pointer()[Q],naux);
+            timer_off("JK: K");
+        }
     } 
 }
 void DFJK::manage_JK_disk()
@@ -2141,12 +2223,21 @@ void DFJK::manage_JK_disk()
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
         psio_address addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
-        psio_->read(unit_,"(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
 
-        if (do_J_) 
+        timer_on("JK: (Q|mn) Read");
+        psio_->read(unit_,"(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
+        timer_off("JK: (Q|mn) Read");
+
+        if (do_J_) {
+            timer_on("JK: J");
             block_J(&Qmn_->pointer()[0],naux);
-        if (do_K_) 
+            timer_off("JK: J");
+        }
+        if (do_K_) {
+            timer_on("JK: K");
             block_K(&Qmn_->pointer()[0],naux);
+            timer_off("JK: K");
+        }
     } 
     psio_->close(unit_,1);
     Qmn_.reset();
@@ -2158,7 +2249,9 @@ void DFJK::manage_wK_core()
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_w) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_w ? auxiliary_->nbf() - Q : max_rows_w);
 
+        timer_on("JK: wK");
         block_wK(&Qlmn_->pointer()[Q],&Qrmn_->pointer()[Q],naux);
+        timer_off("JK: wK");
     } 
 }
 void DFJK::manage_wK_disk()
@@ -2172,11 +2265,20 @@ void DFJK::manage_wK_disk()
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_w) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_w ? auxiliary_->nbf() - Q : max_rows_w);
         psio_address addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
-        psio_->read(unit_,"Left (Q|w|mn) Integrals", (char*)(Qlmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
-        addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
-        psio_->read(unit_,"Right (Q|w|mn) Integrals", (char*)(Qrmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
 
+        timer_on("JK: (Q|mn)^L Read");
+        psio_->read(unit_,"Left (Q|w|mn) Integrals", (char*)(Qlmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
+        timer_off("JK: (Q|mn)^L Read");
+
+        addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
+
+        timer_on("JK: (Q|mn)^R Read");
+        psio_->read(unit_,"Right (Q|w|mn) Integrals", (char*)(Qrmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
+        timer_off("JK: (Q|mn)^R Read");
+
+        timer_on("JK: wK");
         block_wK(&Qlmn_->pointer()[0],&Qrmn_->pointer()[0],naux);
+        timer_off("JK: wK");
     } 
     psio_->close(unit_,1);
     Qlmn_.reset();
@@ -2201,8 +2303,13 @@ void DFJK::block_J(double** Qmnp, int naux)
             D2p[mn] = (m == n ? Dp[m][n] : Dp[m][n] + Dp[n][m]);
         }
 
+        timer_on("JK: J1");
         C_DGEMV('N',naux,num_nm,1.0,Qmnp[0],num_nm,D2p,1,0.0,dp,1);
+        timer_off("JK: J1");
+
+        timer_on("JK: J2");
         C_DGEMV('T',naux,num_nm,1.0,Qmnp[0],num_nm,dp,1,0.0,J2p,1);
+        timer_off("JK: J2");
         
         for (unsigned long int mn = 0; mn < num_nm; ++mn) {
             int m = function_pairs[mn].first;
@@ -2233,6 +2340,8 @@ void DFJK::block_K(double** Qmnp, int naux)
 
         if (N == 0 || C_left_[N].get() != C_left_[N-1].get()) {
             
+            timer_on("JK: K1");
+
             #pragma omp parallel for schedule (dynamic)
             for (int m = 0; m < nbf; m++) {
 
@@ -2257,10 +2366,14 @@ void DFJK::block_K(double** Qmnp, int naux)
                 C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
             }
 
+            timer_off("JK: K1");
+
         }
 
         if (!lr_symmetric_ && (N == 0 || C_right_[N].get() != C_right_[N-1].get())) {
             
+            timer_on("JK: K1");
+
             #pragma omp parallel for schedule (dynamic)
             for (int m = 0; m < nbf; m++) {
 
@@ -2284,9 +2397,14 @@ void DFJK::block_K(double** Qmnp, int naux)
                 
                 C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
             }
+
+            timer_off("JK: K1");
+
         }
 
+        timer_on("JK: K2");
         C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,Kp[0],nbf);        
+        timer_off("JK: K2");
     } 
 
 }
@@ -2311,6 +2429,8 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
 
         if (N == 0 || C_left_[N].get() != C_left_[N-1].get()) {
             
+            timer_on("JK: wK1");
+
             #pragma omp parallel for schedule (dynamic)
             for (int m = 0; m < nbf; m++) {
 
@@ -2335,7 +2455,11 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
                 C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
             }
 
+            timer_off("JK: wK1");
+
         }
+
+        timer_on("JK: wK1");
 
         #pragma omp parallel for schedule (dynamic)
         for (int m = 0; m < nbf; m++) {
@@ -2361,7 +2485,11 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
             C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
         }
 
+        timer_off("JK: wK1");
+
+        timer_on("JK: wK2");
         C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,wKp[0],nbf);        
+        timer_off("JK: wK2");
     } 
 }
 
