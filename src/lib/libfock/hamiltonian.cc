@@ -614,7 +614,7 @@ boost::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
     delete[] nov;
     return diag;
 }
-std::vector<SharedVector> CPHFRHamiltonian::pack(const std::vector<SharedMatrix>& x)
+std::map<std::string, SharedVector> CPHFRHamiltonian::pack(const std::map<std::string, SharedMatrix>& x)
 {
     int nirrep = eps_aocc_->nirrep();
     int* nov = new int[nirrep];
@@ -625,10 +625,13 @@ std::vector<SharedVector> CPHFRHamiltonian::pack(const std::vector<SharedMatrix>
         }
     }
 
-    std::vector<SharedVector> X;
-    for (int i = 0; i < x.size(); i++) {
+    std::map<std::string, SharedVector> X;
+    for (std::map<std::string, SharedMatrix>::const_iterator it = x.begin(); 
+        it != x.end(); ++it) {
+
         boost::shared_ptr<Vector> v(new Vector("X", nirrep, nov));
-        int symm = x[i]->symmetry();
+        SharedMatrix x2 = (*it).second;
+        int symm = x2->symmetry();
         int offset = 0;
         for (int h = 0; h < nirrep; h++) {
             int nocc = eps_aocc_->dimpi()[h];
@@ -636,11 +639,11 @@ std::vector<SharedVector> CPHFRHamiltonian::pack(const std::vector<SharedMatrix>
 
             if (!nocc || !nvir) continue;
 
-            ::memcpy((void*) &v->pointer(symm)[offset], (void*) x[i]->pointer(h)[0], sizeof(double)*nocc*nvir);
+            ::memcpy((void*) &v->pointer(symm)[offset], (void*) x2->pointer(h)[0], sizeof(double)*nocc*nvir);
 
             offset += nocc * nvir;
         } 
-        X.push_back(v);
+        X[(*it).first] = v;
     }
     return X;
 }

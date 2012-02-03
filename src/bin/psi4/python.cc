@@ -52,6 +52,7 @@ namespace psi {
     namespace mints      { PsiReturnType mints(Options &);    }
     namespace deriv      { PsiReturnType deriv(Options &);    }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfcc       { PsiReturnType dfcc(Options &);     }
     namespace sapt       { PsiReturnType sapt(Options &);     }
@@ -161,6 +162,12 @@ int py_psi_omp2()
 {
     py_psi_prepare_options_for_module("OMP2");
     return omp2wave::omp2wave(Process::environment.options);
+}
+
+int py_psi_libfock()
+{
+    py_psi_prepare_options_for_module("CPHF");
+    return libfock::libfock(Process::environment.options);
 }
 
 double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
@@ -990,6 +997,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("scf", py_psi_scf_callbacks);
     def("scf", py_psi_scf);
     def("dcft", py_psi_dcft);
+    def("libfock", py_psi_libfock);
     def("dfmp2", py_psi_dfmp2);
     def("dfcc", py_psi_dfcc);
     def("lmp2", py_psi_lmp2);

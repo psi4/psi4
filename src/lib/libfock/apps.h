@@ -12,6 +12,7 @@ namespace psi {
 class BasisSet;
 class Matrix;
 class TwoBodyAOInt;
+class JK;
 
 // => BASE CLASSES <= //
 
@@ -35,6 +36,9 @@ protected:
 
     SharedMatrix AO2USO_;
 
+    /// Global JK object, built in preiterations, destroyed in postiterations
+    boost::shared_ptr<JK> jk_;
+
     double Eref_;
 
     void common_init();
@@ -45,8 +49,18 @@ public:
     virtual ~RBase();
 
     virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
 
     void set_print(int print) { print_ = print; }
+
+    /// Gets a handle to the JK object, if built by preiterations 
+    boost::shared_ptr<JK> jk() const { return jk_;}
+    /// Set the JK object, say from SCF
+    void set_jk(boost::shared_ptr<JK> jk) { jk_ = jk; }
+    /// Builds JK object, if needed 
+    virtual void preiterations();
+    /// Destroys JK object, if needed
+    virtual void postiterations();
 
 }; 
 
@@ -117,9 +131,9 @@ class RCPHF : public RBase {
 protected:
 
     // OV-Rotations
-    std::vector<SharedMatrix> x_;  
+    std::map<std::string, SharedMatrix> x_;  
     // OV-Perturbations
-    std::vector<SharedMatrix> b_;  
+    std::map<std::string, SharedMatrix> b_;  
 
     virtual void print_header();
 
@@ -139,9 +153,9 @@ public:
     virtual double compute_energy();
 
     /// Perturbation vector queue, shove tasks onto this guy before compute_energy
-    std::vector<SharedMatrix>& b() { return b_; }
+    std::map<std::string, SharedMatrix>& b() { return b_; }
     /// Resultant solution vectors, available after compute_energy is called
-    std::vector<SharedMatrix>& x() { return x_; }
+    std::map<std::string, SharedMatrix>& x() { return x_; }
 
     /// Add a named task
     void add_task(const std::string& task);
