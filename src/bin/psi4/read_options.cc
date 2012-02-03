@@ -2023,6 +2023,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     /*- How to perform MP2_CCSD computations -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
+    /*- Whether to use spin symmetry to map equivalent configurations onto each other, for efficiency !expert -*/
+    options.add_bool("USE_SPIN_SYMMETRY", true);
     /*- The number of frozen occupied orbitals per irrep -*/
     options.add("FROZEN_DOCC", new ArrayType());
     /*- The number of doubly occupied orbitals per irrep -*/

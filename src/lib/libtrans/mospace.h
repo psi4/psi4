@@ -18,16 +18,30 @@ class MOSpace{
                 const int *bOrbsPI, const double ***aEvecs, const double ***bEvecs,
                 const int *aIndex, const int *bIndex);
         /**
+         * The MOSpace::frc space can be used to define the frozen occupied space.
+         *
+         * The label associated with this space is 'o'
+         */
+        #define MOSPACE_FZC 'o'
+        static boost::shared_ptr<MOSpace> fzc;
+        /**
          * The MOSpace::occ space can be used to define the occupied space.  Frozen
          * orbitals are handled consistently with how the transformation object is
          * constructed.  For restricted transformations, this corresponds to
          * singly- plus doubly-occupied orbitals, for unrestricted transforms only
          * occupied orbitals are included
          *
-         * The label associated with this space is 'o'
+         * The label associated with this space is 'O'
          */
         #define MOSPACE_OCC 'O'
         static boost::shared_ptr<MOSpace> occ;
+        /**
+         * The MOSpace::frv space can be used to define the frozen virtual space.
+         *
+         * The label associated with this space is 'v'
+         */
+        #define MOSPACE_FZV 'v'
+        static boost::shared_ptr<MOSpace> fzv;
         /**
          * The MOSpace::vir space can be used to define the virtual space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -35,12 +49,12 @@ class MOSpace{
          * singly occupied plus virtual orbitals, for unrestricted transforms only
          * virtual orbitals are included
          *
-         * The label associated with this space is 'v'
+         * The label associated with this space is 'V'
          */
         #define MOSPACE_VIR 'V'
         static boost::shared_ptr<MOSpace> vir;
         /**
-         * The MOSpace::all space can be used to define the virtual space.  Frozen
+         * The MOSpace::all space can be used to define the full MO space.  Frozen
          * orbitals are handled consistently with how the transformation object is
          * constructed.  All active molecular orbtitals are transformed
          *

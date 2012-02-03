@@ -83,10 +83,10 @@ plugin_mp2(Options &options)
 
     aOccCount = 0; bOccCount = 0; aVirCount = 0; bVirCount = 0;
     for(int h = 0; h < nirreps; ++h){
-        for(int a = 0; a < aOccOrbsPI[h]; ++a) aOccEvals[aOccCount++] = aEvals->get(h, a);
-        for(int b = 0; b < bOccOrbsPI[h]; ++b) bOccEvals[bOccCount++] = bEvals->get(h, b);
-        for(int a = aOccOrbsPI[h]; a < mopi[h]; ++a) aVirEvals[aVirCount++] = aEvals->get(h, a);
-        for(int b = bOccOrbsPI[h]; b < mopi[h]; ++b) bVirEvals[bVirCount++] = bEvals->get(h, b);
+        for(int a = frzcpi[h]; a < clsdpi[h] + openpi[h]; ++a) aOccEvals[aOccCount++] = aEvals->get(h, a);
+        for(int b = frzcpi[h]; b < clsdpi[h]; ++b) bOccEvals[bOccCount++] = bEvals->get(h, b);
+        for(int a = clsdpi[h] + openpi[h]; a < mopi[h]; ++a) aVirEvals[aVirCount++] = aEvals->get(h, a);
+        for(int b = clsdpi[h]; b < mopi[h]; ++b) bVirEvals[bVirCount++] = bEvals->get(h, b);
     }
 
     if(print > 2){
