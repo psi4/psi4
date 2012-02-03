@@ -31,6 +31,7 @@ RBase::RBase() :
 }
 RBase::~RBase()
 {
+    postiterations();
 }
 void RBase::common_init()
 {
@@ -77,6 +78,17 @@ void RBase::common_init()
         eps_avir_->print();
         eps_fvir_->print();
     }
+}
+void RBase::preiterations()
+{
+    jk_ = JK::build_JK(options_, false);
+    unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
+    jk_->set_memory(effective_memory);
+    jk_->initialize();
+}
+void RBase::postiterations()
+{
+    jk_.reset();
 }
 
 RCPHF::RCPHF()
@@ -164,8 +176,10 @@ void RCPHF::add_polarizability()
         }
 
         delete[] temp;
-    
-        b_.push_back(B); 
+
+        std::stringstream ss2;
+        ss2 << (i == 0 ? "MU_X" : (i == 1 ? "MU_Y" : "MU_Z"));
+        b_[ss2.str()] = B; 
     }    
 }
 void RCPHF::analyze_polarizability()
@@ -173,21 +187,13 @@ void RCPHF::analyze_polarizability()
     std::vector<SharedMatrix> u;
     std::vector<SharedMatrix> d;
 
-    d.push_back(b_[b_.size() - 3]);
-    d.push_back(b_[b_.size() - 2]);
-    d.push_back(b_[b_.size() - 1]);
+    d.push_back(b_["MU_X"]);
+    d.push_back(b_["MU_Y"]);
+    d.push_back(b_["MU_Z"]);
 
-    u.push_back(x_[x_.size() - 3]);
-    u.push_back(x_[x_.size() - 2]);
-    u.push_back(x_[x_.size() - 1]);
-
-    x_.pop_back();
-    x_.pop_back();
-    x_.pop_back();
-
-    b_.pop_back();
-    b_.pop_back();
-    b_.pop_back();
+    u.push_back(x_["MU_X"]);
+    u.push_back(x_["MU_Y"]);
+    u.push_back(x_["MU_Z"]);
 
     // Analysis
     SharedMatrix polarizability(new Matrix("CPHF Polarizability", 3, 3));
@@ -207,9 +213,11 @@ double RCPHF::compute_energy()
     // Add named tasks to the force vector list
     add_named_tasks();
     
+    if (!jk_)
+        preiterations();
+    
     // Construct components
-    boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
-    boost::shared_ptr<CPHFRHamiltonian> H(new CPHFRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    boost::shared_ptr<CPHFRHamiltonian> H(new CPHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
     boost::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
 
     // Extra Knobs
@@ -218,24 +226,19 @@ double RCPHF::compute_energy()
 
     // Addition of force vectors
     std::vector<SharedVector>& bref = solver->b();
-    std::vector<SharedVector> b = H->pack(b_);
-    for (int i = 0; i < b.size(); i++) {
-        bref.push_back(b[i]);
+    std::map<std::string, SharedVector> b = H->pack(b_);
+    for (std::map<std::string, SharedVector>::const_iterator it = b.begin(); 
+        it != b.end(); ++it) {
+        bref.push_back((*it).second);
     }
 
     // Initialization/Memory
     solver->initialize();
 
-    unsigned long int solver_memory = solver->memory_estimate();
-    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
-    unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * remaining_memory);
-    jk->set_memory(effective_memory);
-    jk->initialize();
-
     // Component Headers
     solver->print_header();
     H->print_header();
-    jk->print_header();
+    jk_->print_header();
 
     if (print_) {
         fprintf(outfile, "  ==> CPHF Iterations <==\n\n");
@@ -247,29 +250,32 @@ double RCPHF::compute_energy()
     }
 
     if (debug_) {
-        for (int Q = 0; Q < b_.size(); Q++) {
-            b_[Q]->print();
+        for (std::map<std::string, SharedMatrix>::const_iterator it = b_.begin(); 
+            it != b_.end(); ++it) {
+            (*it).second->print();
         }
     }
 
     solver->solve();
 
     std::vector<SharedMatrix> x1 = H->unpack(solver->x());
-    for (int Q = 0; Q < x1.size(); Q++) {
-        x_.push_back(x1[Q]); 
+
+    int index = 0;
+    for (std::map<std::string, SharedMatrix>::const_iterator it = b_.begin(); 
+        it != b_.end(); ++it) {
+        x_[(*it).first] = x1[index++]; 
     }
 
     if (debug_) {
-        for (int Q = 0; Q < x_.size(); Q++) {
-            x_[Q]->print();
+        for (std::map<std::string, SharedMatrix>::const_iterator it = x_.begin(); 
+            it != x_.end(); ++it) {
+            (*it).second->print();
         }
     }
 
     analyze_named_tasks();
 
-    // Finalize solver/JK memory
     solver->finalize();
-    jk->finalize();
 
     return 0.0; 
 }
@@ -807,9 +813,11 @@ double RCIS::compute_energy()
     // Main CIS Header
     print_header(); 
     
+    if (!jk_)
+        preiterations();
+
     // Construct components
-    boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
-    boost::shared_ptr<CISRHamiltonian> H(new CISRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    boost::shared_ptr<CISRHamiltonian> H(new CISRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
     boost::shared_ptr<DLRSolver> solver = DLRSolver::build_solver(options_,H);
 
     // Extra Knobs
@@ -818,16 +826,11 @@ double RCIS::compute_energy()
 
     // Initialization/Memory
     solver->initialize();
-    unsigned long int solver_memory = solver->memory_estimate();
-    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
-    unsigned long int effective_memory = (unsigned long int)(options_.get_double("CIS_MEM_SAFETY_FACTOR") * remaining_memory);
-    jk->set_memory(effective_memory);
-    jk->initialize();
 
     // Component Headers
     solver->print_header();
     H->print_header();
-    jk->print_header();
+    jk_->print_header();
 
     // Singlets
     if (options_.get_bool("DO_SINGLETS")) {
@@ -919,9 +922,8 @@ double RCIS::compute_energy()
 
     }
     
-    // Finalize solver/JK memory
+    // Finalize solver
     solver->finalize();
-    jk->finalize();
 
     // Print wavefunctions and properties
     sort_states();
@@ -965,28 +967,25 @@ double RTDHF::compute_energy()
 {
     // Main TDHF Header
     print_header(); 
-    
+
+    if (!jk_)
+        preiterations();
+
     // Construct components
-    boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
-    boost::shared_ptr<TDHFRHamiltonian> H(new TDHFRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    boost::shared_ptr<TDHFRHamiltonian> H(new TDHFRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
     boost::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
 
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
 
-    // Initialization/Memory
+    // Initialization
     solver->initialize();
-    unsigned long int solver_memory = solver->memory_estimate();
-    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
-    unsigned long int effective_memory = (unsigned long int)(options_.get_double("TDHF_MEM_SAFETY_FACTOR") * remaining_memory);
-    jk->set_memory(effective_memory);
-    jk->initialize();
 
     // Component Headers
     solver->print_header();
     H->print_header();
-    jk->print_header();
+    jk_->print_header();
 
     // Singlets
     if (options_.get_bool("DO_SINGLETS")) {
@@ -1043,9 +1042,8 @@ double RTDHF::compute_energy()
         //}
     }
     
-    // Finalize solver/JK memory
+    // Finalize solver
     solver->finalize();
-    jk->finalize();
 
     // TODO
     // Print wavefunctions and properties
