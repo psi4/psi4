@@ -1,0 +1,33 @@
+#! Test DF-CCSD(T) energy for H2O/aug-cc-pVDZ
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+plugin_load('./plugin_df_ccsd.so')
+
+memory 250 mb
+set {
+  basis        aug-cc-pvdz
+  df_basis_cc  aug-cc-pvdz-ri
+  df_basis_scf aug-cc-pvdz-jkfit
+
+  scf_type df
+  freeze_core true
+  e_convergence 1e-10
+  d_convergence 1e-10
+  r_convergence 1e-7
+}
+
+scf_energy = scf()
+plugin('./plugin_df_ccsd.so')
+
+refscf =  -76.03566968373900 # TEST
+refccsd =  -0.230819852022   # TEST
+refccsdt = -0.236360387427   # TEST
+
+
+clean()
