@@ -1054,13 +1054,16 @@ void DFJK::initialize_temps()
     
 
     #ifdef _OPENMP
+	int temp_nthread = omp_get_max_threads();
+	omp_set_num_threads(omp_nthread_);
         C_temp_.resize(omp_nthread_);
         Q_temp_.resize(omp_nthread_);
-        #pragma omp parallel num_threads(omp_nthread_) 
+        #pragma omp parallel 
         {
             C_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf()));
             Q_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Qtemp", max_rows_, primary_->nbf()));
         } 
+	omp_set_num_threads(temp_nthread);
     #else
         for (int thread = 0; thread < omp_nthread_; thread++) {
             C_temp_.push_back(SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf())));
@@ -1081,13 +1084,16 @@ void DFJK::initialize_w_temps()
     max_rows_w = (max_rows_w < 1 ? 1 : max_rows_w);
 
     #ifdef _OPENMP
+	int temp_nthread = omp_get_max_threads();
+	omp_set_num_threads(omp_nthread_);
         C_temp_.resize(omp_nthread_);
         Q_temp_.resize(omp_nthread_);
-        #pragma omp parallel num_threads(omp_nthread_) 
+        #pragma omp parallel 
         {
             C_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf()));
             Q_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Qtemp", max_rows_w, primary_->nbf()));
         } 
+	omp_set_num_threads(temp_nthread);
     #else
         for (int thread = 0; thread < omp_nthread_; thread++) {
             C_temp_.push_back(SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf())));
