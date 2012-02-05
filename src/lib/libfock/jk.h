@@ -640,6 +640,7 @@ protected:
     virtual void manage_wK_core();
     virtual void manage_wK_disk();
     virtual void block_wK(double** Qlmnp, double** Qrmnp, int naux);
+    virtual void rebuild_wK_disk();
 
 public:
     // => Constructors < = //
