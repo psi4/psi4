@@ -63,7 +63,7 @@ public:
             * Set the default path for files to be stored
             * \param path full path to scratch
             */
-    void set_default_path(const std::string& path) { default_path_ = path; }
+    void set_default_path(const std::string& path);
     /**
             * Set the path for specific file numbers
             * \param fileno PSI4 file number
