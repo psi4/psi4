@@ -1638,6 +1638,17 @@ void DFJK::initialize_wK_core()
     #endif
     int rank = 0;
 
+    // Check that the right integrals are using the correct omega
+    if (df_ints_io_ == "LOAD") {
+        psio_->open(unit_,PSIO_OPEN_OLD);
+        double check_omega;
+        psio_->read_entry(unit_, "Omega", (char*)&check_omega, sizeof(double));        
+        if (check_omega != omega_) {
+            rebuild_wK_disk();
+        }
+        psio_->close(unit_,1);
+    }
+
     Qlmn_ = SharedMatrix(new Matrix("Qlmn (Fitted Integrals)",
         auxiliary_->nbf(), ntri));
     double** Qmnp = Qlmn_->pointer();
@@ -1779,6 +1790,7 @@ void DFJK::initialize_wK_core()
         psio_->open(unit_,PSIO_OPEN_OLD);
         psio_->write_entry(unit_, "Left (Q|w|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->write_entry(unit_, "Right (Q|w|mn) Integrals", (char*) Qmn2p[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->write_entry(unit_, "Omega", (char*) &omega_, sizeof(double));
         psio_->close(unit_,1);
     }
 }
@@ -1786,8 +1798,14 @@ void DFJK::initialize_wK_disk()
 {
     // Try to load
     if (df_ints_io_ == "LOAD") {
-        return;
-    } 
+        psio_->open(unit_,PSIO_OPEN_OLD);
+        double check_omega;
+        psio_->read_entry(unit_, "Omega", (char*)&check_omega, sizeof(double));        
+        if (check_omega != omega_) {
+            rebuild_wK_disk();
+        }
+        psio_->close(unit_,1);
+    }
 
     int nso = primary_->nbf();
     int nshell = primary_->nshell();
@@ -2202,7 +2220,139 @@ void DFJK::initialize_wK_disk()
     Amn2.reset();
     delete[] eri2;
 
+    psio_->write_entry(unit_, "Omega", (char*) &omega_, sizeof(double));
     psio_->close(unit_,1);
+}
+void DFJK::rebuild_wK_disk()
+{
+    // Already open
+    fprintf(outfile, "    Rebuilding (Q|w|mn) Integrals (new omega)\n\n");    
+
+    int nso = primary_->nbf();
+    int nshell = primary_->nshell();
+    int naux = auxiliary_->nbf();
+    
+    // ==> Schwarz Indexing <== //
+    const std::vector<std::pair<int,int> >& schwarz_shell_pairs = sieve_->shell_pairs();
+    const std::vector<std::pair<int,int> >& schwarz_fun_pairs = sieve_->function_pairs();
+    int nshellpairs = schwarz_shell_pairs.size();
+    int ntri = schwarz_fun_pairs.size(); 
+    const std::vector<long int>&  schwarz_shell_pairs_r = sieve_->shell_pairs_reverse();
+    const std::vector<long int>&  schwarz_fun_pairs_r = sieve_->function_pairs_reverse();
+
+    // ==> Thread setup <== //
+    int nthread = 1;
+    #ifdef _OPENMP
+        nthread = df_ints_num_threads_;
+    #endif
+
+    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+    const double **buffer2 = new const double*[nthread];
+    boost::shared_ptr<TwoBodyAOInt> *eri2 = new boost::shared_ptr<TwoBodyAOInt>[nthread];
+    for (int Q = 0; Q<nthread; Q++) {
+        eri2[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        buffer2[Q] = eri2[Q]->buffer();
+    }
+
+    ULI maxP = auxiliary_->max_function_per_shell();
+    ULI max_rows = memory_ / ntri;
+    max_rows = (max_rows > naux ? naux : max_rows);
+    max_rows = (max_rows < maxP ? maxP : max_rows); 
+    
+    // Block extents
+    std::vector<int> block_Q_starts;
+    int counter = 0;
+    block_Q_starts.push_back(0);
+    for (int Q = 0; Q < auxiliary_->nshell(); Q++) {
+        int nQ = auxiliary_->shell(Q)->nfunction();
+        if (counter + nQ > max_rows) {
+            counter = 0;
+            block_Q_starts.push_back(Q);
+        }
+        counter += nQ;
+    }
+    block_Q_starts.push_back(auxiliary_->nshell());
+
+    SharedMatrix Amn2(new Matrix("(A|mn) Block", max_rows, ntri));
+    double** Amn2p = Amn2->pointer();
+    psio_address next_AIA = PSIO_ZERO;
+
+    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
+    const size_t npairs = shell_pairs.size();
+    
+    // Loop over blocks of Qshell
+    for (int block = 0; block < block_Q_starts.size() - 1; block++) {
+        
+        // Block sizing/offsets
+        int Qstart = block_Q_starts[block];
+        int Qstop  = block_Q_starts[block+1];
+        int qoff   = auxiliary_->shell(Qstart)->function_index();
+        int nrows  = (Qstop == auxiliary_->nshell() ? 
+                     auxiliary_->nbf() - 
+                     auxiliary_->shell(Qstart)->function_index() : 
+                     auxiliary_->shell(Qstop)->function_index() - 
+                     auxiliary_->shell(Qstart)->function_index()); 
+
+        // Compute TEI tensor block (A|mn)
+
+        timer_on("JK: (Q|mn)^R");
+
+        #pragma omp parallel for schedule(dynamic) num_threads(nthread)
+        for (long int QMN = 0L; QMN < (Qstop - Qstart) * (ULI) npairs; QMN++) {
+
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            int Q =  QMN / npairs + Qstart;
+            int MN = QMN % npairs;
+
+            std::pair<int,int> pair = shell_pairs[MN];
+            int M = pair.first;
+            int N = pair.second;
+        
+            int nq = auxiliary_->shell(Q)->nfunction();       
+            int nm = primary_->shell(M)->nfunction();       
+            int nn = primary_->shell(N)->nfunction();       
+        
+            int sq =  auxiliary_->shell(Q)->function_index();       
+            int sm =  primary_->shell(M)->function_index();       
+            int sn =  primary_->shell(N)->function_index();       
+
+            eri2[thread]->compute_shell(Q,0,M,N);
+
+            for (int om = 0; om < nm; om++) {
+                for (int on = 0; on < nn; on++) {
+                    long int m = sm + om;
+                    long int n = sn + on;
+                    if (m >= n && schwarz_fun_pairs_r[m*(m+1)/2 + n] >= 0) {
+                        long int delta = schwarz_fun_pairs_r[m*(m+1)/2 + n];
+                        for (int oq = 0; oq < nq; oq++) {
+                            Amn2p[sq + oq - qoff][delta] =
+                            buffer2[thread][oq * nm * nn + om * nn + on];
+                        }
+                    }
+                }
+            }
+        }    
+
+        timer_off("JK: (Q|mn)^R");
+
+        // Dump block to disk
+        timer_on("JK: (Q|mn)^R Write");
+
+        psio_->write(unit_,"Right (Q|w|mn) Integrals",(char*)Amn2p[0],sizeof(double)*nrows*ntri,next_AIA,&next_AIA);
+
+        timer_off("JK: (Q|mn)^R Write");
+
+    }
+    Amn2.reset();
+    delete[] eri2;
+
+    psio_->write_entry(unit_, "Omega", (char*) &omega_, sizeof(double));
+    // No need to close
 }
 void DFJK::manage_JK_core()
 {
