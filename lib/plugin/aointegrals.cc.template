@@ -57,10 +57,10 @@ PsiReturnType @plugin@(Options &options)
     boost::shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
     boost::shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
     // Form the one-electron integral matrices from the matrix factory
-    boost::shared_ptr<SimpleMatrix> sMat(factory->create_simple_matrix("Overlap"));
-    boost::shared_ptr<SimpleMatrix> tMat(factory->create_simple_matrix("Kinetic"));
-    boost::shared_ptr<SimpleMatrix> vMat(factory->create_simple_matrix("Potential"));
-    boost::shared_ptr<SimpleMatrix> hMat(factory->create_simple_matrix("One Electron Ints"));
+    SharedMatrix sMat(factory->create_matrix("Overlap"));
+    SharedMatrix tMat(factory->create_matrix("Kinetic"));
+    SharedMatrix vMat(factory->create_matrix("Potential"));
+    SharedMatrix hMat(factory->create_matrix("One Electron Ints"));
     // Compute the one electron integrals, telling each object where to store the result
     sOBI->compute(sMat);
     tOBI->compute(tMat);

@@ -17,9 +17,9 @@ class DipoleInt : public OneBodyAOInt
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     //! Computes the dipole between two gaussian shells.
-    void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
+    void compute_pair(const GaussianShell&, const GaussianShell&);
     //! Computes the dipole derivative between two gaussian shells.
-    void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
+    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
 
 public:
     //! Constructor. Do not call directly use an IntegralFactory.

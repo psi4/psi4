@@ -41,15 +41,15 @@ protected:
 
     OneBodyAOInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv=0);
 
-    virtual void compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2) = 0;
-    virtual void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
-    virtual void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
+    virtual void compute_pair(const GaussianShell& s1, const GaussianShell& s2) = 0;
+    virtual void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
+    virtual void compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2);
 
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
-    void pure_transform(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int=1);
+    void pure_transform(const GaussianShell&, const GaussianShell&, int=1);
 
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int nchunk=1);
+    void normalize_am(const GaussianShell&, const GaussianShell&, int nchunk=1);
 
 public:
     virtual ~OneBodyAOInt();
