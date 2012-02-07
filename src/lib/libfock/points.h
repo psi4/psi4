@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <map>
 
-#include "typedefs.h"
+#include <libmints/typedefs.h>
 #include <boost/tuple/tuple.hpp>
 
 namespace psi {

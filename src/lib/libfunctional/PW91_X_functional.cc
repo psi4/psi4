@@ -5,6 +5,7 @@
 *
 ***********************************************************/
 #include <libmints/mints.h>
+#include <libfock/points.h>
 #include "PW91_X_functional.h"
 #include <stdlib.h>
 #include <cmath>
