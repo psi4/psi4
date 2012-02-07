@@ -645,8 +645,12 @@ def ip_fitting(mol, omega_l, omega_r, **kwargs):
     if (converged):
         PsiMod.print_out('\n\tIP Fitting Converged\n')
         PsiMod.print_out('\tFinal omega = %14.6E\n' % ((omega_l + omega_r) / 2))
+        PsiMod.print_out('\n\t"M,I. does the dying. Fleet just does the flying."\n')
+        PsiMod.print_out('\t\t\t-Starship Troopers\n')
+
     else:
         PsiMod.print_out('\n\tIP Fitting did not converge!\n')
     
     PsiMod.set_global_option("DF_INTS_IO", "NONE")
     PsiMod.set_global_option("GUESS", old_guess)
+
