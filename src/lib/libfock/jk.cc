@@ -463,11 +463,26 @@ void JK::compute()
         C_right_ = C_left_;
     }
 
+    timer_on("JK: D");
     compute_D();
-    if (C1()) USO2AO();
-    else allocate_JK();
+    timer_off("JK: D");
+    if (C1()) {
+        timer_on("JK: USO2AO");
+        USO2AO();
+        timer_off("JK: USO2AO");
+    } else {
+        allocate_JK();
+    }
+
+    timer_on("JK: JK");
     compute_JK();
-    if (C1()) AO2USO();
+    timer_off("JK: JK");
+
+    if (C1()) {
+        timer_on("JK: AO2USO");
+        AO2USO();
+        timer_off("JK: AO2USO");
+    }
 
     if (debug_ > 3) {
         fprintf(outfile, "   > JK <\n\n");
