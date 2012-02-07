@@ -3,13 +3,21 @@
 
 #include <cstdio>
 #include <libmints/vector3.h>
+#include <vector>
 
 namespace psi {
 
 class Vector3;
 
-enum PrimitiveType { Normalized, Unnormalized };
-enum GaussianType { Cartesian, Pure };
+enum PrimitiveType {
+    Normalized,
+    Unnormalized
+};
+
+enum GaussianType {
+    Cartesian = 0,
+    Pure = 1
+};
 
 /*! \ingroup MINTS
  *  \class GaussianShell
@@ -18,16 +26,14 @@ enum GaussianType { Cartesian, Pure };
 class GaussianShell
 {
 private:
-    /// number of primitives used in this contraction
-    int nprimitive_;
     /// Angular momentum
     int l_;
     /// Flag for pure angular momentum
     int puream_;
     /// Exponents (of length nprimitives_)
-    double *exp_;
+    std::vector<double> exp_;
     /// Contraction coefficients (of length nprimitives_)
-    double *coef_;
+    std::vector<double> coef_;
 
     /// Atom number this shell goes to. Needed when indexing integral derivatives.
     int nc_;
@@ -37,21 +43,10 @@ private:
 
     /// How many cartesian functions? (1=s, 3=p, 6=d, ...)
     int ncartesian_;
-    /// How many functions? (1=s, 3=p, 6=d, ...)
+    /** How many functions? (1=s, 3=p, 5/6=d, ...)
+     * Dependent on the value of puream_
+     */
     int nfunction_;
-
-    /** Initializes some basic data about the GaussianShell
-     *
-     *  Determines maximum and minimum AM and totall number of Cartesian and functions.
-     */
-    void init_data();
-
-    /** Makes a copy of the data for the Gaussian shell.
-     *  @param l Angular momentum
-     *  @param exp Array of exponents
-     *  @param coef Array of contraction coefficients. nprimitive
-     */
-    void copy_data(int l, double *exp, double *coef);
 
     /** Normalizes a single primitive.
      *  @param p The primitive index to normalize.
@@ -69,14 +64,7 @@ private:
     static const char *AMTYPES;
 
 public:
-    /** Constructor, does nothing. */
-    GaussianShell() {};
-    ~GaussianShell();
-
-    /** Handles calling primitive_normalization and contraction_normalization for you. */
-    void normalize_shell();
-    /** Initializes the GaussianShell with the data provided.
-     *  @param nprm The number of primitives.
+    /** Constructor.
      *  @param e An array of exponent values.
      *  @param am Angular momentum.
      *  @param pure Pure spherical harmonics, or Cartesian.
@@ -86,21 +74,26 @@ public:
      *  @param start The starting index of the first function this shell provides. Used to provide starting positions in matrices.
      *  @param pt Is the shell already normalized?
      */
-    void init(int nprm,
-              double* e,
-              int am,
-              GaussianType pure,
-              double* c,
-              int nc,
-              Vector3& center,
-              int start,
-              PrimitiveType pt = Normalized);
+    GaussianShell(int am,
+                  const std::vector<double>& c,
+                  const std::vector<double>& e,
+                  GaussianType pure,
+                  int nc,
+                  const Vector3& center,
+                  int start,
+                  PrimitiveType pt = Normalized);
+
+    /** Handles calling primitive_normalization and contraction_normalization for you. */
+    void normalize_shell();
 
     /// Make a copy of the GaussianShell.
-    GaussianShell* copy(int nc, Vector3& c);
+    GaussianShell copy();
+
+    /// Make a copy of the GaussianShell.
+    GaussianShell copy(int nc, const Vector3& c);
 
     /// The number of primitive Gaussians
-    int nprimitive() const          { return nprimitive_; }
+    int nprimitive() const;
     /// Total number of basis functions
     int nfunction() const;
     /// Total number of functions if this shell was Cartesian
@@ -117,7 +110,7 @@ public:
     bool is_pure() const            { return puream_; }
 
     /// Returns the center of the Molecule this shell is on
-    Vector3 center() const;
+    const Vector3& center() const;
     /// Returns the atom number this shell is on. Used by integral derivatives for indexing.
     int ncenter() const             { return nc_; }
 
@@ -126,15 +119,15 @@ public:
     /// Return coefficient of pi'th primitive and ci'th contraction
     double coef(int pi) const       { return coef_[pi]; }
     /// Returns the exponent of the given primitive
-    double* exps() const            { return exp_; }
+    const std::vector<double>& exps() const { return exp_; }
     /// Return coefficient of pi'th primitive and ci'th contraction
-    double* coefs() const           { return coef_; }
+    const std::vector<double>& coefs() const { return coef_; }
 
     /// Print out the shell
     void print(FILE *out) const;
 
     /// Normalize the angular momentum component
-    double normalize(int l, int m, int n);
+    static double normalize(int l, int m, int n);
 
     /// Basis function index where this shell starts.
     int function_index() const      { return start_; }

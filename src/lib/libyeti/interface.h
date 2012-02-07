@@ -4,7 +4,7 @@
 /*
  *  Defines the interface between YETI and the external quantum chemistry code
  *  that YETI is being linked into.
- */ 
+ */
 #include <libyeti/class.h>
 #include <libyeti/sort.hpp>
 #include <libyeti/index.hpp>
@@ -51,7 +51,7 @@
 
 namespace sc {
 
-class MPQCMole : 
+class MPQCMole :
     public Wavefunction {
 
     Ref<CLHF> ref_;
@@ -61,7 +61,7 @@ class MPQCMole :
     int memory_;
     int nthread_;
 
-  public: 
+  public:
     MPQCMole(const Ref<KeyVal> &);
     MPQCMole(StateIn &);
     void save_data_state(StateOut &);
@@ -629,11 +629,11 @@ namespace psi{
     struct _dpdbuf4;
     typedef _dpdbuf4 dpdbuf4;
 
-    double min_exponent(const boost::shared_ptr<GaussianShell>& shell);
-    
+    double min_exponent(const GaussianShell& shell);
+
     void build_ao_range(const boost::shared_ptr<BasisSet>& obs,
                    const char* id1, const char* id2, const char* id3, const char* id4);
-    
+
     class TwoElectronIntegralComputer: public TensorElementComputer {
       protected:
         /// The integral generation object
@@ -664,17 +664,17 @@ namespace psi{
          * @param eri a TwoBodyAOInt object to compute the desired integrals
          */
         TwoElectronIntegralComputer(boost::shared_ptr<TwoBodyAOInt> eri);
-    
+
         /// The copy constructor
         TensorElementComputer* copy() const;
-    
+
         yeti::TemplateInfo::type_t
         element_type(const uli* indices, usi depth) { return yeti::TemplateInfo::double_type; }
-    
+
         /// Performs the integral computation
         void compute(const uli* indices, double* data, uli nelements);
     };
-    
+
     class MatrixFiller : public TensorElementComputer {
         private:
             int callcount_;
@@ -688,10 +688,10 @@ namespace psi{
 
             yeti::TemplateInfo::type_t
             element_type(const uli* indices, usi depth) { return yeti::TemplateInfo::double_type; }
-    
+
             void compute(const uli* indices, double* data, uli n);
     };
-    
+
     class VectorFiller : public TensorElementComputer {
         private:
             int callcount_;
@@ -703,11 +703,11 @@ namespace psi{
 
             yeti::TemplateInfo::type_t
             element_type(const uli* indices, usi depth) { return yeti::TemplateInfo::double_type; }
-    
+
             void compute(const uli* indices, double* data, uli n);
     };
-    
-    
+
+
     class DPDFiller : public TensorElementComputer {
         private:
             int callcount_;
@@ -720,7 +720,7 @@ namespace psi{
             DPDFiller(dpdbuf4 *buf, yeti::uli poff, yeti::uli qoff, yeti::uli roff, yeti::uli soff);
 
             TensorElementComputer* copy() const;
-    
+
             yeti::TemplateInfo::type_t
             element_type(const uli* indices, usi depth) { return yeti::TemplateInfo::double_type; }
 

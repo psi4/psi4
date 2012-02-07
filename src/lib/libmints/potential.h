@@ -26,10 +26,10 @@ namespace psi {
 class PotentialInt : public OneBodyAOInt
 {
     /// Computes integrals between two shell objects.
-    void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
+    void compute_pair(const GaussianShell&, const GaussianShell&);
     /// Computes integrals between two shell objects.
-    void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>& );
-    void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>& );
+    void compute_pair_deriv1(const GaussianShell&, const GaussianShell& );
+    void compute_pair_deriv2(const GaussianShell&, const GaussianShell& );
 
 protected:
     /// Recursion object that does the heavy lifting.

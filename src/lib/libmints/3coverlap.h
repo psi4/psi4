@@ -37,9 +37,9 @@ protected:
     /// Vector of Sphericaltransforms
     std::vector<SphericalTransform> st_;
 
-    void compute_pair(boost::shared_ptr<GaussianShell> s1,
-                      boost::shared_ptr<GaussianShell> s2,
-                      boost::shared_ptr<GaussianShell> s3);
+    void compute_pair(const GaussianShell& s1,
+                      const GaussianShell& s2,
+                      const GaussianShell& s3);
 public:
     ThreeCenterOverlapInt(std::vector<SphericalTransform>&,
                           boost::shared_ptr<BasisSet> bs1,
@@ -64,14 +64,14 @@ public:
     virtual void compute_shell(int, int, int);
 
     /// Normalize Cartesian functions based on angular momentum
-    void normalize_am(boost::shared_ptr<GaussianShell>&,
-                      boost::shared_ptr<GaussianShell>&,
-                      boost::shared_ptr<GaussianShell>&);
+    void normalize_am(const GaussianShell&,
+                      const GaussianShell&,
+                      const GaussianShell&);
 
     /// Perform pure (spherical) transform.
-    void pure_transform(boost::shared_ptr<GaussianShell>&,
-                        boost::shared_ptr<GaussianShell>&,
-                        boost::shared_ptr<GaussianShell>&);
+    void pure_transform(const GaussianShell&,
+                        const GaussianShell&,
+                        const GaussianShell&);
 };
 
 }

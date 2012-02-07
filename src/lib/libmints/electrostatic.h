@@ -22,7 +22,7 @@ class Vector3;
  */
 class ElectrostaticInt : public PotentialInt
 {
-    void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&)
+    void compute_pair(const GaussianShell&, const GaussianShell&)
     {}
 
 public:
@@ -36,7 +36,7 @@ public:
     /// Computes integrals between two shells.
     void compute_shell(int, int, Vector3&);
     /// Computes integrals between two shells.
-    void compute_pair(boost::shared_ptr<GaussianShell>, boost::shared_ptr<GaussianShell>, Vector3&);
+    void compute_pair(const GaussianShell&, const GaussianShell&, Vector3&);
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return false; }
