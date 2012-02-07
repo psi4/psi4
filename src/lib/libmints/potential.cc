@@ -61,21 +61,21 @@ PotentialInt::~PotentialInt()
 }
 
 // The engine only supports segmented basis sets
-void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
-                                const boost::shared_ptr<GaussianShell>& s2)
+void PotentialInt::compute_pair(const GaussianShell& s1,
+                                const GaussianShell& s2)
 {
     int ao12;
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int nprim1 = s1.nprimitive();
+    int nprim2 = s2.nprimitive();
     double A[3], B[3];
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
 
     int izm = 1;
     int iym = am1 + 1;
@@ -90,7 +90,7 @@ void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, s1.ncartesian() * s2.ncartesian() * sizeof(double));
 
     double ***vi = potential_recur_->vi();
 
@@ -98,11 +98,11 @@ void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
     int ncharge = Zxyz_->rowspi()[0];
 
     for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1->exp(p1);
-        double c1 = s1->coef(p1);
+        double a1 = s1.exp(p1);
+        double c1 = s1.coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2->exp(p2);
-            double c2 = s2->coef(p2);
+            double a2 = s2.exp(p2);
+            double c2 = s2.coef(p2);
             double gamma = a1 + a2;
             double oog = 1.0/gamma;
 
@@ -164,26 +164,26 @@ void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
     }
 }
 
-void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
+void PotentialInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2)
 {
     int ao12;
-    const int am1 = s1->am();
-    const int am2 = s2->am();
-    const int nprim1 = s1->nprimitive();
-    const int nprim2 = s2->nprimitive();
-    const int ncenteri = s1->ncenter();
-    const int ncenterj = s2->ncenter();
+    const int am1 = s1.am();
+    const int am2 = s2.am();
+    const int nprim1 = s1.nprimitive();
+    const int nprim2 = s2.nprimitive();
+    const int ncenteri = s1.ncenter();
+    const int ncenterj = s2.ncenter();
 
     double A[3], B[3];
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
 
     // size of the length of a perturbation
-    const size_t size = s1->ncartesian() * s2->ncartesian();
+    const size_t size = s1.ncartesian() * s2.ncartesian();
     const int center_i = ncenteri * 3 * size;
     const int center_j = ncenterj * 3 * size;
 
@@ -211,11 +211,11 @@ void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
     int ncharge = Zxyz_->rowspi()[0];
 
     for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1->exp(p1);
-        double c1 = s1->coef(p1);
+        double a1 = s1.exp(p1);
+        double c1 = s1.coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2->exp(p2);
-            double c2 = s2->coef(p2);
+            double a2 = s2.exp(p2);
+            double c2 = s2.coef(p2);
             double gamma = a1 + a2;
             double oog = 1.0/gamma;
 
@@ -322,26 +322,26 @@ void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
     }
 }
 
-void PotentialInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
+void PotentialInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2)
 {
     int ao12;
-    const int am1 = s1->am();
-    const int am2 = s2->am();
-    const int nprim1 = s1->nprimitive();
-    const int nprim2 = s2->nprimitive();
-    const int ncenteri = s1->ncenter();
-    const int ncenterj = s2->ncenter();
+    const int am1 = s1.am();
+    const int am2 = s2.am();
+    const int nprim1 = s1.nprimitive();
+    const int nprim2 = s2.nprimitive();
+    const int ncenteri = s1.ncenter();
+    const int ncenterj = s2.ncenter();
 
     double A[3], B[3];
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
 
     // size of the length of a perturbation
-    const size_t size = s1->ncartesian() * s2->ncartesian();
+    const size_t size = s1.ncartesian() * s2.ncartesian();
     const int center_i = ncenteri * 3 * size;
     const int center_j = ncenterj * 3 * size;
 
@@ -375,11 +375,11 @@ void PotentialInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s
     int ncharge = Zxyz_->rowspi()[0];
 
     for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1->exp(p1);
-        double c1 = s1->coef(p1);
+        double a1 = s1.exp(p1);
+        double c1 = s1.coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2->exp(p2);
-            double c2 = s2->coef(p2);
+            double a2 = s2.exp(p2);
+            double c2 = s2.coef(p2);
             double gamma = a1 + a2;
             double oog = 1.0/gamma;
 
@@ -503,10 +503,10 @@ void PotentialInt::compute_deriv1(std::vector<SharedMatrix > &result)
         throw SanityCheckError("PotentialInt::compute_derv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
 
             // Compute the shell
             compute_shell_deriv1(i, j);
@@ -573,11 +573,9 @@ void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
             // by the end of these 4 for loops we will have our final integral in buffer_
             for (int i=0; i<t1.naoshell; ++i) {
                 const SOTransformShell &s1 = t1.aoshell[i];
-                int center_i = ob_->basis1()->shell(s1.aoshell)->ncenter();
 
                 for (int j=0; j<t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
-                    int center_j = ob_->basis2()->shell(s2.aoshell)->ncenter();
 
                     // If we're working on the same atomic center, don't even bother with the derivative
                     // Does this still hold for potentials? nope

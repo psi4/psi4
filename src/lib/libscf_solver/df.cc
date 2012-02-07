@@ -480,13 +480,13 @@ void DFHF::initialize_JK_disk()
 
             int MU = schwarz_shell_pairs[2*MUNU + 0];
             int NU = schwarz_shell_pairs[2*MUNU + 1];
-            int nummu = primary_->shell(MU)->nfunction();
-            int numnu = primary_->shell(NU)->nfunction();
-            int mu = primary_->shell(MU)->function_index();
-            int nu = primary_->shell(NU)->function_index();
+            int nummu = primary_->shell(MU).nfunction();
+            int numnu = primary_->shell(NU).nfunction();
+            int mu = primary_->shell(MU).function_index();
+            int nu = primary_->shell(NU).function_index();
             for (int P = 0; P < auxiliary_->nshell(); P++) {
-                int nump = auxiliary_->shell(P)->nfunction();
-                int p = auxiliary_->shell(P)->function_index();
+                int nump = auxiliary_->shell(P).nfunction();
+                int p = auxiliary_->shell(P).function_index();
                 eri[rank]->compute_shell(P,0,MU,NU);
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
@@ -590,20 +590,20 @@ void DFHF::initialize_JK_core()
             rank = omp_get_thread_num();
             //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
         #endif
-        nummu = primary_->shell(MU)->nfunction();
+        nummu = primary_->shell(MU).nfunction();
         for (NU=0; NU <= MU; ++NU) {
-            numnu = primary_->shell(NU)->nfunction();
+            numnu = primary_->shell(NU).nfunction();
             if (schwarz_shell_pairs[MU*(MU+1)/2+NU] > -1) {
                 for (Pshell=0; Pshell < auxiliary_->nshell(); ++Pshell) {
-                    numP = auxiliary_->shell(Pshell)->nfunction();
+                    numP = auxiliary_->shell(Pshell).nfunction();
                     eri[rank]->compute_shell(Pshell, 0, MU, NU);
                     for (mu=0 ; mu < nummu; ++mu) {
-                        omu = primary_->shell(MU)->function_index() + mu;
+                        omu = primary_->shell(MU).function_index() + mu;
                         for (nu=0; nu < numnu; ++nu) {
-                            onu = primary_->shell(NU)->function_index() + nu;
+                            onu = primary_->shell(NU).function_index() + nu;
                             if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] > -1) {
                                 for (P=0; P < numP; ++P) {
-                                    PHI = auxiliary_->shell(Pshell)->function_index() + P;
+                                    PHI = auxiliary_->shell(Pshell).function_index() + P;
                                     Qmnp[PHI][schwarz_fun_pairs[omu*(omu+1)/2+onu]] = buffer[rank][P*nummu*numnu + mu*numnu + nu];
                                 }
                             }
@@ -729,20 +729,20 @@ void DFHF::initialize_J_core()
             rank = omp_get_thread_num();
             //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
         #endif
-        nummu = primary_->shell(MU)->nfunction();
+        nummu = primary_->shell(MU).nfunction();
         for (NU=0; NU <= MU; ++NU) {
-            numnu = primary_->shell(NU)->nfunction();
+            numnu = primary_->shell(NU).nfunction();
             if (schwarz_shell_pairs[MU*(MU+1)/2+NU] > -1) {
                 for (Pshell=0; Pshell < auxiliary_->nshell(); ++Pshell) {
-                    numP = auxiliary_->shell(Pshell)->nfunction();
+                    numP = auxiliary_->shell(Pshell).nfunction();
                     eri[rank]->compute_shell(Pshell, 0, MU, NU);
                     for (mu=0 ; mu < nummu; ++mu) {
-                        omu = primary_->shell(MU)->function_index() + mu;
+                        omu = primary_->shell(MU).function_index() + mu;
                         for (nu=0; nu < numnu; ++nu) {
-                            onu = primary_->shell(NU)->function_index() + nu;
+                            onu = primary_->shell(NU).function_index() + nu;
                             if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] > -1) {
                                 for (P=0; P < numP; ++P) {
-                                    PHI = auxiliary_->shell(Pshell)->function_index() + P;
+                                    PHI = auxiliary_->shell(Pshell).function_index() + P;
                                     Qmnp[PHI][schwarz_fun_pairs[omu*(omu+1)/2+onu]] = buffer[rank][P*nummu*numnu + mu*numnu + nu];
                                 }
                             }
