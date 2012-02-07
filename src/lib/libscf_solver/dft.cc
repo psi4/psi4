@@ -1,7 +1,7 @@
 #include <libfunctional/superfunctional.h>
 #include <libmints/mints.h>
-#include <libmints/points.h>
-#include <libmints/cubature.h>
+#include <libfock/points.h>
+#include <libfock/cubature.h>
 #include <libqt/qt.h>
 #include <math.h>
 #include "dft.h"
