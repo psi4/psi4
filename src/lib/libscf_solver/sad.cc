@@ -44,9 +44,9 @@ SADGuess::~SADGuess()
 void SADGuess::common_init()
 {
     molecule_ = basis_->molecule();
-    
+
     boost::shared_ptr<IntegralFactory> ints(new IntegralFactory(basis_));
-    boost::shared_ptr<PetiteList> petite(new PetiteList(basis_,ints)); 
+    boost::shared_ptr<PetiteList> petite(new PetiteList(basis_,ints));
     AO2SO_ =  petite->aotoso();
 
     print_ = options_.get_int("SAD_PRINT");
@@ -61,7 +61,7 @@ void SADGuess::form_D()
 {
     // Build Neutral D in AO basis (block diagonal)
     SharedMatrix DAO = form_D_AO();
-    
+
     // Transform Neutral D from AO to SO basis
     Da_ = SharedMatrix(new Matrix("Da SAD",AO2SO_->colspi(),AO2SO_->colspi()));
 
@@ -106,10 +106,10 @@ void SADGuess::form_C()
     Ca_ = Da_->partial_cholesky_factorize(options_.get_double("SAD_CHOL_TOLERANCE"));
     Ca_->set_name("Ca SAD");
     if (nalpha_ == nbeta_) {
-        
+
         Cb_ = Ca_;
     } else {
-        Cb_ = SharedMatrix(Ca_->clone()); 
+        Cb_ = SharedMatrix(Ca_->clone());
         Cb_->set_name("Cb SAD");
         Cb_->scale(sqrt(((double)nbeta_)/((double)nalpha_)));
     }
@@ -235,7 +235,7 @@ SharedMatrix SADGuess::form_D_AO()
         fprintf(outfile,"\n");
 
     fflush(outfile);
-    
+
     //Add atomic_D into D (scale by 1/2, we like effective pairs)
     SharedMatrix DAO = SharedMatrix(new Matrix("D_SAD (AO)", basis_->nbf(), basis_->nbf()));
     for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
@@ -445,22 +445,22 @@ void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, i
 
         //At the moment this is 8-fold slower than it could be, we'll see if it is signficant
         for (int MU = 0; MU < bas->nshell(); MU++) {
-        int numMU = bas->shell(MU)->nfunction();
+        int numMU = bas->shell(MU).nfunction();
         for (int NU = 0; NU < bas->nshell(); NU++) {
-        int numNU = bas->shell(NU)->nfunction();
+        int numNU = bas->shell(NU).nfunction();
         for (int LA = 0; LA < bas->nshell(); LA++) {
-        int numLA = bas->shell(LA)->nfunction();
+        int numLA = bas->shell(LA).nfunction();
         for (int SI = 0; SI < bas->nshell(); SI++) {
-        int numSI = bas->shell(SI)->nfunction();
+        int numSI = bas->shell(SI).nfunction();
         TEI->compute_shell(MU,NU,LA,SI);
         for (int m = 0, index = 0; m < numMU; m++) {
-        int omu = bas->shell(MU)->function_index() + m;
+        int omu = bas->shell(MU).function_index() + m;
         for (int n = 0; n < numNU; n++) {
-        int onu = bas->shell(NU)->function_index() + n;
+        int onu = bas->shell(NU).function_index() + n;
         for (int l = 0; l < numLA; l++) {
-        int ola = bas->shell(LA)->function_index() + l;
+        int ola = bas->shell(LA).function_index() + l;
         for (int s = 0; s < numSI; s++, index++) {
-        int osi = bas->shell(SI)->function_index() + s;
+        int osi = bas->shell(SI).function_index() + s;
              //fprintf(outfile,"  Integral (%d, %d| %d, %d) = %14.10f\n",omu,onu,ola,osi,buffer[index]);
              Ga[omu][onu] += D[ola][osi]*buffer[index];
              //Ga[ola][osi] += D[omu][onu]*buffer[index];
@@ -606,7 +606,7 @@ void HF::compute_SAD_guess()
         if (nmo > X_->colspi()[h])
             nmo = X_->colspi()[h];
 
-        sad_nocc_[h] = nmo; 
+        sad_nocc_[h] = nmo;
 
         if (!nso || !nmo) continue;
 
@@ -614,7 +614,7 @@ void HF::compute_SAD_guess()
         double** Cbp = Cb_->pointer(h);
         double** Ca2p = guess->Ca()->pointer(h);
         double** Cb2p = guess->Cb()->pointer(h);
-    
+
         for (int i = 0; i < nso; i++) {
             ::memcpy((void*) Cap[i], (void*) Ca2p[i], nmo*sizeof(double));
             ::memcpy((void*) Cbp[i], (void*) Cb2p[i], nmo*sizeof(double));
@@ -635,7 +635,7 @@ void HF::compute_SAD_guess()
 
     E_ = 0.0; // This is the -1th iteration
 }
-SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis) 
+SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis)
 {
 
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311

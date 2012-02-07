@@ -133,25 +133,23 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
 #ifdef MINTS_TIMER
     timer_on("Permute target");
 #endif
-    boost::shared_ptr<GaussianShell> s1, s2, s3, s4;
-
-    s1 = bs1_->shell(sh1);
-    s2 = bs2_->shell(sh2);
-    s3 = bs3_->shell(sh3);
-    s4 = bs4_->shell(sh4);
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
+    const GaussianShell& s3 = bs3_->shell(sh3);
+    const GaussianShell& s4 = bs4_->shell(sh4);
 
     int nbf1, nbf2, nbf3, nbf4;
     if(force_cartesian_){
-        nbf1 = s1->ncartesian();
-        nbf2 = s2->ncartesian();
-        nbf3 = s3->ncartesian();
-        nbf4 = s4->ncartesian();
+        nbf1 = s1.ncartesian();
+        nbf2 = s2.ncartesian();
+        nbf3 = s3.ncartesian();
+        nbf4 = s4.ncartesian();
     }
     else{
-        nbf1 = s1->nfunction();
-        nbf2 = s2->nfunction();
-        nbf3 = s3->nfunction();
-        nbf4 = s4->nfunction();
+        nbf1 = s1.nfunction();
+        nbf2 = s2.nfunction();
+        nbf3 = s3.nfunction();
+        nbf4 = s4.nfunction();
     }
 
     if (!p13p24) {
@@ -315,41 +313,39 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
 #ifdef MINTS_TIMER
     timer_on("Pure transformation");
 #endif
-    boost::shared_ptr<GaussianShell> s1, s2, s3, s4;
-
-    s1 = bs1_->shell(sh1);
-    s2 = bs2_->shell(sh2);
-    s3 = bs3_->shell(sh3);
-    s4 = bs4_->shell(sh4);
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
+    const GaussianShell& s3 = bs3_->shell(sh3);
+    const GaussianShell& s4 = bs4_->shell(sh4);
 
     // Get the transforms from the basis set
-    SphericalTransformIter trans1(*integral()->spherical_transform(s1->am()));
-    SphericalTransformIter trans2(*integral()->spherical_transform(s2->am()));
-    SphericalTransformIter trans3(*integral()->spherical_transform(s3->am()));
-    SphericalTransformIter trans4(*integral()->spherical_transform(s4->am()));
+    SphericalTransformIter trans1(*integral()->spherical_transform(s1.am()));
+    SphericalTransformIter trans2(*integral()->spherical_transform(s2.am()));
+    SphericalTransformIter trans3(*integral()->spherical_transform(s3.am()));
+    SphericalTransformIter trans4(*integral()->spherical_transform(s4.am()));
 
     // Get the angular momentum for each shell
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int am3 = s3->am();
-    int am4 = s4->am();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int am3 = s3.am();
+    int am4 = s4.am();
 
     // Get number of Cartesian functions for each shell
-    int nao1 = s1->ncartesian();
-    int nao2 = s2->ncartesian();
-    int nao3 = s3->ncartesian();
-    int nao4 = s4->ncartesian();
+    int nao1 = s1.ncartesian();
+    int nao2 = s2.ncartesian();
+    int nao3 = s3.ncartesian();
+    int nao4 = s4.ncartesian();
 
-    int nbf1 = s1->nfunction();
-    int nbf2 = s2->nfunction();
-    int nbf3 = s3->nfunction();
-    int nbf4 = s4->nfunction();
+    int nbf1 = s1.nfunction();
+    int nbf2 = s2.nfunction();
+    int nbf3 = s3.nfunction();
+    int nbf4 = s4.nfunction();
 
     // Get if each shell has pure functions
-    bool is_pure1 = s1->is_pure();
-    bool is_pure2 = s2->is_pure();
-    bool is_pure3 = s3->is_pure();
-    bool is_pure4 = s4->is_pure();
+    bool is_pure1 = s1.is_pure();
+    bool is_pure2 = s2.is_pure();
+    bool is_pure3 = s3.is_pure();
+    bool is_pure4 = s4.is_pure();
 
     for (int ichunk=0; ichunk < nchunk; ++ichunk) {
         // Compute the offset in source_, and target

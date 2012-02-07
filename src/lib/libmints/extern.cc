@@ -102,12 +102,12 @@ SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basi
         for (int Q = 0; Q < aux->nshell(); Q++) {
             for (int M = 0; M < basis->nshell(); M++) {
                 for (int N = 0; N < basis->nshell(); N++) {
-                    int numQ = aux->shell(Q)->nfunction();
-                    int numM = basis->shell(M)->nfunction();
-                    int numN = basis->shell(N)->nfunction();
-                    int Qstart = aux->shell(Q)->function_index();
-                    int Mstart = basis->shell(M)->function_index();
-                    int Nstart = basis->shell(N)->function_index();
+                    int numQ = aux->shell(Q).nfunction();
+                    int numM = basis->shell(M).nfunction();
+                    int numN = basis->shell(N).nfunction();
+                    int Qstart = aux->shell(Q).function_index();
+                    int Mstart = basis->shell(M).function_index();
+                    int Nstart = basis->shell(N).function_index();
 
                     eri->compute_shell(Q,0,M,N);
 

@@ -11,50 +11,33 @@
 
 using namespace psi;
 
-void GaussianShell::init(int nprm, double* e, int am, GaussianType pure,
-    double* c, int nc, Vector3& center, int start, PrimitiveType pt)
+GaussianShell::GaussianShell(int am, const std::vector<double> &c,
+                             const std::vector<double> &e, GaussianType pure,
+                             int nc, const Vector3 &center, int start,
+                             PrimitiveType pt)
+    : l_(am), puream_(pure), exp_(e), coef_(c),
+      nc_(nc), center_(center), start_(start)
 {
-    nprimitive_ = nprm;
-    nc_ = nc;
-    center_ = center;
-    start_ = start;
-
-    puream_ = pure;
-
-    // Directly copy the arrays over
-    copy_data(am, e, c);
-    // Compute the number of basis functions in this shell
-    init_data();
+    ncartesian_ = INT_NCART(l_);
+    nfunction_  = INT_NFUNC(puream_, l_);
 
     // Compute the normalization constants
     if (pt == Unnormalized)
         normalize_shell();
 }
 
-GaussianShell::~GaussianShell()
+GaussianShell GaussianShell::copy()
 {
-    delete[] exp_;
-    delete[] coef_;
+    return GaussianShell(l_, coef_, exp_,
+                         GaussianType(puream_),
+                         nc_, center_, start_);
 }
 
-// expects coef to be in primitive x contraction format. the data is transposed here
-void GaussianShell::copy_data(int l, double *exp, double *coef)
+GaussianShell GaussianShell::copy(int nc, const Vector3& c)
 {
-    l_ = l;
-
-    exp_ = new double[nprimitive()];
-    coef_ = new double[nprimitive()];
-    for (int p=0; p<nprimitive(); ++p) {
-        exp_[p] = exp[p];
-        coef_[p] = coef[p];
-    }
-}
-
-GaussianShell* GaussianShell::copy(int nc, Vector3& c)
-{
-    GaussianShell* temp = new GaussianShell();
-    temp->init(nprimitive_, exp_, l_, GaussianType(puream_), coef_, nc, c, start_);
-    return temp;
+    return GaussianShell(l_, coef_, exp_,
+                         GaussianType(puream_),
+                         nc, c, start_);
 }
 
 double GaussianShell::primitive_normalization(int p)
@@ -71,8 +54,8 @@ void GaussianShell::contraction_normalization()
     int i, j;
     double e_sum = 0.0, g, z;
 
-    for (i=0; i<nprimitive_; ++i) {
-        for (j=0; j<nprimitive_; ++j) {
+    for (i=0; i<nprimitive(); ++i) {
+        for (j=0; j<nprimitive(); ++j) {
             g = exp_[i] + exp_[j];
             z = pow(g, l_+1.5);
             e_sum += coef_[i] * coef_[j] / z;
@@ -83,12 +66,11 @@ void GaussianShell::contraction_normalization()
     double norm = sqrt(1.0 / (tmp*e_sum));
 
     // Set the normalization
-    for (i=0; i<nprimitive_; ++i)
+    for (i=0; i<nprimitive(); ++i)
         coef_[i] *= norm;
 
-    //if (std::isnan(norm))
-    if (norm != norm) 
-        for (i=0; i<nprimitive_; ++i)
+    if (norm != norm)
+        for (i=0; i<nprimitive(); ++i)
             coef_[i] = 1.0;
 }
 
@@ -96,7 +78,7 @@ void GaussianShell::normalize_shell()
 {
     int i;
 
-    for (i = 0; i < nprimitive_; ++i) {
+    for (i = 0; i < nprimitive(); ++i) {
         double normalization = primitive_normalization(i);
         coef_[i] *= normalization;
     }
@@ -108,10 +90,9 @@ int GaussianShell::nfunction() const
     return INT_NFUNC(puream_, l_);
 }
 
-void GaussianShell::init_data()
+int GaussianShell::nprimitive() const
 {
-    ncartesian_ = INT_NCART(l_);
-    nfunction_ = INT_NFUNC(puream_, l_);
+    return exp_.size();
 }
 
 void GaussianShell::print(FILE *out) const
@@ -139,10 +120,10 @@ double GaussianShell::normalize(int l, int m, int n)
     return 1.0;
 }
 
-Vector3 GaussianShell::center() const
+const Vector3& GaussianShell::center() const
 {
     return center_;
 }
+
 const char *GaussianShell::amtypes = "spdfghiklmn";
 const char *GaussianShell::AMTYPES = "SPDFGHIKLMN";
-

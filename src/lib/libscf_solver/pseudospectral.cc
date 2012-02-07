@@ -147,8 +147,8 @@ void PseudospectralHF::form_J_DF_RHF()
     // Form c_A = (A|mn) D_{mn}
     int max_p = 0;
     for (int P = 0; P < primary_->nshell(); P++)
-        if (max_p < primary_->shell(P)->nfunction())
-            max_p = primary_->shell(P)->nfunction();
+        if (max_p < primary_->shell(P).nfunction())
+            max_p = primary_->shell(P).nfunction();
     int nca = max_p*max_p;
 
     int nthread = 1;
@@ -194,10 +194,10 @@ void PseudospectralHF::form_J_DF_RHF()
 
         int P = pairs[2*PQ];
         int Q = pairs[2*PQ + 1];
-        int np = primary_->shell(P)->nfunction();
-        int nq = primary_->shell(Q)->nfunction();
-        int op = primary_->shell(P)->function_index();
-        int oq = primary_->shell(Q)->function_index();
+        int np = primary_->shell(P).nfunction();
+        int nq = primary_->shell(Q).nfunction();
+        int op = primary_->shell(P).function_index();
+        int oq = primary_->shell(Q).function_index();
 
         unsigned long int offset = 0L;
         const double* buffer = eri_[thread]->buffer();
@@ -206,7 +206,7 @@ void PseudospectralHF::form_J_DF_RHF()
         for (int Ap = 0; Ap < Ashell; Ap++) {
             // Compute the integrals
             eri_[thread]->compute_shell(Ap, 0 , P, Q);
-            int na = auxiliary_->shell(Ap)->nfunction();
+            int na = auxiliary_->shell(Ap).nfunction();
 
             memcpy(static_cast<void*>(&A[thread][offset]), buffer, np*nq*na*sizeof(double));
 
@@ -270,10 +270,10 @@ void PseudospectralHF::form_J_DF_RHF()
 
         int P = pairs[2*PQ];
         int Q = pairs[2*PQ + 1];
-        int np = primary_->shell(P)->nfunction();
-        int nq = primary_->shell(Q)->nfunction();
-        int op = primary_->shell(P)->function_index();
-        int oq = primary_->shell(Q)->function_index();
+        int np = primary_->shell(P).nfunction();
+        int nq = primary_->shell(Q).nfunction();
+        int op = primary_->shell(P).function_index();
+        int oq = primary_->shell(Q).function_index();
 
         unsigned long int offset = 0L;
         const double* buffer = eri_[thread]->buffer();
@@ -282,7 +282,7 @@ void PseudospectralHF::form_J_DF_RHF()
         for (int Ap = 0; Ap < Ashell; Ap++) {
             // Compute the integrals
             eri_[thread]->compute_shell(Ap, 0 , P, Q);
-            int na = auxiliary_->shell(Ap)->nfunction();
+            int na = auxiliary_->shell(Ap).nfunction();
 
             memcpy(static_cast<void*>(&A[thread][offset]), buffer, np*nq*na*sizeof(double));
 

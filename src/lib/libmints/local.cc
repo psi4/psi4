@@ -98,14 +98,14 @@ double Local::er_metric()
             for (int R = 0; R < basisset_->nshell(); R++) {
                 for (int S = 0; S < basisset_->nshell(); S++) {
 
-                int nM = basisset_->shell(M)->nfunction();
-                int nN = basisset_->shell(N)->nfunction();
-                int nR = basisset_->shell(R)->nfunction();
-                int nS = basisset_->shell(S)->nfunction();
-                int mstart = basisset_->shell(M)->function_index();
-                int nstart = basisset_->shell(N)->function_index();
-                int rstart = basisset_->shell(R)->function_index();
-                int sstart = basisset_->shell(S)->function_index();
+                int nM = basisset_->shell(M).nfunction();
+                int nN = basisset_->shell(N).nfunction();
+                int nR = basisset_->shell(R).nfunction();
+                int nS = basisset_->shell(S).nfunction();
+                int mstart = basisset_->shell(M).function_index();
+                int nstart = basisset_->shell(N).function_index();
+                int rstart = basisset_->shell(R).function_index();
+                int sstart = basisset_->shell(S).function_index();
 
                 eri->compute_shell(M,N,R,S);
 
@@ -115,18 +115,18 @@ double Local::er_metric()
                             for (int oS = 0; oS < nS; oS++, index++) {
                                 for (int i = 0; i < nmo; i++) {
                                     ip[i] += Lp[oM + mstart][i] * Lp[oN + nstart][i] *
-                                             buffer[index] *  
+                                             buffer[index] *
                                              Lp[oR + rstart][i] * Lp[oS + sstart][i];
                                 }
                 }}}}
-    }}}} 
+    }}}}
 
     double metric = 0.0;
 
     for (int i = 0; i < nmo; i++) {
         metric += ip[i];
     }
-    
+
     return metric;
 }
 double Local::pm_metric()
@@ -137,7 +137,7 @@ double Local::pm_metric()
 
     SharedMatrix Q = mulliken_charges(L_AO_);
 
-    double metric = C_DDOT(nmo * (ULI) natom, Q->pointer()[0], 1, Q->pointer()[0], 1);    
+    double metric = C_DDOT(nmo * (ULI) natom, Q->pointer()[0], 1, Q->pointer()[0], 1);
 
     return metric;
 }
@@ -151,13 +151,13 @@ double Local::boys_metric()
     // Build dipole integrals
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     boost::shared_ptr<OneBodyAOInt> Dint(integral->ao_dipole());
-   
+
     std::vector<SharedMatrix > dipole;
     dipole.push_back(SharedMatrix(new Matrix("Dipole X", nso, nso)));
     dipole.push_back(SharedMatrix(new Matrix("Dipole Y", nso, nso)));
     dipole.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso)));
 
-    Dint->compute(dipole); 
+    Dint->compute(dipole);
 
     SharedMatrix XC(new Matrix("XC", nso, nmo));
 
@@ -198,7 +198,7 @@ SharedMatrix Local::C_AO()
 
     int nao = AO2USO_->rowspi()[0];
     int nmo = 0;
-    for (int h = 0; h < AO2USO_->nirrep(); h++) 
+    for (int h = 0; h < AO2USO_->nirrep(); h++)
         nmo += C_USO_->colspi()[h];
 
     SharedMatrix C = SharedMatrix(new Matrix("C (C1 Symmetry)",nao,nmo));
@@ -229,17 +229,17 @@ SharedMatrix Local::AO2USO()
 void Local::localize(const std::string& algorithm, double conv)
 {
     if (algorithm == "CHOLESKY")
-        localize_cholesky(conv);    
+        localize_cholesky(conv);
     else if (algorithm == "PM")
-        localize_pm(conv);    
+        localize_pm(conv);
     else if (algorithm == "BOYS")
-        localize_boys(conv);    
+        localize_boys(conv);
     else if (algorithm == "ER")
-        localize_er(conv);    
-    else 
+        localize_er(conv);
+    else
         throw PSIEXCEPTION("Localization algorithm not recognized");
 }
-void Local::localize_cholesky(double conv) 
+void Local::localize_cholesky(double conv)
 {
     if (print_) {
         fprintf(outfile, "  ==> Localization: Cholesky <==\n\n");
@@ -254,7 +254,7 @@ void Local::localize_cholesky(double conv)
     SharedMatrix D(new Matrix("D",nso,nso));
     double** Lp = L_AO_->pointer();
     double** Dp = D->pointer();
-    
+
     C_DGEMM('N','T',nso,nso,nmo,1.0,Lp[0],nmo,Lp[0],nmo,0.0,Dp[0],nso);
 
     if (debug_)
@@ -268,7 +268,7 @@ void Local::localize_cholesky(double conv)
     int nmo2 = L->colspi()[0];
     double** Lp2 = L->pointer();
 
-    if (nmo2 < nmo) 
+    if (nmo2 < nmo)
         throw PSIEXCEPTION("Local: Cholesky factor has smaller numerical rank than nmo!");
 
     for (int i = 0; i < nmo; i++) {
@@ -280,21 +280,21 @@ void Local::localize_cholesky(double conv)
         D->print(outfile, "Residual");
     }
 }
-void Local::localize_pm(double conv) 
+void Local::localize_pm(double conv)
 {
     throw FeatureNotImplemented("psi::Local","localize_pm",__FILE__,__LINE__);
     L_AO_ = SharedMatrix(C_AO()->clone());
     L_AO_->set_name("L Pipek-Mezey (C1 Symmetry)");
 
 }
-void Local::localize_boys(double conv) 
+void Local::localize_boys(double conv)
 {
     throw FeatureNotImplemented("psi::Local","localize_boys",__FILE__,__LINE__);
     L_AO_ = SharedMatrix(C_AO()->clone());
     L_AO_->set_name("L Boys (C1 Symmetry)");
 
 }
-void Local::localize_er(double conv) 
+void Local::localize_er(double conv)
 {
     throw FeatureNotImplemented("psi::Local","localize_er",__FILE__,__LINE__);
     L_AO_ = SharedMatrix(C_AO()->clone());
@@ -303,7 +303,7 @@ void Local::localize_er(double conv)
 }
 SharedMatrix Local::lowdin_charges(SharedMatrix C)
 {
-    boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
+    boost::shared_ptr<Molecule> molecule = basisset_->molecule();
     int nmo = C->colspi()[0];
     int nso = C->rowspi()[0];
     int natom = molecule->natom();
@@ -329,7 +329,7 @@ SharedMatrix Local::lowdin_charges(SharedMatrix C)
 }
 SharedMatrix Local::mulliken_charges(SharedMatrix C)
 {
-    boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
+    boost::shared_ptr<Molecule> molecule = basisset_->molecule();
     int nmo = C->colspi()[0];
     int nso = C->rowspi()[0];
     int natom = molecule->natom();
@@ -353,16 +353,16 @@ SharedMatrix Local::mulliken_charges(SharedMatrix C)
 
     return Q;
 }
-void Local::compute_boughton_pulay_domains(double Qcutoff) 
+void Local::compute_boughton_pulay_domains(double Qcutoff)
 {
-    boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
+    boost::shared_ptr<Molecule> molecule = basisset_->molecule();
     int nmo = L_AO_->colspi()[0];
     int nso = L_AO_->rowspi()[0];
     int natom = molecule->natom();
 
     // Build Mulliken charges for current local coefficients
     Q_ = mulliken_charges(L_AO_);
-    double** Qp = Q_->pointer();    
+    double** Qp = Q_->pointer();
 
     // Clear domains
     domains_.clear();
@@ -380,7 +380,7 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
     for (int i = 0; i < nmo; i++) {
         std::set<int> total_atoms;
 
-        // Rank atoms in this domain by Lowdin charges 
+        // Rank atoms in this domain by Lowdin charges
         std::vector<std::pair<double, int> > charges;
         for (int A = 0; A < natom; A++) {
             charges.push_back(std::make_pair(Qp[i][A], A));
@@ -398,45 +398,45 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
             // Add the functions from that atom to the funs_in_domain list
             for (int M = 0; M < basisset_->nshell(); M++) {
                 if (basisset_->shell_to_center(M) != current_atom) continue;
-                int nM = basisset_->shell(M)->nfunction();
-                int mstart = basisset_->shell(M)->function_index();
+                int nM = basisset_->shell(M).nfunction();
+                int mstart = basisset_->shell(M).function_index();
                 for (int om = 0; om < nM; om++) {
                     funs_in_domain.push_back(om + mstart);
-                }     
+                }
             }
-            
-            // Figure out how many functions there are           
-            int nfun = funs_in_domain.size(); 
+
+            // Figure out how many functions there are
+            int nfun = funs_in_domain.size();
 
             // Temps
             SharedMatrix Smn(new Matrix("Smn", nfun, nfun));
             boost::shared_ptr<Vector> A(new Vector("A", nfun));
             double** Smnp = Smn->pointer();
             double* Ap = A->pointer();
-    
+
             // Place the proper overlap elements
             for (int m = 0; m < nfun; m++) {
                 for (int n = 0; n < nfun; n++) {
                     Smnp[m][n] = Sp[funs_in_domain[m]][funs_in_domain[n]];
                 }
-            }            
-           
+            }
+
             // Place the proper SL elements
             for (int m = 0; m < nfun; m++) {
                 Ap[m] = SLp[funs_in_domain[m]][i];
-            } 
- 
-            // Find the A vector  
-            int info1 = C_DPOTRF('L', nfun, Smnp[0], nfun);            
+            }
+
+            // Find the A vector
+            int info1 = C_DPOTRF('L', nfun, Smnp[0], nfun);
             if (info1 != 0) {
                 throw PSIEXCEPTION("Local: Boughton Pulay Domains: Cholesky Failed!");
-            } 
+            }
             int info2 = C_DPOTRS('L', nfun, 1, Smnp[0], nfun, Ap, nfun);
             if (info2 != 0) {
                 throw PSIEXCEPTION("Local: Boughton Pulay Domains: Cholesky Solve Failed!");
-            } 
- 
-            // Compute the incompleteness metric 
+            }
+
+            // Compute the incompleteness metric
             double incompleteness = 1.0 - C_DDOT(nfun, Ap, 1, Ap, 1);
             if (incompleteness < 1.0 - Qcutoff)
                 break;
@@ -448,20 +448,20 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
         }
 
         domains_.push_back(OrbitalDomain::buildOrbitalDomain(basisset_, total_atoms));
-        if (auxiliary_.get() != NULL) 
+        if (auxiliary_.get() != NULL)
             auxiliary_domains_.push_back(OrbitalDomain::buildOrbitalDomain(auxiliary_, total_atoms));
-    } 
+    }
 }
-void Local::compute_polly_domains(double Qcutoff, double Rext, double Qcheck) 
+void Local::compute_polly_domains(double Qcutoff, double Rext, double Qcheck)
 {
-    boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
+    boost::shared_ptr<Molecule> molecule = basisset_->molecule();
     int nmo = L_AO_->colspi()[0];
     int nso = L_AO_->rowspi()[0];
     int natom = molecule->natom();
 
     // Build Lowdin charges for current local coefficients
     Q_ = lowdin_charges(L_AO_);
-    double** Qp = Q_->pointer();    
+    double** Qp = Q_->pointer();
 
     // Clear domains
     domains_.clear();
@@ -491,7 +491,7 @@ void Local::compute_polly_domains(double Qcutoff, double Rext, double Qcheck)
             }
         }
 
-        // Merge the two lists        
+        // Merge the two lists
         for (std::set<int>::const_iterator it = charge_atoms.begin();
             it != charge_atoms.end(); it++) {
             total_atoms.insert((*it));
@@ -517,9 +517,9 @@ void Local::compute_polly_domains(double Qcutoff, double Rext, double Qcheck)
         }
 
         domains_.push_back(OrbitalDomain::buildOrbitalDomain(basisset_, total_atoms));
-        if (auxiliary_.get() != NULL) 
+        if (auxiliary_.get() != NULL)
             auxiliary_domains_.push_back(OrbitalDomain::buildOrbitalDomain(auxiliary_, total_atoms));
-    } 
+    }
 }
 OrbitalDomain::OrbitalDomain()
 {
@@ -534,51 +534,51 @@ void OrbitalDomain::print(FILE* out, int label)
     fprintf(out, "    Atoms Local to Global:\n");
     for (int A = 0; A < atoms_local_to_global_.size(); A++) {
         fprintf(out, "    %4d -> %4d\n", A, atoms_local_to_global_[A]);
-    } 
+    }
     fprintf(out, "    \n");
 
     fprintf(out, "    Atoms Global to Local:\n");
     for (int A = 0; A < atoms_global_to_local_.size(); A++) {
         int a = atoms_local_to_global_[A];
         fprintf(out, "    %4d -> %4d\n", a, atoms_global_to_local_[a]);
-    } 
+    }
     fprintf(out, "    \n");
 
     fprintf(out, "    Shells Local to Global:\n");
     for (int A = 0; A < shells_local_to_global_.size(); A++) {
         fprintf(out, "    %4d -> %4d\n", A, shells_local_to_global_[A]);
-    } 
+    }
     fprintf(out, "    \n");
 
     fprintf(out, "    Shells Global to Local:\n");
     for (int A = 0; A < shells_global_to_local_.size(); A++) {
         int a = shells_local_to_global_[A];
         fprintf(out, "    %4d -> %4d\n", a, shells_global_to_local_[a]);
-    } 
+    }
     fprintf(out, "    \n");
 
     fprintf(out, "    Functions Local to Global:\n");
     for (int A = 0; A < functions_local_to_global_.size(); A++) {
         fprintf(out, "    %4d -> %4d\n", A, functions_local_to_global_[A]);
-    } 
+    }
     fprintf(out, "    \n");
 
     fprintf(out, "    Functions Global to Local:\n");
     for (int A = 0; A < functions_global_to_local_.size(); A++) {
         int a = functions_local_to_global_[A];
         fprintf(out, "    %4d -> %4d\n", a, functions_global_to_local_[a]);
-    } 
+    }
     fprintf(out, "    \n");
 }
 boost::shared_ptr<OrbitalDomain> OrbitalDomain::buildOrbitalDomain(boost::shared_ptr<BasisSet> basis, const std::set<int>& atoms)
 {
     boost::shared_ptr<OrbitalDomain> domain(new OrbitalDomain());
     domain->atoms_ = atoms;
-   
+
     boost::shared_ptr<Molecule> molecule = basis->molecule();
     int natom = molecule->natom();
     int nso = basis->nbf();
-    int nshell = basis->nshell(); 
+    int nshell = basis->nshell();
 
     for (std::set<int>::const_iterator it = atoms.begin();
         it != atoms.end(); it++) {
@@ -589,24 +589,24 @@ boost::shared_ptr<OrbitalDomain> OrbitalDomain::buildOrbitalDomain(boost::shared
 
     for (int A = 0; A < atoms.size(); A++) {
         domain->atoms_global_to_local_[domain->atoms_local_to_global_[A]] = A;
-    } 
+    }
 
     int shell_counter = 0;
     int fun_counter = 0;
     for (int M = 0; M < nshell; M++) {
         int atom = basis->shell_to_center(M);
         if (!atoms.count(atom)) continue;
-   
+
         domain->shells_local_to_global_.push_back(M);
         domain->shells_global_to_local_[M] = shell_counter++;
 
-        int mstart = basis->shell(M)->function_index();
-        int nM = basis->shell(M)->nfunction();
+        int mstart = basis->shell(M).function_index();
+        int nM = basis->shell(M).nfunction();
 
         for (int om = 0; om < nM; om++) {
             domain->functions_local_to_global_.push_back(om + mstart);
             domain->functions_global_to_local_[om + mstart] = fun_counter++;
-        } 
+        }
     }
 
     return domain;
