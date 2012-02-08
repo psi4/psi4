@@ -48,8 +48,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   struct integral *ijkl,*klcd,*akjc,*abci1,*abci3;
   struct integral *abci5,*abcd1,*abcd2,*ijak,*ijak2;
 
-  ULI nelem = 1000000;
-
   // available memory:
   ULI memory = Process::environment.get_memory();
 
@@ -67,6 +65,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
 
 
   struct integral*integralbuffer;
+  ULI nelem = maxelem/10 - 20;
   if ((nelem+20)*10>maxelem)
      integralbuffer= new integral[(nelem+20)*10];
   else
@@ -111,10 +110,6 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   psio->close(PSIF_ABCI2,1);
   psio->open(PSIF_ABCI3,PSIO_OPEN_NEW);
   psio->close(PSIF_ABCI3,1);
-  //psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
-  //psio->close(PSIF_ABCI4,1);
-  //psio->open(PSIF_ABCI5,PSIO_OPEN_NEW);
-  //psio->close(PSIF_ABCI5,1);
   psio->open(PSIF_ABCD1,PSIO_OPEN_NEW);
   psio->close(PSIF_ABCD1,1);
   psio->open(PSIF_ABCD2,PSIO_OPEN_NEW);
@@ -1223,7 +1218,6 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
      addr = new psio_address[nbins];
      addr1 = PSIO_ZERO;
 
-     // rough sort of integrals into bins
      psio->open(PSIFILE,PSIO_OPEN_OLD);
 
      psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
