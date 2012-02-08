@@ -49,12 +49,8 @@ BasisSet::BasisSet()
     call_once(initialize_singletons, initialized_shared_);
 }
 
-BasisSet::~BasisSet()
-{
-
-}
 boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule,
-                                            std::vector<GaussianShell> shells)
+                                            const std::vector<GaussianShell>& shells)
 {
     boost::shared_ptr<BasisSet> basis(new BasisSet());
     basis->molecule_ = molecule;
@@ -744,4 +740,3 @@ boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     //And ... return
     return bas;
 }
-
