@@ -137,46 +137,46 @@ void ThreeCenterOverlapInt::compute_shell(int sh1, int sh2, int sh3)
     compute_pair(bs1_->shell(sh1), bs2_->shell(sh2), bs3_->shell(sh3));
 }
 
-void ThreeCenterOverlapInt::compute_pair(boost::shared_ptr<GaussianShell> sA,
-                                         boost::shared_ptr<GaussianShell> sB,
-                                         boost::shared_ptr<GaussianShell> sC)
+void ThreeCenterOverlapInt::compute_pair(const GaussianShell& sA,
+                                         const GaussianShell& sB,
+                                         const GaussianShell& sC)
 {
     unsigned int ao123;
-    int amA = sA->am();
-    int amB = sB->am();
-    int amC = sC->am();
-    int nprimA = sA->nprimitive();
-    int nprimB = sB->nprimitive();
-    int nprimC = sC->nprimitive();
+    int amA = sA.am();
+    int amB = sB.am();
+    int amC = sC.am();
+    int nprimA = sA.nprimitive();
+    int nprimB = sB.nprimitive();
+    int nprimC = sC.nprimitive();
     double A[3], B[3], C[3], P[3], G[3], GA[3], GB[3], GC[3];
-    A[0] = sA->center()[0];
-    A[1] = sA->center()[1];
-    A[2] = sA->center()[2];
-    B[0] = sB->center()[0];
-    B[1] = sB->center()[1];
-    B[2] = sB->center()[2];
-    C[0] = sC->center()[0];
-    C[1] = sC->center()[1];
-    C[2] = sC->center()[2];
+    A[0] = sA.center()[0];
+    A[1] = sA.center()[1];
+    A[2] = sA.center()[2];
+    B[0] = sB.center()[0];
+    B[1] = sB.center()[1];
+    B[2] = sB.center()[2];
+    C[0] = sC.center()[0];
+    C[1] = sC.center()[1];
+    C[2] = sC.center()[2];
 
     double AB2 = 0.0;
     AB2 += (A[0] - B[0]) * (A[0] - B[0]);
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, sA->ncartesian() * sC->ncartesian() * sB->ncartesian() * sizeof(double));
+    memset(buffer_, 0, sA.ncartesian() * sC.ncartesian() * sB.ncartesian() * sizeof(double));
 
     double ***x = overlap_recur_.x();
     double ***y = overlap_recur_.y();
     double ***z = overlap_recur_.z();
 
     for (int pA=0; pA<nprimA; ++pA) {
-        double aA = sA->exp(pA);
-        double cA = sA->coef(pA);
+        double aA = sA.exp(pA);
+        double cA = sA.coef(pA);
 
         for (int pB=0; pB<nprimB; ++pB) {
-            double aB = sB->exp(pB);
-            double cB = sB->coef(pB);
+            double aB = sB.exp(pB);
+            double cB = sB.coef(pB);
 
             double gamma = aA + aB;
             double oog = 1.0 / gamma;
@@ -188,8 +188,8 @@ void ThreeCenterOverlapInt::compute_pair(boost::shared_ptr<GaussianShell> sA,
             double overlap_AB = exp(-aA*aB*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * cA * cB;
 
             for (int pC=0; pC<nprimC; ++pC) {
-                double aC = sC->exp(pC);
-                double cC = sC->coef(pC);
+                double aC = sC.exp(pC);
+                double cC = sC.coef(pC);
 
                 double PC2 = 0.0;
                 PC2 += (P[0] - C[0]) * (P[0] - C[0]);
@@ -260,25 +260,23 @@ void ThreeCenterOverlapInt::compute_pair(boost::shared_ptr<GaussianShell> sA,
     pure_transform(sA, sB, sC);
 }
 
-void ThreeCenterOverlapInt::normalize_am(boost::shared_ptr<GaussianShell>& sA,
-                                         boost::shared_ptr<GaussianShell>& sB,
-                                         boost::shared_ptr<GaussianShell>& sC)
+void ThreeCenterOverlapInt::normalize_am(const GaussianShell& sA,
+                                         const GaussianShell& sB,
+                                         const GaussianShell& sC)
 {
     // Assume integrals are done. Normalize for angular momentum
-    int amA = sA->am();
-    int amB = sB->am();
-    int amC = sC->am();
+    int amA = sA.am();
+    int amB = sB.am();
+    int amC = sC.am();
 
-    int length = INT_NCART(amA) * INT_NCART(amC) * INT_NCART(amB);
-
-    int ao123 = 0;
+    size_t ao123 = 0;
     for(int ii = 0; ii <= amA; ii++) {
         int lA = amA - ii;
         for(int jj = 0; jj <= ii; jj++) {
             int mA = ii - jj;
             int nA = jj;
 
-            double normA = sA->normalize(lA, mA, nA);
+            double normA = GaussianShell::normalize(lA, mA, nA);
 
             for(int mm = 0; mm <= amB; mm++) {
                 int lB = amB - mm;
@@ -286,7 +284,7 @@ void ThreeCenterOverlapInt::normalize_am(boost::shared_ptr<GaussianShell>& sA,
                     int mB = mm - nn;
                     int nB = nn;
 
-                    double normB = sB->normalize(lB, mB, nB);
+                    double normB = GaussianShell::normalize(lB, mB, nB);
 
                     for(int kk = 0; kk <= amC; kk++) {
                         int lC = amC - kk;
@@ -294,7 +292,7 @@ void ThreeCenterOverlapInt::normalize_am(boost::shared_ptr<GaussianShell>& sA,
                             int mC = kk - ll;
                             int nC = ll;
 
-                            buffer_[ao123] *= normA * normB * sC->normalize(lC, mC, nC);
+                            buffer_[ao123] *= normA * normB * GaussianShell::normalize(lC, mC, nC);
                             ao123++;
                         }
                     }
@@ -304,33 +302,33 @@ void ThreeCenterOverlapInt::normalize_am(boost::shared_ptr<GaussianShell>& sA,
     }
 }
 
-void ThreeCenterOverlapInt::pure_transform(boost::shared_ptr<GaussianShell>& s1,
-                                           boost::shared_ptr<GaussianShell>& s2,
-                                           boost::shared_ptr<GaussianShell>& s3)
+void ThreeCenterOverlapInt::pure_transform(const GaussianShell& s1,
+                                           const GaussianShell& s2,
+                                           const GaussianShell& s3)
 {
     // Get the transforms from the basis set
-    SphericalTransformIter trans1(st_[s1->am()]);
-    SphericalTransformIter trans2(st_[s2->am()]);
-    SphericalTransformIter trans3(st_[s3->am()]);
+    SphericalTransformIter trans1(st_[s1.am()]);
+    SphericalTransformIter trans2(st_[s2.am()]);
+    SphericalTransformIter trans3(st_[s3.am()]);
 
     // Get the angular momentum for each shell
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int am3 = s3->am();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int am3 = s3.am();
 
     // Get number of Cartesian functions for each shell
-    int nao1 = s1->ncartesian();
-    int nao2 = s2->ncartesian();
-    int nao3 = s3->ncartesian();
+    int nao1 = s1.ncartesian();
+    int nao2 = s2.ncartesian();
+    int nao3 = s3.ncartesian();
 
-    int nbf1 = s1->nfunction();
-    int nbf2 = s2->nfunction();
-    int nbf3 = s3->nfunction();
+    int nbf1 = s1.nfunction();
+    int nbf2 = s2.nfunction();
+    int nbf3 = s3.nfunction();
 
     // Get if each shell has pure functions
-    bool is_pure1 = s1->is_pure();
-    bool is_pure2 = s2->is_pure();
-    bool is_pure3 = s3->is_pure();
+    bool is_pure1 = s1.is_pure();
+    bool is_pure2 = s2.is_pure();
+    bool is_pure3 = s3.is_pure();
 
     double *source1, *target1;
     double *source2, *target2;

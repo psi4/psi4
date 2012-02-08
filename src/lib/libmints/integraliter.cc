@@ -16,39 +16,36 @@ static void swap(T& x, T& y) {
 }
 }
 
-AOIntegralsIterator::AOIntegralsIterator(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2,
-                                     boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4)
+AOIntegralsIterator::AOIntegralsIterator(const GaussianShell& s1, const GaussianShell& s2,
+                                     const GaussianShell& s3, const GaussianShell& s4)
+    : usi(s1), usj(s2), usk(s3), usl(s4)
 {
     done = false;
-    usi = s1;
-    usj = s2;
-    usk = s3;
-    usl = s4;
-    ni =usi->nfunction();
-    nj =usj->nfunction();
-    nk =usk->nfunction();
-    nl =usl->nfunction();
+    ni = usi.nfunction();
+    nj = usj.nfunction();
+    nk = usk.nfunction();
+    nl = usl.nfunction();
 
-    fii = usi->function_index();
-    fij = usj->function_index();
-    fik = usk->function_index();
-    fil = usl->function_index();
+    fii = usi.function_index();
+    fij = usj.function_index();
+    fik = usk.function_index();
+    fil = usl.function_index();
 
     iimax = ni - 1;
-    if (usi == usj && usk == usl && usi == usk) {
+    if (&usi == &usj && &usk == &usl && &usi == &usk) {
         kkmax = 0;
         llmax = 0;
         jjmax = 0;
     }
-    else if(usi == usk && usj == usl){
+    else if(&usi == &usk && &usj == &usl){
         kkmax = 0;
         llmax = 0;
         jjmax = nj - 1;
     }
     else{
         kkmax = nk - 1;
-        jjmax = (usi == usj) ? 0 : nj - 1;
-        llmax = (usk == usl) ? 0 : nl - 1;
+        jjmax = (&usi == &usj) ? 0 : nj - 1;
+        llmax = (&usk == &usl) ? 0 : nl - 1;
     }
 
     ii = 0;
@@ -64,9 +61,9 @@ void AOIntegralsIterator::first()
     current.k = 0 + fik;
     current.l = 0 + fil;
     current.index = 0;
-    if (usi == usj && usk == usl && usi == usk) {     // (aa|aa) case
+    if (&usi == &usj && &usk == &usl && &usi == &usk) {     // (aa|aa) case
     }
-    else if(usi== usk && usj == usl){
+    else if(&usi== &usk && &usj == &usl){
         if (current.i < current.j) {
             swap(current.i, current.j);
             swap(current.k, current.l);
@@ -92,7 +89,7 @@ void AOIntegralsIterator::first()
 
 void AOIntegralsIterator::next()
 {
-    if (usi == usj && usk == usl && usi == usk) {
+    if (&usi == &usj && &usk == &usl && &usi == &usk) {
         ++ll;
         if(ll > llmax){
             ++kk;
@@ -120,7 +117,7 @@ void AOIntegralsIterator::next()
         current.index = ll+nl*(kk+nk*(jj+nj*ii));
 
     }
-    else if(usi == usk && usj == usl){ //(ab|ab)
+    else if(&usi == &usk && &usj == &usl){ //(ab|ab)
         ++ll;
         if(ll > llmax){
             ++kk;
@@ -167,10 +164,10 @@ void AOIntegralsIterator::next()
                     if(ii > iimax){
                         done = true;
                     }
-                    jjmax = (usi == usj) ? ii : nj - 1;
+                    jjmax = (&usi == &usj) ? ii : nj - 1;
                 }
             }
-            llmax = (usk==usl) ? kk : nl - 1;
+            llmax = (&usk == &usl) ? kk : nl - 1;
         }
         current.i = ii + fii;
         current.j = jj + fij;
@@ -232,14 +229,14 @@ void AOShellCombinationsIterator::first()
     usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
-    if (bs1_->shell(usi)->am() < bs2_->shell(usj)->am()) {
+    if (bs1_->shell(usi).am() < bs2_->shell(usj).am()) {
         swap(usi, usj);
     }
-    if (bs3_->shell(usk)->am() < bs4_->shell(usl)->am()) {
+    if (bs3_->shell(usk).am() < bs4_->shell(usl).am()) {
         swap(usk, usl);
     }
-    if (bs1_->shell(usi)->am() + bs2_->shell(usj)->am() >
-            bs3_->shell(usk)->am() + bs4_->shell(usl)->am()) {
+    if (bs1_->shell(usi).am() + bs2_->shell(usj).am() >
+            bs3_->shell(usk).am() + bs4_->shell(usl).am()) {
         swap(usi, usk);
         swap(usj, usl);
     }
@@ -307,14 +304,14 @@ void AOShellCombinationsIterator::next()
 
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
-    if (bs1_->shell(usi)->am() < bs2_->shell(usj)->am()) {
+    if (bs1_->shell(usi).am() < bs2_->shell(usj).am()) {
         swap(usi, usj);
     }
-    if (bs3_->shell(usk)->am() < bs4_->shell(usl)->am()) {
+    if (bs3_->shell(usk).am() < bs4_->shell(usl).am()) {
         swap(usk, usl);
     }
-    if (bs1_->shell(usi)->am() + bs2_->shell(usj)->am() >
-            bs3_->shell(usk)->am() + bs4_->shell(usl)->am()) {
+    if (bs1_->shell(usi).am() + bs2_->shell(usj).am() >
+            bs3_->shell(usk).am() + bs4_->shell(usl).am()) {
         swap(usi, usk);
         swap(usj, usl);
     }
