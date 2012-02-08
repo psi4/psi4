@@ -30,9 +30,7 @@ class TwoBodySOInt;
 class JK;
 namespace scf {
 
-class PseudospectralHF;
 class PKIntegrals;
-class DFHF;
 
 class HF : public Wavefunction {
 protected:
@@ -108,10 +106,6 @@ protected:
 
     /// The SO integral generator.  Only ever constructed if needed
     boost::shared_ptr<TwoBodySOInt> eri_;
-    /// Pseudospectral stuff
-    boost::shared_ptr<PseudospectralHF> pseudospectral_;
-    /// DF stuff
-    boost::shared_ptr<DFHF> df_;
     /// PK Matrix approach
     boost::shared_ptr<PKIntegrals> pk_integrals_;
 
