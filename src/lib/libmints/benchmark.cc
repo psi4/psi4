@@ -2300,14 +2300,14 @@ void benchmark_integrals(int max_am, double min_time)
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             combinations[2][index] = "(" + shell_names[P] + "|" + shell_names[Q] + ")";
-            n_per_combination[2][index] =  basis->shell(P)->nfunction() * basis->shell(Q)->nfunction();
+            n_per_combination[2][index] =  basis->shell(P).nfunction() * basis->shell(Q).nfunction();
         }
     }
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++) {
             for (int R = 0; R < max_shell; R++, index++) {
                 combinations[3][index] = "(" + shell_names[P] + "|" + shell_names[Q] + shell_names[R] + ")";
-                n_per_combination[3][index] =  basis->shell(P)->nfunction() * basis->shell(Q)->nfunction() * basis->shell(R)->nfunction();
+                n_per_combination[3][index] =  basis->shell(P).nfunction() * basis->shell(Q).nfunction() * basis->shell(R).nfunction();
             }
         }
     }
@@ -2316,7 +2316,7 @@ void benchmark_integrals(int max_am, double min_time)
             for (int R = 0; R < max_shell; R++) {
                for (int S = 0; S < max_shell; S++, index++) {
                    combinations[4][index] = "(" + shell_names[P] + shell_names[Q] + "|" + shell_names[R] + shell_names[S] + ")";
-                   n_per_combination[4][index] =  basis->shell(P)->nfunction() * basis->shell(Q)->nfunction() * basis->shell(R)->nfunction() * basis->shell(S)->nfunction();
+                   n_per_combination[4][index] =  basis->shell(P).nfunction() * basis->shell(Q).nfunction() * basis->shell(R).nfunction() * basis->shell(S).nfunction();
                 }
             }
         }

@@ -45,21 +45,21 @@ void PseudospectralInt::compute_shell_deriv1(int sh1, int sh2)
 }
 
 // The engine only supports segmented basis sets
-void PseudospectralInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
-                                     const boost::shared_ptr<GaussianShell>& s2)
+void PseudospectralInt::compute_pair(const GaussianShell& s1,
+                                     const GaussianShell& s2)
 {
     int ao12;
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int nprim1 = s1.nprimitive();
+    int nprim2 = s2.nprimitive();
     double A[3], B[3];
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
 
     int izm = 1;
     int iym = am1 + 1;
@@ -74,29 +74,29 @@ void PseudospectralInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, s1.ncartesian() * s2.ncartesian() * sizeof(double));
 
     double ***vi = potential_recur_.vi();
 
     for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1->exp(p1);
-        double c1 = s1->coef(p1);
+        double a1 = s1.exp(p1);
+        double c1 = s1.coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2->exp(p2);
-            double c2 = s2->coef(p2);
+            double a2 = s2.exp(p2);
+            double c2 = s2.coef(p2);
 
             // The GPT gamma of the two cartesian functions.
             // This is used for all GPT operations here, such as over_pf and P,
-            // And for OS relations AFTER the modified (0|A|0)^(m) integrals are built 
+            // And for OS relations AFTER the modified (0|A|0)^(m) integrals are built
             double gamma0 = a1 + a2;
             double oog = 1.0/gamma0;
 
             // An effective gamma if range-separation is to be used.
             // This gamma is only for use in the generation of auxiliary integrals,
             // particularly the (0|A|0)^(m) auxiliary integrals as built in potential_recur_.compute().
-            double gamma = gamma0; 
+            double gamma = gamma0;
             if (use_omega_) {
-                gamma = gamma0 * omega_ * omega_ / (gamma0 + omega_ * omega_); 
+                gamma = gamma0 * omega_ * omega_ / (gamma0 + omega_ * omega_);
             }
 
             double PA[3], PB[3];
@@ -155,24 +155,24 @@ void PseudospectralInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
 }
 
 // The engine only supports segmented basis sets
-void PseudospectralInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
+void PseudospectralInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2)
 {
     int ao12;
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int nprim1 = s1.nprimitive();
+    int nprim2 = s2.nprimitive();
     double A[3], B[3];
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
 
-    size_t size = s1->ncartesian() * s2->ncartesian();
-    int center_i = s1->ncenter()*3*size;
-    int center_j = s2->ncenter()*3*size;
+    size_t size = s1.ncartesian() * s2.ncartesian();
+    int center_i = s1.ncenter()*3*size;
+    int center_j = s2.ncenter()*3*size;
 
     int izm1 = 1;
     int iym1 = am1 + 1 + 1;  // extra 1 for derivative
@@ -187,7 +187,7 @@ void PseudospectralInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShel
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 3 * s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 3 * s1.ncartesian() * s2.ncartesian() * sizeof(double));
 
     double ***vi = potential_deriv_recur_.vi();
     double ***vx = potential_deriv_recur_.vx();
@@ -195,24 +195,24 @@ void PseudospectralInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShel
     double ***vz = potential_deriv_recur_.vz();
 
     for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1->exp(p1);
-        double c1 = s1->coef(p1);
+        double a1 = s1.exp(p1);
+        double c1 = s1.coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2->exp(p2);
-            double c2 = s2->coef(p2);
+            double a2 = s2.exp(p2);
+            double c2 = s2.coef(p2);
 
             // The GPT gamma of the two cartesian functions.
             // This is used for all GPT operations here, such as over_pf and P,
-            // And for OS relations AFTER the modified (0|A|0)^(m) integrals are built 
+            // And for OS relations AFTER the modified (0|A|0)^(m) integrals are built
             double gamma0 = a1 + a2;
             double oog = 1.0/gamma0;
 
             // An effective gamma if range-separation is to be used.
             // This gamma is only for use in the generation of auxiliary integrals,
             // particularly the (0|A|0)^(m) auxiliary integrals as built in potential_recur_.compute().
-            double gamma = gamma0; 
+            double gamma = gamma0;
             if (use_omega_) {
-                gamma = gamma0 * omega_ * omega_ / (gamma0 + omega_ * omega_); 
+                gamma = gamma0 * omega_ * omega_ / (gamma0 + omega_ * omega_);
             }
 
             double PA[3], PB[3];

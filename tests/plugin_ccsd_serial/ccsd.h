@@ -7,23 +7,20 @@
 
 // output files
 #define PSIF_IJAK  250
-#define PSIF_IJAK2  266
-#define PSIF_ABCI  251
-#define PSIF_ABCI2 252
-#define PSIF_ABCI3 253
-#define PSIF_ABCI4 254
-#define PSIF_ABCI5 255
-#define PSIF_ABCD1 256
-#define PSIF_ABCD2 257
-#define PSIF_AKJC2 259
-#define PSIF_KLCD  260
-#define PSIF_IJKL  261
-#define PSIF_OVEC 262
-#define PSIF_EVEC 263
-#define PSIF_R2 264
-#define PSIF_TEMP 265
-#define PSIF_T2 267
-
+#define PSIF_IJAK2 251
+#define PSIF_ABCI  252
+#define PSIF_ABCI2 253
+#define PSIF_ABCI3 254
+#define PSIF_ABCD1 255
+#define PSIF_ABCD2 256
+#define PSIF_AKJC2 257
+#define PSIF_KLCD  258
+#define PSIF_IJKL  259
+#define PSIF_OVEC  260
+#define PSIF_EVEC  261
+#define PSIF_R2    262
+#define PSIF_TEMP  263
+#define PSIF_T2    264
 
 // psi headers
 #include"psi4-dec.h"

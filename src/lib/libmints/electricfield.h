@@ -21,10 +21,10 @@ class ElectricFieldInt : public OneBodyAOInt
     int natom_;
 
     //! Computes the electric field between two gaussian shells.
-    void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
+    void compute_pair(const GaussianShell&, const GaussianShell&);
 
     //! Computes the electric field gradient between two gaussian shells.
-    void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
+    void compute_pair_deriv1(const GaussianShell&, const GaussianShell&);
 
 public:
     //! Constructor. Do not call directly use an IntegralFactory.

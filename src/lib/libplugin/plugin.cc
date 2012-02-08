@@ -15,10 +15,10 @@ extern "C" void init_plugin(const shared_ptr<Communicator>& comm, const Process:
 {
     // Prepares the plugin's environment to a state that it can expect when it is
     // fully incorporated into the psi4 source tree.
-    Wavefunction::initialize_singletons();
-    Communicator::world = comm;
-    Process::environment = env;
-    _default_psio_lib_ = psio;
-    _default_chkpt_lib_ = chkpt;
-    psi::yetiEnv = yetiEnv;
+//    Wavefunction::initialize_singletons();
+//    Communicator::world = comm;
+//    Process::environment = env;
+//    _default_psio_lib_ = psio;
+//    _default_chkpt_lib_ = chkpt;
+//    psi::yetiEnv = yetiEnv;
 }

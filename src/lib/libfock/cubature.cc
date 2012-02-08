@@ -77,11 +77,11 @@ void BasisExtents::computeExtents()
         }
 
         // Stage 1: Collect information on the shell
-        boost::shared_ptr<GaussianShell> Pshell = primary_->shell(P);
-        int l         = Pshell->am();
-        int nprim     = Pshell->nprimitive();
-        double* alpha = Pshell->exps();
-        double* norm  = Pshell->coefs();
+        const GaussianShell& Pshell = primary_->shell(P);
+        int l         = Pshell.am();
+        int nprim     = Pshell.nprimitive();
+        const std::vector<double>& alpha = Pshell.exps();
+        const std::vector<double>& norm  = Pshell.coefs();
 
         double norm_max = norm[0];
         double alpha_max = alpha[0];
@@ -176,7 +176,7 @@ void BasisExtents::print(FILE* out)
     fprintf(out, "   Shell Extents:\n");
     fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "R");
     for (int Q = 0; Q < primary_->nshell(); Q++) {
-        Vector3 v = primary_->shell(Q)->center();
+        Vector3 v = primary_->shell(Q).center();
         fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", Q+1,
             v[0], v[1], v[2], Rp[Q]);
     }
@@ -230,7 +230,7 @@ void BlockOPoints::populate()
     for (int P = 0; P < primary->nshell(); P++) {
 
         // First pass: mean center/max spread of point clould
-        Vector3 v = primary->shell(P)->center();
+        Vector3 v = primary->shell(P).center();
         double Reff = sqrt((v[0] - xc_[0]) * (v[0] - xc_[0]) +
                            (v[1] - xc_[1]) * (v[1] - xc_[1]) +
                            (v[2] - xc_[2]) * (v[2] - xc_[2]));
@@ -246,8 +246,8 @@ void BlockOPoints::populate()
                                   (z_[Q] - v[2]) * (z_[Q] - v[2]);
             if (R2_candidate < Rp2) {
                 // Sig Shell located!
-                int nP = primary->shell(P)->nfunction();
-                int pstart = primary->shell(P)->function_index();
+                int nP = primary->shell(P).nfunction();
+                int pstart = primary->shell(P).function_index();
 
                 shells_local_to_global_.push_back(P);
                 for (int oP = 0; oP < nP; oP++) {
@@ -1616,8 +1616,8 @@ void MolecularGrid::print(FILE* out, int print)
         fprintf(out, "   Blocks:\n\n");
         for (int N = 0; N < blocks_.size(); N++) {
             boost::shared_ptr<BlockOPoints> block = blocks_[N];
-            block->print(out, 1); 
-        } 
+            block->print(out, 1);
+        }
     }
 }
 
@@ -7462,7 +7462,7 @@ void OctreeGridBlocker::block()
                         double R2 = dx * dx + dy * dy + dz * dz;
                         RC2 = (RC2 > R2 ? RC2 : R2);
                     }
-                    
+
                     // Terminate if necessary
                     if (RC2 < T2) {
                         completed_tree.push_back(left);
@@ -7497,7 +7497,7 @@ void OctreeGridBlocker::block()
                         double R2 = dx * dx + dy * dy + dz * dz;
                         RC2 = (RC2 > R2 ? RC2 : R2);
                     }
-                    
+
                     // Terminate if necessary
                     if (RC2 < T2) {
                         completed_tree.push_back(right);
@@ -7518,7 +7518,7 @@ void OctreeGridBlocker::block()
             break;
     }
     if (bench_) fclose(fh_ktree);
-    
+
     // Move stuff over
     x_ = new double[npoints_];
     y_ = new double[npoints_];
@@ -7571,7 +7571,7 @@ void OctreeGridBlocker::block()
         boost::shared_ptr<BasisSet> basis = extents_->basis();
         boost::shared_ptr<Vector> Rc = extents_->shell_extents();
         for (int Q = 0; Q < basis->nshell(); Q++) {
-            Vector3 v = basis->shell(Q)->center();
+            Vector3 v = basis->shell(Q).center();
             fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
         }
         fclose(fh_extents);
@@ -7588,7 +7588,7 @@ void OctreeGridBlocker::block()
             boost::shared_ptr<BasisSet> basis = extents_->basis();
             boost::shared_ptr<Vector> Rc = extents_->shell_extents();
             for (int Q = 0; Q < basis->nshell(); Q++) {
-                Vector3 v = basis->shell(Q)->center();
+                Vector3 v = basis->shell(Q).center();
                 fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
             }
             fclose(fh_extents);

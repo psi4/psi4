@@ -45,25 +45,24 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   fprintf(outfile,"\n");
   fflush(outfile);
 
+  bool threaded = true;
   if (memory<0){
-     while (memory<0 && nthreads>0){
-           memory += 8L*3L*v*v*v;
-           nthreads--;
-     }
+     memory += (nthreads-1)*8L*3L*v*v*v;
      if (nthreads<1){
         fprintf(outfile,"        Error: not enough memory.\n");
         fprintf(outfile,"\n");
-        fprintf(outfile,"        Setting num_threads = 1 will reduce required memory to %7.2lf mb\n",
+        fprintf(outfile,"        (T) requires at least %7.2lf mb\n",
              8.*(2.*o*o*v*v+1.*o*o*o*v+3.*v*v*v+1.*o*v)/1024./1024.);
         fprintf(outfile,"\n");
         fflush(outfile);
         return Failure;
      }
-     fprintf(outfile,"        Not enough memory.  Decreasing num_threads ... \n");
+     threaded = false;
+     nthreads = 1;
+     fprintf(outfile,"        Not enough memory for explicit threading ... \n");
      fprintf(outfile,"\n");
-     fprintf(outfile,"        num_threads =             %9i\n",nthreads);
      fprintf(outfile,"        memory requirements =  %9.2lf mb\n",
-              8.*(2.*o*o*v*v+1.*o*o*o*v+(3.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
+              8.*(2.*o*o*v*v+1.*o*o*o*v+(3.)*v*v*v+1.*o*v)/1024./1024.);
      fprintf(outfile,"\n");
      fflush(outfile);
   }
@@ -98,15 +97,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   // some v^3 intermediates
   double **Z  = (double**)malloc(nthreads*sizeof(double*));
   double **Z2 = (double**)malloc(nthreads*sizeof(double*));
-  //double **Y  = (double**)malloc(nthreads*sizeof(double*));
-  //double **Z3 = (double**)malloc(nthreads*sizeof(double*));
 
   for (int i=0; i<nthreads; i++){
       E2abci[i] = (double*)malloc(v*v*v*sizeof(double));
       Z[i]      = (double*)malloc(v*v*v*sizeof(double));
       Z2[i]     = (double*)malloc(v*v*v*sizeof(double));
-      //Y[i]      = (double*)malloc(v*v*v*sizeof(double));
-      //Z3[i]     = (double*)malloc(v*v*v*sizeof(double));
   }
 
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -144,17 +139,14 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   fflush(outfile);
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
- 
-
   time_t stop,start = time(NULL);
   int pct10,pct20,pct30,pct40,pct50,pct60,pct70,pct80,pct90;
   pct10=pct20=pct30=pct40=pct50=pct60=pct70=pct80=pct90=0;
 
   /**
-    *  if there is only one thread due to memory constraints, 
-    *  don't use the pragma so mkl will pick up more threads in dgemm
+    *  if there is enough memory to explicitly thread, do so
     */
-  if (nthreads>1){
+  if (threaded){
      #pragma omp parallel for schedule (dynamic) num_threads(nthreads)
      for (int ind=0; ind<nijk; ind++){
          int i = ijk[ind][0];
@@ -553,15 +545,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   free(E2ijak);
   for (int i=0; i<nthreads; i++){  
       free(E2abci[i]);
-      //free(Y[i]);
       free(Z[i]);
       free(Z2[i]);
-      //free(Z3[i]);
   }
-  //free(Y);
   free(Z);
   free(Z2);
-  //free(Z3);
   free(E2abci);
   free(etrip);
   free(renorm);
