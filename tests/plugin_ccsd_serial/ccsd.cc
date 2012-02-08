@@ -753,31 +753,30 @@ void CoupledCluster::CPU_I2p_abci_refactored_term1(CCTaskParams params){
   long int o2v = o*o*v;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_ABCI5,PSIO_OPEN_OLD);
+  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
   psio_address addr;
   addr = PSIO_ZERO;
 
   for (i=0; i<nov2tiles-1; i++){
-      psio->read(PSIF_ABCI5,"E2abci5",(char*)&integrals[0],v*ov2tilesize*sizeof(double),addr,&addr);
+      psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],v*ov2tilesize*sizeof(double),addr,&addr);
       helper_->GPUTiledDGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
   }
   i=nov2tiles-1;
-  psio->read(PSIF_ABCI5,"E2abci5",(char*)&integrals[0],v*lastov2tile*sizeof(double),addr,&addr);
+  psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],v*lastov2tile*sizeof(double),addr,&addr);
   helper_->GPUTiledDGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
-  psio->close(PSIF_ABCI5,1);
+  psio->close(PSIF_ABCI,1);
 
   // contribute to residual
   psio->open(PSIF_R2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   for (a=0; a<v; a++){
-  for (b=0; b<v; b++){
-      F_DAXPY(o*o,1.0,tempt+b*v*o*o+a*o*o,1,tempv+a*v*o*o+b*o*o,1);
-  }}
-  for (a=0; a<v; a++){
-  for (b=0; b<v; b++){
-  for (i=0; i<o; i++){
-      F_DAXPY(o,1.0,tempt+a*v*o*o+b*o*o+i,o,tempv+a*v*o*o+b*o*o+i*o,1);
-  }}}
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              F_DAXPY(o,1.0,tempt+i*v*v*o+b*o*v+a*o,1,tempv+a*v*o*o+b*o*o+i*o,1);
+              F_DAXPY(o,1.0,tempt+i+a*o*v+b*o,v*v*o,tempv+a*v*o*o+b*o*o+i*o,1);
+          }
+      }
+  }
   psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_R2,1);
   psio.reset();
@@ -1771,23 +1770,21 @@ void CoupledCluster::I2iajb(CCTaskParams params){
 
   // o^2v^3 work
   addr = PSIO_ZERO;
-  psio->open(PSIF_ABCI4,PSIO_OPEN_OLD);
+  psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
 
   for (j=0; j<nov2tiles-1; j++){
-      psio->read(PSIF_ABCI4,"E2abci4",(char*)&integrals[0],ov2tilesize*v*sizeof(double),addr,&addr);
+      psio->read(PSIF_ABCI3,"E2abci3",(char*)&integrals[0],ov2tilesize*v*sizeof(double),addr,&addr);
       helper_->GPUTiledDGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o);
   }
   j=nov2tiles-1;
-  psio->read(PSIF_ABCI4,"E2abci4",(char*)&integrals[0],lastov2tile*v*sizeof(double),addr,&addr);
+  psio->read(PSIF_ABCI3,"E2abci3",(char*)&integrals[0],lastov2tile*v*sizeof(double),addr,&addr);
   helper_->GPUTiledDGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempv+j*o*ov2tilesize,o);
-  psio->close(PSIF_ABCI4,1);
+  psio->close(PSIF_ABCI3,1);
 
   for (i=0,id=0; i<o; i++){
       for (b=0; b<v; b++){
           for (j=0; j<o; j++){
-              for (a=0; a<v; a++){
-                  tempt[id++] += tempv[i*o*v*v+a*v*o+b*o+j];
-              }
+              F_DAXPY(v,1.0,tempv+b*o*o+i*o+j,o*o*v,tempt+i*o*v*v+b*o*v+j*v,1);
           }
       }
   }
