@@ -5,16 +5,10 @@
 #include "sobasis.h"
 #include "sointegral.h"
 #include <boost/shared_ptr.hpp>
+#include <algorithm>
 
 using namespace boost;
 using namespace psi;
-
-namespace psi {
-template <class T>
-static void swap(T& x, T& y) {
-    T tmp=x; x = y; y = tmp;
-}
-}
 
 AOIntegralsIterator::AOIntegralsIterator(const GaussianShell& s1, const GaussianShell& s2,
                                      const GaussianShell& s3, const GaussianShell& s4)
@@ -65,24 +59,24 @@ void AOIntegralsIterator::first()
     }
     else if(&usi== &usk && &usj == &usl){
         if (current.i < current.j) {
-            swap(current.i, current.j);
-            swap(current.k, current.l);
+            std::swap(current.i, current.j);
+            std::swap(current.k, current.l);
         }
         if (current.i < current.k) {
-            swap(current.i, current.k);
-            swap(current.j, current.l);
+            std::swap(current.i, current.k);
+            std::swap(current.j, current.l);
         }
     }
     else{
         if (current.i < current.j) {
-            swap(current.i, current.j);
+            std::swap(current.i, current.j);
         }
         if (current.k < current.l) {
-            swap(current.k, current.l);
+            std::swap(current.k, current.l);
         }
         if ((current.i < current.k) || (current.i == current.k && current.j < current.l)) {
-            swap(current.i, current.k);
-            swap(current.j, current.l);
+            std::swap(current.i, current.k);
+            std::swap(current.j, current.l);
         }
     }
 }
@@ -142,12 +136,12 @@ void AOIntegralsIterator::next()
         current.l = ll + fil;
         current.index = ll+nl*(kk+nk*(jj+nj*ii));
         if (current.i < current.j) {
-            swap(current.i, current.j);
-            swap(current.k, current.l);
+            std::swap(current.i, current.j);
+            std::swap(current.k, current.l);
         }
         if (current.i < current.k) {
-            swap(current.i, current.k);
-            swap(current.j, current.l);
+            std::swap(current.i, current.k);
+            std::swap(current.j, current.l);
         }
     }
     else{
@@ -175,14 +169,14 @@ void AOIntegralsIterator::next()
         current.l = ll + fil;
         current.index = ll+nl*(kk+nk*(jj+nj*ii));
         if (current.i < current.j) {
-            swap(current.i, current.j);
+            std::swap(current.i, current.j);
         }
         if (current.k < current.l) {
-            swap(current.k, current.l);
+            std::swap(current.k, current.l);
         }
         if ((current.i < current.k) || (current.i == current.k && current.j < current.l)) {
-            swap(current.i, current.k);
-            swap(current.j, current.l);
+            std::swap(current.i, current.k);
+            std::swap(current.j, current.l);
         }
     }
 
@@ -230,15 +224,15 @@ void AOShellCombinationsIterator::first()
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->shell(usi).am() < bs2_->shell(usj).am()) {
-        swap(usi, usj);
+        std::swap(usi, usj);
     }
     if (bs3_->shell(usk).am() < bs4_->shell(usl).am()) {
-        swap(usk, usl);
+        std::swap(usk, usl);
     }
     if (bs1_->shell(usi).am() + bs2_->shell(usj).am() >
             bs3_->shell(usk).am() + bs4_->shell(usl).am()) {
-        swap(usi, usk);
-        swap(usj, usl);
+        std::swap(usi, usk);
+        std::swap(usj, usl);
     }
 
     current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
@@ -305,15 +299,15 @@ void AOShellCombinationsIterator::next()
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->shell(usi).am() < bs2_->shell(usj).am()) {
-        swap(usi, usj);
+        std::swap(usi, usj);
     }
     if (bs3_->shell(usk).am() < bs4_->shell(usl).am()) {
-        swap(usk, usl);
+        std::swap(usk, usl);
     }
     if (bs1_->shell(usi).am() + bs2_->shell(usj).am() >
             bs3_->shell(usk).am() + bs4_->shell(usl).am()) {
-        swap(usi, usk);
-        swap(usj, usl);
+        std::swap(usi, usk);
+        std::swap(usj, usl);
     }
 
     current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
@@ -427,15 +421,15 @@ void SOShellCombinationsIterator::next()
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->am(usi) < bs2_->am(usj)) {
-        swap(usi, usj);
+        std::swap(usi, usj);
     }
     if (bs3_->am(usk) < bs4_->am(usl)) {
-        swap(usk, usl);
+        std::swap(usk, usl);
     }
     if (bs1_->am(usi) + bs2_->am(usj) >
             bs3_->am(usk) + bs4_->am(usl)) {
-        swap(usi, usk);
-        swap(usj, usl);
+        std::swap(usi, usk);
+        std::swap(usj, usl);
     }
 
     current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
@@ -547,15 +541,15 @@ void SO_RS_Iterator::first()
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->am(usi) < bs2_->am(usj)) {
-        swap(usi, usj);
+        std::swap(usi, usj);
     }
     if (bs3_->am(usk) < bs4_->am(usl)) {
-        swap(usk, usl);
+        std::swap(usk, usl);
     }
     if (bs1_->am(usi) + bs2_->am(usj) >
             bs3_->am(usk) + bs4_->am(usl)) {
-        swap(usi, usk);
-        swap(usj, usl);
+        std::swap(usi, usk);
+        std::swap(usj, usl);
     }
 
     current.P = usi; current.Q = usj; current.R = usk; current.S = usl; //current.end_of_PK = false;
@@ -611,15 +605,15 @@ void SO_RS_Iterator::next()
 
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->am(usi) < bs2_->am(usj)) {
-        swap(usi, usj);
+        std::swap(usi, usj);
     }
     if (bs3_->am(usk) < bs4_->am(usl)) {
-        swap(usk, usl);
+        std::swap(usk, usl);
     }
     if (bs1_->am(usi) + bs2_->am(usj) >
             bs3_->am(usk) + bs4_->am(usl)) {
-        swap(usi, usk);
-        swap(usj, usl);
+        std::swap(usi, usk);
+        std::swap(usj, usl);
     }
 
     current.P = usi; current.Q = usj; current.R = usk; current.S = usl; //current.end_of_PK = false;
