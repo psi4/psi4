@@ -24,17 +24,17 @@ class Matrix;
 class Properties;
 class TwoBodySOInt;
 class ErfERI;
+class VBase;
 
 namespace scf{
-
-class RKSPotential; 
-class UKSPotential; 
 
 class KS {
 
 protected:
     /// Superfunctional object
     boost::shared_ptr<functional::SuperFunctional> functional_;
+    /// KS Potential (the heart of the algorithm)
+    boost::shared_ptr<VBase> potential_;
     /// primary basis set (might get fancy later)
     boost::shared_ptr<BasisSet> basisset_;
     /// primary so basis set
@@ -49,9 +49,6 @@ protected:
     boost::shared_ptr<TwoBodySOInt> omega_eri_;
     /// Factory (for Spherical Harmonics)
     boost::shared_ptr<IntegralFactory> omega_factory_;
-    /// DF object for omega integrals
-    boost::shared_ptr<DFHF> erf_df_;
-    
 
     /// Compute E_xc and the V matrix
     virtual void form_V() = 0;
@@ -68,8 +65,6 @@ public:
 class RKS : public RHF, public KS {
 
 protected:
-    /// RKS Potential (the heart of the algorithm)
-    boost::shared_ptr<RKSPotential> potential_;
     /// Alpha/Beta spin Kohn-Sham Potential (identical)
     SharedMatrix V_;
     /// Omega K
@@ -90,8 +85,6 @@ public:
 class UKS : public UHF, public KS {
 
 protected:
-    /// UKS Potential (the heart of the algorithm)
-    boost::shared_ptr<UKSPotential> potential_;
     /// Alpha spin Kohn-Sham Potential
     SharedMatrix Va_;
     /// Beta spin Kohn-Sham Potential

@@ -57,10 +57,13 @@ boost::shared_ptr<VBase> VBase::build_V(Options& options, const std::string& typ
 }
 void VBase::compute_D()
 {
+    // Allocate D if needed
     if (D_.size() != C_.size()) {
         D_.clear();
         for (int A = 0; A < C_.size(); A++) {
-            D_.push_back(SharedMatrix(new Matrix("D (SO)", C_[A]->rowspi(), C_[A]->rowspi())));
+            std::stringstream ss;
+            ss << "D (SO) " << A;
+            D_.push_back(SharedMatrix(new Matrix(ss.str(), C_[A]->rowspi(), C_[A]->rowspi())));
         }
     }
     
@@ -80,16 +83,174 @@ void VBase::compute_D()
 void VBase::USO2AO()
 {
     // Build AO2USO matrix, if needed
-    if (!AO2USO_) {
+    if (!AO2USO_ && (C_[0]->nirrep() != 1)) {
         boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
         boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
         AO2USO_ = SharedMatrix(pet->aotoso());
     }
-    // TODO
+
+    // Allocate V if needed
+    if (P_.size()) {
+        bool same = true;
+        if (V_.size() != P_.size()) {
+            same = false;   
+        } else {
+            for (int A = 0; A < P_.size(); A++) {
+                if (P_[A]->symmetry() != V_[A]->symmetry())
+                    same = false;
+            }
+        } 
+        if (!same) {
+            V_.clear();
+            for (int A = 0; A < P_.size(); A++) {
+                std::stringstream ss1;
+                ss1 << "V (SO) " << A;
+                V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi(),P_[A]->symmetry())));
+            } 
+        }
+    } else {
+        if (V_.size() != C_.size()) {
+            V_.clear();
+            for (int A = 0; A < C_.size(); A++) {
+                std::stringstream ss1;
+                ss1 << "V (SO) " << A;
+                V_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->rowspi(), C_[0]->rowspi())));
+            } 
+            
+        }
+    }
+
+    // If C1, just assign pointers
+    if (C_[0]->nirrep() == 1) {
+        C_AO_ = C_;
+        D_AO_ = D_;
+        V_AO_ = V_;
+        P_AO_ = P_;
+        // Clear V_AO_ out
+        for (int A = 0; A < V_AO_.size(); A++) {
+            V_AO_[A]->zero();
+        }
+        return;    
+    }
+
+    if (P_.size()) {
+        if (V_.size() != P_.size()) {
+            V_AO_.clear();
+            P_AO_.clear();
+            for (int A = 0; A < P_.size(); A++) {
+                std::stringstream ss2;
+                ss2 << "V (AO) " << A;
+                V_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+                std::stringstream ss3;
+                ss3 << "P (AO) " << A;
+                P_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
+            } 
+        }
+    } else {
+        if (V_AO_.size() != C_.size()) {
+            V_AO_.clear();
+            P_AO_.clear();
+            for (int A = 0; A < C_.size(); A++) {
+                std::stringstream ss2;
+                ss2 << "V (AO) " << A;
+                V_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+                std::stringstream ss3;
+                ss3 << "P (AO) " << A;
+                P_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss3.str(), C_[0]->nrow(), C_[0]->nrow())));
+            } 
+            
+        }
+    }
+
+    // Clear V_AO_ out
+    for (int A = 0; A < V_AO_.size(); A++) {
+        V_AO_[A]->zero();
+    }
+
+    // Allocate C_AO/D_AO if needed
+    if (C_AO_.size() != C_.size()) {
+        C_AO_.clear();
+        D_AO_.clear();
+        for (int A = 0; A < C_.size(); A++) {
+            std::stringstream ss1;
+            ss1 << "C (AO) " << A;
+            C_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss1.str(), C_[0]->nrow(), C_[0]->ncol())));
+            std::stringstream ss2;
+            ss2 << "D (AO) " << A;
+            D_AO_.push_back(boost::shared_ptr<Matrix>(new Matrix(ss2.str(), C_[0]->nrow(), C_[0]->nrow())));
+        }    
+    }
+
+    // C_AO (Order is not important, just KE Density)
+    for (int A = 0; A < C_.size(); A++) {
+        SharedMatrix C = C_[A];
+        SharedMatrix C_AO = C_AO_[A];
+        int offset = 0;
+        for (int h = 0; h < C->nirrep(); h++) {
+            int nocc = C->colspi()[h];
+            int nso = C->rowspi()[h];
+            int nao = AO2USO_->rowspi()[h];
+            int nmo = C_AO->colspi()[0];
+            if (!nocc || !nso || !nao || !nmo) continue;
+            double** Cp = C->pointer(h);
+            double** C_AOp = C_AO->pointer(0);
+            double** Up = AO2USO_->pointer(h);
+            C_DGEMM('N','N',nao,nocc,nso,1.0,Up[0],nso,Cp[0],nocc,0.0,&C_AOp[0][offset],nmo);
+            offset += nocc;
+        }
+    }
+    
+    // D_AO
+    double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
+    for (int A = 0; A < D_AO_.size(); A++) {
+        SharedMatrix D = D_[A];
+        SharedMatrix D_AO = D_AO_[A];
+        D_AO->zero();
+        for (int h = 0; h < D->nirrep(); h++) {
+            int symm = D->symmetry();
+            int nao = AO2USO_->rowspi()[h];
+            int nsol = AO2USO_->colspi()[h];
+            int nsor = AO2USO_->colspi()[h^symm];
+            if (!nao || !nsol || !nsor) continue;
+            double** Dp = D->pointer(h);
+            double** D_AOp = D_AO->pointer();
+            double** Ulp = AO2USO_->pointer(h);
+            double** Urp = AO2USO_->pointer(h^symm);
+            C_DGEMM('N','N',nao,nsor,nsol,1.0,Ulp[0],nsol,Dp[0],nsor,0.0,temp,nsor);
+            C_DGEMM('N','T',nao,nao,nsor,1.0,temp,nsor,Urp[0],nsor,1.0,D_AOp[0],nao);
+        }
+    }    
+    delete[] temp;
+
+    // P_AO
+    // TODO 
 }
 void VBase::AO2USO()
 {
-    // TODO
+    if (C_[0]->nirrep() == 1) {
+        // V_ is already assigned
+        return;    
+    }
+
+    double* temp = new double[AO2USO_->max_nrow() * (ULI) AO2USO_->max_ncol()];
+    for (int A = 0; A < V_AO_.size(); A++) {
+        SharedMatrix V = V_[A];
+        SharedMatrix V_AO = V_AO_[A];
+        for (int h = 0; h < V->nirrep(); h++) {
+            int symm = V->symmetry();
+            int nao = AO2USO_->rowspi()[h];
+            int nsol = AO2USO_->colspi()[h];
+            int nsor = AO2USO_->colspi()[h^symm];
+            if (!nao || !nsol || !nsor) continue;
+            double** Vp = V->pointer(h);
+            double** V_AOp = V_AO->pointer();
+            double** Ulp = AO2USO_->pointer(h);
+            double** Urp = AO2USO_->pointer(h^symm);
+            C_DGEMM('N','N',nao,nsor,nao,1.0,V_AOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
+            C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,Vp[0],nsor);
+        }
+    }    
+    delete[] temp;
 }
 void VBase::initialize()
 {
@@ -138,6 +299,8 @@ void RV::initialize()
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions(); 
     properties_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
+    properties_->set_derivative(functional_->getDeriv());
+    properties_->set_ansatz(functional_->getLocalAnsatz());
 }
 void RV::finalize()
 {
@@ -346,6 +509,8 @@ void UV::initialize()
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions(); 
     properties_ = boost::shared_ptr<UKSFunctions>(new UKSFunctions(primary_,max_points,max_functions));
+    properties_->set_derivative(functional_->getDeriv());
+    properties_->set_ansatz(functional_->getLocalAnsatz());
 }
 void UV::finalize()
 {

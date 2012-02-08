@@ -187,7 +187,17 @@ unsigned long int JK::memory_overhead()
 void JK::compute_D()
 {
     /// Make sure the memory is there
-    if (D_.size() != C_left_.size()) {
+    bool same = true;
+    if (C_left_.size() != D_.size()) {
+        same = false;
+    } else {
+        for (int N = 0; N < D_.size(); N++) {
+            if (D_[N]->symmetry() != (C_left_[N]->symmetry() ^ C_right_[N]->symmetry()))
+                same = false;
+        }
+    }
+
+    if (!same) {
         D_.clear();
 	for (int N = 0; N < C_left_.size(); ++N) {
             std::stringstream s;
@@ -218,7 +228,17 @@ void JK::compute_D()
 void JK::allocate_JK()
 {
     // Allocate J/K in the case that the algorithm uses USOs, so AO2USO will not allocate. 
+    bool same = true;
     if (J_.size() != D_.size()) {
+        same = false;
+    } else {
+        for (int N = 0; N < D_.size(); N++) {
+            if (D_[N]->symmetry() != J_[N]->symmetry())
+                same = false;
+        }
+    }
+
+    if (!same) {
 	J_.clear();    
 	K_.clear();    
 	wK_.clear();    
@@ -396,7 +416,17 @@ void JK::AO2USO()
     }
 
     // If not C1, J/K must be allocated
-    if (J_.size() != J_ao_.size()) {
+    bool same = true;
+    if (J_.size() != D_.size()) {
+        same = false;
+    } else {
+        for (int N = 0; N < D_.size(); N++) {
+            if (D_[N]->symmetry() != J_[N]->symmetry())
+                same = false;
+        }
+    }
+
+    if (!same) {
 	J_.clear();    
 	K_.clear();    
 	wK_.clear();    

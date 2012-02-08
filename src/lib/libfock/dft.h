@@ -87,7 +87,7 @@ public:
     boost::shared_ptr<BasisSet> basis() const { return primary_; }
     boost::shared_ptr<functional::SuperFunctional> functional() const { return functional_; }
     boost::shared_ptr<DFTGrid> grid() const { return grid_; }
-    const std::map<std::string, double>& quadrature_values() const { return quad_values_; }
+    std::map<std::string, double>& quadrature_values() { return quad_values_; }
 
     /// Grab this, clear, and push Cocc matrices (with symmetry) to change GS density
     std::vector<SharedMatrix>& C() { return C_; }
