@@ -479,19 +479,26 @@ def process_input(raw_input):
     temp = process_multiline_arrays(temp)
 
     # Process all "set name? { ... }"
-    set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}',
+                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set (module_list) key  {[value_list] or $value or value}"
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-+,()*\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
+    # N.B. We have to be careful here, because \s matches \n, leading to potential problems
+    # with undesired multiline matches.  Better the double-negative [^\S\n] instead, which
+    # will match any space, tab, etc., except a newline
+    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,()\.\w]+))\s*$', 
+                             re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
-    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}',
+                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
 
     # Process "external name? { ... }"
-    external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}',
+                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(external, process_external_command, temp)
     
     # Then remove repeated newlines
@@ -499,7 +506,8 @@ def process_input(raw_input):
     temp = re.sub(multiplenewlines, '\n', temp)
 
     # Process " extract"
-    extract = re.compile(r'(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*', re.IGNORECASE)
+    extract = re.compile(r'(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*',
+                         re.IGNORECASE)
     temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "PsiMod.print_out()"
@@ -507,15 +515,18 @@ def process_input(raw_input):
     temp = re.sub(print_string,process_print_command,temp)
 
     # Process "memory ... "
-    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)', re.IGNORECASE)
+    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',
+                               re.IGNORECASE)
     temp = re.sub(memory_string,process_memory_command,temp)
 
     # Process "basis file ... "
-    basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$', re.MULTILINE | re.IGNORECASE)
+    basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$',
+                            re.MULTILINE | re.IGNORECASE)
     temp = re.sub(basis_file,process_basis_file,temp)
 
     # Process "basis name { ... }"
-    basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}',
+                             re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block,process_basis_block,temp)
 
     # imports
