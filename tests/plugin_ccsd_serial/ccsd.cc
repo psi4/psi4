@@ -812,38 +812,6 @@ void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params){
 
   psio.reset();
 }
-void CoupledCluster::CPU_I2p_abci_refactored_term3(CCTaskParams params){
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int a,b,c,i,j,id=0;
-  long int ov2 = o*v*v;
-  long int o2v = o*o*v;
-
-  boost::shared_ptr<PSIO> psio(new PSIO());
-
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-  helper_->GPUTiledDGEMM_NoThread('t','t',o2v,o,v,-1.0,tempv,v,t1,o,0.0,tempt,o2v,0);
-  // TODO: this was one of the ones the gpu version was screwing up...
-  // it seems that it only has  problems with cuda 3.2, not cuda 4.0
-  helper_->GPUTiledDGEMM_NoThread('t','n',v,o2v,o,1.0,t1,o,tempt,o,0.0,tempv,v,0);
-
-  // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  for (a=0,id=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempv+i*v*v*o+b*v+a,v*v,tempt+a*o*o*v+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempv+i*v*v+a*v+b,v*v*o,tempt+a*o*o*v+b*o*o+i*o,1);
-          }
-      }
-  }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
-  psio.reset();
-}
 
 void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
 
@@ -1213,7 +1181,9 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
 
 }
 /**
- *  Build and use I2'iajk
+ *  Build and use I2'iajk.
+ *  This contains one of the terms that came out of refactorizing I2'abci
+ *  (it used to be I2p_abci_refactored_term3)
  */
 void CoupledCluster::I2piajk(CCTaskParams params){
   long int id,i,j,a,b,o,v;
@@ -1242,7 +1212,6 @@ void CoupledCluster::I2piajk(CCTaskParams params){
   psio->open(PSIF_IJAK2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJAK2,"E2ijak2",(char*)&tempv[0],o*o*o*v*sizeof(double));
   psio->close(PSIF_IJAK2,1);
-  //F_DCOPY(o*o*o*v,E2ijak2,1,tempv,1);
 
   addr = PSIO_ZERO;
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
@@ -1255,6 +1224,20 @@ void CoupledCluster::I2piajk(CCTaskParams params){
   helper_->GPUTiledDGEMM('n','n',o*o,lastovtile,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*o*o*ovtilesize,o*o);
   psio->close(PSIF_ABCI,1);
 
+  // this used to be part of I2p(ab,ci) ... see notes ...
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  helper_->GPUTiledDGEMM_NoThread('t','t',o*o*v,o,v,1.0,integrals,v,t1,o,0.0,tempt,o*o*v,0);
+  for (j=0; j<o; j++){
+      for (a=0; a<v; a++){
+          for (i=0; i<o; i++){
+              F_DAXPY(o,1.0,tempt+i*o*o*v+a*o+j,o*v,tempv+j*o*o*v+a*o*o+i*o,1);
+          }
+      }
+  }
+
+  // use intermediate
   helper_->GPUTiledDGEMM_NoThread('n','n',o*o*v,v,o,-1.0,tempv,o*o*v,t1,o,0.0,tempt,o*o*v,0);
 
   // contribute to residual
@@ -1722,7 +1705,6 @@ void CoupledCluster::DefineTasks(){
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_t1_vmaef;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I2p_abci_refactored_term1;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I2p_abci_refactored_term2;
-  CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I2p_abci_refactored_term3;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I1ab;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_t1_vmeai;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I1pij_I1ia_lessmem;
