@@ -742,44 +742,10 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
   psio.reset();
 }
 
-// a refactored version of I2p(ab,ci) that avoids ov^3 storage
-void CoupledCluster::CPU_I2p_abci_refactored_term1(CCTaskParams params){
-  long int o = ndoccact;
-  long int v = nvirt;
-  long int a,b,c,i,j,id=0;
-  long int ov2 = o*v*v;
-  long int o2v = o*o*v;
-
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
-  psio_address addr;
-  addr = PSIO_ZERO;
-
-  for (i=0; i<nov2tiles-1; i++){
-      psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],v*ov2tilesize*sizeof(double),addr,&addr);
-      helper_->GPUTiledDGEMM('n','n',o,ov2tilesize,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
-  }
-  i=nov2tiles-1;
-  psio->read(PSIF_ABCI,"E2abci",(char*)&integrals[0],v*lastov2tile*sizeof(double),addr,&addr);
-  helper_->GPUTiledDGEMM('n','n',o,lastov2tile,v,1.0,t1,o,integrals,v,0.0,tempt+i*ov2tilesize*o,o);
-  psio->close(PSIF_ABCI,1);
-
-  // contribute to residual
-  psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              F_DAXPY(o,1.0,tempt+i*v*v*o+b*o*v+a*o,1,tempv+a*v*o*o+b*o*o+i*o,1);
-              F_DAXPY(o,1.0,tempt+i+a*o*v+b*o,v*v*o,tempv+a*v*o*o+b*o*o+i*o,1);
-          }
-      }
-  }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
-  psio.reset();
-
-}
+// a refactored version of I2p(ab,ci) that avoids ov^3 storage.
+// it turns out that most of the resulting term can be dumped in 
+// with other terms.  all we're left with is this 2o^3v^2 term
+// and another o^3v^2 term that was added to I2piajk
 void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params){
   long int o = ndoccact;
   long int v = nvirt;
@@ -1469,7 +1435,8 @@ void CoupledCluster::I2iabj(CCTaskParams params){
   }
   helper_->GPUTiledDGEMM('n','n',o*v,o*v,o*v,1.0,integrals,o*v,tempv,o*v,0.0,tempt,o*v);
 
-  // o^2v^3 piece of intermediate
+  // o^2v^3 piece of intermediate ... also, this is identical to the contribution to the
+  // residual that used to be found in I2p_abci_refactored_term1
   addr = PSIO_ZERO;
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
@@ -1489,11 +1456,25 @@ void CoupledCluster::I2iabj(CCTaskParams params){
       }
   }
 
+  // contribute to residual from I2p_abci_refactored_term1 ... if we know
+  // this is the first diagram, we don't need to read in the old residual.
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              F_DCOPY(o,tempv+i*v*v*o+b*o*v+a*o,1,integrals+a*v*o*o+b*o*o+i*o,1);
+              F_DAXPY(o,1.0,tempv+i+a*o*v+b*o,v*v*o,integrals+a*v*o*o+b*o*o+i*o,1);
+          }
+      }
+  }
+  psio->open(PSIF_R2,PSIO_OPEN_OLD);
+  psio->write_entry(PSIF_R2,"residual",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_R2,1);
+
   // contribute to intermediate
   psio->open(PSIF_TEMP,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_TEMP,"temporary",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
   psio->close(PSIF_TEMP,0);
+  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
 
   // use I2iabj
   if (t2_on_disk){
@@ -1515,13 +1496,11 @@ void CoupledCluster::I2iabj(CCTaskParams params){
 
   // contribute to residual
   psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  // if we KNOW this is the first diagram, we don't need to read in the old
-  // residual.
-  //psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
   for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
-              F_DCOPY(o,integrals+b*v*o+i*v+a,o*v*v,tempt+a*o*o*v+b*o*o+i*o,1);
+              F_DAXPY(o,1.0,integrals+b*v*o+i*v+a,o*v*v,tempt+a*o*o*v+b*o*o+i*o,1);
               F_DAXPY(o,1.0,integrals+i*o*v*v+a*v*o+b,v,tempt+a*o*o*v+b*o*o+i*o,1);
           }
       }
@@ -1703,7 +1682,6 @@ void CoupledCluster::DefineTasks(){
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::I2piajk;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_t1_vmeni;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_t1_vmaef;
-  CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I2p_abci_refactored_term1;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I2p_abci_refactored_term2;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I1ab;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_t1_vmeai;
