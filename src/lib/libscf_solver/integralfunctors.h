@@ -5,9 +5,7 @@
 #include <libiwl/iwl.hpp>
 #include <libmints/mints.h>
 #include <libmints/sointegral_twobody.h>
-#include "pseudospectral.h"
 #include "pkintegrals.h"
-#include "df.h"
 
 // We're assuming that for (PQ|RS) P>=Q, R>=S and PQ>=RS
 
@@ -24,8 +22,6 @@
  *                   this is called by the out-of-core and direct codes, and will take
  *                   the relative (within irrep) and absolute values of p, q, r and s, along
  *                   with their symmetries, to generate the J and K matrices.
- * void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> psHF) which will set up a PSHF object
- * void operator()(boost::shared_ptr<DSHF> dfHF) which will set up a DFHF object
  * void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) which is used in the PK algorithms.
  */
 
@@ -129,28 +125,8 @@ public:
     }
 
 
-    void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
-        dfhf->set_restricted(true);
-        dfhf->set_jk(false);
-        dfhf->set_J(J_[0]);
-        dfhf->set_Da(D_);
-        pshf->set_restricted(true);
-        pshf->set_Da(D_);
-        pshf->set_Ka(K_[0]);
-    }
-
     void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
         pk_integrals->setup(J_[0], K_[0], D_, D_);
-    }
-
-    void operator()(boost::shared_ptr<DFHF> dfhf) {
-        dfhf->set_restricted(true);
-        dfhf->set_jk(true);
-        dfhf->set_J(J_[0]);
-        dfhf->set_Ka(K_[0]);
-        dfhf->set_Da(D_);
-        dfhf->set_Ca(C_);
-        dfhf->set_Na(N_);
     }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
@@ -412,18 +388,6 @@ public:
     }
 
 
-    void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
-        // Pseudospectral is exchange only, this does nothing
-    }
-
-    void operator()(boost::shared_ptr<DFHF> dfhf) {
-        dfhf->set_restricted(restricted_);
-        dfhf->set_jk(false);
-        dfhf->set_J(J_[0]);
-        dfhf->set_Da(Da_);
-        dfhf->set_Db(Db_);
-    }
-
     void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
         pk_integrals->setup(J_[0], Da_, Db_);
     }
@@ -618,33 +582,6 @@ public:
         return *this;
     }
 
-
-    void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
-        pshf->set_restricted(false);
-        pshf->set_Da(Da_);
-        pshf->set_Db(Db_);
-        pshf->set_Ka(Ka_[0]);
-        pshf->set_Kb(Kb_[0]);
-        dfhf->set_restricted(false);
-        dfhf->set_jk(false);
-        dfhf->set_J(J_[0]);
-        dfhf->set_Da(Da_);
-        dfhf->set_Db(Db_);
-    }
-
-    void operator()(boost::shared_ptr<DFHF> dfhf) {
-        dfhf->set_restricted(false);
-        dfhf->set_jk(true);
-        dfhf->set_J(J_[0]);
-        dfhf->set_Da(Da_);
-        dfhf->set_Db(Db_);
-        dfhf->set_Ca(Ca_);
-        dfhf->set_Cb(Cb_);
-        dfhf->set_Na(Na_);
-        dfhf->set_Nb(Nb_);
-        dfhf->set_Ka(Ka_[0]);
-        dfhf->set_Kb(Kb_[0]);
-    }
 
     void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
         pk_integrals->setup(J_[0], Ka_[0], Kb_[0], Da_, Db_);
@@ -873,19 +810,6 @@ void HF::process_tei(JKFunctor & functor)
         functor.initialize(scf_type_);
         eri_->compute_integrals(functor);  // parallelized
         functor.finalize();
-    }else if (scf_type_ == "PSEUDOSPECTRAL"){
-        functor.initialize(scf_type_);
-        functor(df_, pseudospectral_);
-        df_->form_J_DF();
-        if(functor.k_required())
-            pseudospectral_->form_K_PS();
-    }else if (scf_type_ == "DF"){
-        functor.initialize(scf_type_);
-        functor(df_);
-        if(functor.k_required())
-            df_->form_JK_DF();
-        else
-            df_->form_J_DF();
     }else if(scf_type_ == "PK"){
         functor.initialize(scf_type_);
         functor(pk_integrals_);
