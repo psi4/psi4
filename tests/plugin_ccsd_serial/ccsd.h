@@ -133,11 +133,11 @@ class CoupledCluster{
       * this diagram required ov^3 storage for an
       * intermediate in the Piecuch CPC.  this formulation
       * only requires o^3v storage...at the expense of
-      * 4 extra O(N^5) terms.
+      * 4 extra O(N^5) terms.  Now reduced to 3 extra terms
+      * by dumping one in with I2piajk.
       */
     void CPU_I2p_abci_refactored_term1(CCTaskParams params);
     void CPU_I2p_abci_refactored_term2(CCTaskParams params);
-    void CPU_I2p_abci_refactored_term3(CCTaskParams params);
 
     /**
       * Update t1
