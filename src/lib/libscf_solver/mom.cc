@@ -23,9 +23,7 @@
 #include <libqt/qt.h>
 #include <psifiles.h>
 #include "integralfunctors.h"
-#include "pseudospectral.h"
 #include "pkintegrals.h"
-#include "df.h"
 
 #include <libmints/mints.h>
 

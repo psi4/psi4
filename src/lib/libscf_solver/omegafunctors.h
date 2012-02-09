@@ -23,7 +23,6 @@ template<class T> class shared_ptr;
  *                   this is called by the out-of-core and direct codes, and will take
  *                   the relative (within irrep) and absolute values of p, q, r and s, along
  *                   with their symmetries, to generate the long-range wK matrices.
- * void operator()(boost::shared_ptr<DFHF> dfhf) which will set up a DFHF object
  */
 
 
@@ -84,16 +83,6 @@ public:
         J_.clear();
         J_.push_back(SharedMatrix(D->clone()));
         wK_.push_back(wK);
-    }
-
-    void operator()(boost::shared_ptr<DFHF> dfhf) {
-        dfhf->set_restricted(true);
-        dfhf->set_jk(true);
-        dfhf->set_J(J_[0]);
-        dfhf->set_Ka(wK_[0]);
-        dfhf->set_Da(D_);
-        dfhf->set_Ca(C_);
-        dfhf->set_Na(N_);
     }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
@@ -306,20 +295,6 @@ public:
         wKb_.push_back(wKb);
     }
 
-    void operator()(boost::shared_ptr<DFHF> dfhf) {
-        dfhf->set_restricted(false);
-        dfhf->set_jk(true);
-        dfhf->set_J(J_[0]);
-        dfhf->set_Da(Da_);
-        dfhf->set_Db(Db_);
-        dfhf->set_Ca(Ca_);
-        dfhf->set_Cb(Cb_);
-        dfhf->set_Na(Na_);
-        dfhf->set_Nb(Nb_);
-        dfhf->set_Ka(wKa_[0]);
-        dfhf->set_Kb(wKb_[0]);
-    }
-
     void operator()(int pabs, int qabs, int rabs, int sabs,
                     int psym, int prel, int qsym, int qrel,
                     int rsym, int rrel, int ssym, int srel, double value) {
@@ -478,10 +453,6 @@ void KS::process_omega_tei(OmegaKFunctor & functor)
         functor.initialize(options_.get_str("SCF_TYPE"));
         omega_eri_->compute_integrals(functor);  // parallelized
         functor.finalize();
-    }else if (options_.get_str("SCF_TYPE") == "DF"){
-        functor.initialize(options_.get_str("SCF_TYPE"));
-        functor(erf_df_);
-        erf_df_->form_JK_DF();
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + options_.get_str("SCF_TYPE") + " is not supported in KS::process_omega_tei");
     }
