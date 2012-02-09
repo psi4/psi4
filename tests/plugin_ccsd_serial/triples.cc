@@ -48,7 +48,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   bool threaded = true;
   if (memory<0){
      memory += (nthreads-1)*8L*3L*v*v*v;
-     if (nthreads<1){
+     if (nthreads==1){
         fprintf(outfile,"        Error: not enough memory.\n");
         fprintf(outfile,"\n");
         fprintf(outfile,"        (T) requires at least %7.2lf mb\n",
@@ -224,12 +224,16 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
 
          F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
          for (int a=0; a<v; a++){
+             double tai = t1[a*o+i];
              for (int b=0; b<v; b++){
+                 int ab = 1+(a==b);
+                 double tbj = t1[b*o+j];
+                 double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
                  for (int c=0; c<v; c++){
-                     Z2[thread][a*v*v+b*v+c] += (t1[a*o+i]*E2klcd[j*v*v*o+b*v*o+k*v+c] +
-                                                 t1[b*o+j]*E2klcd[i*v*v*o+a*v*o+k*v+c] +
-                                                 t1[c*o+k]*E2klcd[i*v*v*o+a*v*o+j*v+b]);
-                     Z2[thread][a*v*v+b*v+c] /= (1 + (a==b) + (b==c) + (a==c));
+                     Z2[thread][a*v*v+b*v+c] += (tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
+                                                 tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
+                                                 t1[c*o+k]*E2iajb);
+                     Z2[thread][a*v*v+b*v+c] /= (ab + (b==c) + (a==c));
                  }
              }
          }
@@ -240,17 +244,16 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                      long int abc = a*v*v+b*v+c;
                      long int bac = b*v*v+a*v+c;
                      long int acb = a*v*v+c*v+b;
-                     long int bca = b*v*v+c*v+a;
-                     long int cab = c*v*v+a*v+b;
                      long int cba = c*v*v+b*v+a;
 
-                     //Y[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
                      E2abci[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
                  }
              }
          }
          double dijk = F[i]+F[j]+F[k];
+         int ijkfac = ( 2-((i==j)+(j==k)+(i==k)) );
          // separate out these bits to save v^3 storage
+         double tripval = 0.0;
          for (int a=0; a<v; a++){
              double dijka = dijk-F[a+o];
              for (int b=0; b<=a; b++){
@@ -270,31 +273,25 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                                     * ((Z[thread][abc] + Z[thread][bca] + Z[thread][cab])*-2.0
                                     +  (Z[thread][acb] + Z[thread][bac] + Z[thread][cba]))
                                     + 3.0*dum;
-                     //dum            = (Y[thread][abc] - 2.0*E2abci[thread][abc])
-                     //               * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab])
-                     //               + (E2abci[thread][abc] - 2.0*Y[thread][abc])
-                     //               * (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])
-                     //               + 3.0*dum;
                      double denom = dijkab-F[c+o];
-                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                     tripval += dum/denom;
                  }
              }
          }
+         etrip[thread] += tripval*ijkfac;
          // the second bit
          for (int a=0; a<v; a++){
              for (int b=0; b<v; b++){
                  for (int c=0; c<v; c++){
                      long int abc = a*v*v+b*v+c;
-                     long int bac = b*v*v+a*v+c;
-                     long int acb = a*v*v+c*v+b;
                      long int bca = b*v*v+c*v+a;
                      long int cab = c*v*v+a*v+b;
-                     long int cba = c*v*v+b*v+a;
 
                      E2abci[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
                  }
              }
          }
+         tripval = 0.0;
          for (int a=0; a<v; a++){
              double dijka = dijk-F[a+o];
              for (int b=0; b<=a; b++){
@@ -312,10 +309,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                                     + (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])*-2.0);
 
                      double denom = dijkab-F[c+o];
-                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                     tripval += dum/denom;
                  }
              }
          }
+         etrip[thread] += tripval*ijkfac;
          // print out update 
          if (thread==0){
             int print = 0;
@@ -401,12 +399,16 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
 
          F_DCOPY(v*v*v,Z[thread],1,Z2[thread],1);
          for (int a=0; a<v; a++){
+             double tai = t1[a*o+i];
              for (int b=0; b<v; b++){
+                 double tbj = t1[b*o+j];
+                 double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
+                 int ab = 1+(a==b);
                  for (int c=0; c<v; c++){
-                     Z2[thread][a*v*v+b*v+c] += (t1[a*o+i]*E2klcd[j*v*v*o+b*v*o+k*v+c] +
-                                                 t1[b*o+j]*E2klcd[i*v*v*o+a*v*o+k*v+c] +
-                                                 t1[c*o+k]*E2klcd[i*v*v*o+a*v*o+j*v+b]);
-                     Z2[thread][a*v*v+b*v+c] /= (1 + (a==b) + (b==c) + (a==c));
+                     Z2[thread][a*v*v+b*v+c] += (tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
+                                                 tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
+                                                 t1[c*o+k]*E2iajb);
+                     Z2[thread][a*v*v+b*v+c] /= (ab + (b==c) + (a==c));
                  }
              }
          }
@@ -417,16 +419,15 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                      long int abc = a*v*v+b*v+c;
                      long int bac = b*v*v+a*v+c;
                      long int acb = a*v*v+c*v+b;
-                     long int bca = b*v*v+c*v+a;
-                     long int cab = c*v*v+a*v+b;
                      long int cba = c*v*v+b*v+a;
 
-                     //Y[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
                      E2abci[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
                  }
              }
          }
          double dijk = F[i]+F[j]+F[k];
+         int ijkfac = ( 2-((i==j)+(j==k)+(i==k)) );
+         double tripval = 0.0;
          // separate out these bits to save v^3 storage
          for (int a=0; a<v; a++){
              double dijka = dijk-F[a+o];
@@ -447,31 +448,25 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                                     * ((Z[thread][abc] + Z[thread][bca] + Z[thread][cab])*-2.0
                                     +  (Z[thread][acb] + Z[thread][bac] + Z[thread][cba]))
                                     + 3.0*dum;
-                     //dum            = (Y[thread][abc] - 2.0*E2abci[thread][abc])
-                     //               * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab])
-                     //               + (E2abci[thread][abc] - 2.0*Y[thread][abc])
-                     //               * (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])
-                     //               + 3.0*dum;
                      double denom = dijkab-F[c+o];
-                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                     tripval += dum/denom;
                  }
              }
          }
+         etrip[thread] += tripval*ijkfac;
          // the second bit
          for (int a=0; a<v; a++){
              for (int b=0; b<v; b++){
                  for (int c=0; c<v; c++){
                      long int abc = a*v*v+b*v+c;
-                     long int bac = b*v*v+a*v+c;
-                     long int acb = a*v*v+c*v+b;
                      long int bca = b*v*v+c*v+a;
                      long int cab = c*v*v+a*v+b;
-                     long int cba = c*v*v+b*v+a;
 
                      E2abci[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
                  }
              }
          }
+         tripval = 0.0;
          for (int a=0; a<v; a++){
              double dijka = dijk-F[a+o];
              for (int b=0; b<=a; b++){
@@ -489,10 +484,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                                     + (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])*-2.0);
 
                      double denom = dijkab-F[c+o];
-                     etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                     tripval += dum/denom;
                  }
              }
          }
+         etrip[thread] += tripval*ijkfac;
          int print = 0;
          stop = time(NULL);
          if ((double)ind/nijk >= 0.1 && !pct10){      pct10 = 1; print=1;}
