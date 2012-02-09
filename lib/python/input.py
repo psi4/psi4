@@ -487,7 +487,7 @@ def process_input(raw_input):
     # N.B. We have to be careful here, because \s matches \n, leading to potential problems
     # with undesired multiline matches.  Better the double-negative [^\S\n] instead, which
     # will match any space, tab, etc., except a newline
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,()\.\w]+))\s*$', 
+    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$', 
                              re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
