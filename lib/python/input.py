@@ -448,6 +448,41 @@ def process_multiline_arrays(inputfile):
 
 def process_input(raw_input):
 
+    # Check if the infile is actually an outfile (yeah we did)
+    psi4_id = re.compile(r'PSI4: An Open-Source Ab Initio Electronic Structure Package')
+    if (re.search(psi4_id, raw_input)):
+        input_lines = raw_input.split("\n")
+        input_re = re.compile(r'^\s*?\=\=> Input File <\=\=')
+        input_start = -1;
+        for line_count in range(len(input_lines)):
+            line = input_lines[line_count] 
+            if re.match(input_re, line):
+                input_start = line_count + 3;            
+                break;
+
+        stop_re = re.compile(r'^-{74}')
+        input_stop = -1;
+        for line_count in range(input_start,len(input_lines)):        
+            line = input_lines[line_count] 
+            if re.match(stop_re, line):
+                input_stop = line_count;            
+                break;
+                       
+        if (input_start == -1 or input_stop == -1):
+            print 'Cannot extract infile from outfile.'
+            sys.exit(1)
+ 
+        raw_input = '\n'.join(input_lines[input_start:input_stop])
+        raw_input += '\n'
+
+    # Echo the infile on the outfile
+    PsiMod.print_out("\n  ==> Input File <==\n\n");
+    PsiMod.print_out("--------------------------------------------------------------------------\n");
+    PsiMod.print_out(raw_input);
+    PsiMod.print_out("--------------------------------------------------------------------------\n");
+    PsiMod.flush_outfile();
+
+
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
     #   which has the regex capture group:
