@@ -130,14 +130,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   psio->close(PSIF_KLCD,1);
 
   double *etrip = (double*)malloc(nthreads*sizeof(double));
-  double *renorm = (double*)malloc(nthreads*sizeof(double));
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
-  for (int i=0; i<nthreads; i++) renorm[i] = 0.0;
   fprintf(outfile,"        Computing (T) correction...\n");
   fprintf(outfile,"\n");
   fprintf(outfile,"        %% complete  total time\n");
   fflush(outfile);
-  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
   time_t stop,start = time(NULL);
   int pct10,pct20,pct30,pct40,pct50,pct60,pct70,pct80,pct90;
@@ -158,12 +155,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
              thread = omp_get_thread_num();
          #endif
 
-         psio_address addr;
-         #pragma omp critical
-         {
-             addr = psio_get_address(PSIO_ZERO,(long int)k*v*v*v*sizeof(double));
-             psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
-         }
+         boost::shared_ptr<PSIO> mypsio(new PSIO());
+         mypsio->open(PSIF_ABCI,PSIO_OPEN_OLD);
+
+         psio_address addr = psio_get_address(PSIO_ZERO,(long int)k*v*v*v*sizeof(double));
+         mypsio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
          ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+i*v*v,v,0.0,Z[thread],v*v,thread);
          ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+k*o*v,v,tempt+i*v*v*o,v*v,1.0,Z[thread],v,thread);
 
@@ -177,11 +173,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
          }
 
          //(bc)(jk)
-         #pragma omp critical
-         {
-             addr = psio_get_address(PSIO_ZERO,(long int)j*v*v*v*sizeof(double));
-             psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
-         }
+         addr = psio_get_address(PSIO_ZERO,(long int)j*v*v*v*sizeof(double));
+         mypsio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
          ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+k*v*v*o+i*v*v,v,0.0,Z2[thread],v*v,thread);
          ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+k*o*o*v+j*o*v,v,tempt+i*v*v*o,v*v,1.0,Z2[thread],v,thread);
          for (int a=0; a<v; a++){
@@ -200,11 +193,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
          }
 
          //(ac)(ik)
-         #pragma omp critical
-         {
-             addr = psio_get_address(PSIO_ZERO,(long int)i*v*v*v*sizeof(double));
-             psio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
-         }
+         addr = psio_get_address(PSIO_ZERO,(long int)i*v*v*v*sizeof(double));
+         mypsio->read(PSIF_ABCI,"E2abci",(char*)&E2abci[thread][0],v*v*v*sizeof(double),addr,&addr);
          ccsd->helper_->GPUTiledDGEMM_NoThread('t','t',v*v,v,v,1.0,E2abci[thread],v,tempt+j*v*v*o+k*v*v,v,0.0,Z2[thread],v*v,thread);
          ccsd->helper_->GPUTiledDGEMM_NoThread('n','t',v,v*v,o,-1.0,E2ijak+j*o*o*v+i*o*v,v,tempt+k*v*v*o,v*v,1.0,Z2[thread],v,thread);
          for (int a=0; a<v; a++){
@@ -332,9 +322,12 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                fflush(outfile);
             }
          }
+         mypsio->close(PSIF_ABCI,1);
+         mypsio.reset();
      }
   }
   else{
+     psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
      for (int ind=0; ind<nijk; ind++){
          int i = ijk[ind][0];
          int j = ijk[ind][1];
@@ -505,12 +498,12 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
             fflush(outfile);
          }
      }
+     psio->close(PSIF_ABCI,1);
   }
 
   double et = 0.0;
   for (int i=0; i<nthreads; i++) et += etrip[i];
 
-  psio->close(PSIF_ABCI,1);
   fprintf(outfile,"\n");
   if (ccsd->scale_t == 1.0)
      fprintf(outfile,"        (T) energy                   %20.12lf\n",et);
@@ -548,7 +541,6 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   free(Z2);
   free(E2abci);
   free(etrip);
-  free(renorm);
             
   return Success;
 }
