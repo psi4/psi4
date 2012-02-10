@@ -343,7 +343,7 @@ void CGRSolver::check_convergence()
             double* rp = r_[N]->pointer(h);
             r_nrm2_[N] += C_DDOT(n,rp,1,rp,1);
         }
-        sqrt(r_nrm2_[N]);
+        r_nrm2_[N] = sqrt(r_nrm2_[N]);
         if (convergence_ < r_nrm2_[N]) {
             convergence_ = r_nrm2_[N];
         }
