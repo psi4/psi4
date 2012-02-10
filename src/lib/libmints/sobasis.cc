@@ -119,8 +119,6 @@ void SOBasisSet::init()
 
     boost::shared_ptr<Molecule> mol = basis_->molecule();
 
-    mol->print();
-
     CharacterTable ct = mol->point_group()->char_table();
     nirrep_ = ct.nirrep();
 
