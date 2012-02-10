@@ -555,11 +555,17 @@ def process_input(raw_input):
         psirc = fh.read()
         fh.close()
 
+    # Override scratch directory if user specified via env_var
+    scratch = ''
+    scratch_env = PsiMod.Process.environment['PSI_SCRATCH'] 
+    if len(scratch_env):
+        scratch += 'psi4_io.set_default_path("%s")\n' % (scratch_env)
+
     blank_mol = 'geometry("""\n'
     blank_mol += '0 1\nH\nH 1 0.74\n'
     blank_mol += '""","blank_molecule_psi4_yo")\n'
 
-    temp = imports + psirc + blank_mol + temp
+    temp = imports + psirc + scratch + blank_mol + temp
 
     return temp
 
