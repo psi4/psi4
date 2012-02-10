@@ -17,7 +17,7 @@
 
 #include <libmints/mints.h>
 #include <libfock/jk.h>
-#include <libfock/dft.h>
+#include <libfock/v.h>
 #include <libfunctional/superfunctional.h>
 #include <lib3index/3index.h>
 #include "ks.h"

@@ -26,13 +26,33 @@ PsiReturnType libfock(Options & options)
 {
     tstart();
 
+    boost::shared_ptr<RBase> wfn;
+
     if (options.get_str("MODULE") == "RCPHF") {
-        boost::shared_ptr<RCPHF> rcphf(new RCPHF());
+        RCPHF* cphf(new RCPHF());
         for (int i = 0; i < options["CPHF_TASKS"].size(); i++) {
-            rcphf->add_task(options["CPHF_TASKS"][i].to_string());
+            cphf->add_task(options["CPHF_TASKS"][i].to_string());
         }
-        rcphf->compute_energy();
+        wfn = boost::shared_ptr<RBase>(cphf);
+    } else if (options.get_str("MODULE") == "RCIS") {
+        wfn = boost::shared_ptr<RBase>(new RCIS());
+    } else if (options.get_str("MODULE") == "RTDHF") {
+        wfn = boost::shared_ptr<RBase>(new RTDHF());
+    } else if (options.get_str("MODULE") == "RCPKS") {
+        RCPKS* cphf(new RCPKS());
+        for (int i = 0; i < options["CPHF_TASKS"].size(); i++) {
+            cphf->add_task(options["CPHF_TASKS"][i].to_string());
+        }
+        wfn = boost::shared_ptr<RBase>(cphf);
+    } else if (options.get_str("MODULE") == "RTDA") {
+        wfn = boost::shared_ptr<RBase>(new RTDA());
+    } else if (options.get_str("MODULE") == "RTDDFT") {
+        wfn = boost::shared_ptr<RBase>(new RTDDFT());
+    } else {
+        throw PSIEXCEPTION("Libfock: Applications module not recognized");
     }
+
+    wfn->compute_energy();
 
     tstop();
 

@@ -13,6 +13,7 @@ class BasisSet;
 class Matrix;
 class TwoBodyAOInt;
 class JK;
+class VBase;
 
 // => BASE CLASSES <= //
 
@@ -24,6 +25,7 @@ protected:
 
     SharedMatrix C_;
 
+    SharedMatrix Cocc_;
     SharedMatrix Cfocc_;
     SharedMatrix Cfvir_;
     SharedMatrix Caocc_;
@@ -38,6 +40,7 @@ protected:
 
     /// Global JK object, built in preiterations, destroyed in postiterations
     boost::shared_ptr<JK> jk_;
+    boost::shared_ptr<VBase> v_;
 
     double Eref_;
 
@@ -57,6 +60,10 @@ public:
     boost::shared_ptr<JK> jk() const { return jk_;}
     /// Set the JK object, say from SCF
     void set_jk(boost::shared_ptr<JK> jk) { jk_ = jk; }
+    /// Gets a handle to the VBase object, if built by preiterations 
+    boost::shared_ptr<VBase> v() const { return v_;}
+    /// Set the VBase object, say from SCF (except that wouldn't work, right?)
+    void set_jk(boost::shared_ptr<VBase> v) { v_ = v; }
     /// Builds JK object, if needed 
     virtual void preiterations();
     /// Destroys JK object, if needed
@@ -125,7 +132,6 @@ public:
 
 };
 
-
 class RCPHF : public RBase {
 
 protected:
@@ -160,6 +166,42 @@ public:
     /// Add a named task
     void add_task(const std::string& task);
         
+};
+
+class RCPKS : public RCPHF {
+
+protected:
+    virtual void print_header();
+
+public:
+    RCPKS();
+    virtual ~RCPKS();
+
+    virtual double compute_energy();
+};
+
+class RTDA : public RCIS {
+
+protected:
+    virtual void print_header();
+
+public:
+    RTDA();
+    virtual ~RTDA();
+
+    virtual double compute_energy();
+};
+
+class RTDDFT : public RTDHF {
+
+protected:
+    virtual void print_header();
+
+public:
+    RTDDFT();
+    virtual ~RTDDFT();
+
+    virtual double compute_energy();
 };
 
 }

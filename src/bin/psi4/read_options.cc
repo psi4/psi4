@@ -916,7 +916,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG", 0);
     /*- What app to test?
       -*/
-    options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF");
+    options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF RCPKS RTDA RTDDFT");
     /*- Do singlet states? Default true
      -*/
     options.add_bool("DO_SINGLETS", true);

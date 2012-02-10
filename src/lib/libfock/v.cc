@@ -5,7 +5,7 @@
 
 #include "cubature.h"
 #include "points.h"
-#include "dft.h"
+#include "v.h"
 
 #include <sstream>
 
