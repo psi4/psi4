@@ -61,6 +61,11 @@ class CoupledCluster{
     ~CoupledCluster();
 
     /**
+      * Number of threads
+      */
+    int nthreads;
+
+    /**
       * Flag to indicate if t2 is stored in core memory or 
       * needs to be read from disk.  Default false.
       */
