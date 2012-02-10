@@ -334,11 +334,6 @@ DIISManager::extrapolate(int numQuantities, ...)
     double *coefficients = init_array(dimension);
     double *force = init_array(dimension);
 
-    // This is superfluous, pseudoinverse is used instead of LU
-    int *pivots = init_int_array(dimension);
-    for (int i = 0; i < dimension; i++)
-        pivots[i] = i;
-
     timer_on("DIISManager::extrapolate: bMatrix setup");
 
     for(int i = 0; i < _subspace.size(); ++i){
@@ -369,19 +364,45 @@ DIISManager::extrapolate(int numQuantities, ...)
     timer_off("DIISManager::extrapolate: bMatrix setup");
     timer_on("DIISManager::extrapolate: bMatrix pseudoinverse");
 
-    // Form the pseudoinverse
-//    B->print();
-    B->power(-1.0, 1.0E-16);
-//    B->print();
+    // OK, so we want to remove high error vectors until this is numerically stable
+    double** Bp = B->pointer();
+    std::vector<std::pair<double, int> > diag; 
+    for (int d = 0; d < dimension - 1; d++) {
+       diag.push_back(std::make_pair(Bp[d][d], d));
+    }
+    std::sort(diag.begin(), diag.end(), std::greater<std::pair<double, int> >());
+    
+    SharedMatrix B2(new Matrix("B2", dimension, dimension)); 
+    double** B2p = B2->pointer();
+    for (int i = 0; i < dimension - 1; i++) {
+        B2p[i][dimension-1] = B2p[dimension-1][i] = 1.0;
+        for (int j = 0; j < dimension - 1; j++) {
+            B2p[i][j] = Bp[diag[i].second][diag[j].second];
+        }
+    }
+
+    int* pivots = new int[dimension];
+    int offset = 0;
+    while (true) {
+        // Destructive LU 
+        B->copy(B2);
+        // Do the LU
+        int info = C_DGETRF(dimension - offset, dimension - offset, &Bp[offset][offset], dimension, pivots);
+        // LU failing is usually what you call a clue
+        if (info) {
+            offset++;
+            continue;
+        }
+        // You are guaranteed to get here at some point (WCS is [X 1; 1 0], with the smallest X in the set)
+        C_DGETRS('N',dimension - offset, 1, &Bp[offset][offset], dimension, pivots, &force[offset], dimension);
+        for (int i = offset; i < dimension - 1; i++) {
+            coefficients[diag[i].second] = force[i];
+        }
+        break;
+    }
+    delete[] pivots;
 
     timer_off("DIISManager::extrapolate: bMatrix pseudoinverse");
-
-    timer_on("DIISManager::extrapolate: matrix-vector mult");
-
-    // Multiply pseudoinverse by forcing vector to get coefficients
-    C_DGEMV('n',dimension,dimension,1.0,bMatrix[0],dimension,force,1,0.0,coefficients,1);
-
-    timer_off("DIISManager::extrapolate: matrix-vector mult");
 
     timer_on("DIISManager::extrapolate: form new data");
 
@@ -481,7 +502,6 @@ DIISManager::extrapolate(int numQuantities, ...)
     if(print > 2) fprintf(outfile, "\n");
     free(coefficients);
     free(force);
-    free(pivots);
 
     timer_off("DIISManager::extrapolate");
 
