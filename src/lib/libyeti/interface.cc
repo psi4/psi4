@@ -221,7 +221,7 @@ TwoElectronIntegralComputer::compute(
 )
 {
     double* tmp_data = data;
-    if (sort_) 
+    if (sort_)
     {
         tmp_data = reinterpret_cast<double*>(sort_->data_buffer());
         sort_->get_permutation()->permute(indices, permuted_indices_);
@@ -339,7 +339,7 @@ TwoElectronIntegralComputer::compute(
     }
 
     if (sort_) //go to physicist notation
-    { 
+    {
         descr_->get_nelements(indices, nelements_);
         sort_->configure(nelements_);
         sort_->sort<double>(tmp_data, data);
@@ -1234,14 +1234,14 @@ sc::get_ao_space(
 using namespace psi;
 
 double
-psi::min_exponent(const boost::shared_ptr<GaussianShell>& shell) {
-    uli nprim = shell->nprimitive();
+psi::min_exponent(const psi::GaussianShell& shell) {
+    uli nprim = shell.nprimitive();
     double minexp = 1.0E10;
     double invexp = 0;
     for (uli prim=0; prim < nprim; ++prim)
     {
-        double exp  = shell->exp(prim);
-        double coef = shell->coef(prim);
+        double exp  = shell.exp(prim);
+        double coef = shell.coef(prim);
         invexp += coef * 1.0 / (exp * exp);
     }
     double exp = 1.0/sqrt(invexp);
@@ -1278,11 +1278,11 @@ psi::build_ao_range(const boost::shared_ptr<BasisSet>& obs,
         aobasis->add_atom(atom);
 
         for (int sh = 0; sh < obs->nshell_on_center(atomnum); ++sh) {
-            const boost::shared_ptr<GaussianShell>& gshell = obs->shell(shellnum);
-            usi am         = gshell->am();
+            const GaussianShell& gshell = obs->shell(shellnum);
+            usi am         = gshell.am();
             double minexp  = min_exponent(gshell);
             uli ncxn       = 1;
-            uli nfxn       = gshell->nfunction();
+            uli nfxn       = gshell.nfunction();
             uli fxn_start  = obs->shell_to_basis_function(shellnum);
             ShellPtr shell = new Shell(atom, am, ncxn, nfxn, minexp, shellnum, fxn_start, counts[am]);
             aobasis->add_shell(shell);
@@ -1311,7 +1311,7 @@ psi::build_ao_range(const boost::shared_ptr<BasisSet>& obs,
     YetiRuntime::register_index_descr(aobasis->get_index_descr(), id1, id2, id3, id4);
 }
 
-TensorElementComputer* 
+TensorElementComputer*
 TwoElectronIntegralComputer::copy() const
 {
     return new TwoElectronIntegralComputer(eri_);
@@ -1447,7 +1447,7 @@ MatrixFiller::copy() const
 {
     return new MatrixFiller(matrix_, poff_, qoff_);
 }
-    
+
 void
 MatrixFiller::compute(const uli* indices, double* data, uli n){
     double* dptr = data;
@@ -1478,7 +1478,7 @@ VectorFiller::copy() const
 {
     return new VectorFiller(vector_, offset_);
 }
-    
+
 void
 VectorFiller::compute(const uli* indices, double* data, uli n) {
     double* dptr = data;

@@ -32,8 +32,6 @@
 #include "integralfunctors.h"
 
 #include "rhf.h"
-#include "pseudospectral.h"
-#include "df.h"
 
 using namespace boost;
 using namespace psi;

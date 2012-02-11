@@ -10,14 +10,14 @@ plugin_load("./plugin_mp2.so")
 set {
   basis cc-pVDZ
   reference rhf
-  d_converge 10
-  e_converge 10
+  d_convergence 10
+  freeze_core true
+  e_convergence 10
 }
 
 eRHFDimer = scf()
 plugin("plugin_mp2.so")
 eMP2Dimer = get_variable("MP2 ENERGY")
-energy('mp2')
 clean()
 
 molecule n {

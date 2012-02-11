@@ -1,6 +1,7 @@
 #include "3index.h"
 #include <libmints/mints.h>
-#include <libmints/cubature.h>
+#include <libfock/cubature.h>
+#include <libfock/points.h>
 #include <libqt/qt.h>
 
 #include <string>

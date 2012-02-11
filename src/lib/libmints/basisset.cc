@@ -49,20 +49,12 @@ BasisSet::BasisSet()
     call_once(initialize_singletons, initialized_shared_);
 }
 
-BasisSet::~BasisSet()
-{
-
-}
 boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule,
-                                            std::vector<boost::shared_ptr<GaussianShell> > shells)
+                                            const std::vector<GaussianShell>& shells)
 {
     boost::shared_ptr<BasisSet> basis(new BasisSet());
     basis->molecule_ = molecule;
-
-    for (int i = 0; i < shells.size(); i++) {
-        basis->shells_.push_back(shells[i]);
-    }
-
+    basis->shells_ = shells;
     basis->refresh();
 
     return basis;
@@ -122,7 +114,7 @@ void BasisSet::print_summary(FILE* out) const
 {
     if (Communicator::world->me() == 0) {
         fprintf(out, "  -AO BASIS SET INFORMATION:\n");
-        fprintf(out, "    Total number of shells = %d\n", nshell_);
+        fprintf(out, "    Total number of shells = %d\n", nshell());
         fprintf(out, "    Number of primitives   = %d\n", nprimitive_);
         fprintf(out, "    Number of AO           = %d\n", nao_);
         fprintf(out, "    Number of SO           = %d\n", nbf_);
@@ -153,14 +145,13 @@ void BasisSet::print_summary(FILE* out) const
 
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
-        boost::shared_ptr<GaussianShell> shell;
 
         for (int Q = 0; Q < n_shell; Q++) {
-            shell = shells_[Q + first_shell];
-            nshells[shell->am()]++;
-            nunique[shell->am()]+= shell->nprimitive();
-            nprims [shell->am()]+= shell->nprimitive();
-            amtypes[shell->am()] = shell->amchar();
+            const GaussianShell& shell = shells_[Q + first_shell];
+            nshells[shell.am()]++;
+            nunique[shell.am()]+= shell.nprimitive();
+            nprims [shell.am()]+= shell.nprimitive();
+            amtypes[shell.am()] = shell.amchar();
         }
 
         // All Primitives
@@ -200,20 +191,19 @@ void BasisSet::print_detail(FILE* out) const
         if (Communicator::world->me() == 0)
             fprintf(out, "  -Basis set on unique center %d: %s\n", A+1,molecule_->symbol(A).c_str());
 
-        boost::shared_ptr<GaussianShell> shell;
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
 
         for (int Q = 0; Q < n_shell; Q++) {
-            shell = shells_[Q + first_shell];
+            const GaussianShell& shell = shells_[Q + first_shell];
 
-            for (int K = 0; K < shell->nprimitive(); K++) {
+            for (int K = 0; K < shell.nprimitive(); K++) {
                 if (Communicator::world->me() == 0) {
                     if (K == 0)
-                        fprintf(outfile, "     %c ", shell->AMCHAR());
+                        fprintf(outfile, "     %c ", shell.AMCHAR());
                     else
                         fprintf(outfile, "       ");
-                    fprintf(outfile, "(%20.8f %20.8f)\n",shell->exp(K), shell->coef(K));
+                    fprintf(outfile, "(%20.8f %20.8f)\n",shell.exp(K), shell.coef(K));
                 }
 
             }
@@ -223,14 +213,14 @@ void BasisSet::print_detail(FILE* out) const
     }
 }
 
-boost::shared_ptr<GaussianShell> BasisSet::shell(int si) const
+const GaussianShell& BasisSet::shell(int si) const
 {
     if (si < 0 || si > nshell())
         throw PSIEXCEPTION("BasisSet::shell: requested shell is out-of-bounds.");
     return shells_[si];
 }
 
-boost::shared_ptr<GaussianShell> BasisSet::shell(int center, int si) const
+const GaussianShell& BasisSet::shell(int center, int si) const
 {
     return shell(center_to_shell_[center] + si);
 }
@@ -253,32 +243,29 @@ boost::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
     new_basis->molecule_->add_atom(0, 0.0, 0.0, 0.0);
     Vector3 center = new_basis->molecule_->fxyz(0);
 
-    new_basis->nshell_ = 1;
     new_basis->nprimitive_ = 1;
     new_basis->nao_ = 1;
     new_basis->nbf_ = 1;
 
     // Create shell array
-    new_basis->shells_.push_back(boost::shared_ptr<GaussianShell>(new GaussianShell));
+    std::vector<double> e(1);
+    std::vector<double> c(1);
+    e[0] = 0.0;
+    c[0] = 1.0;
 
-    // Create out basis set arrays
-    // null basis set
-    int am   = 0;
-    double e = 0.0;
-    double c = 1.0;
+    new_basis->shells_.push_back(GaussianShell(0, c, e, Cartesian, 0, center, 0));
 
-    // Add the null-s-function
-    new_basis->shells_[0]->init(1, &e, am, Cartesian, &c, 0, center, 0, Normalized);
+    new_basis->refresh();
 
     return new_basis;
 }
 
-boost::shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory)
-{
-    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    boost::shared_ptr<SOBasisSet> sozero(new SOBasisSet(zero, factory));
-    return sozero;
-}
+//boost::shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory)
+//{
+//    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+//    boost::shared_ptr<SOBasisSet> sozero(new SOBasisSet(zero, factory));
+//    return sozero;
+//}
 
 boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSetParser>& parser,
         const boost::shared_ptr<Molecule>& mol,
@@ -300,8 +287,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
     // Map of GaussianShells
     //  basis           atom        gaussian shells
-    typedef map<string, map<string, vector<boost::shared_ptr<GaussianShell> > > > map_ssv;
-    typedef map<string, vector<boost::shared_ptr<GaussianShell> > > map_sv;
+    typedef map<string, map<string, vector<GaussianShell> > > map_ssv;
+    typedef map<string, vector<GaussianShell> > map_sv;
     map_ssv basis_atom_shell;
 
     for (int atom=0; atom<mol->natom(); ++atom) {
@@ -384,11 +371,10 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         string symbol = mol->atom_entry(atom)->symbol();
         Vector3 center = mol->xyz(atom);
 
-        vector<boost::shared_ptr<GaussianShell> >& shells = basis_atom_shell[basis][symbol];
+        vector<GaussianShell>& shells = basis_atom_shell[basis][symbol];
 
         for (int i=0; i<shells.size(); ++i) {
-            boost::shared_ptr<GaussianShell> temp(shells[i]->copy(atom, center));
-            basisset->shells_.push_back(temp);
+            basisset->shells_.push_back(shells[i].copy(atom, center));
         }
     }
 
@@ -438,7 +424,6 @@ std::string BasisSet::make_filename(const std::string& name)
 void BasisSet::refresh()
 {
     // Reset data to initial values
-    nshell_ = shells_.size();
     nprimitive_ = 0;
     nao_ = 0;
     nbf_ = 0;
@@ -446,9 +431,9 @@ void BasisSet::refresh()
     max_nprimitive_ = 0;
     puream_ = false;
 
-    shell_first_basis_function_.clear(); shell_first_basis_function_.resize(nshell_, 0);
-    shell_first_ao_.clear();             shell_first_ao_.resize(nshell_, 0);
-    shell_center_.clear();               shell_center_.resize(nshell_, 0);
+    shell_first_basis_function_.clear(); shell_first_basis_function_.resize(nshell(), 0);
+    shell_first_ao_.clear();             shell_first_ao_.resize(nshell(), 0);
+    shell_center_.clear();               shell_center_.resize(nshell(), 0);
     center_to_nshell_.clear();           center_to_nshell_.resize(molecule_->natom(), 0);
     center_to_shell_.clear();            center_to_shell_.resize(molecule_->natom(), 0);
     center_to_shell_[0] = 0;
@@ -456,10 +441,10 @@ void BasisSet::refresh()
     int current_center = 0;
 
     for (int i=0; i<nshell(); ++i) {
-        shell_center_[i]   = shells_[i]->ncenter();
+        shell_center_[i]   = shells_[i].ncenter();
         shell_first_ao_[i] = nao_;
         shell_first_basis_function_[i] = nbf_;
-        shells_[i]->set_function_index(nbf_);
+        shells_[i].set_function_index(nbf_);
 
         center_to_nshell_[shell_center_[i]]++;
         if (current_center != shell_center_[i]) {
@@ -467,24 +452,24 @@ void BasisSet::refresh()
             current_center = shell_center_[i];
         }
 
-        nprimitive_ += shells_[i]->nprimitive();
-        nao_        += shells_[i]->ncartesian();
-        nbf_        += shells_[i]->nfunction();
+        nprimitive_ += shells_[i].nprimitive();
+        nao_        += shells_[i].ncartesian();
+        nbf_        += shells_[i].nfunction();
 
-        if (max_am_ < shells_[i]->am())
-            max_am_ = shells_[i]->am();
+        if (max_am_ < shells_[i].am())
+            max_am_ = shells_[i].am();
 
-        if (max_nprimitive_ < shells_[i]->nprimitive())
-            max_nprimitive_ = shells_[i]->nprimitive();
+        if (max_nprimitive_ < shells_[i].nprimitive())
+            max_nprimitive_ = shells_[i].nprimitive();
 
-        if (puream_ == false && shells_[i]->is_pure())
+        if (puream_ == false && shells_[i].is_pure())
             puream_ = true;
     }
 
     function_to_shell_.resize(nbf());
     int ifunc = 0;
-    for (int i=0; i<nshell_; ++i) {
-        int nfun = shell(i)->nfunction();
+    for (int i=0; i<nshell(); ++i) {
+        int nfun = shells_[i].nfunction();
         for (int j=0; j<nfun; ++j) {
             function_to_shell_[ifunc] = i;
             ifunc++;
@@ -492,8 +477,8 @@ void BasisSet::refresh()
     }
     ao_to_shell_.resize(nao());
     ifunc = 0;
-    for (int i=0; i<nshell_; ++i) {
-        int nfun = shell(i)->ncartesian();
+    for (int i=0; i<nshell(); ++i) {
+        int nfun = shells_[i].ncartesian();
         for (int j=0; j<nfun; ++j) {
             ao_to_shell_[ifunc] = i;
             ifunc++;
@@ -506,7 +491,7 @@ void BasisSet::refresh()
     typedef std::pair<int, int> am_to_shell_pair;
     std::multimap< int, int, std::less<int> > am_to_shell_list;
     for (int i=0; i < shells_.size(); i++) {
-        am_to_shell_list.insert(am_to_shell_pair(shells_[i]->nfunction(), i));
+        am_to_shell_list.insert(am_to_shell_pair(shells_[i].nfunction(), i));
     }
     // This puts the sorted shell values into the sorted_shell_list_ vector
     // This can be used by the integral iterator to look up the value of the sorted shells
@@ -549,29 +534,29 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     am.push_back(5);
     am.push_back(2);
 
-    std::vector<double*> c;
-    c.push_back(new double[10]);
-    c.push_back(new double[1]);
-    c.push_back(new double[6]);
-    c.push_back(new double[1]);
-    c.push_back(new double[2]);
-    c.push_back(new double[1]);
-    c.push_back(new double[1]);
-    c.push_back(new double[1]);
-    c.push_back(new double[1]);
-    c.push_back(new double[1]);
+    std::vector<std::vector<double> > c;
+    c.push_back(std::vector<double>(10));
+    c.push_back(std::vector<double>(1));
+    c.push_back(std::vector<double>(6));
+    c.push_back(std::vector<double>(1));
+    c.push_back(std::vector<double>(2));
+    c.push_back(std::vector<double>(1));
+    c.push_back(std::vector<double>(1));
+    c.push_back(std::vector<double>(1));
+    c.push_back(std::vector<double>(1));
+    c.push_back(std::vector<double>(1));
 
-    std::vector<double*> e;
-    e.push_back(new double[10]);
-    e.push_back(new double[1]);
-    e.push_back(new double[6]);
-    e.push_back(new double[1]);
-    e.push_back(new double[2]);
-    e.push_back(new double[1]);
-    e.push_back(new double[1]);
-    e.push_back(new double[1]);
-    e.push_back(new double[1]);
-    e.push_back(new double[1]);
+    std::vector<std::vector<double> > e;
+    e.push_back(std::vector<double>(10));
+    e.push_back(std::vector<double>(1));
+    e.push_back(std::vector<double>(6));
+    e.push_back(std::vector<double>(1));
+    e.push_back(std::vector<double>(2));
+    e.push_back(std::vector<double>(1));
+    e.push_back(std::vector<double>(1));
+    e.push_back(std::vector<double>(1));
+    e.push_back(std::vector<double>(1));
+    e.push_back(std::vector<double>(1));
 
     c[0][0] = 0.458878E-03;
     c[0][1] = 0.355070E-02;
@@ -681,24 +666,15 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     // We'll time puream for now
     new_basis->puream_ = true;
 
-    // Create shell array
-    for (int A = 0; A < max_centers; A++)
-        for (int Q = 0; Q < max_shells; Q++)
-            new_basis->shells_.push_back(boost::shared_ptr<GaussianShell>(new GaussianShell));
     // Add shells
     for (int A = 0; A < max_centers; A++) {
         Vector3 center = new_basis->molecule_->fxyz(A);
         for (int Q = 0; Q < max_shells; Q++) {
-            new_basis->shells_[A*max_shells + Q]->init(nprim[Q], e[Q], am[Q], Pure, c[Q], A, center, 0, Normalized);
+            new_basis->shells_.push_back(GaussianShell(am[Q], c[Q], e[Q], Pure, A, center, 0));
         }
     }
 
     new_basis->refresh();
-
-    for (int A = 0; A < e.size(); A++) {
-        delete[] e[A];
-        delete[] c[A];
-    }
 
     return make_pair(labels, new_basis);
 }
@@ -737,25 +713,21 @@ boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     int so_start = 0;
     for (int i = 0; i<nshell(); i++) {
         if (shell_center_[i] < center) {
-            ao_start += shells_[i]->ncartesian();
-            so_start += shells_[i]->nfunction();
+            ao_start += shells_[i].ncartesian();
+            so_start += shells_[i].nfunction();
         }
         if (shell_center_[i] == center) {
             if (shell_start == -1)
                 shell_start = i;
-            boost::shared_ptr<GaussianShell> shell(new GaussianShell);
-            int nprm = shells_[i]->nprimitive();
-            int am = shells_[i]->am();
-            GaussianType harmonics = (shells_[i]->is_pure() ? Pure : Cartesian);
+            int nprm = shells_[i].nprimitive();
+            int am = shells_[i].am();
+            GaussianType harmonics = (shells_[i].is_pure() ? Pure : Cartesian);
             int nc = 0; // In the atomic basis, always on the 0th atom
             int start = 0; //Will be reset later
-            double* e = shells_[i]->exps();
-            double* c = shells_[i]->coefs();
+            const std::vector<double>& e = shells_[i].exps();
+            const std::vector<double>& c = shells_[i].coefs();
 
-            shell->init(nprm,e,am, harmonics, c,nc,
-              v,start);
-
-            bas->shells_.push_back(shell);
+            bas->shells_.push_back(GaussianShell(am, c, e, harmonics, nc, v, start));
             current_shells++;
         }
         if (shell_center_[i] > center)
@@ -768,4 +740,3 @@ boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     //And ... return
     return bas;
 }
-

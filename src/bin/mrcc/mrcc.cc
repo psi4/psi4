@@ -9,6 +9,8 @@
 #include <libtrans/mospace.h>
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
+#include <libfock/apps.h>
+#include <libqt/qt.h>
 #include <vector>
 
 #include <psifiles.h>
@@ -108,10 +110,12 @@ public:
 
         /* The allowed (Mulliken) permutations are very simple in this case */
         if(bucket_map_[p][q] == this_bucket) {
+
             /* Get the row and column indices and assign the value */
             int pq = params_->rowidx[p][q];
             int rs = params_->colidx[r][s];
             int offset = bucket_offset_[this_bucket][pq_sym];
+
             if((pq-offset >= params_->rowtot[pq_sym]) || (rs >= params_->coltot[rs_sym]))
                 error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym);
             file_->matrix[pq_sym][pq-offset][rs] += value;
@@ -212,10 +216,12 @@ public:
                     throw PSIEXCEPTION("MRCC interface: Unable to interpret line.");
                 }
 
+                // The density arrives in Dirac notation, so we reorder to Mulliken
+                // It's also normalized differently to Psi's, by a factor of 2.
                 if (r != 0 && s != 0) {
-                    if (p >= q && r >= s)
+                    if (p >= r && q >= s)
                         if (fabs(value) > tolerance_)
-                            filler(bucket, p-1, q-1, r-1, s-1, value);
+                            filler(bucket, p - 1, r - 1, q - 1, s - 1, value * 0.5);
                 }
                 else
                     one_particle_->set(abs_mo_to_irrep_[p-1], abs_mo_to_rel_[p-1], abs_mo_to_rel_[q-1], value);
@@ -343,9 +349,33 @@ public:
   */
 void load_restricted(FILE* ccdensities, double tolerance, const Dimension& active_mopi, IntegralTransform& ints)
 {
+    // => Sizing <= //
+
+    int debug = Process::environment.options.get_int("DEBUG");
+
+    boost::shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
+    Dimension focc = ref->frzcpi();
+    Dimension docc = ref->doccpi();
+    Dimension nmopi = ref->nmopi();
+    Dimension fvir = ref->frzvpi();
+    Dimension aocc = docc - focc;
+    Dimension avir = nmopi - fvir - docc;
+
+    // => Read results from MRCC <= //
+    
     dpdfile4 I;
     _default_psio_lib_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
+
+    // Just in case the buffer exists, delete it now
+    dpdbuf4 Ibuf;
+    dpd_buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),
+                  ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
+    dpd_buf4_scm(&Ibuf, 0.0);
+    dpd_buf4_close(&Ibuf);
+
+
+    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0,
+                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     SharedMatrix one_particle(new Matrix("MO-basis OPDM", active_mopi, active_mopi));
 
@@ -354,16 +384,161 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     // go ahead and handle the one particle
     MRCCRestrictedReader mrccreader(ccdensities, tolerance, one_particle);
 
-    // Do it
+    // Read the density matrices into DPD buffers
     bucket(mrccreader);
+
+    // Close DPD file
+    dpd_file4_close(&I);
+    
+
+    /****START OF HACK****/
+    fprintf(outfile, "    Beginning integral transformation.\n");
+    // This transforms everything (OEI and TEI)
+    ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+    // Use the IntegralTransform object's DPD instance, for convenience
+    dpd_set_default(ints.get_dpd_id());
+    fprintf(outfile, "    Transformation complete.\n\n");
+    /****END HACK****/
+
+    /*
+     * Form the coupled cluster Lagrangian, X
+     * [eq. 39, Scheiner et al., JCP, 87 5361 (1987)]
+     */
+
+    // One-electron contribution: Xpq <- h_pr D_rq
+    SharedMatrix H(new Matrix(PSIF_MO_FZC, nmopi, nmopi));
+    // TODO make sure the density is frozen appropriately with frozen core
+    H->load(_default_psio_lib_,PSIF_OEI);
+    SharedMatrix X(new Matrix("X (1e contribution)", nmopi, nmopi));
+    X->gemm(false, false, 1.0, one_particle, H, 0.0);
+
+    // Two-electron contribution: Xpq <- 2 (pr|st) G_qrst
+    dpdbuf4 G;
+    dpdbuf4 D;    
+    dpdfile2 X2;
+
+
+    _default_psio_lib_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    _default_psio_lib_->tocprint(PSIF_LIBTRANS_DPD);
+    dpd_buf4_init(&G,PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+                  ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
+    dpd_buf4_init(&D,PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+                  ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
+    dpd_file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'),
+                   "X (2e contribution)");
+
+    // Check energy
+    double enuc = Process::environment.molecule()->nuclear_repulsion_energy();
+    double E1e = one_particle->vector_dot(H);
+    double E2e = dpd_buf4_dot(&G, &D);
+    fprintf(outfile, "\tEnergies recomputed from MRCC's density matrices:\n");
+    fprintf(outfile, "\t\tOne-electron energy = %16.10f\n",E1e);
+    fprintf(outfile, "\t\tTwo-electron energy = %16.10f\n",E2e);
+    fprintf(outfile, "\t\tTotal energy        = %16.10f\n",enuc + E1e + E2e);
+
+    dpd_contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
+    SharedMatrix X2mat(new Matrix(&X2));
+X->print();
+X2mat->print();
+    X->add(X2mat);
+    X->set_name("Full X");
+X->print();
+
+    // Symmetrize X, to form the lagrangian
+    SharedMatrix Lag(X->clone());
+    Lag->add(X->transpose());
+    Lag->set_name("Coupled cluster Lagrangian");
+    Lag->print();
+
+    // Dump the lagrangian to disk, then we're done with it!
+
+    // Orbital lagrangian: Lxy = Xxy - Xyx
+    SharedMatrix Lxy(X->clone());
+    Lxy->set_name("Full orbital Lagrangian");
+    Lxy->subtract(X->transpose());
+    Lxy->print();
+
+    dpd_buf4_close(&D);
+    dpd_buf4_close(&G);
+
+    // At this point, the OPDM is the response OPDM
+    if (debug) {
+        one_particle->print();
+    } 
+
+    // Form the energy-weighted OPDM 
+
+    // Form the Lagrangian
+    //SharedMatrix Lia(new Matrix("Lia", naocc, navir));
+    //for (int h = 0; h < Lia->nirrep(); h++) {
+    //    int ni = naocc[h];
+    //    int na = navir[h];
+    //    if (!ni || !na) continue;
+    //    
+    //    double** Liap = Lia->pointer(h);
+    //    double** Wp = W->pointer(h);
+    //    for (int i = 0; i < ni; i++) {
+    //        for (int a = 0; a < na; a++) {
+    //            Liap[i][a] = Wp[i + focc[h]][a + docc[h]]
+    //        }
+    //    }
+    //}
+    
+    // Form the orbital response contributions to the relaxed OPDM
+    View ia_view(one_particle, aocc, avir, focc, docc);
+    SharedMatrix Pia = ia_view();
+    Pia->set_name("Pia (MRCC OPDM ov Block)");
+
+    if (debug) {
+        Pia->print();
+    }
+
+    // Construct a RCPHF Object 
+    boost::shared_ptr<RCPHF> cphf(new RCPHF());
+    cphf->preiterations();
+
+    // TODO: Add pre-CPHF A-matrix correction
+    boost::shared_ptr<JK> jk = cphf->jk();
+
+    // Task and solve orbital Z-Vector Equations
+    std::map<std::string, SharedMatrix>& b = cphf->b();  
+    b["Orbital Z-Vector"] = Pia;
+    
+    cphf->compute_energy();
+        
+    std::map<std::string, SharedMatrix>& x = cphf->x();  
+    SharedMatrix Xia = x["Orbital Z-Vector"]; 
+
+    if (debug) {
+        Xia->print();
+    }
+
+    // TODO: Add post-CPHF A-matrix correction
+
+    for (int h = 0; h < Xia->nirrep(); h++) {
+        int naocc = Xia->rowspi()[h];
+        int navir = Xia->colspi()[h];
+        if (!naocc || !navir) continue;
+        double** Piap = one_particle->pointer(h);
+        double** Xiap = Xia->pointer(h);
+        for (int i = 0; i < naocc; i++) {
+            C_DCOPY(navir,Xiap[i],1,&Piap[focc[h]+i][docc[h]],1);
+            C_DCOPY(navir,Xiap[i],1,&Piap[docc[h]][focc[h]+i],nmopi[h]);
+        }
+    }
+
+    cphf->postiterations();
+
+    if (debug) {
+        one_particle->print();
+    } 
 
     one_particle->save(_default_psio_lib_, PSIF_MO_OPDM, Matrix::Full);
 
     one_particle->print();
-    dpd_file4_print(&I, outfile);
 
-    dpd_file4_close(&I);
     _default_psio_lib_->close(PSIF_TPDM_PRESORT, 1);
+    _default_psio_lib_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 } // namespace anonymous
@@ -615,7 +790,7 @@ PsiReturnType mrcc_generate_input(Options& options, const boost::python::dict& l
         // Eventually needs to be changed to frozen core energy + nuclear repulsion energy
         fprintf(fort55, "%28.20E%4d%4d%4d%4d\n", ints.get_frozen_core_energy() + molecule->nuclear_repulsion_energy(), 0, 0, 0, 0);
     }
-    _default_psio_lib_->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    _default_psio_lib_->close(PSIF_LIBTRANS_DPD, 1);
 
     fclose(fort55);
 

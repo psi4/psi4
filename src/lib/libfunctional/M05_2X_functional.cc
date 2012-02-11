@@ -5,6 +5,7 @@
 *
 ***********************************************************/
 #include <libmints/mints.h>
+#include <libfock/points.h>
 #include "M05_2X_functional.h"
 #include <stdlib.h>
 #include <cmath>

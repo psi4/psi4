@@ -52,6 +52,7 @@ namespace psi {
     namespace mints      { PsiReturnType mints(Options &);    }
     namespace deriv      { PsiReturnType deriv(Options &);    }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfcc       { PsiReturnType dfcc(Options &);     }
     namespace sapt       { PsiReturnType sapt(Options &);     }
@@ -91,6 +92,11 @@ namespace psi {
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
+}
+
+void py_flush_outfile()
+{
+    fflush(outfile);
 }
 
 void py_close_outfile()
@@ -161,6 +167,12 @@ int py_psi_omp2()
 {
     py_psi_prepare_options_for_module("OMP2");
     return omp2wave::omp2wave(Process::environment.options);
+}
+
+int py_psi_libfock()
+{
+    py_psi_prepare_options_for_module("CPHF");
+    return libfock::libfock(Process::environment.options);
 }
 
 double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
@@ -976,6 +988,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Returns the location where the Psi4 source is located.
     def("psi_top_srcdir", py_psi_top_srcdir);
 
+    def("flush_outfile", py_flush_outfile);
     def("close_outfile", py_close_outfile);
     def("reopen_outfile", py_reopen_outfile);
     def("outfile_name", py_get_outfile_name);
@@ -990,6 +1003,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("scf", py_psi_scf_callbacks);
     def("scf", py_psi_scf);
     def("dcft", py_psi_dcft);
+    def("libfock", py_psi_libfock);
     def("dfmp2", py_psi_dfmp2);
     def("dfcc", py_psi_dfcc);
     def("lmp2", py_psi_lmp2);
@@ -1121,13 +1135,6 @@ void Python::run(FILE *input)
         while(fgets(line, sizeof(line), input)) {
             file << line;
         }
-
-        // Echo the input, so's the user does not have to carry the infile around
-        fprintf(outfile,"\n  ==> Input File <==\n\n");
-        fprintf(outfile,"--------------------------------------------------------------------------\n");
-        fprintf(outfile,"%s", file.str().c_str());
-        fprintf(outfile,"--------------------------------------------------------------------------\n");
-        fflush(outfile);
 
         try {
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);

@@ -237,6 +237,11 @@ def frac_nuke(mol, **kwargs):
 
     charge = charge0
     mult = mult0
+    
+    # By default, nuke all the electrons
+    Nmin = 0;
+    if (kwargs.has_key('nmax')):
+        Nmin = N - int(kwargs['nmax'])
 
     # By default, DIIS in FRAC (1.0 occupation is always DIIS'd)
     frac_diis = True
@@ -291,7 +296,7 @@ def frac_nuke(mol, **kwargs):
     PsiMod.set_global_option("FRAC_RENORMALIZE", True)
 
     # Nuke 'em Rico! 
-    for Nintegral in range(N,0,-1):
+    for Nintegral in range(N,Nmin,-1):
 
         # Nuke the current HOMO
         for occ in foccs:
@@ -375,3 +380,277 @@ def frac_nuke(mol, **kwargs):
     fh.close()
 
     return E    
+
+def ip_fitting(mol, omega_l, omega_r, **kwargs):
+    kwargs = kwargs_lower(kwargs)
+
+    # By default, zero the omega to 3 digits
+    omega_tol = 1.0E-3;
+    if (kwargs.has_key('omega_tolerance')):  
+        omega_tol = kwargs['omega_tolerance']
+
+    # By default, do up to twenty iterations
+    maxiter = 20;
+    if (kwargs.has_key('maxiter')):  
+        maxiter = kwargs['maxiter']
+
+    # The molecule is required, and should be the neutral species
+    mol.update_geometry()
+    activate(mol)
+    charge0 = mol.molecular_charge()
+    mult0   = mol.multiplicity() 
+
+    # How many electrons are there?
+    N = 0;
+    for A in range(mol.natom()):
+        N += mol.Z(A)
+    N -= charge0
+    N  = int(N)
+    Nb = int((N - mult0 + 1)/2)
+    Na = int(N - Nb)
+
+    # Work in the ot namespace for this procedure
+    PsiMod.IO.set_default_namespace("ot")
+
+    # Burn in to determine orbital eigenvalues
+    old_guess = PsiMod.get_global_option("GUESS")
+    PsiMod.set_global_option("DF_INTS_IO", "SAVE")
+    PsiMod.print_out('\n\t==> IP Fitting SCF: Burn-in <==\n')
+    energy('scf')
+    PsiMod.set_global_option("DF_INTS_IO", "LOAD")
+
+    # Determine HOMO, to determine mult1
+    ref = PsiMod.reference_wavefunction()
+    eps_a = ref.epsilon_a()
+    eps_b = ref.epsilon_b()
+    if (Na == Nb):
+        HOMO = -Nb
+    elif (Nb == 0):
+        HOMO = Na
+    else:
+        E_a = eps_a[int(Na - 1)] 
+        E_b = eps_b[int(Nb - 1)] 
+        if (E_a >= E_b):
+            HOMO = Na
+        else: 
+            HOMO = -Nb
+
+    Na1 = Na;
+    Nb1 = Nb;
+    if (HOMO > 0):
+        Na1 = Na1-1;
+    else:
+        Nb1 = Nb1-1;
+    
+    charge1 = charge0 + 1; 
+    mult1 = Na1 - Nb1 + 1
+
+    omegas = [];
+    E0s = [];
+    E1s = [];
+    kIPs = [];
+    IPs = [];
+    types = [];
+    
+    # Right endpoint
+    PsiMod.set_global_option('DFT_OMEGA',omega_r)
+
+    # Neutral
+    mol.set_molecular_charge(charge0)
+    mol.set_multiplicity(mult0)
+    PsiMod.print_out('\n\t==> IP Fitting SCF: Neutral, Right Endpoint <==\n')
+    E0r = energy('scf')
+    ref = PsiMod.reference_wavefunction()
+    eps_a = ref.epsilon_a()
+    eps_b = ref.epsilon_b()
+    E_HOMO = 0.0;
+    if (Nb == 0):
+        E_HOMO = eps_a[int(Na-1)]
+    else:
+        E_a = eps_a[int(Na - 1)] 
+        E_b = eps_b[int(Nb - 1)] 
+        if (E_a >= E_b):
+            E_HOMO = E_a;
+        else: 
+            E_HOMO = E_b;
+    E_HOMOr = E_HOMO;
+    PsiMod.IO.change_file_namespace(180,"ot","neutral")
+    
+    # Cation
+    mol.set_molecular_charge(charge1)
+    mol.set_multiplicity(mult1)
+    PsiMod.print_out('\n\t==> IP Fitting SCF: Cation, Right Endpoint <==\n')
+    E1r = energy('scf')
+    PsiMod.IO.change_file_namespace(180,"ot","cation")
+
+    IPr = E1r - E0r;
+    kIPr = -E_HOMOr;
+    delta_r = IPr - kIPr;
+
+    if (IPr > kIPr):
+        PsiMod.print_out('\n***IP Fitting Error: Right Omega limit should have kIP > IP')
+        sys,exit(1)
+
+    omegas.append(omega_r)
+    types.append('Right Limit')
+    E0s.append(E0r)
+    E1s.append(E1r)
+    IPs.append(IPr)
+    kIPs.append(kIPr)
+
+    # Use previous orbitals from here out
+    PsiMod.set_global_option("GUESS","READ")
+    
+    # Left endpoint
+    PsiMod.set_global_option('DFT_OMEGA',omega_l)
+
+    # Neutral
+    PsiMod.IO.change_file_namespace(180,"neutral","ot")
+    mol.set_molecular_charge(charge0)
+    mol.set_multiplicity(mult0)
+    PsiMod.print_out('\n\t==> IP Fitting SCF: Neutral, Left Endpoint <==\n')
+    E0l = energy('scf')
+    ref = PsiMod.reference_wavefunction()
+    eps_a = ref.epsilon_a()
+    eps_b = ref.epsilon_b()
+    E_HOMO = 0.0;
+    if (Nb == 0):
+        E_HOMO = eps_a[int(Na-1)]
+    else:
+        E_a = eps_a[int(Na - 1)] 
+        E_b = eps_b[int(Nb - 1)] 
+        if (E_a >= E_b):
+            E_HOMO = E_a;
+        else: 
+            E_HOMO = E_b;
+    E_HOMOl = E_HOMO;
+    PsiMod.IO.change_file_namespace(180,"ot","neutral")
+    
+    # Cation
+    PsiMod.IO.change_file_namespace(180,"cation","ot")
+    mol.set_molecular_charge(charge1)
+    mol.set_multiplicity(mult1)
+    PsiMod.print_out('\n\t==> IP Fitting SCF: Cation, Left Endpoint <==\n')
+    E1l = energy('scf')
+    PsiMod.IO.change_file_namespace(180,"ot","cation")
+
+    IPl = E1l - E0l;
+    kIPl = -E_HOMOl;
+    delta_l = IPl - kIPl;
+
+    if (IPl < kIPl):
+        PsiMod.print_out('\n***IP Fitting Error: Left Omega limit should have kIP < IP')
+        sys,exit(1)
+
+    omegas.append(omega_l)
+    types.append('Left Limit')
+    E0s.append(E0l)
+    E1s.append(E1l)
+    IPs.append(IPl)
+    kIPs.append(kIPl)
+    
+    converged = False
+    repeat_l = 0;
+    repeat_r = 0;
+    step = 0;
+    while True:
+
+        step = step + 1;
+        
+        # Regula Falsi (modified)
+        if (repeat_l > 1):
+            delta_l = delta_l / 2.0;
+        if (repeat_r > 1):
+            delta_r = delta_r / 2.0;
+        omega = - (omega_r - omega_l) / (delta_r - delta_l) * delta_l + omega_l;
+        PsiMod.set_global_option('DFT_OMEGA',omega)
+
+        # Neutral
+        PsiMod.IO.change_file_namespace(180,"neutral","ot")
+        mol.set_molecular_charge(charge0)
+        mol.set_multiplicity(mult0)
+        PsiMod.print_out('\n\t==> IP Fitting SCF: Neutral, Omega = %11.3E <==\n' % omega)
+        E0 = energy('scf')
+        ref = PsiMod.reference_wavefunction()
+        eps_a = ref.epsilon_a()
+        eps_b = ref.epsilon_b()
+        E_HOMO = 0.0;
+        if (Nb == 0):
+            E_HOMO = eps_a[int(Na-1)]
+        else:
+            E_a = eps_a[int(Na - 1)] 
+            E_b = eps_b[int(Nb - 1)] 
+            if (E_a >= E_b):
+                E_HOMO = E_a;
+            else: 
+                E_HOMO = E_b;
+        PsiMod.IO.change_file_namespace(180,"ot","neutral")
+        
+        # Cation
+        PsiMod.IO.change_file_namespace(180,"cation","ot")
+        mol.set_molecular_charge(charge1)
+        mol.set_multiplicity(mult1)
+        PsiMod.print_out('\n\t==> IP Fitting SCF: Cation, Omega = %11.3E <==\n' % omega)
+        E1 = energy('scf')
+        PsiMod.IO.change_file_namespace(180,"ot","cation")
+
+        IP = E1 - E0;
+        kIP = -E_HOMO;
+        delta = IP - kIP;
+
+        if (kIP > IP):
+            omega_r = omega
+            E0r = E0
+            E1r = E1
+            IPr = IP
+            kIPr = kIP
+            delta_r = delta
+            repeat_r = 0;
+            repeat_l = repeat_l + 1;
+        else:
+            omega_l = omega
+            E0l = E0
+            E1l = E1
+            IPl = IP
+            kIPl = kIP
+            delta_l = delta
+            repeat_l = 0;
+            repeat_r = repeat_r + 1;
+        
+        omegas.append(omega)
+        types.append('Regula-Falsi')
+        E0s.append(E0)
+        E1s.append(E1)
+        IPs.append(IP)
+        kIPs.append(kIP)
+    
+        # Termination
+        if (abs(omega_l - omega_r) < omega_tol or step > maxiter):
+            converged = True;
+            break
+
+    PsiMod.IO.set_default_namespace("")
+
+    PsiMod.print_out('\n\t==> IP Fitting Results <==\n\n')
+
+    PsiMod.print_out('\t => Occupation Determination <= \n\n')
+    PsiMod.print_out('\t          %6s %6s %6s %6s %6s %6s\n' %('N', 'Na', 'Nb', 'Charge', 'Mult', 'HOMO'))
+    PsiMod.print_out('\t Neutral: %6d %6d %6d %6d %6d %6d\n' %(N, Na, Nb, charge0, mult0, HOMO))
+    PsiMod.print_out('\t Cation:  %6d %6d %6d %6d %6d\n\n' %(N-1, Na1, Nb1, charge1, mult1))
+
+    PsiMod.print_out('\t => Regula Falsi Iterations <=\n\n')
+    PsiMod.print_out('\t%3s %11s %14s %14s %14s %s\n' % ('N','Omega','IP','kIP','Delta','Type'))
+    for k in range(len(omegas)):
+        PsiMod.print_out('\t%3d %11.3E %14.6E %14.6E %14.6E %s\n' % (k+1,omegas[k],IPs[k],kIPs[k],IPs[k] - kIPs[k], types[k]))
+    if (converged):
+        PsiMod.print_out('\n\tIP Fitting Converged\n')
+        PsiMod.print_out('\tFinal omega = %14.6E\n' % ((omega_l + omega_r) / 2))
+        PsiMod.print_out('\n\t"M,I. does the dying. Fleet just does the flying."\n')
+        PsiMod.print_out('\t\t\t-Starship Troopers\n')
+
+    else:
+        PsiMod.print_out('\n\tIP Fitting did not converge!\n')
+    
+    PsiMod.set_global_option("DF_INTS_IO", "NONE")
+    PsiMod.set_global_option("GUESS", old_guess)
+

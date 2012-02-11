@@ -210,22 +210,16 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     const int nso2 = b2_->nfunction(ujsh);
     const int nso3 = b3_->nfunction(uksh);
     const int nso4 = b4_->nfunction(ulsh);
-    const size_t nso12 = nso1*nso2;
-    const size_t nso123 = nso1*nso2*nso3;
     const size_t nso = nso1*nso2*nso3*nso4;
 
-    const int nao1 = b1_->naofunction(uish);
     const int nao2 = b2_->naofunction(ujsh);
     const int nao3 = b3_->naofunction(uksh);
     const int nao4 = b4_->naofunction(ulsh);
 
-    const size_t aQRS = nso1 * nao2 * nao3 * nao4;
-    const size_t abcD = nso1 * nso2 * nso3 * nao4;
-
-    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
-    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
-    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
-    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
+    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell).ncenter();
+    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell).ncenter();
+    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell).ncenter();
+    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell).ncenter();
 
     int nirrep = b1_->nirrep();
 
@@ -270,7 +264,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
     int si = petite1_->unique_shell_map(uish, 0);
-    const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
+    const int siatom = tb_[thread]->basis1()->shell(si).ncenter();
 
     dprintf("dcd %d", petite1_->group());
     dprintf("istab %d, jstab %d, kstab %d, lstab %d, ijstab %d, klstab %d\n", istabdense, jstabdense, kstabdense, lstabdense, ijstablizer, klstablizer);
@@ -278,22 +272,22 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     for (int ij=1; ij <= R_size; ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
-        const int sjatom = tb_[thread]->basis2()->shell(sj)->ncenter();
+        const int sjatom = tb_[thread]->basis2()->shell(sj).ncenter();
 
         for (int ijkl=1; ijkl <= T_size; ++ijkl) {
             int sk = petite3_->unique_shell_map(uksh, T_list[ijkl]);
             int llsh = petite4_->unique_shell_map(ulsh, T_list[ijkl]);
-            const int skatom = tb_[thread]->basis3()->shell(sk)->ncenter();
+            const int skatom = tb_[thread]->basis3()->shell(sk).ncenter();
 
             for (int kl=1; kl <= S_size; ++kl) {
                 int sl = petite4_->shell_map(llsh, S_list[kl]);
-                const int slatom = tb_[thread]->basis4()->shell(sl)->ncenter();
+                const int slatom = tb_[thread]->basis4()->shell(sl).ncenter();
 
                 // Check AM
-                int total_am = tb_[thread]->basis1()->shell(si)->am() +
-                               tb_[thread]->basis2()->shell(sj)->am() +
-                               tb_[thread]->basis3()->shell(sk)->am() +
-                               tb_[thread]->basis4()->shell(sl)->am();
+                int total_am = tb_[thread]->basis1()->shell(si).am() +
+                               tb_[thread]->basis2()->shell(sj).am() +
+                               tb_[thread]->basis3()->shell(sk).am() +
+                               tb_[thread]->basis4()->shell(sl).am();
 
                 if (!(total_am % 2) ||
                     (siatom != sjatom) ||
@@ -593,10 +587,10 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     const int nao4 = b4_->naofunction(ulsh);
     const size_t nao = nao1*nao2*nao3*nao4;
 
-    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
-    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
-    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
-    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
+    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell).ncenter();
+    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell).ncenter();
+    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell).ncenter();
+    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell).ncenter();
 
     // These 3 sections are not shell specific so we can just use petite1_
     const unsigned short istablizer = petite1_->stablizer(iatom);
@@ -625,26 +619,26 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
     int si = petite1_->unique_shell_map(uish, 0);
-    const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
+    const int siatom = tb_[thread]->basis1()->shell(si).ncenter();
 
     for (int ij=1; ij <= R_size; ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
-        const int sjatom = tb_[thread]->basis2()->shell(sj)->ncenter();
+        const int sjatom = tb_[thread]->basis2()->shell(sj).ncenter();
 
         for (int ijkl=1; ijkl <= T_size; ++ijkl) {
             int sk = petite3_->unique_shell_map(uksh, T_list[ijkl]);
             int llsh = petite4_->unique_shell_map(ulsh, T_list[ijkl]);
-            const int skatom = tb_[thread]->basis3()->shell(sk)->ncenter();
+            const int skatom = tb_[thread]->basis3()->shell(sk).ncenter();
 
             for (int kl=1; kl <= S_size; ++kl) {
                 int sl = petite4_->shell_map(llsh, S_list[kl]);
-                const int slatom = tb_[thread]->basis4()->shell(sl)->ncenter();
+                const int slatom = tb_[thread]->basis4()->shell(sl).ncenter();
 
                 // Check AM
-                int total_am = tb_[thread]->basis1()->shell(si)->am() +
-                               tb_[thread]->basis2()->shell(sj)->am() +
-                               tb_[thread]->basis3()->shell(sk)->am() +
-                               tb_[thread]->basis4()->shell(sl)->am();
+                int total_am = tb_[thread]->basis1()->shell(si).am() +
+                               tb_[thread]->basis2()->shell(sj).am() +
+                               tb_[thread]->basis3()->shell(sk).am() +
+                               tb_[thread]->basis4()->shell(sl).am();
 
                 //                if(!(total_am%2)||
                 //                             (BasisSet.shells[si].center!=BasisSet.shells[sj].center)||
@@ -697,9 +691,9 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
         const AOTransform& s3 = b3_->aotrans(sk);
         const AOTransform& s4 = b4_->aotrans(sl);
 
-        const CdSalcWRTAtom& c2 = cdsalcs_->atom_salc(tb_[thread]->basis2()->shell(sj)->ncenter());
-        const CdSalcWRTAtom& c3 = cdsalcs_->atom_salc(tb_[thread]->basis3()->shell(sk)->ncenter());
-        const CdSalcWRTAtom& c4 = cdsalcs_->atom_salc(tb_[thread]->basis4()->shell(sl)->ncenter());
+        const CdSalcWRTAtom& c2 = cdsalcs_->atom_salc(tb_[thread]->basis2()->shell(sj).ncenter());
+        const CdSalcWRTAtom& c3 = cdsalcs_->atom_salc(tb_[thread]->basis3()->shell(sk).ncenter());
+        const CdSalcWRTAtom& c4 = cdsalcs_->atom_salc(tb_[thread]->basis4()->shell(sl).ncenter());
 
         int ns1so = s1.soshell.size();
         int ns2so = s2.soshell.size();

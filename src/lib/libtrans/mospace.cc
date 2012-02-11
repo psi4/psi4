@@ -6,8 +6,10 @@ using namespace boost;
 
 /// Keeps track of which labels have been assigned, for safety
 std::map<char, int> MOSpace::labelsUsed;
+shared_ptr<MOSpace> MOSpace::fzc(new MOSpace(MOSPACE_FZC));
 shared_ptr<MOSpace> MOSpace::occ(new MOSpace(MOSPACE_OCC));
 shared_ptr<MOSpace> MOSpace::vir(new MOSpace(MOSPACE_VIR));
+shared_ptr<MOSpace> MOSpace::fzv(new MOSpace(MOSPACE_FZV));
 shared_ptr<MOSpace> MOSpace::all(new MOSpace(MOSPACE_ALL));
 shared_ptr<MOSpace> MOSpace::nil(new MOSpace(MOSPACE_NIL));
 

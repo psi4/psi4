@@ -68,14 +68,14 @@ void SchwarzSieve::form_schwarz_ints()
     ULI MUNU = 0L;
     ULI munu = 0L;
     for (MU=0; MU < nshell; ++MU) {
-        nummu = basis_->shell(MU)->nfunction();
+        nummu = basis_->shell(MU).nfunction();
         for (NU=0; NU <= MU; ++NU, ++MUNU) {
-            numnu = basis_->shell(NU)->nfunction();
+            numnu = basis_->shell(NU).nfunction();
             eri->compute_shell(MU,NU,MU,NU);
             for (mu=0; mu < nummu; ++mu) {
-                omu = basis_->shell(MU)->function_index() + mu;
+                omu = basis_->shell(MU).function_index() + mu;
                 for (nu=0; nu < numnu; ++nu) {
-                    onu = basis_->shell(NU)->function_index() + nu;
+                    onu = basis_->shell(NU).function_index() + nu;
 
                     if (omu>=onu) {
                         index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);

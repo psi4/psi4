@@ -44,7 +44,13 @@ procedures = {
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
             'fci'           : run_detci,
-            'adc'           : run_adc
+            'adc'           : run_adc,
+            'cphf'          : run_libfock,
+            'cis'           : run_libfock,
+            'tdhf'          : run_libfock,
+            'cpks'          : run_libfock,
+            'tda'           : run_libfock,
+            'tddft'         : run_libfock
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
