@@ -80,7 +80,7 @@ void MoldenWriter::write(const std::string &filename)
         for (int shell=0; shell < basisset.nshell_on_center(atom); ++shell) {
             int overall_shell = basisset.shell_on_center(atom, shell);
 
-            GaussianShell& gs = *basisset.shell(overall_shell).get();
+            const GaussianShell& gs = basisset.shell(overall_shell);
 
             fprintf(molden, "%c %3d 1.00\n", gs.amchar(), gs.nprimitive());
 
@@ -101,7 +101,7 @@ void MoldenWriter::write(const std::string &filename)
         for (int shell=0; shell < basisset.nshell_on_center(atom); ++shell) {
             int overall_shell = basisset.shell_on_center(atom, shell);
 
-            GaussianShell& gs = *basisset.shell(overall_shell).get();
+            const GaussianShell& gs = basisset.shell(overall_shell);
 
             fprintf(molden, "%c %3d 1.00\n", gs.amchar(), gs.nprimitive());
 
@@ -161,10 +161,10 @@ void MoldenWriter::write(const std::string &filename)
     memset(zeropi, 0, sizeof(int) * nirrep);
 
     for(int i = 0; i < basisset.nshell(); i++) {
-        int am = basisset.shell(i)->am();
+        int am = basisset.shell(i).am();
 
-        int ncart = basisset.shell(i)->nfunction();
-        if(am > 1 && am < 5 && basisset.shell(i)->is_cartesian()) {
+        int ncart = basisset.shell(i).nfunction();
+        if(am > 1 && am < 5 && basisset.shell(i).is_cartesian()) {
             for (int h=0; h<nirrep; ++h)
                 ncartpi[h] = ncart;
 
@@ -306,15 +306,15 @@ void NBOWriter::write(const std::string &filename)
     //Loop over all the shells
     for( int i =0; i < nshells; i++)
     {
-        boost::shared_ptr<GaussianShell> gshell(basisset.shell(i));
-        int nfns = gshell->nfunction(); //get number of functions in shell
+        const GaussianShell& gshell = basisset.shell(i);
+        int nfns = gshell.nfunction(); //get number of functions in shell
         components.set(0, i, nfns);
-        int angm = gshell->am(); //get angular momentum of shell
+        int angm = gshell.am(); //get angular momentum of shell
         angmom.set(0, i, angm);
         for( int j = 0; j< nfns; j++)
         {
-            centers.set (0, fnindex, gshell->ncenter());
-            if(gshell->is_pure()) {
+            centers.set (0, fnindex, gshell.ncenter());
+            if(gshell.is_pure()) {
                 //fprintf(outfile, "fnindex %d pure_order[%d][%d] %d\n", fnindex, angm, j, pure_order[angm][j]);
                 labels.set (0, fnindex, pure_order[angm][j]);
             }
@@ -322,12 +322,12 @@ void NBOWriter::write(const std::string &filename)
                 labels.set (0, fnindex, angm*100+j+1);
             fnindex++;
         }
-        int nshellprim = gshell->nprimitive();
+        int nshellprim = gshell.nprimitive();
         nprimitives.set (0, i, nshellprim);
         for( int k =0; k < nshellprim; k++)
         {
-            exponents.set(0, primindex, gshell->exp(k));
-            coefficient.set (0, angm, primindex, gshell->coef(k));
+            exponents.set(0, primindex, gshell.exp(k));
+            coefficient.set (0, angm, primindex, gshell.coef(k));
             primindex++;
         }
     }

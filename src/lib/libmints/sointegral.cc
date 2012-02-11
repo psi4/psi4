@@ -231,12 +231,12 @@ void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
             // by the end of these 4 for loops we will have our final integral in buffer_
             for (int i=0; i<t1.naoshell; ++i) {
                 const SOTransformShell &s1 = t1.aoshell[i];
-                int center_i = ob_->basis1()->shell(s1.aoshell)->ncenter();
+                int center_i = ob_->basis1()->shell(s1.aoshell).ncenter();
                 const CdSalcWRTAtom& cdsalc1 = cdsalcs.atom_salc(center_i);
 
                 for (int j=0; j<t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
-                    int center_j = ob_->basis2()->shell(s2.aoshell)->ncenter();
+                    int center_j = ob_->basis2()->shell(s2.aoshell).ncenter();
                     const CdSalcWRTAtom& cdsalc2 = cdsalcs.atom_salc(center_j);
 
                     // If we're working on the same atomic center, don't even bother with the derivative

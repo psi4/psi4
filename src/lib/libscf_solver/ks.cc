@@ -17,10 +17,10 @@
 
 #include <libmints/mints.h>
 #include <libfock/jk.h>
+#include <libfock/v.h>
 #include <libfunctional/superfunctional.h>
 #include <lib3index/3index.h>
 #include "ks.h"
-#include "dft.h"
 #include "integralfunctors.h"
 #include "omegafunctors.h"
 
@@ -59,12 +59,17 @@ void KS::common_init()
         functional_->setOmega(options_.get_double("DFT_OMEGA"));
     }
 
+    potential_ = VBase::build_V(KS::options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
+    potential_->initialize();
+
     // Print some info on the DFT functional
     fprintf(outfile,"  ==> KS-DFT <==\n\n"); 
     fprintf(outfile,"   Selected Functional is %s.\n",functional_->getName().c_str());
     if (functional_->isRangeCorrected()) 
         fprintf(outfile,"   Range-separation omega is %11.3E.\n", functional_->getOmega());  
     fprintf(outfile,"\n");
+    
+    potential_->print_header();
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
@@ -78,7 +83,6 @@ RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio) :
 }
 void RKS::common_init()
 {
-    potential_ = boost::shared_ptr<RKSPotential>(new RKSPotential(functional_,KS::molecule_,KS::basisset_,KS::options_));
     wK_ = factory_->create_shared_matrix("wKa (Long-Range Hartree-Fock Exchange)");
 }
 RKS::~RKS()
@@ -103,13 +107,17 @@ void RKS::integrals()
 }
 void RKS::form_V()
 {
-    boost::shared_ptr<Dimension> doccpi(new Dimension(nirrep_));
-    for (int h = 0; h < nirrep_; h++) {
-        (*doccpi)[h] = doccpi_[h];
-    }
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = potential_->C();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    
+    // Run the potential object
+    potential_->compute();
 
-    potential_->buildPotential(D_,Ca_,doccpi);
-    V_ = potential_->V_USO(); 
+    // Pull the V matrices off 
+    const std::vector<SharedMatrix> & V = potential_->V();
+    V_ = V[0];
 }
 void RKS::form_G()
 {
@@ -186,7 +194,8 @@ double RKS::compute_E()
     double one_electron_E = 2.0*D_->vector_dot(H_);
     double coulomb_E = D_->vector_dot(J_);
     
-    double XC_E = potential_->quadrature_value("FUNCTIONAL");
+    std::map<std::string, double>& quad = potential_->quadrature_values();  
+    double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
     double alpha = functional_->getExactExchange();
     double beta = 1.0 - alpha;
@@ -233,7 +242,6 @@ UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio) :
 }
 void UKS::common_init()
 {
-    potential_ = boost::shared_ptr<UKSPotential>(new UKSPotential(functional_,KS::molecule_,KS::basisset_,KS::options_));
     wKa_ = factory_->create_shared_matrix("wKa (Long-Range Hartree-Fock Exchange)");
     wKb_ = factory_->create_shared_matrix("wKb (Long-Range Hartree-Fock Exchange)");
 }
@@ -259,17 +267,19 @@ void UKS::integrals()
 }
 void UKS::form_V()
 {
-    boost::shared_ptr<Dimension> napi(new Dimension(nirrep_));
-    boost::shared_ptr<Dimension> nbpi(new Dimension(nirrep_));
-    for (int h = 0; h < nirrep_; h++) {
-        (*napi)[h] = nalphapi_[h];
-        (*nbpi)[h] = nbetapi_[h];
-    }
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = potential_->C();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    C.push_back(Cb_subset("SO", "OCC"));
+    
+    // Run the potential object
+    potential_->compute();
 
-    potential_->buildPotential(Da_,Ca_,napi, 
-                               Db_,Cb_,nbpi);
-    Va_ = potential_->Va_USO(); 
-    Vb_ = potential_->Vb_USO(); 
+    // Pull the V matrices off 
+    const std::vector<SharedMatrix> & V = potential_->V();
+    Va_ = V[0];
+    Vb_ = V[1];
 }
 void UKS::form_G()
 {
@@ -365,7 +375,8 @@ double UKS::compute_E()
     double coulomb_E = Da_->vector_dot(J_);
     coulomb_E += Db_->vector_dot(J_);
 
-    double XC_E = potential_->quadrature_value("FUNCTIONAL");
+    std::map<std::string, double>& quad = potential_->quadrature_values();  
+    double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
     double alpha = functional_->getExactExchange();
     double beta = 1.0 - alpha;

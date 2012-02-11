@@ -167,7 +167,10 @@ private:
     };
 
     Integral current;
-    boost::shared_ptr<GaussianShell> usi, usj, usk, usl;
+    const GaussianShell& usi;
+    const GaussianShell& usj;
+    const GaussianShell& usk;
+    const GaussianShell& usl;
 
     bool done;
 
@@ -175,8 +178,8 @@ private:
     int ni, nj, nk, nl, fii, fij, fik, fil;
 
 public:
-    AOIntegralsIterator(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2,
-                      boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4);
+    AOIntegralsIterator(const GaussianShell& s1, const GaussianShell& s2,
+                      const GaussianShell& s3, const GaussianShell& s4);
 
     void first();
     void next();

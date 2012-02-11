@@ -22,6 +22,23 @@ def run_scf_gradient(name, **kwargs):
     run_scf(name, **kwargs)
     PsiMod.deriv()
 
+def run_libfock(name, **kwargs):
+
+    if (name == "cphf"):
+        PsiMod.set_global_option("MODULE", "RCPHF")
+    if (name == "cis"):
+        PsiMod.set_global_option("MODULE", "RCIS")
+    if (name == "tdhf"):
+        PsiMod.set_global_option("MODULE", "RTDHF")
+    if (name == "cpks"):
+        PsiMod.set_global_option("MODULE", "RCPKS")
+    if (name == "tda"):
+        PsiMod.set_global_option("MODULE", "RTDA")
+    if (name == "tddft"):
+        PsiMod.set_global_option("MODULE", "RTDDFT")
+        
+    PsiMod.libfock() 
+
 def run_mcscf(name, **kwargs):
 
     return PsiMod.mcscf()

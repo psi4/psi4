@@ -25,9 +25,9 @@ class OverlapInt : public OneBodyAOInt
     ObaraSaikaTwoCenterRecursion overlap_recur_;
 
     /// Computes the overlap between a given shell pair.
-    void compute_pair(const boost::shared_ptr<GaussianShell>& , const boost::shared_ptr<GaussianShell> &);
-    void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
-    void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
+    void compute_pair(const GaussianShell& , const GaussianShell&);
+    void compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2);
+    void compute_pair_deriv2(const GaussianShell&, const GaussianShell&);
 
 public:
     /// Constructor, it assumes you are not computing derivatives by default

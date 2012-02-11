@@ -448,6 +448,41 @@ def process_multiline_arrays(inputfile):
 
 def process_input(raw_input):
 
+    # Check if the infile is actually an outfile (yeah we did)
+    psi4_id = re.compile(r'PSI4: An Open-Source Ab Initio Electronic Structure Package')
+    if (re.search(psi4_id, raw_input)):
+        input_lines = raw_input.split("\n")
+        input_re = re.compile(r'^\s*?\=\=> Input File <\=\=')
+        input_start = -1;
+        for line_count in range(len(input_lines)):
+            line = input_lines[line_count] 
+            if re.match(input_re, line):
+                input_start = line_count + 3;            
+                break;
+
+        stop_re = re.compile(r'^-{74}')
+        input_stop = -1;
+        for line_count in range(input_start,len(input_lines)):        
+            line = input_lines[line_count] 
+            if re.match(stop_re, line):
+                input_stop = line_count;            
+                break;
+                       
+        if (input_start == -1 or input_stop == -1):
+            print 'Cannot extract infile from outfile.'
+            sys.exit(1)
+ 
+        raw_input = '\n'.join(input_lines[input_start:input_stop])
+        raw_input += '\n'
+
+    # Echo the infile on the outfile
+    PsiMod.print_out("\n  ==> Input File <==\n\n");
+    PsiMod.print_out("--------------------------------------------------------------------------\n");
+    PsiMod.print_out(raw_input);
+    PsiMod.print_out("--------------------------------------------------------------------------\n");
+    PsiMod.flush_outfile();
+
+
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
     #   which has the regex capture group:
@@ -479,19 +514,26 @@ def process_input(raw_input):
     temp = process_multiline_arrays(temp)
 
     # Process all "set name? { ... }"
-    set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    set_commands = re.compile(r'^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}',
+                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set (module_list) key  {[value_list] or $value or value}"
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-+,()*\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
+    # N.B. We have to be careful here, because \s matches \n, leading to potential problems
+    # with undesired multiline matches.  Better the double-negative [^\S\n] instead, which
+    # will match any space, tab, etc., except a newline
+    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$', 
+                             re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
-    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}',
+                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
 
     # Process "external name? { ... }"
-    external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}',
+                          re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(external, process_external_command, temp)
     
     # Then remove repeated newlines
@@ -499,7 +541,8 @@ def process_input(raw_input):
     temp = re.sub(multiplenewlines, '\n', temp)
 
     # Process " extract"
-    extract = re.compile(r'(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*', re.IGNORECASE)
+    extract = re.compile(r'(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*',
+                         re.IGNORECASE)
     temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "PsiMod.print_out()"
@@ -507,15 +550,18 @@ def process_input(raw_input):
     temp = re.sub(print_string,process_print_command,temp)
 
     # Process "memory ... "
-    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)', re.IGNORECASE)
+    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',
+                               re.IGNORECASE)
     temp = re.sub(memory_string,process_memory_command,temp)
 
     # Process "basis file ... "
-    basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$', re.MULTILINE | re.IGNORECASE)
+    basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$',
+                            re.MULTILINE | re.IGNORECASE)
     temp = re.sub(basis_file,process_basis_file,temp)
 
     # Process "basis name { ... }"
-    basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}',
+                             re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block,process_basis_block,temp)
 
     # imports
@@ -544,11 +590,17 @@ def process_input(raw_input):
         psirc = fh.read()
         fh.close()
 
+    # Override scratch directory if user specified via env_var
+    scratch = ''
+    scratch_env = PsiMod.Process.environment['PSI_SCRATCH'] 
+    if len(scratch_env):
+        scratch += 'psi4_io.set_default_path("%s")\n' % (scratch_env)
+
     blank_mol = 'geometry("""\n'
     blank_mol += '0 1\nH\nH 1 0.74\n'
     blank_mol += '""","blank_molecule_psi4_yo")\n'
 
-    temp = imports + psirc + blank_mol + temp
+    temp = imports + psirc + scratch + blank_mol + temp
 
     return temp
 
