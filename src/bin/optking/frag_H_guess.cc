@@ -64,6 +64,7 @@ double alpha_table(int perA, int perB) {
   }
 }
 
+/* removed for now (see below)
 // used for Lindh model
 double FRAG::Lindh_rho(int A, int B) {
   int perA = period(Z[A]);
@@ -75,7 +76,7 @@ double FRAG::Lindh_rho(int A, int B) {
   double r_ref = r_ref_table(perA, perB);
 
   return (exp(alpha * (r_ref*r_ref - r*r)));
-}
+} */
 
 double ** FRAG::H_guess(void) {
   int i, j, atomA, atomB, atomC, atomD, cnt = 0, perA, perB;
@@ -198,6 +199,11 @@ double ** FRAG::H_guess(void) {
       } // end switch intcos
     } // end loop intcos
   } // end Fischer
+/*
+  // I'm commenting out the LINDH guess (used by Helgaker) because it doesn't surpass
+  // schlegel or fischer for performance in tests thus far.  Also, it should require a
+  // summation over all atoms in the bends and torsions, so I'm not completely sure how
+  // to use it and it seems unnecessarily complex.  -RAK
   else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
     for (i=0; i<intcos.size(); ++i) { 
       double tval;
@@ -238,7 +244,7 @@ double ** FRAG::H_guess(void) {
 
       } // end switch intcos
     } // end loop intcos
-  }
+  } */
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
     for (i=0; i<intcos.size(); ++i) {
       switch (intcos[i]->g_type()) {

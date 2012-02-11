@@ -42,7 +42,7 @@ struct OPT_PARAMS {
   enum STEP_TYPE {NR, RFO, P_RFO, SD} step_type;
 
   // Hessian guess
-  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, LINDH, SIMPLE} intrafragment_H;
+  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE} intrafragment_H;
   enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
 
   enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;
