@@ -88,11 +88,10 @@ void set_params(void)
 //  Opt_params.generate_intcos_only;
     Opt_params.generate_intcos_only = options.get_bool("INTCOS_GENERATE_EXIT");
 
-// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, LINDH}
+// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE}
     s = options.get_str("INTRAFRAG_HESS");
     if (s == "FISCHER")       Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
     else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
-    else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
     else if (s == "SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
@@ -312,12 +311,11 @@ void set_params(void)
 // only generate intcos
   Opt_params.generate_intcos_only = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
 
-// model 0=FISCHER ; 1 = SCHLEGEL (default 0) ; 2 = Lindh  ; 3 = simple
+// model 0=FISCHER ; 1 = SCHLEGEL (default 0) ; 2 = simple
   i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_H);
   if (i == 0)      Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
   else if (i == 1) Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
-  else if (i == 2) Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
-  else if (i == 3) Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
+  else if (i == 2) Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
 
 // interfragment 0=DEFAULT ; 1=FISCHER_LIKE
   i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_H);
@@ -491,8 +489,6 @@ void print_params(void) {
   fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Schlegel");
-  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Lindh");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Simple");
 
