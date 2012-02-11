@@ -17,7 +17,7 @@
 #endif
 
 #define PRINT_ME fprintf(stdout,"If in %d\n",__LINE__);
-
+#define PRINT_ME
 using namespace std;
 using namespace psi;
 
