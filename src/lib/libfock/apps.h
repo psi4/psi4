@@ -37,7 +37,9 @@ protected:
     boost::shared_ptr<Vector> eps_avir_;
 
     SharedMatrix AO2USO_;
-
+    
+    /// How far to converge the two-norm of the residual
+    double convergence_;
     /// Global JK object, built in preiterations, destroyed in postiterations
     boost::shared_ptr<JK> jk_;
     boost::shared_ptr<VBase> v_;
@@ -68,6 +70,8 @@ public:
     virtual void preiterations();
     /// Destroys JK object, if needed
     virtual void postiterations();
+    /// Set convergence behavior
+    void set_convergence(double convergence) { convergence = convergence_; };
 
 }; 
 

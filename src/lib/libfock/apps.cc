@@ -80,6 +80,8 @@ void RBase::common_init()
         eps_avir_->print();
         eps_fvir_->print();
     }
+
+    convergence_ = options_.get_double("SOLVER_CONVERGENCE"); 
 }
 void RBase::preiterations()
 {
@@ -234,6 +236,7 @@ double RCPHF::compute_energy()
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
+    solver->set_convergence(convergence_);
 
     // Addition of force vectors
     std::vector<SharedVector>& bref = solver->b();
@@ -834,6 +837,7 @@ double RCIS::compute_energy()
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
+    solver->set_convergence(convergence_);
 
     // Initialization/Memory
     solver->initialize();
@@ -989,6 +993,7 @@ double RTDHF::compute_energy()
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
+    solver->set_convergence(convergence_);
 
     // Initialization
     solver->initialize();
@@ -1106,6 +1111,7 @@ double RCPKS::compute_energy()
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
+    solver->set_convergence(convergence_);
 
     // Addition of force vectors
     std::vector<SharedVector>& bref = solver->b();
@@ -1203,6 +1209,7 @@ double RTDA::compute_energy()
 
     // Initialization/Memory
     solver->initialize();
+    solver->set_convergence(convergence_);
 
     // Component Headers
     solver->print_header();
@@ -1349,7 +1356,8 @@ double RTDDFT::compute_energy()
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
-
+    solver->set_convergence(convergence_);
+        
     // Initialization
     solver->initialize();
 

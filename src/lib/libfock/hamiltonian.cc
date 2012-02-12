@@ -802,9 +802,17 @@ TDARHamiltonian::TDARHamiltonian(boost::shared_ptr<JK> jk,
                     boost::shared_ptr<Vector> eps_avir) : 
     CISRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix> C = v->C();
+    std::vector<SharedMatrix>& C = v->C();
     C.clear();
     C.push_back(Cocc);
+
+    std::vector<SharedMatrix>& Cao = v->Caocc();
+    Cao.clear();
+    Cao.push_back(Caocc);
+
+    std::vector<SharedMatrix>& Cav = v->Cavir();
+    Cav.clear();
+    Cav.push_back(Cavir);
 }
 TDARHamiltonian::~TDARHamiltonian()
 {
@@ -954,9 +962,17 @@ TDDFTRHamiltonian::TDDFTRHamiltonian(boost::shared_ptr<JK> jk,
                     boost::shared_ptr<Vector> eps_avir) : 
     TDHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix> C = v->C();
+    std::vector<SharedMatrix>& C = v->C();
     C.clear();
     C.push_back(Cocc);
+
+    std::vector<SharedMatrix>& Cao = v->Caocc();
+    Cao.clear();
+    Cao.push_back(Caocc);
+
+    std::vector<SharedMatrix>& Cav = v->Cavir();
+    Cav.clear();
+    Cav.push_back(Cavir);
 }
 TDDFTRHamiltonian::~TDDFTRHamiltonian()
 {
@@ -1148,9 +1164,17 @@ CPKSRHamiltonian::CPKSRHamiltonian(boost::shared_ptr<JK> jk,
                     boost::shared_ptr<Vector> eps_avir) : 
     CPHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix> C = v->C();
+    std::vector<SharedMatrix>& C = v->C();
     C.clear();
     C.push_back(Cocc);
+
+    std::vector<SharedMatrix>& Cao = v->Caocc();
+    Cao.clear();
+    Cao.push_back(Caocc);
+
+    std::vector<SharedMatrix>& Cav = v->Cavir();
+    Cav.clear();
+    Cav.push_back(Cavir);
 }
 CPKSRHamiltonian::~CPKSRHamiltonian()
 {
