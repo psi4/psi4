@@ -520,18 +520,18 @@ print GPY_OUT "GEOS = {}\n";
 print GPY_OUT "for rxn in HRXN:\n";
 if ( ($route == 1) || ($route == 2) ) {
 
-   print GPY_OUT   "   for rgt in ACTV['%s-%s' % (dbse, rxn)]:\n\n";
+   print GPY_OUT   "    for rgt in ACTV['%s-%s' % (dbse, rxn)]:\n\n";
 
-   print GPY_OUT   "            molname = rxnpattern.match(rgt)\n";
-   print GPY_OUT   "            GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))\n\n";
+   print GPY_OUT   "        molname = rxnpattern.match(rgt)\n";
+   print GPY_OUT   "        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))\n";
 }
 elsif ($route == 3) {
 
-   print GPY_OUT "\n   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP\n\n";
+   print GPY_OUT "\n    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP\n";
 }
 
 
