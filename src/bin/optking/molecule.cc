@@ -134,7 +134,7 @@ void MOLECULE::project_f_and_H(void) {
   int Ncart = 3*g_natom();
 
   // compute G = B B^t
-  double **G = compute_G(true);
+  double **G = compute_G(false);
 
 #if defined (OPTKING_PACKAGE_QCHEM)
   // Put 1's on diagonal for EFP coordinates
@@ -158,24 +158,31 @@ void MOLECULE::project_f_and_H(void) {
   // add constraints to projection matrix
   double **C = compute_constraints();
 
-  // P = P' - P' C (CPC)^-1 C P'
-  double **T = init_matrix(Nintco,Nintco);
-  double **T2 = init_matrix(Nintco,Nintco);
-  opt_matrix_mult(P, 0, C, 0,  T, 0, Nintco, Nintco, Nintco, 0);
-  opt_matrix_mult(C, 0, T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
-  double **T3 = symm_matrix_inv(T2, Nintco, 1);
-
-  opt_matrix_mult( C, 0,  P, 0,  T, 0, Nintco, Nintco, Nintco, 0);
-  opt_matrix_mult(T3, 0,  T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
-  opt_matrix_mult( C, 0, T2, 0, T3, 0, Nintco, Nintco, Nintco, 0);
-  opt_matrix_mult( P, 0, T3, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+  bool constraints_present = false;
   for (int i=0; i<Nintco; ++i)
-    for (int j=0; j<Nintco; ++j)
-      P[i][j] -= T2[i][j];
-  free_matrix(T);
-  free_matrix(T2);
-  free_matrix(T3);
-  free_matrix(C);
+    if (C[i][i] != 0)
+      constraints_present = true;
+
+  // P = P' - P' C (CPC)^-1 C P'
+  if (constraints_present) {
+    double **T = init_matrix(Nintco,Nintco);
+    double **T2 = init_matrix(Nintco,Nintco);
+    opt_matrix_mult(P, 0, C, 0,  T, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult(C, 0, T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+    double **T3 = symm_matrix_inv(T2, Nintco, 1);
+  
+    opt_matrix_mult( C, 0,  P, 0,  T, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult(T3, 0,  T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult( C, 0, T2, 0, T3, 0, Nintco, Nintco, Nintco, 0);
+    opt_matrix_mult( P, 0, T3, 0, T2, 0, Nintco, Nintco, Nintco, 0);
+    for (int i=0; i<Nintco; ++i)
+      for (int j=0; j<Nintco; ++j)
+        P[i][j] -= T2[i][j];
+    free_matrix(T);
+    free_matrix(T2);
+    free_matrix(T3);
+    free_matrix(C);
+  }
 
   // Project redundancies and contraints out of forces
   // Unconstrained forces will not need this unless we have interpolated forces,

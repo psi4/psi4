@@ -61,6 +61,11 @@ class CoupledCluster{
     ~CoupledCluster();
 
     /**
+      * Number of threads
+      */
+    int nthreads;
+
+    /**
       * Flag to indicate if t2 is stored in core memory or 
       * needs to be read from disk.  Default false.
       */
@@ -133,11 +138,14 @@ class CoupledCluster{
       * this diagram required ov^3 storage for an
       * intermediate in the Piecuch CPC.  this formulation
       * only requires o^3v storage...at the expense of
-      * 4 extra O(N^5) terms.
+      * 4 extra O(N^5) terms.  
+      * 
+      * 2/9/12: Now reduced to 3 total terms by dumping
+      * one in with I2piajk and one in with I2iabj.  The
+      * total cost of the original diagram was reduced 
+      * from 3o^2v^3 tp 3o^2v^2.
       */
-    void CPU_I2p_abci_refactored_term1(CCTaskParams params);
     void CPU_I2p_abci_refactored_term2(CCTaskParams params);
-    void CPU_I2p_abci_refactored_term3(CCTaskParams params);
 
     /**
       * Update t1

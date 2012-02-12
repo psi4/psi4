@@ -135,21 +135,11 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   fprintf(outfile, "\n");
 
   fprintf(outfile, "    Convergence Criteria");
-  if (Opt_params.i_max_DE) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_max_force) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_rms_force) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_max_disp) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_rms_disp) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
+  Opt_params.i_max_DE ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_max_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_rms_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_max_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_rms_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*") : fprintf(outfile, "             %1s", "o");
   if (g_iteration() == 1) fprintf(outfile, "  ~");
   fprintf(outfile, "\n");
 
@@ -259,7 +249,7 @@ void OPT_DATA::summary(void) const {
     max_force = array_abs_max(f, Nintco);
 
     dq =  g_dq_pointer(i);
-    max_disp = array_abs_max(f, Nintco);
+    max_disp = array_abs_max(dq, Nintco);
 
     fprintf(outfile,"\t %3d  %18.12lf  %18.12lf  %10.2e   %10.2e\n", i+1, g_energy(i),
       DE, max_force, max_disp);
@@ -359,8 +349,9 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       continue;
     }
 
+    // See  J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11 (1994)
+    //  and Helgaker, JCP 2002 for formula.
     if (Opt_params.H_update == OPT_PARAMS::BFGS) {
-// Trying formula in Helgaker JCP 2002.
       for (i=0; i<Nintco; ++i)
         for (j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + dg[i] * dg[j] / gq ;
@@ -375,33 +366,11 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
           H_new[i][j] -=  Hdq[i] * Hdq[j] / qHq ;
 
       free_array(Hdq);
-    // Schlegel 1987 Ab Initio Methods in Quantum Chemistry 
-    // To make formulas work for Hessian, i.e., the 2nd derivatives switch dx and dg
-/*
-      double **temp_mat, **X;
-      // Let a = dg^T.dq and X = (I - dg*dq^T) / a
-      // Then H = X * H_old * X^T + dg*dg^T/a .
-      X = unit_matrix(Nintco);
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
-          X[i][j] -= (dg[i] * dq[j]) / gq ;
-
-      temp_mat = init_matrix(Nintco,Nintco);
-      opt_matrix_mult(X, 0, H, 0, temp_mat, 0, Nintco, Nintco, Nintco, 0);
-      opt_matrix_mult(temp_mat, 0, X, 1, H_new, 0, Nintco, Nintco, Nintco, 0);
-
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
-          H_new[i][j] += dg[i] * dg[j] / gq ;
-
-      free_matrix(temp_mat);
-      free_matrix(X);
-*/
     }
     else if (Opt_params.H_update == OPT_PARAMS::MS) {
-      // Equations taken from Bofill article below
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
+
       for (i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
@@ -414,9 +383,9 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       free_array(Z);
     }
     else if (Opt_params.H_update == OPT_PARAMS::POWELL) {
-      // Equations taken from Bofill article below
       double * Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
+
       for (i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
@@ -429,11 +398,10 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       free_array(Z);
     }
     else if (Opt_params.H_update == OPT_PARAMS::BOFILL) {
-      /* This functions performs a Bofill update on the Hessian according to
-      J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11 (1994). */
       // Bofill = (1-phi) * MS + phi * Powell
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
+
       for (i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
@@ -451,6 +419,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       for (i=0; i<Nintco; ++i)
         for (j=0; j<Nintco; ++j) // (phi * Powell)
           H_new[i][j] += phi * (-1.0*qz/(qq*qq)*dq[i]*dq[j] + (Z[i]*dq[j] + dq[i]*Z[j])/qq);
+
       free_array(Z);
     } // end BOFILL
 
@@ -468,8 +437,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   
       for (i=0; i<Nintco; ++i) {
         for (j=0; j<Nintco; ++j) {
-          double val = H[i][j];
-          max = ((scale_limit*val) > max_limit) ? (scale_limit*val) : max_limit;
+          double val = fabs(scale_limit*H[i][j]);
+          max = ((val > max_limit) ? val : max_limit);
   
         if (fabs(H_new[i][j]) < max)
           H[i][j] += H_new[i][j];
@@ -485,6 +454,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     }
 
     free_array(q_old);
+    zero_matrix(H_new, Nintco, Nintco);
   } // end loop over steps to use in update
   free_array(q);
   free_array(dq);

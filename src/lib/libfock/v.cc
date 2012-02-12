@@ -5,7 +5,7 @@
 
 #include "cubature.h"
 #include "points.h"
-#include "dft.h"
+#include "v.h"
 
 #include <sstream>
 
@@ -79,7 +79,56 @@ void VBase::compute_D()
             C_DGEMM('N','T',nso,nso,nmo,1.0,Cp[0],nmo,Cp[0],nmo,0.0,Dp[0],nso);
         }
     }
-}
+
+    // Allocate P_SO_ if needed
+    if (P_.size()) {
+        bool same = true;
+        if (P_SO_.size() != P_.size()) {
+            same = false;   
+        } else {
+            for (int A = 0; A < P_.size(); A++) {
+                if (P_[A]->symmetry() != P_SO_[A]->symmetry())
+                    same = false;
+            }
+        }
+
+        if (!same) {
+            P_SO_.clear();
+            for (int A = 0; A < P_.size(); A++) {
+                std::stringstream ss;
+                ss << "P (SO) " << A;
+                P_SO_.push_back(SharedMatrix(new Matrix(ss.str(),C_[0]->rowspi(),C_[0]->rowspi(),P_[A]->symmetry())));
+            }
+        } 
+
+        int maxi = Caocc_[0]->max_ncol();
+        if (Caocc_.size() > 1) 
+            maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
+        double* temp = new double[maxi * (ULI) Caocc_[0]->max_nrow()];
+        for (int A = 0; A < P_.size(); A++) {
+            SharedMatrix Cl = Caocc_[A % Caocc_.size()];
+            SharedMatrix Cr = Cavir_[A % Cavir_.size()];
+            SharedMatrix P = P_[A];
+            SharedMatrix P_SO = P_SO_[A];
+            int symm = P->symmetry();
+            for (int h = 0; h < P->nirrep(); h++) {
+                int nl = Cl->rowspi()[h];
+                int nr = Cr->rowspi()[h^symm];
+                int ni = Cl->colspi()[h];
+                int na = Cr->colspi()[h^symm];
+                if (!nl || !nr || !ni || !na) continue;
+                double** Clp   = Cl->pointer(h);
+                double** Crp   = Cr->pointer(h^symm);
+                double** Pp    = P->pointer(h);
+                double** P_SOp = P_SO->pointer(h);
+
+                C_DGEMM('N','T',ni,nr,na,1.0,Pp[0],na,Crp[0],na,0.0,temp,nr);
+                C_DGEMM('N','N',nl,nr,ni,1.0,Clp[0],ni,temp,nr,0.0,P_SOp[0],nr);
+            }
+        }    
+        delete[] temp;
+    }    
+}   
 void VBase::USO2AO()
 {
     // Build AO2USO matrix, if needed
@@ -125,10 +174,13 @@ void VBase::USO2AO()
         C_AO_ = C_;
         D_AO_ = D_;
         V_AO_ = V_;
-        P_AO_ = P_;
         // Clear V_AO_ out
         for (int A = 0; A < V_AO_.size(); A++) {
             V_AO_[A]->zero();
+        }
+        P_AO_ = P_SO_;
+        for (int A = 0; A < P_AO_.size(); A++) {
+            P_AO_[A]->hermitivitize();
         }
         return;    
     }
@@ -220,10 +272,28 @@ void VBase::USO2AO()
             C_DGEMM('N','T',nao,nao,nsor,1.0,temp,nsor,Urp[0],nsor,1.0,D_AOp[0],nao);
         }
     }    
-    delete[] temp;
 
     // P_AO
-    // TODO 
+    for (int A = 0; A < P_SO_.size(); A++) {
+        SharedMatrix D = P_SO_[A];
+        SharedMatrix D_AO = P_AO_[A];
+        D_AO->zero();
+        for (int h = 0; h < D->nirrep(); h++) {
+            int symm = D->symmetry();
+            int nao = AO2USO_->rowspi()[h];
+            int nsol = AO2USO_->colspi()[h];
+            int nsor = AO2USO_->colspi()[h^symm];
+            if (!nao || !nsol || !nsor) continue;
+            double** Dp = D->pointer(h);
+            double** D_AOp = D_AO->pointer();
+            double** Ulp = AO2USO_->pointer(h);
+            double** Urp = AO2USO_->pointer(h^symm);
+            C_DGEMM('N','N',nao,nsor,nsol,1.0,Ulp[0],nsol,Dp[0],nsor,0.0,temp,nsor);
+            C_DGEMM('N','T',nao,nao,nsor,1.0,temp,nsor,Urp[0],nsor,1.0,D_AOp[0],nao);
+        }
+        D_AO->hermitivitize();
+    }
+    delete[] temp;
 }
 void VBase::AO2USO()
 {
@@ -781,7 +851,174 @@ void RK::print_header() const
 }
 void RK::compute_V()
 {
-    // TODO
+    if ((D_AO_.size() != 1) || (C_AO_.size() != 1))
+        throw PSIEXCEPTION("V: RKS should have only one D/C Matrix"); 
+
+    // Setup the pointers
+    SharedMatrix D_AO = D_AO_[0];
+    SharedMatrix C_AO = C_AO_[0];
+    properties_->reset_pointers(D_AO,C_AO);
+
+    // What local XC ansatz are we in?
+    int ansatz = functional_->getLocalAnsatz();
+
+    // How many functions are there (for lda in Vtemp, T)
+    int max_functions = grid_->max_functions(); 
+    int max_points = grid_->max_points();
+
+    // Local/global V matrices
+    SharedMatrix V_local(new Matrix("V Temp", max_functions, max_functions));
+    double** V2p = V_local->pointer();
+
+    // Scratch
+    SharedMatrix T_local = properties_->scratch();
+    double** Tp = T_local->pointer();
+
+    double* rho_x;
+    double* rho_y;
+    double* rho_z;
+    if(ansatz >= 1) {
+        rho_x = new double[max_points];
+        rho_y = new double[max_points];
+        rho_z = new double[max_points];
+    }
+
+    // Traverse the blocks of points
+    double functionalq = 0.0;
+    double rhoaq       = 0.0;
+    double rhoaxq      = 0.0;
+    double rhoayq      = 0.0;
+    double rhoazq      = 0.0;
+
+    boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
+    double *restrict QTp = QT->pointer();
+    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+
+    for (int Q = 0; Q < blocks.size(); Q++) {
+
+        boost::shared_ptr<BlockOPoints> block = blocks[Q];
+        int npoints = block->npoints();
+        double *restrict x = block->x();
+        double *restrict y = block->y();
+        double *restrict z = block->z();
+        double *restrict w = block->w();
+        const std::vector<int>& function_map = block->functions_local_to_global();
+        int nlocal = function_map.size();
+
+        timer_on("Properties");
+        properties_->computeProperties(block);
+        timer_off("Properties");
+
+        // Copy density gradient in for GGA contributions
+        if (ansatz >= 1) {
+            double *restrict rho_ax = properties_->property_value("RHO_AX")->pointer();
+            double *restrict rho_ay = properties_->property_value("RHO_AY")->pointer();
+            double *restrict rho_az = properties_->property_value("RHO_AZ")->pointer();
+            ::memcpy((void*) rho_x, (void*) rho_ax, npoints);
+            ::memcpy((void*) rho_y, (void*) rho_ay, npoints);
+            ::memcpy((void*) rho_z, (void*) rho_az, npoints);
+        }
+
+        timer_on("Functional");
+        functional_->computeRKSFunctional(properties_); 
+        timer_off("Functional");
+
+        if (debug_ > 4) {
+            block->print(outfile, debug_);
+            properties_->print(outfile, debug_);
+        }
+
+        double** phi = properties_->basis_value("PHI")->pointer();
+        double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
+        double *restrict zk = functional_->getFunctionalValue();
+
+        // => Quadrature values <= //
+        functionalq += C_DDOT(npoints,w,1,zk,1);
+        for (int P = 0; P < npoints; P++) {
+            QTp[P] = w[P] * rho_a[P];
+        }
+        rhoaq       += C_DDOT(npoints,w,1,rho_a,1);
+        rhoaxq      += C_DDOT(npoints,QTp,1,x,1);
+        rhoayq      += C_DDOT(npoints,QTp,1,y,1);
+        rhoazq      += C_DDOT(npoints,QTp,1,z,1);
+
+        // Loop over all perturbations
+        timer_on("K_XC");
+        for (int A = 0; A < P_AO_.size(); A++) {
+
+            // Which V are we adding into?
+            SharedMatrix V_AO = V_AO_[A];
+            double** Vp = V_AO->pointer();
+
+            // Which P is ther perturbation density to be computed from
+            SharedMatrix P_AO = P_AO_[A];
+            properties_->reset_pointers(P_AO,C_AO);
+            timer_on("Properties");
+            properties_->computeProperties(block);
+            timer_off("Properties");
+
+            // => LSDA contribution (symmetrized) <= //
+            // TODO: Use GEMV instead
+            timer_on("LSDA");
+            double *restrict v_rho_a_rho_a = functional_->getV_RhoA_RhoA();
+            for (int P = 0; P < npoints; P++) {
+                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
+                C_DAXPY(nlocal,1.0 * rho_a[P] * v_rho_a_rho_a[P] * w[P], phi[P], 1, Tp[P], 1); 
+            }
+            timer_off("LSDA");
+        
+            // TODO GGA
+
+            // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
+            timer_on("LSDA");
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tp[0],max_functions,0.0,V2p[0],max_functions);
+
+            // Symmetrization (V is Hermitian)
+            for (int m = 0; m < nlocal; m++) {
+                for (int n = 0; n <= m; n++) {
+                    V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m]; 
+                }
+            } 
+            timer_off("LSDA");
+
+            // => Unpacking <= //
+            for (int ml = 0; ml < nlocal; ml++) {
+                int mg = function_map[ml];
+                for (int nl = 0; nl < ml; nl++) {
+                    int ng = function_map[nl];
+                    Vp[mg][ng] += V2p[ml][nl];
+                    Vp[ng][mg] += V2p[ml][nl];
+                }
+                Vp[mg][mg] += V2p[ml][ml];
+            }
+        }
+        timer_off("K_XC");
+    } 
+   
+    quad_values_["FUNCTIONAL"] = functionalq;
+    quad_values_["RHO_A"]      = rhoaq; 
+    quad_values_["RHO_AX"]     = rhoaxq; 
+    quad_values_["RHO_AY"]     = rhoayq; 
+    quad_values_["RHO_AZ"]     = rhoazq; 
+    quad_values_["RHO_B"]      = rhoaq; 
+    quad_values_["RHO_BX"]     = rhoaxq; 
+    quad_values_["RHO_BY"]     = rhoayq; 
+    quad_values_["RHO_BZ"]     = rhoazq; 
+ 
+    if (debug_) {
+        fprintf(outfile, "   => Numerical Integrals <=\n\n");
+        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+    }
+
+    if (ansatz >= 1) {
+        delete[] rho_x;
+        delete[] rho_y;
+        delete[] rho_z;
+    }
 }
 
 UK::UK(boost::shared_ptr<functional::SuperFunctional> functional,

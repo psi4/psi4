@@ -238,7 +238,7 @@ OptReturnType optking(void) {
   else
     p_Opt_data->increment_steps_since_last_H();
 
-//mol1->project_f_and_H();
+  mol1->project_f_and_H();
 
   // step functions put dq in p_Opt_data->step
   if (Opt_params.opt_type == OPT_PARAMS::IRC)

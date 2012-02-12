@@ -10,6 +10,7 @@ namespace psi {
 class Matrix;
 class Vector;
 class JK;
+class VBase;
 
 // => BASE CLASSES <= //
 
@@ -23,11 +24,14 @@ protected:
     int debug_;	
     /// jk object
     boost::shared_ptr<JK> jk_;  
+    /// v object
+    boost::shared_ptr<VBase> v_;  
 
 public:
     // => Constructors < = //
 
     Hamiltonian(boost::shared_ptr<JK> jk);
+    Hamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v);
     /// Destructor
     virtual ~Hamiltonian();
 
@@ -38,6 +42,11 @@ public:
     * @return current JK object
     */
     boost::shared_ptr<JK> jk() const { return jk_; }
+    /**
+    * Pointer to the V object
+    * @return current VBase object
+    */
+    boost::shared_ptr<VBase> v() const { return v_; }
 
     /**
     * Print header information regarding Hamiltonian
@@ -52,6 +61,11 @@ public:
     * @param jk new JK object
     */
     void set_JK(boost::shared_ptr<JK> jk) { jk_ = jk; }
+    /**
+    * Knob to swap out a V object
+    * @param v new V object
+    */
+    void set_V(boost::shared_ptr<VBase> v) { v_ = v; }
     /// Print flag (defaults to 1)
     void set_print(int print) { print_ = print; }
     /// Debug flag (defaults to 0)
@@ -64,6 +78,7 @@ public:
     // => Constructors < = //
 
     RHamiltonian(boost::shared_ptr<JK> jk);
+    RHamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v);
     /// Destructor
     virtual ~RHamiltonian();
 
@@ -97,6 +112,7 @@ public:
     // => Constructors < = //
 
     UHamiltonian(boost::shared_ptr<JK> jk);
+    UHamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v);
     /// Destructor
     virtual ~UHamiltonian();
 
@@ -178,7 +194,8 @@ public:
                     SharedMatrix Caocc, 
                     SharedMatrix Cavir, 
                     boost::shared_ptr<Vector> eps_aocc,
-                    boost::shared_ptr<Vector> eps_avir);
+                    boost::shared_ptr<Vector> eps_avir, 
+                    boost::shared_ptr<VBase> v = boost::shared_ptr<VBase>());
     virtual ~CISRHamiltonian();
 
     virtual void print_header() const;
@@ -207,7 +224,8 @@ public:
                     SharedMatrix Caocc, 
                     SharedMatrix Cavir, 
                     boost::shared_ptr<Vector> eps_aocc,
-                    boost::shared_ptr<Vector> eps_avir);
+                    boost::shared_ptr<Vector> eps_avir,
+                    boost::shared_ptr<VBase> v = boost::shared_ptr<VBase>());
     virtual ~TDHFRHamiltonian();
 
     virtual void print_header() const;
@@ -232,7 +250,8 @@ public:
                      SharedMatrix Caocc, 
                      SharedMatrix Cavir, 
                      boost::shared_ptr<Vector> eps_aocc,
-                     boost::shared_ptr<Vector> eps_avir);
+                     boost::shared_ptr<Vector> eps_avir,
+                     boost::shared_ptr<VBase> v = boost::shared_ptr<VBase>());
     virtual ~CPHFRHamiltonian();
 
     virtual void print_header() const;
@@ -242,6 +261,69 @@ public:
 
     virtual std::map<std::string, SharedVector> pack(const std::map<std::string, boost::shared_ptr<Matrix> >& b);
     virtual std::vector<SharedMatrix > unpack(const std::vector<SharedVector >& x);
+};
+
+class TDARHamiltonian : public CISRHamiltonian {
+
+protected:
+    
+    SharedMatrix Cocc_;
+
+public:
+    TDARHamiltonian(boost::shared_ptr<JK> jk, 
+                    boost::shared_ptr<VBase> v,
+                    SharedMatrix Cocc,
+                    SharedMatrix Caocc, 
+                    SharedMatrix Cavir, 
+                    boost::shared_ptr<Vector> eps_aocc,
+                    boost::shared_ptr<Vector> eps_avir);
+    virtual ~TDARHamiltonian();
+
+    virtual void print_header() const;
+    virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
+                               std::vector<boost::shared_ptr<Vector> >& b);
+};
+
+class TDDFTRHamiltonian : public TDHFRHamiltonian {
+
+protected:
+    
+    SharedMatrix Cocc_;
+
+public:
+    TDDFTRHamiltonian(boost::shared_ptr<JK> jk, 
+                    boost::shared_ptr<VBase> v,
+                    SharedMatrix Cocc,
+                    SharedMatrix Caocc, 
+                    SharedMatrix Cavir, 
+                    boost::shared_ptr<Vector> eps_aocc,
+                    boost::shared_ptr<Vector> eps_avir);
+    virtual ~TDDFTRHamiltonian();
+
+    virtual void print_header() const;
+    virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
+                               std::vector<boost::shared_ptr<Vector> >& b);
+};
+
+class CPKSRHamiltonian : public CPHFRHamiltonian {
+
+protected:
+    
+    SharedMatrix Cocc_;
+
+public:
+    CPKSRHamiltonian(boost::shared_ptr<JK> jk, 
+                    boost::shared_ptr<VBase> v,
+                    SharedMatrix Cocc,
+                    SharedMatrix Caocc, 
+                    SharedMatrix Cavir, 
+                    boost::shared_ptr<Vector> eps_aocc,
+                    boost::shared_ptr<Vector> eps_avir);
+    virtual ~CPKSRHamiltonian();
+
+    virtual void print_header() const;
+    virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
+                               std::vector<boost::shared_ptr<Vector> >& b);
 };
 
 }
