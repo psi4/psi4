@@ -9,12 +9,14 @@
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 
+#include <algorithm>
+#include <numeric>
+
 using namespace boost;
 using namespace psi;
 
 Vector::Vector()
 {
-    vector_ = NULL;
     dimpi_ = NULL;
     nirrep_ = 0;
     name_ = "";
@@ -22,38 +24,32 @@ Vector::Vector()
 
 Vector::Vector(const Vector& c)
 {
-    vector_ = NULL;
     nirrep_ = c.nirrep_;
-    dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = c.dimpi_[h];
+    dimpi_ = c.dimpi_;
     alloc();
-    copy_from(c.vector_);
+    copy_from(c);
     name_ = c.name_;
 }
 
 Vector::Vector(int nirreps, int *dimpi)
+    : dimpi_(nirreps)
 {
-    vector_ = NULL;
     nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = dimpi[h];
+    dimpi_ = dimpi;
     alloc();
 }
 
 Vector::Vector(int dim)
+    : dimpi_(1)
 {
-    vector_ = NULL;
     nirrep_ = 1;
-    dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
 }
 
 Vector::Vector(const std::string& name, int nirreps, int *dimpi)
+    : dimpi_(nirreps)
 {
-    vector_ = NULL;
     nirrep_ = nirreps;
     dimpi_ = new int[nirrep_];
     for (int h=0; h<nirrep_; ++h)
@@ -63,10 +59,9 @@ Vector::Vector(const std::string& name, int nirreps, int *dimpi)
 }
 
 Vector::Vector(const std::string& name, int dim)
+    : dimpi_(1)
 {
-    vector_ = NULL;
     nirrep_ = 1;
-    dimpi_ = new int[nirrep_];
     dimpi_[0] = dim;
     alloc();
     name_ = name;
@@ -75,10 +70,7 @@ Vector::Vector(const std::string& name, int dim)
 Vector::Vector(const Dimension& v)
 {
     nirrep_ = v.n();
-    vector_ = NULL;
-    dimpi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i)
-        dimpi_[i] = v[i];
+    dimpi_ = v;
     alloc();
     name_ = v.name();
 }
@@ -86,48 +78,37 @@ Vector::Vector(const Dimension& v)
 Vector::Vector(const std::string& name, const Dimension& v)
 {
     nirrep_ = v.n();
-    vector_ = NULL;
-    dimpi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i)
-        dimpi_[i] = v[i];
+    dimpi_ = v;
     alloc();
     name_ = name;
 }
 
-Vector::~Vector() {
+Vector::~Vector()
+{
     release();
-    if (dimpi_)
-        delete[] dimpi_;
 }
 
 void Vector::init(int nirreps, int *dimpi)
 {
-    if (dimpi_) delete[] dimpi_;
+    dimpi_.init("", nirreps);
     nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = dimpi[h];
+    dimpi_ = dimpi;
     alloc();
 }
 
-void Vector::init(int nirreps, const int *dimpi, const std::string& name) {
+void Vector::init(int nirreps, const int *dimpi, const std::string& name)
+{
     name_ = name;
-    if (dimpi_) delete[] dimpi_;
-    nirrep_ = nirreps;
-    dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = dimpi[h];
+    dimpi_.init("", nirreps);
+    dimpi_ = dimpi;
     alloc();
 }
 
 void Vector::init(const Dimension &v)
 {
     name_ = v.name();
-    if (dimpi_) delete[] dimpi_;
     nirrep_ = v.n();
-    dimpi_ = new int[nirrep_];
-    for (int h=0; h<nirrep_; ++h)
-        dimpi_[h] = v[h];
+    dimpi_ = v;
     alloc();
 }
 
@@ -140,88 +121,64 @@ Vector* Vector::clone()
 
 void Vector::alloc()
 {
-    if (vector_)
+    if (vector_.size())
         release();
 
-    vector_ = (double**)malloc(sizeof(double*) * nirrep_);
+    v_.resize(dimpi_.sum());
+
+    std::fill(vector_.begin(), vector_.end(), (double*)0);
+    std::fill(v_.begin(), v_.end(), 0.0);
+
+    assign_pointer_offsets();
+}
+
+void Vector::assign_pointer_offsets()
+{
+    // Resize just to be sure it's the correct size
+    vector_.resize(dimpi_.n(), 0);
+
+    size_t offset = 0;
     for (int h=0; h<nirrep_; ++h) {
-        if (dimpi_[h]) {
-            vector_[h] = new double[dimpi_[h]];
-            ::memset(vector_[h], 0, sizeof(double)*dimpi_[h]);
-        }
+        if (dimpi_[h])
+            vector_[h] = v_.data() + offset;
+        else
+            vector_[h] = NULL;
+        offset += dimpi_[h];
     }
 }
 
 void Vector::release()
 {
-    if (!vector_)
-        return;
-
-    for (int h=0; h<nirrep_; ++h) {
-        if (dimpi_[h])
-            delete[] (vector_[h]);
-    }
-    free(vector_);
-    vector_ = NULL;
+    std::fill(vector_.begin(), vector_.end(), (double*)0);
+    std::fill(v_.begin(), v_.end(), 0.0);
 }
 
-void Vector::copy_from(double **c)
+void Vector::copy_from(const Vector& other)
 {
-    size_t size;
-    for (int h=0; h<nirrep_; ++h) {
-        size = dimpi_[h] * sizeof(double);
-        if (size)
-            memcpy(&(vector_[h][0]), &(c[h][0]), size);
-    }
+    nirrep_ = other.dimpi_.n();
+    dimpi_ = other.dimpi_;
+    v_ = other.v_;
+    assign_pointer_offsets();
 }
 
 void Vector::copy(const Vector *rhs)
 {
-    if (nirrep_ != rhs->nirrep_) {
-        release();
-        if (dimpi_)
-            delete[] dimpi_;
-        nirrep_ = rhs->nirrep_;
-        dimpi_ = new int[nirrep_];
-        for (int h=0; h<nirrep_; ++h)
-            dimpi_[h] = rhs->dimpi_[h];
-        alloc();
-    }
-    copy_from(rhs->vector_);
+    copy_from(*rhs);
 }
 
 void Vector::copy(const Vector &rhs)
 {
-    if (nirrep_ != rhs.nirrep_) {
-        release();
-        if (dimpi_)
-            delete[] dimpi_;
-        nirrep_ = rhs.nirrep_;
-        dimpi_ = new int[nirrep_];
-        for (int h=0; h<nirrep_; ++h)
-            dimpi_[h] = rhs.dimpi_[h];
-        alloc();
-    }
-    copy_from(rhs.vector_);
+    copy_from(rhs);
 }
 
 void Vector::set(double *vec)
 {
-    int h, i, ij;
-
-    ij = 0;
-    for (h=0; h<nirrep_; ++h) {
-        for (i=0; i<dimpi_[h]; ++i) {
-            vector_[h][i] = vec[ij++];
-        }
-    }
+    std::copy(vec, vec + dimpi_.sum(), v_.begin());
 }
 
 void Vector::zero()
 {
-    for (int h = 0; h < nirrep_; ++h) {
-        ::memset((void*) vector_[h], '\0', sizeof(double)*dimpi_[h]);
-    }
+    std::fill(v_.begin(), v_.end(), 0.0);
 }
 
 double Vector::pyget(const boost::python::tuple &key)
@@ -314,13 +271,20 @@ double Vector::dot(Vector* X)
     return tmp;
 }
 
-void Vector::scale(double sc)
+template<class T>
+struct scale_vector {
+    typedef T data_type;
+    typedef data_type result_type;
+
+    const data_type scalar;
+    scale_vector(const data_type& sc) : scalar(sc) {}
+
+    result_type operator()(data_type value) const { value *= scalar; return value; }
+};
+
+void Vector::scale(const double& sc)
 {
-    for (int h=0; h<nirrep_; ++h) {
-        for (int i=0; i<dimpi_[h]; ++i) {
-            vector_[h][i] *= sc;
-        }
-    }
+    std::transform(v_.begin(), v_.end(), v_.begin(), scale_vector<double>(sc));
 }
 
 void Vector::send()
