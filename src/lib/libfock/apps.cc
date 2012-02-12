@@ -36,7 +36,15 @@ RBase::~RBase()
 }
 void RBase::common_init()
 {
-    reference_wavefunction_ = Process::environment.reference_wavefunction();
+    set_reference(Process::environment.reference_wavefunction());
+
+    print_ = options_.get_int("PRINT");
+    debug_ = options_.get_int("DEBUG");
+    convergence_ = options_.get_double("SOLVER_CONVERGENCE"); 
+}
+void RBase::set_reference(boost::shared_ptr<Wavefunction> wfn) 
+{
+    reference_wavefunction_ = wfn; 
     
     if (!reference_wavefunction_) {
         throw PSIEXCEPTION("RBase: Run SCF first");
@@ -48,8 +56,6 @@ void RBase::common_init()
     
     copy(reference_wavefunction_);
     
-    print_ = options_.get_int("PRINT");
-    debug_ = options_.get_int("DEBUG");
     Eref_ = reference_wavefunction_->reference_energy();
 
     Cocc_  = Ca_subset("SO","OCC");
@@ -68,20 +74,6 @@ void RBase::common_init()
     Cs.push_back(Cavir_);
     Cs.push_back(Cfvir_);
     C_ = Matrix::horzcat(Cs);
-
-    if (debug_) {
-        AO2SO_->print();
-        Cfocc_->print();
-        Caocc_->print();
-        Cavir_->print();
-        Cfvir_->print();
-        eps_focc_->print();
-        eps_aocc_->print();
-        eps_avir_->print();
-        eps_fvir_->print();
-    }
-
-    convergence_ = options_.get_double("SOLVER_CONVERGENCE"); 
 }
 void RBase::preiterations()
 {
