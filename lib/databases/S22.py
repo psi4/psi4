@@ -6,12 +6,11 @@ import input
 #   S220: Jurecka et al. PCCP 8 1985 (2006).
 #   S22A: Takatani et al. JCP 132 144104 (2010).
 #   S22B: Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
-
 dbse = 'S22'
 
 # <<< Database Members >>>
-HRXN = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22]
-HRXN_SM = [2,8,16]
+HRXN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+HRXN_SM = [2, 8, 16]
 HRXN_LG = [15]
 
 # <<< Chemical Systems Involved >>>
@@ -21,21 +20,21 @@ ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
 ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
-   RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1, 
-                                     '%s-%s-monoA-CP'   % (dbse, rxn) : -1, 
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                     '%s-%s-monoA-unCP' % (dbse, rxn) : -1, 
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+    RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                      '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
 
-   ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+    ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-   ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn), 
-                                     '%s-%s-monoA-CP'   % (dbse, rxn), 
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) ]
+    ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-CP'   % (dbse, rxn),
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-   ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn), 
-                                     '%s-%s-monoA-unCP' % (dbse, rxn), 
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) ]
+    ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-unCP' % (dbse, rxn),
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values >>>
 BIND = {}
@@ -270,7 +269,7 @@ H   0.849471  -0.658193   0.000000
 H   2.158621  -0.136396   0.809565
 units angstrom
 }
-""")
+""", 0)
 
 S22_2 = input.process_input("""
 molecule dimer {
@@ -285,7 +284,7 @@ H   1.680398  -0.373741  -0.758561
 H   1.680398  -0.373741   0.758561
 units angstrom
 }
-""")
+""", 0)
 
 S22_3 = input.process_input("""
 molecule dimer {
@@ -304,7 +303,7 @@ H   2.979488   0.258829   0.000000
 H   0.498833  -1.107195   0.000000
 units angstrom
 }
-""")
+""", 0)
 
 S22_4 = input.process_input("""
 molecule dimer {
@@ -325,7 +324,7 @@ H   0.387244   1.207782   0.000000
 H   3.117061   0.013701   0.000000
 units angstrom
 }
-""")
+""", 0)
 
 S22_5 = input.process_input("""
 molecule dimer {
@@ -358,7 +357,7 @@ H     1.9700268   -3.4323850    0.0000000
 H    -2.6690620   -2.3883417    0.0000000
 units angstrom
 }
-""")
+""", 0)
 
 S22_6 = input.process_input("""
 molecule dimer {
@@ -392,7 +391,7 @@ H     1.8694714   -2.7812773    0.2940385
 H     0.4089067   -1.9079942    0.1300860
 units angstrom
 }
-""")
+""", 0)
 
 S22_7 = input.process_input("""
 molecule dimer {
@@ -431,7 +430,7 @@ H    -4.4267056    0.9186178    2.7530256
 H    -5.7883971    0.0505530    2.0247280
 units angstrom
 }
-""")
+""", 0)
 
 S22_8 = input.process_input("""
 molecule dimer {
@@ -450,7 +449,7 @@ H   0.888551  -0.513060  -1.494685
 H   0.000000   1.026339  -1.494868
 units angstrom
 }
-""")
+""", 0)
 
 S22_9 = input.process_input("""
 molecule dimer {
@@ -471,7 +470,7 @@ H  -0.870464   0.870464   2.783308
 H   0.870464  -0.870464   2.783308
 units angstrom
 }
-""")
+""", 0)
 
 S22_10 = input.process_input("""
 molecule dimer {
@@ -497,7 +496,7 @@ H     0.0000000    0.0000000    1.9966697
 H     0.4324413   -0.9273380    3.4463772
 units angstrom
 }
-""")
+""", 0)
 
 S22_11 = input.process_input("""
 molecule dimer {
@@ -530,7 +529,7 @@ H     2.5824943   -0.7163066   -2.1437977
 H     1.1338534    1.2920593   -2.1423150
 units angstrom
 }
-""")
+""", 0)
 
 S22_12 = input.process_input("""
 molecule dimer {
@@ -559,7 +558,7 @@ H     1.3208583    1.0670610   -2.0623986
 H    -0.8103758    2.3643033   -2.0618643
 units angstrom
 }
-""")
+""", 0)
 
 S22_13 = input.process_input("""
 molecule dimer {
@@ -592,7 +591,7 @@ O    -1.5611090    0.9718061    2.1298059
 H    -2.1294635    2.2015046    0.0568134
 units angstrom
 }
-""")
+""", 0)
 
 S22_14 = input.process_input("""
 molecule dimer {
@@ -629,7 +628,7 @@ H     1.8075741   -2.0366963    0.2333038
 H     3.5028794   -0.3485344    0.9695233
 units angstrom
 }
-""")
+""", 0)
 
 S22_15 = input.process_input("""
 molecule dimer {
@@ -668,7 +667,7 @@ O    -0.0397875    0.7227006   -3.2531083
 H     2.0853289   -0.2760176   -2.4454577
 units angstrom
 }
-""")
+""", 0)
 
 S22_16 = input.process_input("""
 molecule dimer {
@@ -687,7 +686,7 @@ H   0.000000   0.000000   0.627352
 H   0.000000   0.000000   3.963929
 units angstrom
 }
-""")
+""", 0)
 
 S22_17 = input.process_input("""
 molecule dimer {
@@ -711,7 +710,7 @@ H    -2.6229114   -1.2190831    0.0000000
 H    -1.9015103    0.0979110    0.0000000
 units angstrom
 }
-""")
+""", 0)
 
 S22_18 = input.process_input("""
 molecule dimer {
@@ -736,7 +735,7 @@ H     0.7595495   -3.1459477    0.8060729
 H     0.0444167   -1.9449399    0.0000000
 units angstrom
 }
-""")
+""", 0)
 
 S22_19 = input.process_input("""
 molecule dimer {
@@ -760,7 +759,7 @@ C     0.0751963    2.3707040    0.0000000
 H     0.1476295    1.3052847    0.0000000
 units angstrom
 }
-""")
+""", 0)
 
 S22_20 = input.process_input("""
 molecule dimer {
@@ -793,7 +792,7 @@ H     1.2382321   -2.1435655   -2.4536764
 H    -1.2382321   -2.1435655   -2.4536764
 units angstrom
 }
-""")
+""", 0)
 
 S22_21 = input.process_input("""
 molecule dimer {
@@ -830,7 +829,7 @@ H    -4.7905991    1.5439372    0.0000000
 H    -4.5580187   -0.9142916    0.0000000
 units angstrom
 }
-""")
+""", 0)
 
 S22_22 = input.process_input("""
 molecule dimer {
@@ -865,15 +864,14 @@ H     4.6137632   -1.1850101    1.1092635
 H     3.4598854    0.9030376    1.7569489
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) 
-   GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_CP
-   GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_CP
-   GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_unCP
-   GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_unCP
-
+    GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
+    GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_CP
+    GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_CP
+    GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_unCP
+    GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_unCP
