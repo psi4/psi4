@@ -17,24 +17,27 @@ NeKr = []
 ArAr = []
 ArKr = []
 KrKr = []
-dist = [0.85,0.9,0.95,0.975,1.0,1.025,1.05,1.1,1.15,1.2,1.3,1.4,1.5,1.6,1.7,1.8,2.0,2.2]
-for d in dist: HeHe.append('HeHe-' + str(d))
-for d in dist: HeNe.append('HeNe-' + str(d))
-for d in dist: HeAr.append('HeAr-' + str(d))
-for d in dist: HeKr.append('HeKr-' + str(d))
-for d in dist: NeNe.append('NeNe-' + str(d))
-for d in dist: NeAr.append('NeAr-' + str(d))
-for d in dist: NeKr.append('NeKr-' + str(d))
-for d in dist: ArAr.append('ArAr-' + str(d))
-for d in dist: ArKr.append('ArKr-' + str(d))
-for d in dist: KrKr.append('KrKr-' + str(d))
+dist = [0.85, 0.9, 0.95, 0.975, 1.0, 1.025, 1.05, 1.1, 1.15,
+        1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 2.0, 2.2]
+for d in dist:
+    HeHe.append('HeHe-' + str(d))
+    HeNe.append('HeNe-' + str(d))
+    HeAr.append('HeAr-' + str(d))
+    HeKr.append('HeKr-' + str(d))
+    NeNe.append('NeNe-' + str(d))
+    NeAr.append('NeAr-' + str(d))
+    NeKr.append('NeKr-' + str(d))
+    ArAr.append('ArAr-' + str(d))
+    ArKr.append('ArKr-' + str(d))
+    KrKr.append('KrKr-' + str(d))
 
 temp = [HeHe, HeNe, HeAr, HeKr, NeNe, NeAr, NeKr, ArAr, ArKr, KrKr]
 HRXN = sum(temp, [])
 
-HRXN_SM = ['NeNe-1.0','NeNe-1.1','NeAr-0.85']
+HRXN_SM = ['NeNe-1.0', 'NeNe-1.1', 'NeAr-0.85']
 HRXN_LG = ['KrKr-0.85']
-HRXN_EQ = ['HeHe-1.0','HeNe-1.0','HeAr-1.0','HeKr-1.0','NeNe-1.0','NeAr-1.0','NeKr-1.0','ArAr-1.0','ArKr-1.0','KrKr-1.0']
+HRXN_EQ = ['HeHe-1.0', 'HeNe-1.0', 'HeAr-1.0', 'HeKr-1.0', 'NeNe-1.0',
+           'NeAr-1.0', 'NeKr-1.0', 'ArAr-1.0', 'ArKr-1.0', 'KrKr-1.0']
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -43,159 +46,159 @@ ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
 ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
-   if rxn in HeHe:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-He-mono-unCP'  % (dbse)      : -2 }
+    if rxn in HeHe:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                          '%s-He-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-He-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-He-mono-unCP'  % (dbse) ]
 
-   elif rxn in HeNe:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-He-mono-unCP'  % (dbse)      : -1,
-                                        '%s-Ne-mono-unCP'  % (dbse)      : -1 }
+    elif rxn in HeNe:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-He-mono-unCP'  % (dbse)      : -1,
+                                          '%s-Ne-mono-unCP'  % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-He-mono-unCP'  % (dbse),
-                                        '%s-Ne-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-He-mono-unCP'  % (dbse),
+                                          '%s-Ne-mono-unCP'  % (dbse) ]
 
-   elif rxn in HeAr:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-He-mono-unCP'  % (dbse)      : -1,
-                                        '%s-Ar-mono-unCP'  % (dbse)      : -1 }
+    elif rxn in HeAr:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-He-mono-unCP'  % (dbse)      : -1,
+                                          '%s-Ar-mono-unCP'  % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-He-mono-unCP'  % (dbse),
-                                        '%s-Ar-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-He-mono-unCP'  % (dbse),
+                                          '%s-Ar-mono-unCP'  % (dbse) ]
 
-   elif rxn in HeKr:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-He-mono-unCP'  % (dbse)      : -1,
-                                        '%s-Kr-mono-unCP'  % (dbse)      : -1 }
+    elif rxn in HeKr:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-He-mono-unCP'  % (dbse)      : -1,
+                                          '%s-Kr-mono-unCP'  % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-He-mono-unCP'  % (dbse),
-                                        '%s-Kr-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-He-mono-unCP'  % (dbse),
+                                          '%s-Kr-mono-unCP'  % (dbse) ]
 
-   elif rxn in NeNe:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-Ne-mono-unCP'  % (dbse)      : -2 }
+    elif rxn in NeNe:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                          '%s-Ne-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Ne-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Ne-mono-unCP'  % (dbse) ]
 
-   elif rxn in NeAr:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-Ne-mono-unCP'  % (dbse)      : -1,
-                                        '%s-Ar-mono-unCP'  % (dbse)      : -1 }
+    elif rxn in NeAr:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-Ne-mono-unCP'  % (dbse)      : -1,
+                                          '%s-Ar-mono-unCP'  % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Ne-mono-unCP'  % (dbse),
-                                        '%s-Ar-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Ne-mono-unCP'  % (dbse),
+                                          '%s-Ar-mono-unCP'  % (dbse) ]
 
-   elif rxn in NeKr:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-Ne-mono-unCP'  % (dbse)      : -1,
-                                        '%s-Kr-mono-unCP'  % (dbse)      : -1 }
+    elif rxn in NeKr:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-Ne-mono-unCP'  % (dbse)      : -1,
+                                          '%s-Kr-mono-unCP'  % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Ne-mono-unCP'  % (dbse),
-                                        '%s-Kr-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Ne-mono-unCP'  % (dbse),
+                                          '%s-Kr-mono-unCP'  % (dbse) ]
 
-   elif rxn in ArAr:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-Ar-mono-unCP'  % (dbse)      : -2 }
+    elif rxn in ArAr:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                          '%s-Ar-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Ar-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Ar-mono-unCP'  % (dbse) ]
 
-   elif rxn in ArKr:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-Ar-mono-unCP'  % (dbse)      : -1,
-                                        '%s-Kr-mono-unCP'  % (dbse)      : -1 }
+    elif rxn in ArKr:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-Ar-mono-unCP'  % (dbse)      : -1,
+                                          '%s-Kr-mono-unCP'  % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Ar-mono-unCP'  % (dbse),
-                                        '%s-Kr-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Ar-mono-unCP'  % (dbse),
+                                          '%s-Kr-mono-unCP'  % (dbse) ]
 
-   elif rxn in KrKr:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-Kr-mono-unCP'  % (dbse)      : -2 }
+    elif rxn in KrKr:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                          '%s-Kr-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Kr-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Kr-mono-unCP'  % (dbse) ]
 
 # <<< Reference Values >>>
 BIND = {}
@@ -393,70 +396,70 @@ BIND['%s-KrKr-2.2'   % (dbse)] =  -0.00429
 TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)$')
 for item in HeHe:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Helium Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Helium Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium Dimer at %s Req' % (molname.group(2))
 
 for item in HeNe:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Helium-Neon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium-Neon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium-Neon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Neon from Helium-Neon Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Helium-Neon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium-Neon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium-Neon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Neon from Helium-Neon Complex at %s Req' % (molname.group(2))
 
 for item in HeAr:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Helium-Argon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium-Argon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium-Argon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Argon from Helium-Argon Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Helium-Argon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium-Argon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium-Argon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Argon from Helium-Argon Complex at %s Req' % (molname.group(2))
 
 for item in HeKr:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Helium-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Krypton from Helium-Krypton Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Helium-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Helium-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Helium from Helium-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Krypton from Helium-Krypton Complex at %s Req' % (molname.group(2))
 
 for item in NeNe:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Neon Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Neon Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Neon from Neon Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Neon Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Neon Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Neon from Neon Dimer at %s Req' % (molname.group(2))
 
 for item in NeAr:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Neon-Argon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Neon-Argon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Neon from Neon-Argon Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Argon from Neon-Argon Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Neon-Argon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Neon-Argon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Neon from Neon-Argon Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Argon from Neon-Argon Complex at %s Req' % (molname.group(2))
 
 for item in NeKr:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Neon-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Neon-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Neon from Neon-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Krypton from Neon-Krypton Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Neon-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Neon-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Neon from Neon-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Krypton from Neon-Krypton Complex at %s Req' % (molname.group(2))
 
 for item in ArAr:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Argon Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Argon Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Argon from Argon Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Argon Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Argon Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Argon from Argon Dimer at %s Req' % (molname.group(2))
 
 for item in ArKr:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Argon-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Argon-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Argon from Argon-Krypton Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Krypton from Argon-Krypton Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Argon-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Argon-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Argon from Argon-Krypton Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Krypton from Argon-Krypton Complex at %s Req' % (molname.group(2))
 
 for item in KrKr:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Krypton Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Krypton Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Krypton from Krypton Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Krypton Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Krypton Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Krypton from Krypton Dimer at %s Req' % (molname.group(2))
 
 TAGL['%s-He-mono-unCP' % (dbse)] = 'Helium Atom'
 TAGL['%s-Ne-mono-unCP' % (dbse)] = 'Neon Atom'
@@ -2662,14 +2665,13 @@ units angstrom
 #<<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
-   distance = rxnpattern.match(rxn)
+    distance = rxnpattern.match(rxn)
 
-   GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
-   GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoA_CP
-   GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_CP
+    GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
+    GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoA_CP
+    GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_CP
 
 GEOS['%s-He-mono-unCP' % (dbse)] = eval('%s_He_monomer' % (dbse))
 GEOS['%s-Ne-mono-unCP' % (dbse)] = eval('%s_Ne_monomer' % (dbse))
 GEOS['%s-Ar-mono-unCP' % (dbse)] = eval('%s_Ar_monomer' % (dbse))
 GEOS['%s-Kr-mono-unCP' % (dbse)] = eval('%s_Kr_monomer' % (dbse))
-
