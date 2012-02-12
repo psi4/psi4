@@ -1,0 +1,25 @@
+molecule {
+symmetry = c1
+O
+H 1 R
+H 1 R 2 A
+
+R = .9
+A = 104.5
+}
+
+plugin_load("./plugin_rqchf.so")
+
+set basis cc-pvdz
+
+set d_convergence 1.0
+set e_convergence 1.0
+scf()
+
+set guess read
+set d_convergence 9
+set e_convergence 9
+plugin("./plugin_rqchf.so")
+
+# Just to see how much effort DIIS needs
+scf()
