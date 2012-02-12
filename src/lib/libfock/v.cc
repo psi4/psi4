@@ -97,37 +97,37 @@ void VBase::compute_D()
             for (int A = 0; A < P_.size(); A++) {
                 std::stringstream ss;
                 ss << "P (SO) " << A;
-                P_SO_.push_back(SharedMatrix(new Matrix(ss.str(),AO2USO_->colspi(),AO2USO_->colspi(),P_[A]->symmetry())));
+                P_SO_.push_back(SharedMatrix(new Matrix(ss.str(),C_[0]->rowspi(),C_[0]->rowspi(),P_[A]->symmetry())));
             }
         } 
-    }
 
-    int maxi = Caocc_[0]->max_ncol();
-    if (Caocc_.size() > 1) 
-        maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
-    double* temp = new double[maxi * (ULI) Caocc_[0]->max_nrow()];
-    for (int A = 0; A < P_.size(); A++) {
-        SharedMatrix Cl = Caocc_[A % Caocc_.size()];
-        SharedMatrix Cr = Cavir_[A % Cavir_.size()];
-        SharedMatrix P = P_[A];
-        SharedMatrix P_SO = P_SO_[A];
-        int symm = P->symmetry();
-        for (int h = 0; h < P->nirrep(); h++) {
-            int nl = Cl->rowspi()[h];
-            int nr = Cr->rowspi()[h^symm];
-            int ni = Cl->colspi()[h];
-            int na = Cr->colspi()[h^symm];
-            if (!nl || !nr || !ni || !na) continue;
-            double** Clp   = Cl->pointer(h);
-            double** Crp   = Cr->pointer(h^symm);
-            double** Pp    = P->pointer(h);
-            double** P_SOp = P_SO->pointer(h);
+        int maxi = Caocc_[0]->max_ncol();
+        if (Caocc_.size() > 1) 
+            maxi = (Caocc_[1]->max_ncol() > maxi ? Caocc_[1]->max_ncol() : maxi);
+        double* temp = new double[maxi * (ULI) Caocc_[0]->max_nrow()];
+        for (int A = 0; A < P_.size(); A++) {
+            SharedMatrix Cl = Caocc_[A % Caocc_.size()];
+            SharedMatrix Cr = Cavir_[A % Cavir_.size()];
+            SharedMatrix P = P_[A];
+            SharedMatrix P_SO = P_SO_[A];
+            int symm = P->symmetry();
+            for (int h = 0; h < P->nirrep(); h++) {
+                int nl = Cl->rowspi()[h];
+                int nr = Cr->rowspi()[h^symm];
+                int ni = Cl->colspi()[h];
+                int na = Cr->colspi()[h^symm];
+                if (!nl || !nr || !ni || !na) continue;
+                double** Clp   = Cl->pointer(h);
+                double** Crp   = Cr->pointer(h^symm);
+                double** Pp    = P->pointer(h);
+                double** P_SOp = P_SO->pointer(h);
 
-            C_DGEMM('N','T',ni,nr,na,1.0,Pp[0],na,Crp[0],na,0.0,temp,nr);
-            C_DGEMM('N','N',nl,nr,ni,1.0,Clp[0],ni,temp,nr,0.0,P_SOp[0],nr);
-        }
+                C_DGEMM('N','T',ni,nr,na,1.0,Pp[0],na,Crp[0],na,0.0,temp,nr);
+                C_DGEMM('N','N',nl,nr,ni,1.0,Clp[0],ni,temp,nr,0.0,P_SOp[0],nr);
+            }
+        }    
+        delete[] temp;
     }    
-    delete[] temp;
 }   
 void VBase::USO2AO()
 {
@@ -174,10 +174,12 @@ void VBase::USO2AO()
         C_AO_ = C_;
         D_AO_ = D_;
         V_AO_ = V_;
-        P_AO_ = P_SO_;
         // Clear V_AO_ out
         for (int A = 0; A < V_AO_.size(); A++) {
             V_AO_[A]->zero();
+        }
+        P_AO_ = P_SO_;
+        for (int A = 0; A < P_AO_.size(); A++) {
             P_AO_[A]->hermitivitize();
         }
         return;    
