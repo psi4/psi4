@@ -2,8 +2,8 @@
 
 memory 250 mb
 
-nucenergy =  9.16089610607450  #TEST
-refenergy = -76.2224485023730  #TEST
+nucenergy =   9.1622581908184 #TEST
+refenergy = -76.2224486598878  #TEST
 
 molecule h2o {
   O
@@ -20,5 +20,5 @@ set globals {
 
 optimized_energy = optimize('mp2')
 
-compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 4, "Nuclear repulsion energy")    #TEST
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, optimized_energy, 6, "Reference energy")                          #TEST
