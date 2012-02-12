@@ -42,6 +42,7 @@ protected:
     boost::shared_ptr<DFTGrid> grid_;
     /// Quadrature values obtained during integration 
     std::map<std::string, double> quad_values_;
+
     /// AO2USO matrix (if not C1)
     SharedMatrix AO2USO_;
 
@@ -65,6 +66,8 @@ protected:
     std::vector<SharedMatrix> Cavir_;
     /// Vector of Perturbation matrices (TDDFT, ia) 
     std::vector<SharedMatrix> P_;
+    /// Vector of Perturbation matrices (TDDFT, SO) 
+    std::vector<SharedMatrix> P_SO_;
     /// Vector of Perturbation matrices (TDDFT, AO) 
     std::vector<SharedMatrix> P_AO_;
 

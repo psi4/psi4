@@ -1,0 +1,42 @@
+#include <libplugin/plugin.h>
+#include <psi4-dec.h>
+#include <libparallel/parallel.h>
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <libpsio/psio.hpp>
+#include "rqchf.h"
+
+INIT_PLUGIN
+
+namespace psi{ namespace scf {
+
+extern "C" 
+int read_options(std::string name, Options& options)
+{
+    if (name == "QCSCF"|| options.read_globals()) {
+        /*- The amount of information printed to the output file -*/
+        options.add_int("PRINT", 1);
+        /*- The auxilliary basis set -*/
+        options.add_str("DF_BASIS_SCF", "");
+        /*- The orbital basis set -*/
+        options.add_str("BASIS", "");
+    }
+
+    return true;
+}
+
+
+extern "C" 
+PsiReturnType plugin_rqchf(Options& options)
+{
+    int print = options.get_int("PRINT");
+    boost::shared_ptr<Wavefunction> hf(new RQCHF(options));
+    Process::environment.set_reference_wavefunction(hf);
+    hf->compute_energy();
+    Process::environment.reference_wavefunction().reset();
+    return Success;
+}
+
+
+}} // End namespaces
+
