@@ -1,3 +1,4 @@
+#include <boost/shared_ptr.hpp>
 #include "mints.h"
 #include "orbitalspace.h"
 
@@ -150,5 +151,54 @@ SharedMatrix OrbitalSpace::overlap(const boost::shared_ptr<BasisSet>& basis1,
 
     return Smat;
 }
+
+namespace SpaceBuilder
+{
+namespace { // anonymous
+//    OrbitalSpace orthogonalize(const std::string& id, const std::string& name,
+//                               const boost::shared_ptr<BasisSet>& bs,
+//                               const boost::shared_ptr<IntegralFactory>& ints,
+//                               double lindep_tol)
+//    {
+//        OneBodySOInt *o_engine = ints->so_overlap();
+
+//        SOBasisSet* so_bs = new SOBasisSet(bs, ints);
+//        const Dimension& SODIM = so_bs->petite_list()->SO_basisdim();
+//        delete so_bs;
+
+//        SharedMatrix overlap(new Matrix("Overlap", SODIM, SODIM));
+//        o_engine->compute(overlap);
+//        delete o_engine;
+
+
+//    }
+
+    OrbitalSpace orthogonal_compliment(const OrbitalSpace& space1, const OrbitalSpace& space2, const std::string& id, const std::string& name, double lindep_tol)
+    {
+        fprintf(outfile, "    Projecting out '%s' from '%s' to obtain space '%s'\n",
+                space1.name().c_str(), space2.name().c_str(), name.c_str());
+
+        // If space1 is empty, return a copy of the original space.
+        if (space1.dim().sum() == 0)
+            return OrbitalSpace(id, name, space2.C(), space2.evals(), space2.basis(), space2.integral());
+
+        // C12 = C1 * S12 * C2
+        SharedMatrix C12 = OrbitalSpace::overlap(space1, space2);
+
+        C12->print();
+    }
+} // namespace anonymous
+
+    OrbitalSpace build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space, double lindep_tol)
+    {
+        return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
+    }
+
+    OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, boost::shared_ptr<IntegralFactory> ints, double lindep_tol)
+    {
+        boost::shared_ptr<BasisSet> ri_basis = obs + aux_bs;
+//        return orthogonalize()
+    }
+} // namespace SpaceBuilder
 
 } // namespace psi
