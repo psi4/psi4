@@ -216,10 +216,12 @@ public:
                     throw PSIEXCEPTION("MRCC interface: Unable to interpret line.");
                 }
 
+                // The density arrives in Dirac notation, so we reorder to Mulliken
+                // It's also normalized differently to Psi's, by a factor of 2.
                 if (r != 0 && s != 0) {
-                    //if (p >= q && r >= s)
+                    if (p >= r && q >= s)
                         if (fabs(value) > tolerance_)
-                            filler(bucket, p-1, q-1, r-1, s-1, value);
+                            filler(bucket, p - 1, r - 1, q - 1, s - 1, value * 0.5);
                 }
                 else
                     one_particle_->set(abs_mo_to_irrep_[p-1], abs_mo_to_rel_[p-1], abs_mo_to_rel_[q-1], value);
@@ -363,7 +365,17 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     
     dpdfile4 I;
     _default_psio_lib_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"), "MO TPDM (AA|AA)");
+
+    // Just in case the buffer exists, delete it now
+    dpdbuf4 Ibuf;
+    dpd_buf4_init(&Ibuf, PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"),
+                  ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
+    dpd_buf4_scm(&Ibuf, 0.0);
+    dpd_buf4_close(&Ibuf);
+
+
+    dpd_file4_init(&I, PSIF_TPDM_PRESORT, 0,
+                   ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), "MO TPDM (AA|AA)");
 
     SharedMatrix one_particle(new Matrix("MO-basis OPDM", active_mopi, active_mopi));
 
@@ -372,69 +384,84 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     // go ahead and handle the one particle
     MRCCRestrictedReader mrccreader(ccdensities, tolerance, one_particle);
 
-    // Do it
+    // Read the density matrices into DPD buffers
     bucket(mrccreader);
 
     // Close DPD file
     dpd_file4_close(&I);
-
-    // Wxy
     
-    // Two-electron contributions (xp|qr)G_ypqr
 
-    // Hack: regenerate TEIs in MO basis 
+    /****START OF HACK****/
     fprintf(outfile, "    Beginning integral transformation.\n");
-
     // This transforms everything (OEI and TEI)
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
-
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
-
     fprintf(outfile, "    Transformation complete.\n\n");
+    /****END HACK****/
 
+    /*
+     * Form the coupled cluster Lagrangian, X
+     * [eq. 39, Scheiner et al., JCP, 87 5361 (1987)]
+     */
+
+    // One-electron contribution: Xpq <- h_pr D_rq
+    SharedMatrix H(new Matrix(PSIF_MO_FZC, nmopi, nmopi));
+    // TODO make sure the density is frozen appropriately with frozen core
+    H->load(_default_psio_lib_,PSIF_OEI);
+    SharedMatrix X(new Matrix("X (1e contribution)", nmopi, nmopi));
+    X->gemm(false, false, 1.0, one_particle, H, 0.0);
+
+    // Two-electron contribution: Xpq <- 2 (pr|st) G_qrst
     dpdbuf4 G;
-    dpdbuf4 D;
-    
+    dpdbuf4 D;    
+    dpdfile2 X2;
+
+
     _default_psio_lib_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
     _default_psio_lib_->tocprint(PSIF_LIBTRANS_DPD);
-    dpd_buf4_init(&G,PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"), ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
-    dpd_buf4_init(&D,PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"), 0, "MO TPDM (AA|AA)");
-    
-    dpd_buf4_print(&D,outfile,1);
-    dpd_buf4_print(&G,outfile,1);
-
-    dpdfile2 W2;
-    
-    dpd_file2_init(&W2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'), "Bill");
-    dpd_contract442(&G, &D, &W2, 3, 3, 2.0, 0.0);
-    
-    SharedMatrix W3(new Matrix(&W2));
-    W3->print();
-
-    // One-electron contributions h_xp D_py    
-    SharedMatrix H(new Matrix(PSIF_MO_OEI, nmopi, nmopi));
-    H->load(_default_psio_lib_,PSIF_OEI); 
-    H->print();
-
-    SharedMatrix W(new Matrix("Wxy", nmopi, nmopi));
-    W->gemm(false,false,1.0,one_particle,H,0.0);
-    W->print();
-
-    W->add(W3);
-    W->print();
+    dpd_buf4_init(&G,PSIF_LIBTRANS_DPD, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+                  ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
+    dpd_buf4_init(&D,PSIF_TPDM_PRESORT, 0, ints.DPD_ID("[A,A]"), ints.DPD_ID("[A,A]"),
+                  ints.DPD_ID("[A>=A]+"), ints.DPD_ID("[A>=A]+"), 0, "MO TPDM (AA|AA)");
+    dpd_file2_init(&X2, PSIF_LIBTRANS_DPD, 0, ints.DPD_ID('A'), ints.DPD_ID('A'),
+                   "X (2e contribution)");
 
     // Check energy
+    double enuc = Process::environment.molecule()->nuclear_repulsion_energy();
     double E1e = one_particle->vector_dot(H);
-    double E2e = dpd_buf4_dot(&G,&D);
-    fprintf(outfile, "Check energy = %24.16E\n",E1e);
-    fprintf(outfile, "Check energy = %24.16E\n",E2e);
-    fprintf(outfile, "Check energy = %24.16E\n",E1e + E2e);
+    double E2e = dpd_buf4_dot(&G, &D);
+    fprintf(outfile, "\tEnergies recomputed from MRCC's density matrices:\n");
+    fprintf(outfile, "\t\tOne-electron energy = %16.10f\n",E1e);
+    fprintf(outfile, "\t\tTwo-electron energy = %16.10f\n",E2e);
+    fprintf(outfile, "\t\tTotal energy        = %16.10f\n",enuc + E1e + E2e);
+
+    dpd_contract442(&G, &D, &X2, 0, 0, 2.0, 0.0);
+    SharedMatrix X2mat(new Matrix(&X2));
+X->print();
+X2mat->print();
+    X->add(X2mat);
+    X->set_name("Full X");
+X->print();
+
+    // Symmetrize X, to form the lagrangian
+    SharedMatrix Lag(X->clone());
+    Lag->add(X->transpose());
+    Lag->set_name("Coupled cluster Lagrangian");
+    Lag->print();
+
+    // Dump the lagrangian to disk, then we're done with it!
+
+    // Orbital lagrangian: Lxy = Xxy - Xyx
+    SharedMatrix Lxy(X->clone());
+    Lxy->set_name("Full orbital Lagrangian");
+    Lxy->subtract(X->transpose());
+    Lxy->print();
 
     dpd_buf4_close(&D);
     dpd_buf4_close(&G);
-    
-    // At this point, the OPDM is the response OPDM 
+
+    // At this point, the OPDM is the response OPDM
     if (debug) {
         one_particle->print();
     } 

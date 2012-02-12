@@ -916,7 +916,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG", 0);
     /*- What app to test?
       -*/
-    options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF");
+    options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF RCPKS RTDA RTDDFT");
     /*- Do singlet states? Default true
      -*/
     options.add_bool("DO_SINGLETS", true);
@@ -2171,8 +2171,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do only generate the internal coordinates and then stop? -*/
       options.add_bool("INTCOS_GENERATE_EXIT", false);
-      /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} -*/
-      options.add_str("INTRAFRAG_HESS", "FISCHER", "FISCHER SCHLEGEL LINDH SIMPLE");
+      /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE} -*/
+      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE");
       /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
       options.add_str("INTERFRAG_HESS", "DEFAULT", "DEFAULT FISCHER_LIKE");
       /*- Do freeze all fragments rigid? -*/
@@ -2187,7 +2187,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Hessian update scheme -*/
       options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
       /*- Number of previous steps to use in Hessian update, 0 uses all -*/
-      options.add_int("HESS_UPDATE_USE_LAST", 6);
+      options.add_int("HESS_UPDATE_USE_LAST", 1);
       /*- Do limit the magnitude of changes caused by the Hessian update? -*/
       options.add_bool("HESS_UPDATE_LIMIT", true);
       /*- If HESS_UPDATE_LIMIT is true, changes to the Hessian from the update are limited to the larger of
@@ -2229,7 +2229,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- IRC mapping direction -*/
       options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
       /*- Set number of consecutive backward steps allowed in optimization -*/
-      options.add_int("CONSECUTIVE_BACKSTEPS", 1);
+      options.add_int("CONSECUTIVE_BACKSTEPS", 0);
   }
   if(name == "FINDIF"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements

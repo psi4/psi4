@@ -13,6 +13,7 @@ class BasisSet;
 class Matrix;
 class TwoBodyAOInt;
 class JK;
+class VBase;
 
 // => BASE CLASSES <= //
 
@@ -24,6 +25,7 @@ protected:
 
     SharedMatrix C_;
 
+    SharedMatrix Cocc_;
     SharedMatrix Cfocc_;
     SharedMatrix Cfvir_;
     SharedMatrix Caocc_;
@@ -35,9 +37,12 @@ protected:
     boost::shared_ptr<Vector> eps_avir_;
 
     SharedMatrix AO2USO_;
-
+    
+    /// How far to converge the two-norm of the residual
+    double convergence_;
     /// Global JK object, built in preiterations, destroyed in postiterations
     boost::shared_ptr<JK> jk_;
+    boost::shared_ptr<VBase> v_;
 
     double Eref_;
 
@@ -57,11 +62,35 @@ public:
     boost::shared_ptr<JK> jk() const { return jk_;}
     /// Set the JK object, say from SCF
     void set_jk(boost::shared_ptr<JK> jk) { jk_ = jk; }
+    /// Gets a handle to the VBase object, if built by preiterations 
+    boost::shared_ptr<VBase> v() const { return v_;}
+    /// Set the VBase object, say from SCF (except that wouldn't work, right?)
+    void set_jk(boost::shared_ptr<VBase> v) { v_ = v; }
     /// Builds JK object, if needed 
     virtual void preiterations();
     /// Destroys JK object, if needed
     virtual void postiterations();
 
+    /// => Setters <= ///
+
+    /// Set convergence behavior
+    void set_convergence(double convergence) { convergence = convergence_; };
+
+    /// Set reference info
+    void set_C(SharedMatrix C) { C_ = C; }
+    void set_Cocc(SharedMatrix Cocc) { Cocc_ = Cocc; }
+    void set_Cfocc(SharedMatrix Cfocc) { Cfocc_ = Cfocc; }
+    void set_Caocc(SharedMatrix Caocc) { Caocc_ = Caocc; }
+    void set_Cavir(SharedMatrix Cavir) { Cavir_ = Cavir; }
+    void set_Cfvir(SharedMatrix Cfvir) { Cfvir_ = Cfvir; }
+    void set_eps_focc(SharedVector eps) { eps_focc_ = eps; }
+    void set_eps_aocc(SharedVector eps) { eps_aocc_ = eps; }
+    void set_eps_avir(SharedVector eps) { eps_aocc_ = eps; }
+    void set_eps_fvir(SharedVector eps) { eps_focc_ = eps; }
+    void set_Eref(double Eref) { Eref_ = Eref; }
+
+    /// Update reference info
+    void set_reference(boost::shared_ptr<Wavefunction> reference);
 }; 
 
 // => APPLIED CLASSES <= //
@@ -125,7 +154,6 @@ public:
 
 };
 
-
 class RCPHF : public RBase {
 
 protected:
@@ -160,6 +188,42 @@ public:
     /// Add a named task
     void add_task(const std::string& task);
         
+};
+
+class RCPKS : public RCPHF {
+
+protected:
+    virtual void print_header();
+
+public:
+    RCPKS();
+    virtual ~RCPKS();
+
+    virtual double compute_energy();
+};
+
+class RTDA : public RCIS {
+
+protected:
+    virtual void print_header();
+
+public:
+    RTDA();
+    virtual ~RTDA();
+
+    virtual double compute_energy();
+};
+
+class RTDDFT : public RTDHF {
+
+protected:
+    virtual void print_header();
+
+public:
+    RTDDFT();
+    virtual ~RTDDFT();
+
+    virtual double compute_energy();
 };
 
 }

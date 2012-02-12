@@ -94,6 +94,11 @@ namespace psi {
     extern FILE *outfile;
 }
 
+void py_flush_outfile()
+{
+    fflush(outfile);
+}
+
 void py_close_outfile()
 {
     if (outfile != stdout) {
@@ -983,6 +988,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Returns the location where the Psi4 source is located.
     def("psi_top_srcdir", py_psi_top_srcdir);
 
+    def("flush_outfile", py_flush_outfile);
     def("close_outfile", py_close_outfile);
     def("reopen_outfile", py_reopen_outfile);
     def("outfile_name", py_get_outfile_name);
@@ -1129,13 +1135,6 @@ void Python::run(FILE *input)
         while(fgets(line, sizeof(line), input)) {
             file << line;
         }
-
-        // Echo the input, so's the user does not have to carry the infile around
-        fprintf(outfile,"\n  ==> Input File <==\n\n");
-        fprintf(outfile,"--------------------------------------------------------------------------\n");
-        fprintf(outfile,"%s", file.str().c_str());
-        fprintf(outfile,"--------------------------------------------------------------------------\n");
-        fflush(outfile);
 
         try {
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);

@@ -45,7 +45,12 @@ procedures = {
             'ci'            : run_detci,  # arbitrary order ci(n)
             'fci'           : run_detci,
             'adc'           : run_adc,
-            'cphf'          : run_libfock
+            'cphf'          : run_libfock,
+            'cis'           : run_libfock,
+            'tdhf'          : run_libfock,
+            'cpks'          : run_libfock,
+            'tda'           : run_libfock,
+            'tddft'         : run_libfock
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -169,20 +174,21 @@ def gradient(name, **kwargs):
         return PsiMod.reference_wavefunction().energy()
     else:
         # If not, perform finite difference of energies
-        info = "Performing finite difference calculations"
-        print info
+
+        opt_iter = 1
+        if (kwargs.has_key('opt_iter')):
+            opt_iter = kwargs['opt_iter'] + 1
+
+        if opt_iter == 1:
+            print 'Performing finite difference calculations'
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_1_0()
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print " %d displacements needed." % ndisp
+        print " %d displacements needed ..." % (ndisp),
         energies = []
-
-        opt_iter = 1
-        if (kwargs.has_key('opt_iter')):
-            opt_iter = kwargs['opt_iter'] + 1
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
         if (opt_mode.lower() == 'sow'):
@@ -238,7 +244,9 @@ def gradient(name, **kwargs):
                 banner("Loading displacement %d of %d" % (n+1, ndisp))
 
                 # Print information to the screen
-                print "    displacement %d" % (n+1)
+                print " %d" % (n + 1),
+                if (n + 1) == ndisp:
+                    print "\n",
 
                 # Load in displacement into the active molecule
                 PsiMod.get_active_molecule().set_geometry(displacement)
@@ -363,15 +371,7 @@ def optimize(name, **kwargs):
                     shutil.copy(restartfile, get_psifile(1))
 
         # compute Hessian as requested; frequency wipes out gradient so stash it
-        if (full_hess_every > -1) and (n == 0):  # on first iteration, compute hessian if you are ever going to
-          G = PsiMod.get_gradient()
-          PsiMod.IOManager.shared_object().set_specific_retention(1, True)
-          PsiMod.IOManager.shared_object().set_specific_path(1, './')
-          frequencies(name, **kwargs)
-          steps_since_last_hessian = 0
-          PsiMod.set_gradient(G)
-          PsiMod.set_global_option("CART_HESS_READ", True)
-        elif steps_since_last_hessian == full_hess_every:
+        if ((full_hess_every > -1) and (n == 0)) or (steps_since_last_hessian == full_hess_every):
           G = PsiMod.get_gradient()
           PsiMod.IOManager.shared_object().set_specific_retention(1, True)
           PsiMod.IOManager.shared_object().set_specific_path(1, './')
