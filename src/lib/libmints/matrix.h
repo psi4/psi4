@@ -74,7 +74,9 @@ protected:
 public:
 
     enum DiagonalizeOrder {
+        EvalsOnlyAscending = 0,
         Ascending = 1,
+        EvalsOnlyDescending = 2,
         Descending = 3
     };
 
