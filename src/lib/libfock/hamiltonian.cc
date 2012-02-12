@@ -818,13 +818,13 @@ void TDARHamiltonian::print_header() const
 void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                                      std::vector<boost::shared_ptr<Vector> >& b)
 {
-    // TODO V
-
     std::vector<SharedMatrix >& C_left = jk_->C_left();
     std::vector<SharedMatrix >& C_right = jk_->C_right();
+    std::vector<SharedMatrix >& P = v_->P();
 
     C_left.clear();
     C_right.clear();
+    P.clear();
 
     int nirrep = (x.size() ? x[0]->nirrep() : 0);
 
@@ -855,13 +855,32 @@ void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
             }
 
             C_right.push_back(Cr); 
+
+            std::stringstream ss2;
+            ss2 << "P, h = " << symm << ", N = " << N;
+            SharedMatrix P2(new Matrix(ss2.str(), Caocc_->colspi(), Cavir_->colspi(), symm));
+
+            offset = 0L;
+            for (int h = 0; h < Caocc_->nirrep(); ++h) {
+                double* xp = x[N]->pointer(symm);
+                int nocc = Caocc_->colspi()[h];
+                int nvir = Cavir_->colspi()[h^symm];
+                if (!nocc || ! nvir) continue;
+                double** P2p = P2->pointer(h);
+                ::memcpy((void*) P2p[0], (void*) &xp[offset], sizeof(double) * nocc * nvir);
+                offset += nocc * nvir;
+            }
+
+            P.push_back(P2);
         }
     }
 
     jk_->compute();
+    v_->compute();
 
     const std::vector<SharedMatrix >& J = jk_->J();
     const std::vector<SharedMatrix >& K = jk_->K();
+    const std::vector<SharedMatrix >& V = v_->V();
 
     double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
@@ -888,10 +907,12 @@ void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
                 double** Jp  = J[symm * x.size() + N]->pointer(h);
                 double** Kp  = K[symm * x.size() + N]->pointer(h);
+                double** Vp  = V[symm * x.size() + N]->pointer(h);
     
+                // TODO: hybrid/RC terms
                 // -(ij|ab)P_jb = C_im K_mn C_na
-                C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Kp[0],nsovir,0.0,Tp,nsovir);
-                C_DGEMM('N','N',nocc,nvir,nsovir,-1.0,Tp,nsovir,Cvp[0],nvir,0.0,&bp[offset],nvir);
+                //C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Kp[0],nsovir,0.0,Tp,nsovir);
+                //C_DGEMM('N','N',nocc,nvir,nsovir,-1.0,Tp,nsovir,Cvp[0],nvir,0.0,&bp[offset],nvir);
     
                 if (singlet_) {
                     // 2(ia|jb)P_jb = C_im J_mn C_na
@@ -899,6 +920,10 @@ void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                     C_DGEMM('N','N',nocc,nvir,nsovir,2.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
                 }
             
+                // V matrix
+                C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Vp[0],nsovir,0.0,Tp,nsovir);
+                C_DGEMM('N','N',nocc,nvir,nsovir,1.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
+
                 for (int i = 0; i < nocc; ++i) {
                     for (int a = 0; a < nvir; ++a) {
                         bp[i * nvir + a + offset] += (evp[a] - eop[i]) * xp[i * nvir + a + offset];        
