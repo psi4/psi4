@@ -446,7 +446,7 @@ def process_multiline_arrays(inputfile):
     return newinput
 
 
-def process_input(raw_input):
+def process_input(raw_input, print_level=1):
 
     # Check if the infile is actually an outfile (yeah we did)
     psi4_id = re.compile(r'PSI4: An Open-Source Ab Initio Electronic Structure Package')
@@ -476,11 +476,12 @@ def process_input(raw_input):
         raw_input += '\n'
 
     # Echo the infile on the outfile
-    PsiMod.print_out("\n  ==> Input File <==\n\n");
-    PsiMod.print_out("--------------------------------------------------------------------------\n");
-    PsiMod.print_out(raw_input);
-    PsiMod.print_out("--------------------------------------------------------------------------\n");
-    PsiMod.flush_outfile();
+    if print_level > 0:
+        PsiMod.print_out("\n  ==> Input File <==\n\n");
+        PsiMod.print_out("--------------------------------------------------------------------------\n");
+        PsiMod.print_out(raw_input);
+        PsiMod.print_out("--------------------------------------------------------------------------\n");
+        PsiMod.flush_outfile();
 
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:

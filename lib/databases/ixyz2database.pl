@@ -119,7 +119,7 @@ else {
    print SPL_OUT "\nsub load_indices_$set {\n\n   \$settype = \"reaction\";\n\n   \@HRXN = (1 .. $Nrxn);\n\n";
    print SPL_OUT "   \$numberTT = $Nrxn;\n";
    print SPL_OUT "   \$numberHB = 0;\n";
-   print SPL_OUT "   \$numberMX = 0;\n";
+   print SPL_OUT "   \$numberMX = $Nrxn;\n";
    print SPL_OUT "   \$numberDD = 0;\n";
    print SPL_OUT "\n   foreach \$reaction (\@HRXN) { push(\@setindex,\"\$set-\$reaction\"); }\n}";
    print SPL_OUT "\n\n\n\nsub load_reagents_$set {\n\n   \$settype = \"reaction\";\n\n   \@HSYS = (";
@@ -128,7 +128,7 @@ else {
 print GPL_OUT "\nsub load_xyz_$set {\n\n";
 
 print GPL_OUT "   \$isHB = \"no\";\n";
-print GPL_OUT "   \$isMX = \"no\";\n";
+print GPL_OUT "   \$isMX = \"yes\";\n";
 print GPL_OUT "   \$isDD = \"no\";\n";
 print GPL_OUT "   \$bas2 = \"no\";\n";
 print GPL_OUT "   \$ABun = \"no\";\n";
@@ -308,7 +308,7 @@ foreach $filename (<*.$fext>) {
       for($i = 0; $i < $Nmol1; $i++) { printf GPY_OUT "%-3s  % 14.8f % 14.8f % 14.8f\n", $elems1[$i], $fragment1X[$i], $fragment1Y[$i], $fragment1Z[$i]; }
       print GPY_OUT "--\n0 1\n";
       for($i = 0; $i < $Nmol2; $i++) { printf GPY_OUT "%-3s  % 14.8f % 14.8f % 14.8f\n", $elems2[$i], $fragment2X[$i], $fragment2Y[$i], $fragment2Z[$i]; }
-      print GPY_OUT "units angstrom\n}\n\"\"\")\n\n";
+      print GPY_OUT "units angstrom\n}\n\"\"\", 0)\n\n";
 
    }
    else {
@@ -370,7 +370,7 @@ foreach $filename (<*.$fext>) {
       print GPL_OUT "\n   }\n";
    
       for($i = 0; $i < $Nmol1; $i++) { printf GPY_OUT "%-3s  % 14.8f % 14.8f % 14.8f\n", $elems1[$i], $fragment1X[$i], $fragment1Y[$i], $fragment1Z[$i]; }
-      print GPY_OUT "units angstrom\n}\n\"\"\")\n\n";
+      print GPY_OUT "units angstrom\n}\n\"\"\", 0)\n\n";
 
       printf LAB_OUT "%-25s\t%d\t%d\t%d\t\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n", $system, $Nsyst, $CHGsyst, $MLPsyst, $NH, $NC, $NN, $NO, $NF, $NSi, $NP, $NS, $NCl, $tagl;
 
