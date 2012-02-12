@@ -70,9 +70,27 @@ public:
     virtual void preiterations();
     /// Destroys JK object, if needed
     virtual void postiterations();
+
+    /// => Setters <= ///
+
     /// Set convergence behavior
     void set_convergence(double convergence) { convergence = convergence_; };
 
+    /// Set reference info
+    void set_C(SharedMatrix C) { C_ = C; }
+    void set_Cocc(SharedMatrix Cocc) { Cocc_ = Cocc; }
+    void set_Cfocc(SharedMatrix Cfocc) { Cfocc_ = Cfocc; }
+    void set_Caocc(SharedMatrix Caocc) { Caocc_ = Caocc; }
+    void set_Cavir(SharedMatrix Cavir) { Cavir_ = Cavir; }
+    void set_Cfvir(SharedMatrix Cfvir) { Cfvir_ = Cfvir; }
+    void set_eps_focc(SharedVector eps) { eps_focc_ = eps; }
+    void set_eps_aocc(SharedVector eps) { eps_aocc_ = eps; }
+    void set_eps_avir(SharedVector eps) { eps_aocc_ = eps; }
+    void set_eps_fvir(SharedVector eps) { eps_focc_ = eps; }
+    void set_Eref(double Eref) { Eref_ = Eref; }
+
+    /// Update reference info
+    void set_reference(boost::shared_ptr<Wavefunction> reference);
 }; 
 
 // => APPLIED CLASSES <= //
