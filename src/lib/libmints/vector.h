@@ -7,6 +7,9 @@
 
 #include <libparallel/serialize.h>
 
+#include <vector>
+#include <iterator>
+
 namespace boost {
 template<class T> class shared_ptr;
 
@@ -18,16 +21,19 @@ namespace psi {
 
 class Dimension;
 class Matrix;
+class VectorIterator;
 
 /*! \ingroup MINTS */
 class Vector : public Serializable {
 protected:
-    /// Vector data
-    double **vector_;
+    /// Actual data, of size dimpi_.sum()
+    std::vector<double> v_;
+    /// Pointer offsets into v_, of size dimpi_.n()
+    std::vector<double* > vector_;
     /// Number of irreps
     int nirrep_;
     /// Dimensions per irrep
-    int *dimpi_;
+    Dimension dimpi_;
     /// Name
     std::string name_;
 
@@ -37,7 +43,10 @@ protected:
     void release();
 
     /// Copies data to vector_
-    void copy_from(double **);
+    void copy_from(const Vector& other);
+
+    /// Assign pointer offsets in vector_ from v_.
+    void assign_pointer_offsets();
 
 public:
     /// Default constructor, zeros everything out
@@ -186,7 +195,7 @@ public:
     double dot(Vector* X);
 
     /// Scale the elements of the vector
-    void scale(double sc);
+    void scale(const double& sc);
 
     // Serializable pure virtual functions:
     void send();
@@ -196,6 +205,41 @@ public:
      * Performs element-by-element sum of all data from all nodes.
      */
     void sum();
+
+    typedef std::vector<double>::iterator       iterator;
+    typedef std::vector<double>::const_iterator const_iterator;
+
+    /// @{
+    /** Returns the starting iterator for the entire v_. */
+    iterator begin()
+        { return v_.begin(); }
+    const_iterator begin() const
+        { return v_.begin(); }
+    /// @}
+
+    /// @{
+    /** Returns the ending iterator for the entire v_. */
+    iterator end()
+        { return v_.end(); }
+    const_iterator end() const
+        { return v_.end(); }
+    /// @}
+
+    /// @{
+    /** Returns the starting iterator for irrep h. */
+    iterator begin(int h)
+        { return iterator(vector_[h]); }
+    const_iterator begin(int h) const
+        { return const_iterator(vector_[h]); }
+    /// @}
+
+    /// @{
+    /** Returns the starting iterator for irrep h. */
+    iterator end(int h)
+        { return iterator(vector_[h]) + dimpi_[h]; }
+    const_iterator end(int h) const
+        { return const_iterator(vector_[h]) + dimpi_[h]; }
+    /// @}
 
     friend class Matrix;
 };
@@ -303,7 +347,26 @@ public:
     /// Copies rhs to this
     void copy(const IntVector& rhs);
 
+    friend class VectorIterator;
 };
+
+//class VectorIterator : public std::iterator<std::forward_iterator_tag, double>
+//{
+//    pointer v_;
+
+//public:
+//    VectorIterator(pointer v) : v_(v) {}
+
+//    VectorIterator(const VectorIterator& mit) : v_(mit.v_) {}
+
+//    VectorIterator& operator++() {v_++; return *this;}  // prefix (++a)
+//    VectorIterator operator++(int) { VectorIterator tmp(*this); operator++(); return tmp; } // suffix (a++)
+
+//    bool operator==(const VectorIterator& rhs) { return v_ == rhs.v_; }
+//    bool operator!=(const VectorIterator& rhs) { return v_ != rhs.v_; }
+
+//    reference operator*() { return *v_; }
+//};
 
 typedef boost::shared_ptr<Vector> SharedVector;
 typedef boost::shared_ptr<IntVector> SharedIntVector;
