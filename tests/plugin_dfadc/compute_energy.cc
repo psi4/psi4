@@ -2,6 +2,7 @@
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 #include <libciomr/libciomr.h>
+#include <libqt/qt.h>
 #include "physconst.h"
 #include "dfadc.h"
 
