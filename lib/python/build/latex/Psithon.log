@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  13 FEB 2012 03:57
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  13 FEB 2012 04:52
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -901,9 +901,9 @@ Underfull \hbox (badness 10000) in paragraph at lines 229--234
  []
 
 LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <9> not available
-(Font)              Font shape `T1/pcr/b/n' tried instead on input line 247.
+(Font)              Font shape `T1/pcr/b/n' tried instead on input line 250.
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <9> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 247.
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 250.
 [4]
 Chapter 2.
 [5
@@ -947,7 +947,7 @@ mf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/local/texlive/2009/texmf-dist
 urw/times/utmb8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/
 utmr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pf
 b>
-Output written on Psithon.pdf (15 pages, 165256 bytes).
+Output written on Psithon.pdf (15 pages, 165435 bytes).
 PDF statistics:
  164 PDF objects out of 1000 (max. 8388607)
  24 named destinations out of 1000 (max. 500000)

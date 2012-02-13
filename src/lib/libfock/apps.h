@@ -74,7 +74,7 @@ public:
     /// => Setters <= ///
 
     /// Set convergence behavior
-    void set_convergence(double convergence) { convergence = convergence_; };
+    void set_convergence(double convergence) { convergence_ = convergence; }
 
     /// Set reference info
     void set_C(SharedMatrix C) { C_ = C; }
