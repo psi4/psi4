@@ -7,6 +7,15 @@
 
 namespace psi {
 
+namespace {
+
+struct max_abs {
+  bool operator() (const double& i, const double& j)
+    { return std::abs(i)<std::abs(j); }
+};
+
+}
+
 OverlapOrthog::OverlapOrthog(OrthogMethod method,
                              SharedMatrix overlap,
                              double lindep_tolerance,
@@ -25,8 +34,29 @@ void OverlapOrthog::compute_overlap_eig(SharedMatrix overlap_eigvec, SharedVecto
     SharedMatrix U(new Matrix("U", overlap_->rowspi(), overlap_->colspi()));
     SharedVector m(new Vector(overlap_->colspi()));
 
-//    overlap_->diagonalize(U, m);
+    overlap_->diagonalize(U, m);
 
+    double maxabs = *std::max_element(m->begin(), m->end(), max_abs());
+    double s_tol = lindep_tol_ * maxabs;
+    double minabs = maxabs;
 
+    std::vector<double> m_sqrt(dim_.sum());
+    std::vector<double> m_isqrt(dim_.sum());
+    std::vector<int> m_index(dim_.sum());
+    std::vector<int> nfunc(dim_.n());
+    int nfunctotal = 0;
+
+    nlindep_ = 0;
+    for (Vector::const_iterator iter=m->begin();
+         iter != m->end(); ++iter) {
+        if (*iter > s_tol) {
+            if (*iter < minabs)
+                minabs = *iter;
+            m_sqrt[nfunctotal] = sqrt(*iter);
+            m_sqrt[nfunctotal] = 1.0/m_sqrt[nfunctotal];
+            m_index[nfunctotal] = std::distance(m->begin(), iter);
+            nfunc
+        }
+    }
 }
 }
