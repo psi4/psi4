@@ -559,53 +559,104 @@ counterpoise_correction = cp
 #########################
 
 def database(name, db_name, **kwargs):
-    """Wrapper to access the molecule objects and reference energies of popular chemical databases.
+    """Wrapper to access the molecule objects and reference energies of
+    popular chemical databases.
 
-    Required Arguments:
-    -------------------
-    * name (or unlabeled first argument) indicates the computational method to be applied to the database.
-    * db_name (or unlabeled second argument) is a string of the requested database name. This name matches the
-        python file in psi4/lib/databases , wherein literature citations for the database are also documented.
+    :returns: Mean absolute deviation of the database in kcal/mol
 
-    Optional Arguments:  --> 'default_option' <--
-    ------------------
-    * mode = --> 'continuous' <-- | 'sow' | 'reap'
-        Indicates whether the calculation required to complete the database are to be run in one
-        file ('continuous') or are to be farmed out in an embarrassingly parallel fashion ('sow'/'reap').
-        For the latter, run an initial job with 'sow' and follow instructions in its output file.
-    * cp = 'on' | --> 'off' <--
-        Indicates whether counterpoise correction is employed in computing interaction energies.
-        Use this option and NOT the cp() wrapper for BSSE correction in the database() wrapper.
-        Option valid only for databases consisting of bimolecular complexes.
-    * rlxd = 'on' | --> 'off' <--
-        Indicates whether correction for the deformation energy is employed in computing interaction energies.
-        Option valid only for databases consisting of bimolecular complexes with non-frozen monomers.
-    * symm = --> 'on' <-- | 'off'
-        Indicates whether the native symmetry of the database molecules is employed ('on') or whether
-        it is forced to c1 symmetry ('off'). Some computational methods (e.g., SAPT) require no symmetry,
-        and this will be set by the database() wrapper.
-    * zpe = 'on' | --> 'off' <--
-        Indicates whether zero-point-energy corrections are appended to single-point energy values. Option
-        valid only for certain thermochemical databases.
-        Disabled until Hessians ready.
-    * benchmark = --> 'default' <-- | etc.
-        Indicates whether a non-default set of reference energies, if available, are employed for the
-        calculation of error statistics.
-    * tabulate = --> [] <-- | etc.
-        Indicates whether to form tables of variables other than the primary requested energy
-    * subset
-        Indicates a subset of the full database to run. This is a very flexible option and can used in
-        three distinct ways, outlined below. Note that two take a string and the last takes a list.
-        * subset = 'small' | 'large' | 'equilibrium'
-            Calls predefined subsets of the requested database, either 'small', a few of the smallest
-            database members, 'large', the largest of the database members, or 'equilibrium', the
-            equilibrium geometries for a database composed of dissociation curves.
-        * subset = 'BzBz_S' | 'FaOOFaON' | 'ArNe' | etc.
-            For databases composed of dissociation curves, individual dissociation curves can be called
-            by name. Consult the database python files for available molecular systems.
-        * subset = [1,2,5] | ['1','2','5'] | ['BzMe-3.5', 'MeMe-5.0'] | etc.
-            Specify a list of database members to run. Consult the database python files for available
-            molecular systems.
+    **Required Arguments**:
+
+    :param name: First argument, usually unlabeled.
+        Indicates the computational method to be applied to the database.
+        May be any valid argument to ``energy()``.
+    :type name: string
+    :param db_name: Second argument, usually unlabeled.
+        Indicates the requested database name, matching the name of a python
+        file in ``psi4/lib/databases``. Consult that directory for available
+        databases and literature citations.
+    :type db_name: string
+
+    **Optional Arguments**:
+
+    :param mode: {*'continuous'*, 'sow', 'reap'}
+        Indicates whether the calculation required to complete the
+        database are to be run in one file (``'continuous'``) or are to be
+        farmed out in an embarrassingly parallel fashion
+        (``'sow'``/``'reap'``).  For the latter, run an initial job with
+        ``'sow'`` and follow instructions in its output file.
+    :type mode: string
+    :param cp: {*'off'*, 'on'}
+        Indicates whether counterpoise correction is employed in computing
+        interaction energies.  Use this option and NOT the ``cp()``
+        wrapper for BSSE correction in the ``database()`` wrapper.  Option
+        valid only for databases consisting of bimolecular complexes.
+    :type cp: bool
+    :param rlxd: {*'off'*, 'on'}
+        Indicates whether correction for the deformation energy is
+        employed in computing interaction energies.  Option valid only for
+        databases consisting of bimolecular complexes with non-frozen
+        monomers, e.g., HBC6
+    :type rlxd: bool
+    :param symm: {*'on'*, 'off'}
+        Indicates whether the native symmetry of the database molecules is
+        employed (``'on'``) or whether it is forced to c1 symmetry
+        (``'off'``). Some computational methods (e.g., SAPT) require no
+        symmetry, and this will be set by the database() wrapper.
+    :type symm: bool
+    :param zpe: {*'off'*, 'on'}
+        Indicates whether zero-point-energy corrections are appended to
+        single-point energy values. Option valid only for certain
+        thermochemical databases.  Disabled until Hessians ready.
+    :type zpe: bool
+    :param benchmark: {*'default'*, 'S22A', etc.}
+        Indicates whether a non-default set of reference energies, if
+        available, are employed for the calculation of error statistics.
+    :type benchmark: string
+    :param tabulate: {*[]*, ['scf total energy', 'natom'], etc.}
+        Indicates whether to form tables of variables other than the
+        primary requested energy.  Available for any PSI variable.
+    :type tabulate: array of strings
+    :param subset:
+        Indicates a subset of the full database to run. This is a very
+        flexible option and can be used in three distinct ways, outlined
+        below. Note that two take a string and the last takes an array.  
+
+        * subset = {'small', 'large', 'equilibrium'}
+            Calls predefined subsets of the requested database, either
+            ``'small'``, a few of the smallest database members,
+            ``'large'``, the largest of the database members, or
+            ``'equilibrium'``, the equilibrium geometries for a database
+            composed of dissociation curves.
+        * subset = {'BzBz_S', 'FaOOFaON', 'ArNe', etc.}
+            For databases composed of dissociation curves, individual
+            curves can be called by name. Consult the database python
+            files for available molecular systems.  The choices for this
+            keyword are case sensitive and must match the database python file
+        * subset = {[1,2,5], ['1','2','5'], ['BzMe-3.5', 'MeMe-5.0'], etc.}
+            Specify a list of database members to run. Consult the
+            database python files for available molecular systems.  The
+            choices for this keyword are case sensitive and must match the
+            database python file
+    :type subset: string or array of strings 
+
+    **Example**:
+
+    >>> # [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer
+    >>> db('scf','RGC10',cast_up='sto-3g',subset=['HeHe-0.85','HeHe-1.0','HeHe-1.5'], tabulate=['scf total energy','natom'])
+
+    >>> # [2] Counterpoise-corrected interaction energies for three complexes in S22
+    >>> #     Error statistics computed wrt an old benchmark, S22A
+    >>> database('dfmp2','S22',cp=1,subset=[16,17,8],benchmark='S22A')
+
+    >>> # [3] SAPT0 on the neon dimer dissociation curve
+    >>> db('sapt0',subset='NeNe',cp=0,symm=0,db_name='RGC10')
+
+    >>> # [4] Optimize system 1 in database S22, producing tables of scf and mp2 energy
+    >>> db('mp2','S22',db_func=optimize,subset=[1], tabulate=['mp2 total energy','current energy'])
+
+    >>> # [5] CCSD on the smallest systems of HTBH, a hydrogen-transfer database
+    >>> database('ccsd','HTBH',subset='small', tabulate=['ccsd total energy', 'mp2 total energy'])
+
     """
 
     lowername = name.lower()
@@ -1705,6 +1756,11 @@ def highest_1(**largs):
 # Solution equation in LaTeX:  $E_{corl}^{\infty} = \frac{E_{corl}^{X} X^3 - E_{corl}^{X-1} (X-1)^3}{X^3 - (X-1)^3}$
 # Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
+    """Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
+
+    .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
+
+    """
 
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name

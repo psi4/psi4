@@ -46,7 +46,7 @@ DFADC::formInvSqrtJ(double **&J_mhalf)
 
     #pragma omp parallel for schedule (dynamic) num_threads(nthread)
     for(int MU = 0;MU < ribasis_->nshell();MU++){
-        int numMU = ribasis_->shell(MU)->nfunction();
+        int numMU = ribasis_->shell(MU).nfunction();
         
         int thread = 0;
         #ifdef _OPENMP
@@ -54,13 +54,13 @@ DFADC::formInvSqrtJ(double **&J_mhalf)
         #endif
         
         for(int NU = 0;NU <=MU;NU++){
-            int numNU = ribasis_->shell(NU)->nfunction();
+            int numNU = ribasis_->shell(NU).nfunction();
             Jint[thread]->compute_shell(MU, 0, NU, 0);
             int index = 0;
             for(int mu = 0;mu < numMU;mu++){
-                int omu = ribasis_->shell(MU)->function_index() + mu;
+                int omu = ribasis_->shell(MU).function_index() + mu;
                 for(int nu = 0;nu < numNU;nu++, index++){
-                    int onu = ribasis_->shell(NU)->function_index() + nu;
+                    int onu = ribasis_->shell(NU).function_index() + nu;
                     J[omu][onu] = Jbuffer[thread][index];
                     J[onu][omu] = Jbuffer[thread][index];
                 }
@@ -98,7 +98,7 @@ DFADC::formDFtensor(SharedMatrix Cl, SharedMatrix Cr, double **J_mhalf, enum Ord
 {    
     int maxPshell = 0;
     for(int Pshell = 0;Pshell < ribasis_->nshell();Pshell++){
-        int numPshell = ribasis_->shell(Pshell)->nfunction();
+        int numPshell = ribasis_->shell(Pshell).nfunction();
         maxPshell = numPshell > maxPshell ? numPshell : maxPshell;
     }
     double ***temp = new double**[maxPshell];
@@ -118,20 +118,20 @@ DFADC::formDFtensor(SharedMatrix Cl, SharedMatrix Cr, double **J_mhalf, enum Ord
     double **half   = block_matrix(Lcol, ribasis_->nbf());
     
     for(int Pshell = 0;Pshell < ribasis_->nshell();Pshell++){
-        int numPshell = ribasis_->shell(Pshell)->nfunction();
+        int numPshell = ribasis_->shell(Pshell).nfunction();
         for(int P = 0;P < numPshell;P++){
             zero_mat(temp[P], ribasis_->nbf(), ribasis_->nbf());
         }
         for(int MU = 0;MU < basisset_->nshell();MU++){
-            int numMU = basisset_->shell(MU)->nfunction();
+            int numMU = basisset_->shell(MU).nfunction();
             for(int NU = 0;NU <= MU;NU++){
-                int numNU = basisset_->shell(NU)->nfunction();
+                int numNU = basisset_->shell(NU).nfunction();
                 eri->compute_shell(Pshell, 0, MU, NU);
                 for(int P = 0, index = 0;P < numPshell;P++){
                     for(int mu = 0;mu < numMU;mu++){
-                        int omu = basisset_->shell(MU)->function_index() + mu;
+                        int omu = basisset_->shell(MU).function_index() + mu;
                         for(int nu = 0;nu < numNU;nu++, index++){
-                            int onu = basisset_->shell(NU)->function_index() + nu;
+                            int onu = basisset_->shell(NU).function_index() + nu;
                             temp[P][omu][onu] = buffer[index];
                             temp[P][onu][omu] = buffer[index];
                         }
@@ -141,7 +141,7 @@ DFADC::formDFtensor(SharedMatrix Cl, SharedMatrix Cr, double **J_mhalf, enum Ord
         }
 
         for(int P = 0, index = 0;P < numPshell;P++){
-            int oP = ribasis_->shell(Pshell)->function_index() + P;
+            int oP = ribasis_->shell(Pshell).function_index() + P;
             C_DGEMM('T', 'N', Lcol, ribasis_->nbf(), ribasis_->nbf(), 1.0, Cleft[0], Lcol, temp[P][0], ribasis_->nbf(), 0.0, half[0],     ribasis_->nbf());
             C_DGEMM('N', 'N', Lcol, Rrow, ribasis_->nbf(), 1.0, half[0],  ribasis_->nbf(), Cright[0],  Rrow, 0.0, mo_P_pq[oP], Rrow);
         }
