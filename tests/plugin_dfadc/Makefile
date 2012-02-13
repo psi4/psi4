@@ -9,9 +9,8 @@ UNAME := $(shell uname)
 include $(psi_top_objdir)/src/bin/MakeVars
 
 PSITARGET = $(shell basename `pwd`).so
-PSIINCLUDE = -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib
-CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
-PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin -lPSI_qt
+PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
+PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
@@ -31,11 +30,11 @@ endif
 
 # The object files
 %.o: %.cc
-	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) -c $< $(OUTPUT_OPTION)
+	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $(PYTHON_INCLUDE) -c $< $(OUTPUT_OPTION)
 
 #include $(psi_top_objdir)/src/bin/MakeRules
 $(PSITARGET): $(BINOBJ)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS) && touch $(shell basename `pwd`).test
 
 # Erase all compiled intermediate files
 clean:
@@ -45,6 +44,8 @@ clean:
 %.d: %.cc
 	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $< | sed 's/^$*.o/$*.o $*.d/g' > $(@F)
 
+ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
-
 include $(BINOBJ:%.o=%.d)
+endif
+
