@@ -1,0 +1,552 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to Psithon’s documentation! &mdash; Psithon 4.01 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Psithon 4.01 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">Psithon 4.01 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-psithon-s-documentation">
+<h1>Welcome to Psithon&#8217;s documentation!<a class="headerlink" href="#welcome-to-psithon-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-example"></span><p>This is the docstring for the example.py module.  Modules names should
+have short, all-lowercase names.  The module name may have underscores if
+this improves readability.</p>
+<p>Every module should have a docstring at the very top of the file.  The
+module&#8217;s docstring may extend over multiple lines.  If your docstring does
+extend over multiple lines, the closing three quotation marks must be on
+a line by itself, preferably preceeded by a blank line.</p>
+<dl class="function">
+<dt id="example.foo">
+<tt class="descclassname">example.</tt><tt class="descname">foo</tt><big>(</big><em>var1</em>, <em>var2</em>, <em>long_var_name='hi'</em><big>)</big><a class="reference internal" href="_modules/example.html#foo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#example.foo" title="Permalink to this definition">¶</a></dt>
+<dd><p>A one-line summary that does not use variable names or the
+function name.</p>
+<p>Several sentences providing an extended description. Refer to
+variables using back-ticks, e.g. <cite>var</cite>.</p>
+<dl class="docutils">
+<dt>var1 <span class="classifier-delimiter">:</span> <span class="classifier">array_like</span></dt>
+<dd>Array_like means all those objects &#8211; lists, nested lists, etc. &#8211;
+that can be converted to an array.  We can also refer to
+variables like <cite>var1</cite>.</dd>
+<dt>var2 <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>The type above can either refer to an actual Python type
+(e.g. <tt class="docutils literal"><span class="pre">int</span></tt>), or describe the type of the variable in more
+detail, e.g. <tt class="docutils literal"><span class="pre">(N,)</span> <span class="pre">ndarray</span></tt> or <tt class="docutils literal"><span class="pre">array_like</span></tt>.</dd>
+<dt>Long_variable_name <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;hi&#8217;, &#8216;ho&#8217;}, optional</span></dt>
+<dd>Choices in brackets, default first when optional.</dd>
+</dl>
+<dl class="docutils">
+<dt>describe <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
+<dd>Explanation</dd>
+<dt>output <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
+<dd>Explanation</dd>
+<dt>tuple <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
+<dd>Explanation</dd>
+<dt>items <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
+<dd>even more explaining</dd>
+</dl>
+<dl class="docutils">
+<dt>only_seldom_used_keywords <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
+<dd>Explanation</dd>
+<dt>common_parameters_listed_above <span class="classifier-delimiter">:</span> <span class="classifier">type</span></dt>
+<dd>Explanation</dd>
+</dl>
+<dl class="docutils">
+<dt>BadException</dt>
+<dd>Because you shouldn&#8217;t have done that.</dd>
+</dl>
+<p>otherfunc : relationship (optional)
+newfunc : Relationship (optional), which could be fairly long, in which</p>
+<blockquote>
+<div>case the line wraps here.</div></blockquote>
+<p>thirdfunc, fourthfunc, fifthfunc</p>
+<p>Notes about the implementation algorithm (if needed).</p>
+<p>This can have multiple paragraphs.</p>
+<p>You may include some math:</p>
+<div class="math">
+<p><img src="_images/math/ea9539ee63e9f14de5b480f709007e075cff6cc0.png" alt="X(e^{j\omega } ) = x(n)e^{ - j\omega n}"/></p>
+</div><p>And even use a greek symbol like <img class="math" src="_images/math/8610a773b5ff1e8d8d587ae771628e0c64c11677.png" alt="omega"/> inline.</p>
+<p>Cite the relevant literature, e.g. <a class="footnote-reference" href="#id2" id="id1">[1]</a>.  You may also cite these
+references in the notes section above.</p>
+<table class="docutils footnote" frame="void" id="id2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>O. McNoleg, &#8220;The integration of GIS, remote sensing,
+expert systems and adaptive co-kriging for environmental habitat
+modelling of the Highland Haggis using object-oriented, fuzzy-logic
+and neural-network techniques,&#8221; Computers &amp; Geosciences, vol. 22,
+pp. 585-588, 1996.</td></tr>
+</tbody>
+</table>
+<p>These are written in doctest format, and should illustrate how to
+use the function.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="p">[</span><span class="n">x</span> <span class="o">+</span> <span class="mi">3</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">a</span><span class="p">]</span>
+<span class="go">[4, 5, 6]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="k">print</span> <span class="s">&quot;a</span><span class="se">\n\n</span><span class="s">b&quot;</span>
+<span class="go">a</span>
+<span class="go">b</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="example.function1">
+<tt class="descclassname">example.</tt><tt class="descname">function1</tt><big>(</big><em>self</em>, <em>arg1</em>, <em>arg2</em>, <em>arg3</em><big>)</big><a class="headerlink" href="#example.function1" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns (arg1 / arg2) + arg3</p>
+<p>This is a longer explanation, which may include math with latex syntax
+<img class="math" src="_images/math/10f32377ac67d94f764f12a15ea987e88c85d3e1.png" alt="\alpha"/>.
+Then, you need to provide optional subsection in this order (just to be
+consistent and have a uniform documentation. Nothing prevent you to
+switch the order):</p>
+<blockquote>
+<div><ul class="simple">
+<li>parameters using <tt class="docutils literal"><span class="pre">:param</span> <span class="pre">&lt;name&gt;:</span> <span class="pre">&lt;description&gt;</span></tt></li>
+<li>type of the parameters <tt class="docutils literal"><span class="pre">:type</span> <span class="pre">&lt;name&gt;:</span> <span class="pre">&lt;description&gt;</span></tt></li>
+<li>returns using <tt class="docutils literal"><span class="pre">:returns:</span> <span class="pre">&lt;description&gt;</span></tt></li>
+<li>examples (doctest)</li>
+<li>seealso using <tt class="docutils literal"><span class="pre">..</span> <span class="pre">seealso::</span> <span class="pre">text</span></tt></li>
+<li>notes using <tt class="docutils literal"><span class="pre">..</span> <span class="pre">note::</span> <span class="pre">text</span></tt></li>
+<li>warning using <tt class="docutils literal"><span class="pre">..</span> <span class="pre">warning::</span> <span class="pre">text</span></tt></li>
+<li>todo <tt class="docutils literal"><span class="pre">..</span> <span class="pre">todo::</span> <span class="pre">text</span></tt></li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt><strong>Advantages</strong>:</dt>
+<dd><ul class="first last simple">
+<li>Uses sphinx markups, which will certainly be improved in future
+version</li>
+<li>Nice HTML output with the See Also, Note, Warnings directives</li>
+</ul>
+</dd>
+<dt><strong>Drawbacks</strong>:</dt>
+<dd><ul class="first last simple">
+<li>Just looking at the docstring, the parameter, type and  return
+sections do not appear nicely</li>
+</ul>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>arg1</strong> (<em>int, float,...</em>) &#8211; the first value</li>
+<li><strong>arg2</strong> (<em>int, float,...</em>) &#8211; the first value</li>
+<li><strong>arg3</strong> (<em>int, float,...</em>) &#8211; the first value</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">arg1/arg2 +arg3</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first">int, float</p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Example :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">template</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">MainClass1</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span><span class="o">.</span><span class="n">function1</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">can be useful to emphasize
+important feature</p>
+</div>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><tt class="xref py py-class docutils literal"><span class="pre">MainClass2</span></tt></p>
+</div>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">arg2 must be non-zero.</p>
+</div>
+</dd></dl>
+
+<span class="target" id="module-wrappers2"></span><dl class="function">
+<dt id="wrappers2.database">
+<tt class="descclassname">wrappers2.</tt><tt class="descname">database</tt><big>(</big><em>name</em>, <em>db_name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/wrappers2.html#database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers2.database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to access the molecule objects and reference energies of
+popular chemical databases.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Mean absolute deviation of the database in kcal/mol</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Required Arguments</strong>:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; First argument, usually unlabeled.
+Indicates the computational method to be applied to the database.
+May be any valid argument to <tt class="docutils literal"><span class="pre">energy()</span></tt>.</li>
+<li><strong>db_name</strong> (<em>string</em>) &#8211; Second argument, usually unlabeled.
+Indicates the requested database name, matching the name of a python
+file in <tt class="docutils literal"><span class="pre">psi4/lib/databases</span></tt>. Consult that directory for available
+databases and literature citations.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Optional Arguments</strong>:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mode</strong> (<em>string</em>) &#8211; {<em>&#8216;continuous&#8217;</em>, &#8216;sow&#8217;, &#8216;reap&#8217;}
+Indicates whether the calculation required to complete the
+database are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
+farmed out in an embarrassingly parallel fashion
+(<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
+<tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</li>
+<li><strong>cp</strong> (<em>bool</em>) &#8211; {<em>&#8216;off&#8217;</em>, &#8216;on&#8217;}
+Indicates whether counterpoise correction is employed in computing
+interaction energies.  Use this option and NOT the <tt class="docutils literal"><span class="pre">cp()</span></tt>
+wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt> wrapper.  Option
+valid only for databases consisting of bimolecular complexes.</li>
+<li><strong>rlxd</strong> (<em>bool</em>) &#8211; {<em>&#8216;off&#8217;</em>, &#8216;on&#8217;}
+Indicates whether correction for the deformation energy is
+employed in computing interaction energies.  Option valid only for
+databases consisting of bimolecular complexes with non-frozen
+monomers, e.g., HBC6</li>
+<li><strong>symm</strong> (<em>bool</em>) &#8211; {<em>&#8216;on&#8217;</em>, &#8216;off&#8217;}
+Indicates whether the native symmetry of the database molecules is
+employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or whether it is forced to c1 symmetry
+(<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
+symmetry, and this will be set by the database() wrapper.</li>
+<li><strong>zpe</strong> (<em>bool</em>) &#8211; {<em>&#8216;off&#8217;</em>, &#8216;on&#8217;}
+Indicates whether zero-point-energy corrections are appended to
+single-point energy values. Option valid only for certain
+thermochemical databases.  Disabled until Hessians ready.</li>
+<li><strong>benchmark</strong> (<em>string</em>) &#8211; {<em>&#8216;default&#8217;</em>, &#8216;S22A&#8217;, etc.}
+Indicates whether a non-default set of reference energies, if
+available, are employed for the calculation of error statistics.</li>
+<li><strong>tabulate</strong> (<em>array of strings</em>) &#8211; {<em>[]</em>, [&#8216;scf total energy&#8217;, &#8216;natom&#8217;], etc.}
+Indicates whether to form tables of variables other than the
+primary requested energy.  Available for any PSI variable.</li>
+<li><strong>subset</strong> (<em>string or array of strings</em>) &#8211; <p>Indicates a subset of the full database to run. This is a very
+flexible option and can be used in three distinct ways, outlined
+below. Note that two take a string and the last takes an array.</p>
+<ul>
+<li><dl class="first docutils">
+<dt>subset = {&#8216;small&#8217;, &#8216;large&#8217;, &#8216;equilibrium&#8217;}</dt>
+<dd>Calls predefined subsets of the requested database, either
+<tt class="docutils literal"><span class="pre">'small'</span></tt>, a few of the smallest database members,
+<tt class="docutils literal"><span class="pre">'large'</span></tt>, the largest of the database members, or
+<tt class="docutils literal"><span class="pre">'equilibrium'</span></tt>, the equilibrium geometries for a database
+composed of dissociation curves.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>subset = {&#8216;BzBz_S&#8217;, &#8216;FaOOFaON&#8217;, &#8216;ArNe&#8217;, etc.}</dt>
+<dd>For databases composed of dissociation curves, individual
+curves can be called by name. Consult the database python
+files for available molecular systems.  The choices for this
+keyword are case sensitive and must match the database python file</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>subset = {[1,2,5], [&#8216;1&#8217;,&#8216;2&#8217;,&#8216;5&#8217;], [&#8216;BzMe-3.5&#8217;, &#8216;MeMe-5.0&#8217;], etc.}</dt>
+<dd>Specify a list of database members to run. Consult the
+database python files for available molecular systems.  The
+choices for this keyword are case sensitive and must match the
+database python file</dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span><span class="s">&#39;RGC10&#39;</span><span class="p">,</span><span class="n">cast_up</span><span class="o">=</span><span class="s">&#39;sto-3g&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;HeHe-0.85&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.0&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.5&#39;</span><span class="p">],</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;scf total energy&#39;</span><span class="p">,</span><span class="s">&#39;natom&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] Counterpoise-corrected interaction energies for three complexes in S22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">#     Error statistics computed wrt an old benchmark, S22A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="p">(</span><span class="s">&#39;dfmp2&#39;</span><span class="p">,</span><span class="s">&#39;S22&#39;</span><span class="p">,</span><span class="n">cp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">benchmark</span><span class="o">=</span><span class="s">&#39;S22A&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [3] SAPT0 on the neon dimer dissociation curve</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;sapt0&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="s">&#39;NeNe&#39;</span><span class="p">,</span><span class="n">cp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">symm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">db_name</span><span class="o">=</span><span class="s">&#39;RGC10&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [4] Optimize system 1 in database S22, producing tables of scf and mp2 energy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span><span class="s">&#39;S22&#39;</span><span class="p">,</span><span class="n">db_func</span><span class="o">=</span><span class="n">optimize</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;mp2 total energy&#39;</span><span class="p">,</span><span class="s">&#39;current energy&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [5] CCSD on the smallest systems of HTBH, a hydrogen-transfer database</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">,</span><span class="s">&#39;HTBH&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">,</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ccsd total energy&#39;</span><span class="p">,</span> <span class="s">&#39;mp2 total energy&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wrappers2.</tt><tt class="descname">database</tt><big>(</big><em>name</em>, <em>db_name</em>, <em>tb</em><span class="optional">[</span>, <em>limit=None</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/wrappers2.html#database"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Wrapper to access the molecule objects and reference energies of
+popular chemical databases.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Mean absolute deviation of the database in kcal/mol</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Required Arguments</strong>:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; First argument, usually unlabeled.
+Indicates the computational method to be applied to the database.
+May be any valid argument to <tt class="docutils literal"><span class="pre">energy()</span></tt>.</li>
+<li><strong>db_name</strong> (<em>string</em>) &#8211; Second argument, usually unlabeled.
+Indicates the requested database name, matching the name of a python
+file in <tt class="docutils literal"><span class="pre">psi4/lib/databases</span></tt>. Consult that directory for available
+databases and literature citations.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Optional Arguments</strong>:</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>mode</strong> (<em>string</em>) &#8211; {<em>&#8216;continuous&#8217;</em>, &#8216;sow&#8217;, &#8216;reap&#8217;}
+Indicates whether the calculation required to complete the
+database are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
+farmed out in an embarrassingly parallel fashion
+(<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
+<tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</li>
+<li><strong>cp</strong> (<em>bool</em>) &#8211; {<em>&#8216;off&#8217;</em>, &#8216;on&#8217;}
+Indicates whether counterpoise correction is employed in computing
+interaction energies.  Use this option and NOT the <tt class="docutils literal"><span class="pre">cp()</span></tt>
+wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt> wrapper.  Option
+valid only for databases consisting of bimolecular complexes.</li>
+<li><strong>rlxd</strong> (<em>bool</em>) &#8211; {<em>&#8216;off&#8217;</em>, &#8216;on&#8217;}
+Indicates whether correction for the deformation energy is
+employed in computing interaction energies.  Option valid only for
+databases consisting of bimolecular complexes with non-frozen
+monomers, e.g., HBC6</li>
+<li><strong>symm</strong> (<em>bool</em>) &#8211; {<em>&#8216;on&#8217;</em>, &#8216;off&#8217;}
+Indicates whether the native symmetry of the database molecules is
+employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or whether it is forced to c1 symmetry
+(<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
+symmetry, and this will be set by the database() wrapper.</li>
+<li><strong>zpe</strong> (<em>bool</em>) &#8211; {<em>&#8216;off&#8217;</em>, &#8216;on&#8217;}
+Indicates whether zero-point-energy corrections are appended to
+single-point energy values. Option valid only for certain
+thermochemical databases.  Disabled until Hessians ready.</li>
+<li><strong>benchmark</strong> (<em>string</em>) &#8211; {<em>&#8216;default&#8217;</em>, &#8216;S22A&#8217;, etc.}
+Indicates whether a non-default set of reference energies, if
+available, are employed for the calculation of error statistics.</li>
+<li><strong>tabulate</strong> (<em>array of strings</em>) &#8211; {<em>[]</em>, [&#8216;scf total energy&#8217;, &#8216;natom&#8217;], etc.}
+Indicates whether to form tables of variables other than the
+primary requested energy.  Available for any PSI variable.</li>
+<li><strong>subset</strong> (<em>string or array of strings</em>) &#8211; <p>Indicates a subset of the full database to run. This is a very
+flexible option and can be used in three distinct ways, outlined
+below. Note that two take a string and the last takes an array.</p>
+<ul>
+<li><dl class="first docutils">
+<dt>subset = {&#8216;small&#8217;, &#8216;large&#8217;, &#8216;equilibrium&#8217;}</dt>
+<dd>Calls predefined subsets of the requested database, either
+<tt class="docutils literal"><span class="pre">'small'</span></tt>, a few of the smallest database members,
+<tt class="docutils literal"><span class="pre">'large'</span></tt>, the largest of the database members, or
+<tt class="docutils literal"><span class="pre">'equilibrium'</span></tt>, the equilibrium geometries for a database
+composed of dissociation curves.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>subset = {&#8216;BzBz_S&#8217;, &#8216;FaOOFaON&#8217;, &#8216;ArNe&#8217;, etc.}</dt>
+<dd>For databases composed of dissociation curves, individual
+curves can be called by name. Consult the database python
+files for available molecular systems.  The choices for this
+keyword are case sensitive and must match the database python file</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>subset = {[1,2,5], [&#8216;1&#8217;,&#8216;2&#8217;,&#8216;5&#8217;], [&#8216;BzMe-3.5&#8217;, &#8216;MeMe-5.0&#8217;], etc.}</dt>
+<dd>Specify a list of database members to run. Consult the
+database python files for available molecular systems.  The
+choices for this keyword are case sensitive and must match the
+database python file</dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example</strong>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span><span class="s">&#39;RGC10&#39;</span><span class="p">,</span><span class="n">cast_up</span><span class="o">=</span><span class="s">&#39;sto-3g&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;HeHe-0.85&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.0&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.5&#39;</span><span class="p">],</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;scf total energy&#39;</span><span class="p">,</span><span class="s">&#39;natom&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] Counterpoise-corrected interaction energies for three complexes in S22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">#     Error statistics computed wrt an old benchmark, S22A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="p">(</span><span class="s">&#39;dfmp2&#39;</span><span class="p">,</span><span class="s">&#39;S22&#39;</span><span class="p">,</span><span class="n">cp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">benchmark</span><span class="o">=</span><span class="s">&#39;S22A&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [3] SAPT0 on the neon dimer dissociation curve</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;sapt0&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="s">&#39;NeNe&#39;</span><span class="p">,</span><span class="n">cp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">symm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">db_name</span><span class="o">=</span><span class="s">&#39;RGC10&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [4] Optimize system 1 in database S22, producing tables of scf and mp2 energy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span><span class="s">&#39;S22&#39;</span><span class="p">,</span><span class="n">db_func</span><span class="o">=</span><span class="n">optimize</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;mp2 total energy&#39;</span><span class="p">,</span><span class="s">&#39;current energy&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [5] CCSD on the smallest systems of HTBH, a hydrogen-transfer database</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">,</span><span class="s">&#39;HTBH&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">,</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ccsd total energy&#39;</span><span class="p">,</span> <span class="s">&#39;mp2 total energy&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<span class="target" id="module-sphnxtest"></span><p>sdflskdjf slkj dlsjf
+lskdfjlskjdl</p>
+<dl class="function">
+<dt id="sphnxtest.functionname_spx">
+<tt class="descclassname">sphnxtest.</tt><tt class="descname">functionname_spx</tt><big>(</big><em>a</em>, <em>b=0</em><big>)</big><a class="reference internal" href="_modules/sphnxtest.html#functionname_spx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#sphnxtest.functionname_spx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to access the molecule objects and reference energies of popular chemical databases.</p>
+<ul>
+<li><p class="first">name (or unlabeled first argument) indicates the computational method to be applied to the database.</p>
+</li>
+<li><dl class="first docutils">
+<dt>db_name (or unlabeled second argument) is a string of the requested database name. This name matches the</dt>
+<dd><p class="first last">python file in psi4/lib/databases , wherein literature citations for the database are also documented.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to Psithon&#8217;s documentation!</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bad_index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="index.html">Psithon 4.01 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
