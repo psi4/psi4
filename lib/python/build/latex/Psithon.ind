@@ -1,0 +1,15 @@
+\begin{theindex}
+\def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
+
+  \bigletter C
+  \item corl\_xtpl\_helgaker\_2() (in module wrappers2), \hyperpage{5}
+
+  \indexspace
+  \bigletter D
+  \item database() (in module wrappers2), \hyperpage{3}
+
+  \indexspace
+  \bigletter W
+  \item wrappers2 (module), \hyperpage{1}
+
+\end{theindex}

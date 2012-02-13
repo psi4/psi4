@@ -1,0 +1,205 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>wrappers2 &mdash; Psithon 4.01 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="Psithon 4.01 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Psithon 4.01 documentation</a> &raquo;</li>
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for wrappers2</h1><div class="highlight"><pre>
+<span class="c">#########################</span>
+<span class="c">##  Start of Database  ##</span>
+<span class="c">#########################</span>
+
+<span class="k">def</span> <span class="nf">database</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="database"><a class="viewcode-back" href="../index.html#wrappers2.database">[docs]</a>    <span class="sd">&quot;&quot;&quot;Wrapper to access the molecule objects and reference energies of popular chemical databases.</span>
+
+<span class="sd">    Required Arguments:</span>
+<span class="sd">    -------------------</span>
+<span class="sd">    * name (or unlabeled first argument) indicates the computational method to be applied to the database.</span>
+<span class="sd">    * db_name (or unlabeled second argument) is a string of the requested database name. This name matches the</span>
+<span class="sd">        python file in psi4/lib/databases , wherein literature citations for the database are also documented.</span>
+
+<span class="sd">    Optional Arguments:  --&gt; &#39;default_option&#39; &lt;--</span>
+<span class="sd">    ------------------</span>
+<span class="sd">    * mode = --&gt; &#39;continuous&#39; &lt;-- | &#39;sow&#39; | &#39;reap&#39;</span>
+<span class="sd">        Indicates whether the calculation required to complete the database are to be run in one</span>
+<span class="sd">        file (&#39;continuous&#39;) or are to be farmed out in an embarrassingly parallel fashion (&#39;sow&#39;/&#39;reap&#39;).</span>
+<span class="sd">        For the latter, run an initial job with &#39;sow&#39; and follow instructions in its output file.</span>
+<span class="sd">    * cp = &#39;on&#39; | --&gt; &#39;off&#39; &lt;--</span>
+<span class="sd">        Indicates whether counterpoise correction is employed in computing interaction energies.</span>
+<span class="sd">        Use this option and NOT the cp() wrapper for BSSE correction in the database() wrapper.</span>
+<span class="sd">        Option valid only for databases consisting of bimolecular complexes.</span>
+<span class="sd">    * rlxd = &#39;on&#39; | --&gt; &#39;off&#39; &lt;--</span>
+<span class="sd">        Indicates whether correction for the deformation energy is employed in computing interaction energies.</span>
+<span class="sd">        Option valid only for databases consisting of bimolecular complexes with non-frozen monomers.</span>
+<span class="sd">    * symm = --&gt; &#39;on&#39; &lt;-- | &#39;off&#39;</span>
+<span class="sd">        Indicates whether the native symmetry of the database molecules is employed (&#39;on&#39;) or whether</span>
+<span class="sd">        it is forced to c1 symmetry (&#39;off&#39;). Some computational methods (e.g., SAPT) require no symmetry,</span>
+<span class="sd">        and this will be set by the database() wrapper.</span>
+<span class="sd">    * zpe = &#39;on&#39; | --&gt; &#39;off&#39; &lt;--</span>
+<span class="sd">        Indicates whether zero-point-energy corrections are appended to single-point energy values. Option</span>
+<span class="sd">        valid only for certain thermochemical databases.</span>
+<span class="sd">        Disabled until Hessians ready.</span>
+<span class="sd">    * benchmark = --&gt; &#39;default&#39; &lt;-- | etc.</span>
+<span class="sd">        Indicates whether a non-default set of reference energies, if available, are employed for the</span>
+<span class="sd">        calculation of error statistics.</span>
+<span class="sd">    * tabulate = --&gt; [] &lt;-- | etc.</span>
+<span class="sd">        Indicates whether to form tables of variables other than the primary requested energy</span>
+<span class="sd">    * subset</span>
+<span class="sd">        Indicates a subset of the full database to run. This is a very flexible option and can used in</span>
+<span class="sd">        three distinct ways, outlined below. Note that two take a string and the last takes a list.</span>
+<span class="sd">        * subset = &#39;small&#39; | &#39;large&#39; | &#39;equilibrium&#39;</span>
+<span class="sd">            Calls predefined subsets of the requested database, either &#39;small&#39;, a few of the smallest</span>
+<span class="sd">            database members, &#39;large&#39;, the largest of the database members, or &#39;equilibrium&#39;, the</span>
+<span class="sd">            equilibrium geometries for a database composed of dissociation curves.</span>
+<span class="sd">        * subset = &#39;BzBz_S&#39; | &#39;FaOOFaON&#39; | &#39;ArNe&#39; | etc.</span>
+<span class="sd">            For databases composed of dissociation curves, individual dissociation curves can be called</span>
+<span class="sd">            by name. Consult the database python files for available molecular systems.</span>
+<span class="sd">        * subset = [1,2,5] | [&#39;1&#39;,&#39;2&#39;,&#39;5&#39;] | [&#39;BzMe-3.5&#39;, &#39;MeMe-5.0&#39;] | etc.</span>
+<span class="sd">            Specify a list of database members to run. Consult the database python files for available</span>
+<span class="sd">            molecular systems.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="c">#hartree2kcalmol = 627.509469  # consistent with perl SETS scripts</span>
+
+    <span class="k">return</span> <span class="n">finalenergy</span>
+
+
+
+<span class="c">#######################</span>
+<span class="c">##  End of Database  ##</span>
+<span class="c">#######################</span>
+
+
+<span class="c">###################################</span>
+<span class="c">##  Start of Complete Basis Set  ##</span>
+<span class="c">###################################</span>
+
+<span class="k">def</span> <span class="nf">complete_basis_set</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span></div>
+    <span class="sd">&quot;&quot;&quot;Wrapper to define an energy method with basis set extrapolations and delta corrections.</span>
+
+<span class="sd">    A CBS energy method is defined in four sequential stages (scf, corl, delta, delta2) covering</span>
+<span class="sd">    treatment of the reference total energy, the correlation energy, a delta correction to the</span>
+<span class="sd">    correlation energy, and a second delta correction. Each is activated by its stage_wfn keyword</span>
+<span class="sd">    and is only allowed if all preceding stages are active.</span>
+
+<span class="sd">    Required Arguments:</span>
+<span class="sd">    -------------------</span>
+<span class="sd">    * name (or unlabeled first argument) indicates the computational method for the correlation energy, unless</span>
+<span class="sd">        only reference step to be performed, in which case should be &#39;scf&#39;. May be overruled if wfn keywords given.</span>
+
+<span class="sd">    Optional Arguments:  --&gt; &#39;default_option&#39; &lt;--</span>
+<span class="sd">    ------------------</span>
+<span class="sd">    Energy Methods:  Indicates the energy method employed for each stage</span>
+<span class="sd">    * corl_wfn          = &#39;mp2&#39; | &#39;ccsd(t)&#39; | etc.</span>
+<span class="sd">    * delta_wfn         = &#39;ccsd&#39; | &#39;ccsd(t)&#39; | etc.</span>
+<span class="sd">    * delta_wfn_lesser  = --&gt; &#39;mp2&#39; &lt;-- | &#39;ccsd&#39; | etc.</span>
+<span class="sd">    * delta2_wfn        = &#39;ccsd&#39; | &#39;ccsd(t)&#39; | etc.</span>
+<span class="sd">    * delta2_wfn_lesser = --&gt; &#39;mp2&#39; &lt;-- | &#39;ccsd(t)&#39; | etc.</span>
+
+<span class="sd">    Basis Sets:  Indicates the single or sequence of basis sets employed for each stage.</span>
+<span class="sd">    * scf_basis    = --&gt; corl_basis &lt;-- | &#39;cc-pV[TQ]Z&#39; | &#39;jun-cc-pv[tq5]z&#39; | &#39;6-31G*&#39; | etc.</span>
+<span class="sd">    * corl_basis   = &#39;cc-pV[TQ]Z&#39; | &#39;jun-cc-pv[tq5]z&#39; | &#39;6-31G*&#39; | etc.</span>
+<span class="sd">    * delta_basis  = &#39;cc-pV[TQ]Z&#39; | &#39;jun-cc-pv[tq5]z&#39; | &#39;6-31G*&#39; | etc.</span>
+<span class="sd">    * delta2_basis = &#39;cc-pV[TQ]Z&#39; | &#39;jun-cc-pv[tq5]z&#39; | &#39;6-31G*&#39; | etc.</span>
+
+<span class="sd">    Schemes:  Indicates the formula for performing basis set extrapolation (or using the single best</span>
+<span class="sd">        basis with highest_1) for each stage.</span>
+<span class="sd">    * scf_scheme    = --&gt; highest_1 &lt;-- | scf_xtpl_helgaker_3</span>
+<span class="sd">    * corl_scheme   = --&gt; highest_1 &lt;-- | corl_xtpl_helgaker_2</span>
+<span class="sd">    * delta_scheme  = --&gt; highest_1 &lt;-- | corl_xtpl_helgaker_2</span>
+<span class="sd">    * delta2_scheme = --&gt; highest_1 &lt;-- | corl_xtpl_helgaker_2</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">finalenergy</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">Psithon 4.01 documentation</a> &raquo;</li>
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
