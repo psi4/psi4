@@ -10,6 +10,7 @@ molecule benz{
 set {
    basis     DZ
    reference rhf
+   max_energy_g_convergence 8
 }
 
 e_sing_rhf = optimize('scf')
