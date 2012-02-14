@@ -1,0 +1,38 @@
+#include <libplugin/plugin.h>
+#include <psi4-dec.h>
+#include <libparallel/parallel.h>
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <libpsio/psio.hpp>
+#include "fqdft.h"
+
+INIT_PLUGIN
+
+namespace psi{ namespace scf {
+
+extern "C" 
+int read_options(std::string name, Options& options)
+{
+    if (name == "FQDFT"|| options.read_globals()) {
+        /*- The amount of information printed to the output file -*/
+        options.add_int("PRINT", 1);
+        /*- The orbital basis set -*/
+        options.add_str("BASIS", "");
+    }
+
+    return true;
+}
+
+
+extern "C" 
+PsiReturnType plugin_fqdft(Options& options)
+{
+    boost::shared_ptr<FQDFT> dft(new FQDFT());
+    dft->compute_energy();
+
+    return Success;
+}
+
+
+}} // End namespaces
+
