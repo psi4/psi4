@@ -548,10 +548,12 @@ void DLRSolver::solve()
 
         // Find delta correctors 
         correctors();
-        // Compute new sigma vectors from delta vectors
-        sigmaDelta();
         // Collapse subspace if needed
         subspaceCollapse();
+        // Orthogonalize the deltas from the existing subspace and themselves
+        deltaOrthogonalization();
+        // Compute new sigma vectors from delta vectors, possibly modifying delta vectors
+        sigmaDelta();
         // Orthogonalize/add significant correctors/add corresponding sigmas
         subspaceExpansion();
 
@@ -925,6 +927,68 @@ void DLRSolver::correctors()
     }
     if (debug_) { 
         fprintf(outfile, "   > Correctors <\n\n");
+        for (int i = 0; i < d_.size(); i++) {
+            d_[i]->print();
+        }
+        fflush(outfile);
+    }
+}
+void DLRSolver::deltaOrthogonalization()
+{
+    if (debug_) {
+        fprintf(outfile, "   > DeltaOrthogonalization <\n\n");
+    }
+
+    // Which vectors are significant?
+    std::vector<bool> sig(d_.size());
+    for (int i = 0; i < d_.size(); ++i) {
+        sig[i] = false;
+    }
+
+    // Orthonormalize d_ via Modified Gram-Schmidt
+    for (int h = 0; h < diag_->nirrep(); ++h) {
+
+        int dimension = diag_->dimpi()[h];
+        if (!dimension) continue;
+
+        // Remove the projection of d on b from b
+        for (int i = 0; i < d_.size(); ++i) {
+            for (int j = 0; j < b_.size(); ++j) {
+                double* dp = d_[i]->pointer(h);
+                double* bp = b_[j]->pointer(h);
+
+                double r_ji = C_DDOT(dimension,dp,1,bp,1);
+                C_DAXPY(dimension,-r_ji,bp,1,dp,1);
+            } 
+        }
+
+        // Remove the self-projection of d on d from d
+        for (int i = 0; i < d_.size(); ++i) {
+            double* dip = d_[i]->pointer(h);
+            double r_ii = sqrt(C_DDOT(dimension,dip,1,dip,1));
+            C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
+            for (int j = i + 1; j < d_.size(); ++j) {
+                double* djp = d_[j]->pointer(h);
+                double r_ij = C_DDOT(dimension,djp,1,dip,1);
+                C_DAXPY(dimension,-r_ij,dip,1,djp,1);
+            }  
+            if (r_ii > norm_) {
+                sig[i] = sig[i] | true;    
+            } 
+        }
+    }
+
+    // Retain significant vector in d
+    std::vector<SharedVector> d2 = d_;
+    d_.clear();
+    for (int i = 0; i < d2.size(); ++i) {
+        if (sig[i]) {
+            d_.push_back(d2[i]);
+        }
+    } 
+
+    if (debug_) { 
+        fprintf(outfile, "   > Orthonormal Correctors <\n\n");
         for (int i = 0; i < d_.size(); i++) {
             d_[i]->print();
         }

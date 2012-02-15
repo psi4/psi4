@@ -283,6 +283,8 @@ protected:
     void sigma();
     // Compute sigma vectors for the deltas (low rank methinks)
     void sigmaDelta();
+    // Orthogonalize the deltas
+    void deltaOrthogonalization();
     // Compute subspace Hamiltonian
     void subspaceHamiltonian();
     // Diagonalize subspace Hamiltonian
