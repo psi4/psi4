@@ -22,11 +22,15 @@ protected:
     int print_;	
     /// Debug flag, defaults to 0
     int debug_;	
+    /// Bench flag, defaults to 0
+    int bench_;
     /// jk object
     boost::shared_ptr<JK> jk_;  
     /// v object
     boost::shared_ptr<VBase> v_;  
 
+    void common_init();
+    
 public:
     // => Constructors < = //
 
@@ -70,6 +74,8 @@ public:
     void set_print(int print) { print_ = print; }
     /// Debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
+    /// Bench flag (defaults to 0)
+    void set_bench(int bench) { bench_ = bench; }
 };
 
 class RHamiltonian : public Hamiltonian {
@@ -189,6 +195,10 @@ protected:
     boost::shared_ptr<Vector> eps_aocc_;
     boost::shared_ptr<Vector> eps_avir_;
 
+    bool rank_reduction_;
+    int max_rank_;
+    double rank_cutoff_;
+
 public:
     CISRHamiltonian(boost::shared_ptr<JK> jk, 
                     SharedMatrix Caocc, 
@@ -204,6 +214,9 @@ public:
                                std::vector<boost::shared_ptr<Vector> >& b);
 
     virtual std::vector<SharedMatrix > unpack(const boost::shared_ptr<Vector>& x);
+
+    void set_rank_cutoff(double cutoff) { rank_cutoff_ = cutoff; rank_reduction_ = (rank_cutoff_ != 0.0 || max_rank_ != 0);  }
+    void set_max_rank(int rank) { max_rank_ = rank; rank_reduction_ = (rank_cutoff_ != 0.0 || max_rank_ != 0);  }
 
     void set_singlet(bool singlet) { singlet_ = singlet; }
 

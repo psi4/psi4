@@ -40,6 +40,7 @@ void RBase::common_init()
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
+    bench_ = options_.get_int("BENCH");
     convergence_ = options_.get_double("SOLVER_CONVERGENCE"); 
 }
 void RBase::set_reference(boost::shared_ptr<Wavefunction> wfn) 
@@ -829,6 +830,9 @@ double RCIS::compute_energy()
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
+    H->set_bench(bench_);
+    H->set_max_rank(options_.get_int("SOLVER_MAX_RANK"));
+    H->set_rank_cutoff(options_.get_double("SOLVER_MAX_NORM"));
     solver->set_convergence(convergence_);
 
     // Initialization/Memory

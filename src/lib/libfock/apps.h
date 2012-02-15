@@ -22,6 +22,7 @@ class RBase : public Wavefunction {
 protected:
 
     int print_;
+    int bench_;
 
     SharedMatrix C_;
 

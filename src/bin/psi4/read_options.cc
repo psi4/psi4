@@ -1010,6 +1010,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- CG Solver Jacobi precondition?
      -*/
     options.add_bool("SOLVER_PRECONDITION",true);
+    /*- Solver rank-reduction techniques?
+     -*/
+    options.add_double("SOLVER_MAX_NORM", 0.0);
+    /*- Solver maximum rank (0 for infinity)
+     -*/
+    options.add_int("SOLVER_MAX_RANK", 0);
   }
   if (name == "MP2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can

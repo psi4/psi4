@@ -238,6 +238,8 @@ protected:
     int min_subspace_; 
     /// Number of guess vectors to build
     int nguess_;    
+    /// Precondition
+    bool precondition_;
 
     // => Iteration values <= //
 
@@ -268,6 +270,8 @@ protected:
     std::vector<double> n_;
     /// Correction vectors (nroots)
     std::vector<boost::shared_ptr<Vector> > d_;
+    /// Sigma vectors corresponding to delta vectors (nroots)
+    std::vector<boost::shared_ptr<Vector> > s_d_;
     /// Diagonal of Hamiltonian 
     boost::shared_ptr<Vector> diag_;
 
@@ -275,8 +279,10 @@ protected:
  
     // Guess, based on diagonal
     void guess();
-    // Compute sigma vectors
+    // Compute sigma vectors for the given set of b
     void sigma();
+    // Compute sigma vectors for the deltas (low rank methinks)
+    void sigmaDelta();
     // Compute subspace Hamiltonian
     void subspaceHamiltonian();
     // Diagonalize subspace Hamiltonian
@@ -334,6 +340,8 @@ public:
     void set_nguess(int nguess) { nguess_ = nguess; }
     /// Set norm critera for adding vectors to subspace (defaults to 1.0E-6) 
     void set_norm(double norm) { norm_ = norm; }
+    /// Precondition or not? (Pure Krylov vs. DL)
+    void set_precondition(bool precondition) { precondition_ = precondition; }
 };
 
 class DLRXSolver : public RSolver {
