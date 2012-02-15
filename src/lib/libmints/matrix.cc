@@ -1505,38 +1505,48 @@ void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::
     }
     delete[] work;
 }
+boost::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps()
+{
+    Dimension rank(nirrep_);
+    for (int h = 0; h < nirrep_; h++) {
+        int m = rowspi_[h];
+        int n = colspi_[h^symmetry_];
+        int k = (m < n ? m : n);
+        rank[h] = k;
+    }
+    SharedMatrix U(new Matrix("U", rowspi_, rank));
+    SharedVector S(new Vector("S", rank));
+    SharedMatrix V(new Matrix("V", rank, colspi_));
 
+    return boost::tuple<SharedMatrix, SharedVector, SharedMatrix>(U,S,V);
+}
 void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::svd: Matrix non-totally symmetric.");
-    }
-
-    // Working copy. This routine takes hella memory
-    Matrix A(*this);
-
+    // Actually, this routine takes mn + mk + nk 
     for (int h = 0; h < nirrep_; h++) {
         if (!rowspi_[h] && !colspi_[h])
             continue;
 
         int m = rowspi_[h];
-        int n = colspi_[h];
+        int n = colspi_[h^symmetry_];
+        int k = (m < n ? m : n);
 
-        double** Ap = A.pointer(h);
+        double** Ap = Matrix::matrix(m,n);
+        ::memcpy((void*) Ap[0], (void*) matrix_[h][0], sizeof(double) * m * n); 
         double*  Sp = S->pointer(h);
         double** Up = U->pointer(h);
-        double** Vp = V->pointer(h);
+        double** Vp = V->pointer(h^symmetry_);
 
-        int* iwork = new int[8L * (m < n ? m : n)];
+        int* iwork = new int[8L * k];
 
         // Workspace Query
         double lwork;
-        int info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,&lwork,-1,iwork);
+        int info = C_DGESDD('S',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,&lwork,-1,iwork);
 
         double* work = new double[(int)lwork];
 
         // SVD
-        info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,work,(int)lwork,iwork);
+        info = C_DGESDD('S',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,work,(int)lwork,iwork);
 
         delete[] work;
         delete[] iwork;
@@ -1553,8 +1563,8 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
                 abort();
             }
         }
+        Matrix::free(Ap);
     }
-    V->transpose_this();
 }
 
 void Matrix::swap_rows(int h, int i, int j)

@@ -6,6 +6,7 @@
 #include <vector>
 #include <libparallel/serialize.h>
 #include <libparallel/parallel.h>
+#include <boost/tuple/tuple.hpp>
 #include "dimension.h"
 #include "typedefs.h"
 #include <exception.h>
@@ -746,9 +747,14 @@ public:
     /// @}
 
     /// @{
-    /// General SVD, such that A = USV'. U, S, and V must be allocated by the caller.
+    /// General SVD, such that A = USV. U, S, and V must be allocated by the caller.
     void svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V);
     /// @}
+
+    ///@{
+    /// Matrices/Vectors U (m x k), S (k), V (k x n) to feed to Matrix::svd
+    boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
+    ///@}
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.

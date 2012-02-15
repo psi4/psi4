@@ -431,7 +431,8 @@ DLRSolver::DLRSolver(boost::shared_ptr<RHamiltonian> H) :
     max_subspace_(6),
     min_subspace_(2),
     nsubspace_(0),
-    nconverged_(0)
+    nconverged_(0),
+    precondition_(true)
 {
 }
 DLRSolver::~DLRSolver()
@@ -469,6 +470,9 @@ boost::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options,
     if (options["SOLVER_NORM"].has_changed()) {
         solver->set_norm(options.get_double("SOLVER_NORM"));
     }
+    if (options["SOLVER_PRECONDITION"].has_changed()) {
+        solver->set_precondition(options.get_bool("SOLVER_PRECONDITION"));
+    }
 
     return solver;
 }
@@ -482,7 +486,8 @@ void DLRSolver::print_header() const
         fprintf(outfile, "   Minimum subspace size   = %11d\n", min_subspace_);
         fprintf(outfile, "   Subspace expansion norm = %11.0E\n", norm_);
         fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
-        fprintf(outfile, "   Maximum iterations      = %11d\n\n", maxiter_); 
+        fprintf(outfile, "   Maximum iterations      = %11d\n", maxiter_); 
+        fprintf(outfile, "   Preconditioning         = %11s\n\n", (precondition_ ? "Yes" : "No"));
     }
 }
 unsigned long int DLRSolver::memory_estimate()
@@ -541,14 +546,16 @@ void DLRSolver::solve()
         // Check for convergence
         if (converged_) break;
 
-        // Find correctors 
+        // Find delta correctors 
         correctors();
         // Collapse subspace if needed
         subspaceCollapse();
-        // Orthogonalize/add significant correctors 
+        // Orthogonalize the deltas from the existing subspace and themselves
+        deltaOrthogonalization();
+        // Compute new sigma vectors from delta vectors, possibly modifying delta vectors
+        sigmaDelta();
+        // Orthogonalize/add significant correctors/add corresponding sigmas
         subspaceExpansion();
-        // Compute new sigma vectors 
-        sigma();
 
     } while (iteration_ < maxiter_ && !converged_);
 
@@ -634,6 +641,27 @@ void DLRSolver::sigma()
         fprintf(outfile, "   > Sigma <\n\n");
         for (int i = 0; i < s_.size(); i++) {
             s_[i]->print();
+        }
+        fflush(outfile);
+    }
+}
+void DLRSolver::sigmaDelta()
+{
+    s_d_.clear();
+    
+    int n = d_.size(); 
+    for (int i = 0; i < n; i++) {   
+        std::stringstream s;
+        s << "Sigma-Delta Vector " << (i);
+        s_d_.push_back(boost::shared_ptr<Vector>(new Vector(s.str(), diag_->nirrep(), diag_->dimpi())));
+    }
+    
+    H_->product(d_,s_d_);
+
+    if (debug_) { 
+        fprintf(outfile, "   > Sigma Delta <\n\n");
+        for (int i = 0; i < s_d_.size(); i++) {
+            s_d_[i]->print();
         }
         fflush(outfile);
     }
@@ -871,13 +899,17 @@ void DLRSolver::correctors()
             double* dp = d->pointer(h);
             double* rp = r_[k]->pointer(h);
 
-            for (int m = 0; m < dimension; m++) {
-                dp[m] = rp[m] / (lambda - hp[m]);
+            if (precondition_) {
+                for (int m = 0; m < dimension; m++) {
+                    dp[m] = rp[m] / (lambda - hp[m]);
+                }
+            } else {
+                C_DCOPY(dimension,rp,1,dp,1);
             }
 
             // Substitute r for this vector, if norm is bad
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
-            if (norm != norm || isinf(norm) || norm < criteria_) {
+            if (norm != norm || isinf(norm)) {
                 C_DCOPY(dimension,rp,1,dp,1);
                 norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             } 
@@ -895,6 +927,68 @@ void DLRSolver::correctors()
     }
     if (debug_) { 
         fprintf(outfile, "   > Correctors <\n\n");
+        for (int i = 0; i < d_.size(); i++) {
+            d_[i]->print();
+        }
+        fflush(outfile);
+    }
+}
+void DLRSolver::deltaOrthogonalization()
+{
+    if (debug_) {
+        fprintf(outfile, "   > DeltaOrthogonalization <\n\n");
+    }
+
+    // Which vectors are significant?
+    std::vector<bool> sig(d_.size());
+    for (int i = 0; i < d_.size(); ++i) {
+        sig[i] = false;
+    }
+
+    // Orthonormalize d_ via Modified Gram-Schmidt
+    for (int h = 0; h < diag_->nirrep(); ++h) {
+
+        int dimension = diag_->dimpi()[h];
+        if (!dimension) continue;
+
+        // Remove the projection of d on b from b
+        for (int i = 0; i < d_.size(); ++i) {
+            for (int j = 0; j < b_.size(); ++j) {
+                double* dp = d_[i]->pointer(h);
+                double* bp = b_[j]->pointer(h);
+
+                double r_ji = C_DDOT(dimension,dp,1,bp,1);
+                C_DAXPY(dimension,-r_ji,bp,1,dp,1);
+            } 
+        }
+
+        // Remove the self-projection of d on d from d
+        for (int i = 0; i < d_.size(); ++i) {
+            double* dip = d_[i]->pointer(h);
+            double r_ii = sqrt(C_DDOT(dimension,dip,1,dip,1));
+            C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
+            for (int j = i + 1; j < d_.size(); ++j) {
+                double* djp = d_[j]->pointer(h);
+                double r_ij = C_DDOT(dimension,djp,1,dip,1);
+                C_DAXPY(dimension,-r_ij,dip,1,djp,1);
+            }  
+            if (r_ii > norm_) {
+                sig[i] = sig[i] | true;    
+            } 
+        }
+    }
+
+    // Retain significant vector in d
+    std::vector<SharedVector> d2 = d_;
+    d_.clear();
+    for (int i = 0; i < d2.size(); ++i) {
+        if (sig[i]) {
+            d_.push_back(d2[i]);
+        }
+    } 
+
+    if (debug_) { 
+        fprintf(outfile, "   > Orthonormal Correctors <\n\n");
         for (int i = 0; i < d_.size(); i++) {
             d_[i]->print();
         }
@@ -924,21 +1018,29 @@ void DLRSolver::subspaceExpansion()
             for (int j = 0; j < b_.size(); ++j) {
                 double* dp = d_[i]->pointer(h);
                 double* bp = b_[j]->pointer(h);
+
+                double* sdp = s_d_[i]->pointer(h);
+                double* sp = s_[j]->pointer(h);
                 
                 double r_ji = C_DDOT(dimension,dp,1,bp,1);
                 C_DAXPY(dimension,-r_ji,bp,1,dp,1);
+                C_DAXPY(dimension,-r_ji,sp,1,sdp,1);
             } 
         }
 
         // Remove the self-projection of d on d from d
         for (int i = 0; i < d_.size(); ++i) {
             double* dip = d_[i]->pointer(h);
+            double* sip = s_d_[i]->pointer(h);
             double r_ii = sqrt(C_DDOT(dimension,dip,1,dip,1));
             C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
+            C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), sip,1);
             for (int j = i + 1; j < d_.size(); ++j) {
                 double* djp = d_[j]->pointer(h);
+                double* sjp = s_d_[j]->pointer(h);
                 double r_ij = C_DDOT(dimension,djp,1,dip,1);
                 C_DAXPY(dimension,-r_ij,dip,1,djp,1);
+                C_DAXPY(dimension,-r_ij,sip,1,sjp,1);
             }  
             if (r_ii > norm_) {
                 sig[i] = sig[i] | true;    
@@ -950,6 +1052,7 @@ void DLRSolver::subspaceExpansion()
     for (int i = 0; i < d_.size(); ++i) {
         if (sig[i]) {
             b_.push_back(d_[i]);
+            s_.push_back(s_d_[i]);
         }
     } 
 
@@ -959,6 +1062,10 @@ void DLRSolver::subspaceExpansion()
         fprintf(outfile, "Final subspace after addition\n\n");
         for (int i = 0; i < b_.size(); i++) {
             b_[i]->print();
+        }
+        fprintf(outfile, "Final sigma vectors after addition\n\n");
+        for (int i = 0; i < s_.size(); i++) {
+            s_[i]->print();
         }
         fflush(outfile);
     }
