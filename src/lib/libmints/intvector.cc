@@ -148,9 +148,9 @@ void IntVector::set(int *vec) {
 void IntVector::print(FILE *out, const char* extra) const {
     int h;
     if (extra == NULL) {
-        fprintf(outfile, "\n # %s #\n", name_.c_str());
+        fprintf(out, "\n # %s #\n", name_.c_str());
     } else {
-        fprintf(outfile, "\n # %s %s #\n", name_.c_str(), extra);
+        fprintf(out, "\n # %s %s #\n", name_.c_str(), extra);
     }
     for (h=0; h<nirrep_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);

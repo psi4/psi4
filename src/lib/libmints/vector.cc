@@ -215,15 +215,15 @@ void Vector::print(FILE* out, const char* extra) const
 {
     int h;
     if (extra == NULL) {
-        fprintf(outfile, "\n # %s #\n", name_.c_str());
+        fprintf(out, "\n # %s #\n", name_.c_str());
     } else {
-        fprintf(outfile, "\n # %s %s #\n", name_.c_str(), extra);
+        fprintf(out, "\n # %s %s #\n", name_.c_str(), extra);
     }
     for (h=0; h<nirrep_; ++h) {
-        fprintf(outfile, " Irrep: %d\n", h+1);
+        fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
-            fprintf(outfile, "   %4d: %10.7f\n", i+1, vector_[h][i]);
-        fprintf(outfile, "\n");
+            fprintf(out, "   %4d: %10.7f\n", i+1, vector_[h][i]);
+        fprintf(out, "\n");
     }
 }
 
