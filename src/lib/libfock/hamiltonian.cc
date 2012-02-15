@@ -315,7 +315,11 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                 SharedVector S = boost::get<1>(svd); 
                 SharedMatrix V = boost::get<2>(svd); 
 
+                timer_on("SVD");
+
                 Pia->svd(U,S,V);
+
+                timer_off("SVD");
 
                 if (bench_) { 
                     fprintf(S_fh, "    symm = %d, N = %d\n\n", symm, N); 

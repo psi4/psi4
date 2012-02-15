@@ -486,7 +486,8 @@ void DLRSolver::print_header() const
         fprintf(outfile, "   Minimum subspace size   = %11d\n", min_subspace_);
         fprintf(outfile, "   Subspace expansion norm = %11.0E\n", norm_);
         fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
-        fprintf(outfile, "   Maximum iterations      = %11d\n\n", maxiter_); 
+        fprintf(outfile, "   Maximum iterations      = %11d\n", maxiter_); 
+        fprintf(outfile, "   Preconditioning         = %11s\n\n", (precondition_ ? "Yes" : "No"));
     }
 }
 unsigned long int DLRSolver::memory_estimate()
