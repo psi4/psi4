@@ -39,6 +39,12 @@ public:
 
     OrbitalSpace(const std::string& id,
                  const std::string& name,
+                 const SharedMatrix& full_C,
+                 const boost::shared_ptr<BasisSet>& basis,
+                 const boost::shared_ptr<IntegralFactory>& ints);
+
+    OrbitalSpace(const std::string& id,
+                 const std::string& name,
                  const boost::shared_ptr<Wavefunction>& wave);
 
     int nirrep() const;
@@ -59,6 +65,9 @@ public:
 
     /// MO dimensionality
     const Dimension& dim() const;
+
+    /// Print information about the orbital space
+    void print() const;
 
     /** Creates an OrbitalSpace from 'from' to the given basis set 'to'
       */
@@ -93,6 +102,7 @@ namespace SpaceBuilder
      * space with the same span. Linearly dependent orbitals are thrown out.
      * \param aux_bs The first basis to include in space
      * \param obs The second basis to include in the new space
+     * \param ints Integral factory. NOTE: This is only needed for the spherical transforms so it can be any integral factory.
      * \param lindep_tol The tolerance for linear dependencies
      */
     OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, boost::shared_ptr<IntegralFactory> ints, double lindep_tol);

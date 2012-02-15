@@ -227,17 +227,17 @@ public:
 
     /// @{
     /** Returns the starting iterator for irrep h. */
-    iterator begin(int h)
+    iterator begin_irrep(int h)
         { return iterator(vector_[h]); }
-    const_iterator begin(int h) const
+    const_iterator begin_irrep(int h) const
         { return const_iterator(vector_[h]); }
     /// @}
 
     /// @{
     /** Returns the starting iterator for irrep h. */
-    iterator end(int h)
+    iterator end_irrep(int h)
         { return iterator(vector_[h]) + dimpi_[h]; }
-    const_iterator end(int h) const
+    const_iterator end_irrep(int h) const
         { return const_iterator(vector_[h]) + dimpi_[h]; }
     /// @}
 

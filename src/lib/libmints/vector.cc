@@ -124,7 +124,8 @@ void Vector::alloc()
     if (vector_.size())
         release();
 
-    v_.resize(dimpi_.sum());
+    int total = dimpi_.sum();
+    v_.resize(total);
 
     std::fill(vector_.begin(), vector_.end(), (double*)0);
     std::fill(v_.begin(), v_.end(), 0.0);

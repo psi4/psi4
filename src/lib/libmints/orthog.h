@@ -42,9 +42,9 @@ private:
     double max_orthog_res_;
     /// @}
 
-    void compute_overlap_eig(SharedMatrix overlap_eigvec,
-                             SharedVector isqrt_eigval,
-                             SharedVector sqrt_eigval);
+    void compute_overlap_eig(Matrix& overlap_eigvec,
+                             Vector& isqrt_eigval,
+                             Vector& sqrt_eigval);
     void compute_symmetric_orthog();
     void compute_canonical_orthog();
     void compute_gs_orthog();

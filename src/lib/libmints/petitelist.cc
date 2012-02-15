@@ -998,6 +998,21 @@ SharedMatrix PetiteList::aotoso()
     return aoso;
 }
 
+SharedMatrix PetiteList::evecs_to_AO_basis(SharedMatrix soevecs)
+{
+    // if C1, then do nothing
+    if (c1_)
+        return SharedMatrix(new Matrix(soevecs));
+
+    SharedMatrix result(new Matrix(soevecs->name(), AO_basisdim(), SO_basisdim()));
+
+    // Currently expects the caller to transpose the soevecs.
+    // This is reasonable because soevecs will be used in the transposed state elsewhere.
+    result->gemm(false, false, 1.0, aotoso(), soevecs, 0.0);
+
+    return result;
+}
+
 const char *labels[] = {
     " E ",
     "C2z",
