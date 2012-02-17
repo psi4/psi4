@@ -23,6 +23,8 @@ protected:
     int print_;	
     /// Debug flag, defaults to 0
     int debug_;
+    /// Bench flag, defaults to 0
+    int bench_;
     /// Memory available, in doubles, defaults to 0 => Unlimited storage 
     unsigned long int memory_;	
 
@@ -36,6 +38,8 @@ protected:
     double convergence_;
     /// Current iteration count
     int iteration_;
+    /// Preconditioner type
+    std::string precondition_;
 
     /// Common initialization
     void common_init();
@@ -50,6 +54,8 @@ public:
 
     // => Knobs <= // 
 
+    /// Set precondition type (specific to solver type) 
+    void set_precondition(const std::string& precondition) { precondition_ = precondition; }
     /// Set maximum vector storage space (defaults to 0 MB => Unlimited storage)
     void set_memory(unsigned long int memory) { memory_ = memory; }
     /// Set maximum number of iterations (defaults to 100)
@@ -60,6 +66,8 @@ public:
     void set_print(int print) { print_ = print; }
     /// Debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
+    /// Bench flag (defaults to 0)
+    void set_bench(int bench) { bench_ = bench; }
 
     // => Accessors <= //
     
@@ -186,8 +194,6 @@ protected:
     
     /// Diagonal M, for guess and Jacobi preconditioning
     boost::shared_ptr<Vector> diag_;
-    /// Do Jacobi preconditioning?
-    bool precondition_;
 
     void guess();
     void residual();
@@ -219,7 +225,6 @@ public:
     void solve();
     void finalize();
 
-    void set_precondition(bool precondition) { precondition_ = precondition; }
 };
 
 class DLRSolver : public RSolver {
@@ -238,8 +243,6 @@ protected:
     int min_subspace_; 
     /// Number of guess vectors to build
     int nguess_;    
-    /// Precondition
-    bool precondition_;
 
     // => Iteration values <= //
 
@@ -258,6 +261,10 @@ protected:
     std::vector<boost::shared_ptr<Vector> > b_;
     /// Sigma vectors (nsubspace)
     std::vector<boost::shared_ptr<Vector> > s_;
+    /// Delta Subspace Hamiltonian (preconditioner)
+    SharedMatrix A_;
+    /// Delta Subspace indices
+    std::vector<std::vector<int> > A_inds_;
     /// G_ij Subspace Hamiltonian (nsubspace x nsubspace)
     SharedMatrix G_;
     /// Subspace eigenvectors (nsubspace x nsubspace)
@@ -270,8 +277,6 @@ protected:
     std::vector<double> n_;
     /// Correction vectors (nroots)
     std::vector<boost::shared_ptr<Vector> > d_;
-    /// Sigma vectors corresponding to delta vectors (nroots)
-    std::vector<boost::shared_ptr<Vector> > s_d_;
     /// Diagonal of Hamiltonian 
     boost::shared_ptr<Vector> diag_;
 
@@ -281,10 +286,6 @@ protected:
     void guess();
     // Compute sigma vectors for the given set of b
     void sigma();
-    // Compute sigma vectors for the deltas (low rank methinks)
-    void sigmaDelta();
-    // Orthogonalize the deltas
-    void deltaOrthogonalization();
     // Compute subspace Hamiltonian
     void subspaceHamiltonian();
     // Diagonalize subspace Hamiltonian
@@ -342,8 +343,6 @@ public:
     void set_nguess(int nguess) { nguess_ = nguess; }
     /// Set norm critera for adding vectors to subspace (defaults to 1.0E-6) 
     void set_norm(double norm) { norm_ = norm; }
-    /// Precondition or not? (Pure Krylov vs. DL)
-    void set_precondition(bool precondition) { precondition_ = precondition; }
 };
 
 class DLRXSolver : public RSolver {

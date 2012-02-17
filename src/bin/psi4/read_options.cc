@@ -1007,9 +1007,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- DL Solver minimum corrector norm to add to subspace
      -*/
     options.add_double("SOLVER_NORM",1.0E-6);
-    /*- CG Solver Jacobi precondition?
+    /*- Solver precondition type
      -*/
-    options.add_bool("SOLVER_PRECONDITION",true);
+    options.add_str("SOLVER_PRECONDITION","JACOBI","SUBSPACE JACOBI NONE");
     /*- Solver rank-reduction techniques?
      -*/
     options.add_double("SOLVER_MAX_NORM", 0.0);
