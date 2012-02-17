@@ -471,7 +471,7 @@ void CGRSolver::update_z()
             double* rp = r_[N]->pointer();
             double* dp = diag_->pointer();
             if (precondition_ == "SUBSPACE") {
-                double lambda = shifts_[h][n];
+                double lambda = shifts_[h][N];
                 for (int m = 0; m < n; m++) {
                     zp[m] = rp[m] / (dp[m] - lambda);
                 }
@@ -501,7 +501,7 @@ void CGRSolver::update_z()
                 }
                 delete[] ipiv;
             } else if (precondition_ == "JACOBI") {
-                double lambda = shifts_[h][n];
+                double lambda = shifts_[h][N];
                 for (int i = 0; i < n; ++i) {
                     zp[i] = rp[i] / (dp[i] - lambda);
                 }
