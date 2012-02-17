@@ -61,6 +61,7 @@ USolver::~USolver()
 CGRSolver::CGRSolver(boost::shared_ptr<RHamiltonian> H) :
     RSolver(H)
 {
+    nguess_ = 0;
 }
 CGRSolver::~CGRSolver()
 {
@@ -86,6 +87,9 @@ boost::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options,
     }
     if (options["SOLVER_CONVERGENCE"].has_changed()) {
         solver->set_convergence(options.get_double("SOLVER_CONVERGENCE"));
+    }
+    if (options["SOLVER_N_GUESS"].has_changed()) {
+        solver->set_nguess(options.get_int("SOLVER_N_GUESS"));
     }
 
     return solver;
@@ -152,6 +156,7 @@ void CGRSolver::solve()
         fflush(outfile);
     }
 
+    setup();
     guess();
     products_x();
     residual();
@@ -201,6 +206,78 @@ void CGRSolver::finalize()
     r_converged_.clear();
     diag_.reset();
 }
+void CGRSolver::setup()
+{
+    if (shifts_.size() == 0) {
+        shifts_.resize(diag_->nirrep());
+        for (int h = 0; h < diag_->nirrep(); h++) {
+            for (int i = 0; i < b_.size(); i++) {
+                shifts_[h][i] = 0.0;
+            }
+        }
+    }
+
+    if (precondition_ == "SUBSPACE" && !A_) {
+
+        // Find the nguess strongest diagonals in the A matrix
+        Dimension rank(diag_->nirrep());
+        A_inds_.clear();
+        A_inds_.resize(diag_->nirrep());
+        for (int h = 0; h < diag_->nirrep(); ++h) {
+            int n = diag_->dimpi()[h];
+            if (!n) continue;
+
+            std::vector<std::pair<double, int> > d;
+            for (int i = 0; i < n; ++i) {
+                d.push_back(make_pair(diag_->get(h,i),i));
+            }
+            std::sort(d.begin(), d.end());
+
+            int r = 0;
+            for (int i = 0; (i < nguess_) && (i < n); ++i) {
+                A_inds_[h].push_back(d[i].second);
+                r++;
+            } 
+            rank[h] = r; 
+        }
+
+        // Preconditioner submatrix and Guess Hamiltonian
+        A_ = SharedMatrix(new Matrix("A_IJ (Preconditioner)", rank, rank));
+        for (int i = 0; i < nguess_; i += b_.size()) {
+            x_.clear();
+            Ap_.clear();
+            int n = (b_.size() > (nguess_ - i) ? (nguess_ - i) : b_.size());
+            for (int j = 0; j < n; j++) {
+                int k = i + j;
+                x_.push_back(boost::shared_ptr<Vector>(new Vector("Delta Guess", diag_->nirrep(), diag_->dimpi())));
+                b_.push_back(boost::shared_ptr<Vector>(new Vector("Delta Sigma", diag_->nirrep(), diag_->dimpi())));
+                for (int h = 0; h < diag_->nirrep(); h++) {
+                    if (k >= A_inds_[h].size()) continue;
+                    b_[j]->set(h,A_inds_[h][k],1.0);
+                }
+            }       
+
+            // Low rank!
+            products_x();
+
+            for (int j = 0; j < n; j++) {
+                int k = i + j;
+                for (int h = 0; h < diag_->nirrep(); h++) {
+                    if (k >= A_inds_[h].size()) continue;
+                    double** Ap = A_->pointer(h);
+                    double*  sp = Ap_[j]->pointer(h);
+                    for (int l = 0; l < rank[h]; l++) {
+                        Ap[k][l] = sp[A_inds_[h][l]];
+                    }
+                }
+            }       
+        }
+
+        Ap_.clear();
+        x_.clear();
+    
+    }
+}
 void CGRSolver::guess()
 {
     for (int N = 0; N < b_.size(); ++N) {
@@ -243,6 +320,15 @@ void CGRSolver::products_x()
 {
     H_->product(x_,Ap_);
 
+    for (int h = 0; h < diag_->nirrep(); h++) {
+        for (int i = 0; i < x_.size(); i++) {
+            if (shifts_[h][i] != 0.0) {
+                double lambda = shifts_[h][i];
+                C_DAXPY(diag_->dimpi()[h],-lambda,x_[i]->pointer(h),1,Ap_[i]->pointer(h),1);
+            }
+        }
+    }
+
     if (debug_) {
         fprintf(outfile, "  > Products x <\n\n");
         for (int N = 0; N < Ap_.size(); N++) {
@@ -262,6 +348,16 @@ void CGRSolver::products_p()
     }
 
     H_->product(p,Ap);
+
+    for (int N = 0; N < b_.size(); ++N) {
+        if (r_converged_[N]) continue;
+        for (int h = 0; h < diag_->nirrep(); h++) {
+            if (shifts_[h][N] != 0.0) {
+                double lambda = shifts_[h][N];
+                C_DAXPY(diag_->dimpi()[h],-lambda,p_[N]->pointer(h),1,Ap_[N]->pointer(h),1);
+            }
+        }
+    }
 
     if (debug_) {
         fprintf(outfile, "  > Products p <\n\n");
@@ -341,14 +437,17 @@ void CGRSolver::check_convergence()
     convergence_ = 0.0;
     for (int N = 0; N < b_.size(); ++N) {
         if (r_converged_[N]) continue;
-        r_nrm2_[N] = 0.0;
+        double R2 = 0.0;
+        double B2 = 0.0;
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
             int n = b_[N]->dimpi()[h];
             if (!n) continue;
             double* rp = r_[N]->pointer(h);
-            r_nrm2_[N] += C_DDOT(n,rp,1,rp,1);
+            double* bp = b_[N]->pointer(h);
+            B2 += C_DDOT(n,bp,1,bp,1);
+            R2 += C_DDOT(n,rp,1,rp,1);
         }
-        r_nrm2_[N] = sqrt(r_nrm2_[N]);
+        r_nrm2_[N] = sqrt(R2/B2);
         if (convergence_ < r_nrm2_[N]) {
             convergence_ = r_nrm2_[N];
         }
@@ -371,9 +470,40 @@ void CGRSolver::update_z()
             double* zp = z_[N]->pointer();
             double* rp = r_[N]->pointer();
             double* dp = diag_->pointer();
-            if (precondition_ == "JACOBI") {
+            if (precondition_ == "SUBSPACE") {
+                double lambda = shifts_[h][n];
+                for (int m = 0; m < n; m++) {
+                    zp[m] = rp[m] / (dp[m] - lambda);
+                }
+                
+                int rank = A_inds_[h].size();
+                SharedMatrix A2(new Matrix("A2", rank, rank));
+                double** A2p = A2->pointer();
+                double** Ap = A_->pointer(h);
+                ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
+                for (int i = 0; i < rank; i++) {
+                    A2p[i][i] -= lambda;
+                }
+
+                int* ipiv = new int[rank];
+                int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
+                // Only apply the improved preconditioner if nonsingular
+                if (!info) {
+                    double* v = new double[rank];
+                    for (int i = 0; i < rank; i++) {
+                        v[i] = rp[A_inds_[h][i]];
+                    }
+                    C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
+                    for (int i = 0; i < rank; i++) {
+                        zp[A_inds_[h][i]] = v[i];
+                    }
+                    delete[] v;
+                }
+                delete[] ipiv;
+            } else if (precondition_ == "JACOBI") {
+                double lambda = shifts_[h][n];
                 for (int i = 0; i < n; ++i) {
-                    zp[i] = rp[i] / dp[i];
+                    zp[i] = rp[i] / (dp[i] - lambda);
                 }
             } else { 
                 for (int i = 0; i < n; ++i) {
@@ -592,6 +722,7 @@ void DLRSolver::guess()
 {
     // Find the nguess strongest diagonals in the A matrix
     Dimension rank(diag_->nirrep());
+    A_inds_.clear();
     A_inds_.resize(diag_->nirrep());
     for (int h = 0; h < diag_->nirrep(); ++h) {
         int n = diag_->dimpi()[h];
@@ -860,6 +991,7 @@ void DLRSolver::residuals()
     for (int k = 0; k < nroot_; k++) {
 
         double R2 = 0.0;
+        double S2 = 0.0;        
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
         
@@ -877,6 +1009,8 @@ void DLRSolver::residuals()
                 double* sp = s_[i]->pointer(h);
                 C_DAXPY(dimension,ap[i][k],sp,1,rp,1);
             }       
+            S2 += C_DDOT(dimension,rp,1,rp,1);
+
             C_DAXPY(dimension,-lp[k],cp,1,rp,1);
 
             R2 += C_DDOT(dimension,rp,1,rp,1);
@@ -884,7 +1018,7 @@ void DLRSolver::residuals()
         }
 
         // Residual norm k
-        double rnorm = sqrt(R2);
+        double rnorm = sqrt(R2/S2);
         n_[k] = rnorm;
         if (rnorm < criteria_) {
             nconverged_++;
@@ -951,8 +1085,6 @@ void DLRSolver::correctors()
                     A2p[i][i] -= lambda;
                 }
 
-                A2->print();
-            
                 int* ipiv = new int[rank];
                 int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
                 // Only apply the improved preconditioner if nonsingular
@@ -1113,6 +1245,137 @@ void DLRSolver::subspaceCollapse()
             s_[i]->print();
         }
     }
+}
+
+RayleighRSolver::RayleighRSolver(boost::shared_ptr<RHamiltonian> H) : 
+    DLRSolver(H)
+{
+}
+RayleighRSolver::~RayleighRSolver()
+{
+}
+boost::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& options,
+    boost::shared_ptr<RHamiltonian> H)
+{
+    boost::shared_ptr<RayleighRSolver> solver(new RayleighRSolver(H));
+
+    if (options["PRINT"].has_changed()) {
+        solver->set_print(options.get_int("PRINT"));
+    }
+    if (options["DEBUG"].has_changed()) {
+        solver->set_debug(options.get_int("DEBUG"));
+    }
+    if (options["BENCH"].has_changed()) {
+        solver->set_bench(options.get_int("BENCH"));
+    }
+    if (options["SOLVER_MAXITER"].has_changed()) {
+        solver->set_maxiter(options.get_int("SOLVER_MAXITER"));
+    }
+    if (options["SOLVER_CONVERGENCE"].has_changed()) {
+        solver->set_convergence(options.get_double("SOLVER_CONVERGENCE"));
+    }
+    if (options["SOLVER_N_ROOT"].has_changed()) {
+        solver->set_nroot(options.get_int("SOLVER_N_ROOT"));
+    }
+    if (options["SOLVER_N_GUESS"].has_changed()) {
+        solver->set_nguess(options.get_int("SOLVER_N_GUESS"));
+    }
+    if (options["SOLVER_MIN_SUBSPACE"].has_changed()) {
+        solver->set_min_subspace(options.get_int("SOLVER_MIN_SUBSPACE"));
+    }
+    if (options["SOLVER_MAX_SUBSPACE"].has_changed()) {
+        solver->set_max_subspace(options.get_int("SOLVER_MAX_SUBSPACE"));
+    }
+    if (options["SOLVER_NORM"].has_changed()) {
+        solver->set_norm(options.get_double("SOLVER_NORM"));
+    }
+    if (options["SOLVER_PRECONDITION"].has_changed()) {
+        solver->set_precondition(options.get_str("SOLVER_PRECONDITION"));
+    }
+
+    return solver;
+}
+void RayleighRSolver::print_header() const 
+{
+    if (print_) {
+        fprintf(outfile, "  ==> RayleighRSolver (by Rob Parrish) <== \n\n");
+        fprintf(outfile, "   Number of roots         = %11d\n", nroot_);
+        fprintf(outfile, "   Number of guess vectors = %11d\n", nguess_);
+        fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
+        fprintf(outfile, "   Maximum iterations      = %11d\n", maxiter_); 
+        fprintf(outfile, "   Preconditioning         = %11s\n\n", precondition_.c_str());
+    }
+}
+unsigned long int RayleighRSolver::memory_estimate()
+{
+    unsigned long int dimension = 0L;
+    if (!diag_) diag_ = H_->diagonal();
+    for (int h = 0; h < diag_->nirrep(); h++) {
+        dimension += diag_->dimpi()[h];
+    }
+    return (5L * nroot_ + 1L) * dimension;
+}
+void RayleighRSolver::initialize()
+{
+    DLRSolver::initialize();
+    cg_ = CGRSolver::build_solver(Process::environment.options, H_);
+} 
+void RayleighRSolver::finalize()
+{
+    DLRSolver::finalize();
+    cg_.reset();
+}
+void RayleighRSolver::correctors()
+{
+    cg_->set_A(A_,A_inds_);
+
+    std::vector<SharedVector>& b = cg_->b();
+    std::vector<SharedVector>& x = cg_->x();
+
+    b.clear();
+    x.clear();
+    d_.clear();
+
+    std::vector<std::vector<double> > shifts(diag_->nirrep());
+    for (int i = 0; i < nroot_; i++) {
+        if (n_[i] > criteria_) {
+            for (int h = 0; h < diag_->nirrep(); h++) {
+                shifts[h].push_back(E_[i][h]);
+            }
+            b.push_back(c_[i]);
+        } else {
+            d_.push_back(c_[i]);
+        }
+    }        
+    cg_->set_shifts(shifts);
+    cg_->initialize();
+    
+    cg_->solve();
+
+    for (int i = 0; i < b.size(); i++) {
+        d_.push_back(x[i]);
+        for (int h = 0; h < diag_->nirrep(); h++) { 
+
+            int dimension = diag_->dimpi()[h];
+            if (!dimension) continue;
+
+            double* dp = d_[i]->pointer(h);
+            double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
+            double scale = 1.0 / norm;
+            if (scale != scale || isinf(scale)) {
+                scale = 0.0;
+            }
+
+            // Normalize the corrector
+            C_DSCAL(dimension, scale, dp, 1); 
+        }
+    }
+
+    cg_->finalize();
+    
+    b_.clear();
+    s_.clear();
+    nsubspace_ = 0;
 }
 
 DLRXSolver::DLRXSolver(boost::shared_ptr<RHamiltonian> H) :

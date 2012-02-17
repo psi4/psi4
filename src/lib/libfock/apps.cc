@@ -825,14 +825,16 @@ double RCIS::compute_energy()
 
     // Construct components
     boost::shared_ptr<CISRHamiltonian> H(new CISRHamiltonian(jk_, Caocc_,Cavir_,eps_aocc_,eps_avir_));
-    boost::shared_ptr<DLRSolver> solver = DLRSolver::build_solver(options_,H);
+    boost::shared_ptr<DLRSolver> solver;
+    if (options_.get_str("SOLVER_TYPE") == "DL")
+        solver = DLRSolver::build_solver(options_,H);
+    else if (options_.get_str("SOLVER_TYPE") == "RAYLEIGH")
+        solver = RayleighRSolver::build_solver(options_,H);
 
     // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
     H->set_bench(bench_);
-    H->set_max_rank(options_.get_int("SOLVER_MAX_RANK"));
-    H->set_rank_cutoff(options_.get_double("SOLVER_MAX_NORM"));
     solver->set_convergence(convergence_);
 
     // Initialization/Memory

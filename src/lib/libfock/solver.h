@@ -194,7 +194,16 @@ protected:
     
     /// Diagonal M, for guess and Jacobi preconditioning
     boost::shared_ptr<Vector> diag_;
+    /// A subspace matrix, for preconditioning 
+    SharedMatrix A_;
+    /// A subspace indices
+    std::vector<std::vector<int> > A_inds_;
+    /// Shifts (to solve (A-mI)
+    std::vector<std::vector<double> > shifts_;     
+    /// Number of guess vectors to use for subspace preconditioner
+    int nguess_;    
 
+    void setup();
     void guess();
     void residual();
     void products_x();
@@ -225,6 +234,9 @@ public:
     void solve();
     void finalize();
 
+    void set_shifts(const std::vector<std::vector<double> >& shifts) { shifts_ = shifts; }
+    void set_A(SharedMatrix A, const std::vector<std::vector<int> > inds) { A_ = A; A_inds_ = inds; }
+    void set_nguess(int nguess) { nguess_ = nguess; }
 };
 
 class DLRSolver : public RSolver {
@@ -297,7 +309,7 @@ protected:
     // Find residuals, update convergence 
     void residuals();
     // Find correctors 
-    void correctors();
+    virtual void correctors();
     // Orthogonalize/add significant correctors 
     void subspaceExpansion();
     // Collapse subspace if needed
@@ -318,9 +330,9 @@ public:
 
     // => Required Methods <= //
     
-    void print_header() const;
-    unsigned long int memory_estimate();
-    void initialize();
+    virtual void print_header() const;
+    virtual unsigned long int memory_estimate();
+    virtual void initialize();
     void solve();
     void finalize();
     
@@ -343,6 +355,37 @@ public:
     void set_nguess(int nguess) { nguess_ = nguess; }
     /// Set norm critera for adding vectors to subspace (defaults to 1.0E-6) 
     void set_norm(double norm) { norm_ = norm; }
+};
+
+class RayleighRSolver : public DLRSolver {
+
+protected:
+
+    /// Turn an eigenproblem into a linear equations problem 
+    boost::shared_ptr<CGRSolver> cg_;
+    
+    // Find correctors (Like, the most advanced correctors ever)
+    void correctors();
+
+public:
+
+    // => Constructors <= //
+
+    /// Constructor
+    RayleighRSolver(boost::shared_ptr<RHamiltonian> H);  
+    /// Destructor
+    virtual ~RayleighRSolver();
+
+    /// Static constructor, uses Options object
+    static boost::shared_ptr<RayleighRSolver> build_solver(Options& options,
+        boost::shared_ptr<RHamiltonian> H);
+
+    // => Required Methods <= //
+    
+    void print_header() const;
+    unsigned long int memory_estimate();
+    void initialize();
+    void finalize();
 };
 
 class DLRXSolver : public RSolver {
