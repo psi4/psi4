@@ -1117,30 +1117,33 @@ void DLRSolver::correctors()
                     dp[m] = rp[m] / (hp[m] - lambda);
                 }
                 
-                int rank = A_inds_[h].size();
-                SharedMatrix A2(new Matrix("A2", rank, rank));
-                double** A2p = A2->pointer();
-                double** Ap = A_->pointer(h);
-                ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
-                for (int i = 0; i < rank; i++) {
-                    A2p[i][i] -= lambda;
-                }
+                // Cannot subspace precondition on the first iteration
+                if (iteration_ > 1) {
+                    int rank = A_inds_[h].size();
+                    SharedMatrix A2(new Matrix("A2", rank, rank));
+                    double** A2p = A2->pointer();
+                    double** Ap = A_->pointer(h);
+                    ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
+                    for (int i = 0; i < rank; i++) {
+                        A2p[i][i] -= lambda;
+                    }
 
-                int* ipiv = new int[rank];
-                int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
-                // Only apply the improved preconditioner if nonsingular
-                if (!info) {
-                    double* v = new double[rank];
-                    for (int i = 0; i < rank; i++) {
-                        v[i] = rp[A_inds_[h][i]];
+                    int* ipiv = new int[rank];
+                    int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
+                    // Only apply the improved preconditioner if nonsingular
+                    if (!info) {
+                        double* v = new double[rank];
+                        for (int i = 0; i < rank; i++) {
+                            v[i] = rp[A_inds_[h][i]];
+                        }
+                        C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
+                        for (int i = 0; i < rank; i++) {
+                            dp[A_inds_[h][i]] = v[i];
+                        }
+                        delete[] v;
                     }
-                    C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
-                    for (int i = 0; i < rank; i++) {
-                        dp[A_inds_[h][i]] = v[i];
-                    }
-                    delete[] v;
+                    delete[] ipiv;
                 }
-                delete[] ipiv;
 
             } else if (precondition_ == "JACOBI") {
                 for (int m = 0; m < dimension; m++) {
@@ -1385,6 +1388,13 @@ void RayleighRSolver::finalize()
 void RayleighRSolver::correctors()
 {
     cg_->set_A(A_,A_inds_);
+    if (precondition_ == "SUBSPACE") {
+        if (iteration_ <= 1) {
+            cg_->set_precondition("JACOBI");
+        } else {
+            cg_->set_precondition("SUBSPACE");
+        }
+    }
     if (precondition_steps_ == "CONSTANT")
         cg_->set_maxiter(precondition_maxiter_);
     else 
