@@ -1013,6 +1013,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Solver type (for interchangeable solvers)
      -*/
     options.add_str("SOLVER_TYPE", "DL", "DL RAYLEIGH"); 
+    /*- Solver precondtion max steps
+    -*/
+    options.add_int("SOLVER_PRECONDITION_MAXITER", 1);
+    /*- Solver precondition step type
+    -*/
+    options.add_str("SOLVER_PRECONDITION_STEPS", "TRIANGULAR", "CONSTANT TRIANGULAR");   
+    /*- Solver residue or eigenvector delta
+    -*/
+    options.add_str("SOLVER_QUANTITY", "RESIDUAL", "EIGENVECTOR RESIDUAL");
+
   }
   if (name == "MP2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can

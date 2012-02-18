@@ -29,7 +29,7 @@ Solver::~Solver()
 }
 void Solver::common_init()
 {
-    print_ = 1;
+    print_ = 2;
     debug_ = 0;
     bench_ = 0;
     // Unlimited default
@@ -40,11 +40,13 @@ void Solver::common_init()
     criteria_ = 1.0E-6;
     maxiter_ = 100;
     precondition_ = "JACOBI";
+    name_ = "Solver";
 }
 
 RSolver::RSolver(boost::shared_ptr<RHamiltonian> H) :
     Solver(), H_(H)
 {
+    name_ = "RSolver";
 }
 RSolver::~RSolver()
 {
@@ -53,6 +55,7 @@ RSolver::~RSolver()
 USolver::USolver(boost::shared_ptr<UHamiltonian> H) :
     Solver(), H_(H)
 {
+    name_ = "USolver";
 }
 USolver::~USolver()
 {
@@ -62,6 +65,7 @@ CGRSolver::CGRSolver(boost::shared_ptr<RHamiltonian> H) :
     RSolver(H)
 {
     nguess_ = 0;
+    name_ = "CGR";
 }
 CGRSolver::~CGRSolver()
 {
@@ -72,7 +76,7 @@ boost::shared_ptr<CGRSolver> CGRSolver::build_solver(Options& options,
     boost::shared_ptr<CGRSolver> solver(new CGRSolver(H));
 
     if (options["PRINT"].has_changed()) {
-        solver->set_print(options.get_int("PRINT"));
+        solver->set_print(options.get_int("PRINT") + 1);
     }
     if (options["DEBUG"].has_changed()) {
         solver->set_debug(options.get_int("DEBUG"));
@@ -150,9 +154,9 @@ void CGRSolver::solve()
     nconverged_ = 0;
     convergence_ = 0.0;
 
-    if (print_) {
+    if (print_ > 1) {
         fprintf(outfile, "  => Iterations <=\n\n");
-        fprintf(outfile, "  %4s %11s %11s %11s\n", "Iter", "Max |R|_2", "Converged", "Remaining");
+        fprintf(outfile, "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Remaining", "Residual"); 
         fflush(outfile);
     }
 
@@ -172,7 +176,8 @@ void CGRSolver::solve()
         update_r();
         check_convergence();
         if (print_) {
-            fprintf(outfile, "  %4d %11.3E %11d %11zu\n", iteration_, convergence_, nconverged_, b_.size() - nconverged_);
+            fprintf(outfile, "  %-10s %4d %10d %10zu %11.3E\n", name_.c_str(), iteration_, nconverged_, 
+                b_.size() - nconverged_, convergence_);
             fflush(outfile);
         }
         update_z();
@@ -181,17 +186,15 @@ void CGRSolver::solve()
 
     } while (iteration_ < maxiter_ && !converged_);
 
-    if (print_) {
+    if (print_ > 1) {
         fprintf(outfile, "\n");
+        if (!converged_) {
+            fprintf(outfile, "    %sSolver did not converge.\n\n", name_.c_str());
+        } else {
+            fprintf(outfile, "    %sSolver converged.\n\n", name_.c_str());
+        }
+        fflush(outfile);
     }
-
-    if (!converged_) {
-        throw PSIEXCEPTION("CGRSolver did not converge");
-    } else if (print_) {
-        fprintf(outfile, "    CGRSolver converged.\n\n");
-    }
-
-    fflush(outfile);
 }
 void CGRSolver::finalize()
 {
@@ -287,8 +290,45 @@ void CGRSolver::guess()
             double* bp = b_[N]->pointer();
             double* xp = x_[N]->pointer();
             double* dp = diag_->pointer();
-            for (int i = 0; i < n; ++i) {
-                xp[i] = bp[i] / dp[i];
+            if (precondition_ == "SUBSPACE") {
+                double lambda = shifts_[h][N];
+                for (int m = 0; m < n; m++) {
+                    xp[m] = bp[m] / (dp[m] - lambda);
+                }
+                
+                int rank = A_inds_[h].size();
+                SharedMatrix A2(new Matrix("A2", rank, rank));
+                double** A2p = A2->pointer();
+                double** Ap = A_->pointer(h);
+                ::memcpy((void*) A2p[0], (void*) Ap[0], sizeof(double) * rank * rank);
+                for (int i = 0; i < rank; i++) {
+                    A2p[i][i] -= lambda;
+                }
+
+                int* ipiv = new int[rank];
+                int info = C_DGETRF(rank,rank,A2p[0],rank,ipiv);
+                // Only apply the improved preconditioner if nonsingular
+                if (!info) {
+                    double* v = new double[rank];
+                    for (int i = 0; i < rank; i++) {
+                        v[i] = bp[A_inds_[h][i]];
+                    }
+                    C_DGETRS('N',rank,1,A2p[0],rank,ipiv,v,rank);
+                    for (int i = 0; i < rank; i++) {
+                        xp[A_inds_[h][i]] = v[i];
+                    }
+                    delete[] v;
+                }
+                delete[] ipiv;
+            } else if (precondition_ == "JACOBI") {
+                double lambda = shifts_[h][N];
+                for (int i = 0; i < n; ++i) {
+                    xp[i] = bp[i] / (dp[i] - lambda);
+                }
+            } else { 
+                for (int i = 0; i < n; ++i) {
+                    xp[i] = bp[i];
+                }
             }
         }
     }
@@ -568,6 +608,7 @@ DLRSolver::DLRSolver(boost::shared_ptr<RHamiltonian> H) :
     nsubspace_(0),
     nconverged_(0)
 {
+    name_ = "DLR";
 }
 DLRSolver::~DLRSolver()
 {
@@ -578,7 +619,7 @@ boost::shared_ptr<DLRSolver> DLRSolver::build_solver(Options& options,
     boost::shared_ptr<DLRSolver> solver(new DLRSolver(H));
 
     if (options["PRINT"].has_changed()) {
-        solver->set_print(options.get_int("PRINT"));
+        solver->set_print(options.get_int("PRINT") + 1);
     }
     if (options["DEBUG"].has_changed()) {
         solver->set_debug(options.get_int("DEBUG"));
@@ -652,9 +693,9 @@ void DLRSolver::solve()
     nconverged_ = 0;
     convergence_ = 0.0;
 
-    if (print_) {
+    if (print_ > 1) {
         fprintf(outfile, "  => Iterations <=\n\n"); 
-        fprintf(outfile, "   %4s  %10s  %10s  %11s\n", "Iter", "NConverged", "NSubspace", "Residual"); 
+        fprintf(outfile, "  %10s %4s %10s %10s %11s\n", "", "Iter", "Converged", "Subspace", "Residual"); 
         fflush(outfile);
     }
 
@@ -676,12 +717,14 @@ void DLRSolver::solve()
         // Find residuals, update convergence 
         residuals();
 
-        fprintf(outfile, "   %4d  %10d  %10d  %11.3E\n", iteration_, nconverged_, 
-            nsubspace_, convergence_);
-        fflush(outfile);       
- 
+        if (print_) {
+            fprintf(outfile, "  %-10s %4d %10d %10d %11.3E\n", name_.c_str(), iteration_, nconverged_, 
+                nsubspace_, convergence_);
+            fflush(outfile);       
+        } 
+
         // Check for convergence
-        if (converged_) break;
+        if (converged_ || iteration_ >= maxiter_) break;
 
         // Find delta correctors 
         correctors();
@@ -692,19 +735,17 @@ void DLRSolver::solve()
         // Compute new sigma vectors
         sigma();
 
-    } while (iteration_ < maxiter_ && !converged_);
+    } while (true);
 
-    if (print_) {
+    if (print_ > 1) {
         fprintf(outfile, "\n");
+        if (!converged_ && print_ > 1) {
+            fprintf(outfile, "    %sSolver did not converge.\n\n", name_.c_str());
+        } else if (print_ > 1) {
+            fprintf(outfile, "    %sSolver converged.\n\n", name_.c_str());
+        }
+        fflush(outfile);
     }
-
-    if (!converged_) {
-        throw PSIEXCEPTION("DLRSolver did not converge");
-    } else if (print_) {
-        fprintf(outfile, "    DLRSolver converged.\n\n");
-    }
-
-    fflush(outfile);
 }
 void DLRSolver::finalize()
 {
@@ -1250,6 +1291,10 @@ void DLRSolver::subspaceCollapse()
 RayleighRSolver::RayleighRSolver(boost::shared_ptr<RHamiltonian> H) : 
     DLRSolver(H)
 {
+    name_ = "RayleighR"; 
+    precondition_maxiter_ = 1;
+    precondition_steps_ = "TRIANGULAR";
+    quantity_ = "RESIDUAL";
 }
 RayleighRSolver::~RayleighRSolver()
 {
@@ -1260,7 +1305,7 @@ boost::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& option
     boost::shared_ptr<RayleighRSolver> solver(new RayleighRSolver(H));
 
     if (options["PRINT"].has_changed()) {
-        solver->set_print(options.get_int("PRINT"));
+        solver->set_print(options.get_int("PRINT") + 1);
     }
     if (options["DEBUG"].has_changed()) {
         solver->set_debug(options.get_int("DEBUG"));
@@ -1292,6 +1337,15 @@ boost::shared_ptr<RayleighRSolver> RayleighRSolver::build_solver(Options& option
     if (options["SOLVER_PRECONDITION"].has_changed()) {
         solver->set_precondition(options.get_str("SOLVER_PRECONDITION"));
     }
+    if (options["SOLVER_PRECONDITION_STEPS"].has_changed()) {
+        solver->set_precondition_steps(options.get_str("SOLVER_PRECONDITION_STEPS"));
+    }
+    if (options["SOLVER_PRECONDITION_MAXITER"].has_changed()) {
+        solver->set_precondition_maxiter(options.get_int("SOLVER_PRECONDITION_MAXITER"));
+    }
+    if (options["SOLVER_QUANTITY"].has_changed()) {
+        solver->set_quantity(options.get_str("SOLVER_QUANTITY"));
+    }
 
     return solver;
 }
@@ -1301,24 +1355,27 @@ void RayleighRSolver::print_header() const
         fprintf(outfile, "  ==> RayleighRSolver (by Rob Parrish) <== \n\n");
         fprintf(outfile, "   Number of roots         = %11d\n", nroot_);
         fprintf(outfile, "   Number of guess vectors = %11d\n", nguess_);
+        fprintf(outfile, "   Expansion quantity      = %11s\n", quantity_.c_str());
+        if (quantity_ == "RESIDUAL") {
+            fprintf(outfile, "   Maximum subspace size   = %11d\n", max_subspace_);
+            fprintf(outfile, "   Minimum subspace size   = %11d\n", min_subspace_);
+        }
         fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
         fprintf(outfile, "   Maximum iterations      = %11d\n", maxiter_); 
+        fprintf(outfile, "   Rayleigh step type      = %11s\n", precondition_steps_.c_str()); 
+        if (precondition_steps_ == "CONSTANT") {
+            fprintf(outfile, "   Rayleigh step maxiter   = %11d\n", precondition_maxiter_); 
+        } else {
+            fprintf(outfile, "   Rayleigh step factor    = %11d\n", precondition_maxiter_); 
+        }
         fprintf(outfile, "   Preconditioning         = %11s\n\n", precondition_.c_str());
     }
-}
-unsigned long int RayleighRSolver::memory_estimate()
-{
-    unsigned long int dimension = 0L;
-    if (!diag_) diag_ = H_->diagonal();
-    for (int h = 0; h < diag_->nirrep(); h++) {
-        dimension += diag_->dimpi()[h];
-    }
-    return (5L * nroot_ + 1L) * dimension;
 }
 void RayleighRSolver::initialize()
 {
     DLRSolver::initialize();
     cg_ = CGRSolver::build_solver(Process::environment.options, H_);
+    cg_->set_print(1);
 } 
 void RayleighRSolver::finalize()
 {
@@ -1328,6 +1385,10 @@ void RayleighRSolver::finalize()
 void RayleighRSolver::correctors()
 {
     cg_->set_A(A_,A_inds_);
+    if (precondition_steps_ == "CONSTANT")
+        cg_->set_maxiter(precondition_maxiter_);
+    else 
+        cg_->set_maxiter(iteration_ * precondition_maxiter_);    
 
     std::vector<SharedVector>& b = cg_->b();
     std::vector<SharedVector>& x = cg_->x();
@@ -1336,15 +1397,22 @@ void RayleighRSolver::correctors()
     x.clear();
     d_.clear();
 
+    std::vector<SharedVector> force;
+    if (quantity_ == "EIGENVECTOR") {
+        force = c_;
+    } else {
+        force = r_;
+    }
+
     std::vector<std::vector<double> > shifts(diag_->nirrep());
     for (int i = 0; i < nroot_; i++) {
         if (n_[i] > criteria_) {
             for (int h = 0; h < diag_->nirrep(); h++) {
                 shifts[h].push_back(E_[i][h]);
             }
-            b.push_back(c_[i]);
+            b.push_back(force[i]);
         } else {
-            d_.push_back(c_[i]);
+            d_.push_back(force[i]);
         }
     }        
     cg_->set_shifts(shifts);
@@ -1373,9 +1441,11 @@ void RayleighRSolver::correctors()
 
     cg_->finalize();
     
-    b_.clear();
-    s_.clear();
-    nsubspace_ = 0;
+    if (quantity_ == "EIGENVECTOR") {
+        b_.clear();
+        s_.clear();
+        nsubspace_ = 0;
+    }
 }
 
 DLRXSolver::DLRXSolver(boost::shared_ptr<RHamiltonian> H) :
@@ -1398,7 +1468,7 @@ boost::shared_ptr<DLRXSolver> DLRXSolver::build_solver(Options& options,
     boost::shared_ptr<DLRXSolver> solver(new DLRXSolver(H));
 
     if (options["PRINT"].has_changed()) {
-        solver->set_print(options.get_int("PRINT"));
+        solver->set_print(options.get_int("PRINT") + 1);
     }
     if (options["DEBUG"].has_changed()) {
         solver->set_debug(options.get_int("DEBUG"));
