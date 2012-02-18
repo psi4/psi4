@@ -1,6 +1,7 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+#include <boost/tuple/tuple_comparison.hpp>
 #include "hamiltonian.h"
 #include "jk.h"
 #include "v.h"
@@ -19,13 +20,21 @@ namespace psi {
 Hamiltonian::Hamiltonian(boost::shared_ptr<JK> jk) :
     jk_(jk)
 {
+    common_init();
 }
 Hamiltonian::Hamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v) :
     jk_(jk), v_(v)
 {
+    common_init();
 }
 Hamiltonian::~Hamiltonian()
 {
+}
+void Hamiltonian::common_init()
+{
+    print_ = 1;
+    debug_ = 0;
+    bench_ = 0;
 }
 
 RHamiltonian::RHamiltonian(boost::shared_ptr<JK> jk) :
@@ -174,7 +183,7 @@ CISRHamiltonian::CISRHamiltonian(boost::shared_ptr<JK> jk,
                                  boost::shared_ptr<Vector> eps_aocc,
                                  boost::shared_ptr<Vector> eps_avir,
                                  boost::shared_ptr<VBase> v) :
-    RHamiltonian(jk,v), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir), singlet_(true) 
+    RHamiltonian(jk,v), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir), singlet_(true)
 {
 }
 CISRHamiltonian::~CISRHamiltonian()
@@ -262,7 +271,7 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
             C_right.push_back(Cr); 
         }
-    }
+    } 
 
     jk_->compute();
 

@@ -1,4 +1,5 @@
 #include "mints.h"
+#include <libint/libint.h>
 
 using namespace boost;
 using namespace psi;
@@ -54,12 +55,8 @@ void IntegralFactory::set_basis(boost::shared_ptr<BasisSet> bs1, boost::shared_p
     bs3_ = bs3;
     bs4_ = bs4;
 
-    // Find the max am
-    boost::shared_ptr<BasisSet> max12(bs1_->max_am() > bs2_->max_am() ? bs1_ : bs2_);
-    boost::shared_ptr<BasisSet> max34(bs3_->max_am() > bs4_->max_am() ? bs3_ : bs4_);
-    boost::shared_ptr<BasisSet> max1234(max12->max_am() > max34->max_am() ? max12 : max34);
-
-    init_spherical_harmonics(max1234->max_am());
+    // Use the max am from libint
+    init_spherical_harmonics(LIBINT_MAX_AM+1);
 }
 
 OneBodyAOInt* IntegralFactory::ao_overlap(int deriv)

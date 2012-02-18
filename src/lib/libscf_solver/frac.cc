@@ -79,9 +79,7 @@ void HF::frac()
             
             // Throw if user requests frac occ above nalpha/nbeta 
             int max_i = (i > 0 ? nalpha_: nbeta_);
-            if (abs(i) > max_i + 1)
-                throw PSIEXCEPTION("Fractional Occupation SCF: FRAC_OCC indices may not exceed occupied electrons by more than one."); 
-            else if(abs(i) == max_i + 1) {
+            if(abs(i) > max_i) {
                 if (i > 0)
                     nalpha_++;
                 else 
@@ -93,8 +91,8 @@ void HF::frac()
                 throw PSIEXCEPTION("Fractional Occupation SCF: PSI4 is not configured for positrons. Please annihilate and start again");             
 
             fprintf(outfile, "    %-5s orbital %4d will contain %11.3E electron.\n", (i > 0 ? "Alpha" : "Beta"), abs(i), val);
-            fprintf(outfile, "\n");
         }
+        fprintf(outfile, "\n");
 
         // Make sure diis restarts correctly/frac plays well with MOM
         if (initialized_diis_manager_) {
