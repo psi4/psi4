@@ -562,84 +562,108 @@ def database(name, db_name, **kwargs):
     """Wrapper to access the molecule objects and reference energies of
     popular chemical databases.
 
-    :returns: Mean absolute deviation of the database in kcal/mol
+    :Aliases: :py:func:`db`
 
-    **Required Arguments**:
+    :returns: (*float*) Mean absolute deviation of the database in kcal/mol
 
-    :param name: First argument, usually unlabeled.
-        Indicates the computational method to be applied to the database.
-        May be any valid argument to ``energy()``.
+    :env: CURRENT ENERGY
+    :env: DABASE MAD
+    :env: SDKFJLS sDLKJ
+
+    **Required Arguments**
+
     :type name: string
-    :param db_name: Second argument, usually unlabeled.
+    :keyword name: First argument, usually unlabeled.
+
+        Indicates the computational method to be applied to the database.
+        May be any valid argument to :py:func:`driver.energy`.
+
+    :type db_name: string
+    :keyword db_name: Second argument, usually unlabeled.
+
         Indicates the requested database name, matching the name of a python
         file in ``psi4/lib/databases``. Consult that directory for available
         databases and literature citations.
-    :type db_name: string
 
-    **Optional Arguments**:
+    **Optional Arguments**
 
+    :type mode: string
     :param mode: {*'continuous'*, 'sow', 'reap'}
+
         Indicates whether the calculation required to complete the
         database are to be run in one file (``'continuous'``) or are to be
         farmed out in an embarrassingly parallel fashion
         (``'sow'``/``'reap'``).  For the latter, run an initial job with
         ``'sow'`` and follow instructions in its output file.
-    :type mode: string
-    :param cp: {*'off'*, 'on'}
-        Indicates whether counterpoise correction is employed in computing
-        interaction energies.  Use this option and NOT the ``cp()``
-        wrapper for BSSE correction in the ``database()`` wrapper.  Option
-        valid only for databases consisting of bimolecular complexes.
+
     :type cp: bool
+    :param cp: {*'off'*, 'on'}
+
+        Indicates whether counterpoise correction is employed in computing
+        interaction energies. Use this option and NOT the :py:func:`wrappers.cp`
+        wrapper for BSSE correction in the ``database()``.  Option
+        valid only for databases consisting of bimolecular complexes.
+
+    :type rlxd: bool
     :param rlxd: {*'off'*, 'on'}
+
         Indicates whether correction for the deformation energy is
         employed in computing interaction energies.  Option valid only for
         databases consisting of bimolecular complexes with non-frozen
         monomers, e.g., HBC6
-    :type rlxd: bool
+
+    :type symm: bool
     :param symm: {*'on'*, 'off'}
+
         Indicates whether the native symmetry of the database molecules is
         employed (``'on'``) or whether it is forced to c1 symmetry
         (``'off'``). Some computational methods (e.g., SAPT) require no
         symmetry, and this will be set by the database() wrapper.
-    :type symm: bool
+
+    :type zpe: bool
     :param zpe: {*'off'*, 'on'}
+
         Indicates whether zero-point-energy corrections are appended to
         single-point energy values. Option valid only for certain
-        thermochemical databases.  Disabled until Hessians ready.
-    :type zpe: bool
+        thermochemical databases. Disabled until Hessians ready.
+
+    :type benchmark: string
     :param benchmark: {*'default'*, 'S22A', etc.}
+
         Indicates whether a non-default set of reference energies, if
         available, are employed for the calculation of error statistics.
-    :type benchmark: string
+
+    :type tabulate: array of strings
     :param tabulate: {*[]*, ['scf total energy', 'natom'], etc.}
+
         Indicates whether to form tables of variables other than the
         primary requested energy.  Available for any PSI variable.
-    :type tabulate: array of strings
+
+    :type subset: string or array of strings 
     :param subset:
+
         Indicates a subset of the full database to run. This is a very
         flexible option and can be used in three distinct ways, outlined
         below. Note that two take a string and the last takes an array.  
 
-        * subset = {'small', 'large', 'equilibrium'}
+        * {'small', 'large', 'equilibrium'}
             Calls predefined subsets of the requested database, either
             ``'small'``, a few of the smallest database members,
             ``'large'``, the largest of the database members, or
             ``'equilibrium'``, the equilibrium geometries for a database
             composed of dissociation curves.
-        * subset = {'BzBz_S', 'FaOOFaON', 'ArNe', etc.}
+        * {'BzBz_S', 'FaOOFaON', 'ArNe', etc.}
             For databases composed of dissociation curves, individual
             curves can be called by name. Consult the database python
             files for available molecular systems.  The choices for this
             keyword are case sensitive and must match the database python file
-        * subset = {[1,2,5], ['1','2','5'], ['BzMe-3.5', 'MeMe-5.0'], etc.}
+        * {[1,2,5], ['1','2','5'], ['BzMe-3.5', 'MeMe-5.0'], etc.}
             Specify a list of database members to run. Consult the
             database python files for available molecular systems.  The
             choices for this keyword are case sensitive and must match the
             database python file
-    :type subset: string or array of strings 
 
-    **Example**:
+    **Examples**
 
     >>> # [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer
     >>> db('scf','RGC10',cast_up='sto-3g',subset=['HeHe-0.85','HeHe-1.0','HeHe-1.5'], tabulate=['scf total energy','natom'])
@@ -1256,37 +1280,75 @@ db = database
 def complete_basis_set(name, **kwargs):
     """Wrapper to define an energy method with basis set extrapolations and delta corrections.
 
+    :returns: (*float*) -- Total electronic energy in Hartrees
+
+    Aliases: :py:func:`cbs()`
+
     A CBS energy method is defined in four sequential stages (scf, corl, delta, delta2) covering
     treatment of the reference total energy, the correlation energy, a delta correction to the
     correlation energy, and a second delta correction. Each is activated by its stage_wfn keyword
     and is only allowed if all preceding stages are active.
 
-    Required Arguments:
-    -------------------
-    * name (or unlabeled first argument) indicates the computational method for the correlation energy, unless
+    **Required Arguments**:
+
+    :type name: string
+    :param name: (or unlabeled first argument) indicates the computational method for the correlation energy, unless
         only reference step to be performed, in which case should be 'scf'. May be overruled if wfn keywords given.
 
-    Optional Arguments:  --> 'default_option' <--
-    ------------------
+    **Optional Arguments**:
+
     Energy Methods:  Indicates the energy method employed for each stage
-    * corl_wfn          = 'mp2' | 'ccsd(t)' | etc.
-    * delta_wfn         = 'ccsd' | 'ccsd(t)' | etc.
-    * delta_wfn_lesser  = --> 'mp2' <-- | 'ccsd' | etc.
-    * delta2_wfn        = 'ccsd' | 'ccsd(t)' | etc.
-    * delta2_wfn_lesser = --> 'mp2' <-- | 'ccsd(t)' | etc.
+
+    :type corl_wfn: string
+    :type delta_wfn: string
+    :type delta_wfn_lesser: string
+    :type delta2_wfn: string
+    :type delta2_wfn_lesser: string
+    :param corl_wfn: {'mp2', 'ccsd(t)', etc.}
+    :param delta_wfn: {'ccsd', 'ccsd(t)', etc.}
+    :param delta_wfn_lesser: { *'mp2'*, 'ccsd', etc.}
+    :param delta2_wfn: {'ccsd', 'ccsd(t)', etc}
+    :param delta2_wfn_lesser: { *'mp2'*, 'ccsd(t)', etc. }
 
     Basis Sets:  Indicates the single or sequence of basis sets employed for each stage.
-    * scf_basis    = --> corl_basis <-- | 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
-    * corl_basis   = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
-    * delta_basis  = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
-    * delta2_basis = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
 
-    Schemes:  Indicates the formula for performing basis set extrapolation (or using the single best
-        basis with highest_1) for each stage.
-    * scf_scheme    = --> highest_1 <-- | scf_xtpl_helgaker_3
-    * corl_scheme   = --> highest_1 <-- | corl_xtpl_helgaker_2
-    * delta_scheme  = --> highest_1 <-- | corl_xtpl_helgaker_2
-    * delta2_scheme = --> highest_1 <-- | corl_xtpl_helgaker_2
+    :type scf_basis: string
+    :type corl_basis: string
+    :type delta_basis: string
+    :type delta2_basis: string
+    :param scf_basis: { *corl_basis*, 'cc-pV[TQ]Z', 'jun-cc-pv[tq5]z', '6-31G*', etc.}
+    :param corl_basis: {'cc-pV[TQ]Z', 'jun-cc-pv[tq5]z', '6-31G*', etc.}
+    :param delta_basis: {'cc-pV[TQ]Z', 'jun-cc-pv[tq5]z', '6-31G*', etc.}
+    :param delta2_basis: {'cc-pV[TQ]Z', 'jun-cc-pv[tq5]z', '6-31G*', etc.}
+
+    Schemes:  Indicates the formula for performing basis set extrapolation (or using
+    the single best basis with the default :py:func:`highest_1`) for each stage.
+    All available: :py:func:`highest_1`, :py:func:`scf_xtpl_helgaker_3`,
+    :py:func:`scf_xtpl_helgaker_2`, :py:func:`corl_xtpl_helgaker_2`
+
+    :type scf_scheme: function
+    :type corl_scheme: function
+    :type delta_scheme: function
+    :type delta2_scheme: function
+    :param scf_scheme: {:py:func:`highest_1`, :py:func:`scf_xtpl_helgaker_3`, etc.}
+    :param corl_scheme: {:py:func:`highest_1`, :py:func:`corl_xtpl_helgaker_2`, etc.}
+    :param delta_scheme: {:py:func:`highest_1`, :py:func:`corl_xtpl_helgaker_2`, etc.}
+    :param delta2_scheme: {:py:func:`highest_1`, :py:func:`corl_xtpl_helgaker_2`, etc.}
+
+    **Examples:**
+
+    >>> # [1] DT-zeta extrapolated mp2 correlation energy atop a T-zeta reference
+    >>> cbs('mp2', corl_basis='cc-pv[dt]z', corl_scheme=corl_xtpl_helgaker_2)
+
+    >>> # [2] a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
+    >>> cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2)
+
+    >>> # [3] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference
+    >>> cbs('mp2', corl_basis='aug-cc-pv[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd', delta_basis='aug-cc-pv[dt]z', delta_scheme=corl_xtpl_helgaker_2, delta2_wfn='ccsd(t)', delta2_wfn_lesser='ccsd', delta2_basis='aug-cc-pvdz')
+
+    >>> # [4] cbs() coupled with database()
+    >>> database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
+
     """
 
     lowername = name.lower()
@@ -1713,6 +1775,12 @@ def reconstitute_bracketed_basis(needarray):
 
 # Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$
 def highest_1(**largs):
+    """Scheme for total or correlation energies with a single basis or the highest zeta-level among an array of bases.
+    Used by :py:func:`complete_basis_set`.
+
+    .. math:: E_{total}^X = E_{total}^X
+
+    """
 
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name
@@ -1757,6 +1825,7 @@ def highest_1(**largs):
 # Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
+    Used by :py:func:`complete_basis_set`.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
 
@@ -1805,6 +1874,12 @@ def corl_xtpl_helgaker_2(**largs):
 
 # Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$
 def scf_xtpl_helgaker_3(**largs):
+    """Extrapolation scheme for reference energies with three adjacent zeta-level bases.
+    Used by :py:func:`complete_basis_set`.
+
+    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}
+
+    """
 
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name
@@ -1856,6 +1931,12 @@ def scf_xtpl_helgaker_3(**largs):
 
 # Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$
 def scf_xtpl_helgaker_2(**largs):
+    """Extrapolation scheme for reference energies with two adjacent zeta-level bases.
+    Used by :py:func:`complete_basis_set`.
+
+    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63
+
+    """
 
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name
@@ -1903,6 +1984,11 @@ def scf_xtpl_helgaker_2(**largs):
 
 
 def validate_scheme_args(functionname, **largs):
+    """lsdkjflskld
+
+    .. deprecated:: old news
+
+    """
 
     mode = ''
     NEED = []
@@ -1950,6 +2036,7 @@ def validate_scheme_args(functionname, **largs):
 
 
 def split_menial(menial):
+    """split meial docstring"""
 
     PTYP = ['tot', 'corl']
     for temp in PTYP:
