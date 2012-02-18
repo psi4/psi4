@@ -23,6 +23,10 @@ protected:
     int print_;	
     /// Debug flag, defaults to 0
     int debug_;
+    /// Bench flag, defaults to 0
+    int bench_;
+    /// Name of solver (set by subclasses)
+    std::string name_;
     /// Memory available, in doubles, defaults to 0 => Unlimited storage 
     unsigned long int memory_;	
 
@@ -36,6 +40,8 @@ protected:
     double convergence_;
     /// Current iteration count
     int iteration_;
+    /// Preconditioner type
+    std::string precondition_;
 
     /// Common initialization
     void common_init();
@@ -50,6 +56,8 @@ public:
 
     // => Knobs <= // 
 
+    /// Set precondition type (specific to solver type) 
+    void set_precondition(const std::string& precondition) { precondition_ = precondition; }
     /// Set maximum vector storage space (defaults to 0 MB => Unlimited storage)
     void set_memory(unsigned long int memory) { memory_ = memory; }
     /// Set maximum number of iterations (defaults to 100)
@@ -60,6 +68,8 @@ public:
     void set_print(int print) { print_ = print; }
     /// Debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
+    /// Bench flag (defaults to 0)
+    void set_bench(int bench) { bench_ = bench; }
 
     // => Accessors <= //
     
@@ -186,9 +196,16 @@ protected:
     
     /// Diagonal M, for guess and Jacobi preconditioning
     boost::shared_ptr<Vector> diag_;
-    /// Do Jacobi preconditioning?
-    bool precondition_;
+    /// A subspace matrix, for preconditioning 
+    SharedMatrix A_;
+    /// A subspace indices
+    std::vector<std::vector<int> > A_inds_;
+    /// Shifts (to solve (A-mI)
+    std::vector<std::vector<double> > shifts_;     
+    /// Number of guess vectors to use for subspace preconditioner
+    int nguess_;    
 
+    void setup();
     void guess();
     void residual();
     void products_x();
@@ -219,7 +236,9 @@ public:
     void solve();
     void finalize();
 
-    void set_precondition(bool precondition) { precondition_ = precondition; }
+    void set_shifts(const std::vector<std::vector<double> >& shifts) { shifts_ = shifts; }
+    void set_A(SharedMatrix A, const std::vector<std::vector<int> > inds) { A_ = A; A_inds_ = inds; }
+    void set_nguess(int nguess) { nguess_ = nguess; }
 };
 
 class DLRSolver : public RSolver {
@@ -238,8 +257,6 @@ protected:
     int min_subspace_; 
     /// Number of guess vectors to build
     int nguess_;    
-    /// Precondition
-    bool precondition_;
 
     // => Iteration values <= //
 
@@ -258,6 +275,10 @@ protected:
     std::vector<boost::shared_ptr<Vector> > b_;
     /// Sigma vectors (nsubspace)
     std::vector<boost::shared_ptr<Vector> > s_;
+    /// Delta Subspace Hamiltonian (preconditioner)
+    SharedMatrix A_;
+    /// Delta Subspace indices
+    std::vector<std::vector<int> > A_inds_;
     /// G_ij Subspace Hamiltonian (nsubspace x nsubspace)
     SharedMatrix G_;
     /// Subspace eigenvectors (nsubspace x nsubspace)
@@ -270,8 +291,6 @@ protected:
     std::vector<double> n_;
     /// Correction vectors (nroots)
     std::vector<boost::shared_ptr<Vector> > d_;
-    /// Sigma vectors corresponding to delta vectors (nroots)
-    std::vector<boost::shared_ptr<Vector> > s_d_;
     /// Diagonal of Hamiltonian 
     boost::shared_ptr<Vector> diag_;
 
@@ -281,10 +300,6 @@ protected:
     void guess();
     // Compute sigma vectors for the given set of b
     void sigma();
-    // Compute sigma vectors for the deltas (low rank methinks)
-    void sigmaDelta();
-    // Orthogonalize the deltas
-    void deltaOrthogonalization();
     // Compute subspace Hamiltonian
     void subspaceHamiltonian();
     // Diagonalize subspace Hamiltonian
@@ -296,7 +311,7 @@ protected:
     // Find residuals, update convergence 
     void residuals();
     // Find correctors 
-    void correctors();
+    virtual void correctors();
     // Orthogonalize/add significant correctors 
     void subspaceExpansion();
     // Collapse subspace if needed
@@ -317,9 +332,9 @@ public:
 
     // => Required Methods <= //
     
-    void print_header() const;
-    unsigned long int memory_estimate();
-    void initialize();
+    virtual void print_header() const;
+    virtual unsigned long int memory_estimate();
+    virtual void initialize();
     void solve();
     void finalize();
     
@@ -342,8 +357,44 @@ public:
     void set_nguess(int nguess) { nguess_ = nguess; }
     /// Set norm critera for adding vectors to subspace (defaults to 1.0E-6) 
     void set_norm(double norm) { norm_ = norm; }
-    /// Precondition or not? (Pure Krylov vs. DL)
-    void set_precondition(bool precondition) { precondition_ = precondition; }
+};
+
+class RayleighRSolver : public DLRSolver {
+
+protected:
+
+    /// Turn an eigenproblem into a linear equations problem 
+    boost::shared_ptr<CGRSolver> cg_;
+
+    std::string precondition_steps_;
+    int precondition_maxiter_;
+    std::string quantity_;
+    
+    // Find correctors (Like, the most advanced correctors ever)
+    void correctors();
+
+public:
+
+    // => Constructors <= //
+
+    /// Constructor
+    RayleighRSolver(boost::shared_ptr<RHamiltonian> H);  
+    /// Destructor
+    virtual ~RayleighRSolver();
+
+    /// Static constructor, uses Options object
+    static boost::shared_ptr<RayleighRSolver> build_solver(Options& options,
+        boost::shared_ptr<RHamiltonian> H);
+
+    // => Required Methods <= //
+    
+    void print_header() const;
+    void initialize();
+    void finalize();
+
+    void set_precondition_maxiter(int maxiter) { precondition_maxiter_ = maxiter; }
+    void set_precondition_steps(const std::string& steps) { precondition_steps_ = steps; }
+    void set_quantity(const std::string& quantity) { quantity_ = quantity; }
 };
 
 class DLRXSolver : public RSolver {
