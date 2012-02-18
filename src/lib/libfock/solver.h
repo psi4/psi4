@@ -25,6 +25,8 @@ protected:
     int debug_;
     /// Bench flag, defaults to 0
     int bench_;
+    /// Name of solver (set by subclasses)
+    std::string name_;
     /// Memory available, in doubles, defaults to 0 => Unlimited storage 
     unsigned long int memory_;	
 
@@ -363,6 +365,10 @@ protected:
 
     /// Turn an eigenproblem into a linear equations problem 
     boost::shared_ptr<CGRSolver> cg_;
+
+    std::string precondition_steps_;
+    int precondition_maxiter_;
+    std::string quantity_;
     
     // Find correctors (Like, the most advanced correctors ever)
     void correctors();
@@ -383,9 +389,12 @@ public:
     // => Required Methods <= //
     
     void print_header() const;
-    unsigned long int memory_estimate();
     void initialize();
     void finalize();
+
+    void set_precondition_maxiter(int maxiter) { precondition_maxiter_ = maxiter; }
+    void set_precondition_steps(const std::string& steps) { precondition_steps_ = steps; }
+    void set_quantity(const std::string& quantity) { quantity_ = quantity; }
 };
 
 class DLRXSolver : public RSolver {
