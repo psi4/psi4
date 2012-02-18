@@ -29,8 +29,16 @@ $(OTFTEX):
 	@srcdir@/document_bases.pl @srcdir@
 
 # special rule here to do bibliography; not needed in other docs
+ifdef PDFLATEX
+$(TARGET_PDF): $(TEX) $(SUBTEX) $(OTFTEX)
+	echo $(srcdir)
+	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
+	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
+	$(PDFLATEX) $< && $(BIBTEX) $(MAN) && $(PDFLATEX) $< && $(PDFLATEX) $<
+else
 userman.dvi: $(TEX) $(SUBTEX) $(OTFTEX)
 	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
 	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
 	$(LATEX) $< && $(BIBTEX) $(MAN) && $(LATEX) $< && $(LATEX) $<
+endif
 

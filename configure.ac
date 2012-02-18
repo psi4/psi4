@@ -304,6 +304,7 @@ AC_PYTHON([2.4])
 
 
 
+AC_PROG_PDFLATEX
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
 AC_PROG_DVIPS
@@ -1143,6 +1144,11 @@ AC_CONFIG_FILES([
           tests/plugin_rqchf/input.dat
           tests/plugin_rqchf/rqchf.cc
           tests/plugin_rqchf/rqchf.h
+          tests/plugin_fqdft/input.dat
+          tests/plugin_fqdft/Makefile
+          tests/plugin_fqdft/main.cc
+          tests/plugin_fqdft/fqdft.cc
+          tests/plugin_fqdft/fqdft.h
           tests/plugin_mp2/Makefile
           tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h
           tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc

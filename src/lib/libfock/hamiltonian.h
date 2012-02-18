@@ -22,11 +22,15 @@ protected:
     int print_;	
     /// Debug flag, defaults to 0
     int debug_;	
+    /// Bench flag, defaults to 0
+    int bench_;
     /// jk object
     boost::shared_ptr<JK> jk_;  
     /// v object
     boost::shared_ptr<VBase> v_;  
 
+    void common_init();
+    
 public:
     // => Constructors < = //
 
@@ -70,6 +74,8 @@ public:
     void set_print(int print) { print_ = print; }
     /// Debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
+    /// Bench flag (defaults to 0)
+    void set_bench(int bench) { bench_ = bench; }
 };
 
 class RHamiltonian : public Hamiltonian {

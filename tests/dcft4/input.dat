@@ -16,6 +16,7 @@ molecule ne {
 
 set globals {
     r_convergence 11
+    d_convergence 10
     reference   uhf
     ao_basis    none
     algorithm   twostep
