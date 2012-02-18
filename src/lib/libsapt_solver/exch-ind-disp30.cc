@@ -920,7 +920,7 @@ double SAPT2p3::exch_ind_disp30_12(double **sBS)
     &(xAB[0][0]),aoccB_,&(xBS[0][0]),nvirB_,0.0,
     &(xAS[0][0]),nvirB_);
 
-  energy + 2.0*C_DDOT(aoccA_*nvirB_,xAS[0],1,tRB_AS[0],1);
+  energy += 2.0*C_DDOT(aoccA_*nvirB_,xAS[0],1,tRB_AS[0],1);
 
   free_block(xAB);
   free_block(xAS);
