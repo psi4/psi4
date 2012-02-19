@@ -289,11 +289,6 @@ void JK::USO2AO()
     C_right_ao_.clear();
     for (int N = 0; N < D_.size(); ++N) {
         std::stringstream s;
-        s << "D " << N << " (AO)";
-        D_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
-    }
-    for (int N = 0; N < D_.size(); ++N) {
-        std::stringstream s;
         s << "C Left " << N << " (AO)";
         int ncol = 0;
         for (int h = 0; h < C_left_[N]->nirrep(); ++h) ncol += C_left_[N]->colspi()[h];
@@ -363,6 +358,12 @@ void JK::USO2AO()
             C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
             offset += ncolspi;
         }
+    }
+
+    for (int N = 0; N < D_.size(); ++N) {
+        if (do_J_) J_ao_[N]->zero();
+        if (do_K_) K_ao_[N]->zero();
+        if (do_wK_) wK_ao_[N]->zero();
     }
 }
 void JK::AO2USO()
@@ -461,6 +462,10 @@ void JK::compute()
             K_[N]->print(outfile);
         }
         fflush(outfile);
+    }
+
+    if (lr_symmetric_) {
+        C_right_.clear();
     }
 }
 void JK::finalize()
