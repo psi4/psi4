@@ -79,7 +79,7 @@ void RBase::set_reference(boost::shared_ptr<Wavefunction> wfn)
 void RBase::preiterations()
 {
     if (!jk_) {
-        jk_ = JK::build_JK(options_, false);
+        jk_ = JK::build_JK();
         unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
         jk_->set_memory(effective_memory);
         jk_->initialize();

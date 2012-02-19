@@ -312,7 +312,7 @@ void HF::integrals()
     // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
     if (scf_type_ == "DF") {
         // Build the JK from options, symmetric type
-        jk_ = JK::build_JK(options_, true);
+        jk_ = JK::build_JK();
         // Tell the JK to print
         jk_->set_print(print_);
         // Give the JK 70% of the memory
