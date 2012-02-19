@@ -245,31 +245,88 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int N = 0; N < x.size(); ++N) {
-            C_left.push_back(Caocc_);
             double* xp = x[N]->pointer(symm);
-
-            std::stringstream ss;
-            ss << "C_right, h = " << symm << ", N = " << N;
-            SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
-            
             long int offset = 0L;
-            for (int h = 0; h < Caocc_->nirrep(); ++h) {
 
+            // Is this a delta (low-rank) vector?
+            bool delta_vector = true;
+            int  delta_h = 0;
+            int  delta_i = 0;
+            int  delta_a = 0;
+            double delta_sum = 0.0;
+            for (int h = 0; h < Caocc_->nirrep(); ++h) {
                 int nocc = Caocc_->colspi()[h];
                 int nvir = Cavir_->colspi()[h^symm];
-                int nso  = Cavir_->rowspi()[h^symm];
-
-                if (!nso || !nocc || !nvir) continue;
-
-                double** Cvp = Cavir_->pointer(h^symm);
-                double** Crp = Cr->pointer(h^symm);
-
-                C_DGEMM('N','T',nso,nocc,nvir,1.0,Cvp[0],nvir,&xp[offset],nvir,0.0,Crp[0],nocc);
-
+                for (int i = 0; i < nocc; i++) {
+                    for (int a = 0; a < nvir; a++) {    
+                        double x = xp[i * nvir + a + offset];
+                        if (x != 0.0 && x != 1.0) {
+                            delta_vector = false;
+                            break;
+                        }
+                        delta_sum += x;
+                        if (x == 1.0) {
+                            delta_i = i;
+                            delta_a = a;
+                            delta_h = h;
+                        }
+                    }
+                }
                 offset += nocc * nvir;
             }
+            if (delta_sum != 1.0) {
+                delta_vector = false;
+            }
 
-            C_right.push_back(Cr); 
+            if (delta_vector) {
+                
+                Dimension rank(Caocc_->nirrep());
+                rank[delta_h] = 1;
+
+                std::stringstream ss;
+                ss << "C_left, h = " << symm << ", N = " << N;
+                SharedMatrix Cl(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank));
+
+                double** Clp = Cl->pointer(delta_h);
+                double** Cop = Caocc_->pointer(delta_h);
+                C_DCOPY(Caocc_->rowspi()[delta_h],&Cop[0][delta_i],Caocc_->colspi()[delta_h],Clp[0],1);
+
+                std::stringstream ss2;
+                ss2 << "C_right, h = " << symm << ", N = " << N;
+                SharedMatrix Cr(new Matrix(ss2.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank, symm));
+
+                double** Crp = Cr->pointer(delta_h);
+                double** Cvp = Cavir_->pointer(delta_h^symm);
+                C_DCOPY(Cavir_->rowspi()[delta_h^symm],&Cvp[0][delta_a],Cavir_->colspi()[delta_h^symm],Crp[0],1);
+
+                C_left.push_back(Cl);
+                C_right.push_back(Cr);
+
+            } else {
+                std::stringstream ss;
+                ss << "C_right, h = " << symm << ", N = " << N;
+                SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+                
+                offset = 0L;
+                for (int h = 0; h < Caocc_->nirrep(); ++h) {
+    
+                    int nocc = Caocc_->colspi()[h];
+                    int nvir = Cavir_->colspi()[h^symm];
+                    int nso  = Cavir_->rowspi()[h^symm];
+    
+                    if (!nso || !nocc || !nvir) continue;
+    
+                    double** Cvp = Cavir_->pointer(h^symm);
+                    double** Crp = Cr->pointer(h^symm);
+    
+                    C_DGEMM('N','T',nso,nocc,nvir,1.0,Cvp[0],nvir,&xp[offset],nvir,0.0,Crp[0],nocc);
+    
+                    offset += nocc * nvir;
+                }
+    
+                C_left.push_back(Caocc_);
+                C_right.push_back(Cr); 
+            }
         }
     } 
 

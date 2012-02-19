@@ -2473,7 +2473,11 @@ void DFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
                 }
 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                if (nocc > 1) {
+                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                } else {
+                    C_DGEMV('N',naux,rows,1.0,QSp[0],nbf,Clp[0],1,0.0,&Elp[0][m*(ULI)nocc*naux],1);
+                }
             }
 
             timer_off("JK: K1");
@@ -2505,7 +2509,11 @@ void DFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
                 }
 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                if (nocc > 1) {
+                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                } else {
+                    C_DGEMV('N',naux,rows,1.0,QSp[0],nbf,Clp[0],1,0.0,&Erp[0][m*(ULI)nocc*naux],1);
+                }
             }
 
             timer_off("JK: K1");

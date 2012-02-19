@@ -8,6 +8,7 @@
 #include "v.h"
 #include "hamiltonian.h"
 #include "solver.h"
+#include <libscf_solver/hf.h>
 
 #include <algorithm>
 #include <boost/tuple/tuple.hpp>
@@ -79,6 +80,10 @@ void RBase::set_reference(boost::shared_ptr<Wavefunction> wfn)
 void RBase::preiterations()
 {
     if (!jk_) {
+        if (options_.get_bool("SAVE_JK")) {
+            jk_ = (static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk();
+            fprintf(outfile,"    Reusing JK object from SCF.\n\n");
+        }
         jk_ = JK::build_JK();
         unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
         jk_->set_memory(effective_memory);
