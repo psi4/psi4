@@ -761,6 +761,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_BASIS_SCF", "");
     /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF");
+    /*- Keep JK object for later use? -*/
+    options.add_bool("SAVE_JK", false);
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies.

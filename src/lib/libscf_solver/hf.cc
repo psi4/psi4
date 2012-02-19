@@ -354,8 +354,10 @@ void HF::finalize()
     pk_integrals_.reset();
     eri_.reset();
 
-    // TODO: This will be the only one
-    jk_.reset();
+    // This will be the only one
+    if (!options_.get_bool("SAVE_JK")) {
+        jk_.reset();
+    }
 
     // Clean up after DIIS
     if(initialized_diis_manager_)
