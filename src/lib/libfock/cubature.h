@@ -12,7 +12,6 @@ class BasisSet;
 class Matrix;
 class Vector;
 class IntVector;
-class GridBlock; // Deprecated
 class Vector3;
 class BasisExtents;
 class BlockOPoints;
@@ -235,9 +234,6 @@ public:
     /// Build the grid 
     void buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms, const std::string& nuclear_scheme, 
         boost::shared_ptr<BasisExtents> extents, int max_points, int min_points, double max_radius);
-
-    /// Legacy method to GridBlock object. You do not own this.
-    boost::shared_ptr<GridBlock> fullGrid();
 
     /// Number of grid points
     int npoints() const { return npoints_; } 
