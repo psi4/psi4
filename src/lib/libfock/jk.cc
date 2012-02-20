@@ -9,6 +9,8 @@
 #include <libmints/sieve.h>
 #include <libiwl/iwl.hpp>
 #include "jk.h"
+#include "cubature.h"
+#include "points.h"
 
 #include <sstream>
 
@@ -2655,6 +2657,7 @@ void PSJK::common_init()
     #ifdef _OPENMP
         df_ints_num_threads_ = omp_get_max_threads();
     #endif
+    unit_ = PSIF_DFSCF_BJ;
     theta_ = 0.3;
     psio_ = PSIO::shared_object();
     dealiasing_ = "QUADRATURE";
@@ -2695,7 +2698,7 @@ void PSJK::preiterations()
     }
 
     if (do_wK_) {
-        build_Amn_disk(theta_ > omega_ ? omega_ : theta_, "(A|mn) wK");
+        throw FeatureNotImplemented("PSJK", "wK", __FILE__, __LINE__);
     }
 }
 void PSJK::postiterations()
@@ -2703,24 +2706,281 @@ void PSJK::postiterations()
     Q_.reset();
     R_.reset();
     grid_.reset();
-    ints_4c_.clear();
-    d_.reset();
-    V_.reset();
-    W_.reset();
 }
 void PSJK::compute_JK()
 {
+    int nbf  = primary_->nbf();
+    int naux = grid_->rowspi()[0];
+    int ntri = sieve_->function_pairs().size();
+    int maxrows = max_rows();
+
+    // Long Range
+    SharedMatrix Amn(new Matrix("Amn",maxrows,ntri)); 
+    double** Amnp = Amn->pointer();    
+
+    V_ = SharedMatrix(new Matrix("V", maxrows,nbf));
+    W_ = SharedMatrix(new Matrix("W", maxrows,nbf));
+    d_ = SharedVector(new Vector("d", maxrows));;
+    J_temp_ = SharedVector(new Vector("J temp", ntri));
+
+    if (do_J_ || do_K_) {
+        // Long Range
+        psio_->open(unit_, PSIO_OPEN_OLD);
+        psio_address addr = PSIO_ZERO;
+        for (int Pstart = 0; Pstart < naux; Pstart += maxrows) {
+            int nrows = (naux - Pstart >= maxrows ? naux - Pstart : maxrows);
+            psio_->read(unit_,"(A|mn) JK", (char*) Amnp[0], sizeof(double)*nrows*ntri,addr,&addr); 
+            if (do_J_) {
+                block_J(Amnp,Pstart,nrows,J_ao_);
+            }
+            if (do_K_) {
+                block_K(Amnp,Pstart,nrows,K_ao_);
+            }
+        }
+        psio_->close(unit_, 1);
+    }
     
+    Amn.reset();
+    V_.reset();
+    W_.reset();
+    d_.reset();
+    J_temp_.reset();
+    
+    // Short Range 
+    build_JK_SR(); 
+
+    // TODO wK
 }
 void PSJK::build_QR()
 {
+    boost::shared_ptr<PseudospectralGrid> grid(new PseudospectralGrid(primary_->molecule(), 
+        primary_, options_));
+    int npoints = grid->npoints(); 
+    int nbf = primary_->nbf();
+    int max_points = grid->max_points();
+    int max_functions = grid->max_functions();
+
+    // Grid
+    grid_ = SharedMatrix(new Matrix("xyzw", npoints, 4));
+    double** gridp = grid_->pointer();
+    double* x = grid->x();
+    double* y = grid->y();
+    double* z = grid->z();
+    double* w = grid->w();
+    for (int P = 0; P < npoints; P++) {
+        gridp[P][0] = x[P]; 
+        gridp[P][1] = y[P]; 
+        gridp[P][2] = z[P]; 
+        gridp[P][3] = w[P]; 
+    } 
+
+    // R (Collocation)
+    R_ = SharedMatrix(new Matrix("R", nbf, npoints));
+    double** Rp = R_->pointer();
+    boost::shared_ptr<PointFunctions> points(new PointFunctions(primary_, max_points, max_functions));
+    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid->blocks();
+    int offset = 0;
+    for (int index = 0; index < blocks.size(); index++) {
+        points->computePoints(blocks[index]);
+        SharedMatrix phi = points->basis_value("PHI");
+        double** phip = phi->pointer();
+        const std::vector<int>& funmap = blocks[index]->functions_local_to_global();
+        int nP = blocks[index]->npoints();
+
+        for (int i = 0; i < funmap.size(); i++) {
+            int iglobal = funmap[i];
+            C_DCOPY(nP,&phip[0][i],max_functions,&Rp[iglobal][offset],1);
+        }
+        
+        offset += nP;
+    }
+
+    points.reset();
+    grid.reset();
+    
+    // Q (Quadrature Rule)
+    if (dealiasing_ == "QUADRATURE") {
+        for (int P = 0; P < npoints; P++) {
+            C_DSCAL(nbf,sqrt(gridp[P][3]),&Rp[0][P],npoints);
+        }
+        Q_ = R_;
+    } else if (dealiasing_ == "RENORMALIZATION") {
+
+        for (int P = 0; P < npoints; P++) {
+            C_DSCAL(nbf,sqrt(gridp[P][3]),&Rp[0][P],npoints);
+        }
+
+        bool warning;     
+        SharedMatrix Rplus = R_->pseudoinverse(1.0E-10, &warning);
+        if (warning) {
+            fprintf(outfile, "    Warning, Renormalization had to be conditioned.\n\n");
+        } 
+
+        boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
+        boost::shared_ptr<OneBodyAOInt> ints(factory->ao_overlap());
+        SharedMatrix S(new Matrix("S", nbf, nbf));
+        ints->compute(S);
+        ints.reset();
+        
+        Q_ = SharedMatrix(R_->clone());
+        Q_->set_name("Q"); 
+        
+        double** Qp = Q_->pointer();
+        double** Rp = Rplus->pointer();
+        double** Sp = S->pointer();
+        
+        C_DGEMM('N','N',nbf,npoints,nbf,1.0,Sp[0],nbf,Rp[0],npoints,0.0,Qp[0],npoints);
+
+    } else if (dealiasing_ == "DEALIAS") {
+        // TODO 
+        throw FeatureNotImplemented("PSJK", "Dealiasing", __FILE__, __LINE__);
+    }
 }
 void PSJK::build_Amn_disk(double theta, const std::string& entry)
 {
+    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
+    std::vector<boost::shared_ptr<PseudospectralInt> > ints;
+    for (int i = 0; i < df_ints_num_threads_; i++) {
+        ints.push_back(boost::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(factory->ao_pseudospectral())));
+        ints[i]->set_omega(theta);        
+    }
+
+    int maxrows = max_rows();
+    int ntri  = sieve_->function_pairs().size();
+    int naux  = grid_->rowspi()[0];
+
+    const std::vector<long int>& function_pairs_r = sieve_->function_pairs_reverse();
+    const std::vector<std::pair<int,int> >& shell_pairs = sieve_->shell_pairs();
+
+    SharedMatrix Amn(new Matrix("Amn", maxrows, ntri));
+    double** Amnp = Amn->pointer();
+    double** Gp = grid_->pointer();
+
+    psio_->open(unit_,PSIO_OPEN_OLD);
+    psio_address addr = PSIO_ZERO;
+    
+    for (int Pstart = 0; Pstart < naux; Pstart += maxrows) {
+        int nrows =  (Pstart + maxrows >= naux ? naux - Pstart : maxrows);
+
+        #pragma omp parallel for num_threads(df_ints_num_threads_)
+        for (int row = 0; row < (unsigned int)nrows; row++) {
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+            boost::shared_ptr<PseudospectralInt> eri = ints[thread];
+            const double* buffer = eri->buffer();
+            eri->set_point(Gp[row + Pstart][0], Gp[row + Pstart][1], Gp[row + Pstart][2]);
+            double* Amp = Amnp[row]; 
+            
+            for (int ind = 0; ind < shell_pairs.size(); ind++) {
+                int M = shell_pairs[ind].first;
+                int N = shell_pairs[ind].second;
+                
+                eri->compute_shell(M,N);
+
+                int nM = primary_->shell(M).nfunction();
+                int nN = primary_->shell(N).nfunction();
+                int oM = primary_->shell(M).function_index();
+                int oN = primary_->shell(N).function_index();
+
+                for (int m = 0 ; m < nM; m++) {
+                    for (int n = 0; n < nN; n++) {
+                        int am = m + oM;
+                        int an = n + oN;
+                        if (am >= an) { 
+                            int mn = (am *(am + 1) >> 1) + an;
+                            long int mn_local = function_pairs_r[mn];
+                            if (mn >= 0) {
+                                Amp[mn_local] = buffer[m * nN + n];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        psio_->write(unit_, entry.c_str(), (char*) Amnp[0], sizeof(double) * ntri * nrows, addr, &addr);
+    }
+
+    psio_->close(unit_, 1);
 }
 int PSJK::max_rows() 
 {
+    // TODO
     return 1;
+}
+void PSJK::block_J(double** Amnp, int Pstart, int nP, const std::vector<SharedMatrix>& J)
+{
+    int nbf = primary_->nbf();
+    int npoints = grid_->rowspi()[0];
+    const std::vector<std::pair<int,int> >& funmap = sieve_->function_pairs();
+    int ntri = funmap.size();
+
+    double** Qp = Q_->pointer();
+    double** Rp = R_->pointer();
+    double** Vp = V_->pointer();
+    double*  dp = d_->pointer();
+    double* J2p = J_temp_->pointer();
+
+    for (int N = 0; N < D_ao_.size(); N++) {
+        
+        double** Dp = D_ao_[N]->pointer();
+        double** Jp = J[N]->pointer();
+
+        C_DGEMM('T','N',nP,nbf,nbf,1.0,&Qp[0][Pstart],npoints,Dp[0],nbf,0.0,Vp[0],nbf);
+        for (int P = 0; P < nP; P++) {
+            dp[P] = C_DDOT(nbf,&Rp[0][Pstart + P],npoints,Vp[P],1);
+        }
+
+        C_DGEMV('T',nP,ntri,1.0,Amnp[0],ntri,dp,1,0.0,J2p,1);
+
+        for (long int mn = 0; mn < ntri; mn++) {
+            int m = funmap[mn].first;
+            int n = funmap[mn].second;
+            Jp[m][n] += J2p[mn];
+            Jp[n][m] += (m == n ? 0.0 : J2p[mn]);
+        }
+    }
+}
+void PSJK::block_K(double** Amnp, int Pstart, int nP, const std::vector<SharedMatrix>& K)
+{
+    int nbf = primary_->nbf();
+    int npoints = grid_->rowspi()[0];
+    const std::vector<std::pair<int,int> >& funmap = sieve_->function_pairs();
+    int ntri = funmap.size();
+
+    double** Qp = Q_->pointer();
+    double** Rp = R_->pointer();
+    double** Vp = V_->pointer();
+    double** Wp = W_->pointer();
+
+    for (int N = 0; N < D_ao_.size(); N++) {
+
+        double** Dp = D_ao_[N]->pointer();
+        double** Kp = K[N]->pointer();
+
+        C_DGEMM('T','N',nP,nbf,nbf,1.0,&Qp[0][Pstart],npoints,Dp[0],nbf,0.0,Vp[0],nbf);
+
+        W_->zero();
+        #pragma omp parallel for num_threads(omp_nthread_)
+        for (int P = 0; P < nP; P++) {
+            double* Arp = Amnp[P];
+            double* Wrp = Wp[P];
+            double* Vrp = Vp[P];
+            for (long int mn = 0; mn < ntri; mn++) {
+                int m = funmap[mn].first;
+                int n = funmap[mn].second;
+                double Aval = Arp[mn];
+                Wrp[m] += Aval * Vrp[n]; 
+                Wrp[n] += (m == n ? 0.0 : Aval * Vrp[m]); 
+            }
+        }
+
+        C_DGEMM('T','N',nbf,nbf,nP,1.0,Vp[0],nbf,Wp[0],nbf,1.0,Kp[0],nbf);
+    }
+}
+void PSJK::build_JK_SR()
+{
 }
 
 }

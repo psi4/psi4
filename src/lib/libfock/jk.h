@@ -653,6 +653,8 @@ protected:
     boost::shared_ptr<BasisSet> dealias_;
     /// Number of threads for three-center integrals
     int df_ints_num_threads_;
+    /// File number for (Q|mn) tensor
+    unsigned int unit_; 
     /// Range separation for integrand smoothing
     double theta_;
     /// QUADRATURE, RENORMALIZATION, or DEALIASING
@@ -675,6 +677,8 @@ protected:
     SharedMatrix V_;
     /// V A (for K)
     SharedMatrix W_;
+    /// Temporary triangular J
+    SharedVector J_temp_;
     
     // => Required Algorithm-Specific Methods <= //
 
@@ -693,6 +697,9 @@ protected:
     // => Magic <= //
     void build_QR();
     void build_Amn_disk(double theta, const std::string& entry);
+    void block_J(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& J);
+    void block_K(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& K);
+    void build_JK_SR(); 
     
     int max_rows();
 
@@ -736,6 +743,11 @@ public:
      * @param dealias, new dealias basis
      */
     void set_dealias_basis(boost::shared_ptr<BasisSet> dealias) { dealias_ = dealias; }
+    /**
+     * Which file number should the (Q|mn) integrals go in
+     * @param unit Unit number
+     */
+    void set_unit(unsigned int unit) { unit_ = unit; }
 
     // => Accessors <= //
 

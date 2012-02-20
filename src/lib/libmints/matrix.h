@@ -756,6 +756,18 @@ public:
     boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
     ///@}
 
+    ///@{
+    /// Matrix of size (m x n) which is the conditioned pseudoinverse of this (m x n)
+    SharedMatrix pseudoinverse(double condition = 0.0, bool* conditioned = NULL);
+    ///@}
+
+    /*! Extract a conditioned orthonormal basis from this SPD matrix
+     *  via canonical orthogonalization. 
+     *  @param delta, the relative condition to maintain
+     *  @return X, a SharedMatrix with m x m' dimension (m' < m if conditioning occurred)
+     */
+    SharedMatrix canonical_orthogonalization(double delta = 0.0);
+
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
      *
