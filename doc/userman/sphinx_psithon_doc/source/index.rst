@@ -10,7 +10,6 @@
    :width: 100 %
    :alt: PSI4 Project Logo
 
-.. include:: ./notes.rst
 
 ..  * NOTES (LAB 2-15-2012)
     * Blank lines in this file usually matter.
@@ -23,28 +22,22 @@
       database and add it to the :exclude-members: list.
     *, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme)] 
 
+.. |dl| replace:: :math:`\Rightarrow`
+.. |dr| replace:: :math:`\Leftarrow`
+
 =======
 General
 =======
 
-To allow arbitrarily complex computations to be performed, PSI4 was built upon the
-Python interpreter. However, to make the input syntax simpler, some pre-processing 
-of the input file is performed before it is interpreted, resulting in Python syntax 
-that is customized for PSI, termed Psithon. 
-The special hybrid of Python and Psi that makes for a clean input file 
-(basically molecule, set, and basis blocks), without being valid python 
-code was described in Chapter 3 of the User's Manual.
-This documentation addresses the pure python side- what functions allow the proper,
-compiled code to be run, what functions post-process and interact with that output,
-and how the ordinary (or ambitious) user 
-sldfkjsldjklsjkl
-sldfkjsldjklsjkl
+To allow arbitrarily complex computations to be performed, PSI4 was built
+upon the Python interpreter, with modifications termed Psithon. Chapter 3
+of the User's Manual described the non-standard Python associated with
+molecule, basis, and option specification. This documentation addresses
+the Python side- what functions allow the proper, compiled code to be run,
+what functions post-process and interact with that output, and how the
+ordinary (or ambitious) user can extent PSI4's functionality.
 
-
-In this section we will describe the 
-essential features of the Psithon language. PSI4 is distributed with an extensive 
-test suite, described in section E; the input files for these test cases can be 
-found in the samples subdirectory of the top-level PSI4 source directory, and should serve as useful examples.
+.. include:: notes.rst
 
 ======
 Energy
@@ -56,8 +49,7 @@ Energy
 Optimize
 ========
 
-.. autofunction:: driver.optimize
-
+.. include:: ./opt.rst
 
 ========
 Response
@@ -75,20 +67,19 @@ Frequency
 Counterpoise Correct
 ====================
 
-.. autofunction:: wrappers.cp()
+.. include:: ./cp.rst
 
 ========
 Database
 ========
 
-.. autofunction:: wrappers.database(name, db_name [, mode, cp, rlxd, symm, zpe, benchmark, tabulate, subset])
+.. include:: ./db.rst
 
 ==================
 Complete Basis Set
 ==================
 
-.. autofunction:: wrappers.complete_basis_set(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme])
-
+.. include:: ./cbs.rst
 
 =====================
 Fractional Occupation
@@ -102,8 +93,9 @@ Fractional Occupation
 Beginner Psithon Programming
 ============================
 
-adding databases; adding aliases; adding extrapolations
+.. include:: ./beginner.rst
 
+.. _sec_intercalls:
 ===================
 Function Intercalls
 ===================
@@ -117,6 +109,7 @@ Embarrassing Parallelism
 what functions; no intercalls; no local set; special section in parameter list
 
 
+.. rst-class:: html-toggle
 ==================================
 Psithon Programming Best Practices
 ==================================
@@ -124,10 +117,10 @@ Psithon Programming Best Practices
 stuff that's in README;
 
 
+.. rst-class:: html-toggle
 ======
 Expert
 ======
-.. rst-class:: html-toggle
 
 .. automodule:: driver
     :members:
@@ -137,7 +130,8 @@ Expert
 .. automodule:: wrappers
     :members:
     :undoc-members:
-    :exclude-members: nbody, counterpoise_correct, counterpoise_correction, cbs, database, db, complete_basis_set
+    :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction, db, database, complete_basis_set, cbs,
+        highest_1, scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2
 
 .. automodule:: aliases
     :members:
@@ -150,7 +144,6 @@ Expert
 .. automodule:: qmmm
     :members:
     :undoc-members:
-
 
 .. automodule:: inpsight
     :members:
@@ -184,16 +177,16 @@ Expert
     :members:
     :undoc-members:
 
-
-======
-PsiMod
-======
+==============
+PsiMod Methods
+==============
 
 ================
-Molecule Options
+Molecule Methods 
 ================
 
-Indices and tables
+==================
+Indices and Tables
 ==================
 
 * :ref:`genindex`
