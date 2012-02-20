@@ -85,7 +85,7 @@ void RBase::preiterations()
             fprintf(outfile,"    Reusing JK object from SCF.\n\n");
         } else {
             jk_ = JK::build_JK();
-            unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
+            unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
             jk_->set_memory(effective_memory);
             jk_->initialize();
         }
