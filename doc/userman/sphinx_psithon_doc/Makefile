@@ -107,6 +107,8 @@ latexpdf:
 	@echo "Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex all-pdf
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
+	cp -p $(BUILDDIR)/latex/Psithon.pdf ./../Psithon.pdf
+	@echo "Psithon.pdf copied into userman directory for merging."
 
 text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text
