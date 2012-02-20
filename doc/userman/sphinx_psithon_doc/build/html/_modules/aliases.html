@@ -1,0 +1,235 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>aliases &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+    <script type="text/javascript" src="../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for aliases</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">PsiMod</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">input</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">driver</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">wrappers</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">molecule</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">text</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">procutil</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c"># Place in this file quickly defined procedures such as</span>
+<span class="c">#   (1) aliases for complex methods</span>
+<span class="c">#   (2) simple modifications to existing methods</span>
+<span class="c">#</span>
+<span class="c"># Python procedures like these can be run directly from the input file or integrated</span>
+<span class="c">#   with the energy(), etc. routines by means of lines like those at the end of this file.</span>
+
+<div class="viewcode-block" id="sherrillgroup_gold_standard"><a class="viewcode-back" href="../index.html#aliases.sherrillgroup_gold_standard">[docs]</a><span class="k">def</span> <span class="nf">sherrillgroup_gold_standard</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;func_cbs&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func_cbs&#39;</span><span class="p">]</span>                 <span class="o">=</span> <span class="n">energy</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;scf_basis&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;scf_basis&#39;</span><span class="p">]</span>               <span class="o">=</span> <span class="s">&#39;aug-cc-pVQZ&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;scf_scheme&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;scf_scheme&#39;</span><span class="p">]</span>             <span class="o">=</span> <span class="n">highest_1</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;corl_wfn&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;corl_wfn&#39;</span><span class="p">]</span>                 <span class="o">=</span> <span class="s">&#39;mp2&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;corl_basis&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;corl_basis&#39;</span><span class="p">]</span>             <span class="o">=</span> <span class="s">&#39;aug-cc-pV[TQ]Z&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;corl_scheme&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;corl_scheme&#39;</span><span class="p">]</span>           <span class="o">=</span> <span class="n">corl_xtpl_helgaker_2</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;delta_wfn&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;delta_wfn&#39;</span><span class="p">]</span>               <span class="o">=</span> <span class="s">&#39;ccsd(t)&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;delta_wfn_lesser&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;delta_wfn_lesser&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;mp2&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;delta_basis&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;delta_basis&#39;</span><span class="p">]</span>           <span class="o">=</span> <span class="s">&#39;aug-cc-pVTZ&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;delta_scheme&#39;</span><span class="p">)):</span>  <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;delta_scheme&#39;</span><span class="p">]</span>         <span class="o">=</span> <span class="n">highest_1</span>
+
+    <span class="k">return</span> <span class="n">cbs</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="run_mp2_5"><a class="viewcode-back" href="../index.html#aliases.run_mp2_5">[docs]</a><span class="k">def</span> <span class="nf">run_mp2_5</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c"># Run detci calculation and collect conventional quantities</span>
+    <span class="n">energy</span><span class="p">(</span><span class="s">&#39;mp3&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">e_scf</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">ce_mp2</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP2 CORRELATION ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">ce_mp3</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP3 CORRELATION ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">e_mp2</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp2</span>
+    <span class="n">e_mp3</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp3</span>
+
+    <span class="c"># Compute quantities particular to MP2.5</span>
+    <span class="n">ce_mp25</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ce_mp2</span> <span class="o">+</span> <span class="n">ce_mp3</span><span class="p">)</span>
+    <span class="n">e_mp25</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp25</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 TOTAL ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+
+    <span class="c"># build string of title banner and print results</span>
+    <span class="n">banners</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">n&#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+    <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;banner(&#39; MP2.5 &#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+    <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">n&#39;)</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
+    <span class="k">exec</span> <span class="n">banners</span>
+
+    <span class="n">tables</span>  <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  SCF total energy:                        </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_scf</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2 total energy:                        </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_mp2</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2.5 total energy:                      </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_mp25</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP3 total energy:                        </span><span class="si">%16.8f</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_mp3</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2 correlation energy:                  </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ce_mp2</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2.5 correlation energy:                </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ce_mp25</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP3 correlation energy:                  </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ce_mp3</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">e_mp25</span>
+</div>
+<div class="viewcode-block" id="run_plugin_ccsd_serial"><a class="viewcode-back" href="../index.html#aliases.run_plugin_ccsd_serial">[docs]</a><span class="k">def</span> <span class="nf">run_plugin_ccsd_serial</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plugfile</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">Process</span><span class="o">.</span><span class="n">environment</span><span class="p">[</span><span class="s">&quot;PSIDATADIR&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so&quot;</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin_load</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">plugfile</span><span class="p">))</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;WFN&#39;</span><span class="p">,</span> <span class="s">&#39;CCSD&#39;</span><span class="p">)</span>
+    <span class="n">run_scf</span><span class="p">(</span><span class="s">&quot;scf&quot;</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">transqt2</span><span class="p">()</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin</span><span class="p">(</span><span class="s">&quot;plugin_ccsd_serial.so&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&quot;CURRENT ENERGY&quot;</span><span class="p">)</span>
+    
+<span class="c"># A direct translation of a plugin input file into a function call. Function calls are the only</span>
+<span class="c">#     way to call plugins in sow/reap mode for db(), opt(), etc. This isn&#39;t best practices</span>
+<span class="c">#     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated</span>
+<span class="c">#     procedure where different options are set for different qc steps.</span></div>
+<div class="viewcode-block" id="run_plugin_omega"><a class="viewcode-back" href="../index.html#aliases.run_plugin_omega">[docs]</a><span class="k">def</span> <span class="nf">run_plugin_omega</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">plugfile</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">Process</span><span class="o">.</span><span class="n">environment</span><span class="p">[</span><span class="s">&quot;PSIDATADIR&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s">&quot;/../tests/plugin_omega/plugin_omega.so&quot;</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin_load</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">plugfile</span><span class="p">))</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">,</span> <span class="s">&#39;AUG-CC-PVDZ&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;DF_BASIS_SCF&#39;</span><span class="p">,</span> <span class="s">&#39;AUG-CC-PVDZ-RI&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;REFERENCE&#39;</span><span class="p">,</span> <span class="s">&#39;UHF&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;SCF_TYPE&#39;</span><span class="p">,</span> <span class="s">&#39;DF&#39;</span><span class="p">)</span>
+    <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;dft_functional&#39;</span><span class="p">,</span> <span class="s">&#39;wB97&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;dft_order_spherical&#39;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span> 
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;dft_num_radial&#39;</span><span class="p">,</span> <span class="mi">35</span><span class="p">)</span> 
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;omega_procedure&#39;</span><span class="p">,</span> <span class="s">&#39;ip&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;maxiter&#39;</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;d_convergence&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;e_convergence&#39;</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin</span><span class="p">(</span><span class="s">&quot;plugin_omega.so&quot;</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
+
+
+<span class="c"># Integration with driver routines</span></div>
+<span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">][</span><span class="s">&#39;mp2.5&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_mp2_5</span>
+<span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">][</span><span class="s">&#39;sherrillgroup_gold_standard&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sherrillgroup_gold_standard</span>
+<span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">][</span><span class="s">&#39;plugin_ccsd_serial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_plugin_ccsd_serial</span>
+<span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">][</span><span class="s">&#39;plugin_omega&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_plugin_omega</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Feb 20, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
