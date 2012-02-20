@@ -2,6 +2,8 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta1 Driver
 
+               Git: Rev 043de9c7da8e183e2e7daf415503bd636ee3713d
+
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
     M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
@@ -77,13 +79,17 @@ D = PsiMod.Vector(n);
 info = PsiMod.DSYEV(0, 'V','U', n, A, n, D, W, 4*n)
 A.set_name("Eigenvectors")
 
+# Make first element of eigenvector positive if desired
+for i in range(1,n):
+    if A.get(i,0) < 0 :
+        A.scale_row(0, i, -1)
 evecRef = PsiMod.Matrix(n,n)                                       #TEST
 evecRef.set(0, 0, 0,  0.0291933); evecRef.set(0, 0, 1, -0.3287121) #TEST
 evecRef.set(0, 0, 2,  0.7914111); evecRef.set(0, 0, 3, -0.5145527) #TEST
 evecRef.set(0, 1, 0,  0.1791863); evecRef.set(0, 1, 1, -0.7419178) #TEST
 evecRef.set(0, 1, 2,  0.1002281); evecRef.set(0, 1, 3,  0.6382825) #TEST
-evecRef.set(0, 2, 0, -0.5820757); evecRef.set(0, 2, 1,  0.3705022) #TEST
-evecRef.set(0, 2, 2,  0.5095786); evecRef.set(0, 2, 3,  0.5140483) #TEST
+evecRef.set(0, 2, 0,  0.5820757); evecRef.set(0, 2, 1, -0.3705022) #TEST
+evecRef.set(0, 2, 2, -0.5095786); evecRef.set(0, 2, 3, -0.5140483) #TEST
 evecRef.set(0, 3, 0,  0.7926083); evecRef.set(0, 3, 1,  0.4519231) #TEST
 evecRef.set(0, 3, 2,  0.3224164); evecRef.set(0, 3, 3,  0.2521612) #TEST
 evecRef.set_name("Reference Eigenvectors");                        #TEST
@@ -227,7 +233,7 @@ A.print_out()
 
     1    0.0291933   -0.3287121    0.7914111   -0.5145527
     2    0.1791863   -0.7419178    0.1002281    0.6382825
-    3   -0.5820757    0.3705022    0.5095786    0.5140483
+    3    0.5820757   -0.3705022   -0.5095786   -0.5140483
     4    0.7926083    0.4519231    0.3224164    0.2521612
 
 
