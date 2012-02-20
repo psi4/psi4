@@ -1,0 +1,239 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>qmmm &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+    <script type="text/javascript" src="../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for qmmm</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">PsiMod</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">input</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">molecule</span> <span class="kn">import</span> <span class="o">*</span> 
+<span class="kn">from</span> <span class="nn">driver</span> <span class="kn">import</span> <span class="o">*</span> 
+
+<div class="viewcode-block" id="Diffuse"><a class="viewcode-back" href="../index.html#qmmm.Diffuse">[docs]</a><span class="k">class</span> <span class="nc">Diffuse</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">molecule</span><span class="p">,</span><span class="n">basisname</span><span class="p">,</span><span class="n">ribasisname</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">molecule</span> <span class="o">=</span> <span class="n">molecule</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basisname</span> <span class="o">=</span> <span class="n">basisname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ribasisname</span> <span class="o">=</span> <span class="n">ribasisname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ribasis</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">da</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Da</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wfn</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;    =&gt; Diffuse &lt;=</span><span class="se">\n\n</span><span class="s">&#39;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">basisname</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;    &#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ribasisname</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+        <span class="k">return</span> <span class="n">s</span>
+        
+<div class="viewcode-block" id="Diffuse.fitScf"><a class="viewcode-back" href="../index.html#qmmm.Diffuse.fitScf">[docs]</a>    <span class="k">def</span> <span class="nf">fitScf</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">basisChanged</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">has_option_changed</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">)</span>  
+        <span class="n">ribasisChanged</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">has_option_changed</span><span class="p">(</span><span class="s">&quot;DF_BASIS_SCF&quot;</span><span class="p">)</span>  
+        <span class="n">scftypeChanged</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">has_option_changed</span><span class="p">(</span><span class="s">&quot;SCF_TYPE&quot;</span><span class="p">)</span>  
+
+        <span class="n">basis</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">)</span>
+        <span class="n">ribasis</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s">&quot;DF_BASIS_SCF&quot;</span><span class="p">)</span>
+        <span class="n">scftype</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s">&quot;SCF_TYPE&quot;</span><span class="p">)</span>
+
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;    =&gt; Diffuse SCF (Determines Da) &lt;=</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">activate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="p">)</span>
+
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">basisname</span><span class="p">)</span> 
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_BASIS_SCF&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ribasisname</span><span class="p">)</span> 
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;SCF_TYPE&quot;</span><span class="p">,</span> <span class="s">&quot;DF&quot;</span><span class="p">)</span> 
+        <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span> 
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">fitGeneral</span><span class="p">()</span>
+
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
+
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">,</span> <span class="n">basis</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_BASIS_SCF&quot;</span><span class="p">,</span> <span class="n">ribasis</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;SCF_TYPE&quot;</span><span class="p">,</span> <span class="n">scftype</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">basisChanged</span><span class="p">:</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">revoke_option_changed</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ribasisChanged</span><span class="p">:</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">revoke_option_changed</span><span class="p">(</span><span class="s">&quot;DF_BASIS_SCF&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">scftypeChanged</span><span class="p">:</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">revoke_option_changed</span><span class="p">(</span><span class="s">&quot;SCF_TYPE&quot;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Diffuse.fitGeneral"><a class="viewcode-back" href="../index.html#qmmm.Diffuse.fitGeneral">[docs]</a>    <span class="k">def</span> <span class="nf">fitGeneral</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;    =&gt; Diffuse Charge Fitting (Determines da) &lt;=</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">);</span>        
+        <span class="bp">self</span><span class="o">.</span><span class="n">wfn</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">Da</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfn</span><span class="o">.</span><span class="n">Da</span><span class="p">()</span> 
+        <span class="bp">self</span><span class="o">.</span><span class="n">basis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfn</span><span class="o">.</span><span class="n">basisset</span><span class="p">()</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">Gaussian94BasisSetParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ribasis</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">BasisSet</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="p">,</span><span class="s">&quot;DF_BASIS_SCF&quot;</span><span class="p">)</span>
+
+        <span class="n">fitter</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">DFChargeFitter</span><span class="p">()</span>
+        <span class="n">fitter</span><span class="o">.</span><span class="n">setPrimary</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">basis</span><span class="p">)</span>
+        <span class="n">fitter</span><span class="o">.</span><span class="n">setAuxiliary</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ribasis</span><span class="p">)</span>
+        <span class="n">fitter</span><span class="o">.</span><span class="n">setD</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Da</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">da</span> <span class="o">=</span> <span class="n">fitter</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">da</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Diffuse.populateExtern"><a class="viewcode-back" href="../index.html#qmmm.Diffuse.populateExtern">[docs]</a>    <span class="k">def</span> <span class="nf">populateExtern</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extern</span><span class="p">):</span>
+        <span class="c"># Electronic Part</span>
+        <span class="n">extern</span><span class="o">.</span><span class="n">addBasis</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ribasis</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">da</span><span class="p">)</span>
+        <span class="c"># Nuclear Part</span>
+        <span class="k">for</span> <span class="n">A</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">natom</span><span class="p">()):</span>
+            <span class="n">extern</span><span class="o">.</span><span class="n">addCharge</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">Z</span><span class="p">(</span><span class="n">A</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">x</span><span class="p">(</span><span class="n">A</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">y</span><span class="p">(</span><span class="n">A</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">molecule</span><span class="o">.</span><span class="n">z</span><span class="p">(</span><span class="n">A</span><span class="p">))</span>
+        </div></div>
+<div class="viewcode-block" id="QMMM"><a class="viewcode-back" href="../index.html#qmmm.QMMM">[docs]</a><span class="k">class</span> <span class="nc">QMMM</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diffuses</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extern</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">ExternalPotential</span><span class="p">()</span>
+     
+<div class="viewcode-block" id="QMMM.addDiffuse"><a class="viewcode-back" href="../index.html#qmmm.QMMM.addDiffuse">[docs]</a>    <span class="k">def</span> <span class="nf">addDiffuse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">diffuse</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">diffuses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diffuse</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="QMMM.addChargeBohr"><a class="viewcode-back" href="../index.html#qmmm.QMMM.addChargeBohr">[docs]</a>    <span class="k">def</span> <span class="nf">addChargeBohr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">Q</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">])</span>
+</div>
+<div class="viewcode-block" id="QMMM.addChargeAngstrom"><a class="viewcode-back" href="../index.html#qmmm.QMMM.addChargeAngstrom">[docs]</a>    <span class="k">def</span> <span class="nf">addChargeAngstrom</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Q</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">Q</span><span class="p">,</span><span class="n">x</span><span class="o">/</span><span class="mf">0.529177249</span><span class="p">,</span><span class="n">y</span><span class="o">/</span><span class="mf">0.529177249</span><span class="p">,</span><span class="n">z</span><span class="o">/</span><span class="mf">0.529177249</span><span class="p">])</span>
+</div>
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        
+        <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;   ==&gt; QMMM &lt;==</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">;</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;   =&gt; Charges (a.u.) &lt;=</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;    </span><span class="si">%11s</span><span class="s"> </span><span class="si">%11s</span><span class="s"> </span><span class="si">%11s</span><span class="s"> </span><span class="si">%11s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;Z&#39;</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="s">&#39;z&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="p">)):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;    </span><span class="si">%11.7f</span><span class="s"> </span><span class="si">%11.3E</span><span class="s"> </span><span class="si">%11.3E</span><span class="s"> </span><span class="si">%11.3E</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="s">&#39;    =&gt; Diffuses &lt;=</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diffuses</span><span class="p">)):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">s</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">diffuses</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">s</span> 
+    
+<div class="viewcode-block" id="QMMM.populateExtern"><a class="viewcode-back" href="../index.html#qmmm.QMMM.populateExtern">[docs]</a>    <span class="k">def</span> <span class="nf">populateExtern</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c"># Charges</span>
+        <span class="k">for</span> <span class="n">charge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">charges</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">extern</span><span class="o">.</span><span class="n">addCharge</span><span class="p">(</span><span class="n">charge</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">charge</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">charge</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">charge</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="c"># Diffuses</span>
+        <span class="k">for</span> <span class="n">diffuse</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">diffuses</span><span class="p">:</span>
+            <span class="n">diffuse</span><span class="o">.</span><span class="n">populateExtern</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extern</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Feb 20, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
