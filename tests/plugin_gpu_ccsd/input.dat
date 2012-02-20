@@ -28,4 +28,3 @@ refccsd = -0.214295329587    # TEST
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")          #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"), 8, "SCF energy")                      #TEST
 compare_values(refccsd, get_variable("CCSD CORRELATION ENERGY"), 8, "CCSD correlation energy") #TEST 
-
