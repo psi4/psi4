@@ -336,7 +336,8 @@ div.body p1.rubric
 div.body h2,
 div.body p2.rubric
 {
-     margin: 1em -10px 0 50px;
+     /*margin: 1em -10px 0 50px;*/
+     margin: 1em -10px 0 -10px;
      padding: 5px;
      
      background: {{ theme_sectionbgcolor2 }};
@@ -415,7 +416,7 @@ div.admonition
     -moz-border-radius: 10px 0 10px 0;
 }
 
-div.note, div.seealso, div.warning, div.admonition-todo
+div.note, div.seealso, div.warning, div.admonition.todo, div.admonition.caution, div.admonition.nyi
 {
     background-position: 8px center;
     background-repeat: no-repeat;
@@ -427,10 +428,11 @@ div.note { background-color: #E7F0FE; background-image: url(icon-note.png); }
 div.seealso { background-color: #FFF7E0; background-image: url(icon-seealso.png); }
 div.topic { background-color: #eee; }
 div.warning { background-color: #ffe4e4; background-image: url(icon-warning.png); }
-div.admonition-todo { background-color: #FFF7E0; background-image: url(icon-todo.png); }
+div.admonition.todo { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
 
-div.admonition.caution { background-color: green; }
-/*div.admonition.caution { background-color: #FFF0E4; }*/
+div.admonition.caution { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
+
+div.admonition.nyi { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
 
 div.admonition p,
 div.admonition pre,
