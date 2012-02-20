@@ -8,6 +8,7 @@
 #include "v.h"
 #include "hamiltonian.h"
 #include "solver.h"
+#include <libscf_solver/hf.h>
 
 #include <algorithm>
 #include <boost/tuple/tuple.hpp>
@@ -79,10 +80,15 @@ void RBase::set_reference(boost::shared_ptr<Wavefunction> wfn)
 void RBase::preiterations()
 {
     if (!jk_) {
-        jk_ = JK::build_JK(options_, false);
-        unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
-        jk_->set_memory(effective_memory);
-        jk_->initialize();
+        if (options_.get_bool("SAVE_JK")) {
+            jk_ = (static_cast<psi::scf::HF*>(reference_wavefunction_.get()))->jk();
+            fprintf(outfile,"    Reusing JK object from SCF.\n\n");
+        } else {
+            jk_ = JK::build_JK();
+            unsigned long int effective_memory = (unsigned long int)(0.125 * options_.get_double("CPHF_MEM_SAFETY_FACTOR") * memory_);
+            jk_->set_memory(effective_memory);
+            jk_->initialize();
+        }
     }
     
     if (!v_) {
@@ -497,7 +503,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state] : triplets_[state]), false);
+        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), false);
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_D.dat";
 
@@ -510,7 +516,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state] : triplets_[state]), true);
+        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state-1] : triplets_[state-1]), true);
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_dD.dat";
 
@@ -523,7 +529,7 @@ void RCIS::print_densities()
         bool singlet = (state > 0);
         state = abs(state);
 
-        boost::shared_ptr<Matrix> D = TDao((singlet ? singlets_[state] : triplets_[state]), singlet);
+        boost::shared_ptr<Matrix> D = TDao((singlet ? singlets_[state-1] : triplets_[state-1]), singlet);
         std::stringstream s;
         s << (singlet ? "S" : "T") << state << "_TD.dat";
 
@@ -531,34 +537,34 @@ void RCIS::print_densities()
         fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
         fclose(fh);        
     }
-    //for (int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
-    //    int state = options_["CIS_NO_STATES"][i].to_integer();
-    //    bool singlet = (state > 0);
-    //    state = abs(state);
+    for (int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
+        int state = options_["CIS_NO_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
 
-    //    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > stuff = Nso(state,singlet);
-    //    std::stringstream s;
-    //    s << (singlet ? "S" : "T") << state << "_N.dat";
+        std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > stuff = Nao((singlet ? singlets_[state-1] : triplets_[state-1]),false);
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_N.dat";
 
-    //    FILE* fh = fopen(s.str().c_str(),"w");
-    //    fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nmo_,fh);
-    //    fwrite((void*)stuff.second->pointer(),sizeof(double),nmo_,fh);
-    //    fclose(fh);        
-    //}
-    //for (int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
-    //    int state = options_["CIS_AD_STATES"][i].to_integer();
-    //    bool singlet = (state > 0);
-    //    state = abs(state);
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nmo_,fh);
+        fwrite((void*)stuff.second->pointer(),sizeof(double),nmo_,fh);
+        fclose(fh);        
+    }
+    for (int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
+        int state = options_["CIS_AD_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
 
-    //    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > stuff = ADso(state,singlet);
-    //    std::stringstream s;
-    //    s << (singlet ? "S" : "T") << state << "_AD.dat";
+        std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > stuff = ADao((singlet ? singlets_[state-1] : triplets_[state-1]));
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_AD.dat";
 
-    //    FILE* fh = fopen(s.str().c_str(),"w");
-    //    fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nso_,fh);
-    //    fwrite((void*)stuff.second->pointer()[0],sizeof(double),nso_ * nso_,fh);
-    //    fclose(fh);        
-    //}
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fwrite((void*)stuff.second->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fclose(fh);        
+    }
 }
 SharedMatrix RCIS::TDmo(SharedMatrix T1, bool singlet)
 {
@@ -634,7 +640,7 @@ SharedMatrix RCIS::TDao(SharedMatrix T1, bool singlet)
 }
 SharedMatrix RCIS::Dmo(SharedMatrix T1, bool diff)
 {
-    SharedMatrix D(new Matrix("Dmo", T1->nirrep(), reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi()));
+    SharedMatrix D(new Matrix("Dmo", reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi()));
 
     int symm = T1->symmetry();
 
@@ -815,6 +821,136 @@ std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, b
 
     return make_pair(N3,O2);
 }
+std::pair<SharedMatrix, SharedMatrix> RCIS::ADmo(SharedMatrix T1)
+{
+    std::pair<SharedMatrix, SharedVector> nos = Nmo(T1, true);
+    SharedMatrix N = nos.first;
+    SharedVector f = nos.second;
+    
+    SharedMatrix A(new Matrix("A", N->rowspi(), N->rowspi()));
+    SharedMatrix D(new Matrix("D", N->rowspi(), N->rowspi()));
+    for (int h = 0; h < N->nirrep(); h++) {
+        int nrow = N->rowspi()[h];  
+        int ncol = N->colspi()[h];
+        if (!nrow || !ncol) continue;
+        double** Np = N->pointer(h);
+        double** Ap = A->pointer(h);
+        double** Dp = D->pointer(h);
+        double*  fp = f->pointer(h);
+        
+        int nA = 0;
+        for (int i = 0; i < ncol; i++) {
+            if (fp[i] < 0.0) {
+                break;
+            }
+            nA++;
+        }
+
+        int nD = ncol - nA;
+
+        // Attach        
+        for (int i = 0; i < nA; i++) {
+            C_DSCAL(nrow,sqrt(fp[i]),&Np[0][i],ncol);
+        }
+        C_DGEMM('N','T',nrow,nrow,nA,1.0,&Np[0][0],ncol,&Np[0][0],ncol,0.0,Ap[0],nrow);
+            
+        // Detach        
+        for (int i = nA; i < ncol; i++) {
+            C_DSCAL(nrow,sqrt(-fp[i]),&Np[0][i],ncol);
+        }
+        C_DGEMM('N','T',nrow,nrow,nD,1.0,&Np[0][nA],ncol,&Np[0][nA],ncol,0.0,Dp[0],nrow);
+            
+    }
+
+    return make_pair(A,D);
+}
+std::pair<SharedMatrix, SharedMatrix> RCIS::ADso(SharedMatrix T1)
+{
+    std::pair<SharedMatrix, SharedVector> nos = Nso(T1, true);
+    SharedMatrix N = nos.first;
+    SharedVector f = nos.second;
+    
+    SharedMatrix A(new Matrix("A", N->rowspi(), N->rowspi()));
+    SharedMatrix D(new Matrix("D", N->rowspi(), N->rowspi()));
+    for (int h = 0; h < N->nirrep(); h++) {
+        int nrow = N->rowspi()[h];  
+        int ncol = N->colspi()[h];
+        if (!nrow || !ncol) continue;
+        double** Np = N->pointer(h);
+        double** Ap = A->pointer(h);
+        double** Dp = D->pointer(h);
+        double*  fp = f->pointer(h);
+        
+        int nA = 0;
+        for (int i = 0; i < ncol; i++) {
+            if (fp[i] < 0.0) {
+                break;
+            }
+            nA++;
+        }
+
+        int nD = ncol - nA;
+
+        // Attach        
+        for (int i = 0; i < nA; i++) {
+            C_DSCAL(nrow,sqrt(fp[i]),&Np[0][i],ncol);
+        }
+        C_DGEMM('N','T',nrow,nrow,nA,1.0,&Np[0][0],ncol,&Np[0][0],ncol,0.0,Ap[0],nrow);
+            
+        // Detach        
+        for (int i = nA; i < ncol; i++) {
+            C_DSCAL(nrow,sqrt(-fp[i]),&Np[0][i],ncol);
+        }
+        C_DGEMM('N','T',nrow,nrow,nD,1.0,&Np[0][nA],ncol,&Np[0][nA],ncol,0.0,Dp[0],nrow);
+            
+    }
+
+    return make_pair(A,D);
+}
+std::pair<SharedMatrix, SharedMatrix> RCIS::ADao(SharedMatrix T1)
+{
+    std::pair<SharedMatrix, SharedVector> nos = Nao(T1, true);
+    SharedMatrix N = nos.first;
+    SharedVector f = nos.second;
+    
+    SharedMatrix A(new Matrix("A", N->rowspi(), N->rowspi()));
+    SharedMatrix D(new Matrix("D", N->rowspi(), N->rowspi()));
+    for (int h = 0; h < N->nirrep(); h++) {
+        int nrow = N->rowspi()[h];  
+        int ncol = N->colspi()[h];
+        if (!nrow || !ncol) continue;
+        double** Np = N->pointer(h);
+        double** Ap = A->pointer(h);
+        double** Dp = D->pointer(h);
+        double*  fp = f->pointer(h);
+        
+        int nA = 0;
+        for (int i = 0; i < ncol; i++) {
+            if (fp[i] < 0.0) {
+                break;
+            }
+            nA++;
+        }
+
+        int nD = ncol - nA;
+
+        // Attach        
+        for (int i = 0; i < nA; i++) {
+            C_DSCAL(nrow,sqrt(fp[i]),&Np[0][i],ncol);
+        }
+        C_DGEMM('N','T',nrow,nrow,nA,1.0,&Np[0][0],ncol,&Np[0][0],ncol,0.0,Ap[0],nrow);
+            
+        // Detach        
+        for (int i = nA; i < ncol; i++) {
+            C_DSCAL(nrow,sqrt(-fp[i]),&Np[0][i],ncol);
+        }
+        C_DGEMM('N','T',nrow,nrow,nD,1.0,&Np[0][nA],ncol,&Np[0][nA],ncol,0.0,Dp[0],nrow);
+            
+    }
+
+    return make_pair(A,D);
+}
+
 double RCIS::compute_energy()
 {
     // Main CIS Header

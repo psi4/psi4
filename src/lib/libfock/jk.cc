@@ -18,29 +18,23 @@
 
 #define PRINT_ME fprintf(stdout,"If in %d\n",__LINE__);
 #define PRINT_ME
+
 using namespace std;
 using namespace psi;
 
 namespace psi {
 
-JK::JK(std::vector<SharedMatrix >& C_left,
-   std::vector<SharedMatrix >& C_right,
-   boost::shared_ptr<BasisSet> primary) :
-   C_left_(C_left), C_right_(C_right), lr_symmetric_(false), primary_(primary)
-{
-    common_init();
-}
-JK::JK(std::vector<SharedMatrix >& C_symm,
-   boost::shared_ptr<BasisSet> primary) :
-   C_left_(C_symm), C_right_(C_symm), lr_symmetric_(true), primary_(primary)
+JK::JK( boost::shared_ptr<BasisSet> primary) :
+    primary_(primary)
 {
     common_init();
 }
 JK::~JK()
 {
 }
-boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
+boost::shared_ptr<JK> JK::build_JK()
 {
+    Options& options = Process::environment.options;
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     boost::shared_ptr<BasisSet> primary = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
 
@@ -51,16 +45,7 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
         }
         boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, primary->molecule(), "DF_BASIS_SCF");
 
-        DFJK* jk;
-
-        if (!lr_symmetric) {
-            std::vector<SharedMatrix > C_left;
-            std::vector<SharedMatrix > C_right;
-            jk = new DFJK(C_left, C_right, primary, auxiliary);
-        } else {
-            std::vector<SharedMatrix > C_left;
-            jk = new DFJK(C_left, primary, auxiliary);
-        }
+        DFJK* jk = new DFJK(primary,auxiliary);
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -68,6 +53,8 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
             jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed())
             jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
         if (options["DF_INTS_IO"].has_changed())
             jk->set_df_ints_io(options.get_str("DF_INTS_IO"));
         if (options["DF_FITTING_CONDITION"].has_changed())
@@ -79,16 +66,7 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
 
     } else if (options.get_str("SCF_TYPE") == "PK") {
 
-        DiskJK* jk;
-
-        if (!lr_symmetric) {
-            std::vector<SharedMatrix > C_left;
-            std::vector<SharedMatrix > C_right;
-            jk = new DiskJK(C_left, C_right, primary);
-        } else {
-            std::vector<SharedMatrix > C_left;
-            jk = new DiskJK(C_left, primary);
-        }
+        DiskJK* jk = new DiskJK(primary);;
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -96,21 +74,14 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
             jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed())
             jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
 
         return boost::shared_ptr<JK>(jk);
 
     } else if (options.get_str("SCF_TYPE") == "DIRECT") {
 
-        DirectJK* jk;
-
-        if (!lr_symmetric) {
-            std::vector<SharedMatrix > C_left;
-            std::vector<SharedMatrix > C_right;
-            jk = new DirectJK(C_left, C_right, primary);
-        } else {
-            std::vector<SharedMatrix > C_left;
-            jk = new DirectJK(C_left, primary);
-        }
+        DirectJK* jk = new DirectJK(primary);
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
@@ -118,6 +89,35 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
             jk->set_print(options.get_int("PRINT"));
         if (options["DEBUG"].has_changed())
             jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+
+        return boost::shared_ptr<JK>(jk);
+
+    } else if (options.get_str("SCF_TYPE") == "PK") {
+    
+        PSJK* jk = new PSJK(primary,options);
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["PS_THETA"].has_changed())
+            jk->set_theta(options.get_double("PS_THETA"));
+        if (options["PS_DEALIASING"].has_changed())
+            jk->set_dealiasing(options.get_str("PS_DEALIASING"));
+        if (options["DEALIAS_BASIS_SCF"].has_changed()) {
+            if (options.get_str("DEALIAS_BASIS_SCF") != "") {
+                boost::shared_ptr<BasisSet> dealias = BasisSet::construct(parser, primary->molecule(), "DEALIAS_BASIS_SCF");
+                jk->set_dealias_basis(dealias);
+            }
+        }
 
         return boost::shared_ptr<JK>(jk);
 
@@ -129,6 +129,8 @@ void JK::common_init()
 {
     print_ = 1;
     debug_ = 0;
+    bench_ = 0;
+
     // 256 MB default
     memory_ = 32000000L;
     omp_nthread_ = 1;
@@ -199,11 +201,11 @@ void JK::compute_D()
 
     if (!same) {
         D_.clear();
-    for (int N = 0; N < C_left_.size(); ++N) {
+        for (int N = 0; N < C_left_.size(); ++N) {
             std::stringstream s;
-        s << "D " << N << " (SO)";
+            s << "D " << N << " (SO)";
             D_.push_back(SharedMatrix(new Matrix(s.str(),C_left_[N]->nirrep(), C_left_[N]->rowspi(), C_right_[N]->rowspi(), C_left_[N]->symmetry() ^ C_right_[N]->symmetry())));
-    }
+        }
     }
 
     for (int N = 0; N < D_.size(); ++N) {
@@ -217,7 +219,7 @@ void JK::compute_D()
 
             if (!nsol || !nsor || !nocc) continue;
 
-            double** Dp = D_[N]->pointer(h^symm);
+            double** Dp = D_[N]->pointer(h);
             double** Clp = C_left_[N]->pointer(h);
             double** Crp = C_right_[N]->pointer(h^symm);
 
@@ -239,198 +241,10 @@ void JK::allocate_JK()
     }
 
     if (!same) {
-	J_.clear();    
-	K_.clear();    
-	wK_.clear();    
-    	for (int N = 0; N < D_.size() && do_J_; ++N) {
-            std::stringstream s;
-        s << "J " << N << " (SO)";
-            J_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
-        }
-        for (int N = 0; N < D_.size() && do_K_; ++N) {
-            std::stringstream s;
-        s << "K " << N << " (SO)";
-            K_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
-        }
-        for (int N = 0; N < D_.size() && do_wK_; ++N) {
-            std::stringstream s;
-        s << "wK " << N << " (SO)";
-            wK_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
-        }
-    }
-
-    // Zero out J/K for compute_JK()
-    for (int N = 0; N < D_.size(); ++N) {
-        if (do_J_) J_[N]->zero();
-        if (do_K_) K_[N]->zero();
-        if (do_wK_) wK_[N]->zero();
-    }
-}
-void JK::USO2AO()
-{
-    // If C1, C_ao and D_ao are equal to C and D
-    if (AO2USO_->nirrep() == 1) {
-        C_left_ao_ = C_left_;
-        C_right_ao_ = C_right_;
-        D_ao_ = D_;
-    }
-
-    // Whether C1 or not, allocate J_ao and K_ao
-    if (D_.size() != J_ao_.size()) {
-    J_ao_.clear();
-    K_ao_.clear();
-    wK_ao_.clear();
-
+        J_.clear();    
+        K_.clear();    
+        wK_.clear();    
         for (int N = 0; N < D_.size() && do_J_; ++N) {
-            std::stringstream s;
-        s << "J " << N << " (AO)";
-            J_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
-        }
-        for (int N = 0; N < D_.size() && do_K_; ++N) {
-            std::stringstream s;
-        s << "K " << N << " (AO)";
-            K_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
-        }
-        for (int N = 0; N < D_.size() && do_wK_; ++N) {
-            std::stringstream s;
-        s << "wK " << N << " (AO)";
-            wK_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
-        }
-    }
-
-    // Zero out J_ao/K_ao for compute_JK()
-    for (int N = 0; N < D_.size(); ++N) {
-        if (do_J_) J_ao_[N]->zero();
-        if (do_K_) K_ao_[N]->zero();
-        if (do_wK_) wK_ao_[N]->zero();
-    }
-
-    if (AO2USO_->nirrep() == 1) return;
-
-    // If not C1, allocate C_ao and D_ao
-    if (D_.size() != C_left_ao_.size()) {
-    C_left_ao_.clear();
-    C_right_ao_.clear();
-    D_ao_.clear();
-        for (int N = 0; N < D_.size(); ++N) {
-            std::stringstream s;
-        s << "D " << N << " (AO)";
-            D_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
-        }
-        for (int N = 0; N < D_.size(); ++N) {
-            std::stringstream s;
-        s << "C Left " << N << " (AO)";
-        int ncol = 0;
-        for (int h = 0; h < C_left_[N]->nirrep(); ++h) ncol += C_left_[N]->colspi()[h];
-            C_left_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
-        }
-        for (int N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
-            std::stringstream s;
-        s << "C Right " << N << " (AO)";
-        int ncol = 0;
-        for (int h = 0; h < C_right_[N]->nirrep(); ++h) ncol += C_right_[N]->colspi()[h];
-            C_right_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
-        }
-    }
-
-    // If not C1, check for changes in nocc
-    for (int N = 0; N < D_.size(); ++N) {
-    int ncol = 0;
-    for (int h = 0; h < C_left_[N]->nirrep(); ++h) ncol += C_left_[N]->colspi()[h];
-    int ncol_old = C_left_ao_[N]->colspi()[0];
-    if (ncol != ncol_old) {
-            std::stringstream s;
-        s << "C Left " << N << " (AO)";
-            C_left_ao_[N] = SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol));
-        if (!lr_symmetric_) {
-                std::stringstream s2;
-            s2 << "C Right " << N << " (AO)";
-                C_right_ao_[N] = SharedMatrix(new Matrix(s2.str(),AO2USO_->rowspi()[0], ncol));
-
-            }
-    }
-    if (lr_symmetric_) C_right_ao_ = C_left_ao_;
-    }
-
-    // Transform D
-    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
-    for (int N = 0; N < D_.size(); ++N) {
-    D_ao_[N]->zero();
-        int symm = D_[N]->symmetry();
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
-            int nao = AO2USO_->rowspi()[0];
-            int nsol = AO2USO_->colspi()[h];
-            int nsor = AO2USO_->colspi()[h^symm];
-        if (!nsol || !nsor) continue;
-        double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
-        double** DSOp = D_[N]->pointer(h^symm);
-        double** DAOp = D_ao_[N]->pointer();
-        C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
-        C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
-    }
-    }
-    delete[] temp;
-
-    // Transform C
-    for (int N = 0; N < D_.size(); ++N) {
-        int offset = 0;
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
-            int nao = AO2USO_->rowspi()[0];
-            int nso = AO2USO_->colspi()[h];
-        int ncol = C_left_ao_[N]->colspi()[0];
-        int ncolspi = C_left_[N]->colspi()[h];
-        if (nso == 0 || ncolspi == 0) continue;
-        double** Up = AO2USO_->pointer(h);
-        double** CAOp = C_left_ao_[N]->pointer();
-        double** CSOp = C_left_[N]->pointer(h);
-        C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
-        offset += ncolspi;
-    }
-    }
-    for (int N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
-        int offset = 0;
-        int symm = D_[N]->symmetry();
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
-            int nao = AO2USO_->rowspi()[0];
-            int nso = AO2USO_->colspi()[h];
-        int ncol = C_right_ao_[N]->colspi()[0];
-        int ncolspi = C_right_[N]->colspi()[h^symm];
-        if (nso == 0 || ncolspi == 0) continue;
-        double** Up = AO2USO_->pointer(h);
-        double** CAOp = C_right_ao_[N]->pointer();
-        double** CSOp = C_right_[N]->pointer(h);
-        C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
-        offset += ncolspi;
-    }
-    }
-}
-void JK::AO2USO()
-{
-    // If already C1, J/K are J_ao/K_ao
-    if (AO2USO_->nirrep() == 1) {
-    J_ = J_ao_;
-    K_ = K_ao_;
-    wK_ = wK_ao_;
-    return;
-    }
-
-    // If not C1, J/K must be allocated
-    bool same = true;
-    if (J_.size() != D_.size()) {
-        same = false;
-    } else {
-        for (int N = 0; N < D_.size(); N++) {
-            if (D_[N]->symmetry() != J_[N]->symmetry())
-                same = false;
-        }
-    }
-
-    if (!same) {
-	J_.clear();    
-	K_.clear();    
-	wK_.clear();    
-    	for (int N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
             s << "J " << N << " (SO)";
             J_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
@@ -447,39 +261,180 @@ void JK::AO2USO()
         }
     }
 
+    // Zero out J/K for compute_JK()
+    for (int N = 0; N < D_.size(); ++N) {
+        if (do_J_) J_[N]->zero();
+        if (do_K_) K_[N]->zero();
+        if (do_wK_) wK_[N]->zero();
+    }
+}
+void JK::USO2AO()
+{
+    allocate_JK();
+
+    // If C1, C_ao and D_ao are equal to C and D
+    if (AO2USO_->nirrep() == 1) {
+        C_left_ao_ = C_left_;
+        C_right_ao_ = C_right_;
+        D_ao_ = D_;
+        J_ao_ = J_;
+        K_ao_ = K_;
+        wK_ao_ = wK_; 
+        return;
+    }
+
+    if (J_ao_.size() != D_.size()) {
+        J_ao_.clear();    
+        K_ao_.clear();    
+        wK_ao_.clear();    
+        D_ao_.clear();
+        int nao = AO2USO_->rowspi()[0];
+        for (int N = 0; N < D_.size() && do_J_; ++N) {
+            std::stringstream s;
+            s << "J " << N << " (AO)";
+            J_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+        }
+        for (int N = 0; N < D_.size() && do_K_; ++N) {
+            std::stringstream s;
+            s << "K " << N << " (AO)";
+            K_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+        }
+        for (int N = 0; N < D_.size() && do_wK_; ++N) {
+            std::stringstream s;
+            s << "wK " << N << " (AO)";
+            wK_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+        }
+        for (int N = 0; N < D_.size(); ++N) {
+            std::stringstream s;
+            s << "D " << N << " (AO)";
+            D_ao_.push_back(SharedMatrix(new Matrix(s.str(),nao,nao)));
+        }
+    }
+
+    // Always reallocate C matrices, the occupations are tricky
+    C_left_ao_.clear();
+    C_right_ao_.clear();
+    for (int N = 0; N < D_.size(); ++N) {
+        std::stringstream s;
+        s << "C Left " << N << " (AO)";
+        int ncol = 0;
+        for (int h = 0; h < C_left_[N]->nirrep(); ++h) ncol += C_left_[N]->colspi()[h];
+        C_left_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
+    }
+    for (int N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
+        std::stringstream s;
+        s << "C Right " << N << " (AO)";
+        int ncol = 0;
+        for (int h = 0; h < C_right_[N]->nirrep(); ++h) ncol += C_right_[N]->colspi()[h];
+        C_right_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
+    }
+
+    // Alias pointers if lr_symmetric_
+    if (lr_symmetric_) {
+        C_right_ao_ = C_left_ao_;
+    }
+
+    // Transform D
+    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    for (int N = 0; N < D_.size(); ++N) {
+        D_ao_[N]->zero();
+        int symm = D_[N]->symmetry();
+        for (int h = 0; h < AO2USO_->nirrep(); ++h) {
+            int nao = AO2USO_->rowspi()[0];
+            int nsol = AO2USO_->colspi()[h];
+            int nsor = AO2USO_->colspi()[h^symm];
+            if (!nsol || !nsor) continue;
+            double** Ulp = AO2USO_->pointer(h);
+            double** Urp = AO2USO_->pointer(h^symm);
+            double** DSOp = D_[N]->pointer(h^symm);
+            double** DAOp = D_ao_[N]->pointer();
+            C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
+            C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+        }
+    }
+    delete[] temp;
+
+    // Transform C
+    for (int N = 0; N < D_.size(); ++N) {
+        int offset = 0;
+        for (int h = 0; h < AO2USO_->nirrep(); ++h) {
+            int nao = AO2USO_->rowspi()[0];
+            int nso = AO2USO_->colspi()[h];
+            int ncol = C_left_ao_[N]->colspi()[0];
+            int ncolspi = C_left_[N]->colspi()[h];
+            if (nso == 0 || ncolspi == 0) continue;
+            double** Up = AO2USO_->pointer(h);
+            double** CAOp = C_left_ao_[N]->pointer();
+            double** CSOp = C_left_[N]->pointer(h);
+            C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
+            offset += ncolspi;
+        }
+    }
+    for (int N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
+        int offset = 0;
+        int symm = D_[N]->symmetry();
+        for (int h = 0; h < AO2USO_->nirrep(); ++h) {
+            int nao = AO2USO_->rowspi()[0];
+            int nso = AO2USO_->colspi()[h];
+            int ncol = C_right_ao_[N]->colspi()[0];
+            int ncolspi = C_right_[N]->colspi()[h^symm];
+            if (nso == 0 || ncolspi == 0) continue;
+            double** Up = AO2USO_->pointer(h);
+            double** CAOp = C_right_ao_[N]->pointer();
+            double** CSOp = C_right_[N]->pointer(h);
+            C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
+            offset += ncolspi;
+        }
+    }
+
+    for (int N = 0; N < D_.size(); ++N) {
+        if (do_J_) J_ao_[N]->zero();
+        if (do_K_) K_ao_[N]->zero();
+        if (do_wK_) wK_ao_[N]->zero();
+    }
+}
+void JK::AO2USO()
+{
+    // If already C1, J/K are J_ao/K_ao, pointers are already aliased
+    if (AO2USO_->nirrep() == 1) {
+        return;
+    }
+
+    // If not C1, J/K/wK are already allocated
+
     // Transform
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
     for (int N = 0; N < D_.size(); ++N) {
         int symm = D_[N]->symmetry();
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
+        for (int h = 0; h < AO2USO_->nirrep(); ++h) {
             int nao = AO2USO_->rowspi()[0];
             int nsol = AO2USO_->colspi()[h];
             int nsor = AO2USO_->colspi()[h^symm];
 
-        if (!nsol || !nsor) continue;
+            if (!nsol || !nsor) continue;
 
-        double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
+            double** Ulp = AO2USO_->pointer(h);
+            double** Urp = AO2USO_->pointer(h^symm);
 
             if (do_J_) {
-            double** JAOp = J_ao_[N]->pointer();
-            double** JSOp = J_[N]->pointer(h);
-            C_DGEMM('N','N',nao,nsor,nao,1.0,JAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-            C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,JSOp[0],nsor);
+                double** JAOp = J_ao_[N]->pointer();
+                double** JSOp = J_[N]->pointer(h);
+                C_DGEMM('N','N',nao,nsor,nao,1.0,JAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
+                C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,JSOp[0],nsor);
             }
             if (do_K_) {
-            double** KAOp = K_ao_[N]->pointer();
-            double** KSOp = K_[N]->pointer(h);
-            C_DGEMM('N','N',nao,nsor,nao,1.0,KAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-            C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,KSOp[0],nsor);
+                double** KAOp = K_ao_[N]->pointer();
+                double** KSOp = K_[N]->pointer(h);
+                C_DGEMM('N','N',nao,nsor,nao,1.0,KAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
+                C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,KSOp[0],nsor);
             }
             if (do_wK_) {
-            double** wKAOp = wK_ao_[N]->pointer();
-            double** wKSOp = wK_[N]->pointer(h);
-            C_DGEMM('N','N',nao,nsor,nao,1.0,wKAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-            C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,wKSOp[0],nsor);
+                double** wKAOp = wK_ao_[N]->pointer();
+                double** wKSOp = wK_[N]->pointer(h);
+                C_DGEMM('N','N',nao,nsor,nao,1.0,wKAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
+                C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,wKSOp[0],nsor);
             }
-    }
+        }
     }
     delete[] temp;
 }
@@ -489,8 +444,11 @@ void JK::initialize()
 }
 void JK::compute()
 {
-    if (lr_symmetric_) {
+    if (C_left_.size() && !C_right_.size()) {
+        lr_symmetric_ = true;
         C_right_ = C_left_;
+    } else {
+        lr_symmetric_ = false;
     }
 
     timer_on("JK: D");
@@ -532,22 +490,18 @@ void JK::compute()
         }
         fflush(outfile);
     }
+
+    if (lr_symmetric_) {
+        C_right_.clear();
+    }
 }
 void JK::finalize()
 {
     postiterations();
 }
 
-DiskJK::DiskJK(std::vector<SharedMatrix >& C_left,
-   std::vector<SharedMatrix >& C_right,
-   boost::shared_ptr<BasisSet> primary) :
-   JK(C_left,C_right,primary)
-{
-    common_init();
-}
-DiskJK::DiskJK(std::vector<SharedMatrix >& C_symm,
-   boost::shared_ptr<BasisSet> primary) :
-   JK(C_symm,primary)
+DiskJK::DiskJK(boost::shared_ptr<BasisSet> primary) :
+   JK(primary)
 {
     common_init();
 }
@@ -567,7 +521,6 @@ void DiskJK::print_header() const
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
-        //fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
     }
 }
 void DiskJK::preiterations()
@@ -808,16 +761,8 @@ void DiskJK::postiterations()
     delete[] so2index_;
 }
 
-DirectJK::DirectJK(std::vector<SharedMatrix >& C_left,
-   std::vector<SharedMatrix >& C_right,
-   boost::shared_ptr<BasisSet> primary) :
-   JK(C_left,C_right,primary)
-{
-    common_init();
-}
-DirectJK::DirectJK(std::vector<SharedMatrix >& C_symm,
-   boost::shared_ptr<BasisSet> primary) :
-   JK(C_symm,primary)
+DirectJK::DirectJK(boost::shared_ptr<BasisSet> primary) :
+   JK(primary)
 {
     common_init();
 }
@@ -985,18 +930,9 @@ void DirectJK::postiterations()
     eri_.clear();
 }
 
-DFJK::DFJK(std::vector<SharedMatrix >& C_left,
-   std::vector<SharedMatrix >& C_right,
-   boost::shared_ptr<BasisSet> primary,
+DFJK::DFJK(boost::shared_ptr<BasisSet> primary,
    boost::shared_ptr<BasisSet> auxiliary) :
-   JK(C_left,C_right,primary), auxiliary_(auxiliary)
-{
-    common_init();
-}
-DFJK::DFJK(std::vector<SharedMatrix >& C_symm,
-   boost::shared_ptr<BasisSet> primary,
-   boost::shared_ptr<BasisSet> auxiliary) :
-   JK(C_symm,primary), auxiliary_(auxiliary)
+   JK(primary), auxiliary_(auxiliary)
 {
     common_init();
 }
@@ -1211,8 +1147,10 @@ void DFJK::compute_JK()
             manage_wK_disk();
         free_w_temps();
         // Bring the wK matrices back to Hermitian
-        for (int N = 0; N < wK_ao_.size(); N++) {
-            wK_ao_[N]->hermitivitize();
+        if (lr_symmetric_) {
+            for (int N = 0; N < wK_ao_.size(); N++) {
+                wK_ao_[N]->hermitivitize();
+            }
         }
     }
 }
@@ -2564,7 +2502,11 @@ void DFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
                 }
 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                if (nocc > 1) {
+                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                } else {
+                    C_DGEMV('N',naux,rows,1.0,QSp[0],nbf,Clp[0],1,0.0,&Elp[0][m*(ULI)nocc*naux],1);
+                }
             }
 
             timer_off("JK: K1");
@@ -2596,7 +2538,11 @@ void DFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
                 }
 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                if (nocc > 1) {
+                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                } else {
+                    C_DGEMV('N',naux,rows,1.0,QSp[0],nbf,Clp[0],1,0.0,&Erp[0][m*(ULI)nocc*naux],1);
+                }
             }
 
             timer_off("JK: K1");
@@ -2694,5 +2640,87 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
     }
 }
 
+PSJK::PSJK(boost::shared_ptr<BasisSet> primary, 
+    Options& options) :
+    JK(primary_), options_(options)
+{
+    common_init();
+}
+PSJK::~PSJK()
+{
+}
+void PSJK::common_init()
+{
+    df_ints_num_threads_ = 1;
+    #ifdef _OPENMP
+        df_ints_num_threads_ = omp_get_max_threads();
+    #endif
+    theta_ = 0.3;
+    psio_ = PSIO::shared_object();
+    dealiasing_ = "QUADRATURE";
+}
+void PSJK::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> PSJK: Pseudospectral J/K Matrices <==\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "    Theta:             %11.3E\n", theta_);
+        fprintf(outfile, "    Dealiasing:        %11s\n", dealiasing_.c_str());
+        fprintf(outfile, "\n");
+
+        if (dealiasing_ == "DEALIAS") {
+            fprintf(outfile, "   => Dealias Basis Set <=\n\n");
+            dealias_->print_by_level(outfile,print_);
+        }
+    }
+}
+void PSJK::preiterations()
+{
+    // PS requires constant sieve, must be static througout object life
+    if (!sieve_) {
+        sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    }
+
+    build_QR();
+
+    if (do_J_ || do_K_) {
+        build_Amn_disk(theta_,"(A|mn) JK");    
+    }
+
+    if (do_wK_) {
+        build_Amn_disk(theta_ > omega_ ? omega_ : theta_, "(A|mn) wK");
+    }
+}
+void PSJK::postiterations()
+{
+    Q_.reset();
+    R_.reset();
+    grid_.reset();
+    ints_4c_.clear();
+    d_.reset();
+    V_.reset();
+    W_.reset();
+}
+void PSJK::compute_JK()
+{
+    
+}
+void PSJK::build_QR()
+{
+}
+void PSJK::build_Amn_disk(double theta, const std::string& entry)
+{
+}
+int PSJK::max_rows() 
+{
+    return 1;
+}
 
 }
