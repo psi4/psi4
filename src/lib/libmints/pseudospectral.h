@@ -53,7 +53,7 @@ public:
     void set_point(double x, double y, double z) { C_[0] = x; C_[1] = y; C_[2] = z; }
 
     /// Set omega value, turns use_omega_ to true
-    void set_omega(double omega) { use_omega_ = true; omega_ = omega; }
+    void set_omega(double omega) { use_omega_ = (omega != 0.0); omega_ = omega; }
 
     /// Set the value of the use_omega_ flag
     void use_omega(bool yes) { use_omega_ = yes; }

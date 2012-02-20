@@ -94,6 +94,33 @@ boost::shared_ptr<JK> JK::build_JK()
 
         return boost::shared_ptr<JK>(jk);
 
+    } else if (options.get_str("SCF_TYPE") == "PK") {
+    
+        PSJK* jk = new PSJK(primary,options);
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+        if (options["BENCH"].has_changed())
+            jk->set_bench(options.get_int("BENCH"));
+        if (options["DF_INTS_NUM_THREADS"].has_changed())
+            jk->set_df_ints_num_threads(options.get_int("DF_INTS_NUM_THREADS"));
+        if (options["PS_THETA"].has_changed())
+            jk->set_theta(options.get_double("PS_THETA"));
+        if (options["PS_DEALIASING"].has_changed())
+            jk->set_dealiasing(options.get_str("PS_DEALIASING"));
+        if (options["DEALIAS_BASIS_SCF"].has_changed()) {
+            if (options.get_str("DEALIAS_BASIS_SCF") != "") {
+                boost::shared_ptr<BasisSet> dealias = BasisSet::construct(parser, primary->molecule(), "DEALIAS_BASIS_SCF");
+                jk->set_dealias_basis(dealias);
+            }
+        }
+
+        return boost::shared_ptr<JK>(jk);
+
     } else {
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
@@ -1120,8 +1147,10 @@ void DFJK::compute_JK()
             manage_wK_disk();
         free_w_temps();
         // Bring the wK matrices back to Hermitian
-        for (int N = 0; N < wK_ao_.size(); N++) {
-            wK_ao_[N]->hermitivitize();
+        if (lr_symmetric_) {
+            for (int N = 0; N < wK_ao_.size(); N++) {
+                wK_ao_[N]->hermitivitize();
+            }
         }
     }
 }
@@ -2611,5 +2640,87 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
     }
 }
 
+PSJK::PSJK(boost::shared_ptr<BasisSet> primary, 
+    Options& options) :
+    JK(primary_), options_(options)
+{
+    common_init();
+}
+PSJK::~PSJK()
+{
+}
+void PSJK::common_init()
+{
+    df_ints_num_threads_ = 1;
+    #ifdef _OPENMP
+        df_ints_num_threads_ = omp_get_max_threads();
+    #endif
+    theta_ = 0.3;
+    psio_ = PSIO::shared_object();
+    dealiasing_ = "QUADRATURE";
+}
+void PSJK::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> PSJK: Pseudospectral J/K Matrices <==\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "    Theta:             %11.3E\n", theta_);
+        fprintf(outfile, "    Dealiasing:        %11s\n", dealiasing_.c_str());
+        fprintf(outfile, "\n");
+
+        if (dealiasing_ == "DEALIAS") {
+            fprintf(outfile, "   => Dealias Basis Set <=\n\n");
+            dealias_->print_by_level(outfile,print_);
+        }
+    }
+}
+void PSJK::preiterations()
+{
+    // PS requires constant sieve, must be static througout object life
+    if (!sieve_) {
+        sieve_ = boost::shared_ptr<ERISieve>(new ERISieve(primary_, cutoff_));
+    }
+
+    build_QR();
+
+    if (do_J_ || do_K_) {
+        build_Amn_disk(theta_,"(A|mn) JK");    
+    }
+
+    if (do_wK_) {
+        build_Amn_disk(theta_ > omega_ ? omega_ : theta_, "(A|mn) wK");
+    }
+}
+void PSJK::postiterations()
+{
+    Q_.reset();
+    R_.reset();
+    grid_.reset();
+    ints_4c_.clear();
+    d_.reset();
+    V_.reset();
+    W_.reset();
+}
+void PSJK::compute_JK()
+{
+    
+}
+void PSJK::build_QR()
+{
+}
+void PSJK::build_Amn_disk(double theta, const std::string& entry)
+{
+}
+int PSJK::max_rows() 
+{
+    return 1;
+}
 
 }

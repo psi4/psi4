@@ -2004,6 +2004,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PS_ALPHA", 1.0);
     /*- Do use range-separation procedure in PS? -*/
     options.add_bool("PS_USE_OMEGA", true);
+    /*- Random stuff for LibFock -*/
+    options.add_double("PS_THETA", 0.3);
+    /*- Random stuff for LibFock -*/
+    options.add_str("PS_DEALIASING", "QUADRATURE", "QUADRATURE RENORMALIZED DEALIASED");
+    /*- Random stuff for LibFock -*/
+    options.add_str("DEALIAS_BASIS_SCF", ""); 
+    
 
     // => DENOMINATOR <= //
 
