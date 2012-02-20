@@ -566,7 +566,7 @@ def optimize(name, **kwargs):
         ``'cbs'`` performs a multistage finite difference calculation.
 
     :type mode: string
-    :param mode: ``'continuous'`` || ``'sow'`` || ``'reap'``
+    :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
 
         Indicates whether the calculation required to complete the
         optimization are to be run in one file (``'continuous'``) or are to be
