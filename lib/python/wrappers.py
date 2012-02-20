@@ -562,7 +562,7 @@ def cp(name, **kwargs):
             e_full = e_full - e_monomer_full[cluster_n]
         cp_table["Interaction"] = [e_full]
 
-        PsiMod.set_variable('CP-CORRECTED 2-BODY INTERACTION ENERGY')
+        PsiMod.set_variable('CP-CORRECTED 2-BODY INTERACTION ENERGY', e_full)
 
     else:
         cp_table = Table(rows=["System:"], cols=["Energy (full):", "Energy (monomer):", "BSSE:"])
@@ -579,7 +579,7 @@ def cp(name, **kwargs):
             e_bsse = e_bsse - e_monomer_bsse[cluster_n]
         cp_table["Totals:"] = [e_full, e_bsse, e_full - e_bsse]
 
-        PsiMod.set_variable('UNCP-CORRECTED 2-BODY INTERACTION ENERGY')
+        PsiMod.set_variable('UNCP-CORRECTED 2-BODY INTERACTION ENERGY', e_full)
 
     PsiMod.print_out("\n")
     banner("CP Computation: Results.")
