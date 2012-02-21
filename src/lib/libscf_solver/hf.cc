@@ -28,9 +28,7 @@
 #include <psifiles.h>
 #include <libfock/jk.h>
 #include "integralfunctors.h"
-#include "pseudospectral.h"
 #include "pkintegrals.h"
-#include "df.h"
 
 #include "hf.h"
 
@@ -299,15 +297,7 @@ void HF::integrals()
             scf_type_ = "OUT_OF_CORE";
             pk_integrals_.reset();
         }
-    }
-    else if (scf_type_ == "PSEUDOSPECTRAL"){
-        if(nirrep_ > 1)
-            throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
-        df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
-        pseudospectral_ = boost::shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
-        density_fitted_ = true;
     }else if (scf_type_ == "DF"){
-        //df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
         density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
         if (print_ && Communicator::world->me() == 0)
@@ -343,7 +333,7 @@ void HF::integrals()
             if (functional->isRangeCorrected()) {
                 double omega = functional->getOmega();
                 if (options_["DFT_OMEGA"].has_changed()) {
-                    omega = options_.get_double("OMEGA"); 
+                    omega = options_.get_double("DFT_OMEGA"); 
                 }
                 jk_->set_omega(omega); 
             }   
@@ -362,8 +352,6 @@ void HF::finalize()
     delete[] so2index_;
 
     pk_integrals_.reset();
-    df_.reset();
-    pseudospectral_.reset();
     eri_.reset();
 
     // TODO: This will be the only one

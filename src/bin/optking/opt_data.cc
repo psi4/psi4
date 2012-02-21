@@ -63,6 +63,7 @@ OPT_DATA::~OPT_DATA() {
 bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double *dq =  g_dq_pointer();
   double max_disp = array_abs_max(dq, Nintco);
+  double rms_disp = array_rms(dq, Nintco);
 
   double DE;
   if (g_iteration() > 1)
@@ -114,23 +115,56 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   }
 
   double max_force = array_abs_max(f, Nintco);
+  double rms_force = array_rms(f, Nintco);
 
+#if defined(OPTKING_PACKAGE_PSI)
+  fprintf(outfile, "\n  ==> Convergence Check <==\n\n");
+  fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
+  fprintf(outfile, "  Criteria marked as inactive (o), active & met (*), and active & unmet ( ).\n");
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "   Step     Total Energy     Delta E     MAX Force     RMS Force      MAX Disp      RMS Disp   ");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "    Convergence Criteria");
+  Opt_params.i_max_DE ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_max_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_rms_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_max_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_rms_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*") : fprintf(outfile, "             %1s", "o");
+  if (g_iteration() == 1) fprintf(outfile, "  ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------");
+  if (g_iteration() == 1) fprintf(outfile, " ~");
+  fprintf(outfile, "\n");
+
+  fprintf(outfile, "   %4d %16.8f  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  %10.2e %1s  ~\n", iteration, g_energy(),
+    DE, (Opt_params.i_max_DE ? ((fabs(DE) < Opt_params.conv_max_DE) ? "*" : "") : "o"), 
+    max_force, (Opt_params.i_max_force ? ((fabs(max_force) < Opt_params.conv_max_force) ? "*" : "") : "o"),
+    rms_force, (Opt_params.i_rms_force ? ((fabs(rms_force) < Opt_params.conv_rms_force) ? "*" : "") : "o"),
+    max_disp, (Opt_params.i_max_disp ? ((fabs(max_disp) < Opt_params.conv_max_disp) ? "*" : "") : "o"),
+    rms_disp, (Opt_params.i_rms_disp ? ((fabs(rms_disp) < Opt_params.conv_rms_disp) ? "*" : "") : "o"));
+
+  fprintf(outfile, "  ---------------------------------------------------------------------------------------------\n\n");
+  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
+
+#elif defined(OPTKING_PACKAGE_QCHEM)
   fprintf(outfile, "\n\tConvergence Check Cycle %4d: (using internal coordinates in au)\n", iteration);
   fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
   fprintf(outfile, "\t----------------------------------------------------------\n");
 
-  // why are these if's here asks RAK?
-  // on the suspicion that I may have put the if's here, LAB answers. It's probably not set up correctly at
-  //    the moment, but these statements allow all 5 possible measures of optimization progress to be
-  //    reported on each opt iter while also, through the if statement, differentiating which measures are
-  //    being used in this job to test for convergence.
   if ( fabs(Opt_params.conv_max_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
   else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", max_force, Opt_params.conv_max_force,
        ((max_force < Opt_params.conv_max_force) ? "yes" : "no"));
-
-  //if ( fabs(Opt_params.conv_rms_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", rms_force);
-  //else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", rms_force, Opt_params.conv_rms_force,
-  //     ((rms_force < Opt_params.conv_rms_force) ? "yes" : "no"));
 
   if ( fabs(Opt_params.conv_max_DE)   < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
   else fprintf(outfile, "\tEnergy Change    %10.1e %14.1e %11s\n", DE, Opt_params.conv_max_DE,
@@ -140,12 +174,9 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   else fprintf(outfile, "\tMAX Displacement %10.1e %14.1e %11s\n", max_disp, Opt_params.conv_max_disp,
        ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
 
-  //if ( fabs(Opt_params.conv_rms_disp) < 1.0e-15 ) fprintf(outfile, "\tMAX Displacement %10.1e\n", rms_disp);
-  //else fprintf(outfile, "\tMAX Displacement %10.1e %14.1e %11s\n", rms_disp, Opt_params.conv_rms_disp,
-  //     ((rms_disp < Opt_params.conv_rms_disp) ? "yes" : "no"));
-
   fprintf(outfile, "\t----------------------------------------------------------\n");
   printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
+#endif
 
   // return all forces to canonical place
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
@@ -153,20 +184,52 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
     free_array(f_backup);
   }
 
-  // convergence test is forces and either energy change or displacement
-  if ((max_force < Opt_params.conv_max_force) &&
-      ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
-
+// Test for convergence
 #if defined(OPTKING_PACKAGE_PSI)
+
+  // Q-Chem and Gaussian have convergence tests involving interplay among criteria.
+  //   The requirement of i_untampered means that if a user explicitly adds any of the
+  //   5 indiv. criteria on top of G_CONVERGENCE, it is required to be met.
+  if ( 
+         (  // For un-modified Q-Chem or Molpro (Baker) criteria, if forces and either energy change or displacement met, convergence!
+               (Opt_params.i_untampered) 
+            && ( (Opt_params.general_conv == "QCHEM") || (Opt_params.general_conv == "MOLPRO") )
+            && ( (max_force < Opt_params.conv_max_force) && ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)) )
+         )
+      || (  // For un-modified Gaussian criteria, if max/rms forces/disp met or flat potential forces met, convergence!
+               (Opt_params.i_untampered) 
+            && ( (Opt_params.general_conv == "GAU") || (Opt_params.general_conv == "GAU_TIGHT") ||
+                 (Opt_params.general_conv == "GAU_VERYTIGHT") || (Opt_params.general_conv == "GAU_LOOSE") )
+            && (    ( (max_force < Opt_params.conv_max_force) && (rms_force < Opt_params.conv_rms_force) &&
+                      (max_disp  < Opt_params.conv_max_disp)  && (rms_disp  < Opt_params.conv_rms_disp) )
+                 || (rms_force * 100 < Opt_params.conv_rms_force) )
+         )
+      || (  // Otherwise, for all criteria, if criterion not active or criterion met, convergence!
+            (!(Opt_params.i_max_DE) || (fabs(DE) < Opt_params.conv_max_DE)) &&
+            (!(Opt_params.i_max_force) || (max_force < Opt_params.conv_max_force)) &&
+            (!(Opt_params.i_rms_force) || (rms_force < Opt_params.conv_rms_force)) &&
+            (!(Opt_params.i_max_disp) || (max_disp < Opt_params.conv_max_disp)) &&
+            (!(Opt_params.i_rms_disp) || (rms_disp < Opt_params.conv_rms_disp))
+         )
+     ) {
+
     // This environment variable will store the number of iterations required 
     // for convergence; it allows the db() python utilities to collect this information
     psi::Process::environment.globals["OPTIMIZATION ITERATIONS"] = g_iteration();
-#endif
-
     return true; // structure is optimized!
   }
   else 
     return false;
+
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // convergence test is forces and either energy change or displacement
+  if ((max_force < Opt_params.conv_max_force) &&
+      ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
+    return true; // structure is optimized!
+  }
+  else 
+    return false;
+#endif
 }
 
 void OPT_DATA::summary(void) const {
@@ -186,7 +249,7 @@ void OPT_DATA::summary(void) const {
     max_force = array_abs_max(f, Nintco);
 
     dq =  g_dq_pointer(i);
-    max_disp = array_abs_max(f, Nintco);
+    max_disp = array_abs_max(dq, Nintco);
 
     fprintf(outfile,"\t %3d  %18.12lf  %18.12lf  %10.2e   %10.2e\n", i+1, g_energy(i),
       DE, max_force, max_disp);
@@ -238,6 +301,11 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     step_start = steps.size() - 1 - Opt_params.H_update_use_last;
     if (step_start < 0) step_start = 0;
   }
+
+  // Check to make sure that the last analytical second derivative isn't newer
+  if ( (step_this-step_start) > steps_since_last_H)
+    step_start = step_this - steps_since_last_H;
+
   fprintf(outfile," with previous %d gradient(s).\n", step_this-step_start);
 
   double *f_old, *x_old, *q_old, *dq, *dg;
@@ -281,8 +349,9 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       continue;
     }
 
+    // See  J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11 (1994)
+    //  and Helgaker, JCP 2002 for formula.
     if (Opt_params.H_update == OPT_PARAMS::BFGS) {
-// Trying formula in Helgaker JCP 2002.
       for (i=0; i<Nintco; ++i)
         for (j=0; j<Nintco; ++j)
           H_new[i][j] = H[i][j] + dg[i] * dg[j] / gq ;
@@ -297,33 +366,11 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
           H_new[i][j] -=  Hdq[i] * Hdq[j] / qHq ;
 
       free_array(Hdq);
-    // Schlegel 1987 Ab Initio Methods in Quantum Chemistry 
-    // To make formulas work for Hessian, i.e., the 2nd derivatives switch dx and dg
-/*
-      double **temp_mat, **X;
-      // Let a = dg^T.dq and X = (I - dg*dq^T) / a
-      // Then H = X * H_old * X^T + dg*dg^T/a .
-      X = unit_matrix(Nintco);
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
-          X[i][j] -= (dg[i] * dq[j]) / gq ;
-
-      temp_mat = init_matrix(Nintco,Nintco);
-      opt_matrix_mult(X, 0, H, 0, temp_mat, 0, Nintco, Nintco, Nintco, 0);
-      opt_matrix_mult(temp_mat, 0, X, 1, H_new, 0, Nintco, Nintco, Nintco, 0);
-
-      for (i=0; i<Nintco; ++i)
-        for (j=0; j<Nintco; ++j)
-          H_new[i][j] += dg[i] * dg[j] / gq ;
-
-      free_matrix(temp_mat);
-      free_matrix(X);
-*/
     }
     else if (Opt_params.H_update == OPT_PARAMS::MS) {
-      // Equations taken from Bofill article below
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
+
       for (i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
@@ -336,9 +383,9 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       free_array(Z);
     }
     else if (Opt_params.H_update == OPT_PARAMS::POWELL) {
-      // Equations taken from Bofill article below
       double * Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
+
       for (i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
@@ -351,11 +398,10 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       free_array(Z);
     }
     else if (Opt_params.H_update == OPT_PARAMS::BOFILL) {
-      /* This functions performs a Bofill update on the Hessian according to
-      J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11 (1994). */
       // Bofill = (1-phi) * MS + phi * Powell
       double *Z = init_array(Nintco);
       opt_matrix_mult(H, 0, &dq, 1, &Z, 1, Nintco, Nintco, 1, 0);
+
       for (i=0; i<Nintco; ++i)
         Z[i] = dg[i] - Z[i];
 
@@ -373,6 +419,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       for (i=0; i<Nintco; ++i)
         for (j=0; j<Nintco; ++j) // (phi * Powell)
           H_new[i][j] += phi * (-1.0*qz/(qq*qq)*dq[i]*dq[j] + (Z[i]*dq[j] + dq[i]*Z[j])/qq);
+
       free_array(Z);
     } // end BOFILL
 
@@ -390,8 +437,8 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
   
       for (i=0; i<Nintco; ++i) {
         for (j=0; j<Nintco; ++j) {
-          double val = H[i][j];
-          max = ((scale_limit*val) > max_limit) ? (scale_limit*val) : max_limit;
+          double val = fabs(scale_limit*H[i][j]);
+          max = ((val > max_limit) ? val : max_limit);
   
         if (fabs(H_new[i][j]) < max)
           H[i][j] += H_new[i][j];
@@ -407,6 +454,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
     }
 
     free_array(q_old);
+    zero_matrix(H_new, Nintco, Nintco);
   } // end loop over steps to use in update
   free_array(q);
   free_array(dq);
@@ -483,6 +531,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   if (!data_file_present) {
     fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n\n");
     iteration = 0;
+    steps_since_last_H = 0;
     consecutive_backsteps = 0;
   }
   else {
@@ -498,12 +547,14 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
 
     if ( (Nintco_old != Nintco) || (Ncart_old != Ncart) ) {
       iteration = 0;
+      steps_since_last_H = 0;
       consecutive_backsteps = 0;
       opt_io_close(0); // close and delete
     }
     else { // read in old optimization data
       opt_io_read_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
       opt_io_read_entry("iteration", (char *) &iteration, sizeof(int));
+      opt_io_read_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
       opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
       opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
       for (int i=0; i<iteration; ++i) {
@@ -516,6 +567,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   }
 
   ++iteration; // increment for current step
+  ++steps_since_last_H;
   // create memory for this, current step
   STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
   steps.push_back(one_step);
@@ -530,6 +582,7 @@ void OPT_DATA::write(void) {
   opt_io_write_entry("Ncart" , (char *) &Ncart , sizeof(int));
   opt_io_write_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
   opt_io_write_entry("iteration", (char *) &iteration, sizeof(int));
+  opt_io_write_entry("steps_since_last_H", (char *) &steps_since_last_H, sizeof(int));
   opt_io_write_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
   opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
 

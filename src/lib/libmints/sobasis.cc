@@ -149,7 +149,7 @@ void SOBasisSet::init()
             }
 
             // For each so shell obtain its angular momentum
-            ushell_am_[soshell] = basis_->shell(mol->unique(i), j)->am();
+            ushell_am_[soshell] = basis_->shell(mol->unique(i), j).am();
 
             soshell++;
         }
@@ -227,7 +227,7 @@ void SOBasisSet::init()
             int soshell0 = aoshell_to_soshell[aoshell0];
             int sofunc = nfunc_[soshell0][irrep];
 
-            int naofunc = include_pure_transform ? basis_->shell(aoshell0)->ncartesian() : basis_->shell(aoshell0)->nfunction();
+            int naofunc = include_pure_transform ? basis_->shell(aoshell0).ncartesian() : basis_->shell(aoshell0).nfunction();
             if (naofunc_[soshell0] && (naofunc_[soshell0] != naofunc)) {
                 throw PSIEXCEPTION("SOBasis::SOBasis: mismatch in naofunc");
             }

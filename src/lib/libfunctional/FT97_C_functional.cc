@@ -5,6 +5,7 @@
 *
 ***********************************************************/
 #include <libmints/mints.h>
+#include <libfock/points.h>
 #include "FT97_C_functional.h"
 #include <stdlib.h>
 #include <cmath>

@@ -37,12 +37,12 @@ void DFMP2::common_init()
     if (!reference_wavefunction_) {
         throw PSIEXCEPTION("DFMP2: Run SCF first");
     }
-    
+
     if (options_.get_str("REFERENCE") == "ROHF")
-        reference_wavefunction_->semicanonicalize();    
+        reference_wavefunction_->semicanonicalize();
 
     copy(reference_wavefunction_);
-    
+
 
     energies_["Singles Energy"] = 0.0;
     energies_["Opposite-Spin Energy"] = 0.0;
@@ -77,13 +77,13 @@ double DFMP2::compute_energy()
     form_energy();
     timer_off("DFMP2 Energy");
     print_energies();
-    
-    return energies_["Total Energy"]; 
+
+    return energies_["Total Energy"];
 }
 void DFMP2::form_singles()
 {
-    double E_singles_a = 0.0;    
-    double E_singles_b = 0.0;    
+    double E_singles_a = 0.0;
+    double E_singles_b = 0.0;
 
     SharedMatrix Caocc_a = Ca_subset("SO","ACTIVE_OCC");
     SharedMatrix Cavir_a = Ca_subset("SO","ACTIVE_VIR");
@@ -95,15 +95,15 @@ void DFMP2::form_singles()
     SharedVector eps_aocc_b = epsilon_b_subset("SO","ACTIVE_OCC");
     SharedVector eps_avir_b = epsilon_b_subset("SO","ACTIVE_VIR");
 
-    SharedMatrix Fia_a(new Matrix("Fia a", Caocc_a->colspi(), Cavir_a->colspi()));  
-    SharedMatrix Fia_b(new Matrix("Fia b", Caocc_b->colspi(), Cavir_b->colspi()));  
+    SharedMatrix Fia_a(new Matrix("Fia a", Caocc_a->colspi(), Cavir_a->colspi()));
+    SharedMatrix Fia_b(new Matrix("Fia b", Caocc_b->colspi(), Cavir_b->colspi()));
 
     double* temp = new double[Fa_->max_nrow() * (ULI) (Cavir_a->max_ncol() > Cavir_b->max_ncol() ?
         Cavir_a->max_ncol() : Cavir_b->max_ncol())];
 
     // Fia a
     for (int h = 0; h < Caocc_a->nirrep(); h++) {
-        
+
         int nso = Fa_->rowspi()[h];
         int naocc = Caocc_a->colspi()[h];
         int navir = Cavir_a->colspi()[h];
@@ -112,11 +112,11 @@ void DFMP2::form_singles()
 
         double** Fsop = Fa_->pointer(h);
         double** Fmop = Fia_a->pointer(h);
-        double** Cip = Caocc_a->pointer(h); 
-        double** Cap = Cavir_a->pointer(h); 
+        double** Cip = Caocc_a->pointer(h);
+        double** Cap = Cavir_a->pointer(h);
 
         C_DGEMM('N','N',nso,navir,nso,1.0,Fsop[0],nso,Cap[0],navir,0.0,temp,navir);
-        C_DGEMM('T','N',naocc,navir,nso,1.0,Cip[0],naocc,temp,navir,0.0,Fmop[0],navir); 
+        C_DGEMM('T','N',naocc,navir,nso,1.0,Cip[0],naocc,temp,navir,0.0,Fmop[0],navir);
 
         double* eps_i = eps_aocc_a->pointer(h);
         double* eps_a = eps_avir_a->pointer(h);
@@ -126,11 +126,11 @@ void DFMP2::form_singles()
                 E_singles_a -= Fmop[i][a] * Fmop[i][a] / (eps_a[a] - eps_i[i]);
             }
         }
-    }  
- 
+    }
+
     // Fia b
     for (int h = 0; h < Caocc_b->nirrep(); h++) {
-        
+
         int nso = Fb_->rowspi()[h];
         int naocc = Caocc_b->colspi()[h];
         int navir = Cavir_b->colspi()[h];
@@ -139,22 +139,22 @@ void DFMP2::form_singles()
 
         double** Fsop = Fb_->pointer(h);
         double** Fmop = Fia_b->pointer(h);
-        double** Cip = Caocc_b->pointer(h); 
-        double** Cap = Cavir_b->pointer(h); 
+        double** Cip = Caocc_b->pointer(h);
+        double** Cap = Cavir_b->pointer(h);
 
         double* eps_i = eps_aocc_b->pointer(h);
         double* eps_a = eps_avir_b->pointer(h);
 
         C_DGEMM('N','N',nso,navir,nso,1.0,Fsop[0],nso,Cap[0],navir,0.0,temp,navir);
-        C_DGEMM('T','N',naocc,navir,nso,1.0,Cip[0],naocc,temp,navir,0.0,Fmop[0],navir); 
-        
+        C_DGEMM('T','N',naocc,navir,nso,1.0,Cip[0],naocc,temp,navir,0.0,Fmop[0],navir);
+
         for (int i = 0; i < naocc; i++) {
             for (int a = 0; a < navir; a++) {
                 E_singles_b -= Fmop[i][a] * Fmop[i][a] / (eps_a[a] - eps_i[i]);
             }
         }
-    }  
- 
+    }
+
     delete[] temp;
 
     energies_["Singles Energy"] = E_singles_a + E_singles_b;
@@ -169,8 +169,8 @@ void DFMP2::form_singles()
         eps_aocc_b->print();
         eps_avir_b->print();
 
-        Fia_a->print(); 
-        Fia_b->print(); 
+        Fia_a->print();
+        Fia_b->print();
         fprintf(outfile, "  Alpha singles energy = %24.16E\n", E_singles_a);
         fprintf(outfile, "  Beta  singles energy = %24.16E\n\n", E_singles_b);
     }
@@ -178,7 +178,7 @@ void DFMP2::form_singles()
 SharedMatrix DFMP2::form_inverse_metric()
 {
     timer_on("DFMP2 Metric");
-    
+
     int naux = ribasis_->nbf();
 
     // Load inverse metric from the SCF three-index integral file if it exists
@@ -191,16 +191,16 @@ SharedMatrix DFMP2::form_inverse_metric()
         psio_->close(PSIF_DFSCF_BJ, 1);
 
         timer_off("DFMP2 Metric");
-    
+
         return Jm12;
 
     } else {
 
         // Form the inverse metric manually
-        boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true)); 
+        boost::shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_, true));
         metric->form_eig_inverse(1.0E-10);
-        SharedMatrix Jm12 = metric->get_metric();    
-    
+        SharedMatrix Jm12 = metric->get_metric();
+
         // Save inverse metric to the SCF three-index integral file if it exists
         if (options_.get_str("DF_INTS_IO") == "SAVE") {
             fprintf(outfile,"\t Will save fitting metric to file %d.\n\n", PSIF_DFSCF_BJ); fflush(outfile);
@@ -222,8 +222,8 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI ni
     if (doubles < 2L * Jmem) {
         throw PSIEXCEPTION("DFMP2: More memory required for tractable disk transpose");
     }
-    ULI rem = (doubles - Jmem) / 2L;    
-    ULI max_nia = (rem / naux); 
+    ULI rem = (doubles - Jmem) / 2L;
+    ULI max_nia = (rem / naux);
     max_nia = (max_nia > nia ? nia : max_nia);
     max_nia = (max_nia < 1L ? 1L : max_nia);
 
@@ -244,40 +244,40 @@ void DFMP2::apply_fitting(SharedMatrix Jm12, unsigned int file, ULI naux, ULI ni
     double** Aiap = Aia->pointer();
     double** Qiap = Qia->pointer();
     double** Jp   = Jm12->pointer();
-    
+
     // Loop through blocks
     psio_->open(file, PSIO_OPEN_OLD);
     psio_address next_AIA = PSIO_ZERO;
     psio_address next_QIA = PSIO_ZERO;
     for (int block = 0; block < ia_starts.size() - 1; block++) {
-        
+
         // Sizing
-        ULI ia_start = ia_starts[block];    
+        ULI ia_start = ia_starts[block];
         ULI ia_stop  = ia_starts[block+1];
         ULI ncols = ia_stop - ia_start;
 
 
         // Read Aia
-        timer_on("DFMP2 Aia Read");        
+        timer_on("DFMP2 Aia Read");
         for (ULI Q = 0; Q < naux; Q++) {
             next_AIA = psio_get_address(PSIO_ZERO,sizeof(double)*(Q*nia+ia_start));
             psio_->read(file,"(A|ia)",(char*)Aiap[Q],sizeof(double)*ncols,next_AIA,&next_AIA);
         }
-        timer_off("DFMP2 Aia Read");        
-       
+        timer_off("DFMP2 Aia Read");
+
         // Apply Fitting
-        timer_on("DFMP2 (Q|A)(A|ia)");        
+        timer_on("DFMP2 (Q|A)(A|ia)");
         C_DGEMM('T','N',ncols,naux,naux,1.0,Aiap[0],max_nia,Jp[0],naux,0.0,Qiap[0],naux);
-        timer_off("DFMP2 (Q|A)(A|ia)");        
+        timer_off("DFMP2 (Q|A)(A|ia)");
 
         // Write Qia
-        timer_on("DFMP2 Qia Write");        
+        timer_on("DFMP2 Qia Write");
         psio_->write(file,"(Q|ia)",(char*)Qiap[0],sizeof(double)*ncols*naux,next_QIA,&next_QIA);
-        timer_off("DFMP2 Qia Write");        
+        timer_off("DFMP2 Qia Write");
 
     }
     psio_->close(file, 1);
-} 
+}
 void DFMP2::print_energies()
 {
     energies_["Correlation Energy"] = energies_["Opposite-Spin Energy"] + energies_["Same-Spin Energy"] + energies_["Singles Energy"];
@@ -309,7 +309,7 @@ void DFMP2::print_energies()
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\n");
     fflush(outfile);
-   
+
     // LAB TODO: drop DF- in labels to match DF-SCF behavior
     Process::environment.globals["CURRENT ENERGY"] = energies_["Total Energy"];
     Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
@@ -381,7 +381,7 @@ void RDFMP2::form_Aia()
     int nthread = 1;
     #ifdef _OPENMP
         if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
-            nthread = omp_get_max_threads(); 
+            nthread = omp_get_max_threads();
         } else {
             nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
@@ -404,9 +404,9 @@ void RDFMP2::form_Aia()
     int maxQ = ribasis_->max_function_per_shell();
 
     // Max block size in naux
-    ULI Amn_cost_per_row = nso * (ULI) nso;    
-    ULI Ami_cost_per_row = nso * (ULI) naocc;    
-    ULI Aia_cost_per_row = naocc * (ULI) navir;    
+    ULI Amn_cost_per_row = nso * (ULI) nso;
+    ULI Ami_cost_per_row = nso * (ULI) naocc;
+    ULI Aia_cost_per_row = naocc * (ULI) navir;
     ULI total_cost_per_row = Amn_cost_per_row + Ami_cost_per_row + Aia_cost_per_row;
     ULI doubles = ((ULI) (options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
     ULI max_temp = doubles / (total_cost_per_row);
@@ -418,7 +418,7 @@ void RDFMP2::form_Aia()
     int counter = 0;
     block_Q_starts.push_back(0);
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
-        int nQ = ribasis_->shell(Q)->nfunction();
+        int nQ = ribasis_->shell(Q).nfunction();
         if (counter + nQ > max_naux) {
             counter = 0;
             block_Q_starts.push_back(Q);
@@ -426,7 +426,7 @@ void RDFMP2::form_Aia()
         counter += nQ;
     }
     block_Q_starts.push_back(ribasis_->nshell());
-    
+
     // Tensor blocks
     SharedMatrix Amn(new Matrix("(A|mn) Block", max_naux, nso * (ULI) nso));
     SharedMatrix Ami(new Matrix("(A|mi) Block", max_naux, nso * (ULI) naocc));
@@ -444,16 +444,16 @@ void RDFMP2::form_Aia()
 
     // Loop over blocks of Qshell
     for (int block = 0; block < block_Q_starts.size() - 1; block++) {
-        
+
         // Block sizing/offsets
         int Qstart = block_Q_starts[block];
         int Qstop  = block_Q_starts[block+1];
-        int qoff   = ribasis_->shell(Qstart)->function_index();
-        int nrows  = (Qstop == ribasis_->nshell() ? 
-                     ribasis_->nbf() - 
-                     ribasis_->shell(Qstart)->function_index() : 
-                     ribasis_->shell(Qstop)->function_index() - 
-                     ribasis_->shell(Qstart)->function_index()); 
+        int qoff   = ribasis_->shell(Qstart).function_index();
+        int nrows  = (Qstop == ribasis_->nshell() ?
+                     ribasis_->nbf() -
+                     ribasis_->shell(Qstart).function_index() :
+                     ribasis_->shell(Qstop).function_index() -
+                     ribasis_->shell(Qstart).function_index());
 
         // Clear Amn for Schwarz sieve
         ::memset((void*) Amnp[0], '\0', sizeof(double) * nrows * nso * nso);
@@ -474,14 +474,14 @@ void RDFMP2::form_Aia()
             std::pair<int,int> pair = shell_pairs[MN];
             int M = pair.first;
             int N = pair.second;
-        
-            int nq = ribasis_->shell(Q)->nfunction();       
-            int nm = basisset_->shell(M)->nfunction();       
-            int nn = basisset_->shell(N)->nfunction();       
-        
-            int sq =  ribasis_->shell(Q)->function_index();       
-            int sm =  basisset_->shell(M)->function_index();       
-            int sn =  basisset_->shell(N)->function_index();       
+
+            int nq = ribasis_->shell(Q).nfunction();
+            int nm = basisset_->shell(M).nfunction();
+            int nn = basisset_->shell(N).nfunction();
+
+            int sq =  ribasis_->shell(Q).function_index();
+            int sm =  basisset_->shell(M).function_index();
+            int sn =  basisset_->shell(N).function_index();
 
             eri[thread]->compute_shell(Q,0,M,N);
 
@@ -494,17 +494,17 @@ void RDFMP2::form_Aia()
                     }
                 }
             }
-        }    
+        }
         timer_off("DFMP2 (A|mn)");
 
         // Compute (A|mi) tensor block (A|mn) C_ni
         timer_on("DFMP2 (A|mn)C_mi");
         C_DGEMM('N','N',nrows*(ULI)nso,naocc,nso,1.0,Amnp[0],nso,Caoccp[0],naocc,0.0,Amip[0],naocc);
         timer_off("DFMP2 (A|mn)C_mi");
-    
+
         // Compute (A|ia) tensor block (A|ia) = (A|mi) C_ma
         timer_on("DFMP2 (A|mi)C_na");
-        #pragma omp parallel for 
+        #pragma omp parallel for
         for (int row = 0; row < nrows; row++) {
             C_DGEMM('T','N',naocc,navir,nso,1.0,Amip[row],naocc,Cavirp[0],navir,0.0,Aiap[row],navir);
         }
@@ -521,7 +521,7 @@ void RDFMP2::form_Aia()
 void RDFMP2::form_Qia()
 {
     SharedMatrix Jm12 = form_inverse_metric();
-    apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_->colspi()[0] * (ULI) Cavir_->colspi()[0]);  
+    apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_->colspi()[0] * (ULI) Cavir_->colspi()[0]);
 }
 void RDFMP2::form_energy()
 {
@@ -534,7 +534,7 @@ void RDFMP2::form_energy()
     int naocc = Caocc_->colspi()[0];
     int navir = Cavir_->colspi()[0];
 
-    // Thread considerations    
+    // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
@@ -551,16 +551,16 @@ void RDFMP2::form_energy()
     ULI max_i = remainder / (2L * Qa_memory);
     max_i = (max_i > naocc? naocc : max_i);
     max_i = (max_i < 1L ? 1L : max_i);
-      
+
     // Blocks
     std::vector<ULI> i_starts;
-    i_starts.push_back(0L); 
+    i_starts.push_back(0L);
     for (ULI i = 0; i < naocc; i += max_i) {
         if (i + max_i >= naocc) {
             i_starts.push_back(naocc);
         } else {
             i_starts.push_back(i + max_i);
-        } 
+        }
     }
 
     // Tensor blocks
@@ -568,7 +568,7 @@ void RDFMP2::form_energy()
     SharedMatrix Qjb (new Matrix("Qjb", max_i * (ULI) navir, naux));
     double** Qiap = Qia->pointer();
     double** Qjbp = Qjb->pointer();
-    
+
     std::vector<SharedMatrix> Iab;
     for (int i = 0; i < nthread; i++) {
         Iab.push_back(SharedMatrix(new Matrix("Iab",navir,navir)));
@@ -580,8 +580,8 @@ void RDFMP2::form_energy()
     // Loop through pairs of blocks
     psio_->open(PSIF_DFMP2_AIA,PSIO_OPEN_OLD);
     psio_address next_AIA = PSIO_ZERO;
-    for (int block_i = 0; block_i < i_starts.size() - 1; block_i++) { 
-        
+    for (int block_i = 0; block_i < i_starts.size() - 1; block_i++) {
+
         // Sizing
         ULI istart = i_starts[block_i];
         ULI istop  = i_starts[block_i+1];
@@ -612,12 +612,12 @@ void RDFMP2::form_energy()
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss, e_os)
             for (long int ij = 0L; ij < ni * nj; ij++) {
-        
+
                 // Sizing
                 ULI i = ij / nj + istart;
                 ULI j = ij % nj + jstart;
                 if (j > i) continue;
-        
+
                 double perm_factor = (i == j ? 1.0 : 2.0);
 
                 // Which thread is this?
@@ -629,18 +629,18 @@ void RDFMP2::form_energy()
 
                 // Form the integral block (ia|jb) = (ia|Q)(Q|jb)
                 C_DGEMM('N','T',navir,navir,naux,1.0,Qiap[(i-istart)*navir],naux,Qjbp[(j-jstart)*navir],naux,0.0,Iabp[0],navir);
-    
+
                 // Add the MP2 energy contributions
                 for (int a = 0; a < navir; a++) {
                     for (int b = 0; b < navir; b++) {
                         double iajb = Iabp[a][b];
                         double ibja = Iabp[b][a];
                         double denom = - perm_factor / (eps_avirp[a] + eps_avirp[b] - eps_aoccp[i] - eps_aoccp[j]);
-        
-                        e_ss += (iajb*iajb - iajb*ibja) * denom;                 
-                        e_os += (iajb*iajb) * denom;                 
+
+                        e_ss += (iajb*iajb - iajb*ibja) * denom;
+                        e_os += (iajb*iajb) * denom;
                     }
-                }            
+                }
             }
         }
     }
@@ -720,7 +720,7 @@ void UDFMP2::form_Aia()
     int nthread = 1;
     #ifdef _OPENMP
         if (options_.get_int("DF_INTS_NUM_THREADS") == 0) {
-            nthread = omp_get_max_threads(); 
+            nthread = omp_get_max_threads();
         } else {
             nthread = options_.get_int("DF_INTS_NUM_THREADS");
         }
@@ -747,7 +747,7 @@ void UDFMP2::form_Aia()
     int maxQ = ribasis_->max_function_per_shell();
 
     // Max block size in naux
-    ULI Amn_cost_per_row = nso * (ULI) nso;    
+    ULI Amn_cost_per_row = nso * (ULI) nso;
     ULI Ami_cost_per_row = nso * (ULI) naocc;
     ULI Aia_cost_per_row = naocc * (ULI) navir;
     ULI total_cost_per_row = Amn_cost_per_row + Ami_cost_per_row + Aia_cost_per_row;
@@ -761,7 +761,7 @@ void UDFMP2::form_Aia()
     int counter = 0;
     block_Q_starts.push_back(0);
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
-        int nQ = ribasis_->shell(Q)->nfunction();
+        int nQ = ribasis_->shell(Q).nfunction();
         if (counter + nQ > max_naux) {
             counter = 0;
             block_Q_starts.push_back(Q);
@@ -769,7 +769,7 @@ void UDFMP2::form_Aia()
         counter += nQ;
     }
     block_Q_starts.push_back(ribasis_->nshell());
-    
+
     // Tensor blocks
     SharedMatrix Amn(new Matrix("(A|mn) Block", max_naux, nso * (ULI) nso));
     SharedMatrix Ami(new Matrix("(A|mi) Block", max_naux, nso * (ULI) naocc));
@@ -791,16 +791,16 @@ void UDFMP2::form_Aia()
 
     // Loop over blocks of Qshell
     for (int block = 0; block < block_Q_starts.size() - 1; block++) {
-        
+
         // Block sizing/offsets
         int Qstart = block_Q_starts[block];
         int Qstop  = block_Q_starts[block+1];
-        int qoff   = ribasis_->shell(Qstart)->function_index();
-        int nrows  = (Qstop == ribasis_->nshell() ? 
-                     ribasis_->nbf() - 
-                     ribasis_->shell(Qstart)->function_index() : 
-                     ribasis_->shell(Qstop)->function_index() - 
-                     ribasis_->shell(Qstart)->function_index()); 
+        int qoff   = ribasis_->shell(Qstart).function_index();
+        int nrows  = (Qstop == ribasis_->nshell() ?
+                     ribasis_->nbf() -
+                     ribasis_->shell(Qstart).function_index() :
+                     ribasis_->shell(Qstop).function_index() -
+                     ribasis_->shell(Qstart).function_index());
 
         // Clear Amn for Schwarz sieve
         ::memset((void*) Amnp[0], '\0', sizeof(double) * nrows * nso * nso);
@@ -821,14 +821,14 @@ void UDFMP2::form_Aia()
             std::pair<int,int> pair = shell_pairs[MN];
             int M = pair.first;
             int N = pair.second;
-        
-            int nq = ribasis_->shell(Q)->nfunction();       
-            int nm = basisset_->shell(M)->nfunction();       
-            int nn = basisset_->shell(N)->nfunction();       
-        
-            int sq =  ribasis_->shell(Q)->function_index();       
-            int sm =  basisset_->shell(M)->function_index();       
-            int sn =  basisset_->shell(N)->function_index();       
+
+            int nq = ribasis_->shell(Q).nfunction();
+            int nm = basisset_->shell(M).nfunction();
+            int nn = basisset_->shell(N).nfunction();
+
+            int sq =  ribasis_->shell(Q).function_index();
+            int sm =  basisset_->shell(M).function_index();
+            int sn =  basisset_->shell(N).function_index();
 
             eri[thread]->compute_shell(Q,0,M,N);
 
@@ -841,7 +841,7 @@ void UDFMP2::form_Aia()
                     }
                 }
             }
-        }    
+        }
         timer_off("DFMP2 (A|mn)");
 
         // => Alpha Case <= //
@@ -850,10 +850,10 @@ void UDFMP2::form_Aia()
         timer_on("DFMP2 (A|mn)C_mi");
         C_DGEMM('N','N',nrows*(ULI)nso,naocc_a,nso,1.0,Amnp[0],nso,Caoccap[0],naocc_a,0.0,Amip[0],naocc);
         timer_off("DFMP2 (A|mn)C_mi");
-    
+
         // Compute (A|ia) tensor block (A|ia) = (A|mi) C_ma
         timer_on("DFMP2 (A|mi)C_na");
-        #pragma omp parallel for 
+        #pragma omp parallel for
         for (int row = 0; row < nrows; row++) {
             C_DGEMM('T','N',naocc_a,navir_a,nso,1.0,Amip[row],naocc,Cavirap[0],navir_a,0.0,&Aiap[0][row*(ULI)naocc_a*navir_a],navir_a);
         }
@@ -870,10 +870,10 @@ void UDFMP2::form_Aia()
         timer_on("DFMP2 (A|mn)C_mi");
         C_DGEMM('N','N',nrows*(ULI)nso,naocc_b,nso,1.0,Amnp[0],nso,Caoccbp[0],naocc_b,0.0,Amip[0],naocc);
         timer_off("DFMP2 (A|mn)C_mi");
-    
+
         // Compute (A|ia) tensor block (A|ia) = (A|mi) C_ma
         timer_on("DFMP2 (A|mi)C_na");
-        #pragma omp parallel for 
+        #pragma omp parallel for
         for (int row = 0; row < nrows; row++) {
             C_DGEMM('T','N',naocc_b,navir_b,nso,1.0,Amip[row],naocc,Cavirbp[0],navir_b,0.0,&Aiap[0][row*(ULI)naocc_b*navir_b],navir_b);
         }
@@ -890,9 +890,9 @@ void UDFMP2::form_Aia()
 }
 void UDFMP2::form_Qia()
 {
-    SharedMatrix Jm12 = form_inverse_metric(); 
-    apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_a_->colspi()[0] * (ULI) Cavir_a_->colspi()[0]);  
-    apply_fitting(Jm12, PSIF_DFMP2_QIA, ribasis_->nbf(), Caocc_b_->colspi()[0] * (ULI) Cavir_b_->colspi()[0]);  
+    SharedMatrix Jm12 = form_inverse_metric();
+    apply_fitting(Jm12, PSIF_DFMP2_AIA, ribasis_->nbf(), Caocc_a_->colspi()[0] * (ULI) Cavir_a_->colspi()[0]);
+    apply_fitting(Jm12, PSIF_DFMP2_QIA, ribasis_->nbf(), Caocc_b_->colspi()[0] * (ULI) Cavir_b_->colspi()[0]);
 }
 void UDFMP2::form_energy()
 {
@@ -907,7 +907,7 @@ void UDFMP2::form_energy()
     int naocc = Caocc_a_->colspi()[0];
     int navir = Cavir_a_->colspi()[0];
 
-    // Thread considerations    
+    // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
@@ -924,16 +924,16 @@ void UDFMP2::form_energy()
     ULI max_i = remainder / (2L * Qa_memory);
     max_i = (max_i > naocc? naocc : max_i);
     max_i = (max_i < 1L ? 1L : max_i);
-      
+
     // Blocks
     std::vector<ULI> i_starts;
-    i_starts.push_back(0L); 
+    i_starts.push_back(0L);
     for (ULI i = 0; i < naocc; i += max_i) {
         if (i + max_i >= naocc) {
             i_starts.push_back(naocc);
         } else {
             i_starts.push_back(i + max_i);
-        } 
+        }
     }
 
     // Tensor blocks
@@ -941,7 +941,7 @@ void UDFMP2::form_energy()
     SharedMatrix Qjb (new Matrix("Qjb", max_i * (ULI) navir, naux));
     double** Qiap = Qia->pointer();
     double** Qjbp = Qjb->pointer();
-    
+
     std::vector<SharedMatrix> Iab;
     for (int i = 0; i < nthread; i++) {
         Iab.push_back(SharedMatrix(new Matrix("Iab",navir,navir)));
@@ -953,8 +953,8 @@ void UDFMP2::form_energy()
     // Loop through pairs of blocks
     psio_->open(PSIF_DFMP2_AIA,PSIO_OPEN_OLD);
     psio_address next_AIA = PSIO_ZERO;
-    for (int block_i = 0; block_i < i_starts.size() - 1; block_i++) { 
-        
+    for (int block_i = 0; block_i < i_starts.size() - 1; block_i++) {
+
         // Sizing
         ULI istart = i_starts[block_i];
         ULI istop  = i_starts[block_i+1];
@@ -985,12 +985,12 @@ void UDFMP2::form_energy()
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss)
             for (long int ij = 0L; ij < ni * nj; ij++) {
-        
+
                 // Sizing
                 ULI i = ij / nj + istart;
                 ULI j = ij % nj + jstart;
                 if (j > i) continue;
-        
+
                 double perm_factor = (i == j ? 1.0 : 2.0);
 
                 // Which thread is this?
@@ -1002,17 +1002,17 @@ void UDFMP2::form_energy()
 
                 // Form the integral block (ia|jb) = (ia|Q)(Q|jb)
                 C_DGEMM('N','T',navir,navir,naux,1.0,Qiap[(i-istart)*navir],naux,Qjbp[(j-jstart)*navir],naux,0.0,Iabp[0],navir);
-    
+
                 // Add the MP2 energy contributions
                 for (int a = 0; a < navir; a++) {
                     for (int b = 0; b < navir; b++) {
                         double iajb = Iabp[a][b];
                         double ibja = Iabp[b][a];
                         double denom = - perm_factor / (eps_avirp[a] + eps_avirp[b] - eps_aoccp[i] - eps_aoccp[j]);
-        
-                        e_ss += 0.5*(iajb*iajb - iajb*ibja) * denom;                 
+
+                        e_ss += 0.5*(iajb*iajb - iajb*ibja) * denom;
                     }
-                }            
+                }
             }
         }
     }
@@ -1027,7 +1027,7 @@ void UDFMP2::form_energy()
     int naocc = Caocc_b_->colspi()[0];
     int navir = Cavir_b_->colspi()[0];
 
-    // Thread considerations    
+    // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
@@ -1044,16 +1044,16 @@ void UDFMP2::form_energy()
     ULI max_i = remainder / (2L * Qa_memory);
     max_i = (max_i > naocc? naocc : max_i);
     max_i = (max_i < 1L ? 1L : max_i);
-      
+
     // Blocks
     std::vector<ULI> i_starts;
-    i_starts.push_back(0L); 
+    i_starts.push_back(0L);
     for (ULI i = 0; i < naocc; i += max_i) {
         if (i + max_i >= naocc) {
             i_starts.push_back(naocc);
         } else {
             i_starts.push_back(i + max_i);
-        } 
+        }
     }
 
     // Tensor blocks
@@ -1061,7 +1061,7 @@ void UDFMP2::form_energy()
     SharedMatrix Qjb (new Matrix("Qjb", max_i * (ULI) navir, naux));
     double** Qiap = Qia->pointer();
     double** Qjbp = Qjb->pointer();
-    
+
     std::vector<SharedMatrix> Iab;
     for (int i = 0; i < nthread; i++) {
         Iab.push_back(SharedMatrix(new Matrix("Iab",navir,navir)));
@@ -1073,8 +1073,8 @@ void UDFMP2::form_energy()
     // Loop through pairs of blocks
     psio_->open(PSIF_DFMP2_QIA,PSIO_OPEN_OLD);
     psio_address next_AIA = PSIO_ZERO;
-    for (int block_i = 0; block_i < i_starts.size() - 1; block_i++) { 
-        
+    for (int block_i = 0; block_i < i_starts.size() - 1; block_i++) {
+
         // Sizing
         ULI istart = i_starts[block_i];
         ULI istop  = i_starts[block_i+1];
@@ -1105,12 +1105,12 @@ void UDFMP2::form_energy()
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_ss)
             for (long int ij = 0L; ij < ni * nj; ij++) {
-        
+
                 // Sizing
                 ULI i = ij / nj + istart;
                 ULI j = ij % nj + jstart;
                 if (j > i) continue;
-        
+
                 double perm_factor = (i == j ? 1.0 : 2.0);
 
                 // Which thread is this?
@@ -1122,17 +1122,17 @@ void UDFMP2::form_energy()
 
                 // Form the integral block (ia|jb) = (ia|Q)(Q|jb)
                 C_DGEMM('N','T',navir,navir,naux,1.0,Qiap[(i-istart)*navir],naux,Qjbp[(j-jstart)*navir],naux,0.0,Iabp[0],navir);
-    
+
                 // Add the MP2 energy contributions
                 for (int a = 0; a < navir; a++) {
                     for (int b = 0; b < navir; b++) {
                         double iajb = Iabp[a][b];
                         double ibja = Iabp[b][a];
                         double denom = - perm_factor / (eps_avirp[a] + eps_avirp[b] - eps_aoccp[i] - eps_aoccp[j]);
-        
-                        e_ss += 0.5*(iajb*iajb - iajb*ibja) * denom;                 
+
+                        e_ss += 0.5*(iajb*iajb - iajb*ibja) * denom;
                     }
-                }            
+                }
             }
         }
     }
@@ -1151,7 +1151,7 @@ void UDFMP2::form_energy()
     int naocc = (naocc_a > naocc_b ? naocc_a : naocc_b);
     int navir = (navir_a > navir_b ? navir_a : navir_b);
 
-    // Thread considerations    
+    // Thread considerations
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
@@ -1169,25 +1169,25 @@ void UDFMP2::form_energy()
     ULI max_i = remainder / (Qa_memory + Qb_memory);
     max_i = (max_i > naocc? naocc : max_i);
     max_i = (max_i < 1L ? 1L : max_i);
-      
+
     // Blocks
     std::vector<ULI> i_starts_a;
-    i_starts_a.push_back(0L); 
+    i_starts_a.push_back(0L);
     for (ULI i = 0; i < naocc_a; i += max_i) {
         if (i + max_i >= naocc_a) {
             i_starts_a.push_back(naocc_a);
         } else {
             i_starts_a.push_back(i + max_i);
-        } 
+        }
     }
     std::vector<ULI> i_starts_b;
-    i_starts_b.push_back(0L); 
+    i_starts_b.push_back(0L);
     for (ULI i = 0; i < naocc_b; i += max_i) {
         if (i + max_i >= naocc_b) {
             i_starts_b.push_back(naocc_b);
         } else {
             i_starts_b.push_back(i + max_i);
-        } 
+        }
     }
 
     // Tensor blocks
@@ -1195,7 +1195,7 @@ void UDFMP2::form_energy()
     SharedMatrix Qjb (new Matrix("Qjb", max_i * (ULI) navir_b, naux));
     double** Qiap = Qia->pointer();
     double** Qjbp = Qjb->pointer();
-    
+
     std::vector<SharedMatrix> Iab;
     for (int i = 0; i < nthread; i++) {
         Iab.push_back(SharedMatrix(new Matrix("Iab",navir_a,navir_b)));
@@ -1211,8 +1211,8 @@ void UDFMP2::form_energy()
     psio_->open(PSIF_DFMP2_QIA,PSIO_OPEN_OLD);
     psio_address next_AIA = PSIO_ZERO;
     psio_address next_QIA = PSIO_ZERO;
-    for (int block_i = 0; block_i < i_starts_a.size() - 1; block_i++) { 
-        
+    for (int block_i = 0; block_i < i_starts_a.size() - 1; block_i++) {
+
         // Sizing
         ULI istart = i_starts_a[block_i];
         ULI istop  = i_starts_a[block_i+1];
@@ -1239,7 +1239,7 @@ void UDFMP2::form_energy()
 
             #pragma omp parallel for schedule(dynamic) num_threads(nthread) reduction(+: e_os)
             for (long int ij = 0L; ij < ni * nj; ij++) {
-        
+
                 // Sizing
                 ULI i = ij / nj + istart;
                 ULI j = ij % nj + jstart;
@@ -1253,15 +1253,15 @@ void UDFMP2::form_energy()
 
                 // Form the integral block (ia|jb) = (ia|Q)(Q|jb)
                 C_DGEMM('N','T',navir_a,navir_b,naux,1.0,Qiap[(i-istart)*navir_a],naux,Qjbp[(j-jstart)*navir_b],naux,0.0,Iabp[0],navir_b);
-    
+
                 // Add the MP2 energy contributions
                 for (int a = 0; a < navir_a; a++) {
                     for (int b = 0; b < navir_b; b++) {
                         double iajb = Iabp[a][b];
                         double denom = - 1.0 / (eps_avirap[a] + eps_avirbp[b] - eps_aoccap[i] - eps_aoccbp[j]);
-                        e_os += (iajb*iajb) * denom;                 
+                        e_os += (iajb*iajb) * denom;
                     }
-                }            
+                }
             }
         }
     }

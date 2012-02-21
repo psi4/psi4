@@ -78,6 +78,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
+  /*- Frequency with which to compute the full Hessian in the course
+  of a geometry optimization. 0 means to compute the initial Hessian only, 1
+  means recompute every step, and N means recompute every N steps. The
+  default (-1) is to never compute the full Hessian. -*/
+  options.add_int("FULL_HESS_EVERY", -1);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -902,6 +907,123 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The blocking scheme for DFT. -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
   }
+  if (name == "CPHF"|| options.read_globals()) {
+    /*- The amount of information printed
+        to the output file -*/
+    options.add_int("PRINT", 1);
+    /*- The amount of debug information printed
+        to the output file -*/
+    options.add_int("DEBUG", 0);
+    /*- What app to test?
+      -*/
+    options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF RCPKS RTDA RTDDFT");
+    /*- Do singlet states? Default true
+     -*/
+    options.add_bool("DO_SINGLETS", true);
+    /*- Do triplet states? Default true
+     -*/
+    options.add_bool("DO_TRIPLETS", true);
+    /*- Do explicit hamiltonian only? -*/
+    options.add_bool("EXPLICIT_HAMILTONIAN", false);
+    /*- Minimum singles amplitude to print in 
+        CIS analysis
+     -*/
+    options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
+    /*- Memory safety factor for allocating JK
+    -*/
+    options.add_double("TDHF_MEM_SAFETY_FACTOR",0.75);
+    /*- Memory safety factor for allocating JK
+    -*/
+    options.add_double("CIS_MEM_SAFETY_FACTOR",0.75);
+    /*- Memory safety factor for allocating JK
+    -*/
+    options.add_double("CPHF_MEM_SAFETY_FACTOR",0.75);
+    /*- Which states to save AO OPDMs for?
+     *   Positive - Singlets
+     *   Negative - Triplets
+     * -*/
+    options.add("CIS_OPDM_STATES", new ArrayType());
+    /*- Which states to save AO transition OPDMs for?
+     *   Positive - Singlets
+     *   Negative - Triplets
+     * -*/
+    options.add("CIS_TOPDM_STATES", new ArrayType());
+    /*- Which states to save AO difference OPDMs for?
+     *   Positive - Singlets
+     *   Negative - Triplets
+     * -*/
+    options.add("CIS_DOPDM_STATES", new ArrayType());
+    /*- Which states to save AO Natural Orbitals for?
+     *   Positive - Singlets
+     *   Negative - Triplets
+     * -*/
+    options.add("CIS_NO_STATES", new ArrayType());
+    /*- Which states to save AD Matrices for?
+     *   Positive - Singlets
+     *   Negative - Triplets
+     * -*/
+    options.add("CIS_AD_STATES", new ArrayType());
+    /*- Which tasks to run CPHF For
+     *  Valid choices:
+     *  -Polarizability
+     * -*/
+    options.add("CPHF_TASKS", new ArrayType());
+    /*- The maximum number of integral threads (0 for omp_get_max_threads()) 
+     -*/
+    options.add_int("OMP_N_THREAD", 0);
+    /*- The schwarz cutoff value 
+     -*/
+    options.add_double("SCHWARZ_CUTOFF", 1.0E-12);
+    /*- The maximum reciprocal condition allowed in the fitting metric 
+     -*/
+    options.add_double("FITTING_CONDITION", 1.0E-12);
+    /*- Fitting algorithm (0 for old, 1 for new)
+     -*/
+    options.add_int("FITTING_ALGORITHM", 0);
+    /*- SCF Type 
+     -*/
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF GPUDF");
+    /*- Auxiliary basis for SCF 
+     -*/
+    options.add_str("RI_BASIS_SCF", ""); 
+    /*- Solver maximum iterations
+     -*/
+    options.add_int("SOLVER_MAXITER",100);
+    /*- Solver convergence threshold (max 2-norm).  See the note at the beginning of Section \ref{keywords}.
+     -*/
+    options.add_double("SOLVER_CONVERGENCE",1.0E-6);
+    /*- DL Solver number of roots 
+     -*/
+    options.add_int("SOLVER_N_ROOT",1);
+    /*- DL Solver number of guesses
+     -*/
+    options.add_int("SOLVER_N_GUESS",1);
+    /*- DL Solver number of subspace vectors to collapse to
+     -*/
+    options.add_int("SOLVER_MIN_SUBSPACE",2);
+    /*- DL Solver maximum number of subspace vectors 
+     -*/
+    options.add_int("SOLVER_MAX_SUBSPACE",6);
+    /*- DL Solver minimum corrector norm to add to subspace
+     -*/
+    options.add_double("SOLVER_NORM",1.0E-6);
+    /*- Solver precondition type
+     -*/
+    options.add_str("SOLVER_PRECONDITION","JACOBI","SUBSPACE JACOBI NONE");
+    /*- Solver type (for interchangeable solvers)
+     -*/
+    options.add_str("SOLVER_TYPE", "DL", "DL RAYLEIGH"); 
+    /*- Solver precondtion max steps
+    -*/
+    options.add_int("SOLVER_PRECONDITION_MAXITER", 1);
+    /*- Solver precondition step type
+    -*/
+    options.add_str("SOLVER_PRECONDITION_STEPS", "TRIANGULAR", "CONSTANT TRIANGULAR");   
+    /*- Solver residue or eigenvector delta
+    -*/
+    options.add_str("SOLVER_QUANTITY", "RESIDUAL", "EIGENVECTOR RESIDUAL");
+
+  }
   if (name == "MP2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
           compute RHF/ROHF/UHF energies, and RHF gradient/property computations.  However, given the small errors introduced,
@@ -1644,43 +1766,36 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEMICANONICAL", true);
   }
   if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
-      /*- The amount of information printed
-             to the output file.  not used -*/
-      options.add_int("PRINT", 1);
-      /*- The amount of information printed
-             to the output file. not used -*/
-      options.add_int("DEBUG", 0);
-      /*- default convergence of amplitudes-*/
-      options.add_double("R_CONVERGENCE", 1.0e-7);
-      /*- default maximum iterations -*/
-      options.add_int("MAXITER", 100);
-      /*- default number of DIIS iterations -*/
-      options.add_int("DIIS_MAX_VECS", 8);
-      /*- for GPU code, cap the amount of memory registerred with the GPU -*/
-      options.add_int("MAX_MAPPED_MEMORY", 1000);
-      /*- compute triples by default */
-      options.add_bool("COMPUTE_TRIPLES", true);
-      /*- cutoff for occupation of MP2 NO orbitals in (T) -*/
-      options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
-      /*- triples by default use the full virtual space -*/
-      options.add_bool("TRIPLES_USE_NOS", false);
-      /*- number of threads for triples, not set by default -*/
-      options.add_int("NUM_THREADS", 1);
-      /*- generate density-fitted integrals so we can skip
-          transqt2() and OutOfCoreSort(). default false */
-      options.add_bool("DF_INTEGRALS",false);
-      /*- SCS MP2, default true -*/
-      options.add_bool("SCS_MP2", true);
-      /*- SCS CCSD, default true -*/
-      options.add_bool("SCS_CCSD", true);
-      /*- opposite-spin scaling factor -*/
-      options.add_double("MP2_SCALE_OS",1.20);
-      /*- same-spin scaling factor -*/
-      options.add_double("MP2_SCALE_SS",1.0/3.0);
-      /*- oppposite-spin scaling factor -*/
-      options.add_double("CC_SCALE_OS", 1.27);
-      /*- same-spin scaling factor -*/
-      options.add_double("CC_SCALE_SS",1.13);
+     /*- Wavefunction type !expert -*/
+     options.add_str("WFN", "CCSD");
+     /*- Convergence for the CC amplitudes-*/
+     options.add_double("R_CONVERGENCE", 1.0e-7);
+     /*- Maximum number of CC iterations -*/
+     options.add_int("MAXITER", 50);
+     /*- Desired number of DIIS vectors -*/
+     options.add_int("DIIS_MAX_VECS", 8);
+     /*- For GPU code, cap the amount of memory registerred with the GPU -*/
+     options.add_int("MAX_MAPPED_MEMORY", 1000);
+     /*- Compute triples contribution? */
+     options.add_bool("COMPUTE_TRIPLES", true);
+     /*- Use MP2 NOs to truncate virtual space for (T)? -*/
+     options.add_bool("TRIPLES_USE_NOS", false);
+     /*- Cutoff for occupation of MP2 NO orbitals in (T) -*/
+     options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
+     /*- Desired number of threads. This will override OMP_NUM_THREADS in (T) -*/
+     options.add_int("NUM_THREADS", 1);
+     /*- Do SCS-MP2? -*/
+     options.add_bool("SCS_MP2", false);
+     /*- Do SCS-CCSD? -*/
+     options.add_bool("SCS_CCSD", false);
+     /*- Opposite-spin scaling factor for SCS-MP2 -*/
+     options.add_double("MP2_SCALE_OS",1.20);
+     /*- Same-spin scaling factor for SCS-MP2 -*/
+     options.add_double("MP2_SCALE_SS",1.0/3.0);
+     /*- Oppposite-spin scaling factor for SCS-CCSD -*/
+     options.add_double("CC_SCALE_OS", 1.27);
+     /*- Same-spin scaling factor for SCS-CCSD -*/
+     options.add_double("CC_SCALE_SS",1.13);
   }
   if(name == "CIS"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
@@ -2025,6 +2140,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
     /*- How to perform MP2_CCSD computations -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
+    /*- Whether to use spin symmetry to map equivalent configurations onto each other, for efficiency !expert -*/
+    options.add_bool("USE_SPIN_SYMMETRY", true);
     /*- The number of frozen occupied orbitals per irrep -*/
     options.add("FROZEN_DOCC", new ArrayType());
     /*- The number of doubly occupied orbitals per irrep -*/
@@ -2067,8 +2184,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Do only generate the internal coordinates and then stop? -*/
       options.add_bool("INTCOS_GENERATE_EXIT", false);
-      /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} -*/
-      options.add_str("INTRAFRAG_HESS", "FISCHER", "FISCHER SCHLEGEL LINDH SIMPLE");
+      /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE} -*/
+      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE");
       /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
       options.add_str("INTERFRAG_HESS", "DEFAULT", "DEFAULT FISCHER_LIKE");
       /*- Do freeze all fragments rigid? -*/
@@ -2083,7 +2200,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Hessian update scheme -*/
       options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
       /*- Number of previous steps to use in Hessian update, 0 uses all -*/
-      options.add_int("HESS_UPDATE_USE_LAST", 6);
+      options.add_int("HESS_UPDATE_USE_LAST", 1);
       /*- Do limit the magnitude of changes caused by the Hessian update? -*/
       options.add_bool("HESS_UPDATE_LIMIT", true);
       /*- If HESS_UPDATE_LIMIT is true, changes to the Hessian from the update are limited to the larger of
@@ -2096,31 +2213,36 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAG_DIST_INV", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("H_BOND_CONNECT", 4.3);
-//      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
-//      will append or overwrite the criteria set here. -*/
-//      options.add_str("G_CONVERGENCE", "QCHEM", "GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT QCHEM NWCHEM NWCHEM_LOOSE NWCHEM_TIGHT MOLPRO PSI3 CFOUR");
-      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
+      will append or overwrite the criteria set here. -*/
+      options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
+      /*- Convergence criterion for geometry optmization: maximum force (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_FORCE_G_CONVERGENCE", 3.0e-4);
-      /*- QCHEM optimization criteria: rms force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: rms force (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_FORCE_G_CONVERGENCE", 3.0e-4);
-      /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: maximum energy change. 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_ENERGY_G_CONVERGENCE", 1.0e-6);
-      /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: maximum displacement (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("MAX_DISP_G_CONVERGENCE", 1.2e-3);
-      /*- QCHEM optimization criteria: rms displacement. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for geometry optmization: rms displacement (internal coordinates, atomic units). 
+      See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
       options.add_bool("TEST_DERIVATIVE_B", false);
-      /*- Do read Cartesian Hessian? -*/
+      /*- Do read Cartesian Hessian?  Only for experts - use FULL_HESS_EVERY instead. -*/
       options.add_bool("CART_HESS_READ", false);
       /*- IRC step size in bohr(amu)$^{1/2}$ -*/
       options.add_double("IRC_STEP_SIZE", 0.2);
       /*- IRC mapping direction -*/
       options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
       /*- Set number of consecutive backward steps allowed in optimization -*/
-      options.add_int("CONSECUTIVE_BACKSTEPS", 1);
+      options.add_int("CONSECUTIVE_BACKSTEPS", 0);
   }
   if(name == "FINDIF"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements

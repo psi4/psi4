@@ -107,14 +107,14 @@ SharedMatrix DFTensor::Qso()
     const double* buffer = eri->buffer();
 
     for (int P = 0; P < auxiliary_->nshell(); P++) {
-        int np = auxiliary_->shell(P)->nfunction();
-        int pstart = auxiliary_->shell(P)->function_index();
+        int np = auxiliary_->shell(P).nfunction();
+        int pstart = auxiliary_->shell(P).function_index();
         for (int M = 0; M < primary_->nshell(); M++) {
-            int nm = primary_->shell(M)->nfunction();
-            int mstart = primary_->shell(M)->function_index();
+            int nm = primary_->shell(M).nfunction();
+            int mstart = primary_->shell(M).function_index();
             for (int N = 0; N < primary_->nshell(); N++) {
-                int nn = primary_->shell(N)->nfunction();
-                int nstart = primary_->shell(N)->function_index();
+                int nn = primary_->shell(N).nfunction();
+                int nstart = primary_->shell(N).function_index();
 
                 eri->compute_shell(P,0,M,N);
 

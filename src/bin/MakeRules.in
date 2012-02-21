@@ -59,9 +59,13 @@ install_target:: $(PSITARGET)
 	$(INSTALL_DATA) $< $(libdir)
 	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
 else
-$(PSITARGET): $(BINOBJ) $(PSILIBS)
+.PHONY: gitversion
+gitversion:
+	@$(PYTHON) gitversion.py
+
+$(PSITARGET): gitversion $(BINOBJ) $(PSILIBS)
 	$(MKDIRS) `dirname $(PSITARGET)`
-	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $^ $(END_EXPORT) $(FILTEREDLDLIBS)
+	$(LD) $(LDFLAGS) -o $@ $(START_EXPORT) $(filter-out gitversion,$^ ) $(END_EXPORT) $(FILTEREDLDLIBS)
 
 install_target:: $(PSITARGET)
 	$(MKDIRS) $(DESTDIR)$(bindir)
@@ -97,7 +101,12 @@ ifneq ($(CCDEPENDSUF),none)
 	/bin/rm -f $(*F).$(CCDEPENDSUF)
 else
 %.d: %.c
-	$(CCDEPEND) $(CCDEPENDFLAGS) $(CPPFLAGS) $(CFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F)
+	$(CCDEPEND) $(CCDEPENDFLAGS) $(CPPFLAGS) $(CFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F); \
+cp $(@F) $(*F).tmp; \
+sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+    -e '/^$$/ d' -e 's/$$/ :/' < $(*F).tmp >> $(@F); \
+rm -f $(*F).tmp
+
 endif
 
 ifneq ($(CXXDEPENDSUF),none)
@@ -107,7 +116,12 @@ ifneq ($(CXXDEPENDSUF),none)
 	/bin/rm -f $(*F).$(CXXDEPENDSUF)
 else
 %.d: %.cc
-	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CPPFLAGS) $(CXXFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F)
+	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CPPFLAGS) $(CXXFLAGS) $< | sed 's/^$*.o/$*.$(OBJSUF) $*.d/g' > $(@F); \
+cp $(@F) $(*F).tmp; \
+sed -e 's/#.*//' -e 's/^[^:]*: *//' -e 's/ *\\$$//' \
+    -e '/^$$/ d' -e 's/$$/ :/' < $(*F).tmp >> $(@F); \
+rm -f $(*F).tmp
+
 endif
 
 #

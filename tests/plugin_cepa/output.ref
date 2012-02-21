@@ -45,16 +45,24 @@ molecule h2o {
 O
 H 1 1.0 
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 plugin_load('./plugin_cepa.so')
+PsiMod.set_global_option('WFN', 'CCSD')
 
 set {
   r_convergence 1e-7
   basis cc-pvdz
   freeze_core true
 }
+
+#energy('cepa(1)')
+#energy('cepa(2)')
+#energy('cepa(3)')
+#energy('cepa(0)')
+#energy('acpf')
+#energy('aqcc')
+#energy('cisd_')
 
 scf_energy = scf()
 transqt2()
@@ -114,7 +122,7 @@ clean()
 ./plugin_cepa.so loaded.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:24 2012
+*** at Mon Jan 30 17:09:12 2012
 
 
          ---------------------------------------------------------
@@ -126,26 +134,25 @@ clean()
 
   ==> Geometry <==
 
-    Molecular point group: c1
+    Molecular point group: c2v
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.068516219310
+           O         -0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
-    Number of unique atoms: 3
+    Number of unique atoms: 2
 
     Atoms equivalency:
        unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
+       unique atom 1: 1 2 
 
-  Running in c1 symmetry.
+  Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801465529972067
+  Nuclear repulsion =    8.801465529972068
 
   Charge       = 0
   Multiplicity = 1
@@ -179,12 +186,15 @@ clean()
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.68914707059000
+  Initial RHF energy:   -58.68914707059002
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A         24      24       5       5       5       0
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
    -------------------------------------------------------
     Total      24      24       5       5       5       0
    -------------------------------------------------------
@@ -197,37 +207,44 @@ clean()
    Calculation information:
       Number of atoms:                   3
       Number of AO shells:              12
-      Number of SO shells:              12
+      Number of SO shells:               9
       Number of primitives:             32
       Number of atomic orbitals:        25
       Number of basis functions:        24
 
-      Number of irreps:                  1
-      Number of functions per irrep: [  24 ]
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
 
       Overlap, kinetic, potential, dipole, and quadrupole integrals
         stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 21643 non-zero two-electron integrals.
+      Computed 11412 non-zero two-electron integrals.
         Stored in file 33.
 
   ==> Iterations <==
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.92345273387491   -1.02343e+01   0.00000e+00 
-   @RHF iter   2:   -69.87832927887155   -9.54877e-01   3.04234e-01 DIIS
-   @RHF iter   3:   -75.76505683712068   -5.88673e+00   2.85194e-01 DIIS
-   @RHF iter   4:   -75.99909055478034   -2.34034e-01   9.59782e-03 DIIS
-   @RHF iter   5:   -76.02109883592944   -2.20083e-02   4.49227e-03 DIIS
-   @RHF iter   6:   -76.02136729063051   -2.68455e-04   7.87994e-04 DIIS
-   @RHF iter   7:   -76.02141644684103   -4.91562e-05   2.80947e-04 DIIS
-   @RHF iter   8:   -76.02141833859491   -1.89175e-06   6.41107e-05 DIIS
-   @RHF iter   9:   -76.02141844395766   -1.05363e-07   1.03706e-05 DIIS
-   @RHF iter  10:   -76.02141844507096   -1.11331e-09   1.68991e-06 DIIS
-   @RHF iter  11:   -76.02141844515261   -8.16414e-11   3.55185e-07 DIIS
-   @RHF iter  12:   -76.02141844515495   -2.34479e-12   4.79733e-08 DIIS
+   @RHF iter   1:   -68.92345273387481   -1.02343e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.87832927887142   -9.54877e-01   5.29715e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76505683712060   -5.88673e+00   4.96564e-01 DIIS
+   @RHF iter   4:   -75.99909055478030   -2.34034e-01   1.67112e-02 DIIS
+   @RHF iter   5:   -76.02109883592945   -2.20083e-02   7.82169e-03 DIIS
+   @RHF iter   6:   -76.02136729063051   -2.68455e-04   1.37201e-03 DIIS
+   @RHF iter   7:   -76.02141644684096   -4.91562e-05   4.89170e-04 DIIS
+   @RHF iter   8:   -76.02141833859497   -1.89175e-06   1.11626e-04 DIIS
+   @RHF iter   9:   -76.02141844395760   -1.05363e-07   1.80568e-05 DIIS
+   @RHF iter  10:   -76.02141844507092   -1.11332e-09   2.94238e-06 DIIS
+   @RHF iter  11:   -76.02141844515253   -8.16129e-11   6.18399e-07 DIIS
+   @RHF iter  12:   -76.02141844515486   -2.33058e-12   8.35395e-08 DIIS
+   @RHF iter  13:   -76.02141844515492   -5.68434e-14   1.55138e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -236,33 +253,34 @@ clean()
 
 	Doubly Occupied:                                                      
 
-	   1A    -20.557846     2A     -1.316181     3A     -0.677073  
-	   4A     -0.558726     5A     -0.490383  
+	   1A1   -20.557846     2A1    -1.316181     1B2    -0.677073  
+	   3A1    -0.558726     1B1    -0.490383  
 
 	Virtual:                                                              
 
-	   6A      0.178011     7A      0.249490     8A      0.760274  
-	   9A      0.816118    10A      1.166182    11A      1.198611  
-	  12A      1.256467    13A      1.452518    14A      1.466082  
-	  15A      1.667951    16A      1.877148    17A      1.889827  
-	  18A      2.354901    19A      2.388286    20A      3.248786  
-	  21A      3.297834    22A      3.453879    23A      3.821364  
-	  24A      4.099041  
+	   4A1     0.178011     2B2     0.249490     3B2     0.760274  
+	   5A1     0.816118     6A1     1.166182     2B1     1.198611  
+	   4B2     1.256467     7A1     1.452518     1A2     1.466082  
+	   3B1     1.667951     8A1     1.877148     5B2     1.889827  
+	   6B2     2.354901     9A1     2.388286     4B1     3.248786  
+	   2A2     3.297834    10A1     3.453879    11A1     3.821364  
+	   7B2     4.099041  
 
 	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02141844515495
+  @RHF Final Energy:   -76.02141844515492
 
   ==> Properties <==
+
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.1947
+     X:     0.0000      Y:     0.0000      Z:    -0.1947
 
   Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.8244     Total:     0.8244
@@ -273,18 +291,18 @@ clean()
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:24 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:12 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:24 2012
+*** at Mon Jan 30 17:09:12 2012
 
 
 	**************************************************
@@ -297,7 +315,7 @@ Total time:
 
 	Input parameters:
 	-----------------
-	Wave function   =	SCF
+	Wave function   =	CCSD
 	Backtransform   =	No
 	Print Level     =	1
 	Print TEIs      =	No
@@ -309,40 +327,43 @@ Total time:
 	Cache Type      =	LRU
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 1
+	Number of irreps     = 4
 	Number of SOs        = 24
 	Number of MOs        = 24
-	Number of active MOs = 24
+	Number of active MOs = 23
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A	   24	    1	    4	    0	    19	    0
+	 A1	   11	    1	    2	    0	    8	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
 
 	Nuclear Rep. energy (chkpt) =      8.80146552997207
-	SCF energy          (chkpt) =    -76.02141844515495
+	SCF energy          (chkpt) =    -76.02141844515492
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
-	Frozen-core energy =    0.000000000000000
+	Frozen-core energy =  -61.221839796383044
 	Starting first half-transformation.
 	Sorting half-transformed integrals.
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:24 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:12 2012
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.17 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:24 2012
+*** at Mon Jan 30 17:09:12 2012
 
 
 
@@ -379,68 +400,71 @@ Calling plugin ./plugin_cepa.so.
 
   available memory =                           244.14 mb
   minimum memory requirements for CEPA(1) =         0.14 mb
+
+  Define tiling:
+
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
 
-  Allocate cpu memory (     0.37 mb).....done.
+  Allocate cpu memory (     0.42 mb).....done.
   Initialize cpu memory..................done.
 
   Begin CEPA(1) iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2084429798   -0.0037505729    0.0290316331        0
-      2   2 1   -0.2135546693   -0.0051116895    0.0116183055        0
-      3   3 1   -0.2143275223   -0.0007728531    0.0036335805        0
-      4   4 1   -0.2143475811   -0.0000200587    0.0009328316        0
-      5   5 1   -0.2143686391   -0.0000210580    0.0003359194        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2084429797   -0.0037505728    0.0290316331        0
+      2   2 1   -0.2135546692   -0.0051116895    0.0116183055        0
+      3   3 1   -0.2143275223   -0.0007728531    0.0036335806        1
+      4   4 1   -0.2143475810   -0.0000200587    0.0009328316        0
+      5   5 1   -0.2143686390   -0.0000210580    0.0003359194        0
       6   6 1   -0.2143647268    0.0000039122    0.0001311643        0
       7   7 1   -0.2143638562    0.0000008706    0.0000362716        0
-      8   8 1   -0.2143636475    0.0000002087    0.0000071195        0
+      8   8 1   -0.2143636474    0.0000002087    0.0000071195        0
       9   8 2   -0.2143635442    0.0000001032    0.0000019743        0
-     10   8 3   -0.2143635816   -0.0000000374    0.0000004578        0
-     11   8 4   -0.2143635741    0.0000000075    0.0000000990        0
+     10   8 3   -0.2143635815   -0.0000000374    0.0000004578        0
+     11   8 4   -0.2143635740    0.0000000075    0.0000000990        0
 
   CEPA(1) iterations converged!
 
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
+        OS SCS-MP2 correlation energy:          -0.184186591999
+        SS SCS-MP2 correlation energy:          -0.017067860084
+        SCS-MP2 correlation energy:             -0.201254452083
+      * SCS-MP2 total energy:                  -76.222672897238
 
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
+        OS MP2 correlation energy:              -0.153488826666
+        SS MP2 correlation energy:              -0.051203580253
+        MP2 correlation energy:                 -0.204692406918
+      * MP2 total energy:                      -76.226110852073
 
-        OS CEPA(1) correlation energy:          -0.169607141951
-        SS CEPA(1) correlation energy:          -0.044756432133
-        CEPA(1) correlation energy:             -0.214363574084
-      * CEPA(1) total energy:                  -76.235782019239
+        OS CEPA(1) correlation energy:          -0.169607141851
+        SS CEPA(1) correlation energy:          -0.044756432158
+        CEPA(1) correlation energy:             -0.214363574010
+      * CEPA(1) total energy:                  -76.235782019165
 
-  Total time for CEPA(1) iterations:       0.10 s (user)
-                                        0.19 s (system)
-                                           0 s (total)
+  Total time for CEPA(1) iterations:       0.09 s (user)
+                                        0.14 s (system)
+                                           1 s (total)
 
   Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
-                                        0.00 s (total)
+                                        0.01 s (system)
+                                        0.09 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:24 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:13 2012
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.28 seconds =       0.00 minutes
-	system time =       0.27 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:24 2012
+*** at Mon Jan 30 17:09:13 2012
 
 
 
@@ -471,75 +495,78 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 1/2...done.
         ABCD block 2/2...done.
 
-  Time for integral sort:             0.01 s (user)
-                                      0.04 s (system)
+  Time for integral sort:             0.00 s (user)
+                                      0.03 s (system)
                                          0 s (total)
 
   available memory =                           244.14 mb
   minimum memory requirements for CEPA(2) =         0.14 mb
+
+  Define tiling:
+
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
 
-  Allocate cpu memory (     0.37 mb).....done.
+  Allocate cpu memory (     0.42 mb).....done.
   Initialize cpu memory..................done.
 
   Begin CEPA(2) iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2105194723   -0.0058270655    0.0303217745        0
-      2   2 1   -0.2160992828   -0.0055798105    0.0123989232        0
-      3   3 1   -0.2168236395   -0.0007243567    0.0037878050        0
-      4   4 1   -0.2168458751   -0.0000222356    0.0011052829        0
-      5   5 1   -0.2168694320   -0.0000235569    0.0004379976        0
-      6   6 1   -0.2168637409    0.0000056911    0.0001773570        1
-      7   7 1   -0.2168625282    0.0000012127    0.0000496077        0
-      8   8 1   -0.2168622997    0.0000002285    0.0000096450        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2105194723   -0.0058270654    0.0303217745        0
+      2   2 1   -0.2160992827   -0.0055798104    0.0123989231        0
+      3   3 1   -0.2168236394   -0.0007243567    0.0037878051        0
+      4   4 1   -0.2168458750   -0.0000222356    0.0011052829        0
+      5   5 1   -0.2168694319   -0.0000235569    0.0004379976        0
+      6   6 1   -0.2168637408    0.0000056911    0.0001773570        0
+      7   7 1   -0.2168625281    0.0000012127    0.0000496077        0
+      8   8 1   -0.2168622996    0.0000002285    0.0000096450        0
       9   8 2   -0.2168621833    0.0000001164    0.0000026765        0
-     10   8 3   -0.2168622312   -0.0000000478    0.0000006287        0
-     11   8 4   -0.2168622214    0.0000000098    0.0000001391        0
-     12   8 5   -0.2168622205    0.0000000009    0.0000000305        0
+     10   8 3   -0.2168622311   -0.0000000478    0.0000006287        0
+     11   8 4   -0.2168622213    0.0000000098    0.0000001391        0
+     12   8 5   -0.2168622204    0.0000000009    0.0000000305        0
 
   CEPA(2) iterations converged!
 
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
+        OS SCS-MP2 correlation energy:          -0.184186591999
+        SS SCS-MP2 correlation energy:          -0.017067860084
+        SCS-MP2 correlation energy:             -0.201254452083
+      * SCS-MP2 total energy:                  -76.222672897238
 
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
+        OS MP2 correlation energy:              -0.153488826666
+        SS MP2 correlation energy:              -0.051203580253
+        MP2 correlation energy:                 -0.204692406918
+      * MP2 total energy:                      -76.226110852073
 
-        OS CEPA(2) correlation energy:          -0.171749371207
-        SS CEPA(2) correlation energy:          -0.045112849272
-        CEPA(2) correlation energy:             -0.216862220479
-      * CEPA(2) total energy:                  -76.238280665634
+        OS CEPA(2) correlation energy:          -0.171749371108
+        SS CEPA(2) correlation energy:          -0.045112849298
+        CEPA(2) correlation energy:             -0.216862220406
+      * CEPA(2) total energy:                  -76.238280665561
 
   Total time for CEPA(2) iterations:       0.11 s (user)
-                                        0.21 s (system)
-                                           1 s (total)
+                                        0.13 s (system)
+                                           0 s (total)
 
   Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
-                                        0.08 s (total)
+                                        0.01 s (system)
+                                        0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:25 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:13 2012
 Module time:
 	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.40 seconds =       0.01 minutes
-	system time =       0.52 seconds =       0.01 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.37 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:25 2012
+*** at Mon Jan 30 17:09:13 2012
 
 
 
@@ -570,74 +597,77 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 1/2...done.
         ABCD block 2/2...done.
 
-  Time for integral sort:             0.01 s (user)
+  Time for integral sort:             0.00 s (user)
                                       0.04 s (system)
                                          0 s (total)
 
   available memory =                           244.14 mb
   minimum memory requirements for CEPA(3) =         0.14 mb
+
+  Define tiling:
+
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
 
-  Allocate cpu memory (     0.37 mb).....done.
+  Allocate cpu memory (     0.42 mb).....done.
   Initialize cpu memory..................done.
 
   Begin CEPA(3) iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2064135796   -0.0017211727    0.0279646556        0
-      2   2 1   -0.2111434636   -0.0047298840    0.0109474716        0
-      3   3 1   -0.2119599683   -0.0008165047    0.0035239813        0
-      4   4 1   -0.2119791314   -0.0000191631    0.0008046126        0
-      5   5 1   -0.2119984694   -0.0000193379    0.0002655681        0
-      6   6 1   -0.2119958635    0.0000026059    0.0000984434        0
-      7   7 1   -0.2119952802    0.0000005833    0.0000269061        0
-      8   8 1   -0.2119951007    0.0000001795    0.0000053871        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2064135795   -0.0017211726    0.0279646556        0
+      2   2 1   -0.2111434635   -0.0047298840    0.0109474716        0
+      3   3 1   -0.2119599682   -0.0008165047    0.0035239813        0
+      4   4 1   -0.2119791313   -0.0000191631    0.0008046126        0
+      5   5 1   -0.2119984693   -0.0000193379    0.0002655681        0
+      6   6 1   -0.2119958634    0.0000026059    0.0000984434        0
+      7   7 1   -0.2119952801    0.0000005833    0.0000269061        0
+      8   8 1   -0.2119951006    0.0000001795    0.0000053871        0
       9   8 2   -0.2119950122    0.0000000884    0.0000014885        0
-     10   8 3   -0.2119950415   -0.0000000292    0.0000003426        0
-     11   8 4   -0.2119950356    0.0000000059    0.0000000724        0
+     10   8 3   -0.2119950414   -0.0000000292    0.0000003426        0
+     11   8 4   -0.2119950355    0.0000000059    0.0000000724        0
 
   CEPA(3) iterations converged!
 
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
+        OS SCS-MP2 correlation energy:          -0.184186591999
+        SS SCS-MP2 correlation energy:          -0.017067860084
+        SCS-MP2 correlation energy:             -0.201254452083
+      * SCS-MP2 total energy:                  -76.222672897238
 
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
+        OS MP2 correlation energy:              -0.153488826666
+        SS MP2 correlation energy:              -0.051203580253
+        MP2 correlation energy:                 -0.204692406918
+      * MP2 total energy:                      -76.226110852073
 
-        OS CEPA(3) correlation energy:          -0.167583897477
-        SS CEPA(3) correlation energy:          -0.044411138078
-        CEPA(3) correlation energy:             -0.211995035555
-      * CEPA(3) total energy:                  -76.233413480710
+        OS CEPA(3) correlation energy:          -0.167583897378
+        SS CEPA(3) correlation energy:          -0.044411138103
+        CEPA(3) correlation energy:             -0.211995035481
+      * CEPA(3) total energy:                  -76.233413480636
 
-  Total time for CEPA(3) iterations:       0.11 s (user)
-                                        0.18 s (system)
+  Total time for CEPA(3) iterations:       0.10 s (user)
+                                        0.13 s (system)
                                            0 s (total)
 
   Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
+                                        0.01 s (system)
                                         0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:25 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:13 2012
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.22 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.17 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.74 seconds =       0.01 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.54 seconds =       0.01 minutes
 	total time  =          1 seconds =       0.02 minutes
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:25 2012
+*** at Mon Jan 30 17:09:13 2012
 
 
 
@@ -668,91 +698,94 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 1/2...done.
         ABCD block 2/2...done.
 
-  Time for integral sort:             0.02 s (user)
-                                      0.03 s (system)
+  Time for integral sort:             0.00 s (user)
+                                      0.04 s (system)
                                          0 s (total)
 
   available memory =                           244.14 mb
   minimum memory requirements for CEPA(0) =         0.14 mb
+
+  Define tiling:
+
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
 
-  Allocate cpu memory (     0.37 mb).....done.
+  Allocate cpu memory (     0.42 mb).....done.
   Initialize cpu memory..................done.
 
   Begin CEPA(0) iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2113011793   -0.0066087724    0.0309033906        0
-      2   2 1   -0.2171026859   -0.0058015066    0.0127933585        0
-      3   3 1   -0.2178164280   -0.0007137421    0.0039034927        0
-      4   4 1   -0.2178409638   -0.0000245358    0.0012076445        0
-      5   5 1   -0.2178659797   -0.0000250158    0.0005034970        0
-      6   6 1   -0.2178591477    0.0000068320    0.0002067767        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2113011792   -0.0066087723    0.0309033906        0
+      2   2 1   -0.2171026858   -0.0058015066    0.0127933585        0
+      3   3 1   -0.2178164279   -0.0007137421    0.0039034927        0
+      4   4 1   -0.2178409638   -0.0000245358    0.0012076446        0
+      5   5 1   -0.2178659796   -0.0000250158    0.0005034970        0
+      6   6 1   -0.2178591476    0.0000068320    0.0002067767        0
       7   7 1   -0.2178577991    0.0000013486    0.0000581432        0
       8   8 1   -0.2178575612    0.0000002379    0.0000113351        0
-      9   8 2   -0.2178574454    0.0000001158    0.0000031246        0
-     10   8 3   -0.2178575006   -0.0000000551    0.0000007388        0
-     11   8 4   -0.2178574894    0.0000000112    0.0000001654        0
-     12   8 5   -0.2178574881    0.0000000013    0.0000000380        0
+      9   8 2   -0.2178574454    0.0000001158    0.0000031246        1
+     10   8 3   -0.2178575005   -0.0000000551    0.0000007388        0
+     11   8 4   -0.2178574893    0.0000000112    0.0000001654        0
+     12   8 5   -0.2178574880    0.0000000013    0.0000000380        0
 
   CEPA(0) iterations converged!
 
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
+        OS SCS-MP2 correlation energy:          -0.184186591999
+        SS SCS-MP2 correlation energy:          -0.017067860084
+        SCS-MP2 correlation energy:             -0.201254452083
+      * SCS-MP2 total energy:                  -76.222672897238
 
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
+        OS MP2 correlation energy:              -0.153488826666
+        SS MP2 correlation energy:              -0.051203580253
+        MP2 correlation energy:                 -0.204692406918
+      * MP2 total energy:                      -76.226110852073
 
-        OS CEPA(0) correlation energy:          -0.172645928472
-        SS CEPA(0) correlation energy:          -0.045211559634
-        CEPA(0) correlation energy:             -0.217857488106
-      * CEPA(0) total energy:                  -76.239275933261
+        OS CEPA(0) correlation energy:          -0.172645928373
+        SS CEPA(0) correlation energy:          -0.045211559660
+        CEPA(0) correlation energy:             -0.217857488033
+      * CEPA(0) total energy:                  -76.239275933188
 
   Total time for CEPA(0) iterations:       0.11 s (user)
-                                        0.20 s (system)
-                                           0 s (total)
+                                        0.12 s (system)
+                                           1 s (total)
 
   Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
-                                        0.00 s (total)
+                                        0.01 s (system)
+                                        0.08 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:25 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:14 2012
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       0.65 seconds =       0.01 minutes
-	system time =       0.97 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.70 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   ==> Properties CEPA(0) <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.2636
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.7555     Total:     0.7555
+     X:    -0.0000      Y:     0.0000      Z:     0.7555     Total:     0.7555
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.9202     Total:     1.9202
+     X:    -0.0000      Y:     0.0000      Z:     1.9202     Total:     1.9202
 
   Quadrupole Moment: (Debye Ang)
     XX:    -7.1617     YY:    -4.2558     ZZ:    -5.7976
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:    -1.4233     YY:     1.4826     ZZ:    -0.0593
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -760,24 +793,24 @@ Total time:
        2     H     0.42451  0.42451  0.00000  0.15098
        3     H     0.42451  0.42451  0.00000  0.15098
 
-   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
   Natural Orbital Occupations:
 
   Total Occupations:
-  HONO-2 :    3  A    1.972
-  HONO-1 :    4  A    1.961
-  HONO-0 :    5  A    1.958
-  LUNO+0 :    6  A    0.032
-  LUNO+1 :    7  A    0.030
-  LUNO+2 :    8  A    0.018
-  LUNO+3 :    9  A    0.012
+  HONO-2 :    1 B1    1.972
+  HONO-1 :    3 A1    1.961
+  HONO-0 :    1 B2    1.958
+  LUNO+0 :    2 B2    0.032
+  LUNO+1 :    4 A1    0.030
+  LUNO+2 :    2 B1    0.018
+  LUNO+3 :    5 A1    0.012
 
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:25 2012
+*** at Mon Jan 30 17:09:14 2012
 
 
 
@@ -810,89 +843,92 @@ Calling plugin ./plugin_cepa.so.
 
   Time for integral sort:             0.01 s (user)
                                       0.03 s (system)
-                                         1 s (total)
+                                         0 s (total)
 
   available memory =                           244.14 mb
   minimum memory requirements for ACPF =         0.14 mb
+
+  Define tiling:
+
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
 
-  Allocate cpu memory (     0.37 mb).....done.
+  Allocate cpu memory (     0.42 mb).....done.
   Initialize cpu memory..................done.
 
   Begin ACPF iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2085846292   -0.0038922224    0.0291113989        0
-      2   2 1   -0.2137222712   -0.0051376419    0.0116956686        0
-      3   3 1   -0.2144892627   -0.0007669915    0.0036602068        0
-      4   4 1   -0.2145098522   -0.0000205895    0.0009560679        0
-      5   5 1   -0.2145310939   -0.0000212417    0.0003502131        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2085846292   -0.0038922223    0.0291113989        0
+      2   2 1   -0.2137222711   -0.0051376419    0.0116956685        0
+      3   3 1   -0.2144892626   -0.0007669915    0.0036602069        0
+      4   4 1   -0.2145098521   -0.0000205895    0.0009560679        0
+      5   5 1   -0.2145310938   -0.0000212417    0.0003502131        0
       6   6 1   -0.2145268337    0.0000042602    0.0001375668        0
-      7   7 1   -0.2145259284    0.0000009053    0.0000378878        0
-      8   8 1   -0.2145257275    0.0000002009    0.0000073693        0
-      9   8 2   -0.2145256246    0.0000001029    0.0000020319        0
-     10   8 3   -0.2145256626   -0.0000000380    0.0000004739        0
-     11   8 4   -0.2145256548    0.0000000078    0.0000001030        0
-     12   8 5   -0.2145256542    0.0000000006    0.0000000216        0
+      7   7 1   -0.2145259283    0.0000009053    0.0000378878        0
+      8   8 1   -0.2145257274    0.0000002009    0.0000073693        0
+      9   8 2   -0.2145256245    0.0000001029    0.0000020319        0
+     10   8 3   -0.2145256625   -0.0000000380    0.0000004739        0
+     11   8 4   -0.2145256547    0.0000000078    0.0000001030        0
+     12   8 5   -0.2145256541    0.0000000006    0.0000000216        0
 
   ACPF iterations converged!
 
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
+        OS SCS-MP2 correlation energy:          -0.184186591999
+        SS SCS-MP2 correlation energy:          -0.017067860084
+        SCS-MP2 correlation energy:             -0.201254452083
+      * SCS-MP2 total energy:                  -76.222672897238
 
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
+        OS MP2 correlation energy:              -0.153488826666
+        SS MP2 correlation energy:              -0.051203580253
+        MP2 correlation energy:                 -0.204692406918
+      * MP2 total energy:                      -76.226110852073
 
-        OS ACPF correlation energy:             -0.169740972051
-        SS ACPF correlation energy:             -0.044784682161
-        ACPF correlation energy:                -0.214525654212
-      * ACPF total energy:                     -76.235944099367
+        OS ACPF correlation energy:             -0.169740971954
+        SS ACPF correlation energy:             -0.044784682187
+        ACPF correlation energy:                -0.214525654141
+      * ACPF total energy:                     -76.235944099296
 
-  Total time for ACPF iterations:       0.12 s (user)
-                                        0.19 s (system)
+  Total time for ACPF iterations:       0.11 s (user)
+                                        0.13 s (system)
                                            0 s (total)
 
   Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
+                                        0.01 s (system)
                                         0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:26 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:14 2012
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.79 seconds =       0.01 minutes
-	system time =       1.19 seconds =       0.02 minutes
+	user time   =       0.69 seconds =       0.01 minutes
+	system time =       0.86 seconds =       0.01 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   ==> Properties ACPF <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.2541
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.7649     Total:     0.7649
+     X:    -0.0000      Y:     0.0000      Z:     0.7649     Total:     0.7649
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.9443     Total:     1.9443
+     X:    -0.0000      Y:     0.0000      Z:     1.9443     Total:     1.9443
 
   Quadrupole Moment: (Debye Ang)
     XX:    -7.1583     YY:    -4.2300     ZZ:    -5.7836
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:    -1.4344     YY:     1.4940     ZZ:    -0.0596
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -900,24 +936,24 @@ Total time:
        2     H     0.42293  0.42293  0.00000  0.15414
        3     H     0.42293  0.42293  0.00000  0.15414
 
-   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
   Natural Orbital Occupations:
 
   Total Occupations:
-  HONO-2 :    3  A    1.973
-  HONO-1 :    4  A    1.964
-  HONO-0 :    5  A    1.961
-  LUNO+0 :    6  A    0.030
-  LUNO+1 :    7  A    0.028
-  LUNO+2 :    8  A    0.017
-  LUNO+3 :    9  A    0.011
+  HONO-2 :    1 B1    1.973
+  HONO-1 :    3 A1    1.964
+  HONO-0 :    1 B2    1.961
+  LUNO+0 :    2 B2    0.030
+  LUNO+1 :    4 A1    0.028
+  LUNO+2 :    2 B1    0.017
+  LUNO+3 :    5 A1    0.011
 
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:26 2012
+*** at Mon Jan 30 17:09:14 2012
 
 
 
@@ -948,90 +984,93 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 1/2...done.
         ABCD block 2/2...done.
 
-  Time for integral sort:             0.00 s (user)
-                                      0.04 s (system)
+  Time for integral sort:             0.02 s (user)
+                                      0.03 s (system)
                                          0 s (total)
 
   available memory =                           244.14 mb
   minimum memory requirements for AQCC =         0.14 mb
+
+  Define tiling:
+
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
 
-  Allocate cpu memory (     0.37 mb).....done.
+  Allocate cpu memory (     0.42 mb).....done.
   Initialize cpu memory..................done.
 
   Begin AQCC iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2063187434   -0.0016263365    0.0278697568        0
-      2   2 1   -0.2110089588   -0.0046902154    0.0109069407        0
-      3   3 1   -0.2118156794   -0.0008067207    0.0035188627        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2063187433   -0.0016263364    0.0278697568        0
+      2   2 1   -0.2110089587   -0.0046902154    0.0109069407        0
+      3   3 1   -0.2118156794   -0.0008067207    0.0035188628        0
       4   4 1   -0.2118347707   -0.0000190913    0.0008068707        0
-      5   5 1   -0.2118539546   -0.0000191839    0.0002677859        0
-      6   6 1   -0.2118512163    0.0000027383    0.0000993527        0
+      5   5 1   -0.2118539545   -0.0000191839    0.0002677859        0
+      6   6 1   -0.2118512162    0.0000027383    0.0000993527        0
       7   7 1   -0.2118506213    0.0000005949    0.0000269174        0
-      8   8 1   -0.2118504586    0.0000001628    0.0000052957        0
-      9   8 2   -0.2118503721    0.0000000864    0.0000014505        0
-     10   8 3   -0.2118504000   -0.0000000279    0.0000003369        0
+      8   8 1   -0.2118504585    0.0000001628    0.0000052957        0
+      9   8 2   -0.2118503720    0.0000000864    0.0000014505        0
+     10   8 3   -0.2118503999   -0.0000000279    0.0000003369        0
      11   8 4   -0.2118503940    0.0000000059    0.0000000714        0
 
   AQCC iterations converged!
 
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
+        OS SCS-MP2 correlation energy:          -0.184186591999
+        SS SCS-MP2 correlation energy:          -0.017067860084
+        SCS-MP2 correlation energy:             -0.201254452083
+      * SCS-MP2 total energy:                  -76.222672897238
 
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
+        OS MP2 correlation energy:              -0.153488826666
+        SS MP2 correlation energy:              -0.051203580253
+        MP2 correlation energy:                 -0.204692406918
+      * MP2 total energy:                      -76.226110852073
 
-        OS AQCC correlation energy:             -0.167419813405
-        SS AQCC correlation energy:             -0.044430580631
-        AQCC correlation energy:                -0.211850394036
-      * AQCC total energy:                     -76.233268839191
+        OS AQCC correlation energy:             -0.167419813310
+        SS AQCC correlation energy:             -0.044430580656
+        AQCC correlation energy:                -0.211850393966
+      * AQCC total energy:                     -76.233268839121
 
-  Total time for AQCC iterations:       0.12 s (user)
-                                        0.17 s (system)
+  Total time for AQCC iterations:       0.08 s (user)
+                                        0.13 s (system)
                                            0 s (total)
 
   Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
+                                        0.01 s (system)
                                         0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:26 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:14 2012
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.21 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.92 seconds =       0.02 minutes
-	system time =       1.40 seconds =       0.02 minutes
+	user time   =       0.79 seconds =       0.01 minutes
+	system time =       1.02 seconds =       0.02 minutes
 	total time  =          2 seconds =       0.03 minutes
 
   ==> Properties AQCC <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.2479
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.7712     Total:     0.7712
+     X:    -0.0000      Y:     0.0000      Z:     0.7712     Total:     0.7712
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.9602     Total:     1.9602
+     X:    -0.0000      Y:     0.0000      Z:     1.9602     Total:     1.9602
 
   Quadrupole Moment: (Debye Ang)
     XX:    -7.1561     YY:    -4.2122     ZZ:    -5.7740
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:    -1.4420     YY:     1.5019     ZZ:    -0.0599
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1044,19 +1083,19 @@ Total time:
   Natural Orbital Occupations:
 
   Total Occupations:
-  HONO-2 :    3  A    1.974
-  HONO-1 :    4  A    1.965
-  HONO-0 :    5  A    1.962
-  LUNO+0 :    6  A    0.029
-  LUNO+1 :    7  A    0.027
-  LUNO+2 :    8  A    0.016
-  LUNO+3 :    9  A    0.011
+  HONO-2 :    1 B1    1.974
+  HONO-1 :    3 A1    1.965
+  HONO-0 :    1 B2    1.962
+  LUNO+0 :    2 B2    0.029
+  LUNO+1 :    4 A1    0.027
+  LUNO+2 :    2 B1    0.016
+  LUNO+3 :    5 A1    0.011
 
 Reading options from the PLUGIN_CEPA block
 Calling plugin ./plugin_cepa.so.
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:26 2012
+*** at Mon Jan 30 17:09:14 2012
 
 
 
@@ -1088,89 +1127,92 @@ Calling plugin ./plugin_cepa.so.
         ABCD block 2/2...done.
 
   Time for integral sort:             0.01 s (user)
-                                      0.03 s (system)
+                                      0.04 s (system)
                                          0 s (total)
 
   available memory =                           244.14 mb
   minimum memory requirements for CISD =         0.14 mb
+
+  Define tiling:
+
         v(ab,cd) diagrams will be evaluated in   1 blocks.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov2.
         v(ab,ci) diagrams will be evaluated in   1 blocks over ov.
 
-  Allocate cpu memory (     0.37 mb).....done.
+  Allocate cpu memory (     0.42 mb).....done.
   Initialize cpu memory..................done.
 
   Begin CISD iterations
 
    Iter  DIIS          Energy       d(Energy)          |d(T)|     time
-      0   0 1   -0.2046924069   -0.2046924069    0.1986952513        0
-      1   1 1   -0.2008909299    0.0038014770    0.0259710333        0
-      2   2 1   -0.2048735676   -0.0039826377    0.0094348242        0
-      3   3 1   -0.2057335446   -0.0008599770    0.0032436732        0
-      4   4 1   -0.2057520410   -0.0000184964    0.0005779467        0
-      5   5 1   -0.2057680932   -0.0000160522    0.0001600928        0
-      6   6 1   -0.2057672803    0.0000008129    0.0000484029        0
-      7   7 1   -0.2057671690    0.0000001113    0.0000121895        0
+      0   0 1   -0.2046924069   -0.2046924069    0.1986952514        0
+      1   1 1   -0.2008909298    0.0038014771    0.0259710334        0
+      2   2 1   -0.2048735675   -0.0039826377    0.0094348242        0
+      3   3 1   -0.2057335445   -0.0008599770    0.0032436732        0
+      4   4 1   -0.2057520409   -0.0000184964    0.0005779467        0
+      5   5 1   -0.2057680931   -0.0000160522    0.0001600929        0
+      6   6 1   -0.2057672802    0.0000008129    0.0000484029        0
+      7   7 1   -0.2057671689    0.0000001113    0.0000121895        0
       8   8 1   -0.2057670895    0.0000000794    0.0000025216        0
-      9   8 2   -0.2057670398    0.0000000498    0.0000006727        1
-     10   8 3   -0.2057670524   -0.0000000126    0.0000001592        0
-     11   8 4   -0.2057670492    0.0000000032    0.0000000323        0
+      9   8 2   -0.2057670397    0.0000000498    0.0000006727        0
+     10   8 3   -0.2057670523   -0.0000000126    0.0000001592        0
+     11   8 4   -0.2057670491    0.0000000032    0.0000000323        0
 
   CISD iterations converged!
 
-        OS SCS-MP2 correlation energy:          -0.184186591992
-        SS SCS-MP2 correlation energy:          -0.017067860073
-        SCS-MP2 correlation energy:             -0.201254452065
-      * SCS-MP2 total energy:                  -76.222672897220
+        OS SCS-MP2 correlation energy:          -0.184186591999
+        SS SCS-MP2 correlation energy:          -0.017067860084
+        SCS-MP2 correlation energy:             -0.201254452083
+      * SCS-MP2 total energy:                  -76.222672897238
 
-        OS MP2 correlation energy:              -0.153488826660
-        SS MP2 correlation energy:              -0.051203580218
-        MP2 correlation energy:                 -0.204692406879
-      * MP2 total energy:                      -76.226110852034
+        OS MP2 correlation energy:              -0.153488826666
+        SS MP2 correlation energy:              -0.051203580253
+        MP2 correlation energy:                 -0.204692406918
+      * MP2 total energy:                      -76.226110852073
 
-        OS CISD correlation energy:             -0.162177585734
-        SS CISD correlation energy:             -0.043589463474
-        CISD correlation energy:                -0.205767049207
-      * CISD total energy:                     -76.227185494362
+        OS CISD correlation energy:             -0.162177585644
+        SS CISD correlation energy:             -0.043589463497
+        CISD correlation energy:                -0.205767049141
+      * CISD total energy:                     -76.227185494296
 
-  Total time for CISD iterations:       0.10 s (user)
-                                        0.19 s (system)
-                                           1 s (total)
+  Total time for CISD iterations:       0.09 s (user)
+                                        0.12 s (system)
+                                           0 s (total)
 
   Time per iteration:                   0.01 s (user)
-                                        0.02 s (system)
-                                        0.09 s (total)
+                                        0.01 s (system)
+                                        0.00 s (total)
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:27 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:14 2012
 Module time:
-	user time   =       0.11 seconds =       0.00 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.10 seconds =       0.00 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.03 seconds =       0.02 minutes
-	system time =       1.62 seconds =       0.03 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       0.89 seconds =       0.01 minutes
+	system time =       1.18 seconds =       0.02 minutes
+	total time  =          2 seconds =       0.03 minutes
 
   ==> Properties CISD <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.2366
 
   Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.7824     Total:     0.7824
+     X:    -0.0000      Y:     0.0000      Z:     0.7824     Total:     0.7824
 
   Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     1.9887     Total:     1.9887
+     X:    -0.0000      Y:     0.0000      Z:     1.9887     Total:     1.9887
 
   Quadrupole Moment: (Debye Ang)
     XX:    -7.1518     YY:    -4.1791     ZZ:    -5.7563
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:    -1.4561     YY:     1.5166     ZZ:    -0.0606
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1178,22 +1220,22 @@ Total time:
        2     H     0.41977  0.41977  0.00000  0.16046
        3     H     0.41977  0.41977  0.00000  0.16046
 
-   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
   Natural Orbital Occupations:
 
   Total Occupations:
-  HONO-2 :    3  A    1.976
-  HONO-1 :    4  A    1.969
-  HONO-0 :    5  A    1.966
-  LUNO+0 :    6  A    0.025
-  LUNO+1 :    7  A    0.024
-  LUNO+2 :    8  A    0.015
-  LUNO+3 :    9  A    0.010
+  HONO-2 :    1 B1    1.976
+  HONO-1 :    3 A1    1.969
+  HONO-0 :    1 B2    1.966
+  LUNO+0 :    2 B2    0.025
+  LUNO+1 :    4 A1    0.024
+  LUNO+2 :    2 B1    0.015
+  LUNO+3 :    5 A1    0.010
 
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:27 2012
+*** at Mon Jan 30 17:09:14 2012
 
 
          ---------------------------------------------------------
@@ -1205,26 +1247,25 @@ Total time:
 
   ==> Geometry <==
 
-    Molecular point group: c1
+    Molecular point group: c2v
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.068516219310
+           O         -0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
-    Number of unique atoms: 3
+    Number of unique atoms: 2
 
     Atoms equivalency:
        unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
+       unique atom 1: 1 2 
 
-  Running in c1 symmetry.
+  Running in c2v symmetry.
 
-  Nuclear repulsion =    8.801465529972067
+  Nuclear repulsion =    8.801465529972068
 
   Charge       = 0
   Multiplicity = 1
@@ -1266,12 +1307,15 @@ Total time:
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.68914707059005
+  Initial RHF energy:   -58.68914707059002
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
-     A         24      24       5       5       5       0
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
    -------------------------------------------------------
     Total      24      24       5       5       5       0
    -------------------------------------------------------
@@ -1284,19 +1328,19 @@ Total time:
    Calculation information:
       Number of atoms:                   3
       Number of AO shells:              12
-      Number of SO shells:              12
+      Number of SO shells:               9
       Number of primitives:             32
       Number of atomic orbitals:        25
       Number of basis functions:        24
 
-      Number of irreps:                  1
-      Number of functions per irrep: [  24 ]
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
 
       Overlap, kinetic, potential, dipole, and quadrupole integrals
         stored in file 35.
 
       Computing two-electron integrals...done
-      Computed 21643 non-zero two-electron integrals.
+      Computed 11412 non-zero two-electron integrals.
         Stored in file 33.
 
   ==> Iterations <==
@@ -1304,18 +1348,25 @@ Total time:
                         Total Energy        Delta E     Density RMS
 
   Forming PK and K matrices.
-   @RHF iter   1:   -68.92345273387487   -1.02343e+01   0.00000e+00 
-   @RHF iter   2:   -69.87832927887155   -9.54877e-01   3.04234e-01 DIIS
-   @RHF iter   3:   -75.76505683712060   -5.88673e+00   2.85194e-01 DIIS
-   @RHF iter   4:   -75.99909055478031   -2.34034e-01   9.59782e-03 DIIS
-   @RHF iter   5:   -76.02109883592941   -2.20083e-02   4.49227e-03 DIIS
-   @RHF iter   6:   -76.02136729063045   -2.68455e-04   7.87994e-04 DIIS
-   @RHF iter   7:   -76.02141644684095   -4.91562e-05   2.80947e-04 DIIS
-   @RHF iter   8:   -76.02141833859494   -1.89175e-06   6.41107e-05 DIIS
-   @RHF iter   9:   -76.02141844395757   -1.05363e-07   1.03706e-05 DIIS
-   @RHF iter  10:   -76.02141844507096   -1.11339e-09   1.68991e-06 DIIS
-   @RHF iter  11:   -76.02141844515259   -8.16271e-11   3.55136e-07 DIIS
-   @RHF iter  12:   -76.02141844515489   -2.30216e-12   4.79859e-08 DIIS
+   @RHF iter   1:   -68.92345273387481   -1.02343e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -69.87832927887142   -9.54877e-01   5.29715e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76505683712060   -5.88673e+00   4.96564e-01 DIIS
+   @RHF iter   4:   -75.99909055478030   -2.34034e-01   1.67112e-02 DIIS
+   @RHF iter   5:   -76.02109883592945   -2.20083e-02   7.82169e-03 DIIS
+   @RHF iter   6:   -76.02136729063051   -2.68455e-04   1.37201e-03 DIIS
+   @RHF iter   7:   -76.02141644684096   -4.91562e-05   4.89170e-04 DIIS
+   @RHF iter   8:   -76.02141833859497   -1.89175e-06   1.11626e-04 DIIS
+   @RHF iter   9:   -76.02141844395760   -1.05363e-07   1.80568e-05 DIIS
+   @RHF iter  10:   -76.02141844507092   -1.11332e-09   2.94238e-06 DIIS
+   @RHF iter  11:   -76.02141844515253   -8.16129e-11   6.18399e-07 DIIS
+   @RHF iter  12:   -76.02141844515486   -2.33058e-12   8.35395e-08 DIIS
+   @RHF iter  13:   -76.02141844515492   -5.68434e-14   1.55138e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1324,33 +1375,34 @@ Total time:
 
 	Doubly Occupied:                                                      
 
-	   1A    -20.557846     2A     -1.316181     3A     -0.677073  
-	   4A     -0.558726     5A     -0.490383  
+	   1A1   -20.557846     2A1    -1.316181     1B2    -0.677073  
+	   3A1    -0.558726     1B1    -0.490383  
 
 	Virtual:                                                              
 
-	   6A      0.178011     7A      0.249490     8A      0.760274  
-	   9A      0.816118    10A      1.166182    11A      1.198611  
-	  12A      1.256467    13A      1.452518    14A      1.466082  
-	  15A      1.667951    16A      1.877148    17A      1.889827  
-	  18A      2.354901    19A      2.388286    20A      3.248786  
-	  21A      3.297834    22A      3.453879    23A      3.821364  
-	  24A      4.099041  
+	   4A1     0.178011     2B2     0.249490     3B2     0.760274  
+	   5A1     0.816118     6A1     1.166182     2B1     1.198611  
+	   4B2     1.256467     7A1     1.452518     1A2     1.466082  
+	   3B1     1.667951     8A1     1.877148     5B2     1.889827  
+	   6B2     2.354901     9A1     2.388286     4B1     3.248786  
+	   2A2     3.297834    10A1     3.453879    11A1     3.821364  
+	   7B2     4.099041  
 
 	Final Occupation by Irrep:
-	          A 
-	DOCC [     5 ]
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.02141844515489
+  @RHF Final Energy:   -76.02141844515492
 
   ==> Properties <==
+
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.1947
+     X:     0.0000      Y:     0.0000      Z:    -0.1947
 
   Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.8244     Total:     0.8244
@@ -1360,11 +1412,11 @@ Total time:
 
   Quadrupole Moment: (Debye Ang)
     XX:    -7.1302     YY:    -4.0304     ZZ:    -5.6737
-    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:    -1.5188     YY:     1.5810     ZZ:    -0.0623
-    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1372,23 +1424,23 @@ Total time:
        2     H     0.41136  0.41136  0.00000  0.17728
        3     H     0.41136  0.41136  0.00000  0.17728
 
-   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:27 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:15 2012
 Module time:
-	user time   =       0.12 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.11 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.16 seconds =       0.02 minutes
-	system time =       1.64 seconds =       0.03 minutes
+	user time   =       1.01 seconds =       0.02 minutes
+	system time =       1.19 seconds =       0.02 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:27 2012
+*** at Mon Jan 30 17:09:15 2012
 
 
 	**************************************************
@@ -1413,46 +1465,73 @@ Total time:
 	Cache Type      =	LRU
 	Chkpt Parameters:
 	--------------------
-	Number of irreps     = 1
+	Number of irreps     = 4
 	Number of SOs        = 24
 	Number of MOs        = 24
 	Number of active MOs = 23
 
 	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	------	------	------	------	------
-	 A	   24	    1	    4	    0	    19	    0
+	 A1	   11	    1	    2	    0	    8	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
 
 	Nuclear Rep. energy (chkpt) =      8.80146552997207
-	SCF energy          (chkpt) =    -76.02141844515489
+	SCF energy          (chkpt) =    -76.02141844515492
 
 	Presorting SO-basis two-electron integrals.
 	Sorting File: SO Ints (pq,rs) nbuckets = 1
-	Frozen-core energy =  -61.221839796348000
+	Frozen-core energy =  -61.221839796383044
 	Starting first half-transformation.
-	h = 0; memfree         = 31998895
-	h = 0; rows_per_bucket = 300
+	h = 0; memfree         = 31999641
+	h = 0; rows_per_bucket = 107
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
+	h = 1; memfree         = 31999804
+	h = 1; rows_per_bucket = 50
+	h = 1; rows_left       = 0
+	h = 1; nbuckets        = 1
+	h = 2; memfree         = 31999776
+	h = 2; rows_per_bucket = 58
+	h = 2; rows_left       = 0
+	h = 2; nbuckets        = 1
+	h = 3; memfree         = 31999674
+	h = 3; rows_per_bucket = 85
+	h = 3; rows_left       = 0
+	h = 3; nbuckets        = 1
 	Sorting half-transformed integrals.
 	Starting second half-transformation.
-	h = 0; memfree         = 31998895
-	h = 0; rows_per_bucket = 276
+	h = 0; memfree         = 31999641
+	h = 0; rows_per_bucket = 96
 	h = 0; rows_left       = 0
 	h = 0; nbuckets        = 1
+	h = 1; memfree         = 31999804
+	h = 1; rows_per_bucket = 48
+	h = 1; rows_left       = 0
+	h = 1; nbuckets        = 1
+	h = 2; memfree         = 31999776
+	h = 2; rows_per_bucket = 54
+	h = 2; rows_left       = 0
+	h = 2; nbuckets        = 1
+	h = 3; memfree         = 31999674
+	h = 3; rows_per_bucket = 78
+	h = 3; rows_left       = 0
+	h = 3; nbuckets        = 1
 	Two-electron integral transformation complete.
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:27 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:15 2012
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.20 seconds =       0.02 minutes
-	system time =       1.66 seconds =       0.03 minutes
+	user time   =       1.02 seconds =       0.02 minutes
+	system time =       1.21 seconds =       0.02 minutes
 	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on ds8
-*** at Thu Jan 26 11:45:27 2012
+*** at Mon Jan 30 17:09:15 2012
 
 
 *******************************************************
@@ -1519,126 +1598,125 @@ ORBITALS:
    RAS3 LVL     =        4      RAS34 MAX    =        2
    RAS3 MAX     =        2
 
-   DOCC         =  5 
-   SOCC         =  0 
-   FROZEN DOCC  =  1 
-   FROZEN UOCC  =  0 
-   RAS 1        =  4 
-   RAS 2        =  0 
-   RAS 3        = 19 
-   RAS 4        =  0 
+   DOCC         =  3  0  1  1 
+   SOCC         =  0  0  0  0 
+   FROZEN DOCC  =  1  0  0  0 
+   FROZEN UOCC  =  0  0  0  0 
+   RAS 1        =  2  0  1  1 
+   RAS 2        =  0  0  0  0 
+   RAS 3        =  8  2  3  6 
+   RAS 4        =  0  0  0  0 
 *******************************************************
 
 
 There are 1103 alpha strings
 There are 1103 beta strings
-CI space contains    6 blocks
+CI space contains    9 blocks
 
-CI space requires 7981 determinants
+CI space requires 2107 determinants
 
 Check SCF Energy from 1- and 2-electron integrals
 
 SCF Energy (ref):            -76.0214184452
 Nuclear repulsion energy:      8.8014655300
-One-electron energy:         -41.1173635878
-Two-electron energy:          17.5163194090
-Frozen core energy:          -61.2218397963
+One-electron energy:         -41.1173635771
+Two-electron energy:          17.5163193984
+Frozen core energy:          -61.2218397964
 Total electronic energy:     -84.8228839751
 Total SCF energy:            -76.0214184452
 Total H0block size (including coupling): 400
 
- CI vector/subblock length = 7981
+ CI vector/subblock length = 2107
 
 Forming diagonal elements of H
 
 Forming H0 block
 
-*** H0 Block Eigenvalue = -76.05201693
+*** H0 Block Eigenvalue = -76.12408579
 
 Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
 Energy convergence = 1e-06
 RMS CI vector convergence = 1e-07
 
 Using 1 initial trial vectors
-Iter  0  Root  1 = -76.052016930   Delta_E -2.363E+01   Delta_C  9.010E-01  
-Iter  1  Root  1 = -76.222290567   Delta_E -1.703E-01   Delta_C  1.125E-01  
-Iter  2  Root  1 = -76.226821545   Delta_E -4.531E-03   Delta_C  2.877E-02  
-Iter  3  Root  1 = -76.227160109   Delta_E -3.386E-04   Delta_C  7.701E-03  
-Iter  4  Root  1 = -76.227183380   Delta_E -2.327E-05   Delta_C  2.153E-03  
-Iter  5  Root  1 = -76.227185335   Delta_E -1.955E-06   Delta_C  6.172E-04  
-Iter  6  Root  1 = -76.227185483   Delta_E -1.483E-07   Delta_C  1.655E-04  
-Iter  7  Root  1 = -76.227185493   Delta_E -1.001E-08   Delta_C  4.178E-05  
-Iter  8  Root  1 = -76.227185494   Delta_E -5.873E-10   Delta_C  8.086E-06  
-Iter  9  Root  1 = -76.227185494   Delta_E -2.105E-11   Delta_C  1.668E-06  
-Iter 10  Root  1 = -76.227185494   Delta_E -9.166E-13   Delta_C  3.471E-07  
+Iter  0  Root  1 = -76.124085794   Delta_E -2.370E+01   Delta_C  7.464E-01  
+Iter  1  Root  1 = -76.225573814   Delta_E -1.015E-01   Delta_C  7.231E-02  
+Iter  2  Root  1 = -76.227034048   Delta_E -1.460E-03   Delta_C  2.160E-02  
+Iter  3  Root  1 = -76.227174310   Delta_E -1.403E-04   Delta_C  5.280E-03  
+Iter  4  Root  1 = -76.227184353   Delta_E -1.004E-05   Delta_C  1.523E-03  
+Iter  5  Root  1 = -76.227185418   Delta_E -1.065E-06   Delta_C  4.139E-04  
+Iter  6  Root  1 = -76.227185489   Delta_E -7.083E-08   Delta_C  1.132E-04  
+Iter  7  Root  1 = -76.227185494   Delta_E -4.912E-09   Delta_C  2.937E-05  
+Iter  8  Root  1 = -76.227185494   Delta_E -2.989E-10   Delta_C  6.884E-06  
+Iter  9  Root  1 = -76.227185494   Delta_E -1.553E-11   Delta_C  1.463E-06  
+Iter 10  Root  1 = -76.227185494   Delta_E -7.070E-13   Delta_C  3.059E-07  
 Warning: Norm of correction (root 0) is < 1.0E-13
-Iter 11  Root  1 = -76.227185494   Delta_E -3.908E-14   Delta_C  6.696E-08 c
+Iter 11  Root  1 = -76.227185494   Delta_E -2.842E-14   Delta_C  6.484E-08 c
 
-* ROOT 1 CI total energy = -76.2271854940702
+* ROOT 1 CI total energy = -76.2271854940891
 
 
 The 20 most important determinants
 
-    1   -0.973784  (    0,    0)  2AX  3AX  4AX  5AX  
-*   2    0.047489  (   21,   21)  2AX  3AX  4AX  11AX  
-*   3    0.034099  (   11,   11)  2AX  4AX  5AX  8AX  
-*   4    0.033027  (   18,   18)  2AX  3AX  5AX  10AX  
-    5    0.030267  (    7,    7)  2AX  4AX  5AX  7AX  
-*   6    0.027250  (   15,   15)  2AX  4AX  5AX  9AX  
-*   7    0.026507  (   18,   21)  2AX  3AX  4AB  5AA  10AA  11AB  
-*   8    0.026507  (   21,   18)  2AX  3AX  4AA  5AB  10AB  11AA  
-    9    0.023783  (   10,   10)  2AX  3AX  5AX  8AX  
-   10    0.021493  (    7,   11)  2AX  4AX  5AX  7AA  8AB  
-   11    0.021493  (   11,    7)  2AX  4AX  5AX  7AB  8AA  
-*  12   -0.021028  (   10,   15)  2AX  3AA  4AB  5AX  8AA  9AB  
-*  13   -0.021028  (   15,   10)  2AX  3AB  4AA  5AX  8AB  9AA  
-*  14    0.020969  (   21,   27)  2AX  3AA  4AX  5AB  11AA  12AB  
-*  15    0.020969  (   27,   21)  2AX  3AB  4AX  5AA  11AB  12AA  
-   16    0.020760  (    7,   21)  2AX  3AB  4AX  5AA  7AA  11AB  
-   17    0.020760  (   21,    7)  2AX  3AA  4AX  5AB  7AB  11AA  
-*  18    0.020610  (   27,   27)  2AX  4AX  5AX  12AX  
-*  19   -0.018429  (    0,  161)  2AX  3AX  4AA  5AA  10AB  11AB  
-*  20   -0.018429  (  161,    0)  2AX  3AX  4AB  5AB  10AA  11AA  
+    1    0.973784  (  274,  274)  2A1X  3A1X  1B1X  1B2X  
+    2   -0.047489  (  291,  291)  2A1X  3A1X  1B2X  2B1X  
+    3   -0.034099  (  295,  295)  2A1X  3A1X  1B1X  3B2X  
+    4   -0.033027  (  279,  279)  2A1X  1B1X  1B2X  6A1X  
+    5   -0.030267  (  294,  294)  2A1X  3A1X  1B1X  2B2X  
+    6   -0.027250  (  562,  562)  2A1X  3A1X  1B1X  5A1X  
+    7   -0.026507  (  279,  291)  2A1X  3A1B  1B1A  1B2X  6A1A  2B1B  
+    8   -0.026507  (  291,  279)  2A1X  3A1A  1B1B  1B2X  6A1B  2B1A  
+    9   -0.023783  (  573,  573)  2A1X  1B1X  1B2X  3B2X  
+   10   -0.021493  (  294,  295)  2A1X  3A1X  1B1X  2B2A  3B2B  
+   11   -0.021493  (  295,  294)  2A1X  3A1X  1B1X  2B2B  3B2A  
+   12   -0.021028  (  562,  573)  2A1X  3A1A  1B1X  1B2B  5A1A  3B2B  
+   13   -0.021028  (  573,  562)  2A1X  3A1B  1B1X  1B2A  5A1B  3B2A  
+   14    0.020969  (  291,  296)  2A1X  3A1X  1B1B  1B2A  2B1A  4B2B  
+   15    0.020969  (  296,  291)  2A1X  3A1X  1B1A  1B2B  2B1B  4B2A  
+   16    0.020760  (  291,  294)  2A1X  3A1X  1B1B  1B2A  2B1A  2B2B  
+   17    0.020760  (  294,  291)  2A1X  3A1X  1B1A  1B2B  2B1B  2B2A  
+*  18   -0.020610  (  296,  296)  2A1X  3A1X  1B1X  4B2X  
+   19    0.018429  (  274,  349)  2A1X  3A1A  1B1A  1B2X  6A1B  2B1B  
+   20    0.018429  (  349,  274)  2A1X  3A1B  1B1B  1B2X  6A1A  2B1A  
 
 
 
-    Molecular point group: c1
+    Molecular point group: c2v
 
     Geometry (in Angstrom), charge = 0, multiplicity = 1:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
-           O          0.000000000000    -0.000000000000    -0.068516219310
+           O         -0.000000000000     0.000000000000    -0.068516219310
            H          0.000000000000    -0.790689573744     0.543701060724
-           H          0.000000000000     0.790689573744     0.543701060724
+           H         -0.000000000000     0.790689573744     0.543701060724
 
-    Number of unique atoms: 3
+    Number of unique atoms: 2
 
     Atoms equivalency:
        unique atom 0: 0 
-       unique atom 1: 1 
-       unique atom 2: 2 
+       unique atom 1: 1 2 
 
   ==> Properties CI OPDM Root 1 <==
   Nuclear Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0191
+     X:    -0.0000      Y:     0.0000      Z:     1.0191
 
   Electronic Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.2366
+     X:     0.0000      Y:     0.0000      Z:    -0.2366
 
   Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.7824     Total:     0.7824
+     X:    -0.0000      Y:     0.0000      Z:     0.7824     Total:     0.7824
 
   Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.9887     Total:     1.9887
+     X:    -0.0000      Y:     0.0000      Z:     1.9887     Total:     1.9887
 
   Quadrupole Moment: (Debye Ang)
     XX:    -7.1518     YY:    -4.1791     ZZ:    -5.7563
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Traceless Quadrupole Moment: (Debye Ang)
     XX:    -1.4561     YY:     1.5166     ZZ:    -0.0606
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
   Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -1651,22 +1729,22 @@ The 20 most important determinants
   Natural Orbital Occupations:
 
   Total Occupations:
-  HONO-2 :    3  A    1.976
-  HONO-1 :    4  A    1.969
-  HONO-0 :    5  A    1.966
-  LUNO+0 :    6  A    0.025
-  LUNO+1 :    7  A    0.024
-  LUNO+2 :    8  A    0.015
-  LUNO+3 :    9  A    0.010
+  HONO-2 :    1 B1    1.976
+  HONO-1 :    3 A1    1.969
+  HONO-0 :    1 B2    1.966
+  LUNO+0 :    2 B2    0.025
+  LUNO+1 :    4 A1    0.024
+  LUNO+2 :    2 B1    0.015
+  LUNO+3 :    5 A1    0.010
 
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.018027
- Write     0.011091
- Sigma1    0.001035
- Sigma2    0.599289
- Sigma3    0.429909
+ Read      0.005626
+ Write     0.004051
+ Sigma1    0.000577
+ Sigma2    0.101458
+ Sigma3    0.067747
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -1680,14 +1758,14 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on ds8 at Thu Jan 26 11:45:28 2012
+*** tstop() called on ds8 at Mon Jan 30 17:09:15 2012
 Module time:
-	user time   =       1.33 seconds =       0.02 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       2.53 seconds =       0.04 minutes
-	system time =       1.69 seconds =       0.03 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       1.51 seconds =       0.03 minutes
+	system time =       1.23 seconds =       0.02 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

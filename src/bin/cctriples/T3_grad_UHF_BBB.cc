@@ -53,14 +53,15 @@ extern void T3_UHF_AAA_abc(double ***W, double ***V, int disc, int nirreps,
       dpdfile2 fij, fab, fia;
       double ***WABC, ***VABC, ***XABC, ***Y;
       double **Z;
-      double ***WIJK = (double ***) malloc(nirreps * sizeof(double **));
-      double ***VIJK = (double ***) malloc(nirreps * sizeof(double **));
 
       nirreps = moinfo.nirreps;
       occpi = moinfo.boccpi; 
       virtpi = moinfo.bvirtpi;
       occ_off = moinfo.bocc_off;
       vir_off = moinfo.bvir_off;
+
+      double ***WIJK = (double ***) malloc(nirreps * sizeof(double **));
+      double ***VIJK = (double ***) malloc(nirreps * sizeof(double **));
 
       dpd_file2_init(&fIJ, CC_OEI, 0, 2, 2, "fij");
       dpd_file2_init(&fAB, CC_OEI, 0, 3, 3, "fab");

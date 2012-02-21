@@ -14,7 +14,7 @@ DFChargeFitter::~DFChargeFitter()
 {
 }
 SharedVector DFChargeFitter::fit()
-{ 
+{
     int naux = auxiliary_->nbf();
     int nso  = primary_->nbf();
 
@@ -34,16 +34,16 @@ SharedVector DFChargeFitter::fit()
         for (int M = 0; M < primary_->nshell(); M++) {
             for (int N = 0; N < primary_->nshell(); N++) {
                 eri->compute_shell(Q,0,M,N);
-                int nq = auxiliary_->shell(Q)->nfunction();
-                int nm = primary_->shell(M)->nfunction();
-                int nn = primary_->shell(N)->nfunction();
-                int sq = auxiliary_->shell(Q)->function_index();
-                int sm = primary_->shell(M)->function_index();
-                int sn = primary_->shell(N)->function_index();
+                int nq = auxiliary_->shell(Q).nfunction();
+                int nm = primary_->shell(M).nfunction();
+                int nn = primary_->shell(N).nfunction();
+                int sq = auxiliary_->shell(Q).function_index();
+                int sm = primary_->shell(M).function_index();
+                int sn = primary_->shell(N).function_index();
                 for (int oq = 0; oq < nq; oq++) {
                     for (int om = 0; om < nm; om++) {
                         for (int on = 0; on < nn; on++) {
-                            dp[sq + oq] += Dp[sm + om][sn + on] * buffer[oq * nm * nn + om * nn + on]; 
+                            dp[sq + oq] += Dp[sm + om][sn + on] * buffer[oq * nm * nn + om * nn + on];
                         }
                     }
                 }
@@ -65,10 +65,10 @@ SharedVector DFChargeFitter::fit()
     for (int Q = 0; Q < auxiliary_->nshell(); Q++) {
         for (int P = 0; P < auxiliary_->nshell(); P++) {
             eri->compute_shell(Q,0,P,0);
-            int nq = auxiliary_->shell(Q)->nfunction();
-            int np = auxiliary_->shell(P)->nfunction();
-            int sq = auxiliary_->shell(Q)->function_index();
-            int sp = auxiliary_->shell(P)->function_index();
+            int nq = auxiliary_->shell(Q).nfunction();
+            int np = auxiliary_->shell(P).nfunction();
+            int sq = auxiliary_->shell(Q).function_index();
+            int sp = auxiliary_->shell(P).function_index();
             for (int oq = 0; oq < nq; oq++) {
                 for (int op = 0; op < np; op++) {
                     Jp[sq + oq][sp + op] = buffer[oq * np + op];

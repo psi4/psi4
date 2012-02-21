@@ -210,22 +210,16 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     const int nso2 = b2_->nfunction(ujsh);
     const int nso3 = b3_->nfunction(uksh);
     const int nso4 = b4_->nfunction(ulsh);
-    const size_t nso12 = nso1*nso2;
-    const size_t nso123 = nso1*nso2*nso3;
     const size_t nso = nso1*nso2*nso3*nso4;
 
-    const int nao1 = b1_->naofunction(uish);
     const int nao2 = b2_->naofunction(ujsh);
     const int nao3 = b3_->naofunction(uksh);
     const int nao4 = b4_->naofunction(ulsh);
 
-    const size_t aQRS = nso1 * nao2 * nao3 * nao4;
-    const size_t abcD = nso1 * nso2 * nso3 * nao4;
-
-    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
-    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
-    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
-    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
+    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell).ncenter();
+    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell).ncenter();
+    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell).ncenter();
+    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell).ncenter();
 
     int nirrep = b1_->nirrep();
 
@@ -270,7 +264,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
     int si = petite1_->unique_shell_map(uish, 0);
-    const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
+    const int siatom = tb_[thread]->basis1()->shell(si).ncenter();
 
     dprintf("dcd %d", petite1_->group());
     dprintf("istab %d, jstab %d, kstab %d, lstab %d, ijstab %d, klstab %d\n", istabdense, jstabdense, kstabdense, lstabdense, ijstablizer, klstablizer);
@@ -278,22 +272,22 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     for (int ij=1; ij <= R_size; ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
-        const int sjatom = tb_[thread]->basis2()->shell(sj)->ncenter();
+        const int sjatom = tb_[thread]->basis2()->shell(sj).ncenter();
 
         for (int ijkl=1; ijkl <= T_size; ++ijkl) {
             int sk = petite3_->unique_shell_map(uksh, T_list[ijkl]);
             int llsh = petite4_->unique_shell_map(ulsh, T_list[ijkl]);
-            const int skatom = tb_[thread]->basis3()->shell(sk)->ncenter();
+            const int skatom = tb_[thread]->basis3()->shell(sk).ncenter();
 
             for (int kl=1; kl <= S_size; ++kl) {
                 int sl = petite4_->shell_map(llsh, S_list[kl]);
-                const int slatom = tb_[thread]->basis4()->shell(sl)->ncenter();
+                const int slatom = tb_[thread]->basis4()->shell(sl).ncenter();
 
                 // Check AM
-                int total_am = tb_[thread]->basis1()->shell(si)->am() +
-                               tb_[thread]->basis2()->shell(sj)->am() +
-                               tb_[thread]->basis3()->shell(sk)->am() +
-                               tb_[thread]->basis4()->shell(sl)->am();
+                int total_am = tb_[thread]->basis1()->shell(si).am() +
+                               tb_[thread]->basis2()->shell(sj).am() +
+                               tb_[thread]->basis3()->shell(sk).am() +
+                               tb_[thread]->basis4()->shell(sl).am();
 
                 if (!(total_am % 2) ||
                     (siatom != sjatom) ||
@@ -587,16 +581,18 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     const int nso4 = b4_->nfunction(ulsh);
     const size_t nso = nso1*nso2*nso3*nso4;
 
+    // These are needed, because the buffers for each perturbation are spaced by
+    // quartets expressed in terms of Cartesian basis functions, regardless of puream.
     const int nao1 = b1_->naofunction(uish);
     const int nao2 = b2_->naofunction(ujsh);
     const int nao3 = b3_->naofunction(uksh);
     const int nao4 = b4_->naofunction(ulsh);
     const size_t nao = nao1*nao2*nao3*nao4;
 
-    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
-    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
-    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
-    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
+    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell).ncenter();
+    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell).ncenter();
+    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell).ncenter();
+    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell).ncenter();
 
     // These 3 sections are not shell specific so we can just use petite1_
     const unsigned short istablizer = petite1_->stablizer(iatom);
@@ -620,31 +616,32 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     const int R_size = R_list[0];
     const int S_size = S_list[0];
     const int T_size = T_list[0];
+
     int lambda_T = petite1_->nirrep() / dcd_->subgroup_dimensions(ijklstablizer);
 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
     int si = petite1_->unique_shell_map(uish, 0);
-    const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
+    const int siatom = tb_[thread]->basis1()->shell(si).ncenter();
 
     for (int ij=1; ij <= R_size; ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
-        const int sjatom = tb_[thread]->basis2()->shell(sj)->ncenter();
+        const int sjatom = tb_[thread]->basis2()->shell(sj).ncenter();
 
         for (int ijkl=1; ijkl <= T_size; ++ijkl) {
             int sk = petite3_->unique_shell_map(uksh, T_list[ijkl]);
             int llsh = petite4_->unique_shell_map(ulsh, T_list[ijkl]);
-            const int skatom = tb_[thread]->basis3()->shell(sk)->ncenter();
+            const int skatom = tb_[thread]->basis3()->shell(sk).ncenter();
 
             for (int kl=1; kl <= S_size; ++kl) {
                 int sl = petite4_->shell_map(llsh, S_list[kl]);
-                const int slatom = tb_[thread]->basis4()->shell(sl)->ncenter();
+                const int slatom = tb_[thread]->basis4()->shell(sl).ncenter();
 
                 // Check AM
-                int total_am = tb_[thread]->basis1()->shell(si)->am() +
-                               tb_[thread]->basis2()->shell(sj)->am() +
-                               tb_[thread]->basis3()->shell(sk)->am() +
-                               tb_[thread]->basis4()->shell(sl)->am();
+                int total_am = tb_[thread]->basis1()->shell(si).am() +
+                               tb_[thread]->basis2()->shell(sj).am() +
+                               tb_[thread]->basis3()->shell(sk).am() +
+                               tb_[thread]->basis4()->shell(sl).am();
 
                 //                if(!(total_am%2)||
                 //                             (BasisSet.shells[si].center!=BasisSet.shells[sj].center)||
@@ -674,11 +671,13 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     // Compute integral using si, sj_arr, sk_arr, sl_arr
     // Loop over unique quartets
     const AOTransform& s1 = b1_->aotrans(si);
+    const unsigned short *ifuncpi = s1.nfuncpi;
     const CdSalcWRTAtom& c1 = cdsalcs_->atom_salc(siatom);
 
     // Zero out SALC memory
     for (int i=0; i<cdsalcs_->ncd(); ++i)
         ::memset(deriv_[thread][i], 0, sizeof(double)*nso);
+
 
     double pfac = 1.0;
     //    if (uish == ujsh)
@@ -693,225 +692,255 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
         int sk = sk_arr[n];
         int sl = sl_arr[n];
 
+
         const AOTransform& s2 = b2_->aotrans(sj);
         const AOTransform& s3 = b3_->aotrans(sk);
         const AOTransform& s4 = b4_->aotrans(sl);
 
-        const CdSalcWRTAtom& c2 = cdsalcs_->atom_salc(tb_[thread]->basis2()->shell(sj)->ncenter());
-        const CdSalcWRTAtom& c3 = cdsalcs_->atom_salc(tb_[thread]->basis3()->shell(sk)->ncenter());
-        const CdSalcWRTAtom& c4 = cdsalcs_->atom_salc(tb_[thread]->basis4()->shell(sl)->ncenter());
+        const unsigned short *jfuncpi = s2.nfuncpi;
+        const unsigned short *kfuncpi = s3.nfuncpi;
+        const unsigned short *lfuncpi = s4.nfuncpi;
 
-        int ns1so = s1.soshell.size();
-        int ns2so = s2.soshell.size();
-        int ns3so = s3.soshell.size();
-        int ns4so = s4.soshell.size();
+        const CdSalcWRTAtom& c2 = cdsalcs_->atom_salc(tb_[thread]->basis2()->shell(sj).ncenter());
+        const CdSalcWRTAtom& c3 = cdsalcs_->atom_salc(tb_[thread]->basis3()->shell(sk).ncenter());
+        const CdSalcWRTAtom& c4 = cdsalcs_->atom_salc(tb_[thread]->basis4()->shell(sl).ncenter());
 
         // Compute this unique AO shell
         tb_[thread]->compute_shell_deriv1(si, sj, sk, sl);
 
-        // First loop over SO transformation
-        for (int itr=0; itr<ns1so; itr++) {
-            const AOTransformFunction &ifunc = s1.soshell[itr];
-            double icoef = ifunc.coef;
-            int iaofunc = ifunc.aofunc;
-            int isofunc = ifunc.sofunc;
-            int iaooff = iaofunc;
-            int isooff = isofunc;
+        int nirrep = b1_->nirrep();
 
-            for (int jtr=0; jtr<ns2so; jtr++) {
-                const AOTransformFunction &jfunc = s2.soshell[jtr];
-                double jcoef = jfunc.coef * icoef;
-                int jaofunc = jfunc.aofunc;
-                int jsofunc = jfunc.sofunc;
-                int jaooff = iaooff*nao2 + jaofunc;
-                int jsooff = isooff*nso2 + jsofunc;
+        for (int isym=0; isym<nirrep; ++isym) {
+            unsigned short nifunc = ifuncpi[isym];
+            for (int itr=0; itr<nifunc; itr++) {
+                mints_timer_on("itr");
 
-                for (int ktr=0; ktr<ns3so; ktr++) {
-                    const AOTransformFunction &kfunc = s3.soshell[ktr];
-                    double kcoef = kfunc.coef * jcoef;
-                    int kaofunc = kfunc.aofunc;
-                    int ksofunc = kfunc.sofunc;
-                    int kaooff = jaooff*nao3 + kaofunc;
-                    int ksooff = jsooff*nso3 + ksofunc;
+                const AOTransformFunction &ifunc = s1.soshellpi[isym][itr];
+                double icoef = ifunc.coef;
+                int iaofunc = ifunc.aofunc;
+                int isofunc = ifunc.sofunc;
+                int iaooff = iaofunc;
+                int isooff = isofunc;
 
-                    for (int ltr=0; ltr<ns4so; ltr++) {
-                        const AOTransformFunction &lfunc = s4.soshell[ltr];
-                        double lcoef = lfunc.coef * kcoef;
-                        int laofunc = lfunc.aofunc;
-                        int lsofunc = lfunc.sofunc;
-                        int laooff = kaooff*nao4 + laofunc;
-                        int lsooff = ksooff*nso4 + lsofunc;
+                mints_timer_off("itr");
 
-                        int total_symmetry = ifunc.irrep ^ jfunc.irrep ^ kfunc.irrep ^ lfunc.irrep;
+                for (int jsym=0; jsym<nirrep; ++jsym) {
+                    unsigned short njfunc = jfuncpi[jsym];
+                    for (int jtr=0; jtr<njfunc; jtr++) {
 
-                        // If we're only interested in totally symmetric derivatives, skip all others.
-                        if (only_totally_symmetric_ == true && total_symmetry != 0)
-                            continue;
+                        mints_timer_on("jtr");
 
-                        // OK, the integral at 12 aobuff[laooff] needs
-                        // to have lambda_T * lcoef * salcCoef applied to
-                        // it and saved to salc index
-                        // Special case is center B which must be determined
-                        // from centers A, C, and D.
-                        double A[3], B[3], C[3], D[3];
+                        const AOTransformFunction &jfunc = s2.soshellpi[jsym][jtr];
+                        double jcoef = jfunc.coef * icoef;
+                        int jaofunc = jfunc.aofunc;
+                        int jsofunc = jfunc.sofunc;
+                        int jaooff = iaooff*nao2 + jaofunc;
+                        int jsooff = isooff*nso2 + jsofunc;
 
-                        A[0] = aobuffer[0*nao+laooff]; A[1] = aobuffer[1*nao+laooff]; A[2] = aobuffer[2*nao+laooff];
-                        C[0] = aobuffer[3*nao+laooff]; C[1] = aobuffer[4*nao+laooff]; C[2] = aobuffer[5*nao+laooff];
-                        D[0] = aobuffer[6*nao+laooff]; D[1] = aobuffer[7*nao+laooff]; D[2] = aobuffer[8*nao+laooff];
+                        mints_timer_off("jtr");
 
-                        // Use translational invariance to determine B
-                        B[0] = -(A[0] + C[0] + D[0]);  B[1] = -(A[1] + C[1] + D[1]);  B[2] = -(A[2] + C[2] + D[2]);
+                        for (int ksym=0; ksym<nirrep; ++ksym) {
+                            unsigned short nkfunc = kfuncpi[ksym];
+                            for (int ktr=0; ktr<nkfunc; ktr++) {
 
-                        A[0] *= lambda_T * pfac * lcoef;
-                        A[1] *= lambda_T * pfac * lcoef;
-                        A[2] *= lambda_T * pfac * lcoef;
-                        B[0] *= lambda_T * pfac * lcoef;
-                        B[1] *= lambda_T * pfac * lcoef;
-                        B[2] *= lambda_T * pfac * lcoef;
-                        C[0] *= lambda_T * pfac * lcoef;
-                        C[1] *= lambda_T * pfac * lcoef;
-                        C[2] *= lambda_T * pfac * lcoef;
-                        D[0] *= lambda_T * pfac * lcoef;
-                        D[1] *= lambda_T * pfac * lcoef;
-                        D[2] *= lambda_T * pfac * lcoef;
+                                mints_timer_on("ktr");
 
-                        dprintf("so' derivatives: A[0] %+lf A[1] %+lf A[2] %+lf\n"
-                                "                 B[0] %+lf B[1] %+lf B[2] %+lf\n"
-                                "                 C[0] %+lf C[1] %+lf C[2] %+lf\n"
-                                "                 D[0] %+lf D[1] %+lf D[2] %+lf\n"
-                                "lsooff: %d\n"
-                                "iirrep: %d jirrep: %d kirrep: %d lirrep: %d combined: %d\n",
-                                A[0], A[1], A[2], B[0], B[1], B[2], C[0], C[1], C[2], D[0], D[1], D[2], lsooff,
-                                ifunc.irrep, jfunc.irrep, kfunc.irrep, lfunc.irrep,
-                                ifunc.irrep ^ jfunc.irrep ^ kfunc.irrep ^ lfunc.irrep);
+                                const AOTransformFunction &kfunc = s3.soshellpi[ksym][ktr];
+                                double kcoef = kfunc.coef * jcoef;
+                                int kaofunc = kfunc.aofunc;
+                                int ksofunc = kfunc.sofunc;
+                                int kaooff = jaooff*nao3 + kaofunc;
+                                int ksooff = jsooff*nso3 + ksofunc;
 
-                        // For each center apply the so transform and salc coef.
-                        // Ax
-                        for (int nx=0; nx<c1.nx(); ++nx) {
-                            const CdSalcWRTAtom::Component element = c1.x(nx);
-                            double temp = element.coef * A[0];
-                            dprintf("Ax SALC#%d pfac %lf, A[0] %lf, contr %lf\n", element.salc, element.coef, A[0], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                mints_timer_off("ktr");
+
+                                int lsym = isym ^ jsym ^ ksym;
+                                unsigned short nlfunc = lfuncpi[lsym];
+                                for (int ltr=0; ltr<nlfunc; ltr++) {
+
+                                    mints_timer_on("ltr");
+
+                                    const AOTransformFunction &lfunc = s4.soshellpi[lsym][ltr];
+                                    double lcoef = lfunc.coef * kcoef;
+                                    int laofunc = lfunc.aofunc;
+                                    int lsofunc = lfunc.sofunc;
+                                    int laooff = kaooff*nao4 + laofunc;
+                                    int lsooff = ksooff*nso4 + lsofunc;
+
+                                    int total_symmetry = ifunc.irrep ^ jfunc.irrep ^ kfunc.irrep ^ lfunc.irrep;
+
+                                    // If we're only interested in totally symmetric derivatives, skip all others.
+                                    if (only_totally_symmetric_ == true && total_symmetry != 0)
+                                        continue;
+
+                                    // OK, the integral at 12 aobuff[laooff] needs
+                                    // to have lambda_T * lcoef * salcCoef applied to
+                                    // it and saved to salc index
+                                    // Special case is center B which must be determined
+                                    // from centers A, C, and D.
+                                    double A[3], B[3], C[3], D[3];
+
+                                    A[0] = aobuffer[0*nao+laooff]; A[1] = aobuffer[1*nao+laooff]; A[2] = aobuffer[2*nao+laooff];
+                                    C[0] = aobuffer[3*nao+laooff]; C[1] = aobuffer[4*nao+laooff]; C[2] = aobuffer[5*nao+laooff];
+                                    D[0] = aobuffer[6*nao+laooff]; D[1] = aobuffer[7*nao+laooff]; D[2] = aobuffer[8*nao+laooff];
+
+                                    // Use translational invariance to determine B
+                                    B[0] = -(A[0] + C[0] + D[0]);  B[1] = -(A[1] + C[1] + D[1]);  B[2] = -(A[2] + C[2] + D[2]);
+
+                                    A[0] *= lambda_T * pfac * lcoef;
+                                    A[1] *= lambda_T * pfac * lcoef;
+                                    A[2] *= lambda_T * pfac * lcoef;
+                                    B[0] *= lambda_T * pfac * lcoef;
+                                    B[1] *= lambda_T * pfac * lcoef;
+                                    B[2] *= lambda_T * pfac * lcoef;
+                                    C[0] *= lambda_T * pfac * lcoef;
+                                    C[1] *= lambda_T * pfac * lcoef;
+                                    C[2] *= lambda_T * pfac * lcoef;
+                                    D[0] *= lambda_T * pfac * lcoef;
+                                    D[1] *= lambda_T * pfac * lcoef;
+                                    D[2] *= lambda_T * pfac * lcoef;
+
+                                    dprintf("so' derivatives: A[0] %+lf A[1] %+lf A[2] %+lf\n"
+                                            "                 B[0] %+lf B[1] %+lf B[2] %+lf\n"
+                                            "                 C[0] %+lf C[1] %+lf C[2] %+lf\n"
+                                            "                 D[0] %+lf D[1] %+lf D[2] %+lf\n"
+                                            "lsooff: %d\n"
+                                            "iirrep: %d jirrep: %d kirrep: %d lirrep: %d combined: %d\n",
+                                            A[0], A[1], A[2], B[0], B[1], B[2], C[0], C[1], C[2], D[0], D[1], D[2], lsooff,
+                                            ifunc.irrep, jfunc.irrep, kfunc.irrep, lfunc.irrep,
+                                            ifunc.irrep ^ jfunc.irrep ^ kfunc.irrep ^ lfunc.irrep);
+
+                                    // For each center apply the so transform and salc coef.
+                                    // Ax
+                                    for (int nx=0; nx<c1.nx(); ++nx) {
+                                        const CdSalcWRTAtom::Component element = c1.x(nx);
+                                        double temp = element.coef * A[0];
+                                        dprintf("Ax SALC#%d pfac %lf, A[0] %lf, contr %lf\n", element.salc, element.coef, A[0], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Ay
+                                    for (int ny=0; ny<c1.ny(); ++ny) {
+                                        const CdSalcWRTAtom::Component element = c1.y(ny);
+                                        double temp = element.coef * A[1];
+                                        dprintf("Ay SALC#%d pfac %lf, A[1] %lf, contr %lf\n", element.salc, element.coef, A[1], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Az
+                                    for (int nz=0; nz<c1.nz(); ++nz) {
+                                        const CdSalcWRTAtom::Component element = c1.z(nz);
+                                        double temp = element.coef * A[2];
+                                        dprintf("Az SALC#%d pfac %lf, A[2] %lf, contr %lf\n", element.salc, element.coef, A[2], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Bx
+                                    for (int nx=0; nx<c2.nx(); ++nx) {
+                                        const CdSalcWRTAtom::Component element = c2.x(nx);
+                                        double temp = element.coef * B[0];
+                                        dprintf("Bx SALC#%d pfac %lf, B[0] %lf, contr %lf\n", element.salc, element.coef, B[0], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // By
+                                    for (int ny=0; ny<c2.ny(); ++ny) {
+                                        const CdSalcWRTAtom::Component element = c2.y(ny);
+                                        double temp = element.coef * B[1];
+                                        dprintf("By SALC#%d pfac %lf, B[1] %lf, contr %lf\n", element.salc, element.coef, B[1], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Bz
+                                    for (int nz=0; nz<c2.nz(); ++nz) {
+                                        const CdSalcWRTAtom::Component element = c2.z(nz);
+                                        double temp = element.coef * B[2];
+                                        dprintf("Bz SALC#%d pfac %lf, B[2] %lf, contr %lf\n", element.salc, element.coef, B[2], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Cx
+                                    for (int nx=0; nx<c3.nx(); ++nx) {
+                                        const CdSalcWRTAtom::Component element = c3.x(nx);
+                                        double temp = element.coef * C[0];
+                                        dprintf("Cx SALC#%d pfac %lf, C[0] %lf, contr %lf\n", element.salc, element.coef, C[0], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Cy
+                                    for (int ny=0; ny<c3.ny(); ++ny) {
+                                        const CdSalcWRTAtom::Component element = c3.y(ny);
+                                        double temp = element.coef * C[1];
+                                        dprintf("Cy SALC#%d pfac %lf, C[1] %lf, contr %lf\n", element.salc, element.coef, C[1], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Cz
+                                    for (int nz=0; nz<c3.nz(); ++nz) {
+                                        const CdSalcWRTAtom::Component element = c3.z(nz);
+                                        double temp = element.coef * C[2];
+                                        dprintf("Cz SALC#%d pfac %lf, C[2] %lf, contr %lf\n", element.salc, element.coef, C[2], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Dx
+                                    for (int nx=0; nx<c4.nx(); ++nx) {
+                                        const CdSalcWRTAtom::Component element = c4.x(nx);
+                                        double temp = element.coef * D[0];
+                                        dprintf("Dx SALC#%d pfac %lf, D[0] %lf, contr %lf\n", element.salc, element.coef, D[0], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Dy
+                                    for (int ny=0; ny<c4.ny(); ++ny) {
+                                        const CdSalcWRTAtom::Component element = c4.y(ny);
+                                        double temp = element.coef * D[1];
+                                        dprintf("Dy SALC#%d pfac %lf, D[1] %lf, contr %lf\n", element.salc, element.coef, D[1], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    // Dz
+                                    for (int nz=0; nz<c4.nz(); ++nz) {
+                                        const CdSalcWRTAtom::Component element = c4.z(nz);
+                                        double temp = element.coef * D[2];
+                                        dprintf("Dz SALC#%d pfac %lf, D[2] %lf, contr %lf\n", element.salc, element.coef, D[2], temp);
+                                        if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
+                                            deriv_[thread][element.salc][lsooff] += temp;
+                                        dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
+                                    }
+
+                                    dprintf("\n");
+                                }
+                            }
                         }
-
-                        // Ay
-                        for (int ny=0; ny<c1.ny(); ++ny) {
-                            const CdSalcWRTAtom::Component element = c1.y(ny);
-                            double temp = element.coef * A[1];
-                            dprintf("Ay SALC#%d pfac %lf, A[1] %lf, contr %lf\n", element.salc, element.coef, A[1], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Az
-                        for (int nz=0; nz<c1.nz(); ++nz) {
-                            const CdSalcWRTAtom::Component element = c1.z(nz);
-                            double temp = element.coef * A[2];
-                            dprintf("Az SALC#%d pfac %lf, A[2] %lf, contr %lf\n", element.salc, element.coef, A[2], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Bx
-                        for (int nx=0; nx<c2.nx(); ++nx) {
-                            const CdSalcWRTAtom::Component element = c2.x(nx);
-                            double temp = element.coef * B[0];
-                            dprintf("Bx SALC#%d pfac %lf, B[0] %lf, contr %lf\n", element.salc, element.coef, B[0], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // By
-                        for (int ny=0; ny<c2.ny(); ++ny) {
-                            const CdSalcWRTAtom::Component element = c2.y(ny);
-                            double temp = element.coef * B[1];
-                            dprintf("By SALC#%d pfac %lf, B[1] %lf, contr %lf\n", element.salc, element.coef, B[1], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Bz
-                        for (int nz=0; nz<c2.nz(); ++nz) {
-                            const CdSalcWRTAtom::Component element = c2.z(nz);
-                            double temp = element.coef * B[2];
-                            dprintf("Bz SALC#%d pfac %lf, B[2] %lf, contr %lf\n", element.salc, element.coef, B[2], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Cx
-                        for (int nx=0; nx<c3.nx(); ++nx) {
-                            const CdSalcWRTAtom::Component element = c3.x(nx);
-                            double temp = element.coef * C[0];
-                            dprintf("Cx SALC#%d pfac %lf, C[0] %lf, contr %lf\n", element.salc, element.coef, C[0], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Cy
-                        for (int ny=0; ny<c3.ny(); ++ny) {
-                            const CdSalcWRTAtom::Component element = c3.y(ny);
-                            double temp = element.coef * C[1];
-                            dprintf("Cy SALC#%d pfac %lf, C[1] %lf, contr %lf\n", element.salc, element.coef, C[1], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Cz
-                        for (int nz=0; nz<c3.nz(); ++nz) {
-                            const CdSalcWRTAtom::Component element = c3.z(nz);
-                            double temp = element.coef * C[2];
-                            dprintf("Cz SALC#%d pfac %lf, C[2] %lf, contr %lf\n", element.salc, element.coef, C[2], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Dx
-                        for (int nx=0; nx<c4.nx(); ++nx) {
-                            const CdSalcWRTAtom::Component element = c4.x(nx);
-                            double temp = element.coef * D[0];
-                            dprintf("Dx SALC#%d pfac %lf, D[0] %lf, contr %lf\n", element.salc, element.coef, D[0], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Dy
-                        for (int ny=0; ny<c4.ny(); ++ny) {
-                            const CdSalcWRTAtom::Component element = c4.y(ny);
-                            double temp = element.coef * D[1];
-                            dprintf("Dy SALC#%d pfac %lf, D[1] %lf, contr %lf\n", element.salc, element.coef, D[1], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        // Dz
-                        for (int nz=0; nz<c4.nz(); ++nz) {
-                            const CdSalcWRTAtom::Component element = c4.z(nz);
-                            double temp = element.coef * D[2];
-                            dprintf("Dz SALC#%d pfac %lf, D[2] %lf, contr %lf\n", element.salc, element.coef, D[2], temp);
-                            if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[thread][element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
-                        }
-
-                        dprintf("\n");
                     }
                 }
             }
         }
     }
+
     provide_IJKL_deriv1(uish, ujsh, uksh, ulsh, body);
 
 } // function

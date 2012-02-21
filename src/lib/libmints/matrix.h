@@ -6,6 +6,7 @@
 #include <vector>
 #include <libparallel/serialize.h>
 #include <libparallel/parallel.h>
+#include <boost/tuple/tuple.hpp>
 #include "dimension.h"
 #include "typedefs.h"
 #include <exception.h>
@@ -74,7 +75,9 @@ protected:
 public:
 
     enum DiagonalizeOrder {
+        EvalsOnlyAscending = 0,
         Ascending = 1,
+        EvalsOnlyDescending = 2,
         Descending = 3
     };
 
@@ -744,9 +747,14 @@ public:
     /// @}
 
     /// @{
-    /// General SVD, such that A = USV'. U, S, and V must be allocated by the caller.
+    /// General SVD, such that A = USV. U, S, and V must be allocated by the caller.
     void svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V);
     /// @}
+
+    ///@{
+    /// Matrices/Vectors U (m x k), S (k), V (k x n) to feed to Matrix::svd
+    boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
+    ///@}
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
@@ -865,9 +873,21 @@ public:
      *
      * \returns true if a vector is added, false otherwise
     */
-    bool schmidt_add(int h, int rows, Vector& v) throw();
-    bool schmidt_add(int h, int rows, double* v) throw();
+    bool schmidt_add_row(int h, int rows, Vector& v) throw();
+    bool schmidt_add_row(int h, int rows, double* v) throw();
     /// @}
+
+    /*! Schmidt orthogonalize this. S is the overlap matrix.
+     *  n is the number of columns to orthogonalize. */
+    void schmidt_orthog(SharedMatrix S, int n);
+
+    /*! Schmidt orthogonalize this. You'll likely want to View this matrix afterwards
+     *  using the result to obtain a properly sized Matrix.
+     *  \param S overlap matrix.
+     *  \param tol is the tolerance.
+     *  \returns A Dimension object tell you how many were removed in each irrep.
+     */
+    Dimension schmidt_orthog_columns(SharedMatrix S, double tol, double*res=0);
 
     /*!
      * Project out the row vectors in the matrix provided out of this matrix.

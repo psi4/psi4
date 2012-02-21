@@ -1,5 +1,10 @@
 #include <libparallel/parallel.h>
 #include <cstdio>
+#include <cstring>
+#include <sstream>
+#include <psiconfig.h>
+
+#include "gitversion.h"
 
 namespace psi {
 
@@ -8,8 +13,14 @@ void print_version(FILE *myout)
 {
   fprintf(myout, "    -----------------------------------------------------------------------\n");
   fprintf(myout, "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
-  fprintf(myout, "                              PSI %s Driver\n\n", PSI_VERSION);
+  fprintf(myout, "                              PSI %s Driver\n", PSI_VERSION);
 
+  // Are we using git? If so,what version string
+#ifdef GIT_VERSION
+  fprintf(myout, "\n               Git: Rev " GIT_VERSION "\n");
+#endif
+
+  fprintf(myout, "\n");
   fprintf(myout, "    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,\n");
   fprintf(myout, "    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,\n");
   fprintf(myout, "    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,\n");

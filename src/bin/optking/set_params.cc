@@ -88,11 +88,10 @@ void set_params(void)
 //  Opt_params.generate_intcos_only;
     Opt_params.generate_intcos_only = options.get_bool("INTCOS_GENERATE_EXIT");
 
-// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, LINDH}
+// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE}
     s = options.get_str("INTRAFRAG_HESS");
     if (s == "FISCHER")       Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
     else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
-    else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
     else if (s == "SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
@@ -149,15 +148,101 @@ void set_params(void)
     if (s == "FORWARD")        Opt_params.IRC_direction = OPT_PARAMS::FORWARD;
     else if (s == "BACKWARD")  Opt_params.IRC_direction = OPT_PARAMS::BACKWARD;
 
-// QCHEM optimization criteria
-//  Opt_params.conv_max_force = 3.0e-4;
-//  Opt_params.conv_max_DE    = 1.0e-6;
-//  Opt_params.conv_max_disp  = 1.2e-3;
-    Opt_params.conv_max_force = options.get_double("MAX_FORCE_G_CONVERGENCE");
-    Opt_params.conv_rms_force = options.get_double("RMS_FORCE_G_CONVERGENCE");
-    Opt_params.conv_max_DE = options.get_double("MAX_ENERGY_G_CONVERGENCE");
-    Opt_params.conv_max_disp = options.get_double("MAX_DISP_G_CONVERGENCE");
-    Opt_params.conv_rms_disp = options.get_double("RMS_DISP_G_CONVERGENCE");
+// General optimization criteria
+    Opt_params.i_max_force = false;
+    Opt_params.i_rms_force = false;
+    Opt_params.i_max_DE = false;
+    Opt_params.i_max_disp = false;
+    Opt_params.i_rms_disp = false;
+    Opt_params.i_untampered = false;
+
+    Opt_params.general_conv = options.get_str("G_CONVERGENCE");
+    if (Opt_params.general_conv == "QCHEM") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 3.0e-4;  Opt_params.i_max_force = true;
+      Opt_params.conv_max_DE    = 1.0e-6;  Opt_params.i_max_DE = true;
+      Opt_params.conv_max_disp  = 1.2e-3;  Opt_params.i_max_disp = true;
+    }
+    else if (Opt_params.general_conv == "MOLPRO") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 3.0e-4;  Opt_params.i_max_force = true;
+      Opt_params.conv_max_DE    = 1.0e-6;  Opt_params.i_max_DE = true;
+      Opt_params.conv_max_disp  = 3.0e-4;  Opt_params.i_max_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 4.5e-4;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 3.0e-4;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 1.8e-3;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 1.2e-3;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU_TIGHT") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 1.5e-5;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 1.0e-5;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 6.0e-5;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 4.0e-5;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU_VERYTIGHT") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 2.0e-6;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 1.0e-6;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 6.0e-6;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 4.0e-6;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "GAU_LOOSE") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 2.5e-3;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 1.7e-3;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 1.0e-2;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 6.7e-3;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "TURBOMOLE") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 1.0e-3;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 5.0e-4;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_DE    = 1.0e-6;  Opt_params.i_max_DE = true;
+      Opt_params.conv_max_disp  = 1.0e-3;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 5.0e-4;  Opt_params.i_rms_disp = true;
+    }
+    else if (Opt_params.general_conv == "CFOUR") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_rms_force = 1.0e-4;  Opt_params.i_rms_force = true;
+    }
+    else if (Opt_params.general_conv == "NWCHEM_LOOSE") {
+      Opt_params.i_untampered = true;
+      Opt_params.conv_max_force = 4.5e-3;  Opt_params.i_max_force = true;
+      Opt_params.conv_rms_force = 3.0e-3;  Opt_params.i_rms_force = true;
+      Opt_params.conv_max_disp  = 5.4e-3;  Opt_params.i_max_disp = true;
+      Opt_params.conv_rms_disp  = 3.6e-3;  Opt_params.i_rms_disp = true;
+    }
+
+// Specific optimization criteria
+    if (options["MAX_FORCE_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_max_force = true;
+      Opt_params.conv_max_force = fabs(options.get_double("MAX_FORCE_G_CONVERGENCE"));
+    }
+    if (options["RMS_FORCE_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_rms_force = true;
+      Opt_params.conv_rms_force = fabs(options.get_double("RMS_FORCE_G_CONVERGENCE"));
+    }
+    if (options["MAX_ENERGY_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_max_DE = true;
+      Opt_params.conv_max_DE = fabs(options.get_double("MAX_ENERGY_G_CONVERGENCE"));
+    }
+    if (options["MAX_DISP_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_max_disp = true;
+      Opt_params.conv_max_disp = fabs(options.get_double("MAX_DISP_G_CONVERGENCE"));
+    }
+    if (options["RMS_DISP_G_CONVERGENCE"].has_changed()) {
+      Opt_params.i_untampered = false;
+      Opt_params.i_rms_disp = true;
+      Opt_params.conv_rms_disp = fabs(options.get_double("RMS_DISP_G_CONVERGENCE"));
+    }
 
 // Whether to test B matrix and derivative B matrix numerically
 //  Opt_params.test_B = false;
@@ -226,12 +311,11 @@ void set_params(void)
 // only generate intcos
   Opt_params.generate_intcos_only = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
 
-// model 0=FISCHER ; 1 = SCHLEGEL (default 0) ; 2 = Lindh  ; 3 = simple
+// model 0=FISCHER ; 1 = SCHLEGEL (default 0) ; 2 = simple
   i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_H);
   if (i == 0)      Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
   else if (i == 1) Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
-  else if (i == 2) Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
-  else if (i == 3) Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
+  else if (i == 2) Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
 
 // interfragment 0=DEFAULT ; 1=FISCHER_LIKE
   i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_H);
@@ -276,14 +360,8 @@ void set_params(void)
   i = rem_read(REM_GEOM_OPT2_TOL_GRADIENT);
   Opt_params.conv_max_force = i / 1.0e6; // default (300 -> 3e-4)
 
-  i = rem_read(REM_GEOM_OPT2_RMSTOL_GRADIENT);
-  Opt_params.conv_rms_force = i / 1.0e6; // default (300 -> 3e-4)
-
   i = rem_read(REM_GEOM_OPT2_TOL_DISPLACEMENT);
   Opt_params.conv_max_disp  = i / 1.0e6; // default (1200 -> 1.2e-3)
-
-  i = rem_read(REM_GEOM_OPT2_RMSTOL_DISPLACEMENT);
-  Opt_params.conv_rms_disp  = i / 1.0e6; // default (1200 -> 1.2e-3)
 
   i = rem_read(REM_GEOM_OPT2_TOL_ENERGY);
   Opt_params.conv_max_DE    = i / 1.0e8; // default (100 -> 1.0e-6)
@@ -411,8 +489,6 @@ void print_params(void) {
   fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Schlegel");
-  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
-  fprintf(outfile, "intrafragment_H        = %18s\n", "Lindh");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Simple");
 

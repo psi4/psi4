@@ -44,12 +44,12 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
             for(int i = 0; i < aOccOrbsPI[h]; ++i){
                 int ii = i + offset + frzcpi[h];
                 aOccEvals[aOccCount++] = F[INDEX(ii,ii)];
-                for(int a = aOccOrbsPI[h] ; a < mopi[h]; ++a){
+                for(int a = clsdpi[h] + openpi[h]; a < mopi[h]; ++a){
                     int aa = a + offset;
                     aE2 += pow(F[INDEX(ii,aa)], 2) / (F[INDEX(ii,ii)] - F[INDEX(aa,aa)]);
                 }
             }
-            for(int a = aOccOrbsPI[h]; a < mopi[h]; ++a){
+            for(int a = clsdpi[h] + openpi[h]; a < mopi[h]; ++a){
                 int aa = a + offset;
                 aVirEvals[aVirCount++] = F[INDEX(aa,aa)];
             }
@@ -66,7 +66,7 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
                     bE2 += pow(F[INDEX(ii,aa)], 2) / (F[INDEX(ii,ii)] - F[INDEX(aa,aa)]);
                 }
             }
-            for(int a = bOccOrbsPI[h]; a < mopi[h]; ++a){
+            for(int a = clsdpi[h]; a < mopi[h]; ++a){
                 int aa = a + offset;
                 bVirEvals[bVirCount++] = F[INDEX(aa,aa)];
             }

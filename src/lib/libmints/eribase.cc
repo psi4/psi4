@@ -153,10 +153,10 @@ void TwoElectronInt::init_shell_pairs12()
 
     // Loop over all shell pairs (si, sj) and create primitive pairs pairs
     for (si=0; si<basis1()->nshell(); ++si) {
-        A = basis1()->shell(si)->center();
+        A = basis1()->shell(si).center();
 
         for (sj=0; sj<basis2()->nshell(); ++sj) {
-            B = basis2()->shell(sj)->center();
+            B = basis2()->shell(sj).center();
 
             AB = A - B;
             ab2 = AB.dot(AB);
@@ -169,8 +169,8 @@ void TwoElectronInt::init_shell_pairs12()
             sp->j = sj;
             sp->AB[0] = AB[0]; sp->AB[1] = AB[1]; sp->AB[2] = AB[2];
 
-            np_i = basis1()->shell(si)->nprimitive();
-            np_j = basis2()->shell(sj)->nprimitive();
+            np_i = basis1()->shell(si).nprimitive();
+            np_j = basis2()->shell(sj).nprimitive();
 
             // Reserve some memory for the primitives
             sp->ai = curr_stack_ptr; curr_stack_ptr += np_i;
@@ -211,16 +211,16 @@ void TwoElectronInt::init_shell_pairs12()
             // All memory has been reserved/allocated for this shell primitive pair pair.
             // Pre-compute all data that we can:
             for (i=0; i<np_i; ++i) {
-                a1 = basis1()->shell(si)->exp(i);
-                c1 = basis1()->shell(si)->coef(i);
+                a1 = basis1()->shell(si).exp(i);
+                c1 = basis1()->shell(si).coef(i);
 
                 // Save some information
                 sp->ai[i] = a1;
                 sp->ci[i] = c1;
 
                 for (j=0; j<np_j; ++j) {
-                    a2 = basis2()->shell(sj)->exp(j);
-                    c2 = basis2()->shell(sj)->coef(j);
+                    a2 = basis2()->shell(sj).exp(j);
+                    c2 = basis2()->shell(sj).coef(j);
 
                     gam = a1 + a2;
 
@@ -264,16 +264,16 @@ void TwoElectronInt::init_shell_pairs34()
     curr_stack_ptr = stack34_;
 
     // Allocate shell pair memory
-    pairs34_ = new ShellPair*[basis3()->nshell()];
-    for (i=0; i<basis3()->nshell(); ++i)
-        pairs34_[i] = new ShellPair[basis4()->nshell()];
+    pairs34_ = new ShellPair*[basis3()->nprimitive()];
+    for (i=0; i<basis3()->nprimitive(); ++i)
+        pairs34_[i] = new ShellPair[basis4()->nprimitive()];
 
     // Loop over all shell pairs (si, sj) and create primitive pairs pairs
-    for (si=0; si<basis3()->nshell(); ++si) {
-        A = basis3()->shell(si)->center();
+    for (si=0; si<basis3()->nprimitive(); ++si) {
+        A = basis3()->shell(si).center();
 
-        for (sj=0; sj<basis4()->nshell(); ++sj) {
-            B = basis4()->shell(sj)->center();
+        for (sj=0; sj<basis4()->nprimitive(); ++sj) {
+            B = basis4()->shell(sj).center();
 
             AB = A - B;
             ab2 = AB.dot(AB);
@@ -286,8 +286,8 @@ void TwoElectronInt::init_shell_pairs34()
             sp->j = sj;
             sp->AB[0] = AB[0]; sp->AB[1] = AB[1]; sp->AB[2] = AB[2];
 
-            np_i = basis3()->shell(si)->nprimitive();
-            np_j = basis4()->shell(sj)->nprimitive();
+            np_i = basis3()->shell(si).nprimitive();
+            np_j = basis4()->shell(sj).nprimitive();
 
             // Reserve some memory for the primitives
             sp->ai = curr_stack_ptr; curr_stack_ptr += np_i;
@@ -373,7 +373,7 @@ void TwoElectronInt::free_shell_pairs12()
     delete[] stack12_;
     for (si=0; si<basis1()->nshell(); ++si) {
         for (sj=0; sj<basis2()->nshell(); ++sj) {
-            np_i = basis1()->shell(si)->nprimitive();
+            np_i = basis1()->shell(si).nprimitive();
             sp = &(pairs12_[si][sj]);
 
             delete[] sp->gamma;
@@ -415,9 +415,9 @@ void TwoElectronInt::free_shell_pairs34()
     // Code is commented out above that allocates stack34_
 #if 0
     free(stack34_);
-    for (si=0; si<basis3()->nshell(); ++si) {
-        for (sj=0; sj<basis4()->nshell(); ++sj) {
-            np_i = basis3()->shell(si)->nprimitive();
+    for (si=0; si<basis3()->nprimitive(); ++si) {
+        for (sj=0; sj<basis4()->nprimitive(); ++sj) {
+            np_i = basis3()->shell(si).nprimitive();
             sp = &(pairs34_[si][sj]);
 
             delete[] sp->gamma;
@@ -441,7 +441,7 @@ void TwoElectronInt::free_shell_pairs34()
         }
     }
 
-    for (si=0; si<basis3()->nshell(); ++si)
+    for (si=0; si<basis3()->nprimitive(); ++si)
         delete[] pairs34_[si];
     delete[] pairs34_;
 #endif
@@ -453,9 +453,9 @@ size_t TwoElectronInt::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &b
     size_t mem = 0;
 
     for (i=0; i<bs1->nshell(); ++i) {
-        np_i = bs1->shell(i)->nprimitive();
+        np_i = bs1->shell(i).nprimitive();
         for (j=0; j<bs2->nshell(); ++j) {
-            np_j = bs2->shell(j)->nprimitive();
+            np_j = bs2->shell(j).nprimitive();
             mem += (2*(np_i + np_j) + 11*np_i*np_j);
         }
     }
@@ -489,16 +489,16 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
             size_t nfill = 1;
 
             if (force_cartesian_) {
-                nfill *= bs1_->shell(sh1)->ncartesian();
-                nfill *= bs2_->shell(sh2)->ncartesian();
-                nfill *= bs3_->shell(sh3)->ncartesian();
-                nfill *= bs4_->shell(sh4)->ncartesian();
+                nfill *= bs1_->shell(sh1).ncartesian();
+                nfill *= bs2_->shell(sh2).ncartesian();
+                nfill *= bs3_->shell(sh3).ncartesian();
+                nfill *= bs4_->shell(sh4).ncartesian();
             }
             else {
-                nfill *= bs1_->shell(sh1)->nfunction();
-                nfill *= bs2_->shell(sh2)->nfunction();
-                nfill *= bs3_->shell(sh3)->nfunction();
-                nfill *= bs4_->shell(sh4)->nfunction();
+                nfill *= bs1_->shell(sh1).nfunction();
+                nfill *= bs2_->shell(sh2).nfunction();
+                nfill *= bs3_->shell(sh3).nfunction();
+                nfill *= bs4_->shell(sh4).nfunction();
             }
             memset(target_, 0, sizeof(double)*nfill);
             return;
@@ -526,24 +526,24 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     p13p24_ = false; p12_ = false; p34_ = false;
 
     // AM used for ordering
-    am1 = original_bs1_->shell(sh1)->am();
-    am2 = original_bs2_->shell(sh2)->am();
-    am3 = original_bs3_->shell(sh3)->am();
-    am4 = original_bs4_->shell(sh4)->am();
+    am1 = original_bs1_->shell(sh1).am();
+    am2 = original_bs2_->shell(sh2).am();
+    am3 = original_bs3_->shell(sh3).am();
+    am4 = original_bs4_->shell(sh4).am();
 
     int n1, n2, n3, n4;
 
     if (force_cartesian_) {
-        n1 = original_bs1_->shell(sh1)->ncartesian();
-        n2 = original_bs2_->shell(sh2)->ncartesian();
-        n3 = original_bs3_->shell(sh3)->ncartesian();
-        n4 = original_bs4_->shell(sh4)->ncartesian();
+        n1 = original_bs1_->shell(sh1).ncartesian();
+        n2 = original_bs2_->shell(sh2).ncartesian();
+        n3 = original_bs3_->shell(sh3).ncartesian();
+        n4 = original_bs4_->shell(sh4).ncartesian();
     }
     else {
-        n1 = original_bs1_->shell(sh1)->nfunction();
-        n2 = original_bs2_->shell(sh2)->nfunction();
-        n3 = original_bs3_->shell(sh3)->nfunction();
-        n4 = original_bs4_->shell(sh4)->nfunction();
+        n1 = original_bs1_->shell(sh1).nfunction();
+        n2 = original_bs2_->shell(sh2).nfunction();
+        n3 = original_bs3_->shell(sh3).nfunction();
+        n4 = original_bs4_->shell(sh4).nfunction();
     }
 
     // Save the original requested shell ordering. The pre-computed shell pair information
@@ -645,17 +645,16 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 #ifdef MINTS_TIMER
     timer_on("setup");
 #endif
-    shared_ptr<GaussianShell> s1, s2, s3, s4;
 
-    s1 = bs1_->shell(sh1);
-    s2 = bs2_->shell(sh2);
-    s3 = bs3_->shell(sh3);
-    s4 = bs4_->shell(sh4);
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
+    const GaussianShell& s3 = bs3_->shell(sh3);
+    const GaussianShell& s4 = bs4_->shell(sh4);
 
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int am3 = s3->am();
-    int am4 = s4->am();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int am3 = s3.am();
+    int am4 = s4.am();
     int am = am1 + am2 + am3 + am4; // total am
     int nprim1;
     int nprim2;
@@ -663,18 +662,18 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     int nprim4;
     double A[3], B[3], C[3], D[3];
 
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
-    C[0] = s3->center()[0];
-    C[1] = s3->center()[1];
-    C[2] = s3->center()[2];
-    D[0] = s4->center()[0];
-    D[1] = s4->center()[1];
-    D[2] = s4->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
+    C[0] = s3.center()[0];
+    C[1] = s3.center()[1];
+    C[2] = s3.center()[2];
+    D[0] = s4.center()[0];
+    D[1] = s4.center()[1];
+    D[2] = s4.center()[2];
 
     // compute intermediates
     double AB2 = 0.0;
@@ -704,10 +703,10 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // Prepare all the data needed by libint
     int max_p2, max_p4, m, n;
     size_t nprim = 0;
-    nprim1 = s1->nprimitive();
-    nprim2 = s2->nprimitive();
-    nprim3 = s3->nprimitive();
-    nprim4 = s4->nprimitive();
+    nprim1 = s1.nprimitive();
+    nprim2 = s2.nprimitive();
+    nprim3 = s3.nprimitive();
+    nprim4 = s4.nprimitive();
 
     if (use_shell_pairs_) {
         ShellPair * restrict p12, * restrict p34;
@@ -780,14 +779,14 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         }
     }
     else {
-        double * restrict a1s = s1->exps();
-        double * restrict a2s = s2->exps();
-        double * restrict a3s = s3->exps();
-        double * restrict a4s = s4->exps();
-        double * restrict c1s = s1->coefs();
-        double * restrict c2s = s2->coefs();
-        double * restrict c3s = s3->coefs();
-        double * restrict c4s = s4->coefs();
+        const std::vector<double>& a1s = s1.exps();
+        const std::vector<double>& a2s = s2.exps();
+        const std::vector<double>& a3s = s3.exps();
+        const std::vector<double>& a4s = s4.exps();
+        const std::vector<double>& c1s = s1.coefs();
+        const std::vector<double>& c2s = s2.coefs();
+        const std::vector<double>& c3s = s3.coefs();
+        const std::vector<double>& c4s = s4.coefs();
 
         // Old version - without ShellPair - STILL USED BY RI CODES
         for (int p1=0; p1<nprim1; ++p1) {
@@ -957,16 +956,16 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     bool p13p24 = false, p12 = false, p34 = false;
 
     // AM used for ordering
-    am1 = original_bs1_->shell(sh1)->am();
-    am2 = original_bs2_->shell(sh2)->am();
-    am3 = original_bs3_->shell(sh3)->am();
-    am4 = original_bs4_->shell(sh4)->am();
+    am1 = original_bs1_->shell(sh1).am();
+    am2 = original_bs2_->shell(sh2).am();
+    am3 = original_bs3_->shell(sh3).am();
+    am4 = original_bs4_->shell(sh4).am();
 
     int n1, n2, n3, n4;
-    n1 = original_bs1_->shell(sh1)->ncartesian();
-    n2 = original_bs2_->shell(sh2)->ncartesian();
-    n3 = original_bs3_->shell(sh3)->ncartesian();
-    n4 = original_bs4_->shell(sh4)->ncartesian();
+    n1 = original_bs1_->shell(sh1).ncartesian();
+    n2 = original_bs2_->shell(sh2).ncartesian();
+    n3 = original_bs3_->shell(sh3).ncartesian();
+    n4 = original_bs4_->shell(sh4).ncartesian();
 
     // l(a) >= l(b), l(c) >= l(d), and l(c) + l(d) >= l(a) + l(b).
     if (am1 >= am2) {
@@ -1093,42 +1092,40 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 
 void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
-    shared_ptr<GaussianShell> s1, s2, s3, s4;
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
+    const GaussianShell& s3 = bs3_->shell(sh3);
+    const GaussianShell& s4 = bs4_->shell(sh4);
 
-    s1 = bs1_->shell(sh1);
-    s2 = bs2_->shell(sh2);
-    s3 = bs3_->shell(sh3);
-    s4 = bs4_->shell(sh4);
-
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int am3 = s3->am();
-    int am4 = s4->am();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int am3 = s3.am();
+    int am4 = s4.am();
 
     int am = am1 + am2 + am3 + am4; // total am
 
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
-    int nprim3 = s3->nprimitive();
-    int nprim4 = s4->nprimitive();
+    int nprim1 = s1.nprimitive();
+    int nprim2 = s2.nprimitive();
+    int nprim3 = s3.nprimitive();
+    int nprim4 = s4.nprimitive();
     size_t nprim;
 
     double A[3], B[3], C[3], D[3];
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
 
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
 
-    C[0] = s3->center()[0];
-    C[1] = s3->center()[1];
-    C[2] = s3->center()[2];
+    C[0] = s3.center()[0];
+    C[1] = s3.center()[1];
+    C[2] = s3.center()[2];
 
-    D[0] = s4->center()[0];
-    D[1] = s4->center()[1];
-    D[2] = s4->center()[2];
+    D[0] = s4.center()[0];
+    D[1] = s4.center()[1];
+    D[2] = s4.center()[2];
 
     // Prefactor
     double prefactor = 1.0;
@@ -1154,11 +1151,11 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     // Prepare all the data needed by libderiv
     nprim = 0;
     for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1->exp(p1);
-        double c1 = s1->coef(p1);
+        double a1 = s1.exp(p1);
+        double c1 = s1.coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2->exp(p2);
-            double c2 = s2->coef(p2);
+            double a2 = s2.exp(p2);
+            double c2 = s2.coef(p2);
             double zeta = a1 + a2;
             double ooz = 1.0/zeta;
             double oo2z = 1.0/(2.0 * zeta);
@@ -1179,12 +1176,12 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
             double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
 
             for (int p3=0; p3<nprim3; ++p3) {
-                double a3 = s3->exp(p3);
-                double c3 = s3->coef(p3);
+                double a3 = s3.exp(p3);
+                double c3 = s3.coef(p3);
                 for (int p4=0; p4<nprim4; ++p4) {
 
-                    double a4 = s4->exp(p4);
-                    double c4 = s4->coef(p4);
+                    double a4 = s4.exp(p4);
+                    double c4 = s4.coef(p4);
                     double nu = a3 + a4;
                     double oon = 1.0/nu;
                     double oo2n = 1.0/(2.0*nu);
@@ -1386,7 +1383,7 @@ void TwoElectronInt::form_sieve()
 {
     //fprintf(outfile,"Starting Sieve"); fflush(outfile);
 
-    int nshell = original_bs1_->nshell();
+    int nshell = original_bs1_->nprimitive();
     //fprintf(outfile,"Read"); fflush(outfile);
     schwarz_norm_ = init_array(nshell*(nshell+1)/2);
 
@@ -1400,12 +1397,12 @@ void TwoElectronInt::form_sieve()
             compute_shell(MU,NU,MU,NU);
 
             if (force_cartesian_) {
-                numMU = original_bs1_->shell(MU)->ncartesian();
-                numNU = original_bs1_->shell(NU)->ncartesian();
+                numMU = original_bs1_->shell(MU).ncartesian();
+                numNU = original_bs1_->shell(NU).ncartesian();
             }
             else {
-                numMU = original_bs1_->shell(MU)->nfunction();
-                numNU = original_bs1_->shell(NU)->nfunction();
+                numMU = original_bs1_->shell(MU).nfunction();
+                numNU = original_bs1_->shell(NU).nfunction();
             }
             max = 0.0;
 

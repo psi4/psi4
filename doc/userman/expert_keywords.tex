@@ -1,28 +1,61 @@
 {
  \footnotesize
 
-\subsection{CCDENSITY}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 AEL\\ 
-
-	 & Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034.  \\ 
+\subsection{GLOBALS}\label{ekw-GLOBALS}
+\paragraph{DEBUG}\label{op-GLOBALS-DEBUG} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & The amount of information to print to the output file  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
+\paragraph{DERTYPE}\label{op-GLOBALS-DERTYPE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Derivative level  \\ 
 
+	  & {\bf Possible Values:} NONE, FIRST, SECOND, RESPONSE \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\paragraph{MAT\_NUM\_COLUMN\_PRINT}\label{op-GLOBALS-MAT-NUM-COLUMN-PRINT} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Number of columns to print in calls to Matrix::print\_mat  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 5\\
+	 & & \\
+\end{tabular*}
+\paragraph{WFN}\label{op-GLOBALS-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 XI\_CONNECT\\ 
 
+\subsection{CCDENSITY}\label{ekw-CCDENSITY}
+\paragraph{AEL}\label{op-CCDENSITY-AEL} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Do compute the approximate excitation level? See Stanton and Bartlett, JCP, 98, 1993, 7034.  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\paragraph{WFN}\label{op-CCDENSITY-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Wavefunction type  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} SCF\\
+	 & & \\
+\end{tabular*}
+\paragraph{XI\_CONNECT}\label{op-CCDENSITY-XI-CONNECT} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do require $\bar{H}$ and $R$ to be connected?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -30,19 +63,27 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CCENERGY}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FORCE\_RESTART\\ 
+\subsection{CCENERGY}\label{ekw-CCENERGY}
+\paragraph{AO\_BASIS}\label{op-CCENERGY-AO-BASIS} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & The algorithm to use for the $\left<VV||VV\right>$ terms If AO\_BASIS=NONE, the MO-basis integrals will be used; if AO\_BASIS=DISK, the AO-basis integrals, stored on disk, will be used; if AO\_BASIS=DIRECT, the AO-basis integrals will be computed on the fly as necessary. NB: The AO\_BASIS=DIRECT option is not fully implemented and should only be used by experts. Default is NONE. Note: The developers recommend use of this keyword only as a last resort because it significantly slows the calculation. The current algorithms for handling the MO-basis four-virtual-index integrals have been significantly improved and are preferable to the AO-based approach.  \\ 
 
+	  & {\bf Possible Values:} NONE, DISK, DIRECT \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\paragraph{FORCE\_RESTART}\label{op-CCENERGY-FORCE-RESTART} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do restart the coupled-cluster iterations even if MO phases are screwed up?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\paragraph{WFN}\label{op-CCENERGY-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 
 	  & {\bf Possible Values:} CCSD, CCSD\_T, EOM\_CCSD, LEOM\_CCSD, BCCD, BCCD\_T, CC2, CC3, EOM\_CC2, EOM\_CC3, CCSD\_MVD \\ 
@@ -52,19 +93,17 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CCEOM}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 EXCITATION\_RANGE\\ 
-
+\subsection{CCEOM}\label{ekw-CCEOM}
+\paragraph{EXCITATION\_RANGE}\label{op-CCEOM-EXCITATION-RANGE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & The depth into the occupied and valence spaces from which one-electron excitations are seeded into the Davidson guess to the CIS (the default of 2 includes all single excitations between HOMO-1, HOMO, LUMO, and LUMO+1). This CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic excited states in the EOM-CC calculation  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 2\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\paragraph{WFN}\label{op-CCEOM-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 
 	  & {\bf Possible Values:} EOM\_CCSD, EOM\_CC2, EOM\_CC3 \\ 
@@ -74,10 +113,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CCHBAR}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{CCHBAR}\label{ekw-CCHBAR}
+\paragraph{WFN}\label{op-CCHBAR-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -85,19 +123,17 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CCLAMBDA}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 JOBTYPE\\ 
-
+\subsection{CCLAMBDA}\label{ekw-CCLAMBDA}
+\paragraph{JOBTYPE}\label{op-CCLAMBDA-JOBTYPE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Type of job being performed  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\paragraph{WFN}\label{op-CCLAMBDA-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -105,10 +141,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CCRESPONSE}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{CCRESPONSE}\label{ekw-CCRESPONSE}
+\paragraph{WFN}\label{op-CCRESPONSE-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -116,10 +151,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CCSORT}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{CCSORT}\label{ekw-CCSORT}
+\paragraph{WFN}\label{op-CCSORT-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -127,10 +161,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CCTRIPLES}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{CCTRIPLES}\label{ekw-CCTRIPLES}
+\paragraph{WFN}\label{op-CCTRIPLES-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -138,10 +171,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CIS}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{CIS}\label{ekw-CIS}
+\paragraph{WFN}\label{op-CIS-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 
 	  & {\bf Possible Values:} CCSD, CCSD\_T, EOM\_CCSD, CIS \\ 
@@ -151,10 +183,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CLAG}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{CLAG}\label{ekw-CLAG}
+\paragraph{WFN}\label{op-CLAG-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -162,145 +193,129 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{DETCI}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 BENDAZZOLI\\ 
-
+\subsection{DETCI}\label{ekw-DETCI}
+\paragraph{BENDAZZOLI}\label{op-DETCI-BENDAZZOLI} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do use some routines based on the papers of Bendazzoli et al. to calculate sigma? Seems to be slower and not worthwhile; may disappear eventually. Works only for full CI and I don't remember if I could see how their clever scheme might be extended to RAS in general.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 CC\_FIX\_EXTERNAL\\ 
-
+\paragraph{CC\_FIX\_EXTERNAL}\label{op-DETCI-CC-FIX-EXTERNAL} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do fix amplitudes involving RAS I or RAS IV? Useful in mixed MP2-CC methods.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 CC\_FIX\_EXTERNAL\_MIN\\ 
-
+\paragraph{CC\_FIX\_EXTERNAL\_MIN}\label{op-DETCI-CC-FIX-EXTERNAL-MIN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Number of external indices before amplitude gets fixed by CC\_FIX\_EXTERNAL. Experimental.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 CC\_MACRO\\ 
-
+\paragraph{CC\_MACRO}\label{op-DETCI-CC-MACRO} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & CC\_MACRO = [ [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], ... ] Optional additional restrictions on allowed exictations in coupled-cluster computations, based on macroconfiguration selection. For each sub-array, [ex\_lvl, max\_holes\_I, max\_parts\_IV, max\_I+IV], eliminate cluster amplitudes in which: [the excitation level (holes in I + II) is equal to ex\_lvl] AND [there are more than max\_holes\_I holes in RAS I, there are more than max\_parts\_IV particles in RAS IV, OR there are more than max\_I+IV quasiparticles in RAS I + RAS IV].  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 CC\_MIXED\\ 
-
-	 & Do ignore block if num holes in RAS I and II is > cc\_ex\_lvl and if any indices correspond to RAS I or IV (i.e., include only all-active higher excitations)?  \\ 
+\paragraph{CC\_MIXED}\label{op-DETCI-CC-MIXED} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Do ignore block if num holes in RAS I and II is $>$ cc\_ex\_lvl and if any indices correspond to RAS I or IV (i.e., include only all-active higher excitations)?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 CC\_UPDATE\_EPS\\ 
-
+\paragraph{CC\_UPDATE\_EPS}\label{op-DETCI-CC-UPDATE-EPS} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do update T amplitudes with orbital eigenvalues? (Usually would do this). Not doing this is experimental.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 CC\_VARIATIONAL\\ 
-
+\paragraph{CC\_VARIATIONAL}\label{op-DETCI-CC-VARIATIONAL} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do use variational energy expression in CC computation? Experimental.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 EX\_ALLOW\\ 
-
+\paragraph{EX\_ALLOW}\label{op-DETCI-EX-ALLOW} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array of length EX\_LEVEL specifying whether each excitation type (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed). Used to specify non-standard CI spaces such as CIST.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FCI\_STRINGS\\ 
-
+\paragraph{FCI\_STRINGS}\label{op-DETCI-FCI-STRINGS} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do store strings specifically for FCI? (Defaults to TRUE for FCI.)  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FILTER\_GUESS\\ 
-
+\paragraph{FILTER\_GUESS}\label{op-DETCI-FILTER-GUESS} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do invoke the FILTER\_GUESS options that are used to filter out some trial vectors which may not have the appropriate phase convention between two determinants? This is useful to remove, e.g., delta states when a sigma state is desired. The user inputs two determinants (by giving the absolute alpha string number and beta string number for each), and also the desired phase between these two determinants for guesses which are to be kept. FILTER\_GUESS = TRUE turns on the filtering routine. Requires additional keywords FILTER\_GUESS\_DET1, FILTER\_GUESS\_DET2, and FILTER\_GUESS\_SIGN.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FILTER\_GUESS\_DET1\\ 
-
+\paragraph{FILTER\_GUESS\_DET1}\label{op-DETCI-FILTER-GUESS-DET1} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Array specifying the absolute alpha string number and beta string number for the first determinant in the filter procedure. (See FILTER\_GUESS).  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FILTER\_GUESS\_DET2\\ 
-
+\paragraph{FILTER\_GUESS\_DET2}\label{op-DETCI-FILTER-GUESS-DET2} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Array specifying the absolute alpha string number and beta string number for the second determinant in the filter procedure. (See FILTER\_GUESS).  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FILTER\_GUESS\_SIGN\\ 
-
+\paragraph{FILTER\_GUESS\_SIGN}\label{op-DETCI-FILTER-GUESS-SIGN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & The required phase (1 or -1) between the two determinants specified by FILTER\_GUESS\_DET1 and FILTER\_GUESS\_DET2  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FILTER\_ZERO\_DET\\ 
-
+\paragraph{FILTER\_ZERO\_DET}\label{op-DETCI-FILTER-ZERO-DET} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & If present, the code will try to filter out a particular determinant by setting its CI coefficient to zero. FILTER\_ZERO\_DET = (alphastr betastr) specifies the absolute alpha and beta string numbers of the target determinant. This could be useful for trying to exclude states that have a nonzero CI coefficient for the given determinant. However, this option was experimental and may not be effective.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 FOLLOW\_VECTOR\\ 
-
+\paragraph{FOLLOW\_VECTOR}\label{op-DETCI-FOLLOW-VECTOR} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & In following a particular root (see ROOT keyword), sometimes the root number changes. To follow a root of a particular character, one can specify a list of determinants and their coefficients, and the code will follow the root with the closest overlap. The user specifies arrays containing the absolute alpha string indices (A\_i below), absolute beta indices (B\_i below), and CI coefficients (C\_i below) to form the desired vector. FOLLOW\_VECTOR\_ALPHAS specifies the alpha string indices. The format is FOLLOW\_VECTOR = [ [[A\_1, B\_1], C\_1], [[A\_2, B\_2], C\_2], ...].  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 GUESS\_VECTOR\\ 
-
+\paragraph{GUESS\_VECTOR}\label{op-DETCI-GUESS-VECTOR} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Guess vector type. Accepted values are UNIT for a unit vector guess (NUM\_ROOTS and NUM\_INIT\_VECS must both be 1); H0\_BLOCK to use eigenvectors from the H0 BLOCK submatrix (default); DFILE to use NUM\_ROOTS previously converged vectors in the D file; IMPORT to import a guess previously exported from a CI computation (possibly using a different CI space)  \\ 
 
 	  & {\bf Possible Values:} UNIT, H0\_BLOCK, DFILE, IMPORT \\ 
@@ -309,225 +324,200 @@
 	   & {\bf Type:} string &  {\bf Default:} H0\_BLOCK\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 H0\_BLOCKSIZE\\ 
-
+\paragraph{H0\_BLOCKSIZE}\label{op-DETCI-H0-BLOCKSIZE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & This parameter specifies the size of the H0 block of the Hamiltonian which is solved exactly. The n determinants with the lowest SCF energy are selected, and a submatrix of the Hamiltonian is formed using these determinants. This submatrix is used to accelerate convergence of the CI iterations in the BOLSEN and MITRUSHENKOV iteration schemes, and also to find a good starting guess for the SEM method if GUESS\_VECTOR = H0\_BLOCK. Defaults to 400. Note that the program may change the given size for Ms=0 cases (Ms0 = TRUE) if it determines that the H0 block includes only one member of a pair of determinants related by time reversal symmetry. For very small block sizes, this could conceivably eliminate the entire H0 block; the program should print warnings if this occurs.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 400\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 H0\_BLOCK\_COUPLING\\ 
-
+\paragraph{H0\_BLOCK\_COUPLING}\label{op-DETCI-H0-BLOCK-COUPLING} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do use coupling block in preconditioner?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 H0\_BLOCK\_COUPLING\_SIZE\\ 
-
+\paragraph{H0\_BLOCK\_COUPLING\_SIZE}\label{op-DETCI-H0-BLOCK-COUPLING-SIZE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Parameters which specifies the size of the coupling block within the generalized davidson preconditioner.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 H0\_GUESS\_SIZE\\ 
-
+\paragraph{H0\_GUESS\_SIZE}\label{op-DETCI-H0-GUESS-SIZE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & size of H0 block for initial guess  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 400\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 HD\_AVG\\ 
-
+\paragraph{HD\_AVG}\label{op-DETCI-HD-AVG} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & How to average H diag energies over spin coupling sets. HD\_EXACT uses the exact diagonal energies which results in expansion vectors which break spin symmetry. HD\_KAVE averages the diagonal energies over a spin-coupling set yielding spin pure expansion vectors. ORB\_ENER employs the sum of orbital energy approximation giving spin pure expansion vectors but usually doubles the number of Davidson iterations. EVANGELISTI uses the sums and differences of orbital energies with the SCF reference energy to produce spin pure expansion vectors. LEININGER approximation which subtracts the one-electron contribution from the orbital energies, multiplies by 0.5, and adds the one-electron contribution back in, producing spin pure expansion vectors and developed by Matt Leininger and works as well as EVANGELISTI.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} EVANGELISTI\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 HD\_OTF\\ 
-
+\paragraph{HD\_OTF}\label{op-DETCI-HD-OTF} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do compute the diagonal elements of the Hamiltonian matrix on-the-fly? Otherwise, a diagonal element vector is written to a separate file on disk.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MIXED\\ 
-
+\paragraph{MIXED}\label{op-DETCI-MIXED} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do allow `mixed' RAS II/RAS III excitations into the CI space? If FALSE, then if there are any electrons in RAS III, then the number of holes in RAS I cannot exceed the given excitation level EX\_LEVEL.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MIXED4\\ 
-
+\paragraph{MIXED4}\label{op-DETCI-MIXED4} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do allow `mixed' excitations involving RAS IV into the CI space. Useful to specify a split-virtual CISD[TQ] computation. If FALSE, then if there are any electrons in RAS IV, then the number of holes in RAS I cannot exceed the given excitation level EX\_LEVEL.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MPN\_ORDER\_SAVE\\ 
-
+\paragraph{MPN\_ORDER\_SAVE}\label{op-DETCI-MPN-ORDER-SAVE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if available from MPN\_WIGNER=true); if 2, save the MP(2n-2) energy (if available from MPN\_WIGNER=true).  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MPN\_SCHMIDT\\ 
-
+\paragraph{MPN\_SCHMIDT}\label{op-DETCI-MPN-SCHMIDT} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do employ an orthonormal vector space rather than storing the kth order wavefunction?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MPN\_WIGNER\\ 
-
+\paragraph{MPN\_WIGNER}\label{op-DETCI-MPN-WIGNER} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do use Wigner formulas in the Empn series?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 NO\_DFILE\\ 
-
+\paragraph{NO\_DFILE}\label{op-DETCI-NO-DFILE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do use the last vector space in the BVEC file to write scratch DVEC rather than using a separate DVEC file? (Only possible if NUM\_ROOTS = 1.)  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 NUM\_INIT\_VECS\\ 
-
+\paragraph{NUM\_INIT\_VECS}\label{op-DETCI-NUM-INIT-VECS} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & The number of initial vectors to use in the CI iterative procedure. Defaults to the number of roots.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 OPDM\_KE\\ 
-
+\paragraph{OPDM\_KE}\label{op-DETCI-OPDM-KE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do compute the kinetic energy contribution from the correlated part of the one-particle density matrix?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 PERTURB\_MAGNITUDE\\ 
-
+\paragraph{PERTURB\_MAGNITUDE}\label{op-DETCI-PERTURB-MAGNITUDE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & $z$ in $H = H_0 + z H_1$  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1.0\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 R4S\\ 
-
+\paragraph{R4S}\label{op-DETCI-R4S} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do restrict strings with $e-$ in RAS IV? Useful to reduce the number of strings required if MIXED4=true, as in a split-virutal CISD[TQ] computation. If more than one electron is in RAS IV, then the holes in RAS I cannot exceed the number of particles in RAS III + RAS IV (i.e., EX\_LEVEL), or else the string is discarded.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS1\\ 
-
+\paragraph{RAS1}\label{op-DETCI-RAS1} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS1  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS2\\ 
-
+\paragraph{RAS2}\label{op-DETCI-RAS2} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS2  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS3\\ 
-
+\paragraph{RAS3}\label{op-DETCI-RAS3} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS3  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS4\\ 
-
+\paragraph{RAS4}\label{op-DETCI-RAS4} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS4  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 REFERENCE\_SYM\\ 
-
+\paragraph{REFERENCE\_SYM}\label{op-DETCI-REFERENCE-SYM} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Irrep for CI vectors; -1 = find automatically. This option allows the user to look for CI vectors of a different irrep than the reference. This probably only makes sense for Full CI, and it would probably not work with unit vector guesses. Numbering starts from zero for the totally-symmetric irrep.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} -1\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 REPL\_OTF\\ 
-
+\paragraph{REPL\_OTF}\label{op-DETCI-REPL-OTF} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do string replacements on the fly in DETCI? Can save a gigantic amount of memory (especially for truncated CI's) but is somewhat flaky and hasn't been tested for a while. It may work only works for certain classes of RAS calculations. The current code is very slow with this option turned on.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SF\_RESTRICT\\ 
-
+\paragraph{SF\_RESTRICT}\label{op-DETCI-SF-RESTRICT} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do eliminate determinants not valid for spin-complete spin-flip CI's? [see J. S. Sears et al, J. Chem. Phys. 118, 9084-9094 (2003)]  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SIGMA\_OVERLAP\\ 
-
+\paragraph{SIGMA\_OVERLAP}\label{op-DETCI-SIGMA-OVERLAP} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do print the sigma overlap matrix? Not generally useful.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\paragraph{WFN}\label{op-DETCI-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 
 	  & {\bf Possible Values:} DETCI, CI, ZAPTN, DETCAS, CASSCF, RASSCF \\ 
@@ -537,10 +527,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{DFMP2}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 DF\_INTS\_IO\\ 
-
+\subsection{DFMP2}\label{ekw-DFMP2}
+\paragraph{DF\_INTS\_IO}\label{op-DFMP2-DF-INTS-IO} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & IO caching for CP corrections, etc  \\ 
 
 	  & {\bf Possible Values:} NONE, SAVE, LOAD \\ 
@@ -549,9 +538,8 @@
 	   & {\bf Type:} string &  {\bf Default:} NONE\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MADMP2\_SLEEP\\ 
-
+\paragraph{MADMP2\_SLEEP}\label{op-DFMP2-MADMP2-SLEEP} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & A helpful option, used only in debugging the MADNESS version  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -559,10 +547,9 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{LMP2}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{LMP2}\label{ekw-LMP2}
+\paragraph{WFN}\label{op-LMP2-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -570,37 +557,33 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{MCSCF}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 ROTATE\_MO\_ANGLE\\ 
-
+\subsection{MCSCF}\label{ekw-MCSCF}
+\paragraph{ROTATE\_MO\_ANGLE}\label{op-MCSCF-ROTATE-MO-ANGLE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & For orbital rotations after convergence, the angle (in degrees) by which to rotate.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 ROTATE\_MO\_IRREP\\ 
-
+\paragraph{ROTATE\_MO\_IRREP}\label{op-MCSCF-ROTATE-MO-IRREP} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 ROTATE\_MO\_P\\ 
-
+\paragraph{ROTATE\_MO\_P}\label{op-MCSCF-ROTATE-MO-P} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & For orbital rotations after convergence, number of the first orbital (1-based) to rotate.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 ROTATE\_MO\_Q\\ 
-
+\paragraph{ROTATE\_MO\_Q}\label{op-MCSCF-ROTATE-MO-Q} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & For orbital rotations after convergence, number of the second orbital (1-based) to rotate.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -608,19 +591,17 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{MP2}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 JOBTYPE\\ 
-
+\subsection{MP2}\label{ekw-MP2}
+\paragraph{JOBTYPE}\label{op-MP2-JOBTYPE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Type of job being performed  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SP\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\paragraph{WFN}\label{op-MP2-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 
 	  & {\bf Possible Values:} MP2 \\ 
@@ -630,19 +611,25 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{MRCC}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MRCC\_METHOD\\ 
-
+\subsection{MRCC}\label{ekw-MRCC}
+\paragraph{MRCC\_METHOD}\label{op-MRCC-MRCC-METHOD} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & If more than one root is requested and calc=1, LR-CC (EOM-CC) calculation is performed automatically for the excited states. This overrides all automatic determination of method and will only work with {\tt energy()}. This becomes CC/CI (option \#5) in fort.56 \begin{tabular}{ccc} Value & Method & Description \\ \hline 1 & CC & \\ 2 & CC(n-1)[n] & \\ 3 & CC(n-1)(n) & (CC(n-1)[n] energy is also calculated) \\ 4 & CC(n-1)(n)\_L & (CC(n-1)[n] and CC(n-1)(n) energies are also calculated) \\ 5 & CC(n)-1a & \\ 6 & CC(n)-1b & \\ 7 & CCn & \\ 8 & CC(n)-3 & \\ \end{tabular}  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 MRCC\_RESTART\\ 
-
+\paragraph{MRCC\_OMP\_NUM\_THREADS}\label{op-MRCC-MRCC-OMP-NUM-THREADS} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Sets the OMP\_NUM\_THREADS environment variable before calling MRCC. If the environment variable OMP\_NUM\_THREADS is set prior to calling PSI4 then that value is used. When set, this option overrides everything. Be aware the {\tt -n} command-line option described in section \ref{sec:threading} does not affect MRCC.  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\paragraph{MRCC\_RESTART}\label{op-MRCC-MRCC-RESTART} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & The program restarts from the previously calculated parameters if it is 1. In case it is 2, the program executes automatically the lower-level calculations of the same type consecutively (e.g., CCSD, CCSDT, and CCSDTQ if CCSDTQ is requested) and restarts each calculation from the previous one (rest=2 is available only for energy calculations). Currently, only a value of 0 and 2 are supported. This becomes {\tt rest} (option \#4) in fort.56.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -650,28 +637,25 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{PSIMRCC}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 PERTURB\_CBS\\ 
-
+\subsection{PSIMRCC}\label{ekw-PSIMRCC}
+\paragraph{PERTURB\_CBS}\label{op-PSIMRCC-PERTURB-CBS} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do compute the perturbative corrections for basis set incompleteness?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 PERTURB\_CBS\_COUPLING\\ 
-
+\paragraph{PERTURB\_CBS\_COUPLING}\label{op-PSIMRCC-PERTURB-CBS-COUPLING} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do include the terms that couple different reference determinants in perturbative CBS correction computations?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 TIKHONOW\_TRIPLES\\ 
-
+\paragraph{TIKHONOW\_TRIPLES}\label{op-PSIMRCC-TIKHONOW-TRIPLES} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do use Tikhonow regularization in (T) computations?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -679,11 +663,28 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{SCF}
-\subsubsection{DFSCF Algorithm }
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 DF\_INTS\_IO\\ 
+\subsection{SAPT}\label{ekw-SAPT}
+\paragraph{DO\_THIRD\_ORDER}\label{op-SAPT-DO-THIRD-ORDER} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Do compute third-order corrections?  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
 
+\subsection{SCF}\label{ekw-SCF}
+\subsubsection{DFSCF Algorithm }
+\paragraph{DF\_FITTING\_CONDITION}\label{op-SCF-DF-FITTING-CONDITION} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Fitting Condition  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\paragraph{DF\_INTS\_IO}\label{op-SCF-DF-INTS-IO} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & IO caching for CP corrections, etc  \\ 
 
 	  & {\bf Possible Values:} NONE, SAVE, LOAD \\ 
@@ -693,27 +694,24 @@
 	 & & \\
 \end{tabular*}
 \subsubsection{Environmental Effects }
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 DISTRIBUTED\_MATRIX\\ 
-
+\paragraph{DISTRIBUTED\_MATRIX}\label{op-SCF-DISTRIBUTED-MATRIX} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & The dimension sizes of the distributed matrix  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 PARALLEL\\ 
-
+\paragraph{PARALLEL}\label{op-SCF-PARALLEL} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Do run in parallel?  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 TILE\_SZ\\ 
-
+\paragraph{TILE\_SZ}\label{op-SCF-TILE-SZ} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & The tile size for the distributed matrices  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -721,9 +719,8 @@
 	 & & \\
 \end{tabular*}
 \subsubsection{General Wavefunction Info }
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\paragraph{WFN}\label{op-SCF-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 
 	  & {\bf Possible Values:} SCF \\ 
@@ -733,9 +730,8 @@
 	 & & \\
 \end{tabular*}
 \subsubsection{Misc. }
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SAPT\\ 
-
+\paragraph{SAPT}\label{op-SCF-SAPT} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Are going to do SAPT? If so, what part?  \\ 
 
 	  & {\bf Possible Values:} FALSE, 2-DIMER, 2-MONOMER\_A, 2-MONOMER\_B, 3-TRIMER, 3-DIMER\_AB, 3-DIMER\_BC, 3-DIMER\_AC, 3-MONOMER\_A, 3-MONOMER\_B, 3-MONOMER\_C \\ 
@@ -745,57 +741,48 @@
 	 & & \\
 \end{tabular*}
 \subsubsection{SAD Guess Algorithm }
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SAD\_CHOL\_TOLERANCE\\ 
-
-	 & SAD Guess Cholesky Cutoff (for eliminating redundancies). See
-the note at the beginning of Section \ref{sec:keywords}.  \\ 
+\paragraph{SAD\_CHOL\_TOLERANCE}\label{op-SCF-SAD-CHOL-TOLERANCE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & SAD Guess Cholesky Cutoff (for eliminating redundancies). See the note at the beginning of Section \ref{keywords}.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1e-7\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SAD\_D\_CONVERGENCE\\ 
-
-	 & Convergence criterion for SCF density in SAD Guess. See the note
-at the beginning of Section \ref{sec:keywords}.  \\ 
+\paragraph{SAD\_D\_CONVERGENCE}\label{op-SCF-SAD-D-CONVERGENCE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Convergence criterion for SCF density in SAD Guess. See the note at the beginning of Section \ref{keywords}.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1e-5\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SAD\_E\_CONVERGENCE\\ 
-
-	 & Convergence criterion for SCF energy in SAD Guess. See the note
-at the beginning of Section \ref{sec:keywords}.  \\ 
+\paragraph{SAD\_E\_CONVERGENCE}\label{op-SCF-SAD-E-CONVERGENCE} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
+	 & Convergence criterion for SCF energy in SAD Guess. See the note at the beginning of Section \ref{keywords}.  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1e-5\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SAD\_F\_MIX\_START\\ 
-
+\paragraph{SAD\_F\_MIX\_START}\label{op-SCF-SAD-F-MIX-START} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & SAD Guess F-mix Iteration Start  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 50\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SAD\_MAXITER\\ 
-
+\paragraph{SAD\_MAXITER}\label{op-SCF-SAD-MAXITER} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Maximum number of SAD guess iterations  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 50\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 SAD\_PRINT\\ 
-
+\paragraph{SAD\_PRINT}\label{op-SCF-SAD-PRINT} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & The amount of SAD information to print to the output  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -803,46 +790,41 @@ at the beginning of Section \ref{sec:keywords}.  \\
 	 & & \\
 \end{tabular*}
 
-\subsection{TRANSQT}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS1\\ 
-
+\subsection{TRANSQT}\label{ekw-TRANSQT}
+\paragraph{RAS1}\label{op-TRANSQT-RAS1} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS1  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS2\\ 
-
+\paragraph{RAS2}\label{op-TRANSQT-RAS2} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS2  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS3\\ 
-
+\paragraph{RAS3}\label{op-TRANSQT-RAS3} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS3  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 RAS4\\ 
-
+\paragraph{RAS4}\label{op-TRANSQT-RAS4} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & An array giving the number of orbitals per irrep for RAS4  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\paragraph{WFN}\label{op-TRANSQT-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -850,10 +832,9 @@ at the beginning of Section \ref{sec:keywords}.  \\
 	 & & \\
 \end{tabular*}
 
-\subsection{TRANSQT2}
-\begin{tabular*}{\textwidth}[tb]{p{0.1\textwidth}p{0.9\textwidth}}
-	 WFN\\ 
-
+\subsection{TRANSQT2}\label{ekw-TRANSQT2}
+\paragraph{WFN}\label{op-TRANSQT2-WFN} 
+\begin{tabular*}{\textwidth}[tb]{p{0.05\textwidth}p{0.95\textwidth}}
 	 & Wavefunction type  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}

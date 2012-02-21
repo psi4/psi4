@@ -132,7 +132,7 @@ void FittingMetric::form_fitting_metric()
 
     #pragma omp parallel for schedule (dynamic) num_threads(nthread)
     for (int MU=0; MU < aux_->nshell(); ++MU) {
-        int nummu = aux_->shell(MU)->nfunction();
+        int nummu = aux_->shell(MU).nfunction();
 
         int thread = 0;
         #ifdef _OPENMP
@@ -140,16 +140,16 @@ void FittingMetric::form_fitting_metric()
         #endif
 
         for (int NU=0; NU <= MU; ++NU) {
-            int numnu = aux_->shell(NU)->nfunction();
+            int numnu = aux_->shell(NU).nfunction();
 
             Jint[thread]->compute_shell(MU, 0, NU, 0);
 
             int index = 0;
             for (int mu=0; mu < nummu; ++mu) {
-                int omu = aux_->shell(MU)->function_index() + mu;
+                int omu = aux_->shell(MU).function_index() + mu;
 
                 for (int nu=0; nu < numnu; ++nu, ++index) {
-                    int onu = aux_->shell(NU)->function_index() + nu;
+                    int onu = aux_->shell(NU).function_index() + nu;
 
                     W[omu][onu] = Jbuffer[thread][index];
                     W[onu][omu] = Jbuffer[thread][index];
@@ -172,7 +172,7 @@ void FittingMetric::form_fitting_metric()
 
         #pragma omp parallel for schedule (dynamic) num_threads(nthread)
         for (int NU=0; NU < pois_->nshell(); ++NU) {
-            int numnu = pois_->shell(NU)->nfunction();
+            int numnu = pois_->shell(NU).nfunction();
 
             int thread = 0;
             #ifdef _OPENMP
@@ -180,16 +180,16 @@ void FittingMetric::form_fitting_metric()
             #endif
 
             for (int MU=0; MU < aux_->nshell(); ++MU) {
-                int nummu = aux_->shell(MU)->nfunction();
+                int nummu = aux_->shell(MU).nfunction();
 
                 Oint[thread]->compute_shell(NU, MU);
 
                 int index = 0;
                 for (int nu=0; nu < numnu; ++nu) {
-                    int onu = pois_->shell(NU)->function_index() + nu;
+                    int onu = pois_->shell(NU).function_index() + nu;
 
                     for (int mu=0; mu < nummu; ++mu, ++index) {
-                        int omu = aux_->shell(MU)->function_index() + mu;
+                        int omu = aux_->shell(MU).function_index() + mu;
 
                         W[omu][onu + ngaussian] = Obuffer[thread][index];
                         W[onu + ngaussian][omu] = Obuffer[thread][index];
@@ -209,7 +209,7 @@ void FittingMetric::form_fitting_metric()
 
         #pragma omp parallel for schedule (dynamic) num_threads(nthread)
         for (int MU=0; MU < pois_->nshell(); ++MU) {
-            int nummu = pois_->shell(MU)->nfunction();
+            int nummu = pois_->shell(MU).nfunction();
 
             int thread = 0;
             #ifdef _OPENMP
@@ -217,16 +217,16 @@ void FittingMetric::form_fitting_metric()
             #endif
 
             for (int NU=0; NU <= MU ; ++NU) {
-                int numnu = pois_->shell(NU)->nfunction();
+                int numnu = pois_->shell(NU).nfunction();
 
                 Tint[thread]->compute_shell(MU, NU);
 
                 int index = 0;
                 for (int mu=0; mu < nummu; ++mu) {
-                    int omu = pois_->shell(MU)->function_index() + mu;
+                    int omu = pois_->shell(MU).function_index() + mu;
 
                     for (int nu=0; nu < numnu; ++nu, ++index) {
-                        int onu = pois_->shell(NU)->function_index() + nu;
+                        int onu = pois_->shell(NU).function_index() + nu;
 
                         // These integrals are (A | -1/2 \nabla^2 | B), and should be (A | - 1 / (4 * pi) \nabla^2 |B)
                         // So a factor of 1 / (2 * PI) is the difference
@@ -313,8 +313,8 @@ void FittingMetric::form_fitting_metric()
     }
 
     // Form indexing
-    pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
-    rev_pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
+    pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi));
+    rev_pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi));
     for (int h = 0; h < auxpet->nirrep(); h++) {
         int* piv = pivots_->pointer(h);
         int* rpiv = pivots_->pointer(h);

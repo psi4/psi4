@@ -7,6 +7,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <libmints/mints.h>
+#include <libfock/points.h>
 #include <libciomr/libciomr.h>
 #include "functional.h"
 #include <stdlib.h>

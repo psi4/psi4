@@ -633,12 +633,12 @@ void PetiteList::init()
                 continue;
 
             for (int s=0; s < gbs.nshell_on_center(i); s++) {
-                int am=gbs.shell(i,s)->am();
+                int am=gbs.shell(i,s).am();
 
                 if (am==0)
                     red_rep[g] += 1.0;
                 else {
-                    ShellRotation r(am,so,integral_,gbs.shell(i,s)->is_pure());
+                    ShellRotation r(am,so,integral_,gbs.shell(i,s).is_pure());
                     red_rep[g] += r.trace();
                 }
             }
@@ -837,11 +837,11 @@ PetiteList::compute_aotoso_info()
         for(int shell = 0; shell < nshells; ++shell){
 //fprintf(outfile, "working on shell %d\n", shell);fflush(outfile);
             int abs_shell = basis_->shell_on_center(atom, shell);
-            int ncart = basis_->shell(abs_shell)->ncartesian();
-            int npure = basis_->shell(abs_shell)->nfunction();
+            int ncart = basis_->shell(abs_shell).ncartesian();
+            int npure = basis_->shell(abs_shell).nfunction();
             int src_nfunc = to_pure ? ncart : npure;
             int src_dimension = nimages * src_nfunc;
-            int l = basis_->shell(abs_shell)->am();
+            int l = basis_->shell(abs_shell).am();
 
             // Store the coefficients for each symmetry
             SOCoefficients *coefficients_list;
@@ -996,6 +996,21 @@ SharedMatrix PetiteList::aotoso()
 
     delete[] SOs;
     return aoso;
+}
+
+SharedMatrix PetiteList::evecs_to_AO_basis(SharedMatrix soevecs)
+{
+    // if C1, then do nothing
+    if (c1_)
+        return SharedMatrix(new Matrix(soevecs));
+
+    SharedMatrix result(new Matrix(soevecs->name(), AO_basisdim(), SO_basisdim()));
+
+    // Currently expects the caller to transpose the soevecs.
+    // This is reasonable because soevecs will be used in the transposed state elsewhere.
+    result->gemm(false, false, 1.0, aotoso(), soevecs, 0.0);
+
+    return result;
 }
 
 const char *labels[] = {

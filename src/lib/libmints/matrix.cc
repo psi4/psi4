@@ -1287,7 +1287,73 @@ void Matrix::gemm(bool transa, bool transb, double alpha,
     gemm(transa, transb, alpha, &a, &b, beta);
 }
 
-bool Matrix::schmidt_add(int h, int rows, Vector& v) throw()
+namespace {
+
+int mat_schmidt_tol(double **C, double **S, int nrow, int ncol, double tolerance, double* res)
+{
+    int i, j;
+    int northog = 0;
+    double vtmp;
+    std::vector<double> v(nrow);
+
+    if (res) *res = 1.0;
+
+    // Orthonormalize the columsn of this wrt S.
+    std::fill(v.begin(), v.end(), 0.0);
+
+    for (int m=0; m<ncol; ++m) {
+        v[0] = C[0][m] * S[0][0];
+
+        for (i=1; i<nrow; ++i) {
+            for (j=0,vtmp=0.0; j<i; j++) {
+                vtmp += C[j][m] * S[i][j];
+                v[j] += C[i][m] * S[i][j];
+            }
+            v[i] = vtmp + C[i][m] * S[i][j];
+        }
+
+        for (i=0,vtmp=0.0; i<nrow; ++i)
+            vtmp += v[i] * C[i][m];
+
+        if (vtmp < tolerance) continue;
+
+        if (res && (m == 0 || vtmp < *res)) *res = vtmp;
+
+        vtmp = 1.0/sqrt(vtmp);
+
+        for (i=0; i<nrow; ++i) {
+            v[i] *= vtmp;
+            C[i][northog] = C[i][m] * vtmp;
+        }
+
+        for (i=m+1,vtmp=0.0; i<ncol; ++i) {
+            for (j=0,vtmp=0.0; j<nrow; ++j)
+                vtmp += v[j] * C[j][i];
+            for (j=0; j<nrow; ++j)
+                C[j][i] -= vtmp * C[j][northog];
+        }
+
+        northog++;
+    }
+
+    return northog;
+}
+
+}
+
+Dimension Matrix::schmidt_orthog_columns(SharedMatrix S, double tol, double *res)
+{
+    Dimension northog(nirrep());
+    std::vector<double> resid(nirrep());
+
+    for (int h=0; h<nirrep(); ++h) {
+        northog[h] = mat_schmidt_tol(matrix_[h], S->matrix_[h], rowspi(h), colspi(h), tol, &resid[h]);
+    }
+
+    return northog;
+}
+
+bool Matrix::schmidt_add_row(int h, int rows, Vector& v) throw()
 {
     if (v.nirrep() > 1)
         throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
@@ -1313,7 +1379,7 @@ bool Matrix::schmidt_add(int h, int rows, Vector& v) throw()
         return false;
 }
 
-bool Matrix::schmidt_add(int h, int rows, double* v) throw()
+bool Matrix::schmidt_add_row(int h, int rows, double* v) throw()
 {
     double dotval, normval;
     int i, I;
@@ -1406,7 +1472,7 @@ void Matrix::project_out(Matrix &constraints)
 //                for(int z=0; z<coldim(h); ++z)
 //                    fprintf(outfile, "%lf ", v[z]);
 //                fprintf(outfile, "\n");
-                schmidt_add(h, i, v);
+                schmidt_add_row(h, i, v);
             }
         }
     }
@@ -1505,38 +1571,48 @@ void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::
     }
     delete[] work;
 }
+boost::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps()
+{
+    Dimension rank(nirrep_);
+    for (int h = 0; h < nirrep_; h++) {
+        int m = rowspi_[h];
+        int n = colspi_[h^symmetry_];
+        int k = (m < n ? m : n);
+        rank[h] = k;
+    }
+    SharedMatrix U(new Matrix("U", rowspi_, rank));
+    SharedVector S(new Vector("S", rank));
+    SharedMatrix V(new Matrix("V", rank, colspi_));
 
+    return boost::tuple<SharedMatrix, SharedVector, SharedMatrix>(U,S,V);
+}
 void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::svd: Matrix non-totally symmetric.");
-    }
-
-    // Working copy. This routine takes hella memory
-    Matrix A(*this);
-
+    // Actually, this routine takes mn + mk + nk 
     for (int h = 0; h < nirrep_; h++) {
         if (!rowspi_[h] && !colspi_[h])
             continue;
 
         int m = rowspi_[h];
-        int n = colspi_[h];
+        int n = colspi_[h^symmetry_];
+        int k = (m < n ? m : n);
 
-        double** Ap = A.pointer(h);
+        double** Ap = Matrix::matrix(m,n);
+        ::memcpy((void*) Ap[0], (void*) matrix_[h][0], sizeof(double) * m * n); 
         double*  Sp = S->pointer(h);
         double** Up = U->pointer(h);
-        double** Vp = V->pointer(h);
+        double** Vp = V->pointer(h^symmetry_);
 
-        int* iwork = new int[8L * (m < n ? m : n)];
+        int* iwork = new int[8L * k];
 
         // Workspace Query
         double lwork;
-        int info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,&lwork,-1,iwork);
+        int info = C_DGESDD('S',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,&lwork,-1,iwork);
 
         double* work = new double[(int)lwork];
 
         // SVD
-        info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,work,(int)lwork,iwork);
+        info = C_DGESDD('S',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,work,(int)lwork,iwork);
 
         delete[] work;
         delete[] iwork;
@@ -1553,8 +1629,8 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
                 abort();
             }
         }
+        Matrix::free(Ap);
     }
-    V->transpose_this();
 }
 
 void Matrix::swap_rows(int h, int i, int j)
@@ -1956,7 +2032,7 @@ void Matrix::hermitivitize()
         int n = rowspi_[h];
         if (!n) continue;
         double** M = matrix_[h];
-        
+
         for (int row = 0; row < n - 1; row++) {
             for (int col = row + 1; col < n; col++) {
                 M[row][col] = M[col][row] = 0.5*(M[row][col] + M[col][row]);

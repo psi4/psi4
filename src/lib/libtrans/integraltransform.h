@@ -188,6 +188,8 @@ class IntegralTransform{
         // Get the beta correlated to Pitzer ordering array, used in backtransforms
         const int *beta_corr_to_pitzer() const { return bCorrToPitzer_; }
 
+        int nirrep() const { return nirreps_; }
+
     protected:
         void check_initialized();
         void common_moinfo_initialize();
@@ -291,6 +293,10 @@ class IntegralTransform{
         int print_;
         // Just an array of zeros! Used in the null MOSpace "transforms"
         int *zeros_;
+        // The alpha Pitzer->QT reordering array
+        int *aQT_;
+        // The alpha Pitzer->QT reordering array
+        int *bQT_;
         // The alpha correlated to Pitzer ordering arrays, used in backtransforms
         int *aCorrToPitzer_;
         // The beta correlated to Pitzer ordering arrays, used in backtransforms

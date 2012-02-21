@@ -1290,21 +1290,6 @@ void Molecule::print() const
             }
             fprintf(outfile,"\n");
             fflush(outfile);
-
-            // Print symmetry information, if available
-            if (nunique_) {
-                fprintf(outfile, "    Number of unique atoms: %d\n\n", nunique_);
-                fprintf(outfile, "    Atoms equivalency:\n");
-                for (int i=0; i<nunique_; ++i) {
-                    fprintf(outfile, "       unique atom %d: ", i);
-                    for (int j=0; j<nequiv_[i]; ++j) {
-                        fprintf(outfile, "%d ", equiv_[i][j]);
-                    }
-                    fprintf(outfile, "\n");
-                }
-                fprintf(outfile, "\n");
-                fflush(outfile);
-            }
         }
         else
             fprintf(outfile, "  No atoms in this molecule.\n");
@@ -2029,6 +2014,8 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 
 boost::shared_ptr<PointGroup> Molecule::point_group() const
 {
+    if (!pg_)
+        throw PSIEXCEPTION("Molecule::point_group: Molecular point group has not been set.");
     return pg_;
 }
 
