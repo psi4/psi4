@@ -452,6 +452,14 @@ def run_dfcc(name, **kwargs):
     e_dfcc = PsiMod.dfcc()
     return e_dfcc
 
+def run_psimrcc(name, **kwargs):
+    run_mcscf(name, **kwargs)
+    return PsiMod.psimrcc()
+
+def run_psimrcc_scf(name, **kwargs):
+    run_scf(name, **kwargs)
+    return PsiMod.psimrcc()
+
 def run_mp2c(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
