@@ -161,7 +161,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     // Ensure rotations and translations are exactly orthogonal
     int count = 0;
     for (int i=0; i<6; ++i)
-        count += constraints_ortho.schmidt_add(0, i, constraints[0][i]);
+        count += constraints_ortho.schmidt_add_row(0, i, constraints[0][i]);
 
 //    constraints_ortho.print();
 

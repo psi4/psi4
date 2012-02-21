@@ -15,6 +15,8 @@
 \usepackage{bm}
 \usepackage{lscape}
 \usepackage{amsmath}
+\usepackage{pdfpages}
+
 % textcomp for those distros without builtin \textquotesingle (macros.tex)
 \usepackage{textcomp}
 \setlength{\textheight}{9in}
@@ -115,7 +117,8 @@ Report bugs to: \PSIemail \\
 \input{variables}
 \input{tests}
 \input{psi4bases}
-%\input{appendix}
+\section{Python Driver Functionality}\label{sphinxpsithon}
+\includepdf[pages=-]{Psithon.pdf} 
 
 \end{document}
 
