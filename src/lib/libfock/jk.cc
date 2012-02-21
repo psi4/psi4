@@ -66,7 +66,7 @@ boost::shared_ptr<JK> JK::build_JK()
 
     } else if (options.get_str("SCF_TYPE") == "PK") {
 
-        PKJK* jk = new DiskJK(primary);;
+        PKJK* jk = new PKJK(primary);;
 
         if (options["INTS_TOLERANCE"].has_changed())
             jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
