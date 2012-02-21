@@ -639,6 +639,7 @@ void GPUCoupledCluster::CudaFinalize(){
   cudaFreeHost(I1);
   cudaFreeHost(I1p);
   cudaFreeHost(t1);
+  cudaThreadExit();
 }
 /*===================================================================
 
