@@ -76,8 +76,12 @@
 
 
 <span class="c"># Function to make calls among wrappers(), energy(), optimize(), etc.</span>
-<div class="viewcode-block" id="call_function_in_1st_argument"><a class="viewcode-back" href="../index.html#wrappers.call_function_in_1st_argument">[docs]</a><span class="k">def</span> <span class="nf">call_function_in_1st_argument</span><span class="p">(</span><span class="n">funcarg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">funcarg</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+<div class="viewcode-block" id="call_function_in_1st_argument"><a class="viewcode-back" href="../index.html#wrappers.call_function_in_1st_argument">[docs]</a><span class="k">def</span> <span class="nf">call_function_in_1st_argument</span><span class="p">(</span><span class="n">funcarg</span><span class="p">,</span> <span class="o">**</span><span class="n">largs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to make primary function call to energy(), opt(), etc.</span>
+<span class="sd">    Useful when function to call is stored in variable.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">funcarg</span><span class="p">(</span><span class="o">**</span><span class="n">largs</span><span class="p">)</span>
 
 
 <span class="c">#######################</span>
@@ -495,14 +499,14 @@
 <span class="sd">    **Keywords**</span>
 
 <span class="sd">    :type name: string</span>
-<span class="sd">    :keyword name: ``&#39;scf&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
 <span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
 <span class="sd">        to be applied to the molecule. May be any valid argument to </span>
 <span class="sd">        :py:func:`driver.energy`; however, SAPT is not appropriate.</span>
 
 <span class="sd">    :type func: function</span>
-<span class="sd">    :param func: :py:func:`driver.energy` || :py:func:`driver.optimize` || ``:py:func:`wrappers.cbs```</span>
+<span class="sd">    :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``</span>
 <span class="sd">    </span>
 <span class="sd">        Indicates the type of calculation to be performed on the molecule</span>
 <span class="sd">        and each of its monomers. The default performs a single-point </span>
@@ -512,7 +516,7 @@
 <span class="sd">        (see :ref:`sec_intercalls`), use keyword ``cp_func`` instead of ``func``.</span>
 
 <span class="sd">    :type check_bsse: bool</span>
-<span class="sd">    :keyword check_bsse: ``&#39;off&#39;`` || ``&#39;on&#39;``</span>
+<span class="sd">    :param check_bsse: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
 
 <span class="sd">        Indicates whether to additionally compute un-counterpoise corrected</span>
 <span class="sd">        monomers and thus obtain an estimate for the basis set superposition error.</span>
@@ -623,7 +627,7 @@
             <span class="n">e_full</span> <span class="o">=</span> <span class="n">e_full</span> <span class="o">-</span> <span class="n">e_monomer_full</span><span class="p">[</span><span class="n">cluster_n</span><span class="p">]</span>
         <span class="n">cp_table</span><span class="p">[</span><span class="s">&quot;Interaction&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_full</span><span class="p">]</span>
 
-        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CP-CORRECTED 2-BODY INTERACTION ENERGY&#39;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CP-CORRECTED 2-BODY INTERACTION ENERGY&#39;</span><span class="p">,</span> <span class="n">e_full</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
         <span class="n">cp_table</span> <span class="o">=</span> <span class="n">Table</span><span class="p">(</span><span class="n">rows</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;System:&quot;</span><span class="p">],</span> <span class="n">cols</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;Energy (full):&quot;</span><span class="p">,</span> <span class="s">&quot;Energy (monomer):&quot;</span><span class="p">,</span> <span class="s">&quot;BSSE:&quot;</span><span class="p">])</span>
@@ -640,7 +644,7 @@
             <span class="n">e_bsse</span> <span class="o">=</span> <span class="n">e_bsse</span> <span class="o">-</span> <span class="n">e_monomer_bsse</span><span class="p">[</span><span class="n">cluster_n</span><span class="p">]</span>
         <span class="n">cp_table</span><span class="p">[</span><span class="s">&quot;Totals:&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">e_full</span><span class="p">,</span> <span class="n">e_bsse</span><span class="p">,</span> <span class="n">e_full</span> <span class="o">-</span> <span class="n">e_bsse</span><span class="p">]</span>
 
-        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;UNCP-CORRECTED 2-BODY INTERACTION ENERGY&#39;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;UNCP-CORRECTED 2-BODY INTERACTION ENERGY&#39;</span><span class="p">,</span> <span class="n">e_full</span><span class="p">)</span>
 
     <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
     <span class="n">banner</span><span class="p">(</span><span class="s">&quot;CP Computation: Results.&quot;</span><span class="p">)</span>
@@ -694,26 +698,24 @@
 
 <span class="sd">       - In sow/reap mode, use only global options (e.g., the local option set by ``set scf scf_type df`` will not be respected).</span>
 
-<span class="sd">    **Required Arguments**</span>
+<span class="sd">    **Keywords**</span>
 
 <span class="sd">    :type name: string</span>
-<span class="sd">    :keyword name: ``&#39;scf&#39;`` || ``&#39;sapt0&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;sapt0&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
 <span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
 <span class="sd">        to be applied to the database. May be any valid argument to </span>
 <span class="sd">        :py:func:`driver.energy`.</span>
 
 <span class="sd">    :type db_name: string</span>
-<span class="sd">    :keyword db_name: ``&#39;BASIC&#39;`` || ``&#39;S22&#39;`` || ``&#39;HTBH&#39;`` || etc.</span>
+<span class="sd">    :param db_name: ``&#39;BASIC&#39;`` || ``&#39;S22&#39;`` || ``&#39;HTBH&#39;`` || etc.</span>
 
 <span class="sd">        Second argument, usually unlabeled. Indicates the requested database </span>
 <span class="sd">        name, matching the name of a python file in ``psi4/lib/databases``. </span>
 <span class="sd">        Consult that directory for available databases and literature citations.</span>
 
-<span class="sd">    **Optional Arguments**</span>
-
 <span class="sd">    :type func: function</span>
-<span class="sd">    :param func: :py:func:`driver.energy` || :py:func:`driver.optimize` || ``:py:func:`wrappers.cbs```</span>
+<span class="sd">    :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``</span>
 <span class="sd">    </span>
 <span class="sd">        Indicates the type of calculation to be performed on each database</span>
 <span class="sd">        member. The default performs a single-point ``energy(&#39;name&#39;)``, while</span>
@@ -723,7 +725,7 @@
 <span class="sd">        keyword ``db_func`` instead of ``func``.</span>
 
 <span class="sd">    :type mode: string</span>
-<span class="sd">    :param mode: ``&#39;continuous&#39;`` || ``&#39;sow&#39;`` || ``&#39;reap&#39;``</span>
+<span class="sd">    :param mode: |dl| ``&#39;continuous&#39;`` |dr| || ``&#39;sow&#39;`` || ``&#39;reap&#39;``</span>
 
 <span class="sd">        Indicates whether the calculation required to complete the</span>
 <span class="sd">        database are to be run in one file (``&#39;continuous&#39;``) or are to be</span>
@@ -732,7 +734,7 @@
 <span class="sd">        ``&#39;sow&#39;`` and follow instructions in its output file.</span>
 
 <span class="sd">    :type cp: bool</span>
-<span class="sd">    :param cp: --&gt; ``&#39;off&#39;`` &lt;-- || ``&#39;on&#39;``</span>
+<span class="sd">    :param cp: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
 
 <span class="sd">        Indicates whether counterpoise correction is employed in computing</span>
 <span class="sd">        interaction energies. Use this option and NOT the :py:func:`wrappers.cp`</span>
@@ -740,7 +742,7 @@
 <span class="sd">        valid only for databases consisting of bimolecular complexes.</span>
 
 <span class="sd">    :type rlxd: bool</span>
-<span class="sd">    :param rlxd: *&#39;off&#39;* || &#39;on&#39;</span>
+<span class="sd">    :param rlxd: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
 
 <span class="sd">        Indicates whether correction for the deformation energy is</span>
 <span class="sd">        employed in computing interaction energies.  Option valid only for</span>
@@ -748,7 +750,7 @@
 <span class="sd">        monomers, e.g., HBC6.</span>
 
 <span class="sd">    :type symm: bool</span>
-<span class="sd">    :param symm: *&#39;on&#39;*, &#39;off&#39;</span>
+<span class="sd">    :param symm: |dl| ``&#39;on&#39;`` |dr| || ``&#39;off&#39;``</span>
 
 <span class="sd">        Indicates whether the native symmetry of the database molecules is</span>
 <span class="sd">        employed (``&#39;on&#39;``) or whether it is forced to :math:`C_1` symmetry</span>
@@ -756,20 +758,20 @@
 <span class="sd">        symmetry, and this will be set by the database() wrapper.</span>
 
 <span class="sd">    :type zpe: bool</span>
-<span class="sd">    :param zpe: *&#39;off&#39;* || &#39;on&#39;</span>
+<span class="sd">    :param zpe: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
 
 <span class="sd">        Indicates whether zero-point-energy corrections are appended to</span>
 <span class="sd">        single-point energy values. Option valid only for certain</span>
 <span class="sd">        thermochemical databases. Disabled until Hessians ready.</span>
 
 <span class="sd">    :type benchmark: string</span>
-<span class="sd">    :param benchmark: *&#39;default&#39;* || &#39;S22A&#39; || etc.</span>
+<span class="sd">    :param benchmark: |dl| ``&#39;default&#39;`` |dr| || ``&#39;S22A&#39;`` || etc.</span>
 
 <span class="sd">        Indicates whether a non-default set of reference energies, if</span>
 <span class="sd">        available, are employed for the calculation of error statistics.</span>
 
 <span class="sd">    :type tabulate: array of strings</span>
-<span class="sd">    :param tabulate: ``*[]* || [&#39;scf total energy&#39;, &#39;natom&#39;] || etc.``</span>
+<span class="sd">    :param tabulate: |dl| ``[]`` |dr| || ``[&#39;scf total energy&#39;, &#39;natom&#39;]`` || etc.</span>
 
 <span class="sd">        Indicates whether to form tables of variables other than the</span>
 <span class="sd">        primary requested energy.  Available for any PSI variable.</span>
@@ -781,18 +783,18 @@
 <span class="sd">        flexible option and can be used in three distinct ways, outlined</span>
 <span class="sd">        below. Note that two take a string and the last takes an array.  </span>
 
-<span class="sd">        * &#39;small&#39;, &#39;large&#39;, &#39;equilibrium&#39;</span>
+<span class="sd">        * ``&#39;small&#39;`` || ``&#39;large&#39;`` || ``&#39;equilibrium&#39;``</span>
 <span class="sd">            Calls predefined subsets of the requested database, either</span>
 <span class="sd">            ``&#39;small&#39;``, a few of the smallest database members,</span>
 <span class="sd">            ``&#39;large&#39;``, the largest of the database members, or</span>
 <span class="sd">            ``&#39;equilibrium&#39;``, the equilibrium geometries for a database</span>
 <span class="sd">            composed of dissociation curves.</span>
-<span class="sd">        * &#39;BzBz_S&#39;, &#39;FaOOFaON&#39;, &#39;ArNe&#39;, etc.</span>
+<span class="sd">        * ``&#39;BzBz_S&#39;`` || ``&#39;FaOOFaON&#39;`` || ``&#39;ArNe&#39;`` || etc.</span>
 <span class="sd">            For databases composed of dissociation curves, individual</span>
 <span class="sd">            curves can be called by name. Consult the database python</span>
 <span class="sd">            files for available molecular systems.  The choices for this</span>
 <span class="sd">            keyword are case sensitive and must match the database python file</span>
-<span class="sd">        * [1,2,5], [&#39;1&#39;,&#39;2&#39;,&#39;5&#39;], [&#39;BzMe-3.5&#39;, &#39;MeMe-5.0&#39;], etc.</span>
+<span class="sd">        * ``[1,2,5]`` || ``[&#39;1&#39;,&#39;2&#39;,&#39;5&#39;]`` || ``[&#39;BzMe-3.5&#39;, &#39;MeMe-5.0&#39;]`` || etc.</span>
 <span class="sd">            Specify a list of database members to run. Consult the</span>
 <span class="sd">            database python files for available molecular systems.  The</span>
 <span class="sd">            choices for this keyword are case sensitive and must match the</span>
@@ -1374,12 +1376,23 @@
 
 </div>
 <div class="viewcode-block" id="drop_duplicates"><a class="viewcode-back" href="../index.html#wrappers.drop_duplicates">[docs]</a><span class="k">def</span> <span class="nf">drop_duplicates</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function that given an array, returns an array without any duplicate</span>
+<span class="sd">    entries. There is no guarantee of which duplicate entry is dropped.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">noDupes</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="p">[</span><span class="n">noDupes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">seq</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">noDupes</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span>
     <span class="k">return</span> <span class="n">noDupes</span>
 
 </div>
 <div class="viewcode-block" id="tblhead"><a class="viewcode-back" href="../index.html#wrappers.tblhead">[docs]</a><span class="k">def</span> <span class="nf">tblhead</span><span class="p">(</span><span class="n">tbl_maxrgt</span><span class="p">,</span> <span class="n">tbl_delimit</span><span class="p">,</span> <span class="n">ttype</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function that prints the header for the changable-width results tables in db().</span>
+<span class="sd">    tbl_maxrgt is the number of reagent columns the table must plan for. tbl_delimit</span>
+<span class="sd">    is a string of dashes of the correct length to set off the table. ttype is 1 for</span>
+<span class="sd">    tables comparing the computed values to the reference or 2 for simple tabulation</span>
+<span class="sd">    and sum of the computed values.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">tbl_str</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="n">tbl_str</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;   </span><span class="si">%s</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tbl_delimit</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">ttype</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -1422,6 +1435,7 @@
 <span class="sd">    :returns: (*float*) -- Total electronic energy in Hartrees</span>
 
 <span class="sd">    :PSI variables:</span>
+
 <span class="sd">    .. envvar:: CBS TOTAL ENERGY</span>
 <span class="sd">        CBS REFERENCE ENERGY</span>
 <span class="sd">        CBS CORRELATION ENERGY</span>
@@ -1452,7 +1466,7 @@
 <span class="sd">        ``corl_basis`` keywords for correlated jobs. </span>
 
 <span class="sd">    :type name: string</span>
-<span class="sd">    :param name: </span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;ccsd&#39;`` || etc.</span>
 
 <span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
 <span class="sd">        for the correlation energy, unless only reference step to be performed,</span>
@@ -1471,25 +1485,25 @@
 <span class="sd">        first argument to the function.</span>
 
 <span class="sd">    :type delta_wfn: string</span>
-<span class="sd">    :keyword delta_wfn: ``&#39;ccsd&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
+<span class="sd">    :param delta_wfn: ``&#39;ccsd&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the (superior) energy method for which a delta correction </span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
 
 <span class="sd">    :type delta_wfn_lesser: string</span>
-<span class="sd">    :keyword delta_wfn_lesser: *``&#39;mp2&#39;``* || ``&#39;ccsd&#39;`` || etc.</span>
+<span class="sd">    :param delta_wfn_lesser: |dl| ``&#39;mp2&#39;`` |dr| || ``&#39;ccsd&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the inferior energy method for which a delta correction </span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
 
 <span class="sd">    :type delta2_wfn: string</span>
-<span class="sd">    :keyword delta2_wfn: ``&#39;ccsd&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
+<span class="sd">    :param delta2_wfn: ``&#39;ccsd&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the (superior) energy method for which a second delta correction </span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
 
 <span class="sd">    :type delta2_wfn_lesser: string</span>
-<span class="sd">    :keyword delta2_wfn_lesser: *``&#39;mp2&#39;``* || ``&#39;ccsd(t)&#39;`` || etc.</span>
+<span class="sd">    :param delta2_wfn_lesser: |dl| ``&#39;mp2&#39;`` |dr| || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the inferior energy method for which a second delta correction </span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
@@ -1499,25 +1513,25 @@
 <span class="sd">        on a cbs calculation.</span>
 
 <span class="sd">    :type scf_basis: string</span>
-<span class="sd">    :param scf_basis: *corl_basis* || &#39;cc-pV[TQ]Z&#39; || &#39;jun-cc-pv[tq5]z&#39; || &#39;6-31G*&#39; || etc.</span>
+<span class="sd">    :param scf_basis: |dl| ``corl_basis`` |dr| || ``&#39;cc-pV[TQ]Z&#39;`` || ``&#39;jun-cc-pv[tq5]z&#39;`` || ``&#39;6-31G*&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the sequence of basis sets employed for the reference energy.</span>
 <span class="sd">        If any correlation method is specified, ``scf_basis`` can default</span>
 <span class="sd">        to ``corl_basis``.</span>
 
 <span class="sd">    :type corl_basis: string</span>
-<span class="sd">    :param corl_basis: &#39;cc-pV[TQ]Z&#39; || &#39;jun-cc-pv[tq5]z&#39; || &#39;6-31G*&#39; || etc.</span>
+<span class="sd">    :param corl_basis: ``&#39;cc-pV[TQ]Z&#39;`` || ``&#39;jun-cc-pv[tq5]z&#39;`` || ``&#39;6-31G*&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the sequence of basis sets employed for the correlation energy.</span>
 
 <span class="sd">    :type delta_basis: string</span>
-<span class="sd">    :param delta_basis: &#39;cc-pV[TQ]Z&#39; || &#39;jun-cc-pv[tq5]z&#39; || &#39;6-31G*&#39; || etc.</span>
+<span class="sd">    :param delta_basis: ``&#39;cc-pV[TQ]Z&#39;`` || ``&#39;jun-cc-pv[tq5]z&#39;`` || ``&#39;6-31G*&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the sequence of basis sets employed for the delta correction</span>
 <span class="sd">        to the correlation energy.</span>
 
 <span class="sd">    :type delta2_basis: string</span>
-<span class="sd">    :param delta2_basis: &#39;cc-pV[TQ]Z&#39; || &#39;jun-cc-pv[tq5]z&#39; || &#39;6-31G*&#39; || etc.</span>
+<span class="sd">    :param delta2_basis: ``&#39;cc-pV[TQ]Z&#39;`` || ``&#39;jun-cc-pv[tq5]z&#39;`` || ``&#39;6-31G*&#39;`` || etc.</span>
 
 <span class="sd">        Indicates the sequence of basis sets employed for the second delta correction</span>
 <span class="sd">        to the correlation energy.</span>
@@ -1530,23 +1544,23 @@
 <span class="sd">        set available. See :ref:`sec_cbs_xtpl` for all available schemes.</span>
 
 <span class="sd">    :type scf_scheme: function</span>
-<span class="sd">    :param scf_scheme: *:py:func:`highest_1`* || :py:func:`scf_xtpl_helgaker_3` || etc.</span>
+<span class="sd">    :param scf_scheme: |dl| ``highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.</span>
 
 <span class="sd">        Indicates the basis set extrapolation scheme to be applied to the reference energy.</span>
 
 <span class="sd">    :type corl_scheme: function</span>
-<span class="sd">    :param corl_scheme: *:py:func:`highest_1`* || :py:func:`corl_xtpl_helgaker_2` || etc.</span>
+<span class="sd">    :param corl_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.</span>
 
 <span class="sd">        Indicates the basis set extrapolation scheme to be applied to the correlation energy.</span>
 
 <span class="sd">    :type delta_scheme: function</span>
-<span class="sd">    :param delta_scheme: *:py:func:`highest_1`* || :py:func:`corl_xtpl_helgaker_2` || etc.</span>
+<span class="sd">    :param delta_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.</span>
 
 <span class="sd">        Indicates the basis set extrapolation scheme to be applied to the delta correction</span>
 <span class="sd">        to the correlation energy.</span>
 
 <span class="sd">    :type delta2_scheme: function</span>
-<span class="sd">    :param delta2_scheme: *:py:func:`highest_1`* || :py:func:`corl_xtpl_helgaker_2` || etc.</span>
+<span class="sd">    :param delta2_scheme: |dl| ``highest_1`` |dr| || ``corl_xtpl_helgaker_2`` || etc.</span>
 
 <span class="sd">        Indicates the basis set extrapolation scheme to be applied to the second delta correction</span>
 <span class="sd">        to the correlation energy.</span>
@@ -1940,7 +1954,15 @@
 
 <span class="c"># Transform and validate basis sets from &#39;cc-pV[Q5]Z&#39; into [cc-pVQZ, cc-pV5Z] and [4, 5]</span></div>
 <div class="viewcode-block" id="validate_bracketed_basis"><a class="viewcode-back" href="../index.html#wrappers.validate_bracketed_basis">[docs]</a><span class="k">def</span> <span class="nf">validate_bracketed_basis</span><span class="p">(</span><span class="n">basisstring</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to transform and validate basis sets for cbs(). A basis set with no </span>
+<span class="sd">    paired square brackets is passed through with zeta level 0 (e.g., &#39;6-31+G(d,p)&#39;</span>
+<span class="sd">    is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is </span>
+<span class="sd">    checked for sensible sequence and Dunning-ness and returned as separate basis</span>
+<span class="sd">    sets (e.g., &#39;cc-pV[Q5]Z&#39; is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note</span>
+<span class="sd">    that this function has no communication with the basis set library to check</span>
+<span class="sd">    if the basis actually exists. Used by :py:func:`wrappers.complete_basis_set`.</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ZETA</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="s">&#39;t&#39;</span><span class="p">,</span> <span class="s">&#39;q&#39;</span><span class="p">,</span> <span class="s">&#39;5&#39;</span><span class="p">,</span> <span class="s">&#39;6&#39;</span><span class="p">]</span>
     <span class="n">BSET</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">ZSET</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1972,7 +1994,13 @@
 
 <span class="c"># Reform string basis set descriptor from basis set strings, &#39;cc-pv[q5]z&#39; from [cc-pvqz, cc-pv5z]</span></div>
 <div class="viewcode-block" id="reconstitute_bracketed_basis"><a class="viewcode-back" href="../index.html#wrappers.reconstitute_bracketed_basis">[docs]</a><span class="k">def</span> <span class="nf">reconstitute_bracketed_basis</span><span class="p">(</span><span class="n">needarray</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to reform a bracketed basis set string from a sequential series</span>
+<span class="sd">    of basis sets (e.g, form &#39;cc-pv[q5]z&#39; from array [cc-pvqz, cc-pv5z]). The</span>
+<span class="sd">    basis set array is extracted from the f_basis field of a NEED dictionary in</span>
+<span class="sd">    :py:func:`wrappers.complete_basis_set`. Result is used to print a nicely</span>
+<span class="sd">    formatted basis set string in the results table.</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">ZETA</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;d&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;t&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;q&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;5&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;6&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">}</span>
     <span class="n">ZSET</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ZETA</span><span class="p">)</span>
     <span class="n">BSET</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1997,11 +2025,10 @@
 
     <span class="k">return</span> <span class="n">basisstring</span>
 
-
-<span class="c"># Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$</span></div>
+</div>
 <div class="viewcode-block" id="highest_1"><a class="viewcode-back" href="../index.html#wrappers.highest_1">[docs]</a><span class="k">def</span> <span class="nf">highest_1</span><span class="p">(</span><span class="o">**</span><span class="n">largs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Scheme for total or correlation energies with a single basis or the highest zeta-level among an array of bases.</span>
-<span class="sd">    Used by :py:func:`complete_basis_set`.</span>
+    <span class="sd">&quot;&quot;&quot;Scheme for total or correlation energies with a single basis or the highest</span>
+<span class="sd">    zeta-level among an array of bases. Used by :py:func:`wrappers.complete_basis_set`.</span>
 
 <span class="sd">    .. math:: E_{total}^X = E_{total}^X</span>
 
@@ -2045,12 +2072,11 @@
         <span class="k">return</span> <span class="n">energypiece</span>
 
 
-<span class="c"># Defining equation in LaTeX:  $E_{corl}^{X} = E_{corl}^{\infty} + \beta X^{-3}$</span>
 <span class="c"># Solution equation in LaTeX:  $E_{corl}^{\infty} = \frac{E_{corl}^{X} X^3 - E_{corl}^{X-1} (X-1)^3}{X^3 - (X-1)^3}$</span>
 <span class="c"># Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$</span></div>
 <div class="viewcode-block" id="corl_xtpl_helgaker_2"><a class="viewcode-back" href="../index.html#wrappers.corl_xtpl_helgaker_2">[docs]</a><span class="k">def</span> <span class="nf">corl_xtpl_helgaker_2</span><span class="p">(</span><span class="o">**</span><span class="n">largs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Extrapolation scheme for correlation energies with two adjacent zeta-level bases.</span>
-<span class="sd">    Used by :py:func:`complete_basis_set`.</span>
+<span class="sd">    Used by :py:func:`wrappers.complete_basis_set`.</span>
 
 <span class="sd">    .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}</span>
 
@@ -2096,11 +2122,10 @@
 
         <span class="k">return</span> <span class="n">energypiece</span>
 
-
-<span class="c"># Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$</span></div>
+</div>
 <div class="viewcode-block" id="scf_xtpl_helgaker_3"><a class="viewcode-back" href="../index.html#wrappers.scf_xtpl_helgaker_3">[docs]</a><span class="k">def</span> <span class="nf">scf_xtpl_helgaker_3</span><span class="p">(</span><span class="o">**</span><span class="n">largs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Extrapolation scheme for reference energies with three adjacent zeta-level bases.</span>
-<span class="sd">    Used by :py:func:`complete_basis_set`.</span>
+<span class="sd">    Used by :py:func:`wrappers.complete_basis_set`.</span>
 
 <span class="sd">    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}</span>
 
@@ -2153,11 +2178,10 @@
 
         <span class="k">return</span> <span class="n">energypiece</span>
 
-
-<span class="c"># Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$</span></div>
+</div>
 <div class="viewcode-block" id="scf_xtpl_helgaker_2"><a class="viewcode-back" href="../index.html#wrappers.scf_xtpl_helgaker_2">[docs]</a><span class="k">def</span> <span class="nf">scf_xtpl_helgaker_2</span><span class="p">(</span><span class="o">**</span><span class="n">largs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Extrapolation scheme for reference energies with two adjacent zeta-level bases.</span>
-<span class="sd">    Used by :py:func:`complete_basis_set`.</span>
+<span class="sd">    Used by :py:func:`wrappers.complete_basis_set`.</span>
 
 <span class="sd">    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63</span>
 
@@ -2209,12 +2233,11 @@
 
 </div>
 <div class="viewcode-block" id="validate_scheme_args"><a class="viewcode-back" href="../index.html#wrappers.validate_scheme_args">[docs]</a><span class="k">def</span> <span class="nf">validate_scheme_args</span><span class="p">(</span><span class="n">functionname</span><span class="p">,</span> <span class="o">**</span><span class="n">largs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;lsdkjflskld</span>
-
-<span class="sd">    .. deprecated:: old news</span>
+    <span class="sd">&quot;&quot;&quot;Function called by each extrapolation scheme in :py:func:`wrappers.complete_basis_set`.</span>
+<span class="sd">    Checks that all the input arguments are present and suitable so that</span>
+<span class="sd">    the scheme function can focus on defining the extrapolation.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">mode</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="n">NEED</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">wfnname</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
@@ -2261,8 +2284,10 @@
 
 </div>
 <div class="viewcode-block" id="split_menial"><a class="viewcode-back" href="../index.html#wrappers.split_menial">[docs]</a><span class="k">def</span> <span class="nf">split_menial</span><span class="p">(</span><span class="n">menial</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;split meial docstring&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Function used by :py:func:`wrappers.complete_basis_set` to separate &#39;scftot&#39;</span>
+<span class="sd">    into [scf, tot] and &#39;mp2corl&#39; into [mp2, corl].</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">PTYP</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;tot&#39;</span><span class="p">,</span> <span class="s">&#39;corl&#39;</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">temp</span> <span class="ow">in</span> <span class="n">PTYP</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">menial</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">temp</span><span class="p">):</span>
@@ -2322,7 +2347,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Feb 21, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

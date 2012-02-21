@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 20, 2012}
+\date{February 21, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -158,10 +158,6 @@ Function to compute the single-point electronic energy.
 \begin{quote}\begin{description}
 \item[{Returns}] \leavevmode
 (\emph{float}) Total electronic energy in Hartrees. SAPT returns interaction energy.
-
-\item[{Parameters}] \leavevmode
-\textbf{name} (\emph{string}) -- First argument, usually unlabeled.
-Indicates the computational method to be computed.
 
 \item[{Psi variables}] \leavevmode
 \end{description}\end{quote}
@@ -645,6 +641,8 @@ $\Rightarrow$ \code{gradient} $\Leftarrow$ \textbar{}\textbar{} \code{energy} \t
 Indicates the type of calculation to be performed on the molecule.
 The default dertype accesses{}`{}`'gradient'{}`{}` or \code{'energy'}, while
 \code{'cbs'} performs a multistage finite difference calculation.
+If a nested series of python functions is intended (see {\hyperref[index:sec-intercalls]{\emph{Function Intercalls}}}),
+use keyword \code{opt\_func} instead of \code{func}.
 
 
 \item {} 
@@ -731,15 +729,157 @@ equation of motion (EOM) CCSD
 
 \begin{fulllineitems}
 \phantomsection\label{index:driver.response}\pysiglinewithargsret{\code{driver.}\bfcode{response}}{\emph{name}, \emph{**kwargs}}{}
+Function to compute linear response properties.
+\begin{quote}\begin{description}
+\item[{Returns}] \leavevmode
+(\emph{float}) Total electronic energy in Hartrees.
+
+\end{description}\end{quote}
+
+\begin{notice}{caution}{Caution:}
+Some features are not yet implemented. Buy a developer a coffee.
+\begin{itemize}
+\item {} 
+Check that energy is actually being returned.
+
+\item {} 
+Check if ther're some PSI variables that ought to be set.
+
+\end{itemize}
+\end{notice}
+
+\textbf{Keywords}
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\textbf{name} (\emph{string}) -- 
+\code{'ccsd'} \textbar{}\textbar{} etc.
+
+First argument, usually unlabeled. Indicates the computational method 
+to be applied to the system.
+
+
+\end{description}\end{quote}
+
+\begin{tabulary}{\linewidth}{|L|L|}
+\hline
+\textbf{
+name
+} & \textbf{
+calls method
+}\\\hline
+
+cc2
+ & 
+2nd-order approximate CCSD
+\\\hline
+
+ccsd
+ & 
+coupled cluster singles and doubles (CCSD)
+\\\hline
+\end{tabulary}
+
+
+\textbf{Examples}
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] CCSD-LR properties calculation}
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{response}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{ccsd}\PYG{l+s}{'}\PYG{p}{)}
+\end{Verbatim}
+
 \end{fulllineitems}
 
 
 
 \chapter{Frequency}
-\label{index:frequency}\index{frequencies() (in module driver)}
+\label{index:frequency}\index{frequency() (in module driver)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:driver.frequencies}\pysiglinewithargsret{\code{driver.}\bfcode{frequencies}}{\emph{name}, \emph{**kwargs}}{}
+\phantomsection\label{index:driver.frequency}\pysiglinewithargsret{\code{driver.}\bfcode{frequency}}{\emph{name}, \emph{**kwargs}}{}
+Function to compute harmonic vibrational frequencies.
+\begin{quote}\begin{description}
+\item[{Aliases }] \leavevmode
+frequency(), freq()
+
+\item[{Returns}] \leavevmode
+(\emph{float}) Total electronic energy in Hartrees.
+
+\item[{Psi variables}] \leavevmode
+\end{description}\end{quote}
+\index{environment variable!\textless{}PSIVARIABLESETBYFUNCTION\textgreater{}}\index{environment variable!\textless{}ANOTHERPSIVARIABLEWITHnonstandardPORTIONOFNAME\textgreater{}}
+
+\begin{fulllineitems}
+\phantomsection\label{index:envvar-_PSIVARIABLESETBYFUNCTION_}\pysigline{\bfcode{\textless{}PSI~VARIABLE~SET~BY~FUNCTION\textgreater{}}}\phantomsection\label{index:envvar-_ANOTHERPSIVARIABLEWITHnonstandardPORTIONOFNAME_}\pysigline{\bfcode{\textless{}ANOTHER~PSI~VARIABLE~WITH~nonstandard~PORTION~OF~NAME\textgreater{}}}
+\end{fulllineitems}
+
+
+\begin{notice}{note}{Note:}
+\textless{}Notes for the user
+of an informative nature.\textgreater{}
+\end{notice}
+
+\begin{notice}{warning}{Warning:}
+\textless{}Notes for the user
+of a cautionary nature.\textgreater{}
+\end{notice}
+
+\begin{notice}{caution}{Caution:}
+Some features are not yet implemented. Buy a developer a coffee.
+\begin{itemize}
+\item {} 
+RAK, why are you adding OPTKING options as GLOBALS? (And should they be Py-side not C-side options.)
+
+\item {} 
+Put in a dictionary, so IRREPS can be called by point group or `all'
+
+\end{itemize}
+\end{notice}
+
+\textbf{Keywords}
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{name} (\emph{string}) -- 
+\code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
+
+First argument, usually unlabeled. Indicates the computational method 
+to be applied to the system.
+
+
+\item {} 
+\textbf{dertype} (\emph{dertype}) -- 
+$\Rightarrow$ \code{'hessian'} $\Leftarrow$ \textbar{}\textbar{} \code{'gradient'} \textbar{}\textbar{} \code{'energy'}
+
+Indicates whether analytic (if available- they're not), finite
+difference of gradients (if available) or finite difference of 
+energies is to be performed.
+
+
+\item {} 
+\textbf{irrep} (\emph{int}) -- 
+$\Rightarrow$ \code{-1} $\Leftarrow$ \textbar{}\textbar{} \code{1} \textbar{}\textbar{} etc.
+
+Indicates which symmetry block of vibrational freqiencies to be
+computed. 1 represents $a_1$, requesting only the totally symmetric modes.
+\code{-1} indicates a full frequency calculation.
+
+
+\end{itemize}
+
+\end{description}\end{quote}
+
+\textbf{Examples}
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] \textless{}example description\textgreater{}}
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{o}{\textless{}}\PYG{n}{example} \PYG{n}{python} \PYG{n}{command}\PYG{o}{\textgreater{}}
+\end{Verbatim}
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [2] Frequency calculation for b2 modes through finite difference of gradients}
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{frequencies}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{scf}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{dertype}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{irrep}\PYG{o}{=}\PYG{l+m+mi}{4}\PYG{p}{)}
+\end{Verbatim}
+
 \end{fulllineitems}
 
 
@@ -1456,8 +1596,8 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.highest_1}\pysiglinewithargsret{\code{wrappers.}\bfcode{highest\_1}}{\emph{**largs}}{}
-Scheme for total or correlation energies with a single basis or the highest zeta-level among an array of bases.
-Used by \code{complete\_basis\_set()}.
+Scheme for total or correlation energies with a single basis or the highest
+zeta-level among an array of bases. Used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
 \begin{gather}
 \begin{split}E_{total}^X = E_{total}^X\end{split}\notag\\\begin{split}\end{split}\notag
 \end{gather}
@@ -1468,7 +1608,7 @@ Used by \code{complete\_basis\_set()}.
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.scf_xtpl_helgaker_2}\pysiglinewithargsret{\code{wrappers.}\bfcode{scf\_xtpl\_helgaker\_2}}{\emph{**largs}}{}
 Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-Used by \code{complete\_basis\_set()}.
+Used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
 \begin{gather}
 \begin{split}E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63\end{split}\notag\\\begin{split}\end{split}\notag
 \end{gather}
@@ -1479,7 +1619,7 @@ Used by \code{complete\_basis\_set()}.
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.scf_xtpl_helgaker_3}\pysiglinewithargsret{\code{wrappers.}\bfcode{scf\_xtpl\_helgaker\_3}}{\emph{**largs}}{}
 Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-Used by \code{complete\_basis\_set()}.
+Used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
 \begin{gather}
 \begin{split}E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}\end{split}\notag\\\begin{split}\end{split}\notag
 \end{gather}
@@ -1490,7 +1630,7 @@ Used by \code{complete\_basis\_set()}.
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.corl_xtpl_helgaker_2}\pysiglinewithargsret{\code{wrappers.}\bfcode{corl\_xtpl\_helgaker\_2}}{\emph{**largs}}{}
 Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-Used by \code{complete\_basis\_set()}.
+Used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
 \begin{gather}
 \begin{split}E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}\end{split}\notag\\\begin{split}\end{split}\notag
 \end{gather}
@@ -1547,8 +1687,6 @@ and return the MP2.5 energy.
     \PYG{n}{e\PYGZus{}scf} \PYG{o}{=} \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{get\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{SCF TOTAL ENERGY}\PYG{l+s}{'}\PYG{p}{)}
     \PYG{n}{ce\PYGZus{}mp2} \PYG{o}{=} \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{get\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2 CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{)}
     \PYG{n}{ce\PYGZus{}mp3} \PYG{o}{=} \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{get\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP3 CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{)}
-    \PYG{n}{e\PYGZus{}mp2} \PYG{o}{=} \PYG{n}{e\PYGZus{}scf} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp2}
-    \PYG{n}{e\PYGZus{}mp3} \PYG{o}{=} \PYG{n}{e\PYGZus{}scf} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp3}
 
     \PYG{n}{ce\PYGZus{}mp25} \PYG{o}{=} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{p}{(}\PYG{n}{ce\PYGZus{}mp2} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp3}\PYG{p}{)}
     \PYG{n}{e\PYGZus{}mp25} \PYG{o}{=} \PYG{n}{e\PYGZus{}scf} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp25}
@@ -1564,7 +1702,7 @@ The rationale for the changes is indicated in the comments below.
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{k}{def} \PYG{n+nf}{run\PYGZus{}mp2\PYGZus{}5}\PYG{p}{(}\PYG{n}{name}\PYG{p}{,} \PYG{o}{*}\PYG{o}{*}\PYG{n}{kwargs}\PYG{p}{)}\PYG{p}{:}
-    \PYG{n}{lowername} \PYG{o}{=} \PYG{n}{name}\PYG{o}{.}\PYG{n}{lower}\PYG{p}{(}\PYG{p}{)}
+    \PYG{n}{lowername} \PYG{o}{=} \PYG{n}{name}\PYG{o}{.}\PYG{n}{lower}\PYG{p}{(}\PYG{p}{)}  \PYG{c}{\PYGZsh{} handy variable with name keyword in lowercase}
     \PYG{n}{kwargs} \PYG{o}{=} \PYG{n}{kwargs\PYGZus{}lower}\PYG{p}{(}\PYG{n}{kwargs}\PYG{p}{)}  \PYG{c}{\PYGZsh{} removes case sensitivity in keyword names}
 
     \PYG{c}{\PYGZsh{} Run detci calculation and collect conventional quantities}
@@ -1572,17 +1710,17 @@ The rationale for the changes is indicated in the comments below.
     \PYG{n}{e\PYGZus{}scf} \PYG{o}{=} \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{get\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{SCF TOTAL ENERGY}\PYG{l+s}{'}\PYG{p}{)}
     \PYG{n}{ce\PYGZus{}mp2} \PYG{o}{=} \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{get\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2 CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{)}
     \PYG{n}{ce\PYGZus{}mp3} \PYG{o}{=} \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{get\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP3 CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{)}
-    \PYG{n}{e\PYGZus{}mp2} \PYG{o}{=} \PYG{n}{e\PYGZus{}scf} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp2}
+    \PYG{n}{e\PYGZus{}mp2} \PYG{o}{=} \PYG{n}{e\PYGZus{}scf} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp2}  \PYG{c}{\PYGZsh{} reform mp2 and mp3 total energies for printing}
     \PYG{n}{e\PYGZus{}mp3} \PYG{o}{=} \PYG{n}{e\PYGZus{}scf} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp3}
 
     \PYG{c}{\PYGZsh{} Compute quantities particular to MP2.5}
     \PYG{n}{ce\PYGZus{}mp25} \PYG{o}{=} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{p}{(}\PYG{n}{ce\PYGZus{}mp2} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp3}\PYG{p}{)}
     \PYG{n}{e\PYGZus{}mp25} \PYG{o}{=} \PYG{n}{e\PYGZus{}scf} \PYG{o}{+} \PYG{n}{ce\PYGZus{}mp25}
-    \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2.5 CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{ce\PYGZus{}mp25}\PYG{p}{)}  \PYG{c}{\PYGZsh{} add new method's vitals to PSI variable repository}
-    \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2.5 TOTAL ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{e\PYGZus{}mp25}\PYG{p}{)}
+    \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2.5 CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{ce\PYGZus{}mp25}\PYG{p}{)}  \PYG{c}{\PYGZsh{} add new method's important results}
+    \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2.5 TOTAL ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{e\PYGZus{}mp25}\PYG{p}{)}         \PYG{c}{\PYGZsh{}     to PSI variable repository}
     \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{CURRENT CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{ce\PYGZus{}mp25}\PYG{p}{)}
-    \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{CURRENT ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{e\PYGZus{}mp25}\PYG{p}{)}  \PYG{c}{\PYGZsh{} geometry optimizer tracks this variable, permits MP2.5 findif optimizations}
-
+    \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{CURRENT ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{e\PYGZus{}mp25}\PYG{p}{)}  \PYG{c}{\PYGZsh{} geometry optimizer tracks this variable, permits}
+                                                   \PYG{c}{\PYGZsh{}     MP2.5 finite difference optimizations}
     \PYG{c}{\PYGZsh{} build string of title banner and print results}
     \PYG{n}{banners} \PYG{o}{=} \PYG{l+s}{'}\PYG{l+s}{'}
     \PYG{n}{banners} \PYG{o}{+}\PYG{o}{=} \PYG{l+s}{"""}\PYG{l+s}{PsiMod.print\PYGZus{}out(}\PYG{l+s}{'}\PYG{l+s+se}{\PYGZbs{}\PYGZbs{}}\PYG{l+s}{n}\PYG{l+s}{'}\PYG{l+s}{)}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s}{"""}
@@ -1737,41 +1875,55 @@ what functions; no intercalls; no local set; special section in parameter list
 stuff that's in README;
 
 
+\chapter{PsiMod Methods}
+\label{index:psimod-methods}
+
+\chapter{Molecule Methods}
+\label{index:molecule-methods}
+
 \chapter{Expert}
 \label{index:module-driver}\label{index:expert}\index{driver (module)}\index{gradient() (in module driver)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:driver.gradient}\pysiglinewithargsret{\code{driver.}\bfcode{gradient}}{\emph{name}, \emph{**kwargs}}{}
+Function complementary to optimize(). Carries out one gradient pass,
+deciding analytic or finite difference.
+
 \end{fulllineitems}
 
 \index{hessian() (in module driver)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:driver.hessian}\pysiglinewithargsret{\code{driver.}\bfcode{hessian}}{\emph{name}, \emph{**kwargs}}{}
+Function to compute force constants. Presently identical to frequency().
+
 \end{fulllineitems}
 
 \index{parse\_arbitrary\_order() (in module driver)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:driver.parse_arbitrary_order}\pysiglinewithargsret{\code{driver.}\bfcode{parse\_arbitrary\_order}}{\emph{name}}{}
-\end{fulllineitems}
+Function to parse name string into a method family like CI or MRCC and specific
+level information like 4 for CISDTQ or MRCCSDTQ.
 
-\index{response() (in module driver)}
-
-\begin{fulllineitems}
-\pysiglinewithargsret{\code{driver.}\bfcode{response}}{\emph{name}, \emph{**kwargs}}{}
 \end{fulllineitems}
 
 \phantomsection\label{index:module-wrappers}\index{wrappers (module)}\index{call\_function\_in\_1st\_argument() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:wrappers.call_function_in_1st_argument}\pysiglinewithargsret{\code{wrappers.}\bfcode{call\_function\_in\_1st\_argument}}{\emph{funcarg}, \emph{**kwargs}}{}
+\phantomsection\label{index:wrappers.call_function_in_1st_argument}\pysiglinewithargsret{\code{wrappers.}\bfcode{call\_function\_in\_1st\_argument}}{\emph{funcarg}, \emph{**largs}}{}
+Function to make primary function call to energy(), opt(), etc.
+Useful when function to call is stored in variable.
+
 \end{fulllineitems}
 
 \index{drop\_duplicates() (in module wrappers)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.drop_duplicates}\pysiglinewithargsret{\code{wrappers.}\bfcode{drop\_duplicates}}{\emph{seq}}{}
+Function that given an array, returns an array without any duplicate
+entries. There is no guarantee of which duplicate entry is dropped.
+
 \end{fulllineitems}
 
 \index{n\_body() (in module wrappers)}
@@ -1784,13 +1936,20 @@ stuff that's in README;
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.reconstitute_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{reconstitute\_bracketed\_basis}}{\emph{needarray}}{}
+Function to reform a bracketed basis set string from a sequential series
+of basis sets (e.g, form `cc-pv{[}q5{]}z' from array {[}cc-pvqz, cc-pv5z{]}). The
+basis set array is extracted from the f\_basis field of a NEED dictionary in
+{\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}. Result is used to print a nicely
+formatted basis set string in the results table.
+
 \end{fulllineitems}
 
 \index{split\_menial() (in module wrappers)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.split_menial}\pysiglinewithargsret{\code{wrappers.}\bfcode{split\_menial}}{\emph{menial}}{}
-split meial docstring
+Function used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}} to separate `scftot'
+into {[}scf, tot{]} and `mp2corl' into {[}mp2, corl{]}.
 
 \end{fulllineitems}
 
@@ -1798,44 +1957,77 @@ split meial docstring
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.tblhead}\pysiglinewithargsret{\code{wrappers.}\bfcode{tblhead}}{\emph{tbl\_maxrgt}, \emph{tbl\_delimit}, \emph{ttype}}{}
+Function that prints the header for the changable-width results tables in db().
+tbl\_maxrgt is the number of reagent columns the table must plan for. tbl\_delimit
+is a string of dashes of the correct length to set off the table. ttype is 1 for
+tables comparing the computed values to the reference or 2 for simple tabulation
+and sum of the computed values.
+
 \end{fulllineitems}
 
 \index{validate\_bracketed\_basis() (in module wrappers)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.validate_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{validate\_bracketed\_basis}}{\emph{basisstring}}{}
+Function to transform and validate basis sets for cbs(). A basis set with no 
+paired square brackets is passed through with zeta level 0 (e.g., `6-31+G(d,p)'
+is returned as {[}6-31+G(d,p){]} and {[}0{]}). A basis set with square brackets is 
+checked for sensible sequence and Dunning-ness and returned as separate basis
+sets (e.g., `cc-pV{[}Q5{]}Z' is returned as {[}cc-pVQZ, cc-pV5Z{]} and {[}4, 5{]}). Note
+that this function has no communication with the basis set library to check
+if the basis actually exists. Used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
+
 \end{fulllineitems}
 
 \index{validate\_scheme\_args() (in module wrappers)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.validate_scheme_args}\pysiglinewithargsret{\code{wrappers.}\bfcode{validate\_scheme\_args}}{\emph{functionname}, \emph{**largs}}{}
-lsdkjflskld
-Deprecated since version old: news
+Function called by each extrapolation scheme in {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
+Checks that all the input arguments are present and suitable so that
+the scheme function can focus on defining the extrapolation.
+
 \end{fulllineitems}
 
 \phantomsection\label{index:module-aliases}\index{aliases (module)}\index{run\_mp2\_5() (in module aliases)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:aliases.run_mp2_5}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_mp2\_5}}{\emph{name}, \emph{**kwargs}}{}
+Function that computes MP2.5 energy from results of a DETCI
+MP3 calculation.
+
 \end{fulllineitems}
 
 \index{run\_plugin\_ccsd\_serial() (in module aliases)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:aliases.run_plugin_ccsd_serial}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_plugin\_ccsd\_serial}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module and plugin calls so that
+Eugene DePrince's ccsd\_serial plugin can be called via {\hyperref[index:driver.energy]{\code{driver.energy()}}}.
+
 \end{fulllineitems}
 
 \index{run\_plugin\_omega() (in module aliases)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:aliases.run_plugin_omega}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_plugin\_omega}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module and plugin calls, as well
+as typical options, so that Rob Parrish's omega plugin can be called
+via {\hyperref[index:driver.energy]{\code{driver.energy()}}}.
+
 \end{fulllineitems}
 
 \index{sherrillgroup\_gold\_standard() (in module aliases)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:aliases.sherrillgroup_gold_standard}\pysiglinewithargsret{\code{aliases.}\bfcode{sherrillgroup\_gold\_standard}}{\emph{name='mp2'}, \emph{**kwargs}}{}
+Function to call the quantum chemical method known as `Gold Standard'
+in the Sherrill group. Uses {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}} to evaluateo
+the following expression. Two-point extrapolation of the correlation energy
+performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wrappers.corl\_xtpl\_helgaker\_2()}}}.
+\begin{gather}
+\begin{split}E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}\end{split}\notag\\\begin{split}\end{split}\notag
+\end{gather}
 \end{fulllineitems}
 
 \phantomsection\label{index:module-pubchem}\index{pubchem (module)}\index{PubChemObj (class in pubchem)}
@@ -2399,7 +2591,7 @@ Deprecated since version old: news
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`15613'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`16888'}}{}
 \end{fulllineitems}
 
 \index{kwargs\_lower() (in module procutil)}
@@ -2541,12 +2733,6 @@ Deprecated since version old: news
 \end{fulllineitems}
 
 
-
-\chapter{PsiMod Methods}
-\label{index:psimod-methods}
-
-\chapter{Molecule Methods}
-\label{index:molecule-methods}
 
 \chapter{Indices and Tables}
 \label{index:indices-and-tables}\begin{itemize}

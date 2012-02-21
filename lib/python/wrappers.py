@@ -15,8 +15,12 @@ from procutil import *
 
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.
-def call_function_in_1st_argument(funcarg, **kwargs):
-    return funcarg(**kwargs)
+def call_function_in_1st_argument(funcarg, **largs):
+    """Function to make primary function call to energy(), opt(), etc.
+    Useful when function to call is stored in variable.
+
+    """
+    return funcarg(**largs)
 
 
 #######################
@@ -1311,12 +1315,23 @@ def database(name, db_name, **kwargs):
 
 
 def drop_duplicates(seq):
+    """Function that given an array, returns an array without any duplicate
+    entries. There is no guarantee of which duplicate entry is dropped.
+
+    """
     noDupes = []
     [noDupes.append(i) for i in seq if not noDupes.count(i)]
     return noDupes
 
 
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
+    """Function that prints the header for the changable-width results tables in db().
+    tbl_maxrgt is the number of reagent columns the table must plan for. tbl_delimit
+    is a string of dashes of the correct length to set off the table. ttype is 1 for
+    tables comparing the computed values to the reference or 2 for simple tabulation
+    and sum of the computed values.
+
+    """
     tbl_str = ''
     tbl_str += """   %s""" % (tbl_delimit)
     if ttype == 1:
@@ -1359,6 +1374,7 @@ def complete_basis_set(name, **kwargs):
     :returns: (*float*) -- Total electronic energy in Hartrees
 
     :PSI variables:
+
     .. envvar:: CBS TOTAL ENERGY
         CBS REFERENCE ENERGY
         CBS CORRELATION ENERGY
@@ -1877,7 +1893,15 @@ def complete_basis_set(name, **kwargs):
 
 # Transform and validate basis sets from 'cc-pV[Q5]Z' into [cc-pVQZ, cc-pV5Z] and [4, 5]
 def validate_bracketed_basis(basisstring):
+    """Function to transform and validate basis sets for cbs(). A basis set with no 
+    paired square brackets is passed through with zeta level 0 (e.g., '6-31+G(d,p)'
+    is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is 
+    checked for sensible sequence and Dunning-ness and returned as separate basis
+    sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note
+    that this function has no communication with the basis set library to check
+    if the basis actually exists. Used by :py:func:`wrappers.complete_basis_set`.
 
+    """
     ZETA = ['d', 't', 'q', '5', '6']
     BSET = []
     ZSET = []
@@ -1909,7 +1933,13 @@ def validate_bracketed_basis(basisstring):
 
 # Reform string basis set descriptor from basis set strings, 'cc-pv[q5]z' from [cc-pvqz, cc-pv5z]
 def reconstitute_bracketed_basis(needarray):
+    """Function to reform a bracketed basis set string from a sequential series
+    of basis sets (e.g, form 'cc-pv[q5]z' from array [cc-pvqz, cc-pv5z]). The
+    basis set array is extracted from the f_basis field of a NEED dictionary in
+    :py:func:`wrappers.complete_basis_set`. Result is used to print a nicely
+    formatted basis set string in the results table.
 
+    """
     ZETA = {'d': 2, 't': 3, 'q': 4, '5': 5, '6': 6}
     ZSET = [''] * len(ZETA)
     BSET = []
@@ -1935,10 +1965,9 @@ def reconstitute_bracketed_basis(needarray):
     return basisstring
 
 
-# Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$
 def highest_1(**largs):
-    """Scheme for total or correlation energies with a single basis or the highest zeta-level among an array of bases.
-    Used by :py:func:`complete_basis_set`.
+    """Scheme for total or correlation energies with a single basis or the highest
+    zeta-level among an array of bases. Used by :py:func:`wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^X
 
@@ -1982,12 +2011,11 @@ def highest_1(**largs):
         return energypiece
 
 
-# Defining equation in LaTeX:  $E_{corl}^{X} = E_{corl}^{\infty} + \beta X^{-3}$
 # Solution equation in LaTeX:  $E_{corl}^{\infty} = \frac{E_{corl}^{X} X^3 - E_{corl}^{X-1} (X-1)^3}{X^3 - (X-1)^3}$
 # Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`complete_basis_set`.
+    Used by :py:func:`wrappers.complete_basis_set`.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
 
@@ -2034,10 +2062,9 @@ def corl_xtpl_helgaker_2(**largs):
         return energypiece
 
 
-# Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$
 def scf_xtpl_helgaker_3(**largs):
     """Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`complete_basis_set`.
+    Used by :py:func:`wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}
 
@@ -2091,10 +2118,9 @@ def scf_xtpl_helgaker_3(**largs):
         return energypiece
 
 
-# Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$
 def scf_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`complete_basis_set`.
+    Used by :py:func:`wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63
 
@@ -2146,12 +2172,11 @@ def scf_xtpl_helgaker_2(**largs):
 
 
 def validate_scheme_args(functionname, **largs):
-    """lsdkjflskld
-
-    .. deprecated:: old news
+    """Function called by each extrapolation scheme in :py:func:`wrappers.complete_basis_set`.
+    Checks that all the input arguments are present and suitable so that
+    the scheme function can focus on defining the extrapolation.
 
     """
-
     mode = ''
     NEED = []
     wfnname = ''
@@ -2198,8 +2223,10 @@ def validate_scheme_args(functionname, **largs):
 
 
 def split_menial(menial):
-    """split meial docstring"""
+    """Function used by :py:func:`wrappers.complete_basis_set` to separate 'scftot'
+    into [scf, tot] and 'mp2corl' into [mp2, corl].
 
+    """
     PTYP = ['tot', 'corl']
     for temp in PTYP:
         if menial.endswith(temp):

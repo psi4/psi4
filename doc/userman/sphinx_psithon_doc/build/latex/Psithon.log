@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  20 FEB 2012 18:42
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  21 FEB 2012 14:29
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -913,76 +913,91 @@ LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <10> not available
 (Font)              Font shape `T1/pcr/b/n' tried instead on input line 156.
 [3] [4]
 LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <9> not available
-(Font)              Font shape `T1/pcr/b/n' tried instead on input line 567.
+(Font)              Font shape `T1/pcr/b/n' tried instead on input line 563.
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <9> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 567.
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 563.
  [5] [6
 
 ]
 Chapter 2.
-LaTeX Font Info:    Try loading font information for TS1+ptm on input line 623.
+LaTeX Font Info:    Try loading font information for TS1+ptm on input line 619.
 
 (/usr/local/texlive/2009/texmf-dist/tex/latex/psnfss/ts1ptm.fd
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 )
-Underfull \hbox (badness 10000) in paragraph at lines 627--628
+Underfull \hbox (badness 10000) in paragraph at lines 623--624
 
  []
 
 [7] [8]
 Chapter 3.
+
+Underfull \hbox (badness 10000) in paragraph at lines 749--750
+
+ []
+
 [9
 
 ] [10
 
 ]
 Chapter 4.
-[11] [12
 
-]
-Chapter 5.
-
-Underfull \hbox (badness 10000) in paragraph at lines 780--781
+Underfull \hbox (badness 10000) in paragraph at lines 824--825
 
  []
 
-[13] [14
+
+Underfull \hbox (badness 10000) in paragraph at lines 836--837
+
+ []
+
+[11] [12]
+Chapter 5.
+
+Underfull \hbox (badness 10000) in paragraph at lines 920--921
+
+ []
+
+[13
+
+] [14
 
 ]
 Chapter 6.
 
-Underfull \hbox (badness 10000) in paragraph at lines 865--866
+Underfull \hbox (badness 10000) in paragraph at lines 1005--1006
 
  []
 
 [15]
-Underfull \hbox (badness 5345) in paragraph at lines 992--997
+Underfull \hbox (badness 5345) in paragraph at lines 1132--1137
 []\T1/ptm/m/n/10 Specify a
  []
 
 [16] [17] [18]
 Chapter 7.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1146--1147
+Underfull \hbox (badness 10000) in paragraph at lines 1286--1287
 
  []
 
 [19
 
 ] [20] [21] [22]
-Underfull \hbox (badness 10000) in paragraph at lines 1470--1472
+Underfull \hbox (badness 10000) in paragraph at lines 1610--1612
 \T1/ptm/m/n/10 Extrapolation scheme for ref-er-ence en-er-gies with two ad-ja-c
 ent zeta-level bases. Used by
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1481--1483
+Underfull \hbox (badness 10000) in paragraph at lines 1621--1623
 \T1/ptm/m/n/10 Extrapolation scheme for ref-er-ence en-er-gies with three ad-ja
 -cent zeta-level bases. Used by
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1492--1494
+Underfull \hbox (badness 10000) in paragraph at lines 1632--1634
 \T1/ptm/m/n/10 Extrapolation scheme for cor-re-la-tion en-er-gies with two ad-j
 a-cent zeta-level bases. Used by
  []
@@ -995,11 +1010,11 @@ Chapter 8.
 
 ]
 Chapter 9.
-[27] [28] [29] [30]
-Chapter 10.
-[31
+[27] [28] [29] [30
 
-] [32
+]
+Chapter 10.
+[31] [32
 
 ]
 Chapter 11.
@@ -1011,15 +1026,15 @@ Chapter 12.
 
 ]
 Chapter 13.
-[37] [38] [39] [40] [41] [42
+[37] [38
 
 ]
 Chapter 14.
-[43] [44
+[39] [40
 
 ]
 Chapter 15.
-[45] [46
+[41] [42] [43] [44] [45] [46
 
 ]
 Chapter 16.
@@ -1032,27 +1047,32 @@ Chapter 16.
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 53--54
+Underfull \hbox (badness 10000) in paragraph at lines 50--52
+[]| \T1/ptm/m/n/10 <AN-OTH-ERP-SI-VARI-ABLE-WITH-non-stan-dard-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 56--57
 []| \T1/ptm/m/n/10 CP-CORRECTED2-
  []
 
 
-Overfull \hbox (15.00143pt too wide) in paragraph at lines 57--58
+Overfull \hbox (15.00143pt too wide) in paragraph at lines 60--61
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANABSOLUTEDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 58--59
+Underfull \hbox (badness 10000) in paragraph at lines 61--62
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANSIGNEDDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 59--60
+Underfull \hbox (badness 10000) in paragraph at lines 62--63
 []| \T1/ptm/m/n/10 db_nameDATABASEROOT-MEAN-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 60--61
+Underfull \hbox (badness 10000) in paragraph at lines 63--64
 []| \T1/ptm/m/n/10 UNCP-CORRECTED2-
  []
 
@@ -1066,10 +1086,10 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 8386 strings out of 493848
- 116965 string characters out of 3149207
- 216726 words of memory out of 3000000
- 11205 multiletter control sequences out of 15000+200000
+ 8395 strings out of 493848
+ 117118 string characters out of 3149207
+ 216800 words of memory out of 3000000
+ 11212 multiletter control sequences out of 15000+200000
  63666 words of font info for 72 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
  45i,18n,45p,2295b,551s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1089,9 +1109,9 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (57 pages, 499468 bytes).
+Output written on Psithon.pdf (57 pages, 509791 bytes).
 PDF statistics:
- 857 PDF objects out of 1000 (max. 8388607)
- 256 named destinations out of 1000 (max. 500000)
+ 873 PDF objects out of 1000 (max. 8388607)
+ 258 named destinations out of 1000 (max. 500000)
  190 words of extra memory for PDF output out of 10000 (max. 10000000)
 
