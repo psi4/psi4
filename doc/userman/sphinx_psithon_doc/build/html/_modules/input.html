@@ -1,0 +1,732 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>input &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+    <script type="text/javascript" src="../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for input</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">PsiMod</span>
+<span class="kn">from</span> <span class="nn">pubchem</span> <span class="kn">import</span> <span class="n">getPubChemResults</span><span class="p">,</span><span class="n">PubChemObj</span> 
+<span class="kn">import</span> <span class="nn">re</span><span class="p">;</span>
+<span class="kn">import</span> <span class="nn">os</span><span class="p">;</span>
+
+<span class="n">yes</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(yes|true|on|1)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="n">no</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(no|false|off|0)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="n">der0th</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(0|none|energy)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="n">der1st</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(1|first|gradient)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+<span class="n">der2nd</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(2|second|hessian)&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+
+<div class="viewcode-block" id="bad_option_syntax"><a class="viewcode-back" href="../index.html#input.bad_option_syntax">[docs]</a><span class="k">def</span> <span class="nf">bad_option_syntax</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="k">print</span> <span class="s">&#39;Unsupported syntax:</span><span class="se">\n\n</span><span class="si">%s</span><span class="se">\n\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="process_word_quotes"><a class="viewcode-back" href="../index.html#input.process_word_quotes">[docs]</a><span class="k">def</span> <span class="nf">process_word_quotes</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">dollar</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">val</span>    <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">dollar</span><span class="p">):</span>
+        <span class="c"># This is a python variable, make sure that it starts with a letter</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^[A-Za-z][\w]*&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">val</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Invalid Python variable: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">val</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^-?\d+\.?\d*(?:[Ee]-?\d+)?$&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">)):</span>
+        <span class="c"># This must be a number, don&#39;t wrap it in quotes</span>
+        <span class="k">return</span> <span class="n">val</span>
+    <span class="k">elif</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^</span><span class="se">\&#39;</span><span class="s">.*</span><span class="se">\&#39;</span><span class="s">$&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">or</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^\&quot;.*\&quot;$&#39;</span><span class="p">,</span> <span class="n">val</span><span class="p">)):</span>
+        <span class="c"># This is already wrapped in quotes, do nothing</span>
+        <span class="k">return</span> <span class="n">val</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># This must be a string</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">val</span>
+</div>
+<div class="viewcode-block" id="quotify"><a class="viewcode-back" href="../index.html#input.quotify">[docs]</a><span class="k">def</span> <span class="nf">quotify</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="c"># This wraps anything that looks like a string in quotes, and removes leading</span>
+    <span class="c"># dollar signs from python variables</span>
+    <span class="n">wordre</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(([$]?)([-+()*.\w\&quot;</span><span class="se">\&#39;</span><span class="s">]+))&#39;</span><span class="p">)</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">wordre</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">process_word_quotes</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">string</span>
+</div>
+<div class="viewcode-block" id="process_option"><a class="viewcode-back" href="../index.html#input.process_option">[docs]</a><span class="k">def</span> <span class="nf">process_option</span><span class="p">(</span><span class="n">spaces</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+    <span class="n">value</span>  <span class="o">=</span> <span class="n">quotify</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="n">temp</span>   <span class="o">=</span> <span class="s">&quot;&quot;</span>
+
+    <span class="n">global_options</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">module</span> <span class="o">==</span> <span class="s">&quot;GLOBALS&quot;</span> <span class="ow">or</span> <span class="n">module</span> <span class="o">==</span> <span class="s">&quot;GLOBAL&quot;</span> <span class="ow">or</span> <span class="n">module</span> <span class="o">==</span> <span class="s">&quot;&quot;</span> <span class="ow">or</span> <span class="n">module</span><span class="o">.</span><span class="n">isspace</span><span class="p">()):</span>
+        <span class="n">global_options</span> <span class="o">=</span> <span class="bp">True</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">global_options</span><span class="p">):</span>
+        <span class="c"># If it&#39;s really a global, we need slightly different syntax</span>
+        <span class="k">return</span> <span class="n">spaces</span> <span class="o">+</span> <span class="s">&quot;PsiMod.set_global_option(</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, </span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># It&#39;s a local option, so we need the module name in there too</span>
+        <span class="k">return</span> <span class="n">spaces</span> <span class="o">+</span> <span class="s">&quot;PsiMod.set_local_option(</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">, </span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="process_set_command"><a class="viewcode-back" href="../index.html#input.process_set_command">[docs]</a><span class="k">def</span> <span class="nf">process_set_command</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="n">module_string</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)):</span>
+        <span class="n">module_string</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">module_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">process_option</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">module</span><span class="p">,</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">),</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">result</span>
+</div>
+<div class="viewcode-block" id="process_set_commands"><a class="viewcode-back" href="../index.html#input.process_set_commands">[docs]</a><span class="k">def</span> <span class="nf">process_set_commands</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">spaces</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">command_lines</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">commands</span><span class="p">)</span>
+    <span class="c"># Remove trailing newline from each line</span>
+    <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">command_lines</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="n">module_string</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)):</span>
+        <span class="n">module_string</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">module_string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">command_lines</span><span class="p">:</span>
+            <span class="c"># Chomp the trailing newline and accumulate</span>
+            <span class="n">command</span> <span class="o">=</span> <span class="n">command</span> <span class="o">+</span> <span class="n">line</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">check_parentheses_and_brackets</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="c"># If the brackets don&#39;t match up, we need to move on to the next line</span>
+                <span class="c"># and keep going, until they do match. Only then do we process the command</span>
+                <span class="k">continue</span>
+            <span class="c"># Ignore blank/empty lines</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">isspace</span><span class="p">()):</span>
+                <span class="k">continue</span>
+            <span class="n">matchobj</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^\s*(\w+)[\s=]+(.*?)$&#39;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+            <span class="c"># Is the syntax correct? If so, process the line</span>
+            <span class="k">if</span> <span class="n">matchobj</span><span class="p">:</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="n">result</span> <span class="o">+</span> <span class="n">process_option</span><span class="p">(</span><span class="n">spaces</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">command</span><span class="p">)</span>
+                <span class="c"># Reset the string</span>
+                <span class="n">command</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bad_option_syntax</span><span class="p">(</span><span class="n">command</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="process_pubchem_command"><a class="viewcode-back" href="../index.html#input.process_pubchem_command">[docs]</a><span class="k">def</span> <span class="nf">process_pubchem_command</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s">r&#39;^\s*[0-9]+\s*$&#39;</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="c"># This is just a number - must be a CID</span>
+        <span class="n">pcobj</span> <span class="o">=</span> <span class="n">PubChemObj</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">string</span><span class="p">),</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pcobj</span><span class="o">.</span><span class="n">getMoleculeString</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># Search pubchem for the provided string</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">getPubChemResults</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
+
+        <span class="c"># N.B. Anything starting with PubchemError will be handled correctly by the molecule parser</span>
+        <span class="c"># in libmints, which will just print the rest of the string and exit gracefully.</span>
+        <span class="k">if</span><span class="p">(</span><span class="ow">not</span> <span class="n">results</span><span class="p">):</span>
+            <span class="c"># Nothing!</span>
+            <span class="k">return</span> <span class="s">&quot;PubchemError</span><span class="se">\n\t</span><span class="s">No results were found when searching PubChem for </span><span class="si">%s</span><span class="s">.</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">string</span>
+        <span class="k">elif</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="c"># There&#39;s only 1 result - use it</span>
+            <span class="k">return</span> <span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getMoleculeString</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># There are multiple results. Print and exit</span>
+            <span class="n">msg</span> <span class="o">=</span>  <span class="s">&quot;</span><span class="se">\t</span><span class="s">PubchemError</span><span class="se">\n</span><span class="s">&quot;</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">Multiple pubchem results were found. Replace</span><span class="se">\n\n\t\t</span><span class="s">pubchem:</span><span class="si">%s</span><span class="se">\n\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">string</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">with the Chemical ID number or exact name from one of the following and re-run.</span><span class="se">\n\n</span><span class="s">&quot;</span>
+            <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s"> Chemical ID     IUPAC Name</span><span class="se">\n\n</span><span class="s">&quot;</span>
+            <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">result</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">string</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="c">#We&#39;ve found an exact match!</span>
+                    <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getMoleculeString</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">msg</span>
+</div>
+<div class="viewcode-block" id="process_molecule_command"><a class="viewcode-back" href="../index.html#input.process_molecule_command">[docs]</a><span class="k">def</span> <span class="nf">process_molecule_command</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">spaces</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">geometry</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">pubchemre</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(\s*pubchem\s*:\s*(.*)\n)$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">geometry</span> <span class="o">=</span> <span class="n">pubchemre</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">process_pubchem_command</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+    <span class="n">molecule</span> <span class="o">=</span> <span class="n">spaces</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">molecule</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s"> = &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">molecule</span> <span class="o">+=</span> <span class="s">&#39;geometry(&quot;&quot;&quot;</span><span class="si">%s</span><span class="s">&quot;&quot;&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+        <span class="n">molecule</span> <span class="o">+=</span> <span class="s">&#39;,&quot;</span><span class="si">%s</span><span class="s">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="n">molecule</span> <span class="o">+=</span> <span class="s">&quot;)</span><span class="se">\n</span><span class="s">&quot;</span>
+    <span class="n">molecule</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">PsiMod.IO.set_default_namespace(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spaces</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">molecule</span>
+</div>
+<div class="viewcode-block" id="process_extract_command"><a class="viewcode-back" href="../index.html#input.process_extract_command">[docs]</a><span class="k">def</span> <span class="nf">process_extract_command</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">spaces</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">extract</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">extract</span> <span class="o">+=</span> <span class="n">spaces</span> <span class="o">+</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">.set_name(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">extract</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s">PsiMod.set_active_molecule(</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spaces</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">extract</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="si">%s</span><span class="s">PsiMod.IO.set_default_namespace(&quot;</span><span class="si">%s</span><span class="s">&quot;)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spaces</span><span class="p">,</span><span class="n">name</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">extract</span>
+</div>
+<div class="viewcode-block" id="process_print_command"><a class="viewcode-back" href="../index.html#input.process_print_command">[docs]</a><span class="k">def</span> <span class="nf">process_print_command</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">spaces</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">printer</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">spaces</span><span class="p">)</span>
+    <span class="n">printer</span> <span class="o">+=</span> <span class="s">&quot;PsiMod.print_out(str(</span><span class="si">%s</span><span class="s">))</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">printer</span>
+</div>
+<div class="viewcode-block" id="process_memory_command"><a class="viewcode-back" href="../index.html#input.process_memory_command">[docs]</a><span class="k">def</span> <span class="nf">process_memory_command</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+
+    <span class="n">spacing</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+
+    <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">memory_amount</span> <span class="o">=</span> <span class="n">val</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;KB&#39;</span><span class="p">):</span>
+        <span class="n">memory_amount</span> <span class="o">=</span> <span class="n">val</span><span class="o">*</span><span class="mi">1000</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;MB&#39;</span><span class="p">):</span>
+        <span class="n">memory_amount</span> <span class="o">=</span> <span class="n">val</span><span class="o">*</span><span class="mi">1000000</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;GB&#39;</span><span class="p">):</span>
+        <span class="n">memory_amount</span> <span class="o">=</span> <span class="n">val</span><span class="o">*</span><span class="mi">1000000000</span>
+
+    <span class="n">command</span> <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">PsiMod.set_memory(</span><span class="si">%d</span><span class="s">)</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">memory_amount</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">command</span>
+</div>
+<div class="viewcode-block" id="process_basis_file"><a class="viewcode-back" href="../index.html#input.process_basis_file">[docs]</a><span class="k">def</span> <span class="nf">process_basis_file</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">spacing</span>   <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">basisfile</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="n">command</span>   <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">PsiMod.add_user_basis_file(</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">basisfile</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">command</span>
+</div>
+<div class="viewcode-block" id="process_basis_block"><a class="viewcode-back" href="../index.html#input.process_basis_block">[docs]</a><span class="k">def</span> <span class="nf">process_basis_block</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+    <span class="n">command_lines</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">spacing</span>   <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">result</span>   <span class="o">=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">temppsioman = PsiMod.IOManager.shared_object()&quot;</span> <span class="o">%</span> <span class="n">spacing</span>
+    <span class="n">result</span>  <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">psi4tempscratchdir = temppsioman.get_file_path(100)&quot;</span> <span class="o">%</span> <span class="n">spacing</span>
+    <span class="n">basislabel</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\s*\[([-*\(\)\w]+)\]\s*&#39;</span><span class="p">)</span>
+
+    <span class="c"># Start by looking for assign lines, and remove them</span>
+    <span class="n">label_re</span>  <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*assign\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$&#39;</span><span class="p">)</span>
+    <span class="n">symbol_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*assign\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$&#39;</span><span class="p">)</span>
+    <span class="n">all_re</span>    <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*assign\s*([-*\(\)\w]+)\s*(\w+)?\s*$&#39;</span><span class="p">)</span>
+    <span class="n">leftover_lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">command_lines</span><span class="p">:</span>
+        <span class="n">basistype</span> <span class="o">=</span> <span class="s">&quot;BASIS&quot;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">label_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">label_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">basistype</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">PsiMod.get_active_molecule().set_basis_by_label(</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">,</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">,</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">basistype</span><span class="p">)</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">symbol_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">symbol_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">basistype</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">PsiMod.get_active_molecule().set_basis_by_symbol(</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">,</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">,</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">basistype</span><span class="p">)</span>
+        <span class="k">elif</span><span class="p">(</span><span class="n">all_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)):</span>
+            <span class="n">m</span> <span class="o">=</span> <span class="n">all_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span> <span class="n">basistype</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">PsiMod.get_active_molecule().set_basis_all_atoms(</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">,</span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">basistype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">leftover_lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="c"># Now look for regular basis set definitions</span>
+    <span class="n">basisstring</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">leftover_lines</span><span class="p">:</span>
+        <span class="c"># Ignore blank/empty lines</span>
+        <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">line</span> <span class="ow">or</span> <span class="n">line</span><span class="o">.</span><span class="n">isspace</span><span class="p">()):</span>
+            <span class="k">continue</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">basislabel</span><span class="p">,</span> <span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="k">if</span><span class="p">(</span><span class="n">basisstring</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">):</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">psi4tempbasisfile = psi4tempscratchdir + </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">basisname</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">PsiMod.add_user_basis_file(psi4tempbasisfile)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+                <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">temppsioman.write_scratch_file(psi4tempbasisfile, </span><span class="se">\&quot;\&quot;\&quot;\n</span><span class="si">%s</span><span class="se">\&quot;\&quot;\&quot;</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">basisstring</span><span class="p">)</span>
+                <span class="n">basisstring</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="n">basisname</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">BasisSet</span><span class="o">.</span><span class="n">make_filename</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">basisstring</span> <span class="o">+=</span> <span class="n">line</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">basisstring</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">psi4tempbasisfile = psi4tempscratchdir + </span><span class="se">\&quot;</span><span class="si">%s</span><span class="se">\&quot;</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">basisname</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">PsiMod.add_user_basis_file(psi4tempbasisfile)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">temppsioman.write_scratch_file(psi4tempbasisfile, </span><span class="se">\&quot;\&quot;\&quot;\n</span><span class="si">%s</span><span class="se">\&quot;\&quot;\&quot;</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">basisstring</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<div class="viewcode-block" id="process_external_command"><a class="viewcode-back" href="../index.html#input.process_external_command">[docs]</a><span class="k">def</span> <span class="nf">process_external_command</span><span class="p">(</span><span class="n">matchobj</span><span class="p">):</span>
+
+    <span class="n">spacing</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">isspace</span><span class="p">()):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="s">&quot;extern&quot;</span>
+    <span class="n">block</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">matchobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">block</span><span class="p">)</span>
+
+    <span class="n">extern</span> <span class="o">=</span>  <span class="s">&quot;</span><span class="si">%s</span><span class="s">qmmm = QMMM()</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+
+    <span class="n">NUMBER</span> <span class="o">=</span> <span class="s">&quot;((?:[-+]?</span><span class="se">\\</span><span class="s">d*</span><span class="se">\\</span><span class="s">.</span><span class="se">\\</span><span class="s">d+(?:[DdEe][-+]?</span><span class="se">\\</span><span class="s">d+)?)|(?:[-+]?</span><span class="se">\\</span><span class="s">d+</span><span class="se">\\</span><span class="s">.</span><span class="se">\\</span><span class="s">d*(?:[DdEe][-+]?</span><span class="se">\\</span><span class="s">d+)?))&quot;</span>
+
+    <span class="c"># Comments are all removed by this point</span>
+    <span class="c"># 0. Remove blank lines</span>
+    <span class="n">re_blank</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*$&#39;</span><span class="p">)</span>
+    <span class="n">lines2</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">mobj</span> <span class="o">=</span> <span class="n">re_blank</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mobj</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">lines2</span> 
+    
+    <span class="c"># 1. Look for units [ang|bohr|au|a.u.] defaults to ang</span>
+    <span class="n">re_units</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*units?[\s=]+((ang)|(angstrom)|(bohr)|(au)|(a\.u\.))$\s*&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">units</span> <span class="o">=</span> <span class="s">&#39;ang&#39;</span>
+    <span class="n">lines2</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span> 
+        <span class="n">mobj</span> <span class="o">=</span> <span class="n">re_units</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mobj</span><span class="p">):</span>
+            <span class="n">unit</span> <span class="o">=</span> <span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">unit</span> <span class="o">==</span> <span class="s">&#39;bohr&#39;</span> <span class="ow">or</span> <span class="n">unit</span> <span class="o">==</span> <span class="s">&#39;au&#39;</span> <span class="ow">or</span> <span class="n">unit</span> <span class="o">==</span> <span class="s">&#39;a.u.&#39;</span><span class="p">):</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="s">&#39;bohr&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">units</span> <span class="o">=</span> <span class="s">&#39;ang&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">lines2</span>
+
+    <span class="c"># 2. Look for basis basisname, defaults to cc-pvdz </span>
+    <span class="c"># 3. Look for df_basis_scf basisname, defaults to cc-pvdz-jkfit </span>
+    <span class="n">re_basis</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\s*basis[\s=]+(\S+)\s*$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">re_df_basis</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\s*df_basis_scf[\s=]+(\S+)\s*$&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">basis</span> <span class="o">=</span> <span class="s">&#39;cc-pvdz&#39;</span>
+    <span class="n">df_basis_scf</span> <span class="o">=</span> <span class="s">&#39;cc-pvdz-jkfit&#39;</span>
+    <span class="n">lines2</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span> 
+        <span class="n">mobj</span> <span class="o">=</span> <span class="n">re_basis</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mobj</span><span class="p">):</span>
+            <span class="n">basis</span> <span class="o">=</span> <span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> 
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mobj</span> <span class="o">=</span> <span class="n">re_df_basis</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">mobj</span><span class="p">):</span>
+                <span class="n">df_basis_scf</span> <span class="o">=</span> <span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">lines2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">lines2</span>
+
+    <span class="c"># 4. Look for charge lines Z x y z, convert according to unit convention</span>
+    <span class="n">charge_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*&#39;</span> <span class="o">+</span> <span class="n">NUMBER</span> <span class="o">+</span> <span class="s">r&#39;\s+&#39;</span> <span class="o">+</span> <span class="n">NUMBER</span> <span class="o">+</span> <span class="s">r&#39;\s+&#39;</span> <span class="o">+</span> <span class="n">NUMBER</span> <span class="o">+</span> <span class="s">r&#39;\s+&#39;</span> <span class="o">+</span> <span class="n">NUMBER</span> <span class="o">+</span> <span class="s">r&#39;\s*$&#39;</span><span class="p">)</span>
+    <span class="n">lines2</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span> 
+        <span class="n">mobj</span> <span class="o">=</span> <span class="n">charge_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mobj</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">units</span> <span class="o">==</span> <span class="s">&#39;ang&#39;</span><span class="p">):</span>
+                <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">qmmm.addChargeAngstrom(</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">spacing</span><span class="p">,</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">units</span> <span class="o">==</span> <span class="s">&#39;bohr&#39;</span><span class="p">):</span>
+                <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">qmmm.addChargeBohr(</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">,</span><span class="si">%s</span><span class="s">)</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">spacing</span><span class="p">,</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span><span class="n">mobj</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines2</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="n">lines2</span>
+
+    <span class="c"># 5. Look for diffuse regions, which are XYZ molecules seperated by the usual -- lines</span>
+    <span class="n">spacer_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*--\s*$&#39;</span><span class="p">)</span>
+    <span class="n">frags</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">frags</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="n">mobj</span> <span class="o">=</span> <span class="n">spacer_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mobj</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frags</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">frags</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">])):</span>
+                <span class="n">frags</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">frags</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">frags</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">extern_mol_temp = PsiMod.get_active_molecule()</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+
+    <span class="n">mol_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\s*\S+\s+&#39;</span> <span class="o">+</span> <span class="n">NUMBER</span> <span class="o">+</span> <span class="s">r&#39;\s+&#39;</span> <span class="o">+</span> <span class="n">NUMBER</span> <span class="o">+</span> <span class="s">r&#39;\s+&#39;</span> <span class="o">+</span> <span class="n">NUMBER</span> <span class="o">+</span> <span class="s">r&#39;\s*$&#39;</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">frag</span> <span class="ow">in</span> <span class="n">frags</span><span class="p">:</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">len</span><span class="p">(</span><span class="n">frag</span><span class="p">):</span>
+            <span class="k">continue</span>
+
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">external_diffuse = geometry(&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">0 1</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span> 
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">frag</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">mol_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">spacing</span><span class="p">,</span><span class="n">line</span><span class="p">)</span>    
+
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">units </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">units</span><span class="p">)</span> 
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">symmetry c1</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span> 
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">no_reorient</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span> 
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">no_com</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span> 
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">&quot;&quot;&quot;)</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">diffuse = Diffuse(external_diffuse,&#39;</span><span class="si">%s</span><span class="s">&#39;,&#39;</span><span class="si">%s</span><span class="s">&#39;)</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">basis</span><span class="p">,</span> <span class="n">df_basis_scf</span><span class="p">)</span>
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">diffuse.fitScf()</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">qmmm.addDiffuse(diffuse)</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+        <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+    <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">PsiMod.set_active_molecule(extern_mol_temp)</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+
+    <span class="c"># 6. If there is anything left, the user messed up</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">)):</span>
+        <span class="k">print</span> <span class="s">&#39;Input parsing for external {}: Extra line(s) present:&#39;</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+            <span class="k">print</span> <span class="n">line</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># Return is actually an ExternalPotential, not a QMMM</span>
+    <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s</span><span class="s">qmmm.populateExtern()</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">)</span>
+    <span class="n">extern</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="si">%s%s</span><span class="s"> = qmmm.extern</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">spacing</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> 
+
+    <span class="k">return</span> <span class="n">extern</span>
+</div>
+<div class="viewcode-block" id="check_parentheses_and_brackets"><a class="viewcode-back" href="../index.html#input.check_parentheses_and_brackets">[docs]</a><span class="k">def</span> <span class="nf">check_parentheses_and_brackets</span><span class="p">(</span><span class="n">input_string</span><span class="p">,</span> <span class="n">exit_on_error</span><span class="p">):</span>
+    <span class="c"># This returns 1 if the string&#39;s all matched up, 0 otherwise</span>
+    <span class="kn">import</span> <span class="nn">collections</span>
+
+    <span class="c"># create left to right parenthesis mappings</span>
+    <span class="n">lrmap</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;(&quot;</span><span class="p">:</span><span class="s">&quot;)&quot;</span><span class="p">,</span> <span class="s">&quot;[&quot;</span><span class="p">:</span><span class="s">&quot;]&quot;</span><span class="p">,</span> <span class="s">&quot;{&quot;</span><span class="p">:</span><span class="s">&quot;}&quot;</span><span class="p">}</span>
+
+    <span class="c"># derive sets of left and right parentheses</span>
+    <span class="n">lparens</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">lrmap</span><span class="o">.</span><span class="n">iterkeys</span><span class="p">())</span>
+    <span class="n">rparens</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">lrmap</span><span class="o">.</span><span class="n">itervalues</span><span class="p">())</span>
+
+    <span class="n">parenstack</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">deque</span><span class="p">()</span>
+    <span class="n">all_matched</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">input_string</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">lparens</span><span class="p">:</span>
+            <span class="n">parenstack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">rparens</span><span class="p">:</span>
+            <span class="n">opench</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">opench</span> <span class="o">=</span> <span class="n">parenstack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="c"># Run out of opening parens</span>
+                <span class="n">all_matched</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">exit_on_error</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;Input error: extra </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">ch</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">lrmap</span><span class="p">[</span><span class="n">opench</span><span class="p">]</span> <span class="o">!=</span> <span class="n">ch</span><span class="p">:</span>
+                <span class="c"># wrong type of parenthesis popped from stack</span>
+                <span class="n">all_matched</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="n">exit_on_error</span><span class="p">:</span>
+                    <span class="k">print</span> <span class="s">&quot;Input error: </span><span class="si">%s</span><span class="s"> closed with a </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opench</span><span class="p">,</span> <span class="n">ch</span><span class="p">)</span>
+                    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">parenstack</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">all_matched</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">exit_on_error</span><span class="p">:</span>
+            <span class="k">print</span> <span class="s">&quot;Input error: Unmatched </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">parenstack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">all_matched</span>
+
+</div>
+<div class="viewcode-block" id="parse_multiline_array"><a class="viewcode-back" href="../index.html#input.parse_multiline_array">[docs]</a><span class="k">def</span> <span class="nf">parse_multiline_array</span><span class="p">(</span><span class="n">input_list</span><span class="p">):</span>
+    <span class="n">line</span> <span class="o">=</span> <span class="n">input_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c"># Keep adding lines to the current one, until all parens match up</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">check_parentheses_and_brackets</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">thisline</span> <span class="o">=</span> <span class="n">input_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">line</span> <span class="o">+=</span> <span class="n">thisline</span>
+    <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">line</span>
+
+</div>
+<div class="viewcode-block" id="process_multiline_arrays"><a class="viewcode-back" href="../index.html#input.process_multiline_arrays">[docs]</a><span class="k">def</span> <span class="nf">process_multiline_arrays</span><span class="p">(</span><span class="n">inputfile</span><span class="p">):</span>
+    <span class="c"># This function takes multiline array inputs, and puts them on a single line</span>
+    <span class="c"># Start by converting the input to a list, splitting at newlines</span>
+    <span class="n">input_list</span> <span class="o">=</span> <span class="n">inputfile</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+    <span class="n">set_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+\[.*&#39;</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">newinput</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_list</span><span class="p">):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">input_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">set_re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+            <span class="c"># We&#39;ve found the start of a set matrix [ .... line - hand it off for more checks</span>
+            <span class="n">newinput</span> <span class="o">+=</span> <span class="n">parse_multiline_array</span><span class="p">(</span><span class="n">input_list</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># Nothing to do - just add the line to the string</span>
+            <span class="n">newinput</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">input_list</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">newinput</span>
+
+</div>
+<div class="viewcode-block" id="process_input"><a class="viewcode-back" href="../index.html#input.process_input">[docs]</a><span class="k">def</span> <span class="nf">process_input</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">,</span> <span class="n">print_level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+
+    <span class="c"># Check if the infile is actually an outfile (yeah we did)</span>
+    <span class="n">psi4_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;PSI4: An Open-Source Ab Initio Electronic Structure Package&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">psi4_id</span><span class="p">,</span> <span class="nb">raw_input</span><span class="p">)):</span>
+        <span class="n">input_lines</span> <span class="o">=</span> <span class="nb">raw_input</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+        <span class="n">input_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*?\=\=&gt; Input File &lt;\=\=&#39;</span><span class="p">)</span>
+        <span class="n">input_start</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="k">for</span> <span class="n">line_count</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_lines</span><span class="p">)):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="n">input_lines</span><span class="p">[</span><span class="n">line_count</span><span class="p">]</span> 
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">input_re</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                <span class="n">input_start</span> <span class="o">=</span> <span class="n">line_count</span> <span class="o">+</span> <span class="mi">3</span><span class="p">;</span>            
+                <span class="k">break</span><span class="p">;</span>
+
+        <span class="n">stop_re</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^-{74}&#39;</span><span class="p">)</span>
+        <span class="n">input_stop</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+        <span class="k">for</span> <span class="n">line_count</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">input_start</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">input_lines</span><span class="p">)):</span>        
+            <span class="n">line</span> <span class="o">=</span> <span class="n">input_lines</span><span class="p">[</span><span class="n">line_count</span><span class="p">]</span> 
+            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">stop_re</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+                <span class="n">input_stop</span> <span class="o">=</span> <span class="n">line_count</span><span class="p">;</span>            
+                <span class="k">break</span><span class="p">;</span>
+                       
+        <span class="k">if</span> <span class="p">(</span><span class="n">input_start</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">or</span> <span class="n">input_stop</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">print</span> <span class="s">&#39;Cannot extract infile from outfile.&#39;</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+ 
+        <span class="nb">raw_input</span> <span class="o">=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">input_lines</span><span class="p">[</span><span class="n">input_start</span><span class="p">:</span><span class="n">input_stop</span><span class="p">])</span>
+        <span class="nb">raw_input</span> <span class="o">+=</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span>
+
+    <span class="c"># Echo the infile on the outfile</span>
+    <span class="k">if</span> <span class="n">print_level</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">  ==&gt; Input File &lt;==</span><span class="se">\n\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;--------------------------------------------------------------------------</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">);</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;--------------------------------------------------------------------------</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">flush_outfile</span><span class="p">();</span>
+
+
+    <span class="c">#NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:</span>
+    <span class="c">#   function [objname] { ... }</span>
+    <span class="c">#   which has the regex capture group:</span>
+    <span class="c">#</span>
+    <span class="c">#   r&#39;^(\s*?)FUNCTION\s*(\w*?)\s*\{(.*?)\}&#39;, re.MULTILINE | re.DOTALL | re.IGNORECASE</span>
+    <span class="c">#</span>
+    <span class="c">#   your function is in capture group #1</span>
+    <span class="c">#   your objname is in capture group #2</span>
+    <span class="c">#   your data is in capture group #3</span>
+
+    <span class="c"># Nuke all comments</span>
+    <span class="n">comment</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;#.*&#39;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">comment</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="nb">raw_input</span><span class="p">)</span>
+
+    <span class="c"># Check the brackets and parentheses match up, as long as this is not a pickle input file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s">r&#39;pickle_kw&#39;</span><span class="p">,</span> <span class="n">temp</span><span class="p">):</span>
+        <span class="n">check_parentheses_and_brackets</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># First, remove everything from lines containing only spaces</span>
+    <span class="n">blankline</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^\s*$&#39;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">blankline</span><span class="p">,</span> <span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">temp</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span><span class="p">)</span>
+
+    <span class="c"># Look for things like</span>
+    <span class="c"># set matrix [</span>
+    <span class="c">#              [ 1, 2 ],</span>
+    <span class="c">#              [ 3, 4 ]</span>
+    <span class="c">#            ]</span>
+    <span class="c"># and put them on a single line</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">process_multiline_arrays</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process all &quot;set name? { ... }&quot;</span>
+    <span class="n">set_commands</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(\s*?)set\s+([-,\w]*?)[\s=]*\{(.*?)\}&#39;</span><span class="p">,</span>
+                              <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">set_commands</span><span class="p">,</span> <span class="n">process_set_commands</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process all individual &quot;set (module_list) key  {[value_list] or $value or value}&quot;</span>
+    <span class="c"># N.B. We have to be careful here, because \s matches \n, leading to potential problems</span>
+    <span class="c"># with undesired multiline matches.  Better the double-negative [^\S\n] instead, which</span>
+    <span class="c"># will match any space, tab, etc., except a newline</span>
+    <span class="n">set_command</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$&#39;</span><span class="p">,</span> 
+                             <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">set_command</span><span class="p">,</span> <span class="n">process_set_command</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process &quot;molecule name? { ... }&quot;</span>
+    <span class="n">molecule</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}&#39;</span><span class="p">,</span>
+                          <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">process_molecule_command</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process &quot;external name? { ... }&quot;</span>
+    <span class="n">external</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}&#39;</span><span class="p">,</span>
+                          <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">external</span><span class="p">,</span> <span class="n">process_external_command</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+    
+    <span class="c"># Then remove repeated newlines</span>
+    <span class="n">multiplenewlines</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;\n+&#39;</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">multiplenewlines</span><span class="p">,</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process &quot; extract&quot;</span>
+    <span class="n">extract</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(\s*?)(\w+)\s*=\s*\w+\.extract_subsets.*&#39;</span><span class="p">,</span>
+                         <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">extract</span><span class="p">,</span> <span class="n">process_extract_command</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process &quot;print&quot; and transform it to &quot;PsiMod.print_out()&quot;</span>
+    <span class="n">print_string</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(\s*?)print\s+(.*)&#39;</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">print_string</span><span class="p">,</span><span class="n">process_print_command</span><span class="p">,</span><span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process &quot;memory ... &quot;</span>
+    <span class="n">memory_string</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)&#39;</span><span class="p">,</span>
+                               <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">memory_string</span><span class="p">,</span><span class="n">process_memory_command</span><span class="p">,</span><span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process &quot;basis file ... &quot;</span>
+    <span class="n">basis_file</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(\s*?)basis\s+file\s*(\b.*\b)\s*$&#39;</span><span class="p">,</span>
+                            <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">basis_file</span><span class="p">,</span><span class="n">process_basis_file</span><span class="p">,</span><span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># Process &quot;basis name { ... }&quot;</span>
+    <span class="n">basis_block</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s">r&#39;(\s*?)basis[=\s]*\{(.*?)\}&#39;</span><span class="p">,</span>
+                             <span class="n">re</span><span class="o">.</span><span class="n">MULTILINE</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">DOTALL</span> <span class="o">|</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)</span>
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">basis_block</span><span class="p">,</span><span class="n">process_basis_block</span><span class="p">,</span><span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># imports</span>
+    <span class="n">imports</span>  <span class="o">=</span> <span class="s">&#39;from PsiMod import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from physconst import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from molecule import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from driver import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from text import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from inpsight import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from wrappers import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from aliases import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from psiexceptions import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from util import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from qmmm import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from frac import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;from pubchem import *</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;import pickle</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">imports</span> <span class="o">+=</span> <span class="s">&#39;psi4_io = PsiMod.IOManager.shared_object()</span><span class="se">\n</span><span class="s">&#39;</span>
+
+    <span class="c"># psirc (a baby PSIthon script that might live in ~/.psi4rc)</span>
+    <span class="n">psirc</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">homedir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="s">&#39;~&#39;</span><span class="p">)</span>
+    <span class="n">psirc_file</span> <span class="o">=</span> <span class="n">homedir</span> <span class="o">+</span> <span class="s">&#39;/.psi4rc&#39;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">psirc_file</span><span class="p">):</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">psirc_file</span><span class="p">)</span>
+        <span class="n">psirc</span> <span class="o">=</span> <span class="n">fh</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="c"># Override scratch directory if user specified via env_var</span>
+    <span class="n">scratch</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">scratch_env</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">Process</span><span class="o">.</span><span class="n">environment</span><span class="p">[</span><span class="s">&#39;PSI_SCRATCH&#39;</span><span class="p">]</span> 
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">scratch_env</span><span class="p">):</span>
+        <span class="n">scratch</span> <span class="o">+=</span> <span class="s">&#39;psi4_io.set_default_path(&quot;</span><span class="si">%s</span><span class="s">&quot;)</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">scratch_env</span><span class="p">)</span>
+
+    <span class="n">blank_mol</span> <span class="o">=</span> <span class="s">&#39;geometry(&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">blank_mol</span> <span class="o">+=</span> <span class="s">&#39;0 1</span><span class="se">\n</span><span class="s">H</span><span class="se">\n</span><span class="s">H 1 0.74</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">blank_mol</span> <span class="o">+=</span> <span class="s">&#39;&quot;&quot;&quot;,&quot;blank_molecule_psi4_yo&quot;)</span><span class="se">\n</span><span class="s">&#39;</span>
+
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">imports</span> <span class="o">+</span> <span class="n">psirc</span> <span class="o">+</span> <span class="n">scratch</span> <span class="o">+</span> <span class="n">blank_mol</span> <span class="o">+</span> <span class="n">temp</span>
+
+    <span class="k">return</span> <span class="n">temp</span>
+</div>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">process_input</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">molecule h2 {</span>
+<span class="s">H</span>
+<span class="s">H 1 R</span>
+
+<span class="s">R = .9</span>
+<span class="s">}</span>
+
+<span class="s">set basis 6-31G**</span>
+
+<span class="s">&quot;&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">print</span> <span class="s">&quot;Result</span><span class="se">\n</span><span class="s">==========================&quot;</span>
+    <span class="k">print</span> <span class="n">result</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Feb 20, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

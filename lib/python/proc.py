@@ -718,7 +718,7 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out(line3)
     PsiMod.set_variable("SAPT CT ENERGY",CT)
 
-    return CT
+    return e_sapt
 
 def run_mrcc(name, **kwargs):
 

@@ -20,6 +20,7 @@ currdir = $(shell echo `pwd`)
 
 LATEX = @LATEX@
 PDFLATEX = @PDFLATEX@
+SPHINX = @SPHINX@
 BIBTEX = @BIBTEX@
 DVIPS = @DVIPS@
 PS2PDF = @PS2PDF@

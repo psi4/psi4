@@ -1,8 +1,8 @@
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 #include <libpsio/psio.hpp>
-#include <libpsio/aiohandler.h>
 #include <libpsio/psio.h>
+#include <libpsio/aiohandler.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
 #include <psifiles.h>
@@ -67,6 +67,19 @@ boost::shared_ptr<JK> JK::build_JK()
         return boost::shared_ptr<JK>(jk);
 
     } else if (options.get_str("SCF_TYPE") == "PK") {
+
+        PKJK* jk = new PKJK(primary);;
+
+        if (options["INTS_TOLERANCE"].has_changed())
+            jk->set_cutoff(options.get_double("INTS_TOLERANCE"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+
+        return boost::shared_ptr<JK>(jk);
+
+    } else if (options.get_str("SCF_TYPE") == "OUT_OF_CORE") {
 
         DiskJK* jk = new DiskJK(primary);;
 
@@ -763,6 +776,366 @@ void DiskJK::postiterations()
     delete[] so2symblk_;
     delete[] so2index_;
 }
+
+PKJK::PKJK(boost::shared_ptr<BasisSet> primary) :
+    JK(primary)
+{
+    common_init();
+}
+
+PKJK::~PKJK()
+{
+}
+
+void PKJK::common_init()
+{
+    pk_file_ = PSIF_SO_TEI;
+}
+
+void PKJK::print_header() const
+{
+    if (print_) {
+        fprintf(outfile, "  ==> DiskJK: Disk-Based J/K Matrices <==\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+        //fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+    }
+}
+
+void PKJK::preiterations()
+{
+    psio_ = _default_psio_lib_;
+
+    // Start by generating conventional integrals on disk
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    mints->integrals();
+    mints.reset();
+
+    int nso   = Process::environment.reference_wavefunction()->nso();
+    int *sopi = Process::environment.reference_wavefunction()->nsopi();
+    int nirreps = Process::environment.reference_wavefunction()->nirrep();
+
+    so2symblk_ = new int[nso];
+    so2index_  = new int[nso];
+    size_t so_count = 0;
+    size_t offset = 0;
+    for (int h = 0; h < nirreps; ++h) {
+        for (int i = 0; i < sopi[h]; ++i) {
+            so2symblk_[so_count] = h;
+            so2index_[so_count] = so_count-offset;
+            ++so_count;
+        }
+        offset += sopi[h];
+    }
+
+    // The first SO in each irrep
+    int* orb_offset = new int[nirreps];
+    orb_offset[0] = 0;
+    for(int h = 1; h < nirreps; ++h)
+        orb_offset[h] = orb_offset[h-1] + sopi[h-1];
+
+    // Compute PK symmetry mapping
+    int *pk_symoffset = new int[nirreps];
+    pk_size_ = 0;
+    pk_pairs_ = 0;
+    for(int h = 0; h < nirreps; ++h){
+        pk_symoffset[h] = pk_pairs_;
+        // Add up possible pair combinations that yield A1 symmetry
+        pk_pairs_ += sopi[h]*(sopi[h] + 1)/2;
+    }
+    // Compute the number of pairs in PK
+    pk_size_ = INDEX2(pk_pairs_-1, pk_pairs_-1) + 1;
+
+    // Count the pairs
+    size_t npairs = 0;
+    size_t *pairpi = new size_t[nirreps];
+    ::memset(pairpi, '\0', nirreps*sizeof(size_t));
+    for(int pq_sym = 0; pq_sym < nirreps; ++pq_sym){
+        for(int p_sym = 0; p_sym < nirreps; ++p_sym){
+            int q_sym = pq_sym ^ p_sym;
+            if(p_sym >= q_sym){
+                for(int p = 0; p < sopi[p_sym]; ++p){
+                    for(int q = 0; q < sopi[q_sym]; ++q){
+                        int p_abs = p + orb_offset[p_sym];
+                        int q_abs = q + orb_offset[q_sym];
+                        if(p_abs >= q_abs){
+                            pairpi[pq_sym]++;
+                            npairs++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // TODO figure out a better scheme.  For now, use half of the memory
+    // N.B. we need to accomodate both p and k
+    // 32 comes from 2 (J and K) * 2 (use only half the mem) * 8 (bytes per double)
+    size_t memory = memory_ / 32;
+
+    int nbatches      = 0;
+    size_t pq_incore  = 0;
+    size_t pqrs_index = 0;
+    size_t totally_symmetric_pairs = pairpi[0];
+    batch_pq_min_.clear();
+    batch_pq_max_.clear();
+    batch_index_min_.clear();
+    batch_index_max_.clear();
+    batch_pq_min_.push_back(0);
+    batch_index_min_.push_back(0);
+    for(size_t pq = 0; pq < pk_pairs_; ++pq){
+        // Increment counters
+        if(pq_incore + pq + 1 > memory){
+            // The batch is full. Save info.
+            batch_pq_max_.push_back(pq);
+            batch_pq_min_.push_back(pq);
+            batch_index_max_.push_back(pqrs_index);
+            batch_index_min_.push_back(pqrs_index);
+            pq_incore = 0;
+            nbatches++;
+        }
+        pq_incore  += pq + 1;
+        pqrs_index += pq + 1;
+    }
+    batch_pq_max_.push_back(totally_symmetric_pairs);
+    batch_index_max_.push_back(pk_size_);
+    nbatches++;
+
+    for(int batch = 0; batch < nbatches; ++batch){
+        fprintf(outfile,"\tBatch %3d pq = [%8ld,%8ld] index = [%14ld,%14ld]\n",
+                batch + 1,
+                batch_pq_min_[batch],batch_pq_max_[batch],
+                batch_index_min_[batch],batch_index_max_[batch]);
+    }
+    fflush(outfile);
+
+    // We might want to only build p in future...
+    bool build_k = true;
+
+    for(int batch = 0; batch < nbatches; ++batch){
+        size_t min_index   = batch_index_min_[batch];
+        size_t max_index   = batch_index_max_[batch];
+        size_t batch_size = max_index - min_index;
+        double *j_block = new double[batch_size];
+        double *k_block = new double[batch_size];
+        ::memset(j_block, '\0', batch_size * sizeof(double));
+        ::memset(k_block, '\0', batch_size * sizeof(double));
+
+        IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, cutoff_, 1, 1);
+        Label *lblptr = iwl->labels();
+        Value *valptr = iwl->values();
+        int labelIndex, pabs, qabs, rabs, sabs, prel, qrel, rrel, srel, psym, qsym, rsym, ssym;
+        size_t bra, ket, braket;
+        double value;
+        bool last_buffer;
+        do{
+            last_buffer = iwl->last_buffer();
+            for(int index = 0; index < iwl->buffer_count(); ++index){
+                labelIndex = 4*index;
+                pabs  = abs((int) lblptr[labelIndex++]);
+                qabs  = (int) lblptr[labelIndex++];
+                rabs  = (int) lblptr[labelIndex++];
+                sabs  = (int) lblptr[labelIndex++];
+                prel  = so2index_[pabs];
+                qrel  = so2index_[qabs];
+                rrel  = so2index_[rabs];
+                srel  = so2index_[sabs];
+                psym  = so2symblk_[pabs];
+                qsym  = so2symblk_[qabs];
+                rsym  = so2symblk_[rabs];
+                ssym  = so2symblk_[sabs];
+                value = (double) valptr[index];
+
+                // J
+                if ((psym == qsym) && (rsym == ssym)) {
+                    bra = INDEX2(prel, qrel);
+                    ket = INDEX2(rrel, srel);
+                    // pk_symoffset_ corrects for the symmetry offset in the pk_ vector
+                    braket = INDEX2(bra + pk_symoffset[psym], ket + pk_symoffset[rsym]);
+                    if((braket >= min_index) && (braket < max_index)){
+                        j_block[braket - min_index] += value;
+                    }
+
+                    // K (2nd sort)
+                    if (build_k && (prel != qrel) && (rrel != srel)) {
+                        if ((psym == ssym) && (qsym == rsym)) {
+                            bra = INDEX2(prel, srel);
+                            ket = INDEX2(qrel, rrel);
+                            braket = INDEX2(bra + pk_symoffset[psym], ket + pk_symoffset[qsym]);
+                            if((braket >= min_index) && (braket < max_index)){
+                                if ((prel == srel) || (qrel == rrel)) {
+                                    k_block[braket - min_index] += value;
+                                } else {
+                                    k_block[braket - min_index] += 0.5 * value;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // K (1st sort)
+                if (build_k && (psym == rsym) && (qsym == ssym)) {
+                    bra = INDEX2(prel, rrel);
+                    ket = INDEX2(qrel, srel);
+                    braket = INDEX2(bra + pk_symoffset[psym], ket + pk_symoffset[qsym]);
+                    if((braket >= min_index) && (braket < max_index)){
+                        if ((prel == rrel) || (qrel == srel)) {
+                            k_block[braket - min_index] += value;
+                        } else {
+                            k_block[braket - min_index] += 0.5 * value;
+                        }
+                    }
+                }
+            }
+            if (!last_buffer) iwl->fetch();
+        } while (!last_buffer);
+
+        // Halve the diagonal elements held in core
+        for(size_t pq = batch_pq_min_[batch]; pq < batch_pq_max_[batch]; ++pq){
+            size_t address = INDEX2(pq, pq) - min_index;
+            j_block[address] *= 0.5;
+            k_block[address] *= 0.5;
+        }
+
+        char *label = new char[100];
+        sprintf(label, "J Block (Batch %d)", batch);
+        psio_->write_entry(pk_file_, label, (char*) j_block, batch_size * sizeof(double));
+        sprintf(label, "K Block (Batch %d)", batch);
+        psio_->write_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
+        delete [] label;
+
+        delete iwl;
+        delete [] j_block;
+        delete [] k_block;
+    } // End of loop over batches
+    delete [] orb_offset;
+}
+
+void PKJK::compute_JK()
+{
+    int nirreps = Process::environment.reference_wavefunction()->nirrep();
+    int *sopi   = Process::environment.reference_wavefunction()->nsopi();
+
+
+    bool file_open_on_entry = psio_->open_check(pk_file_);
+    if(!file_open_on_entry)
+        psio_->open(pk_file_, PSIO_OPEN_OLD);
+    std::vector<double*> J_vectors;
+    std::vector<double*> K_vectors;
+    std::vector<double*> D_vectors;
+    for(int N = 0; N < J_.size(); ++N){
+        double *J_vector = new double[pk_pairs_];
+        ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
+        J_vectors.push_back(J_vector);
+        double *K_vector = new double[pk_pairs_];
+        ::memset(K_vector,  0, pk_pairs_ * sizeof(double));
+        K_vectors.push_back(K_vector);
+        double *D_vector = new double[pk_pairs_];
+        ::memset(D_vector,  0, pk_pairs_ * sizeof(double));
+        D_vectors.push_back(D_vector);
+        // The off-diagonal terms need to be doubled here
+        size_t pqval = 0;
+        for (int h = 0; h < nirreps; ++h) {
+            for (int p = 0; p < sopi[h]; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    if (p != q) {
+                        D_vector[pqval] = 2.0 * D_[N]->get(h, p, q);
+                    }else{
+                        D_vector[pqval] = D_[N]->get(h, p, q);
+                    }
+                    ++pqval;
+                }
+            }
+        }
+    }
+
+    int nbatches = batch_pq_min_.size();
+    for(int batch = 0; batch < nbatches; ++batch){
+        size_t min_pq      = batch_pq_min_[batch];
+        size_t max_pq      = batch_pq_max_[batch];
+        size_t min_index   = batch_index_min_[batch];
+        size_t max_index   = batch_index_max_[batch];
+        size_t batch_size = max_index - min_index;
+        size_t pqval = 0;
+        double *j_block = new double[batch_size];
+        double *k_block = new double[batch_size];
+
+        char *label = new char[100];
+        sprintf(label, "J Block (Batch %d)", batch);
+        psio_->read_entry(pk_file_, label, (char*) j_block, batch_size * sizeof(double));
+        sprintf(label, "K Block (Batch %d)", batch);
+        psio_->read_entry(pk_file_, label, (char*) k_block, batch_size * sizeof(double));
+
+        int nvectors = J_.size();
+        for(int N = 0; N < nvectors; ++N){
+            double *D_vector = D_vectors[N];
+            double *J_vector = J_vectors[N];
+            double *K_vector = K_vectors[N];
+            double *j_ptr = j_block;
+            double *k_ptr = k_block;
+            for (size_t pq = min_pq; pq < max_pq; ++pq) {
+                double D_pq = D_vector[pq];
+                double *D_rs = D_vector;
+                double J_pq = 0.0;
+                double *J_rs = J_vector;
+                double K_pq = 0.0;
+                double *K_rs = K_vector;
+                for (size_t rs = 0; rs <= pq; ++rs) {
+                    J_pq  += *j_ptr * (*D_rs);
+                    *J_rs += *j_ptr * D_pq;
+                    K_pq  += *k_ptr * (*D_rs);
+                    *K_rs += *k_ptr * D_pq;
+                    ++D_rs;
+                    ++J_rs;
+                    ++K_rs;
+                    ++j_ptr;
+                    ++k_ptr;
+                }
+                J_vector[pq] += J_pq;
+                K_vector[pq] += K_pq;
+            }
+        }
+        delete[] label;
+        delete[] j_block;
+        delete[] k_block;
+    }
+
+    for(int N = 0; N < J_.size(); ++N){
+        // Copy the results from the vector to the buffer
+        double *J = J_vectors[N];
+        double *K = K_vectors[N];
+        for (int h = 0; h < nirreps; ++h) {
+            for (int p = 0; p < sopi[h]; ++p) {
+                for (int q = 0; q <= p; ++q) {
+                    J_[N]->set(h, p, q, *J++);
+                    K_[N]->set(h, p, q, *K++);
+                }
+            }
+        }
+        J_[N]->copy_lower_to_upper();
+        K_[N]->copy_lower_to_upper();
+
+        delete [] D_vectors[N];
+        delete [] K_vectors[N];
+        delete [] J_vectors[N];
+    }
+
+    // Leave the file in the state we found it
+    if(!file_open_on_entry)
+        psio_->close(pk_file_, 1);
+}
+
+
+void PKJK::postiterations()
+{
+    delete[] so2symblk_;
+    delete[] so2index_;
+}
+
 
 DirectJK::DirectJK(boost::shared_ptr<BasisSet> primary) :
    JK(primary)

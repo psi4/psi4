@@ -270,7 +270,7 @@ public:
         for(int h = 0; h < nirrep; ++h){
             size_t row_length = (size_t) I_->params->coltot[h^(I_->my_irrep)];
             for(int row=0; row < I_->params->rowtot[h]; ++row) {
-                if((memory_limit - row_length) >= 0){  // <-- This is aways true (unsigned - unsigned >= 0)
+                if(memory_limit >= row_length) {
                     memory_limit -= row_length;
                     bucket_row_dim_[nbucket_-1][h]++;
                     bucket_size_[nbucket_-1][h] += row_length;
@@ -362,7 +362,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
     Dimension avir = nmopi - fvir - docc;
 
     // => Read results from MRCC <= //
-    
+
     dpdfile4 I;
     _default_psio_lib_->open(PSIF_TPDM_PRESORT, PSIO_OPEN_NEW);
 
@@ -389,7 +389,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
     // Close DPD file
     dpd_file4_close(&I);
-    
+
 
     /****START OF HACK****/
     fprintf(outfile, "    Beginning integral transformation.\n");
@@ -414,7 +414,7 @@ void load_restricted(FILE* ccdensities, double tolerance, const Dimension& activ
 
     // Two-electron contribution: Xpq <- 2 (pr|st) G_qrst
     dpdbuf4 G;
-    dpdbuf4 D;    
+    dpdbuf4 D;
     dpdfile2 X2;
 
 
@@ -464,9 +464,9 @@ X->print();
     // At this point, the OPDM is the response OPDM
     if (debug) {
         one_particle->print();
-    } 
+    }
 
-    // Form the energy-weighted OPDM 
+    // Form the energy-weighted OPDM
 
     // Form the Lagrangian
     //SharedMatrix Lia(new Matrix("Lia", naocc, navir));
@@ -474,7 +474,7 @@ X->print();
     //    int ni = naocc[h];
     //    int na = navir[h];
     //    if (!ni || !na) continue;
-    //    
+    //
     //    double** Liap = Lia->pointer(h);
     //    double** Wp = W->pointer(h);
     //    for (int i = 0; i < ni; i++) {
@@ -483,7 +483,7 @@ X->print();
     //        }
     //    }
     //}
-    
+
     // Form the orbital response contributions to the relaxed OPDM
     View ia_view(one_particle, aocc, avir, focc, docc);
     SharedMatrix Pia = ia_view();
@@ -493,7 +493,7 @@ X->print();
         Pia->print();
     }
 
-    // Construct a RCPHF Object 
+    // Construct a RCPHF Object
     boost::shared_ptr<RCPHF> cphf(new RCPHF());
     cphf->preiterations();
 
@@ -501,13 +501,13 @@ X->print();
     boost::shared_ptr<JK> jk = cphf->jk();
 
     // Task and solve orbital Z-Vector Equations
-    std::map<std::string, SharedMatrix>& b = cphf->b();  
+    std::map<std::string, SharedMatrix>& b = cphf->b();
     b["Orbital Z-Vector"] = Pia;
-    
+
     cphf->compute_energy();
-        
-    std::map<std::string, SharedMatrix>& x = cphf->x();  
-    SharedMatrix Xia = x["Orbital Z-Vector"]; 
+
+    std::map<std::string, SharedMatrix>& x = cphf->x();
+    SharedMatrix Xia = x["Orbital Z-Vector"];
 
     if (debug) {
         Xia->print();
@@ -531,7 +531,7 @@ X->print();
 
     if (debug) {
         one_particle->print();
-    } 
+    }
 
     one_particle->save(_default_psio_lib_, PSIF_MO_OPDM, Matrix::Full);
 
