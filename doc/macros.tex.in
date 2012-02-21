@@ -158,3 +158,4 @@ Returns: & #4
 
 % Convenient macro to give clean formatting of input snippets
 \DefineVerbatimEnvironment{Snippet}{Verbatim}{numbersep=2mm,frame=lines,framerule=0.8mm}
+\DefineVerbatimEnvironment{smallSnippet}{Verbatim}{numbersep=2mm,frame=lines,framerule=0.8mm,fontsize=\scriptsize}

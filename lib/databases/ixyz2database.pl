@@ -119,7 +119,7 @@ else {
    print SPL_OUT "\nsub load_indices_$set {\n\n   \$settype = \"reaction\";\n\n   \@HRXN = (1 .. $Nrxn);\n\n";
    print SPL_OUT "   \$numberTT = $Nrxn;\n";
    print SPL_OUT "   \$numberHB = 0;\n";
-   print SPL_OUT "   \$numberMX = 0;\n";
+   print SPL_OUT "   \$numberMX = $Nrxn;\n";
    print SPL_OUT "   \$numberDD = 0;\n";
    print SPL_OUT "\n   foreach \$reaction (\@HRXN) { push(\@setindex,\"\$set-\$reaction\"); }\n}";
    print SPL_OUT "\n\n\n\nsub load_reagents_$set {\n\n   \$settype = \"reaction\";\n\n   \@HSYS = (";
@@ -128,7 +128,7 @@ else {
 print GPL_OUT "\nsub load_xyz_$set {\n\n";
 
 print GPL_OUT "   \$isHB = \"no\";\n";
-print GPL_OUT "   \$isMX = \"no\";\n";
+print GPL_OUT "   \$isMX = \"yes\";\n";
 print GPL_OUT "   \$isDD = \"no\";\n";
 print GPL_OUT "   \$bas2 = \"no\";\n";
 print GPL_OUT "   \$ABun = \"no\";\n";
@@ -140,7 +140,7 @@ print GPL_OUT "   \$bind = \"NaN\";\n\n";
 @HRXN = (1 .. $Nrxn);
 %BINDRXN = ();
 %TAGLRXN = ();
-foreach $rxn (@HRXN) { $BINDRXN{$rxn} = 0.0; }
+foreach $rxn (@HRXN) { $BINDRXN{$rxn} = "nan"; }
 foreach $rxn (@HRXN) { $TAGLRXN{$rxn} = "Reaction $rxn"; }
 
 if ($route != 3) {
@@ -211,7 +211,7 @@ foreach $filename (<*.$fext>) {
       $tagl = $text[1];
    }
    $TAGLRGT{$system} = $tagl;
-   $BINDRGT{$system} = 0.0;
+   $BINDRGT{$system} = "nan";
 
    if ($route == 3) {
 
@@ -308,7 +308,7 @@ foreach $filename (<*.$fext>) {
       for($i = 0; $i < $Nmol1; $i++) { printf GPY_OUT "%-3s  % 14.8f % 14.8f % 14.8f\n", $elems1[$i], $fragment1X[$i], $fragment1Y[$i], $fragment1Z[$i]; }
       print GPY_OUT "--\n0 1\n";
       for($i = 0; $i < $Nmol2; $i++) { printf GPY_OUT "%-3s  % 14.8f % 14.8f % 14.8f\n", $elems2[$i], $fragment2X[$i], $fragment2Y[$i], $fragment2Z[$i]; }
-      print GPY_OUT "units angstrom\n}\n\"\"\")\n\n";
+      print GPY_OUT "units angstrom\n}\n\"\"\", 0)\n\n";
 
    }
    else {
@@ -370,7 +370,7 @@ foreach $filename (<*.$fext>) {
       print GPL_OUT "\n   }\n";
    
       for($i = 0; $i < $Nmol1; $i++) { printf GPY_OUT "%-3s  % 14.8f % 14.8f % 14.8f\n", $elems1[$i], $fragment1X[$i], $fragment1Y[$i], $fragment1Z[$i]; }
-      print GPY_OUT "units angstrom\n}\n\"\"\")\n\n";
+      print GPY_OUT "units angstrom\n}\n\"\"\", 0)\n\n";
 
       printf LAB_OUT "%-25s\t%d\t%d\t%d\t\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n", $system, $Nsyst, $CHGsyst, $MLPsyst, $NH, $NC, $NN, $NO, $NF, $NSi, $NP, $NS, $NCl, $tagl;
 
@@ -487,6 +487,7 @@ elsif ($route == 3) {
 
 print SPY_OUT "# <<< Reference Values [kcal/mol] >>>\n";
 print SPY_OUT "BIND = {}\n";
+print SPY_OUT "nan = float('NaN')\n";
 if    ($route == 1) { foreach $rgt (@HRGT) { print SPY_OUT "BIND['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = %8.3f\n", $rgt . "\'", $BINDRGT{$rgt}; } }
 elsif ($route == 2) { foreach $rxn (@HRXN) { print SPY_OUT "BIND['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = %8.3f\n", $rxn . "\'", $BINDRXN{$rxn}; } }
 elsif ($route == 3) { foreach $rgt (@HRGT) { print SPY_OUT "BIND['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = %8.3f\n", $rgt . "\'", $BINDRGT{$rgt}; } }
@@ -519,18 +520,18 @@ print GPY_OUT "GEOS = {}\n";
 print GPY_OUT "for rxn in HRXN:\n";
 if ( ($route == 1) || ($route == 2) ) {
 
-   print GPY_OUT   "   for rgt in ACTV['%s-%s' % (dbse, rxn)]:\n\n";
+   print GPY_OUT   "    for rgt in ACTV['%s-%s' % (dbse, rxn)]:\n\n";
 
-   print GPY_OUT   "            molname = rxnpattern.match(rgt)\n";
-   print GPY_OUT   "            GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))\n\n";
+   print GPY_OUT   "        molname = rxnpattern.match(rgt)\n";
+   print GPY_OUT   "        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))\n";
 }
 elsif ($route == 3) {
 
-   print GPY_OUT "\n   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP\n";
-   print GPY_OUT   "   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP\n\n";
+   print GPY_OUT "\n    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP\n";
 }
 
 

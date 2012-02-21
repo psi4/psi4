@@ -161,7 +161,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     // Ensure rotations and translations are exactly orthogonal
     int count = 0;
     for (int i=0; i<6; ++i)
-        count += constraints_ortho.schmidt_add(0, i, constraints[0][i]);
+        count += constraints_ortho.schmidt_add_row(0, i, constraints[0][i]);
 
 //    constraints_ortho.print();
 
@@ -259,6 +259,8 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
 //    salcs.print();
 
     // Walk through the new salcs and populate our sparse vectors.
+    int new_cdsalcpi[8];
+    memset(new_cdsalcpi, 0, sizeof(int)*8);
     for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<cdsalcpi_[h]; ++i) {
             bool added = false;
@@ -270,19 +272,14 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
                     atom_salcs_[cd/3].add(cd % 3, salcs(h, i, cd), h, salcs_.size());
                 }
             }
-            if (added)
+            if (added) {
                 salcs_.push_back(new_salc);
+                new_cdsalcpi[h]++;
+            }
         }
     }
     ncd_ = salcs_.size();
-
-//    fprintf(outfile,"    -Cartesian displacement SALCs per irrep:\n");
-//    fprintf(outfile,"    Irrep  #SALCs\n");
-//    fprintf(outfile,"    -----  ------\n");
-//    for (int irrep=0; irrep<nirrep_; irrep++) {
-//        fprintf(outfile,"    %3d    %4d\n", irrep, cdsalcpi_[irrep]);
-//    }
-//    fprintf(outfile,"\n");
+    memcpy(cdsalcpi_, new_cdsalcpi, sizeof(int)*8);
 
     // Free memory.
     delete[] salcirrep;

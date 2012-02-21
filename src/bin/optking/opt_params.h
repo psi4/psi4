@@ -17,6 +17,13 @@ struct OPT_PARAMS {
   double conv_max_DE;
   double conv_max_disp;
   double conv_rms_disp;
+  bool i_max_force;
+  bool i_rms_force;
+  bool i_max_DE;
+  bool i_max_disp;
+  bool i_rms_disp;
+  bool i_untampered;
+  std::string general_conv;
 
   double scale_connectivity;
 
@@ -35,7 +42,7 @@ struct OPT_PARAMS {
   enum STEP_TYPE {NR, RFO, P_RFO, SD} step_type;
 
   // Hessian guess
-  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, LINDH, SIMPLE} intrafragment_H;
+  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, SIMPLE} intrafragment_H;
   enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
 
   enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;

@@ -52,6 +52,7 @@ namespace psi {
     namespace mints      { PsiReturnType mints(Options &);    }
     namespace deriv      { PsiReturnType deriv(Options &);    }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
     namespace dfcc       { PsiReturnType dfcc(Options &);     }
     namespace sapt       { PsiReturnType sapt(Options &);     }
@@ -71,7 +72,10 @@ namespace psi {
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
     namespace adc        { PsiReturnType adc(Options&);       }
-    namespace mrcc       { PsiReturnType mrcc(Options&, const boost::python::dict&); }
+    namespace mrcc       {
+        PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
+        PsiReturnType mrcc_load_ccdensities(Options&, const boost::python::dict&);
+    }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -88,6 +92,11 @@ namespace psi {
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
+}
+
+void py_flush_outfile()
+{
+    fflush(outfile);
 }
 
 void py_close_outfile()
@@ -160,6 +169,12 @@ int py_psi_omp2()
     return omp2wave::omp2wave(Process::environment.options);
 }
 
+int py_psi_libfock()
+{
+    py_psi_prepare_options_for_module("CPHF");
+    return libfock::libfock(Process::environment.options);
+}
+
 double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
 {
     py_psi_prepare_options_for_module("SCF");
@@ -190,10 +205,16 @@ double py_psi_mcscf()
         return 0.0;
 }
 
-PsiReturnType py_psi_mrcc(const boost::python::dict& level)
+PsiReturnType py_psi_mrcc_generate_input(const boost::python::dict& level)
 {
     py_psi_prepare_options_for_module("MRCC");
-    return mrcc::mrcc(Process::environment.options, level);
+    return mrcc::mrcc_generate_input(Process::environment.options, level);
+}
+
+PsiReturnType py_psi_mrcc_load_densities(const boost::python::dict& level)
+{
+    py_psi_prepare_options_for_module("MRCC");
+    return mrcc::mrcc_load_ccdensities(Process::environment.options, level);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
@@ -967,6 +988,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Returns the location where the Psi4 source is located.
     def("psi_top_srcdir", py_psi_top_srcdir);
 
+    def("flush_outfile", py_flush_outfile);
     def("close_outfile", py_close_outfile);
     def("reopen_outfile", py_reopen_outfile);
     def("outfile_name", py_get_outfile_name);
@@ -981,12 +1003,14 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("scf", py_psi_scf_callbacks);
     def("scf", py_psi_scf);
     def("dcft", py_psi_dcft);
+    def("libfock", py_psi_libfock);
     def("dfmp2", py_psi_dfmp2);
     def("dfcc", py_psi_dfcc);
     def("lmp2", py_psi_lmp2);
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
-    def("mrcc", py_psi_mrcc);
+    def("mrcc_generate_input", py_psi_mrcc_generate_input);
+    def("mrcc_load_densities", py_psi_mrcc_load_densities);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
@@ -1058,7 +1082,7 @@ void Python::finalize()
      if(!(ptr = command)){    \
          PyErr_Print();       \
          exit(1);             \
-     } 
+     }
 
 
 void Python::run(FILE *input)
@@ -1111,13 +1135,6 @@ void Python::run(FILE *input)
         while(fgets(line, sizeof(line), input)) {
             file << line;
         }
-
-        // Echo the input, so's the user does not have to carry the infile around
-        fprintf(outfile,"\n  ==> Input File <==\n\n");
-        fprintf(outfile,"--------------------------------------------------------------------------\n");
-        fprintf(outfile,"%s", file.str().c_str());
-        fprintf(outfile,"--------------------------------------------------------------------------\n");
-        fflush(outfile);
 
         try {
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);

@@ -11,7 +11,15 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+m4_include([m4/ac_prog_pdflatex.m4])
 m4_include([m4/ac_prog_latex.m4])
+m4_include([m4/ax_boost_base.m4])
+m4_include([m4/ax_boost_filesystem.m4])
+m4_include([m4/ax_boost_python.m4])
+m4_include([m4/ax_boost_regex.m4])
+m4_include([m4/ax_boost_serialization.m4])
+m4_include([m4/ax_boost_system.m4])
+m4_include([m4/ax_boost_thread.m4])
 m4_include([m4/ax_builtins.m4])
 m4_include([m4/ax_openmp.m4])
 m4_include([m4/bibtex.m4])

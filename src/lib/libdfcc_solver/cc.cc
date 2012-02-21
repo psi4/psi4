@@ -26,8 +26,8 @@ CC::~CC()
 
 void CC::get_options()
 {
-    print_ = options_.get_int("PRINT"); 
-    debug_ = options_.get_int("DEBUG"); 
+    print_ = options_.get_int("PRINT");
+    debug_ = options_.get_int("DEBUG");
 }
 
 void CC::get_params()
@@ -158,19 +158,19 @@ void CC::df_integrals()
   const double *Jbuffer = Jint->buffer();
 
   for (int MU=0; MU < ribasis_->nshell(); ++MU) {
-    int nummu = ribasis_->shell(MU)->nfunction();
+    int nummu = ribasis_->shell(MU).nfunction();
 
     for (int NU=0; NU <= MU; ++NU) {
-      int numnu = ribasis_->shell(NU)->nfunction();
+      int numnu = ribasis_->shell(NU).nfunction();
 
       Jint->compute_shell(MU, 0, NU, 0);
 
       int index = 0;
       for (int mu=0; mu < nummu; ++mu) {
-        int omu = ribasis_->shell(MU)->function_index() + mu;
+        int omu = ribasis_->shell(MU).function_index() + mu;
 
         for (int nu=0; nu < numnu; ++nu, ++index) {
-          int onu = ribasis_->shell(NU)->function_index() + nu;
+          int onu = ribasis_->shell(NU).function_index() + nu;
 
           J[omu][onu] = Jbuffer[index];
         }
@@ -213,7 +213,7 @@ void CC::df_integrals()
 
   int maxPshell = 0;
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-    int numPshell = ribasis_->shell(Pshell)->nfunction();
+    int numPshell = ribasis_->shell(Pshell).nfunction();
     if (numPshell > maxPshell) maxPshell = numPshell;
   }
 
@@ -222,21 +222,21 @@ void CC::df_integrals()
   double** MO_RI = block_matrix(ndf_,namo_*namo_);
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-    int numPshell = ribasis_->shell(Pshell)->nfunction();
+    int numPshell = ribasis_->shell(Pshell).nfunction();
     for (int MU=0; MU < basisset_->nshell(); ++MU) {
-      int nummu = basisset_->shell(MU)->nfunction();
+      int nummu = basisset_->shell(MU).nfunction();
       for (int NU=0; NU <= MU; ++NU) {
-        int numnu = basisset_->shell(NU)->nfunction();
+        int numnu = basisset_->shell(NU).nfunction();
 
         eri->compute_shell(Pshell, 0, MU, NU);
 
         for (int P=0, index=0; P < numPshell; ++P) {
 
           for (int mu=0; mu < nummu; ++mu) {
-            int omu = basisset_->shell(MU)->function_index() + mu;
+            int omu = basisset_->shell(MU).function_index() + mu;
 
             for (int nu=0; nu < numnu; ++nu, ++index) {
-              int onu = basisset_->shell(NU)->function_index() + nu;
+              int onu = basisset_->shell(NU).function_index() + nu;
 
               AO_RI[P][omu*nso_+onu] = buffer[index];
               AO_RI[P][onu*nso_+omu] = buffer[index];
@@ -246,7 +246,7 @@ void CC::df_integrals()
       }
     }
     for (int P=0; P < numPshell; ++P) {
-      int oP = ribasis_->shell(Pshell)->function_index() + P;
+      int oP = ribasis_->shell(Pshell).function_index() + P;
       C_DGEMM('T', 'N', namo_, nso_, nso_, 1.0, &(Cp_[0][nfocc_]), nmo_,
         AO_RI[P], nso_, 0.0, halftrans, nso_);
       C_DGEMM('N', 'N', namo_, namo_, nso_, 1.0, halftrans, nso_,
@@ -572,7 +572,7 @@ void DFCCDIIS::store_current_vector(char *t_vec)
 
     psio_->write_entry(diis_file_,diis_vec_label,t_vec,
         vec_length_*(ULI) sizeof(double));
-    
+
     free(diis_vec_label);
 }
 

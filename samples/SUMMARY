@@ -49,13 +49,16 @@ cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH$@@2$.
 
 
+cc23:         ROHF-EOM-CCSD/DZ analytic gradient lowest 2B1 state of H2O+ (A1 excitation)
+
+
 cc24:         Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
 
 
 cc25:         Single point gradient of 1-2B2 state of H2O+ with EOM-CCSD
 
 
-cc26:         Single point gradient of 2-1A1 state of H2O with EOM-CCSD
+cc26:         Single-point gradient, analytic and via finite-differences of 2-1A1 state of H2O with EOM-CCSD
 
 
 cc27:         Single point gradient of 1-1B2 state of H2O with EOM-CCSD
@@ -67,7 +70,7 @@ cc28:         CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z
 cc29:         CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H$@@2$O$@@2$
 
 
-cc3:          CCSD/6-31G** H2O vibrational frequencies via gradients
+cc3:          cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency analysis by finite-differences of gradients
 
 
 cc30:         CCSD/sto-3g optical rotation calculation (length gauge only) at two frequencies on methyloxirane
@@ -235,10 +238,16 @@ fci-tdm:      He2+ FCI/cc-pVDZ Transition Dipole Moment
 fci-tdm-2:    BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
 
-fd-freq-energy:  SCF STO-3G finite-difference tests
+fd-freq-energy:  SCF STO-3G finite-difference frequencies from energies
 
 
 fd-freq-energy-large:  SCF DZ finite difference frequencies by energies for C4NH4
+
+
+fd-freq-gradient:  STO-3G frequencies for H2O by finite-differences of gradients
+
+
+fd-freq-gradient-large:  SCF DZ finite difference frequencies by energies for C4NH4
 
 
 fd-gradient:  SCF STO-3G finite-difference tests
@@ -311,6 +320,9 @@ opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
 
 
 opt5:         6-31G** UHF CH2 3B1 optimization
+
+
+plugin_df_ccsd:  Test DF-CCSD(T) energy for H2O/aug-cc-pVDZ
 
 
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.

@@ -46,21 +46,21 @@ SharedVector QuadrupoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol
     return sret;
 }
 
-void QuadrupoleInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
-                                 const boost::shared_ptr<GaussianShell>& s2)
+void QuadrupoleInt::compute_pair(const GaussianShell& s1,
+                                 const GaussianShell& s2)
 {
     int ao12;
-    int am1 = s1->am();
-    int am2 = s2->am();
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
+    int am1 = s1.am();
+    int am2 = s2.am();
+    int nprim1 = s1.nprimitive();
+    int nprim2 = s2.nprimitive();
     double A[3], B[3];
-    A[0] = s1->center()[0];
-    A[1] = s1->center()[1];
-    A[2] = s1->center()[2];
-    B[0] = s2->center()[0];
-    B[1] = s2->center()[1];
-    B[2] = s2->center()[2];
+    A[0] = s1.center()[0];
+    A[1] = s1.center()[1];
+    A[2] = s1.center()[2];
+    B[0] = s2.center()[0];
+    B[1] = s2.center()[1];
+    B[2] = s2.center()[2];
 
     int xydisp = INT_NCART(am1) * INT_NCART(am2);
     int xzdisp = 2 * INT_NCART(am1) * INT_NCART(am2);
@@ -74,18 +74,18 @@ void QuadrupoleInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 6 * s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 6 * s1.ncartesian() * s2.ncartesian() * sizeof(double));
 
     double **x = overlap_recur_.x();
     double **y = overlap_recur_.y();
     double **z = overlap_recur_.z();
 
     for (int p1=0; p1<nprim1; ++p1) {
-        double a1 = s1->exp(p1);
-        double c1 = s1->coef(p1);
+        double a1 = s1.exp(p1);
+        double c1 = s1.coef(p1);
         for (int p2=0; p2<nprim2; ++p2) {
-            double a2 = s2->exp(p2);
-            double c2 = s2->coef(p2);
+            double a2 = s2.exp(p2);
+            double c2 = s2.coef(p2);
             double gamma = a1 + a2;
             double oog = 1.0/gamma;
 

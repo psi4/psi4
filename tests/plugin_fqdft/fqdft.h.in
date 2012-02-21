@@ -1,0 +1,45 @@
+#ifndef FQDFT_H
+#define FQDFT_H
+
+#include <libmints/typedefs.h>
+#include <libmints/wavefunction.h>
+
+namespace psi {
+
+class BasisSet;
+class Matrix;
+class TwoBodyAOInt;
+
+class FQDFT : public Wavefunction {
+
+protected:
+
+    int print_;
+
+    void common_init();
+    virtual void print_header() const;
+    virtual void integrals();
+
+    SharedVector T_;
+    SharedVector V_;
+    SharedVector H_;
+    SharedVector E_;
+    SharedMatrix J_;
+    SharedMatrix K_;
+    SharedMatrix G_;
+    
+public:
+
+    FQDFT();
+    virtual ~FQDFT();
+
+    virtual bool same_a_b_orbs() const { return true; }
+    virtual bool same_a_b_dens() const { return true; }
+    virtual double compute_energy();
+    void set_print(int print) { print_ = print; }
+
+}; 
+
+}
+
+#endif

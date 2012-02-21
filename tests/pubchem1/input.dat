@@ -10,6 +10,7 @@ molecule benz{
 set {
    basis     DZ
    reference rhf
+   max_energy_g_convergence 8
 }
 
 e_sing_rhf = optimize('scf')
@@ -32,11 +33,11 @@ vertical_rohf = psi_hartree2ev * (e_trip_rohf - e_sing_rhf)
 print "\nSinglet-Triplet gap (vertical, UHF)   = %8.2f eV\n" % vertical_uhf
 print "\nSinglet-Triplet gap (vertical, ROHF)  = %8.2f eV\n" % vertical_rohf
 
-enuc  =  203.64849933457236                                                          #TEST
-erhf  = -230.64169474007278                                                          #TEST
-erohf = -230.44833620706100                                                          #TEST
-euhf  = -230.45268192818583                                                          #TEST
-compare_values(enuc, benz.nuclear_repulsion_energy(), 6, "Nuclear repulsion energy") #TEST 
+enuc  =  203.65056339380897                                                          #TEST
+erhf  = -230.64169476819367                                                          #TEST
+erohf = -230.44750163089151                                                          #TEST
+euhf  = -230.45330949687190                                                          #TEST
+compare_values(enuc, benz.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy") #TEST 
 compare_values(erhf,  e_sing_rhf,  6, "Singlet benzene RHF energy")                  #TEST 
 compare_values(erohf, e_trip_rohf, 6, "Triplet benzene UHF energy")                  #TEST 
 compare_values(euhf,  e_trip_uhf,  6, "Triplet benzene ROHF energy")                 #TEST 
