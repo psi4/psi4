@@ -40,6 +40,9 @@ public:
     /// Return the name of the dimension.
     const std::string& name() const { return name_; }
 
+    /// Set the name of the dimension.
+    void set_name(const std::string& n) { name_ = n; }
+
     /// Blocks access
     int& operator[](int i) { return blocks_[i]; }
     const int& operator[](int i) const { return blocks_[i]; }
@@ -51,8 +54,6 @@ public:
 
     /// Return the sum of constituent dimensions
     int sum() const;
-
-    int* pointer() const { return blocks_; }
 
     void print(FILE* out=outfile) const;
 };

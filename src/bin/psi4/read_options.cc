@@ -761,6 +761,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DF_BASIS_SCF", "");
     /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF");
+    /*- Keep JK object for later use? -*/
+    options.add_bool("SAVE_JK", false);
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies.
@@ -1007,15 +1009,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- DL Solver minimum corrector norm to add to subspace
      -*/
     options.add_double("SOLVER_NORM",1.0E-6);
-    /*- CG Solver Jacobi precondition?
+    /*- Solver precondition type
      -*/
-    options.add_bool("SOLVER_PRECONDITION",true);
-    /*- Solver rank-reduction techniques?
+    options.add_str("SOLVER_PRECONDITION","JACOBI","SUBSPACE JACOBI NONE");
+    /*- Solver type (for interchangeable solvers)
      -*/
-    options.add_double("SOLVER_MAX_NORM", 0.0);
-    /*- Solver maximum rank (0 for infinity)
-     -*/
-    options.add_int("SOLVER_MAX_RANK", 0);
+    options.add_str("SOLVER_TYPE", "DL", "DL RAYLEIGH"); 
+    /*- Solver precondtion max steps
+    -*/
+    options.add_int("SOLVER_PRECONDITION_MAXITER", 1);
+    /*- Solver precondition step type
+    -*/
+    options.add_str("SOLVER_PRECONDITION_STEPS", "TRIANGULAR", "CONSTANT TRIANGULAR");   
+    /*- Solver residue or eigenvector delta
+    -*/
+    options.add_str("SOLVER_QUANTITY", "RESIDUAL", "EIGENVECTOR RESIDUAL");
+
   }
   if (name == "MP2"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Performs second order Moller-Plesset perturbation theory (MP2) computations.  This code can
@@ -1995,6 +2004,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PS_ALPHA", 1.0);
     /*- Do use range-separation procedure in PS? -*/
     options.add_bool("PS_USE_OMEGA", true);
+    /*- Random stuff for LibFock -*/
+    options.add_double("PS_THETA", 0.3);
+    /*- Random stuff for LibFock -*/
+    options.add_str("PS_DEALIASING", "QUADRATURE", "QUADRATURE RENORMALIZED DEALIASED");
+    /*- Random stuff for LibFock -*/
+    options.add_str("DEALIAS_BASIS_SCF", ""); 
+    
 
     // => DENOMINATOR <= //
 

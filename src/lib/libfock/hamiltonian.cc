@@ -183,7 +183,7 @@ CISRHamiltonian::CISRHamiltonian(boost::shared_ptr<JK> jk,
                                  boost::shared_ptr<Vector> eps_aocc,
                                  boost::shared_ptr<Vector> eps_avir,
                                  boost::shared_ptr<VBase> v) :
-    RHamiltonian(jk,v), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir), singlet_(true), rank_reduction_(false), max_rank_(0), rank_cutoff_(0.0) 
+    RHamiltonian(jk,v), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir), singlet_(true)
 {
 }
 CISRHamiltonian::~CISRHamiltonian()
@@ -193,10 +193,6 @@ void CISRHamiltonian::print_header() const
 {
     if (print_) {
         fprintf(outfile, "  ==> CISRHamiltonian (by Rob Parrish) <== \n\n");
-        fprintf(outfile,"    Rank-reduction %s\n", (rank_reduction_ ? "ENABLED" : "DISABLED")); 
-        fprintf(outfile,"    Rank-reduction cutoff = %11.3E\n", rank_cutoff_); 
-        fprintf(outfile,"    Maximum rank          = %11d\n", max_rank_); 
-        fprintf(outfile,"\n");
     }
 }
 boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
@@ -247,210 +243,92 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     int nirrep = (x.size() ? x[0]->nirrep() : 0);
 
-    if (!rank_reduction_) {
-        // Old rank-N method
-        for (int symm = 0; symm < nirrep; ++symm) {
-            for (int N = 0; N < x.size(); ++N) {
-                C_left.push_back(Caocc_);
-                double* xp = x[N]->pointer(symm);
+    for (int symm = 0; symm < nirrep; ++symm) {
+        for (int N = 0; N < x.size(); ++N) {
+            double* xp = x[N]->pointer(symm);
+            long int offset = 0L;
 
+            // Is this a delta (low-rank) vector?
+            bool delta_vector = true;
+            int  delta_h = 0;
+            int  delta_i = 0;
+            int  delta_a = 0;
+            double delta_sum = 0.0;
+            for (int h = 0; h < Caocc_->nirrep(); ++h) {
+                int nocc = Caocc_->colspi()[h];
+                int nvir = Cavir_->colspi()[h^symm];
+                for (int i = 0; i < nocc; i++) {
+                    for (int a = 0; a < nvir; a++) {    
+                        double x = xp[i * nvir + a + offset];
+                        if (x != 0.0 && x != 1.0) {
+                            delta_vector = false;
+                            break;
+                        }
+                        delta_sum += x;
+                        if (x == 1.0) {
+                            delta_i = i;
+                            delta_a = a;
+                            delta_h = h;
+                        }
+                    }
+                }
+                offset += nocc * nvir;
+            }
+            if (delta_sum != 1.0) {
+                delta_vector = false;
+            }
+
+            if (delta_vector) {
+                
+                Dimension rank(Caocc_->nirrep());
+                rank[delta_h] = 1;
+
+                std::stringstream ss;
+                ss << "C_left, h = " << symm << ", N = " << N;
+                SharedMatrix Cl(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank));
+
+                double** Clp = Cl->pointer(delta_h);
+                double** Cop = Caocc_->pointer(delta_h);
+                C_DCOPY(Caocc_->rowspi()[delta_h],&Cop[0][delta_i],Caocc_->colspi()[delta_h],Clp[0],1);
+
+                std::stringstream ss2;
+                ss2 << "C_right, h = " << symm << ", N = " << N;
+                SharedMatrix Cr(new Matrix(ss2.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank, symm));
+
+                double** Crp = Cr->pointer(delta_h);
+                double** Cvp = Cavir_->pointer(delta_h^symm);
+                C_DCOPY(Cavir_->rowspi()[delta_h^symm],&Cvp[0][delta_a],Cavir_->colspi()[delta_h^symm],Crp[0],1);
+
+                C_left.push_back(Cl);
+                C_right.push_back(Cr);
+
+            } else {
                 std::stringstream ss;
                 ss << "C_right, h = " << symm << ", N = " << N;
                 SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
                 
-                long int offset = 0L;
+                offset = 0L;
                 for (int h = 0; h < Caocc_->nirrep(); ++h) {
-
+    
                     int nocc = Caocc_->colspi()[h];
                     int nvir = Cavir_->colspi()[h^symm];
                     int nso  = Cavir_->rowspi()[h^symm];
-
+    
                     if (!nso || !nocc || !nvir) continue;
-
+    
                     double** Cvp = Cavir_->pointer(h^symm);
                     double** Crp = Cr->pointer(h^symm);
-
+    
                     C_DGEMM('N','T',nso,nocc,nvir,1.0,Cvp[0],nvir,&xp[offset],nvir,0.0,Crp[0],nocc);
-
+    
                     offset += nocc * nvir;
                 }
-
+    
+                C_left.push_back(Caocc_);
                 C_right.push_back(Cr); 
             }
-        } 
-    } else {
-
-        FILE* rank_fh;
-        FILE* S_fh;
-        if (bench_) {
-            rank_fh = fopen("rank.dat","a");
-            S_fh = fopen("S.dat", "a");
         }
-
-        // New rank-reduced method 
-        for (int symm = 0; symm < nirrep; ++symm) {
-            for (int N = 0; N < x.size(); ++N) {
-
-                // What's the perturbation?
-                double* xp = x[N]->pointer(symm);
-
-                // Put Pia in a matrix
-                SharedMatrix Pia(new Matrix("Pia", Caocc_->colspi(), Cavir_->colspi(), symm));
-                long int offset = 0L;
-                for (int h = 0; h < Caocc_->nirrep(); ++h) {
-
-                    int nocc = Caocc_->colspi()[h];
-                    int nvir = Cavir_->colspi()[h^symm];
-
-                    if (!nocc || !nvir) continue;
-
-                    ::memcpy((void*) Pia->pointer()[h], (void*) &xp[offset], sizeof(double)*nocc*nvir);
-                    
-                    offset += nocc * nvir;
-                }
-
-                // SVD the matrix
-                boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd = Pia->svd_temps();
-                SharedMatrix U = boost::get<0>(svd); 
-                SharedVector S = boost::get<1>(svd); 
-                SharedMatrix V = boost::get<2>(svd); 
-
-                Pia->svd(U,S,V);
-
-                if (bench_) { 
-                    fprintf(S_fh, "    symm = %d, N = %d\n\n", symm, N); 
-                    S->print(S_fh);
-                }                
- 
-                // Truncate the matrix
-                Dimension rank(S->nirrep(), "Rank");
-                rank = S->dimpi();
-                int max_rank = rank.sum();
-
-                // Max_rank based cutoff gets first priority
-                if (max_rank_) {
-                    std::vector<boost::tuple<double,int,int> > Ss;
-                    for (int h = 0; h < Caocc_->nirrep(); h++) {
-                        int n = S->dimpi()[h];
-                        for (int i = 0; i < n; i++) {
-                            Ss.push_back(boost::tuple<double,int,int>(S->get(h,i),h,i)); 
-                        }
-                    }
-                    std::sort(Ss.begin(), Ss.end());
-                    for (int ind = 0; ind < Ss.size() - max_rank_; ind++) {
-                        int h = boost::get<1>(Ss[ind]);
-                        int i = boost::get<2>(Ss[ind]);
-                        rank[h] = rank[h] - 1;
-                        S->set(h,i,0.0);
-                    }   
-                }
-
-                // See if there is additionally lower rank
-                if (rank_cutoff_ != 0.0) {
-                    double S0 = 0.0;
-                    for (int h = 0; h < Caocc_->nirrep(); h++) {
-                        int n = S->dimpi()[h];
-                        if (!n) continue;
-                        S0 = (S->get(h,0) > S0 ? S->get(h,0) : S0);
-                    }                
-
-                    for (int h = 0; h < Caocc_->nirrep(); h++) {
-                        int n = S->dimpi()[h];
-                        int count = 0;
-                        for (int i = 0; i < n; i++) {
-                            if (S->get(h,i) > S0 * rank_cutoff_) {
-                                count++; 
-                            } else {
-                                S->set(h,i,0.0);
-                            }
-                        } 
-                        rank[h] = count;
-                    } 
-                }
-
-                if (bench_) {
-                    fprintf(rank_fh, "%3d %4d %6d %6d\n", symm, N, rank.sum(), max_rank);
-                }
-
-                // Reform Pia'
-                Pia->zero();
-                offset = 0L;
-                for (int h = 0; h < Caocc_->nirrep(); h++) {
-                    int n = rank[h];
-                    int nocc = Caocc_->colspi()[h];
-                    int nvir = Cavir_->colspi()[h^symm];
-                    if (!n || !nocc || !nvir) continue;
-
-                    double** Piap = Pia->pointer(h);
-                    double** Up = U->pointer(h);
-                    double** Vp = V->pointer(h^symm);
-                    double*  Sp = S->pointer(h); 
-
-                    // Scale s into U
-                    for (int i = 0; i < n; i++) {
-                        C_DSCAL(nocc,Sp[i],&Up[0][i],S->dimpi()[h]);
-                    }
-                    
-                    // Slam effective USV together
-                    C_DGEMM('N','N',nocc,nvir,n,1.0,Up[0],S->dimpi()[h],Vp[0],nvir,0.0,Piap[0],nvir);
-
-                    // Politely tell Solver you are disagreeing (this is implicit and I hate it)
-                    ::memcpy((void*) &xp[offset], (void*) Pia->pointer()[h], sizeof(double)*nocc*nvir);
-                    
-                    offset += nocc * nvir;
-                     
-                }
-                
-                // Form the C
-                std::stringstream ssl;
-                ssl << "C_left, h = " << symm << ", N = " << N;
-                SharedMatrix Cl(new Matrix(ssl.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank));
-
-                std::stringstream ssr;
-                ssr << "C_right, h = " << symm << ", N = " << N;
-                SharedMatrix Cr(new Matrix(ssr.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank, symm));
-
-                    
-                // Cl = C_mi U_iq
-                for (int h = 0; h < Caocc_->nirrep(); h++) {
-                    int n = rank[h];
-                    int nocc = Caocc_->colspi()[h];
-                    int nso = Caocc_->rowspi()[h];
-                    if (!n || !nocc || !nso) continue;
-                
-                    double** Cp = Caocc_->pointer(h);
-                    double** Lp = Cl->pointer(h);
-                    double** Up = U->pointer(h);
-                
-                    C_DGEMM('N','N',nso,n,nocc,1.0,Cp[0],nocc,Up[0],S->dimpi()[h],0.0,Lp[0],n);
-                } 
-
-                // Cr = C_na Vaq
-                for (int h = 0; h < Cavir_->nirrep(); h++) {
-                    int n = rank[h];
-                    int nvir = Cavir_->colspi()[h^symm];
-                    int nso = Cavir_->rowspi()[h^symm];
-                    if (!n || !nvir || !nso) continue;
-                
-                    double** Cp = Cavir_->pointer(h);
-                    double** Rp = Cr->pointer(h);
-                    double** Vp = V->pointer(h^symm);
-                
-                    C_DGEMM('N','T',nso,n,nvir,1.0,Cp[0],nvir,Vp[0],nvir,0.0,Rp[0],n);
-                } 
-
-                C_left.push_back(Cl);    
-                C_right.push_back(Cr);    
-
-            }
-        } 
-
-        if (bench_) {
-            fclose(rank_fh);
-            fclose(S_fh);
-        }
-
-    }
+    } 
 
     jk_->compute();
 

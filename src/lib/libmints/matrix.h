@@ -873,9 +873,21 @@ public:
      *
      * \returns true if a vector is added, false otherwise
     */
-    bool schmidt_add(int h, int rows, Vector& v) throw();
-    bool schmidt_add(int h, int rows, double* v) throw();
+    bool schmidt_add_row(int h, int rows, Vector& v) throw();
+    bool schmidt_add_row(int h, int rows, double* v) throw();
     /// @}
+
+    /*! Schmidt orthogonalize this. S is the overlap matrix.
+     *  n is the number of columns to orthogonalize. */
+    void schmidt_orthog(SharedMatrix S, int n);
+
+    /*! Schmidt orthogonalize this. You'll likely want to View this matrix afterwards
+     *  using the result to obtain a properly sized Matrix.
+     *  \param S overlap matrix.
+     *  \param tol is the tolerance.
+     *  \returns A Dimension object tell you how many were removed in each irrep.
+     */
+    Dimension schmidt_orthog_columns(SharedMatrix S, double tol, double*res=0);
 
     /*!
      * Project out the row vectors in the matrix provided out of this matrix.

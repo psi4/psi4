@@ -3,7 +3,7 @@
 
 memory 250 mb
 
-Enuc = 235.946638332857646 #TEST 
+Enuc = 235.946620315069168 #TEST
 Ecp  = -0.0224119246       #TEST
 
 molecule formic_dim {
@@ -36,5 +36,5 @@ set globals {
 
 e_cp = cp('dfmp2')
 
-compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
+compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy") #TEST
 compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")                      #TEST
