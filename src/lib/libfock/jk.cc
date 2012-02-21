@@ -96,7 +96,7 @@ boost::shared_ptr<JK> JK::build_JK()
 
         return boost::shared_ptr<JK>(jk);
 
-    } else if (options.get_str("SCF_TYPE") == "PK") {
+    } else if (options.get_str("SCF_TYPE") == "PS") {
     
         PSJK* jk = new PSJK(primary,options);
 
@@ -144,6 +144,7 @@ void JK::common_init()
     do_J_ = true;
     do_K_ = true;
     do_wK_ = false;
+    lr_symmetric_ = false;
 
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
@@ -2644,7 +2645,7 @@ void DFJK::block_wK(double** Qlmnp, double** Qrmnp, int naux)
 
 PSJK::PSJK(boost::shared_ptr<BasisSet> primary, 
     Options& options) :
-    JK(primary_), options_(options)
+    JK(primary), options_(options)
 {
     common_init();
 }
@@ -2728,7 +2729,7 @@ void PSJK::compute_JK()
         psio_->open(unit_, PSIO_OPEN_OLD);
         psio_address addr = PSIO_ZERO;
         for (int Pstart = 0; Pstart < naux; Pstart += maxrows) {
-            int nrows = (naux - Pstart >= maxrows ? naux - Pstart : maxrows);
+            int nrows = (naux - Pstart <= maxrows ? naux - Pstart : maxrows);
             psio_->read(unit_,"(A|mn) JK", (char*) Amnp[0], sizeof(double)*nrows*ntri,addr,&addr); 
             if (do_J_) {
                 block_J(Amnp,Pstart,nrows,J_ao_);
@@ -2738,6 +2739,11 @@ void PSJK::compute_JK()
             }
         }
         psio_->close(unit_, 1);
+        if (lr_symmetric_ && do_K_) {
+            for (int N = 0; N < D_.size(); N++) {
+                K_ao_[N]->hermitivitize();
+            }    
+        }
     }
     
     Amn.reset();
@@ -2906,8 +2912,13 @@ void PSJK::build_Amn_disk(double theta, const std::string& entry)
 }
 int PSJK::max_rows() 
 {
-    // TODO
-    return 1;
+    int ntri = sieve_->function_pairs().size();
+    int naux = grid_->rowspi()[0];
+    unsigned long int effective_memory = memory_ - memory_overhead();
+    unsigned long int rows = effective_memory / ntri;
+    rows = (rows > naux ? naux : rows);
+    rows = (rows < 1 ? 1 : rows);   
+    return (int) rows;
 }
 void PSJK::block_J(double** Amnp, int Pstart, int nP, const std::vector<SharedMatrix>& J)
 {
@@ -2981,6 +2992,137 @@ void PSJK::block_K(double** Amnp, int Pstart, int nP, const std::vector<SharedMa
 }
 void PSJK::build_JK_SR()
 {
+    boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary_));
+    boost::shared_ptr<TwoBodyAOInt> eri(factory->erf_complement_eri(theta_));
+    const double* buffer = eri->buffer();
+
+    double cutoff = sieve_->sieve();
+    const std::vector<std::pair<int,int> >& shellmap = sieve_->shell_pairs();
+    int nTRI = shellmap.size(); 
+    for (int MN = 0; MN < nTRI; MN++) {
+        int M = shellmap[MN].first;
+        int N = shellmap[MN].second;
+        int nM = primary_->shell(M).nfunction();
+        int nN = primary_->shell(N).nfunction();
+        int oM = primary_->shell(M).function_index();
+        int oN = primary_->shell(N).function_index();
+        for (int LS = 0; LS < nTRI; LS++) {
+            int L = shellmap[LS].first;
+            int S = shellmap[LS].second;
+            if (!sieve_->shell_significant(M,N,L,S)) continue;
+            // TODO: More sieving
+            int nL = primary_->shell(L).nfunction();
+            int nS = primary_->shell(S).nfunction();
+            int oL = primary_->shell(L).function_index();
+            int oS = primary_->shell(S).function_index();
+
+            eri->compute_shell(M,N,L,S);
+
+            for (int rM = 0, index = 0; rM < nM; rM++) {
+                for (int rN = 0; rN < nN; rN++) {
+                    for (int rL = 0; rL < nL; rL++) {
+                        for (int rS = 0; rS < nS; rS++, index++) {
+                            int m = rM + oM;
+                            int n = rN + oN;
+                            int l = rL + oL;
+                            int s = rS + oS;
+                            int mn = (m * (m + 1) >> 1) + n;
+                            int ls = (l * (l + 1) >> 1) + s;
+                            if (n > m || s > l || ls > mn) continue;
+                            double val = buffer[index];
+                            
+                            // J
+                            if (do_J_) {
+                                for (int A = 0; A < D_.size(); A++) {
+                                    double** Jp = J_ao_[A]->pointer();
+                                    double** Dp = D_ao_[A]->pointer();
+                                    if (mn == ls && m == n) {
+                                        // (mm|mm)
+                                        Jp[m][m] += val * Dp[m][m]; // (mm|mm)
+                                    } else if (m == n && l == s) {
+                                        // (mm|ll)
+                                        Jp[m][m] += val * Dp[l][l]; // (mm|ll)
+                                        Jp[l][l] += val * Dp[m][m]; // (ll|mm)
+                                    } else if (m == n) {
+                                        // (mm|ls)
+                                        Jp[m][m] += val * Dp[l][s]; // (mm|ls)
+                                        Jp[m][m] += val * Dp[s][l]; // (mm|sl)
+                                        Jp[l][s] += val * Dp[m][m]; // (ls|mm)
+                                        Jp[s][l] += val * Dp[m][m]; // (sl|mm)
+                                    } else if (l == s) {
+                                        // (mn|ll)
+                                        Jp[m][n] += val * Dp[l][l]; // (mn|ll)
+                                        Jp[n][m] += val * Dp[l][l]; // (nm|ll)
+                                        Jp[l][l] += val * Dp[m][n]; // (ll|mn)
+                                        Jp[l][l] += val * Dp[n][m]; // (ll|nm)
+                                    } else if (mn == ls) {
+                                        // (mn|mn)
+                                        Jp[m][n] += val * Dp[m][n]; // (mn|mn)
+                                        Jp[m][n] += val * Dp[n][m]; // (mn|nm)
+                                        Jp[n][m] += val * Dp[m][n]; // (nm|mn)
+                                        Jp[n][m] += val * Dp[n][m]; // (nm|nm)
+                                    } else {
+                                        // (mn|ls)
+                                        Jp[m][n] += val * Dp[l][s]; // (mn|ls)
+                                        Jp[m][n] += val * Dp[s][l]; // (mn|sl)
+                                        Jp[n][m] += val * Dp[l][s]; // (nm|ls)
+                                        Jp[n][m] += val * Dp[s][l]; // (nm|sl)
+                                        Jp[l][s] += val * Dp[m][n]; // (ls|mn)
+                                        Jp[l][s] += val * Dp[n][m]; // (ls|nm)
+                                        Jp[s][l] += val * Dp[m][n]; // (sl|mn)
+                                        Jp[s][l] += val * Dp[n][m]; // (sl|nm)
+                                    }
+                                }   
+                            }
+                            // K
+                            if (do_K_) {
+                                for (int A = 0; A < D_.size(); A++) {
+                                    double** Kp = K_ao_[A]->pointer();
+                                    double** Dp = D_ao_[A]->pointer();
+                                    if (mn == ls && m == n) {
+                                        // (mm|mm)
+                                        Kp[m][m] += val * Dp[m][m]; // (mm|mm)
+                                    } else if (m == n && l == s) {
+                                        // (mm|ll)
+                                        Kp[m][l] += val * Dp[m][l]; // (mm|ll)
+                                        Kp[l][m] += val * Dp[l][m]; // (ll|mm)
+                                    } else if (m == n) {
+                                        // (mm|ls)
+                                        Kp[m][s] += val * Dp[m][l]; // (mm|ls) 
+                                        Kp[m][l] += val * Dp[m][s]; // (mm|sl)
+                                        Kp[l][m] += val * Dp[s][m]; // (ls|mm)
+                                        Kp[s][m] += val * Dp[l][m]; // (sl|mm)
+                                    } else if (l == s) {
+                                        // (mn|ll)
+                                        Kp[m][l] += val * Dp[n][l]; // (mn|ll)
+                                        Kp[n][l] += val * Dp[m][l]; // (nm|ll)
+                                        Kp[l][n] += val * Dp[l][m]; // (ll|mn)
+                                        Kp[l][m] += val * Dp[l][n]; // (ll|nm)
+                                    } else if (mn == ls) {
+                                        // (mn|mn)
+                                        Kp[m][n] += val * Dp[n][m]; // (mn|mn)
+                                        Kp[m][m] += val * Dp[n][n]; // (mn|nm)
+                                        Kp[n][n] += val * Dp[m][m]; // (nm|mn)
+                                        Kp[n][m] += val * Dp[m][n]; // (nm|nm)
+                                    } else {
+                                        // (mn|ls)
+                                        Kp[m][s] += val * Dp[n][l]; // (mn|ls)
+                                        Kp[m][l] += val * Dp[n][s]; // (mn|sl)
+                                        Kp[n][s] += val * Dp[m][l]; // (nm|ls)
+                                        Kp[n][l] += val * Dp[m][s]; // (nm|sl)
+                                        Kp[l][n] += val * Dp[s][m]; // (ls|mn)
+                                        Kp[l][m] += val * Dp[s][n]; // (ls|nm)
+                                        Kp[s][n] += val * Dp[l][m]; // (sl|mn)
+                                        Kp[s][m] += val * Dp[l][n]; // (sl|nm)
+                                    }
+                                }   
+                            }
+                        }
+                    }   
+                }
+            }
+        }
+    } 
 }
 
 }

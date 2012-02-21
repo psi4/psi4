@@ -310,7 +310,7 @@ void HF::integrals()
     }
 
     // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
-    if (scf_type_ == "DF") {
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
         // Tell the JK to print
