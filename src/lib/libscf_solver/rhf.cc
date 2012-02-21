@@ -156,7 +156,7 @@ void RHF::form_G()
 #endif
 
     // TODO: Relax the if statement
-    if (scf_type_ == "DF") {
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
 
         // Push the C matrix on
         std::vector<SharedMatrix> & C = jk_->C_left();
