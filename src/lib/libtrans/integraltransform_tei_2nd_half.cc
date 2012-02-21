@@ -22,6 +22,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 {
     check_initialized();
 
+    bool bra_sym = s1 == s2;
+    bool ket_sym = s3 == s4;
+    bool bra_ket_sym = (s1 == s3) && bra_sym && ket_sym;
+
     char *label = new char[100];
 
     // Grab the transformation coefficients
@@ -152,16 +156,18 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     //TODO else if s3->label() == MOSPACE_NIL, copy buffer...
                 } /* Gr */
                 if(useIWL_){
-                    int p = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
-                    int q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                    size_t PQ = INDEX(p,q);
+                    int P = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
+                    int Q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
+                    size_t PQ = INDEX(P,Q);
+                    if( (P < Q) && bra_sym) continue;
                     for(int rs=0; rs < K.params->coltot[h]; rs++) {
-                        int r = aIndex3[K.params->colorb[h][rs][0]];
-                        int s = aIndex4[K.params->colorb[h][rs][1]];
-                        size_t RS = INDEX(r,s);
-                        if(r >= s && RS <= PQ)
-                            iwl->write_value(p, q, r, s, K.matrix[h][pq][rs],
-                                             printTei_, outfile, 0);
+                        int R = aIndex3[K.params->colorb[h][rs][0]];
+                        int S = aIndex4[K.params->colorb[h][rs][1]];
+                        if( (R < S) && ket_sym) continue;
+                        size_t RS = INDEX(R,S);
+                        if( (RS < PQ) && bra_ket_sym) continue;
+                        iwl->write_value(P, Q, R, S, K.matrix[h][pq][rs],
+                                         printTei_, outfile, 0);
                     } /* rs */
                 }
             } /* pq */
@@ -265,16 +271,15 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                         //TODO else if s3->label() == MOSPACE_NIL, copy buffer...
                     } /* Gr */
                     if(useIWL_){
-                        int p = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
-                        int q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                        size_t PQ = INDEX(p,q);
+                        int P = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
+                        int Q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
+                        if( (P < Q) && bra_sym) continue;
                         for(int rs=0; rs < K.params->coltot[h]; rs++) {
-                            int r = bIndex3[K.params->colorb[h][rs][0]];
-                            int s = bIndex4[K.params->colorb[h][rs][1]];
-                            size_t RS = INDEX(r,s);
-                            if(r >= s)
-                                iwl->write_value(p, q, r, s, K.matrix[h][pq][rs],
-                                                 printTei_, outfile, 0);
+                            int R = bIndex3[K.params->colorb[h][rs][0]];
+                            int S = bIndex4[K.params->colorb[h][rs][1]];
+                            if( (R < S) && ket_sym) continue;
+                            iwl->write_value(P, Q, R, S, K.matrix[h][pq][rs],
+                                             printTei_, outfile, 0);
                         } /* rs */
                     }
                 } /* pq */
@@ -381,16 +386,18 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                                     TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
                     } /* Gr */
                     if(useIWL_){
-                        int p = bIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
-                        int q = bIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                        size_t PQ = INDEX(p,q);
+                        int P = bIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
+                        int Q = bIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
+                        if( (P < Q) && bra_sym) continue;
+                        size_t PQ = INDEX(P,Q);
                         for(int rs=0; rs < K.params->coltot[h]; rs++) {
-                            int r = bIndex3[K.params->colorb[h][rs][0]];
-                            int s = bIndex4[K.params->colorb[h][rs][1]];
-                            size_t RS = INDEX(r,s);
-                            if(r >= s && RS <= PQ)
-                                iwl->write_value(p, q, r, s, K.matrix[h][pq][rs],
-                                                 printTei_, outfile, 0);
+                            int R = bIndex3[K.params->colorb[h][rs][0]];
+                            int S = bIndex4[K.params->colorb[h][rs][1]];
+                            if( (R < S) && ket_sym) continue;
+                            size_t RS = INDEX(R,S);
+                            if( (RS < PQ) && bra_ket_sym) continue;
+                            iwl->write_value(P, Q, R, S, K.matrix[h][pq][rs],
+                                             printTei_, outfile, 0);
                         } /* rs */
                     }
                 } /* pq */
