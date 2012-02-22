@@ -107,18 +107,18 @@
 \indexentry{fitGeneral() (qmmm.Diffuse method)|hyperpage}{46}
 \indexentry{fitScf() (qmmm.Diffuse method)|hyperpage}{46}
 \indexentry{populateExtern() (qmmm.Diffuse method)|hyperpage}{46}
-\indexentry{QMMM (class in qmmm)|hyperpage}{46}
-\indexentry{addChargeAngstrom() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{addChargeBohr() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{addDiffuse() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{populateExtern() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{input (module)|hyperpage}{46}
-\indexentry{bad\_option\_syntax() (in module input)|hyperpage}{46}
-\indexentry{check\_parentheses\_and\_brackets() (in module input)|hyperpage}{46}
-\indexentry{parse\_multiline\_array() (in module input)|hyperpage}{46}
-\indexentry{process\_basis\_block() (in module input)|hyperpage}{46}
-\indexentry{process\_basis\_file() (in module input)|hyperpage}{46}
-\indexentry{process\_external\_command() (in module input)|hyperpage}{46}
+\indexentry{QMMM (class in qmmm)|hyperpage}{47}
+\indexentry{addChargeAngstrom() (qmmm.QMMM method)|hyperpage}{47}
+\indexentry{addChargeBohr() (qmmm.QMMM method)|hyperpage}{47}
+\indexentry{addDiffuse() (qmmm.QMMM method)|hyperpage}{47}
+\indexentry{populateExtern() (qmmm.QMMM method)|hyperpage}{47}
+\indexentry{input (module)|hyperpage}{47}
+\indexentry{bad\_option\_syntax() (in module input)|hyperpage}{47}
+\indexentry{check\_parentheses\_and\_brackets() (in module input)|hyperpage}{47}
+\indexentry{parse\_multiline\_array() (in module input)|hyperpage}{47}
+\indexentry{process\_basis\_block() (in module input)|hyperpage}{47}
+\indexentry{process\_basis\_file() (in module input)|hyperpage}{47}
+\indexentry{process\_external\_command() (in module input)|hyperpage}{47}
 \indexentry{process\_extract\_command() (in module input)|hyperpage}{47}
 \indexentry{process\_input() (in module input)|hyperpage}{47}
 \indexentry{process\_memory\_command() (in module input)|hyperpage}{47}
@@ -134,29 +134,29 @@
 \indexentry{physconst (module)|hyperpage}{47}
 \indexentry{pubchem (module)|hyperpage}{47}
 \indexentry{PubChemObj (class in pubchem)|hyperpage}{47}
-\indexentry{getCartesian() (pubchem.PubChemObj method)|hyperpage}{47}
-\indexentry{getMoleculeString() (pubchem.PubChemObj method)|hyperpage}{47}
-\indexentry{getSDF() (pubchem.PubChemObj method)|hyperpage}{47}
-\indexentry{getXYZFile() (pubchem.PubChemObj method)|hyperpage}{47}
-\indexentry{name() (pubchem.PubChemObj method)|hyperpage}{47}
-\indexentry{getPubChemResults() (in module pubchem)|hyperpage}{47}
-\indexentry{inpsight (module)|hyperpage}{47}
-\indexentry{InPsight (class in inpsight)|hyperpage}{47}
-\indexentry{atoms (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{azimuth (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bohr\_per\_ang (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bond\_width (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bonding\_alpha (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bonds (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{colors (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{defines (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{elevation (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{height (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{light (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{light\_color (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{location (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{look\_at (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{position\_camera() (inpsight.InPsight method)|hyperpage}{47}
+\indexentry{getCartesian() (pubchem.PubChemObj method)|hyperpage}{48}
+\indexentry{getMoleculeString() (pubchem.PubChemObj method)|hyperpage}{48}
+\indexentry{getSDF() (pubchem.PubChemObj method)|hyperpage}{48}
+\indexentry{getXYZFile() (pubchem.PubChemObj method)|hyperpage}{48}
+\indexentry{name() (pubchem.PubChemObj method)|hyperpage}{48}
+\indexentry{getPubChemResults() (in module pubchem)|hyperpage}{48}
+\indexentry{inpsight (module)|hyperpage}{48}
+\indexentry{InPsight (class in inpsight)|hyperpage}{48}
+\indexentry{atoms (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{azimuth (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{bohr\_per\_ang (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{bond\_width (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{bonding\_alpha (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{bonds (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{colors (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{defines (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{elevation (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{height (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{light (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{light\_color (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{location (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{look\_at (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{position\_camera() (inpsight.InPsight method)|hyperpage}{48}
 \indexentry{radial\_scale (inpsight.InPsight attribute)|hyperpage}{48}
 \indexentry{radii (inpsight.InPsight attribute)|hyperpage}{48}
 \indexentry{right (inpsight.InPsight attribute)|hyperpage}{48}
@@ -165,11 +165,11 @@
 \indexentry{set\_camera() (inpsight.InPsight method)|hyperpage}{48}
 \indexentry{set\_color() (inpsight.InPsight method)|hyperpage}{48}
 \indexentry{set\_define() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_radius() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_size() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_view() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{sky (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{up (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{update\_geometry() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{width (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{zoom (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{set\_radius() (inpsight.InPsight method)|hyperpage}{49}
+\indexentry{set\_size() (inpsight.InPsight method)|hyperpage}{49}
+\indexentry{set\_view() (inpsight.InPsight method)|hyperpage}{49}
+\indexentry{sky (inpsight.InPsight attribute)|hyperpage}{49}
+\indexentry{up (inpsight.InPsight attribute)|hyperpage}{49}
+\indexentry{update\_geometry() (inpsight.InPsight method)|hyperpage}{49}
+\indexentry{width (inpsight.InPsight attribute)|hyperpage}{49}
+\indexentry{zoom (inpsight.InPsight attribute)|hyperpage}{49}

@@ -1880,7 +1880,7 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 
 <dl class="function">
 <dt id="procutil.get_psifile">
-<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='21061'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='35843'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -1951,52 +1951,75 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 <span class="target" id="module-util"></span><dl class="function">
 <dt id="util.compare_integers">
 <tt class="descclassname">util.</tt><tt class="descname">compare_integers</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_integers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_integers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to compare two integers. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when value <em>computed</em> matches value <em>expected</em>.
+Performs a system exit on failure. Used in input files in the test suite.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.compare_matrices">
 <tt class="descclassname">util.</tt><tt class="descname">compare_matrices</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_matrices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to compare two matrices. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when elements of matrix <em>computed</em> match elements of matrix <em>expected</em> to
+number of <em>digits</em>. Performs a system exit on failure to match symmetry
+structure, dimensions, or element values. Used in input files in the test suite.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.compare_strings">
 <tt class="descclassname">util.</tt><tt class="descname">compare_strings</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_strings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_strings" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to compare two strings. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when string <em>computed</em> exactly matches string <em>expected</em>.
+Performs a system exit on failure. Used in input files in the test suite.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.compare_values">
 <tt class="descclassname">util.</tt><tt class="descname">compare_values</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to compare two values. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when value <em>computed</em> matches value <em>expected</em> to number of <em>digits</em>.
+Performs a system exit on failure. Used in input files in the test suite.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.compare_vectors">
 <tt class="descclassname">util.</tt><tt class="descname">compare_vectors</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_vectors" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to compare two vectors. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when elements of vector <em>computed</em> match elements of vector <em>expected</em> to
+number of <em>digits</em>. Performs a system exit on failure to match symmetry
+structure, dimension, or element values. Used in input files in the test suite.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.get_memory">
 <tt class="descclassname">util.</tt><tt class="descname">get_memory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_memory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to return the total memory allocation.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.get_num_threads">
 <tt class="descclassname">util.</tt><tt class="descname">get_num_threads</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_num_threads" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to return the number of threads to parallelize across.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.set_memory">
 <tt class="descclassname">util.</tt><tt class="descname">set_memory</tt><big>(</big><em>bytes</em><big>)</big><a class="reference internal" href="_modules/util.html#set_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_memory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to reset the total memory allocation.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.set_num_threads">
 <tt class="descclassname">util.</tt><tt class="descname">set_num_threads</tt><big>(</big><em>nthread</em><big>)</big><a class="reference internal" href="_modules/util.html#set_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_num_threads" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to reset the number of threads to parallelize across.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="util.success">
 <tt class="descclassname">util.</tt><tt class="descname">success</tt><big>(</big><em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#success"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.success" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to print a &#8216;<em>label</em>...PASSED&#8217; line to screen.
+Used by <a class="reference internal" href="#util.compare_values" title="util.compare_values"><tt class="xref py py-func docutils literal"><span class="pre">util.compare_values()</span></tt></a> family when functions pass.</p>
+</dd></dl>
 
 <span class="target" id="module-qmmm"></span><dl class="class">
 <dt id="qmmm.Diffuse">
@@ -2133,40 +2156,65 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 <tt class="descclassname">input.</tt><tt class="descname">quotify</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/input.html#quotify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.quotify" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<span class="target" id="module-physconst"></span><span class="target" id="module-pubchem"></span><dl class="class">
+<span class="target" id="module-physconst"></span><span class="target" id="module-pubchem"></span><p><strong>PubChem.py</strong></p>
+<p>Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
+to obtain a molecule string that can be passed to Molecule.</p>
+<p>Example</p>
+<div class="highlight-python"><pre>results = getPubChemObj("1,3,5-hexatriene")
+
+Results is an array of results from PubChem matches to your query.
+  for entry in results:
+     entry["CID"]         =&gt; PubChem compound identifer
+     entry["IUPAC"]       =&gt; IUPAC name for the resulting compound
+     entry["PubChemObj"]  =&gt; instance of PubChemObj for this compound
+
+     entry["PubChemObj"].getMoleculeString()   =&gt; returns a string compatible
+                                                  with PSI4's Molecule creation</pre>
+</div>
+<dl class="class">
 <dt id="pubchem.PubChemObj">
 <em class="property">class </em><tt class="descclassname">pubchem.</tt><tt class="descname">PubChemObj</tt><big>(</big><em>cid</em>, <em>mf</em>, <em>iupac</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="pubchem.PubChemObj.getCartesian">
 <tt class="descname">getCartesian</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getCartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getCartesian" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to return a string of the atom symbol and XYZ
+coordinates of the PubChem object.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pubchem.PubChemObj.getMoleculeString">
 <tt class="descname">getMoleculeString</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getMoleculeString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getMoleculeString" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to obtain a molecule string through
+getCartesian() or fail.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pubchem.PubChemObj.getSDF">
 <tt class="descname">getSDF</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getSDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getSDF" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to return the SDF (structure-data file) of the PubChem object.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pubchem.PubChemObj.getXYZFile">
 <tt class="descname">getXYZFile</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getXYZFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getXYZFile" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to obtain preferentially a molecule string
+through getCartesian() or a query string otherwise.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="pubchem.PubChemObj.name">
 <tt class="descname">name</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.name" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to return the IUPAC name of the PubChem object.</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="function">
 <dt id="pubchem.getPubChemResults">
 <tt class="descclassname">pubchem.</tt><tt class="descname">getPubChemResults</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#getPubChemResults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.getPubChemResults" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to query the PubChem database for molecules matching the
+input string. Builds a PubChem object if found.</p>
+</dd></dl>
 
 <span class="target" id="module-inpsight"></span><dl class="class">
 <dt id="inpsight.InPsight">

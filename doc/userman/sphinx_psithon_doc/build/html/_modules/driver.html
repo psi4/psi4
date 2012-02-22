@@ -59,6 +59,13 @@
           <div class="body">
             
   <h1>Source code for driver</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Module with a *procedures* dictionary specifying available quantum</span>
+<span class="sd">chemical methods and functions driving the main quantum chemical</span>
+<span class="sd">functionality, namely single-point energies, geometry optimizations,</span>
+<span class="sd">response properties, and vibrational frequency calculations.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">PsiMod</span>
 <span class="kn">import</span> <span class="nn">input</span>
 <span class="kn">from</span> <span class="nn">proc</span> <span class="kn">import</span> <span class="o">*</span>
@@ -137,17 +144,10 @@
 <span class="sd">    :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.</span>
 
 <span class="sd">    :PSI variables:</span>
+
 <span class="sd">    .. envvar:: CURRENT ENERGY</span>
 <span class="sd">        CURRENT REFERENCE ENERGY</span>
 <span class="sd">        CURRENT CORRELATION ENERGY</span>
-
-<span class="sd">    **Keywords**</span>
-
-<span class="sd">    :type name: string</span>
-<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
-
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
-<span class="sd">        to be applied to the system.</span>
 
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | name                    | calls method                                                                          | </span>
@@ -303,6 +303,21 @@
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | mrccsdtqph-3            |                                                                                       | </span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+
+<span class="sd">    **Keywords**</span>
+
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
+
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
+<span class="sd">        to be applied to the system.</span>
+
+<span class="sd">    :type bypass_scf: bool</span>
+<span class="sd">    :param bypass_scf: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
+
+<span class="sd">        Indicates whether, for *name* values built atop of scf calculations,</span>
+<span class="sd">        the scf step is skipped. Suitable when special steps are taken to get</span>
+<span class="sd">        the scf to converge in an explicit preceeding scf step.</span>
 
 <span class="sd">    **Examples**</span>
 
@@ -586,14 +601,6 @@
 
 <span class="sd">       - Check if ther&#39;re some PSI variables that ought to be set.</span>
 
-<span class="sd">    **Keywords**</span>
-
-<span class="sd">    :type name: string</span>
-<span class="sd">    :param name: ``&#39;ccsd&#39;`` || etc.</span>
-
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
-<span class="sd">        to be applied to the system.</span>
-
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | name                    | calls method                                                                          | </span>
 <span class="sd">    +=========================+=======================================================================================+</span>
@@ -601,6 +608,14 @@
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+
+<span class="sd">    **Keywords**</span>
+
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param name: ``&#39;ccsd&#39;`` || etc.</span>
+
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
+<span class="sd">        to be applied to the system.</span>
 
 <span class="sd">    **Examples**</span>
 
@@ -642,6 +657,20 @@
 
 <span class="sd">       - Need to check that all methods do return electronic energy. I think gradient got changed at one point.</span>
 
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | name                    | calls method                                                                          | </span>
+<span class="sd">    +=========================+=======================================================================================+</span>
+<span class="sd">    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | ccsd(t)                 | CCSD with perturbative triples                                                        |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+
 <span class="sd">    **Keywords**</span>
 
 <span class="sd">    :type name: string</span>
@@ -657,7 +686,7 @@
 <span class="sd">        Indicates the type of calculation to be performed on the molecule.</span>
 <span class="sd">        The default dertype accesses``&#39;gradient&#39;`` or ``&#39;energy&#39;``, while</span>
 <span class="sd">        ``&#39;cbs&#39;`` performs a multistage finite difference calculation.</span>
-<span class="sd">        If a nested series of python functions is intended (see :ref:`sec_intercalls`),</span>
+<span class="sd">        If a nested series of python functions is intended (see `Function Intercalls`_),</span>
 <span class="sd">        use keyword ``opt_func`` instead of ``func``.</span>
 
 <span class="sd">    :type mode: string</span>
@@ -674,20 +703,6 @@
 
 <span class="sd">        Indicates whether analytic (if available) or finite difference</span>
 <span class="sd">        optimization is to be performed.</span>
-
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | name                    | calls method                                                                          | </span>
-<span class="sd">    +=========================+=======================================================================================+</span>
-<span class="sd">    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | ccsd(t)                 | CCSD with perturbative triples                                                        |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 
 <span class="sd">    **Examples**</span>
 
@@ -846,25 +861,17 @@
 <div class="viewcode-block" id="frequency"><a class="viewcode-back" href="../index.html#driver.frequency">[docs]</a><span class="k">def</span> <span class="nf">frequency</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to compute harmonic vibrational frequencies.</span>
 
-<span class="sd">    :aliases: frequency(), freq()</span>
+<span class="sd">    :aliases: frequencies(), freq()</span>
 
 <span class="sd">    :returns: (*float*) Total electronic energy in Hartrees.</span>
 
-<span class="sd">    :PSI variables:</span>
-<span class="sd">    .. envvar:: &lt;PSI VARIABLE SET BY FUNCTION&gt;</span>
-<span class="sd">        &lt;ANOTHER PSI VARIABLE WITH nonstandard PORTION OF NAME&gt;</span>
-
-<span class="sd">    .. note:: &lt;Notes for the user</span>
-<span class="sd">        of an informative nature.&gt;</span>
-
-<span class="sd">    .. warning:: &lt;Notes for the user</span>
-<span class="sd">        of a cautionary nature.&gt;</span>
-
 <span class="sd">    .. caution:: Some features are not yet implemented. Buy a developer a coffee.</span>
 
-<span class="sd">       - RAK, why are you adding OPTKING options as GLOBALS? (And should they be Py-side not C-side options.)</span>
+<span class="sd">       - RAK, why are you adding OPTKING options as GLOBALS? And shouldn&#39;t they be Py-side not C-side options?</span>
 
-<span class="sd">       - Put in a dictionary, so IRREPS can be called by point group or &#39;all&#39;</span>
+<span class="sd">       - Put in a dictionary, so IRREPS can be called by symmetry element or &#39;all&#39;</span>
+
+<span class="sd">       - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.</span>
 
 <span class="sd">    **Keywords**</span>
 

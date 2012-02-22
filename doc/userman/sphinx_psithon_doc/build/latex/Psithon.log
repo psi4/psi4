@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  22 FEB 2012 01:49
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  22 FEB 2012 17:26
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -1041,16 +1041,16 @@ Underfull \hbox (badness 10000) in paragraph at lines 2090--2091
 
  []
 
-[43] [44] [45] [46] [47] [48]
+[43] [44] [45] [46] [47] [48] [49] [50
+
+]
 Chapter 16.
-[49
+[51] [52
 
-] [50
-
-] [51
+] [53
 
 
-] (./Psithon.ind [52
+] (./Psithon.ind [54
 
 
 ]
@@ -1078,9 +1078,9 @@ Underfull \hbox (badness 10000) in paragraph at lines 60--61
 []| \T1/ptm/m/n/10 UNCP-CORRECTED2-
  []
 
-[53
+[55
 
-] [54] [55
+] [56] [57
 
 ]) (./Psithon.aux)
 
@@ -1088,8 +1088,8 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 8389 strings out of 493848
- 116901 string characters out of 3149207
+ 8391 strings out of 493848
+ 116915 string characters out of 3149207
  212526 words of memory out of 3000000
  11206 multiletter control sequences out of 15000+200000
  63666 words of font info for 72 fonts, out of 3000000 for 9000
@@ -1111,9 +1111,9 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (59 pages, 518791 bytes).
+Output written on Psithon.pdf (61 pages, 523602 bytes).
 PDF statistics:
- 887 PDF objects out of 1000 (max. 8388607)
- 258 named destinations out of 1000 (max. 500000)
+ 903 PDF objects out of 1000 (max. 8388607)
+ 260 named destinations out of 1000 (max. 500000)
  190 words of extra memory for PDF output out of 10000 (max. 10000000)
 

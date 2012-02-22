@@ -2398,7 +2398,7 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`21061'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`35843'}}{}
 \end{fulllineitems}
 
 \index{kwargs\_lower() (in module procutil)}
@@ -2483,60 +2483,93 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.compare_integers}\pysiglinewithargsret{\code{util.}\bfcode{compare\_integers}}{\emph{expected}, \emph{computed}, \emph{label}}{}
+Function to compare two integers. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when value \emph{computed} matches value \emph{expected}.
+Performs a system exit on failure. Used in input files in the test suite.
+
 \end{fulllineitems}
 
 \index{compare\_matrices() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.compare_matrices}\pysiglinewithargsret{\code{util.}\bfcode{compare\_matrices}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+Function to compare two matrices. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when elements of matrix \emph{computed} match elements of matrix \emph{expected} to
+number of \emph{digits}. Performs a system exit on failure to match symmetry
+structure, dimensions, or element values. Used in input files in the test suite.
+
 \end{fulllineitems}
 
 \index{compare\_strings() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.compare_strings}\pysiglinewithargsret{\code{util.}\bfcode{compare\_strings}}{\emph{expected}, \emph{computed}, \emph{label}}{}
+Function to compare two strings. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when string \emph{computed} exactly matches string \emph{expected}.
+Performs a system exit on failure. Used in input files in the test suite.
+
 \end{fulllineitems}
 
 \index{compare\_values() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.compare_values}\pysiglinewithargsret{\code{util.}\bfcode{compare\_values}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+Function to compare two values. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when value \emph{computed} matches value \emph{expected} to number of \emph{digits}.
+Performs a system exit on failure. Used in input files in the test suite.
+
 \end{fulllineitems}
 
 \index{compare\_vectors() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.compare_vectors}\pysiglinewithargsret{\code{util.}\bfcode{compare\_vectors}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+Function to compare two vectors. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when elements of vector \emph{computed} match elements of vector \emph{expected} to
+number of \emph{digits}. Performs a system exit on failure to match symmetry
+structure, dimension, or element values. Used in input files in the test suite.
+
 \end{fulllineitems}
 
 \index{get\_memory() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.get_memory}\pysiglinewithargsret{\code{util.}\bfcode{get\_memory}}{}{}
+Function to return the total memory allocation.
+
 \end{fulllineitems}
 
 \index{get\_num\_threads() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.get_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{get\_num\_threads}}{}{}
+Function to return the number of threads to parallelize across.
+
 \end{fulllineitems}
 
 \index{set\_memory() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.set_memory}\pysiglinewithargsret{\code{util.}\bfcode{set\_memory}}{\emph{bytes}}{}
+Function to reset the total memory allocation.
+
 \end{fulllineitems}
 
 \index{set\_num\_threads() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.set_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{set\_num\_threads}}{\emph{nthread}}{}
+Function to reset the number of threads to parallelize across.
+
 \end{fulllineitems}
 
 \index{success() (in module util)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:util.success}\pysiglinewithargsret{\code{util.}\bfcode{success}}{\emph{label}}{}
+Function to print a `\emph{label}...PASSED' line to screen.
+Used by {\hyperref[index:util.compare_values]{\code{util.compare\_values()}}} family when functions pass.
+
 \end{fulllineitems}
 
 \phantomsection\label{index:module-qmmm}\index{qmmm (module)}\index{Diffuse (class in qmmm)}
@@ -2701,37 +2734,70 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 \phantomsection\label{index:input.quotify}\pysiglinewithargsret{\code{input.}\bfcode{quotify}}{\emph{string}}{}
 \end{fulllineitems}
 
-\phantomsection\label{index:module-physconst}\index{physconst (module)}\phantomsection\label{index:module-pubchem}\index{pubchem (module)}\index{PubChemObj (class in pubchem)}
+\phantomsection\label{index:module-physconst}\index{physconst (module)}\phantomsection\label{index:module-pubchem}\index{pubchem (module)}
+\textbf{PubChem.py}
+
+Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
+to obtain a molecule string that can be passed to Molecule.
+
+Example
+
+\begin{Verbatim}[commandchars=\\\{\}]
+results = getPubChemObj("1,3,5-hexatriene")
+
+Results is an array of results from PubChem matches to your query.
+  for entry in results:
+     entry["CID"]         =\textgreater{} PubChem compound identifer
+     entry["IUPAC"]       =\textgreater{} IUPAC name for the resulting compound
+     entry["PubChemObj"]  =\textgreater{} instance of PubChemObj for this compound
+
+     entry["PubChemObj"].getMoleculeString()   =\textgreater{} returns a string compatible
+                                                  with PSI4's Molecule creation
+\end{Verbatim}
+\index{PubChemObj (class in pubchem)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:pubchem.PubChemObj}\pysiglinewithargsret{\strong{class }\code{pubchem.}\bfcode{PubChemObj}}{\emph{cid}, \emph{mf}, \emph{iupac}}{}~\index{getCartesian() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:pubchem.PubChemObj.getCartesian}\pysiglinewithargsret{\bfcode{getCartesian}}{}{}
+Function to return a string of the atom symbol and XYZ
+coordinates of the PubChem object.
+
 \end{fulllineitems}
 
 \index{getMoleculeString() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:pubchem.PubChemObj.getMoleculeString}\pysiglinewithargsret{\bfcode{getMoleculeString}}{}{}
+Function to obtain a molecule string through
+getCartesian() or fail.
+
 \end{fulllineitems}
 
 \index{getSDF() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:pubchem.PubChemObj.getSDF}\pysiglinewithargsret{\bfcode{getSDF}}{}{}
+Function to return the SDF (structure-data file) of the PubChem object.
+
 \end{fulllineitems}
 
 \index{getXYZFile() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:pubchem.PubChemObj.getXYZFile}\pysiglinewithargsret{\bfcode{getXYZFile}}{}{}
+Function to obtain preferentially a molecule string
+through getCartesian() or a query string otherwise.
+
 \end{fulllineitems}
 
 \index{name() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:pubchem.PubChemObj.name}\pysiglinewithargsret{\bfcode{name}}{}{}
+Function to return the IUPAC name of the PubChem object.
+
 \end{fulllineitems}
 
 
@@ -2741,6 +2807,9 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 
 \begin{fulllineitems}
 \phantomsection\label{index:pubchem.getPubChemResults}\pysiglinewithargsret{\code{pubchem.}\bfcode{getPubChemResults}}{\emph{name}}{}
+Function to query the PubChem database for molecules matching the
+input string. Builds a PubChem object if found.
+
 \end{fulllineitems}
 
 \phantomsection\label{index:module-inpsight}\index{inpsight (module)}\index{InPsight (class in inpsight)}
