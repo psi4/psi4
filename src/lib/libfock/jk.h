@@ -769,6 +769,9 @@ protected:
     void block_J(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& J);
     void block_K(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& K);
     void build_JK_SR(); 
+    void build_JK_LR(); 
+
+    void build_JK_debug(const std::string& op = "", double theta = 0.0);
     
     int max_rows();
 

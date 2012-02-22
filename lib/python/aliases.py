@@ -18,6 +18,14 @@ from procutil import *
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
 
 def sherrillgroup_gold_standard(name='mp2', **kwargs):
+    """Function to call the quantum chemical method known as 'Gold Standard'
+    in the Sherrill group. Uses :py:func:`wrappers.complete_basis_set` to evaluateo
+    the following expression. Two-point extrapolation of the correlation energy
+    performed according to :py:func:`wrappers.corl_xtpl_helgaker_2`.
+
+    .. math:: E_{total}^{\\text{Au\_std}} = E_{total,\; \\text{SCF}}^{\\text{aug-cc-pVQZ}} \; + E_{corl,\; \\text{MP2}}^{\\text{aug-cc-pV[TQ]Z}} \; + \delta_{\\text{MP2}}^{\\text{CCSD(T)}}\\big\\vert_{\\text{aug-cc-pVTZ}}
+
+    """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -38,6 +46,10 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
     return cbs(name, **kwargs)
 
 def run_mp2_5(name, **kwargs):
+    """Function that computes MP2.5 energy from results of a DETCI
+    MP3 calculation.
+
+    """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -77,6 +89,10 @@ def run_mp2_5(name, **kwargs):
     return e_mp25
 
 def run_plugin_ccsd_serial(name, **kwargs):
+    """Function encoding sequence of PSI module and plugin calls so that
+    Eugene DePrince's ccsd_serial plugin can be called via :py:func:`driver.energy`.
+
+    """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -94,6 +110,11 @@ def run_plugin_ccsd_serial(name, **kwargs):
 #     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated
 #     procedure where different options are set for different qc steps.
 def run_plugin_omega(name, **kwargs):
+    """Function encoding sequence of PSI module and plugin calls, as well
+    as typical options, so that Rob Parrish's omega plugin can be called
+    via :py:func:`driver.energy`.
+
+    """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 

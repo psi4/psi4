@@ -16,9 +16,9 @@
 \contentsline {chapter}{\numberline {10}Function Intercalls}{31}{chapter.10}
 \contentsline {chapter}{\numberline {11}Embarrassing Parallelism}{33}{chapter.11}
 \contentsline {chapter}{\numberline {12}Psithon Programming Best Practices}{35}{chapter.12}
-\contentsline {chapter}{\numberline {13}Expert}{37}{chapter.13}
-\contentsline {chapter}{\numberline {14}PsiMod Methods}{43}{chapter.14}
-\contentsline {chapter}{\numberline {15}Molecule Methods}{45}{chapter.15}
-\contentsline {chapter}{\numberline {16}Indices and Tables}{47}{chapter.16}
-\contentsline {chapter}{Python Module Index}{49}{section*.176}
-\contentsline {chapter}{Index}{51}{section*.177}
+\contentsline {chapter}{\numberline {13}PsiMod Methods}{39}{chapter.13}
+\contentsline {chapter}{\numberline {14}Molecule Methods}{41}{chapter.14}
+\contentsline {chapter}{\numberline {15}Expert}{43}{chapter.15}
+\contentsline {chapter}{\numberline {16}Indices and Tables}{49}{chapter.16}
+\contentsline {chapter}{Python Module Index}{51}{section*.176}
+\contentsline {chapter}{Index}{53}{section*.177}
