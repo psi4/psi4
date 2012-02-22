@@ -1,25 +1,28 @@
 molecule {
 symmetry = c1
 O
-H 1 R
-H 1 R 2 A
+O 1 R
+O 1 R 2 A
 
-R = .9
+R = 1.4
 A = 104.5
 }
 
 plugin_load("./plugin_rqchf.so")
 
+set basis DZ
 set basis cc-pvdz
-
-set d_convergence 1.0
-set e_convergence 1.0
+set guess core
+set d_convergence 0.01
+set e_convergence 999999.9
 scf()
 
+set scf_type DF
 set guess read
-set d_convergence 9
-set e_convergence 9
+set d_convergence 12
+set e_convergence 12
 plugin("./plugin_rqchf.so")
 
 # Just to see how much effort DIIS needs
+set guess core
 scf()
