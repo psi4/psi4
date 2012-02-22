@@ -17,12 +17,20 @@ void IntegralTransform::common_moinfo_initialize()
     nTriSo_  = nso_ * (nso_ + 1) / 2;
     nTriMo_  = nmo_ * (nmo_ + 1) / 2;
     sosym_   = init_int_array(nso_);
+    mosym_   = init_int_array(nmo_);
     zeros_   = init_int_array(nirreps_);
 
     int count = 0;
     for(int h = 0; h < nirreps_; ++h){
         for(int i = 0; i < sopi_[h]; ++i, ++count){
             sosym_[count] = h;
+        }
+    }
+
+    count = 0;
+    for(int h = 0; h < nirreps_; ++h){
+        for(int i = 0; i < mopi_[h]; ++i, ++count){
+            mosym_[count] = h;
         }
     }
 
@@ -161,8 +169,9 @@ IntegralTransform::process_spaces()
             for(int h = 0; h < nirreps_; ++h){
                 pitzerCount = pitzerOffset + frzcpi_[h];
                 for(int n = 0; n < aOrbsPI[h]; ++n){
-                    aIndex[aOrbCount] = (qt_order ? aQT_[pitzerCount] : pitzerCount);
-                    aOrbSym[aOrbCount++] = h;
+                    bIndex[aOrbCount] = aIndex[aOrbCount] = (qt_order ? aQT_[pitzerCount] : pitzerCount);
+                    bOrbSym[aOrbCount] = aOrbSym[aOrbCount] = h;
+                    aOrbCount++;
                     if(transformationType_ != Restricted){
                         bIndex[bOrbCount] = (qt_order ? bQT_[pitzerCount] : pitzerCount);
                         bOrbSym[bOrbCount++] = h;
@@ -258,13 +267,46 @@ IntegralTransform::process_spaces()
             }
         }else{
             // This must be a custom MOSpace that the user provided
-            aOrbsPI = const_cast<int*>(moSpace->aOrbsPI());
-            bOrbsPI = const_cast<int*>(moSpace->bOrbsPI());
-            aOrbSym = const_cast<int*>(moSpace->aOrbSym());
-            bOrbSym = const_cast<int*>(moSpace->bOrbSym());
-            aIndex  = const_cast<int*>(moSpace->aIndex());
-            bIndex  = const_cast<int*>(moSpace->bIndex());
-            if(useIWL_ && aIndex == NULL){
+            const std::vector<int> aorbs  = moSpace->aOrbs();
+            const std::vector<int> borbs  = moSpace->bOrbs();
+            const std::vector<int> aindex = moSpace->aIndex();
+            const std::vector<int> bindex = moSpace->bIndex();
+
+            // Figure out how many orbitals per irrep, and group all orbitals by irrep
+            int nAOrbs = aorbs.size();
+            int nBOrbs = borbs.size();
+            bOrbSym = aOrbSym = new int[nAOrbs];
+            ::memset(aOrbsPI, '\0', nirreps_*sizeof(int));
+            bIndex = aIndex = (aindex.empty() ? 0 : new int[nAOrbs]);
+            for(int h = 0, count = 0; h < nirreps_; ++h){
+                for(int n = 0; n < nAOrbs; ++n){
+                    int orb = aorbs[n];
+                    if(mosym_[orb] == h){
+                        aOrbsPI[h]++;
+                        aOrbSym[count] = h;
+                        if(aIndex) aIndex[count] = aindex[n];
+                        count++;
+                    }
+                }
+            }
+            if(transformationType_ != Restricted){
+                bOrbSym = new int[nBOrbs];
+                bIndex = (bindex.empty() ? 0 : new int[nBOrbs]);
+                ::memset(bOrbsPI, '\0', nirreps_*sizeof(int));
+                for(int h = 0, count = 0; h < nirreps_; ++h){
+                    for(int n = 0; n < nBOrbs; ++n){
+                        int orb = borbs[n];
+                        if(mosym_[orb] == h){
+                            bOrbsPI[h]++;
+                            bOrbSym[count] = h;
+                            if(bIndex) bIndex[count] = bindex[n];
+                            count++;
+                        }
+                    }
+                }
+            }
+            // Check that the indexing array was provided, if needed
+            if(useIWL_ && aindex.empty()){
                 std::string error("You must provide an indexing array for space ");
                 error += moSpace->label();
                 error += " or disable IWL output by changing OutputType.";
@@ -456,7 +498,47 @@ IntegralTransform::process_eigenvectors()
         }else if(moSpace->label() == MOSPACE_NIL){
             // Do nothing!
         }else{
-            //TODO This is a custom space work on this!
+            char label = moSpace->label();
+            if(aOrbsPI_.count(label) == 0){
+                std::string err("Space ");
+                err += label;
+                err += " has not been initialized properly.";
+                throw PSIEXCEPTION(err);
+            }
+
+            const std::vector<int> & aorbs = moSpace->aOrbs();
+            const std::vector<int> & borbs = moSpace->bOrbs();
+            int nAOrbs = aorbs.size();
+            int nBOrbs = borbs.size();
+            std::string name("Alpha orbitals for space ");
+            name += label;
+            Ca = SharedMatrix(new Matrix(name, nirreps_, sopi_, aOrbsPI_[label]));
+            for(int h = 0; h < nirreps_; ++h){
+                int count = 0;
+                for(int n = 0; n < nAOrbs; ++n){
+                    int orb = aorbs[n];
+                    if(mosym_[orb] == h){
+                        for(int so = 0; so < sopi_[h]; ++so)
+                            Ca->set(h, so, count, Ca_->get(h, so, orb));
+                        count++;
+                    }
+                }
+            }
+            if(transformationType_ != Restricted){
+                name = "Beta orbitals for space " + label;
+                Cb = SharedMatrix(new Matrix(name, nirreps_, sopi_, bOrbsPI_[label]));
+                for(int h = 0; h < nirreps_; ++h){
+                    int count = 0;
+                    for(int n = 0; n < nBOrbs; ++n){
+                        int orb = borbs[n];
+                        if(mosym_[orb] == h){
+                            for(int so = 0; so < sopi_[h]; ++so)
+                                Cb->set(h, so, count, Cb_->get(h, so, orb));
+                            count++;
+                        }
+                    }
+                }
+            }
         }
 
         if(transformationType_ == Restricted) Cb = Ca;

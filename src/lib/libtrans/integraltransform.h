@@ -305,6 +305,8 @@ class IntegralTransform{
         Dimension sopi_;
         // The symmetry (irrep number) of each symmetrized atomic orbital
         int *sosym_;
+        // The symmetry (irrep number) of each molecular orbital
+        int *mosym_;
         // The number of molecular orbitals per irrep
         Dimension mopi_;
         // The number of doubly-occupied orbitals per irrep
