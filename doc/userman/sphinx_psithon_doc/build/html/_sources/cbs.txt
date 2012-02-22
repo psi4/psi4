@@ -73,7 +73,6 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
     ----------------------------------------------------------------------------------
 
 
-.. _sec_cbs_xtpl:
 
 Extrapolation Schemes
 =====================

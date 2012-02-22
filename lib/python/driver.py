@@ -1,3 +1,10 @@
+"""Module with a *procedures* dictionary specifying available quantum
+chemical methods and functions driving the main quantum chemical
+functionality, namely single-point energies, geometry optimizations,
+response properties, and vibrational frequency calculations.
+
+"""
+
 import PsiMod
 import input
 from proc import *
@@ -77,22 +84,11 @@ def energy(name, **kwargs):
 
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
-    :type name: string
-    :param name: First argument, usually unlabeled.
-        Indicates the computational method to be computed.
-
     :PSI variables:
+
     .. envvar:: CURRENT ENERGY
         CURRENT REFERENCE ENERGY
         CURRENT CORRELATION ENERGY
-
-    **Keywords**
-
-    :type name: string
-    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
-
-        First argument, usually unlabeled. Indicates the computational method 
-        to be applied to the system.
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          | 
@@ -249,6 +245,21 @@ def energy(name, **kwargs):
     | mrccsdtqph-3            |                                                                                       | 
     +-------------------------+---------------------------------------------------------------------------------------+
 
+    **Keywords**
+
+    :type name: string
+    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method 
+        to be applied to the system.
+
+    :type bypass_scf: bool
+    :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
+
+        Indicates whether, for *name* values built atop of scf calculations,
+        the scf step is skipped. Suitable when special steps are taken to get
+        the scf to converge in an explicit preceeding scf step.
+
     **Examples**
 
     >>> # [1] Coupled-cluster singles and doubles calculation with psi code
@@ -283,6 +294,10 @@ def energy(name, **kwargs):
         raise ValidationError('Energy method %s not available.' % (lowername))
 
 def gradient(name, **kwargs):
+    """Function complementary to optimize(). Carries out one gradient pass,
+    deciding analytic or finite difference.
+
+    """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     dertype = 1
@@ -517,6 +532,38 @@ def gradient(name, **kwargs):
         return energies[-1]
 
 def response(name, **kwargs):
+    """Function to compute linear response properties.
+
+    :returns: (*float*) Total electronic energy in Hartrees.
+
+    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
+
+       - Check that energy is actually being returned.
+
+       - Check if ther're some PSI variables that ought to be set.
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                          | 
+    +=========================+=======================================================================================+
+    | cc2                     | 2nd-order approximate CCSD                                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
+    **Keywords**
+
+    :type name: string
+    :param name: ``'ccsd'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method 
+        to be applied to the system.
+
+    **Examples**
+
+    >>> # [1] CCSD-LR properties calculation
+    >>> response('ccsd')
+
+    """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -551,6 +598,20 @@ def optimize(name, **kwargs):
 
        - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
 
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                          | 
+    +=========================+=======================================================================================+
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | ccsd(t)                 | CCSD with perturbative triples                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
     **Keywords**
 
     :type name: string
@@ -566,6 +627,8 @@ def optimize(name, **kwargs):
         Indicates the type of calculation to be performed on the molecule.
         The default dertype accesses``'gradient'`` or ``'energy'``, while
         ``'cbs'`` performs a multistage finite difference calculation.
+        If a nested series of python functions is intended (see `Function Intercalls`_),
+        use keyword ``opt_func`` instead of ``func``.
 
     :type mode: string
     :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
@@ -581,20 +644,6 @@ def optimize(name, **kwargs):
 
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
-
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          | 
-    +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | ccsd(t)                 | CCSD with perturbative triples                                                        |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
-    +-------------------------+---------------------------------------------------------------------------------------+
 
     **Examples**
 
@@ -682,6 +731,10 @@ def optimize(name, **kwargs):
 opt = optimize
 
 def parse_arbitrary_order(name):
+    """Function to parse name string into a method family like CI or MRCC and specific
+    level information like 4 for CISDTQ or MRCCSDTQ.
+
+    """
     namelower = name.lower()
 
     # matches 'mrccsdt(q)'
@@ -746,7 +799,53 @@ def parse_arbitrary_order(name):
     else:
         return namelower, None
 
-def frequencies(name, **kwargs):
+def frequency(name, **kwargs):
+    """Function to compute harmonic vibrational frequencies.
+
+    :aliases: frequencies(), freq()
+
+    :returns: (*float*) Total electronic energy in Hartrees.
+
+    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
+
+       - RAK, why are you adding OPTKING options as GLOBALS? And shouldn't they be Py-side not C-side options?
+
+       - Put in a dictionary, so IRREPS can be called by symmetry element or 'all'
+
+       - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
+
+    **Keywords**
+
+    :type name: string
+    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method 
+        to be applied to the system.
+
+    :type dertype: dertype
+    :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
+
+        Indicates whether analytic (if available- they're not), finite
+        difference of gradients (if available) or finite difference of 
+        energies is to be performed.
+
+    :type irrep: int
+    :param irrep: |dl| ``-1`` |dr| || ``1`` || etc.
+
+        Indicates which symmetry block of vibrational freqiencies to be
+        computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.
+        ``-1`` indicates a full frequency calculation.
+
+    **Examples**
+
+    >>> # [1] <example description>
+    >>> <example python command>
+
+    >>> # [2] Frequency calculation for b2 modes through finite difference of gradients
+    >>> frequencies('scf', dertype=1, irrep=4)
+
+    """
+
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -891,8 +990,13 @@ def frequencies(name, **kwargs):
         # The last item in the list is the reference energy, return it
         return energies[-1]
 
+## Aliases ##
+frequencies = frequency
+freq = frequency
+
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
+    """Function to compute force constants. Presently identical to frequency()."""
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)

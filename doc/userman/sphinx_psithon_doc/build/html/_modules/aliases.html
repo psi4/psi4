@@ -79,6 +79,14 @@
 <span class="c">#   with the energy(), etc. routines by means of lines like those at the end of this file.</span>
 
 <div class="viewcode-block" id="sherrillgroup_gold_standard"><a class="viewcode-back" href="../index.html#aliases.sherrillgroup_gold_standard">[docs]</a><span class="k">def</span> <span class="nf">sherrillgroup_gold_standard</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to call the quantum chemical method known as &#39;Gold Standard&#39;</span>
+<span class="sd">    in the Sherrill group. Uses :py:func:`wrappers.complete_basis_set` to evaluateo</span>
+<span class="sd">    the following expression. Two-point extrapolation of the correlation energy</span>
+<span class="sd">    performed according to :py:func:`wrappers.corl_xtpl_helgaker_2`.</span>
+
+<span class="sd">    .. math:: E_{total}^{\\text{Au\_std}} = E_{total,\; \\text{SCF}}^{\\text{aug-cc-pVQZ}} \; + E_{corl,\; \\text{MP2}}^{\\text{aug-cc-pV[TQ]Z}} \; + \delta_{\\text{MP2}}^{\\text{CCSD(T)}}\\big\\vert_{\\text{aug-cc-pVTZ}}</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -99,6 +107,10 @@
     <span class="k">return</span> <span class="n">cbs</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </div>
 <div class="viewcode-block" id="run_mp2_5"><a class="viewcode-back" href="../index.html#aliases.run_mp2_5">[docs]</a><span class="k">def</span> <span class="nf">run_mp2_5</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function that computes MP2.5 energy from results of a DETCI</span>
+<span class="sd">    MP3 calculation.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -138,6 +150,10 @@
     <span class="k">return</span> <span class="n">e_mp25</span>
 </div>
 <div class="viewcode-block" id="run_plugin_ccsd_serial"><a class="viewcode-back" href="../index.html#aliases.run_plugin_ccsd_serial">[docs]</a><span class="k">def</span> <span class="nf">run_plugin_ccsd_serial</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function encoding sequence of PSI module and plugin calls so that</span>
+<span class="sd">    Eugene DePrince&#39;s ccsd_serial plugin can be called via :py:func:`driver.energy`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -155,6 +171,11 @@
 <span class="c">#     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated</span>
 <span class="c">#     procedure where different options are set for different qc steps.</span></div>
 <div class="viewcode-block" id="run_plugin_omega"><a class="viewcode-back" href="../index.html#aliases.run_plugin_omega">[docs]</a><span class="k">def</span> <span class="nf">run_plugin_omega</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function encoding sequence of PSI module and plugin calls, as well</span>
+<span class="sd">    as typical options, so that Rob Parrish&#39;s omega plugin can be called</span>
+<span class="sd">    via :py:func:`driver.energy`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -228,7 +249,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Feb 22, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

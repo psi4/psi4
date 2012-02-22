@@ -1634,10 +1634,12 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 }
 SharedMatrix Matrix::pseudoinverse(double condition, bool* conditioned)
 {
-    boost::tuple<SharedMatrix, SharedVector, SharedMatrix> svd = svd_temps();
-    SharedMatrix U = boost::get<0>(svd);
-    SharedVector S = boost::get<1>(svd);
-    SharedMatrix V = boost::get<2>(svd);
+    boost::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temp = svd_temps();
+    SharedMatrix U = boost::get<0>(svd_temp);
+    SharedVector S = boost::get<1>(svd_temp);
+    SharedMatrix V = boost::get<2>(svd_temp);
+
+    svd(U,S,V);
 
     bool conditioned_here = false;
     for (int h = 0; h < nirrep_; h++) {
@@ -1662,7 +1664,7 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool* conditioned)
     for (int h = 0; h < nirrep_; h++) {
         int m = rowspi_[h];
         int n = colspi_[h^symmetry_];
-        int k = S->dimpi()[0];
+        int k = S->dimpi()[h];
         if (!m || !n || !k) continue;
         double** Up = U->pointer(h);
         double*  Sp = S->pointer(h);

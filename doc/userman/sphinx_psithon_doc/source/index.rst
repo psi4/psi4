@@ -13,14 +13,29 @@
 
 ..  * NOTES (LAB 2-15-2012)
     * Blank lines in this file usually matter.
-    * For each new python file add a new automodule section, followed by :members:
-      and undoc-members lines to slurp docstrings from all module members.
+    * For each new python file, add a new automodule section like below
+      to place an entry and slurp docstrings from all module members.
+          .. automodule:: newpythonfile
+              :members:
+              :undoc-members:
     * If there are aliases to functions, like opt and optimize, add all but
       one name to :exclude-members: to avoid duplicating the documentation.
     * Function signatures are got by introspection. To show a more detailed
-      signature with options, give it a separate autofunction line, like for
-      database and add it to the :exclude-members: list.
-    *, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme)] 
+      signature with options, give it a separate autofunction line, like below,
+      and add it to the :exclude-members: list. Place optional arguments in
+      square brackets.
+          .. autofunction:: wrappers.cp(name[, func, check_bsse])
+..  * NOTES (LAB 2-21-2012)
+    * Functions to be regularly accessed in the input file (usually those
+      that kwargs passes through) should get their own section (like
+      Energy below). In the early stages of documentation, just place 
+      the autofunction command in the section. When ready to add documentation
+      outside the docstring, create a new rst file, along the lines of database.
+    * When using LaTeX math in rst files, the \ character that is so abundant
+      in LaTeX commands can be used normally. When using math in docstrings,
+      though, any \ followed by character combination that has a shell
+      meaning (e.g., \t for tab, \b for bell, \n for newline) must be
+      escaped (e.g., \\text or \\beta).
 
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
@@ -61,7 +76,7 @@ Response
 Frequency
 =========
 
-.. autofunction:: driver.frequencies
+.. autofunction:: driver.frequency
 
 ====================
 Counterpoise Correct
@@ -95,13 +110,13 @@ Beginner Psithon Programming
 
 .. include:: ./beginner.rst
 
-.. _sec_intercalls:
 
 ===================
 Function Intercalls
 ===================
 
 table; handling func; no sow/reap
+
 
 ========================
 Embarrassing Parallelism
@@ -115,7 +130,19 @@ what functions; no intercalls; no local set; special section in parameter list
 Psithon Programming Best Practices
 ==================================
 
-stuff that's in README;
+.. include:: ./bestpractices.rst
+
+
+.. rst-class:: html-toggle
+==============
+PsiMod Methods
+==============
+
+
+.. rst-class:: html-toggle
+================
+Molecule Methods 
+================
 
 
 .. rst-class:: html-toggle
@@ -123,10 +150,14 @@ stuff that's in README;
 Expert
 ======
 
+.. automodule:: proc
+    :members:
+    :undoc-members:
+
 .. automodule:: driver
     :members:
     :undoc-members:
-    :exclude-members: energy, optimize, opt, frequencies
+    :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq 
 
 .. automodule:: wrappers
     :members:
@@ -135,30 +166,6 @@ Expert
         highest_1, scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2
 
 .. automodule:: aliases
-    :members:
-    :undoc-members:
-
-.. automodule:: pubchem
-    :members:
-    :undoc-members:
-
-.. automodule:: qmmm
-    :members:
-    :undoc-members:
-
-.. automodule:: inpsight
-    :members:
-    :undoc-members:
-
-.. automodule:: input
-    :members:
-    :undoc-members:
-
-.. automodule:: physconst
-    :members:
-    :undoc-members:
-
-.. automodule:: proc
     :members:
     :undoc-members:
 
@@ -178,13 +185,25 @@ Expert
     :members:
     :undoc-members:
 
-==============
-PsiMod Methods
-==============
+.. automodule:: qmmm
+    :members:
+    :undoc-members:
 
-================
-Molecule Methods 
-================
+.. automodule:: input
+    :members:
+    :undoc-members:
+
+.. automodule:: physconst
+    :members:
+    :undoc-members:
+
+.. automodule:: pubchem
+    :members:
+    :undoc-members:
+
+.. automodule:: inpsight
+    :members:
+    :undoc-members:
 
 ==================
 Indices and Tables

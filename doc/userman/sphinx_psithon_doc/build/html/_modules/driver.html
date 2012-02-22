@@ -136,10 +136,6 @@
 
 <span class="sd">    :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.</span>
 
-<span class="sd">    :type name: string</span>
-<span class="sd">    :keyword name: First argument, usually unlabeled.</span>
-<span class="sd">        Indicates the computational method to be computed.</span>
-
 <span class="sd">    :PSI variables:</span>
 <span class="sd">    .. envvar:: CURRENT ENERGY</span>
 <span class="sd">        CURRENT REFERENCE ENERGY</span>
@@ -148,7 +144,7 @@
 <span class="sd">    **Keywords**</span>
 
 <span class="sd">    :type name: string</span>
-<span class="sd">    :keyword name: * ``&#39;scf&#39;`` * || ``*text*`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
 
 <span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
 <span class="sd">        to be applied to the system.</span>
@@ -342,6 +338,10 @@
         <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Energy method </span><span class="si">%s</span><span class="s"> not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lowername</span><span class="p">))</span>
 </div>
 <div class="viewcode-block" id="gradient"><a class="viewcode-back" href="../index.html#driver.gradient">[docs]</a><span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function complementary to optimize(). Carries out one gradient pass,</span>
+<span class="sd">    deciding analytic or finite difference.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">dertype</span> <span class="o">=</span> <span class="mi">1</span>
@@ -576,6 +576,38 @@
         <span class="k">return</span> <span class="n">energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 </div>
 <div class="viewcode-block" id="response"><a class="viewcode-back" href="../index.html#driver.response">[docs]</a><span class="k">def</span> <span class="nf">response</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compute linear response properties.</span>
+
+<span class="sd">    :returns: (*float*) Total electronic energy in Hartrees.</span>
+
+<span class="sd">    .. caution:: Some features are not yet implemented. Buy a developer a coffee.</span>
+
+<span class="sd">       - Check that energy is actually being returned.</span>
+
+<span class="sd">       - Check if ther&#39;re some PSI variables that ought to be set.</span>
+
+<span class="sd">    **Keywords**</span>
+
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param name: ``&#39;ccsd&#39;`` || etc.</span>
+
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
+<span class="sd">        to be applied to the system.</span>
+
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | name                    | calls method                                                                          | </span>
+<span class="sd">    +=========================+=======================================================================================+</span>
+<span class="sd">    | cc2                     | 2nd-order approximate CCSD                                                            |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+
+<span class="sd">    **Examples**</span>
+
+<span class="sd">    &gt;&gt;&gt; # [1] CCSD-LR properties calculation</span>
+<span class="sd">    &gt;&gt;&gt; response(&#39;ccsd&#39;)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -592,7 +624,7 @@
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Response method </span><span class="si">%s</span><span class="s"> not available.&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">lowername</span><span class="p">))</span>
 </div>
-<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../opt.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../index.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to perform a geometry optimization.</span>
 
 <span class="sd">    :aliases: opt()</span>
@@ -613,21 +645,23 @@
 <span class="sd">    **Keywords**</span>
 
 <span class="sd">    :type name: string</span>
-<span class="sd">    :keyword name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
 
 <span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
 <span class="sd">        to be applied to the database. May be any valid argument to </span>
 <span class="sd">        :py:func:`driver.energy`.</span>
 
 <span class="sd">    :type func: function</span>
-<span class="sd">    :keyword func: :py:func:`driver.gradient` || :py:func:`driver.energy` || ``:py:func:`wrappers.cbs```</span>
+<span class="sd">    :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``</span>
 <span class="sd">    </span>
 <span class="sd">        Indicates the type of calculation to be performed on the molecule.</span>
 <span class="sd">        The default dertype accesses``&#39;gradient&#39;`` or ``&#39;energy&#39;``, while</span>
 <span class="sd">        ``&#39;cbs&#39;`` performs a multistage finite difference calculation.</span>
+<span class="sd">        If a nested series of python functions is intended (see :ref:`sec_intercalls`),</span>
+<span class="sd">        use keyword ``opt_func`` instead of ``func``.</span>
 
 <span class="sd">    :type mode: string</span>
-<span class="sd">    :keyword mode: ``&#39;continuous&#39;`` || ``&#39;sow&#39;`` || ``&#39;reap&#39;``</span>
+<span class="sd">    :param mode: |dl| ``&#39;continuous&#39;`` |dr| || ``&#39;sow&#39;`` || ``&#39;reap&#39;``</span>
 
 <span class="sd">        Indicates whether the calculation required to complete the</span>
 <span class="sd">        optimization are to be run in one file (``&#39;continuous&#39;``) or are to be</span>
@@ -636,7 +670,7 @@
 <span class="sd">        ``&#39;sow&#39;`` and follow instructions in its output file.</span>
 
 <span class="sd">    :type dertype: dertype</span>
-<span class="sd">    :keyword dertype: ``&#39;gradient&#39;`` || ``&#39;energy&#39;``</span>
+<span class="sd">    :param dertype: ``&#39;gradient&#39;`` || ``&#39;energy&#39;``</span>
 
 <span class="sd">        Indicates whether analytic (if available) or finite difference</span>
 <span class="sd">        optimization is to be performed.</span>
@@ -741,6 +775,10 @@
 <span class="n">opt</span> <span class="o">=</span> <span class="n">optimize</span>
 
 <div class="viewcode-block" id="parse_arbitrary_order"><a class="viewcode-back" href="../index.html#driver.parse_arbitrary_order">[docs]</a><span class="k">def</span> <span class="nf">parse_arbitrary_order</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to parse name string into a method family like CI or MRCC and specific</span>
+<span class="sd">    level information like 4 for CISDTQ or MRCCSDTQ.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">namelower</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 
     <span class="c"># matches &#39;mrccsdt(q)&#39;</span>
@@ -805,7 +843,61 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">namelower</span><span class="p">,</span> <span class="bp">None</span>
 </div>
-<div class="viewcode-block" id="frequencies"><a class="viewcode-back" href="../index.html#driver.frequencies">[docs]</a><span class="k">def</span> <span class="nf">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="frequency"><a class="viewcode-back" href="../index.html#driver.frequency">[docs]</a><span class="k">def</span> <span class="nf">frequency</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compute harmonic vibrational frequencies.</span>
+
+<span class="sd">    :aliases: frequency(), freq()</span>
+
+<span class="sd">    :returns: (*float*) Total electronic energy in Hartrees.</span>
+
+<span class="sd">    :PSI variables:</span>
+<span class="sd">    .. envvar:: &lt;PSI VARIABLE SET BY FUNCTION&gt;</span>
+<span class="sd">        &lt;ANOTHER PSI VARIABLE WITH nonstandard PORTION OF NAME&gt;</span>
+
+<span class="sd">    .. note:: &lt;Notes for the user</span>
+<span class="sd">        of an informative nature.&gt;</span>
+
+<span class="sd">    .. warning:: &lt;Notes for the user</span>
+<span class="sd">        of a cautionary nature.&gt;</span>
+
+<span class="sd">    .. caution:: Some features are not yet implemented. Buy a developer a coffee.</span>
+
+<span class="sd">       - RAK, why are you adding OPTKING options as GLOBALS? (And should they be Py-side not C-side options.)</span>
+
+<span class="sd">       - Put in a dictionary, so IRREPS can be called by point group or &#39;all&#39;</span>
+
+<span class="sd">    **Keywords**</span>
+
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
+
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
+<span class="sd">        to be applied to the system.</span>
+
+<span class="sd">    :type dertype: dertype</span>
+<span class="sd">    :param dertype: |dl| ``&#39;hessian&#39;`` |dr| || ``&#39;gradient&#39;`` || ``&#39;energy&#39;``</span>
+
+<span class="sd">        Indicates whether analytic (if available- they&#39;re not), finite</span>
+<span class="sd">        difference of gradients (if available) or finite difference of </span>
+<span class="sd">        energies is to be performed.</span>
+
+<span class="sd">    :type irrep: int</span>
+<span class="sd">    :param irrep: |dl| ``-1`` |dr| || ``1`` || etc.</span>
+
+<span class="sd">        Indicates which symmetry block of vibrational freqiencies to be</span>
+<span class="sd">        computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.</span>
+<span class="sd">        ``-1`` indicates a full frequency calculation.</span>
+
+<span class="sd">    **Examples**</span>
+
+<span class="sd">    &gt;&gt;&gt; # [1] &lt;example description&gt;</span>
+<span class="sd">    &gt;&gt;&gt; &lt;example python command&gt;</span>
+
+<span class="sd">    &gt;&gt;&gt; # [2] Frequency calculation for b2 modes through finite difference of gradients</span>
+<span class="sd">    &gt;&gt;&gt; frequencies(&#39;scf&#39;, dertype=1, irrep=4)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -950,8 +1042,13 @@
         <span class="c"># The last item in the list is the reference energy, return it</span>
         <span class="k">return</span> <span class="n">energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-<span class="c"># hessian to be changed later to compute force constants</span></div>
+<span class="c">## Aliases ##</span></div>
+<span class="n">frequencies</span> <span class="o">=</span> <span class="n">frequency</span>
+<span class="n">freq</span> <span class="o">=</span> <span class="n">frequency</span>
+
+<span class="c"># hessian to be changed later to compute force constants</span>
 <div class="viewcode-block" id="hessian"><a class="viewcode-back" href="../index.html#driver.hessian">[docs]</a><span class="k">def</span> <span class="nf">hessian</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compute force constants. Presently identical to frequency().&quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="n">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -999,7 +1096,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Feb 22, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
