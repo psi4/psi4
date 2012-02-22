@@ -1,4 +1,4 @@
-#ifndef JK_H 
+#ifndef JK_H
 #define JK_H
 
 #include <vector>
@@ -436,6 +436,75 @@ public:
     virtual void print_header() const;
 };
 
+/**
+ * Class PKJK
+ *
+ * JK implementation using disk-based
+ * integral technology
+ */
+class PKJK : public JK {
+
+    /// The PSIO instance to use for I/O
+    boost::shared_ptr<PSIO> psio_;
+
+    /// Absolute AO index to relative SO index
+    int* so2index_;
+    /// Absolute AO index to irrep
+    int* so2symblk_;
+
+    /// The pk file to use for storing the pk batches
+    int pk_file_;
+
+    /// The number of integrals in the P and K arrays
+    size_t pk_size_;
+    /// The number of totally symmetric pairs that contribute
+    size_t pk_pairs_;
+
+    /// The index of the first pair in each batch
+    std::vector<size_t> batch_pq_min_;
+    /// The index of the last pair in each batch
+    std::vector<size_t> batch_pq_max_;
+    /// The index of the first integral in each batch
+    std::vector<size_t> batch_index_min_;
+    /// The index of the last integral in each batch
+    std::vector<size_t> batch_index_max_;
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return false; }
+    /// Setup integrals, files, etc
+    virtual void preiterations();
+    /// Compute J/K for current C/D
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations();
+
+    /// Common initialization
+    void common_init();
+
+public:
+    // => Constructors < = //
+
+    /**
+     * Symmetric Constructor
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    PKJK(boost::shared_ptr<BasisSet> primary);
+    /// Destructor
+    virtual ~PKJK();
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+};
+
 
 /**
  * Class DirectJK
@@ -653,6 +722,8 @@ protected:
     boost::shared_ptr<BasisSet> dealias_;
     /// Number of threads for three-center integrals
     int df_ints_num_threads_;
+    /// File number for (Q|mn) tensor
+    unsigned int unit_; 
     /// Range separation for integrand smoothing
     double theta_;
     /// QUADRATURE, RENORMALIZATION, or DEALIASING
@@ -675,6 +746,8 @@ protected:
     SharedMatrix V_;
     /// V A (for K)
     SharedMatrix W_;
+    /// Temporary triangular J
+    SharedVector J_temp_;
     
     // => Required Algorithm-Specific Methods <= //
 
@@ -693,6 +766,12 @@ protected:
     // => Magic <= //
     void build_QR();
     void build_Amn_disk(double theta, const std::string& entry);
+    void block_J(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& J);
+    void block_K(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& K);
+    void build_JK_SR(); 
+    void build_JK_LR(); 
+
+    void build_JK_debug(const std::string& op = "", double theta = 0.0);
     
     int max_rows();
 
@@ -736,6 +815,11 @@ public:
      * @param dealias, new dealias basis
      */
     void set_dealias_basis(boost::shared_ptr<BasisSet> dealias) { dealias_ = dealias; }
+    /**
+     * Which file number should the (Q|mn) integrals go in
+     * @param unit Unit number
+     */
+    void set_unit(unsigned int unit) { unit_ = unit; }
 
     // => Accessors <= //
 

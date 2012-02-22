@@ -1632,6 +1632,99 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
         Matrix::free(Ap);
     }
 }
+SharedMatrix Matrix::pseudoinverse(double condition, bool* conditioned)
+{
+    boost::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temp = svd_temps();
+    SharedMatrix U = boost::get<0>(svd_temp);
+    SharedVector S = boost::get<1>(svd_temp);
+    SharedMatrix V = boost::get<2>(svd_temp);
+
+    svd(U,S,V);
+
+    bool conditioned_here = false;
+    for (int h = 0; h < nirrep_; h++) {
+        int ncol = S->dimpi()[h];
+        double* Sp = S->pointer(h);
+        double S0 = (ncol ? Sp[0] : 0.0);
+        for (int i = 0; i < ncol; i++) {
+            if (Sp[i] > S0 * condition) {
+                Sp[i] = 1.0 / Sp[i];
+            } else {
+                Sp[i] = 0.0;
+                conditioned_here = true;
+            }
+        }
+    }    
+    if (conditioned) {
+        *conditioned = conditioned_here;
+    }
+
+    SharedMatrix Q(clone());
+    
+    for (int h = 0; h < nirrep_; h++) {
+        int m = rowspi_[h];
+        int n = colspi_[h^symmetry_];
+        int k = S->dimpi()[h];
+        if (!m || !n || !k) continue;
+        double** Up = U->pointer(h);
+        double*  Sp = S->pointer(h);
+        double** Vp = V->pointer(h^symmetry_);
+        double** Qp = Q->pointer(h);
+        for (int i = 0; i < k; i++) {
+            C_DSCAL(m,Sp[i],&Up[0][i],k);
+        }
+        C_DGEMM('N','N',m,n,k,1.0,Up[0],k,Vp[0],n,0.0,Qp[0],n);
+    }
+
+    return Q;
+}
+
+SharedMatrix Matrix::canonical_orthogonalization(double delta)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix: canonical orthogonalization only works for totally symmetric matrices");
+    }
+
+    SharedMatrix U(clone());
+    SharedVector a(new Vector("a",rowspi_));
+
+    diagonalize(U,a,Matrix::Descending);
+    
+    Dimension rank(nirrep_);
+    
+    for (int h = 0; h < nirrep_; h++) {
+        int k = a->dimpi()[h];
+        if (!k) continue;
+        int sig = 0;
+        double* ap = a->pointer(h);
+        double a0 = ap[0];
+        for (int i = 0; i < k; i++) {
+            if (ap[i] > a0 * delta) {
+                ap[i] = pow(ap[i], -1.0 / 2.0);
+                sig++;
+            } else {
+                ap[i] = 0.0;
+            }
+        }
+        rank[h] = sig;
+    } 
+
+    SharedMatrix X(new Matrix("X",rowspi_,rank));
+
+    for (int h = 0; h < nirrep_; h++) {
+        int m = rowspi_[h];
+        int k = rank[h];
+        if (!m || !k) continue;
+        double** Up = U->pointer(h);
+        double** Xp = X->pointer(h);
+        double*  ap = a->pointer(h);
+        for (int i = 0; i < k; i++) {
+            C_DAXPY(m,ap[i],&Up[0][i],m,&Xp[0][i],k);
+        }
+    }
+    
+    return X; 
+}
 
 void Matrix::swap_rows(int h, int i, int j)
 {

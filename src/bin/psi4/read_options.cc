@@ -760,7 +760,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for SCF density fitting computations. Defaults to BASIS-JKFIT. -*/
     options.add_str("DF_BASIS_SCF", "");
     /*- What algorithm to use for the SCF computation -*/
-    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
     /*- SO orthogonalization: symmetric or canonical? -*/
@@ -984,7 +984,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FITTING_ALGORITHM", 0);
     /*- SCF Type 
      -*/
-    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF GPUDF");
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Auxiliary basis for SCF 
      -*/
     options.add_str("RI_BASIS_SCF", ""); 
