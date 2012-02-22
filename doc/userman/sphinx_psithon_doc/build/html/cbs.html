@@ -98,10 +98,10 @@ components into a minimum number of calculations.</p>
 <li>No way to tell function to boost fitting basis size for all calculations.</li>
 </ul>
 </div>
-<p>As represented in the equation below, a CBS energy method is defined in four 
-sequential stages (scf, corl, delta, delta2) covering treatment of the 
+<p>As represented in the equation below, a CBS energy method is defined in four
+sequential stages (scf, corl, delta, delta2) covering treatment of the
 reference total energy, the correlation energy, a delta correction to the
-correlation energy, and a second delta correction. Each is activated by its 
+correlation energy, and a second delta correction. Each is activated by its
 stage_wfn keyword and is only allowed if all preceding stages are active.</p>
 <div class="math">
 <p><img src="_images/math/6d9de98a82a318032a969fb41b082259f375bbf9.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\textbf{scf\_scheme}} \left(E_{total,\; \text{SCF}}^{\textbf{scf\_basis}}\right) \; + \mathcal{F}_{\textbf{corl\_scheme}} \left(E_{corl,\; \textbf{corl\_wfn}}^{\textbf{corl\_basis}}\right) \; + \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; + \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}}"/></p>
@@ -120,7 +120,17 @@ reference energy.</p>
 <p><img src="_images/math/234e164ef6b8d98f1bd0cac104963a877b89a88f.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\text{highest\_1}} \left(E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}}\right) \; + \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}}\right) \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}"/></p>
 </div><div class="math">
 <p><img src="_images/math/018cd7aadafa5dd49354fc8f39513fb7e73b54a4.png" alt="\delta_{\text{MP2}}^{\text{CCSD(T)}} \; = \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{CCSD(T)}}^{\text{aug-cc-pV[DT]Z}}\right) - \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[DT]Z}}\right)"/></p>
-</div><p>Keywords</p>
+</div><p><strong>Keywords</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt>Energy Methods</dt>
+<dd><p class="first last">The presence of a stage_wfn keyword is the indicator to incorporate
+(and check for stage_basis and stage_scheme keywords) and compute
+that stage in defining the CBS energy.</p>
+</dd>
+</dl>
+</li>
+</ul>
 <dl class="docutils">
 <dt>The cbs() function requires, at a minimum, <tt class="docutils literal"><span class="pre">name='scf'</span></tt> and <tt class="docutils literal"><span class="pre">scf_basis</span></tt></dt>
 <dd>keywords to be specified for reference-step only jobs and <tt class="docutils literal"><span class="pre">name</span></tt> and
@@ -130,44 +140,31 @@ reference energy.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
 for the correlation energy, unless only reference step to be performed,
 in which case should be <tt class="docutils literal"><span class="pre">'scf'</span></tt>. Overruled if stage_wfn keywords supplied.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>Energy Methods</dt>
-<dd>The presence of a stage_wfn keyword is the indicator to incorporate
-(and check for stage_basis and stage_scheme keywords) and compute
-that stage in defining the CBS energy.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+</li>
 <li><strong>corl_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
 <p>Indicates the energy method for which the correlation energy is to be
 obtained. Can also be specified with <tt class="docutils literal"><span class="pre">name</span></tt> or as the unlabeled
 first argument to the function.</p>
 </li>
 <li><strong>delta_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the (superior) energy method for which a delta correction 
+<p>Indicates the (superior) energy method for which a delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta_wfn_lesser</strong> (<em>string</em>) &#8211; <p><a href="#id1"><span class="problematic" id="id2">|dl|</span></a> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <a href="#id3"><span class="problematic" id="id4">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
-<p>Indicates the inferior energy method for which a delta correction 
+<p>Indicates the inferior energy method for which a delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta2_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the (superior) energy method for which a second delta correction 
+<p>Indicates the (superior) energy method for which a second delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta2_wfn_lesser</strong> (<em>string</em>) &#8211; <p><a href="#id5"><span class="problematic" id="id6">|dl|</span></a> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <a href="#id7"><span class="problematic" id="id8">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the inferior energy method for which a second delta correction 
+<p>Indicates the inferior energy method for which a second delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 </ul>
@@ -217,7 +214,7 @@ to the correlation energy.</p>
 stage of the CBS definition. A complaint is generated if number of basis
 sets in stage_basis does not exactly satisfy requirements of stage_scheme.
 An exception is the default, <tt class="docutils literal"><span class="pre">'highest_1'</span></tt>, which uses the best basis
-set available. See <a class="reference internal" href="index.html#sec-cbs-xtpl"><em>Extrapolation Schemes</em></a> for all available schemes.</p>
+set available. See <a class="reference internal" href="#extrapolation-schemes">Extrapolation Schemes</a> for all available schemes.</p>
 </dd>
 </dl>
 </li>
@@ -347,7 +344,7 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 </div>
 </div>
 <div class="section" id="extrapolation-schemes">
-<span id="sec-cbs-xtpl"></span><h1>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Permalink to this headline">¶</a></h1>
+<h1>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="wrappers.highest_1">
 <tt class="descclassname">wrappers.</tt><tt class="descname">highest_1</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#highest_1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.highest_1" title="Permalink to this definition">¶</a></dt>
@@ -439,7 +436,7 @@ Used by <a class="reference internal" href="index.html#wrappers.complete_basis_s
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 21, 2012.
+      Last updated on Feb 22, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

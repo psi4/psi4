@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 21, 2012}
+\date{February 22, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -167,18 +167,6 @@ Function to compute the single-point electronic energy.
 \phantomsection\label{index:envvar-CURRENTENERGY}\pysigline{\bfcode{CURRENT~ENERGY}}\phantomsection\label{index:envvar-CURRENTREFERENCEENERGY}\pysigline{\bfcode{CURRENT~REFERENCE~ENERGY}}\phantomsection\label{index:envvar-CURRENTCORRELATIONENERGY}\pysigline{\bfcode{CURRENT~CORRELATION~ENERGY}}
 \end{fulllineitems}
 
-
-\textbf{Keywords}
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode
-\textbf{name} (\emph{string}) -- 
-\code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
-
-First argument, usually unlabeled. Indicates the computational method 
-to be applied to the system.
-
-
-\end{description}\end{quote}
 
 \begin{longtable}{|l|l|}
 \hline
@@ -557,6 +545,30 @@ mrccsdtqph-3
 \end{longtable}
 
 
+\textbf{Keywords}
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{name} (\emph{string}) -- 
+\code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
+
+First argument, usually unlabeled. Indicates the computational method 
+to be applied to the system.
+
+
+\item {} 
+\textbf{bypass\_scf} (\emph{bool}) -- 
+\code{'on'} \textbar{}\textbar{} $\Rightarrow$ \code{'off'} $\Leftarrow$
+
+Indicates whether, for \emph{name} values built atop of scf calculations,
+the scf step is skipped. Suitable when special steps are taken to get
+the scf to converge in an explicit preceeding scf step.
+
+
+\end{itemize}
+
+\end{description}\end{quote}
+
 \textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -581,7 +593,7 @@ mrccsdtqph-3
 \chapter{Optimize}
 \label{index:optimize}
 \begin{notice}{note}{Note:}
-The derivative level type for \code{optimize()} and \code{frequencies()}
+The derivative level type for {\hyperref[index:driver.optimize]{\code{driver.optimize()}}} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
 functions can be specified by \code{energy}, \code{none}, or \code{0} for 0th derivative,
 \code{gradient}, \code{first}, or \code{1} for 1st derivative, and \code{hessian},
 \code{second}, or \code{2} for 2nd derivative.
@@ -622,52 +634,6 @@ Need to check that all methods do return electronic energy. I think gradient got
 \end{itemize}
 \end{notice}
 
-\textbf{Keywords}
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode\begin{itemize}
-\item {} 
-\textbf{name} (\emph{string}) -- 
-\code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
-
-First argument, usually unlabeled. Indicates the computational method 
-to be applied to the database. May be any valid argument to 
-{\hyperref[index:driver.energy]{\code{driver.energy()}}}.
-
-
-\item {} 
-\textbf{func} (\emph{function}) -- 
-$\Rightarrow$ \code{gradient} $\Leftarrow$ \textbar{}\textbar{} \code{energy} \textbar{}\textbar{} \code{cbs}
-
-Indicates the type of calculation to be performed on the molecule.
-The default dertype accesses{}`{}`'gradient'{}`{}` or \code{'energy'}, while
-\code{'cbs'} performs a multistage finite difference calculation.
-If a nested series of python functions is intended (see {\hyperref[index:sec-intercalls]{\emph{Function Intercalls}}}),
-use keyword \code{opt\_func} instead of \code{func}.
-
-
-\item {} 
-\textbf{mode} (\emph{string}) -- 
-$\Rightarrow$ \code{'continuous'} $\Leftarrow$ \textbar{}\textbar{} \code{'sow'} \textbar{}\textbar{} \code{'reap'}
-
-Indicates whether the calculation required to complete the
-optimization are to be run in one file (\code{'continuous'}) or are to be
-farmed out in an embarrassingly parallel fashion
-(\code{'sow'}/\code{'reap'}).  For the latter, run an initial job with
-\code{'sow'} and follow instructions in its output file.
-
-
-\item {} 
-\textbf{dertype} (\emph{dertype}) -- 
-\code{'gradient'} \textbar{}\textbar{} \code{'energy'}
-
-Indicates whether analytic (if available) or finite difference
-optimization is to be performed.
-
-
-\end{itemize}
-
-\end{description}\end{quote}
-
 \begin{tabulary}{\linewidth}{|L|L|}
 \hline
 \textbf{
@@ -702,6 +668,52 @@ equation of motion (EOM) CCSD
 \\\hline
 \end{tabulary}
 
+
+\textbf{Keywords}
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
+\textbf{name} (\emph{string}) -- 
+\code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
+
+First argument, usually unlabeled. Indicates the computational method 
+to be applied to the database. May be any valid argument to 
+{\hyperref[index:driver.energy]{\code{driver.energy()}}}.
+
+
+\item {} 
+\textbf{func} (\emph{function}) -- 
+$\Rightarrow$ \code{gradient} $\Leftarrow$ \textbar{}\textbar{} \code{energy} \textbar{}\textbar{} \code{cbs}
+
+Indicates the type of calculation to be performed on the molecule.
+The default dertype accesses{}`{}`'gradient'{}`{}` or \code{'energy'}, while
+\code{'cbs'} performs a multistage finite difference calculation.
+If a nested series of python functions is intended (see {\hyperref[index:function-intercalls]{Function Intercalls}}),
+use keyword \code{opt\_func} instead of \code{func}.
+
+
+\item {} 
+\textbf{mode} (\emph{string}) -- 
+$\Rightarrow$ \code{'continuous'} $\Leftarrow$ \textbar{}\textbar{} \code{'sow'} \textbar{}\textbar{} \code{'reap'}
+
+Indicates whether the calculation required to complete the
+optimization are to be run in one file (\code{'continuous'}) or are to be
+farmed out in an embarrassingly parallel fashion
+(\code{'sow'}/\code{'reap'}).  For the latter, run an initial job with
+\code{'sow'} and follow instructions in its output file.
+
+
+\item {} 
+\textbf{dertype} (\emph{dertype}) -- 
+\code{'gradient'} \textbar{}\textbar{} \code{'energy'}
+
+Indicates whether analytic (if available) or finite difference
+optimization is to be performed.
+
+
+\end{itemize}
+
+\end{description}\end{quote}
 
 \textbf{Examples}
 
@@ -748,18 +760,6 @@ Check if ther're some PSI variables that ought to be set.
 \end{itemize}
 \end{notice}
 
-\textbf{Keywords}
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode
-\textbf{name} (\emph{string}) -- 
-\code{'ccsd'} \textbar{}\textbar{} etc.
-
-First argument, usually unlabeled. Indicates the computational method 
-to be applied to the system.
-
-
-\end{description}\end{quote}
-
 \begin{tabulary}{\linewidth}{|L|L|}
 \hline
 \textbf{
@@ -780,6 +780,18 @@ coupled cluster singles and doubles (CCSD)
 \end{tabulary}
 
 
+\textbf{Keywords}
+\begin{quote}\begin{description}
+\item[{Parameters}] \leavevmode
+\textbf{name} (\emph{string}) -- 
+\code{'ccsd'} \textbar{}\textbar{} etc.
+
+First argument, usually unlabeled. Indicates the computational method 
+to be applied to the system.
+
+
+\end{description}\end{quote}
+
 \textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -799,38 +811,24 @@ coupled cluster singles and doubles (CCSD)
 Function to compute harmonic vibrational frequencies.
 \begin{quote}\begin{description}
 \item[{Aliases }] \leavevmode
-frequency(), freq()
+frequencies(), freq()
 
 \item[{Returns}] \leavevmode
 (\emph{float}) Total electronic energy in Hartrees.
 
-\item[{Psi variables}] \leavevmode
 \end{description}\end{quote}
-\index{environment variable!\textless{}PSIVARIABLESETBYFUNCTION\textgreater{}}\index{environment variable!\textless{}ANOTHERPSIVARIABLEWITHnonstandardPORTIONOFNAME\textgreater{}}
-
-\begin{fulllineitems}
-\phantomsection\label{index:envvar-_PSIVARIABLESETBYFUNCTION_}\pysigline{\bfcode{\textless{}PSI~VARIABLE~SET~BY~FUNCTION\textgreater{}}}\phantomsection\label{index:envvar-_ANOTHERPSIVARIABLEWITHnonstandardPORTIONOFNAME_}\pysigline{\bfcode{\textless{}ANOTHER~PSI~VARIABLE~WITH~nonstandard~PORTION~OF~NAME\textgreater{}}}
-\end{fulllineitems}
-
-
-\begin{notice}{note}{Note:}
-\textless{}Notes for the user
-of an informative nature.\textgreater{}
-\end{notice}
-
-\begin{notice}{warning}{Warning:}
-\textless{}Notes for the user
-of a cautionary nature.\textgreater{}
-\end{notice}
 
 \begin{notice}{caution}{Caution:}
 Some features are not yet implemented. Buy a developer a coffee.
 \begin{itemize}
 \item {} 
-RAK, why are you adding OPTKING options as GLOBALS? (And should they be Py-side not C-side options.)
+RAK, why are you adding OPTKING options as GLOBALS? And shouldn't they be Py-side not C-side options?
 
 \item {} 
-Put in a dictionary, so IRREPS can be called by point group or `all'
+Put in a dictionary, so IRREPS can be called by symmetry element or `all'
+
+\item {} 
+Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
 
 \end{itemize}
 \end{notice}
@@ -926,8 +924,8 @@ Table print-out needs improving. Add some PSI variables.
 \textbf{name} (\emph{string}) -- 
 \code{'scf'} \textbar{}\textbar{} \code{'ccsd(t)'} \textbar{}\textbar{} etc.
 
-First argument, usually unlabeled. Indicates the computational method 
-to be applied to the molecule. May be any valid argument to 
+First argument, usually unlabeled. Indicates the computational method
+to be applied to the molecule. May be any valid argument to
 {\hyperref[index:driver.energy]{\code{driver.energy()}}}; however, SAPT is not appropriate.
 
 
@@ -936,16 +934,16 @@ to be applied to the molecule. May be any valid argument to
 $\Rightarrow$ \code{energy} $\Leftarrow$ \textbar{}\textbar{} \code{optimize} \textbar{}\textbar{} \code{cbs}
 
 Indicates the type of calculation to be performed on the molecule
-and each of its monomers. The default performs a single-point 
-\code{energy('name')}, while \code{optimize} perfoms a geometry optimization 
-on each system, and \code{cbs} performs a compound single-point energy. 
-If a nested series of python functions is intended 
-(see {\hyperref[index:sec-intercalls]{\emph{Function Intercalls}}}), use keyword \code{cp\_func} instead of \code{func}.
+and each of its monomers. The default performs a single-point
+\code{energy('name')}, while \code{optimize} perfoms a geometry optimization
+on each system, and \code{cbs} performs a compound single-point energy.
+If a nested series of python functions is intended
+(see {\hyperref[index:function-intercalls]{Function Intercalls}}), use keyword \code{cp\_func} instead of \code{func}.
 
 
 \item {} 
 \textbf{check\_bsse} (\emph{bool}) -- 
-$\Rightarrow$ \code{'off'} $\Leftarrow$ \textbar{}\textbar{} \code{'on'}
+\code{'on'} \textbar{}\textbar{} $\Rightarrow$ \code{'off'} $\Leftarrow$
 
 Indicates whether to additionally compute un-counterpoise corrected
 monomers and thus obtain an estimate for the basis set superposition error.
@@ -992,7 +990,7 @@ db()
 \begin{notice}{note}{Note:}
 It is very easy to make a database from a collection of xyz files
 using the script \code{\$PSIDATADIR/databases/ixyz2database.pl}.
-See {\hyperref[index:sec-beginner-newdatabase]{\emph{Creating a New Database}}} for details.
+See {\hyperref[index:creating-a-new-database]{Creating a New Database}} for details.
 \end{notice}
 
 \begin{notice}{caution}{Caution:}
@@ -1011,8 +1009,8 @@ In sow/reap mode, use only global options (e.g., the local option set by \code{s
 \textbf{name} (\emph{string}) -- 
 \code{'scf'} \textbar{}\textbar{} \code{'sapt0'} \textbar{}\textbar{} \code{'ccsd(t)'} \textbar{}\textbar{} etc.
 
-First argument, usually unlabeled. Indicates the computational method 
-to be applied to the database. May be any valid argument to 
+First argument, usually unlabeled. Indicates the computational method
+to be applied to the database. May be any valid argument to
 {\hyperref[index:driver.energy]{\code{driver.energy()}}}.
 
 
@@ -1020,8 +1018,8 @@ to be applied to the database. May be any valid argument to
 \textbf{db\_name} (\emph{string}) -- 
 \code{'BASIC'} \textbar{}\textbar{} \code{'S22'} \textbar{}\textbar{} \code{'HTBH'} \textbar{}\textbar{} etc.
 
-Second argument, usually unlabeled. Indicates the requested database 
-name, matching the name of a python file in \code{psi4/lib/databases}. 
+Second argument, usually unlabeled. Indicates the requested database
+name, matching the name of a python file in \code{psi4/lib/databases}.
 Consult that directory for available databases and literature citations.
 
 
@@ -1033,7 +1031,7 @@ Indicates the type of calculation to be performed on each database
 member. The default performs a single-point \code{energy('name')}, while
 \code{optimize} perfoms a geometry optimization on each reagent, and
 \code{cbs} performs a compound single-point energy. If a nested series
-of python functions is intended (see {\hyperref[index:sec-intercalls]{\emph{Function Intercalls}}}), use
+of python functions is intended (see {\hyperref[index:function-intercalls]{Function Intercalls}}), use
 keyword \code{db\_func} instead of \code{func}.
 
 
@@ -1050,7 +1048,7 @@ farmed out in an embarrassingly parallel fashion
 
 \item {} 
 \textbf{cp} (\emph{bool}) -- 
-$\Rightarrow$ \code{'off'} $\Leftarrow$ \textbar{}\textbar{} \code{'on'}
+\code{'on'} \textbar{}\textbar{} $\Rightarrow$ \code{'off'} $\Leftarrow$
 
 Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the {\hyperref[index:wrappers.cp]{\code{wrappers.cp()}}}
@@ -1060,7 +1058,7 @@ valid only for databases consisting of bimolecular complexes.
 
 \item {} 
 \textbf{rlxd} (\emph{bool}) -- 
-$\Rightarrow$ \code{'off'} $\Leftarrow$ \textbar{}\textbar{} \code{'on'}
+\code{'on'} \textbar{}\textbar{} $\Rightarrow$ \code{'off'} $\Leftarrow$
 
 Indicates whether correction for the deformation energy is
 employed in computing interaction energies.  Option valid only for
@@ -1080,7 +1078,7 @@ symmetry, and this will be set by the database() wrapper.
 
 \item {} 
 \textbf{zpe} (\emph{bool}) -- 
-$\Rightarrow$ \code{'off'} $\Leftarrow$ \textbar{}\textbar{} \code{'on'}
+\code{'on'} \textbar{}\textbar{} $\Rightarrow$ \code{'off'} $\Leftarrow$
 
 Indicates whether zero-point-energy corrections are appended to
 single-point energy values. Option valid only for certain
@@ -1285,10 +1283,10 @@ No way to tell function to boost fitting basis size for all calculations.
 \end{itemize}
 \end{notice}
 
-As represented in the equation below, a CBS energy method is defined in four 
-sequential stages (scf, corl, delta, delta2) covering treatment of the 
+As represented in the equation below, a CBS energy method is defined in four
+sequential stages (scf, corl, delta, delta2) covering treatment of the
 reference total energy, the correlation energy, a delta correction to the
-correlation energy, and a second delta correction. Each is activated by its 
+correlation energy, and a second delta correction. Each is activated by its
 stage\_wfn keyword and is only allowed if all preceding stages are active.
 \begin{gather}
 \begin{split}E_{total}^{\text{CBS}} = \mathcal{F}_{\textbf{scf\_scheme}} \left(E_{total,\; \text{SCF}}^{\textbf{scf\_basis}}\right) \; + \mathcal{F}_{\textbf{corl\_scheme}} \left(E_{corl,\; \textbf{corl\_wfn}}^{\textbf{corl\_basis}}\right) \; + \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; + \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}}\end{split}\notag\\\begin{split}\end{split}\notag
@@ -1310,7 +1308,17 @@ reference energy.
 \end{gather}\begin{gather}
 \begin{split}\delta_{\text{MP2}}^{\text{CCSD(T)}} \; = \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{CCSD(T)}}^{\text{aug-cc-pV[DT]Z}}\right) - \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[DT]Z}}\right)\end{split}\notag\\\begin{split}\end{split}\notag
 \end{gather}
-Keywords
+\textbf{Keywords}
+\begin{itemize}
+\item {} \begin{description}
+\item[{Energy Methods}] \leavevmode
+The presence of a stage\_wfn keyword is the indicator to incorporate
+(and check for stage\_basis and stage\_scheme keywords) and compute
+that stage in defining the CBS energy.
+
+\end{description}
+
+\end{itemize}
 \begin{description}
 \item[{The cbs() function requires, at a minimum, \code{name='scf'} and \code{scf\_basis}}] \leavevmode
 keywords to be specified for reference-step only jobs and \code{name} and
@@ -1318,25 +1326,16 @@ keywords to be specified for reference-step only jobs and \code{name} and
 
 \end{description}
 \begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode
+\item[{Parameters}] \leavevmode\begin{itemize}
+\item {} 
 \textbf{name} (\emph{string}) -- 
 \code{'scf'} \textbar{}\textbar{} \code{'ccsd'} \textbar{}\textbar{} etc.
 
-First argument, usually unlabeled. Indicates the computational method 
+First argument, usually unlabeled. Indicates the computational method
 for the correlation energy, unless only reference step to be performed,
 in which case should be \code{'scf'}. Overruled if stage\_wfn keywords supplied.
 
 
-\end{description}\end{quote}
-\begin{description}
-\item[{Energy Methods}] \leavevmode
-The presence of a stage\_wfn keyword is the indicator to incorporate
-(and check for stage\_basis and stage\_scheme keywords) and compute
-that stage in defining the CBS energy.
-
-\end{description}
-\begin{quote}\begin{description}
-\item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
 \textbf{corl\_wfn} (\emph{string}) -- 
 \code{'mp2'} \textbar{}\textbar{} \code{'ccsd(t)'} \textbar{}\textbar{} etc.
@@ -1350,7 +1349,7 @@ first argument to the function.
 \textbf{delta\_wfn} (\emph{string}) -- 
 \code{'ccsd'} \textbar{}\textbar{} \code{'ccsd(t)'} \textbar{}\textbar{} etc.
 
-Indicates the (superior) energy method for which a delta correction 
+Indicates the (superior) energy method for which a delta correction
 to the correlation energy is to be obtained.
 
 
@@ -1358,7 +1357,7 @@ to the correlation energy is to be obtained.
 \textbf{delta\_wfn\_lesser} (\emph{string}) -- 
 $\Rightarrow$ \code{'mp2'} $\Leftarrow$ \textbar{}\textbar{} \code{'ccsd'} \textbar{}\textbar{} etc.
 
-Indicates the inferior energy method for which a delta correction 
+Indicates the inferior energy method for which a delta correction
 to the correlation energy is to be obtained.
 
 
@@ -1366,7 +1365,7 @@ to the correlation energy is to be obtained.
 \textbf{delta2\_wfn} (\emph{string}) -- 
 \code{'ccsd'} \textbar{}\textbar{} \code{'ccsd(t)'} \textbar{}\textbar{} etc.
 
-Indicates the (superior) energy method for which a second delta correction 
+Indicates the (superior) energy method for which a second delta correction
 to the correlation energy is to be obtained.
 
 
@@ -1374,7 +1373,7 @@ to the correlation energy is to be obtained.
 \textbf{delta2\_wfn\_lesser} (\emph{string}) -- 
 $\Rightarrow$ \code{'mp2'} $\Leftarrow$ \textbar{}\textbar{} \code{'ccsd(t)'} \textbar{}\textbar{} etc.
 
-Indicates the inferior energy method for which a second delta correction 
+Indicates the inferior energy method for which a second delta correction
 to the correlation energy is to be obtained.
 
 
@@ -1434,7 +1433,7 @@ Transformations of the energy through basis set extrapolation for each
 stage of the CBS definition. A complaint is generated if number of basis
 sets in stage\_basis does not exactly satisfy requirements of stage\_scheme.
 An exception is the default, \code{'highest\_1'}, which uses the best basis
-set available. See {\hyperref[index:sec-cbs-xtpl]{\emph{Extrapolation Schemes}}} for all available schemes.
+set available. See {\hyperref[index:extrapolation-schemes]{Extrapolation Schemes}} for all available schemes.
 
 \end{description}
 
@@ -1592,7 +1591,7 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 
 
 \section{Extrapolation Schemes}
-\label{index:extrapolation-schemes}\label{index:sec-cbs-xtpl}\index{highest\_1() (in module wrappers)}
+\label{index:extrapolation-schemes}\index{highest\_1() (in module wrappers)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.highest_1}\pysiglinewithargsret{\code{wrappers.}\bfcode{highest\_1}}{\emph{**largs}}{}
@@ -1668,7 +1667,7 @@ files in \code{\$PSIDATADIR}, including those described below.
 
 
 \section{Defining a Method Alias}
-\label{index:defining-a-method-alias}\label{index:sec-beginner-newalias}
+\label{index:defining-a-method-alias}
 Since quantum chemical methods in PSI4 are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward
 to create aliases to commonly run calculations or to define hybrid methods. The
@@ -1757,7 +1756,7 @@ with the following command.
 
 
 \section{Creating a New Database}
-\label{index:creating-a-new-database}\label{index:sec-beginner-newdatabase}
+\label{index:creating-a-new-database}
 A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system
 (may be a dimer) whose geometry you are possession of and whose electronic
@@ -1861,7 +1860,7 @@ All routes. Necessarily, copy your new database into \code{\$PSIDATADIR/database
 
 
 \chapter{Function Intercalls}
-\label{index:sec-intercalls}\label{index:function-intercalls}
+\label{index:function-intercalls}
 table; handling func; no sow/reap
 
 
@@ -1871,8 +1870,115 @@ what functions; no intercalls; no local set; special section in parameter list
 
 
 \chapter{Psithon Programming Best Practices}
-\label{index:psithon-programming-best-practices}
-stuff that's in README;
+\label{index:psithon-programming-best-practices}\begin{itemize}
+\item {} 
+Thy python functions shall always have final argument **kwargs, that they may take in and pass on keywords meant for other functions. Yea, even the run\_mcscf(), and run\_ccsd() -type functions that have no use for kwargs. The exceptions are python functions that are only helpers called by a driver function.
+
+\item {} 
+Python functions should read the kwargs dictionary and (possibly) add to it. Functions should not pop or remove keywords from kwargs, even those keywords meaningful only to itself. This will ensure that the complete kwargs is available for pickling and sow/reap procedures. The exception is the molecule argument, which is read by the first function that gets ahold of it. This first function activates the molecule and pops it out of kwargs, effectively setting molecule for all subsequent functions. The code below should suffice.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} Make sure the molecule the user provided is the active one}
+\PYG{k}{if} \PYG{l+s}{'}\PYG{l+s}{molecule}\PYG{l+s}{'} \PYG{o+ow}{in} \PYG{n}{kwargs}\PYG{p}{:}
+    \PYG{n}{activate}\PYG{p}{(}\PYG{n}{kwargs}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{molecule}\PYG{l+s}{'}\PYG{p}{]}\PYG{p}{)}
+    \PYG{k}{del} \PYG{n}{kwargs}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{molecule}\PYG{l+s}{'}\PYG{p}{]}
+\PYG{n}{molecule} \PYG{o}{=} \PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{get\PYGZus{}active\PYGZus{}molecule}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{molecule}\PYG{o}{.}\PYG{n}{update\PYGZus{}geometry}\PYG{p}{(}\PYG{p}{)}
+\end{Verbatim}
+
+\item {} 
+Preferrably, the python function signature (for functions intended to be called in input files) is \code{function(name, **kwargs)}. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see {\hyperref[index:wrappers.database]{\code{wrappers.database()}}} argument db\_name for example).
+
+\item {} 
+After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{lowername} \PYG{o}{=} \PYG{n}{name}\PYG{o}{.}\PYG{n}{lower}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{kwargs} \PYG{o}{=} \PYG{n}{kwargs\PYGZus{}lower}\PYG{p}{(}\PYG{n}{kwargs}\PYG{p}{)}
+\end{Verbatim}
+
+\item {} 
+Case sensitivity for kwargs dictionary values still needs to be handled. The first line below shows how to convert argument values to lowercase for matching. When not matching a whole value such that regular expressions are needed, the second line below performs a case insensitive match.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+if (kwargs['db\_mode'].lower() == 'continuous'):
+if re.match(r'\textasciicircum{}sapt', name, flags=re.IGNORECASE):
+\end{Verbatim}
+
+\item {} 
+Match boolean keywords (db\_cp in the example below) with expressions like the following, which allow case insensitive yes/true/on/1/no/false/off/0 user input. If your argument's value is a derivative level, similarly, use input.der0th, input.der1st, and input.der2nd.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+if input.yes.match(str(db\_cp)):
+elif input.no.match(str(db\_cp)):
+\end{Verbatim}
+
+\item {} 
+For keywords that might be used in other functions as well as your own, prepend the argument name with a short representation of your function name. For example, there are keywords cp\_func, db\_func, and opt\_func to request what python function, if not energy(), is called by cp(), database(), and optimize().
+
+\item {} 
+Upon checking in a new python file, edit the file \code{psi4/doc/userman/source/index.rst} and follow the instructions therein that your file may be autodocumented here.
+
+\item {} 
+Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in \code{psi4/lib/python/example\_docstring} and replace anything that looks like \code{\textless{}this\textgreater{}}. For a behind-the-scenes function or if you don't want the bother of dealing with \href{http://docutils.sourceforge.net/docs/user/rst/quickref.html}{reStructuredText}, just write an ordinary docstring. It will get slurped into the documentation in plain text.
+
+\item {} 
+Your python function should follow \href{http://www.python.org/dev/peps/pep-0008/}{PEP8} conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{pep8}\PYG{o}{.}\PYG{n}{py} \PYG{o}{-}\PYG{n}{r} \PYG{o}{-}\PYG{o}{-}\PYG{n}{ignore}\PYG{o}{=}\PYG{n}{E501} \PYG{n}{pythonfile}\PYG{o}{.}\PYG{n}{py}
+\end{Verbatim}
+
+\item {} 
+Your python function should not prevent any test case (\code{make tests}, NOT \code{make longtests}) from passing. A test case(s) should be written and checked in for any major python function, so that others do not break your code. If most of your work was on the python (as opposed to c++) side, the test case prefix pywrap\_ is suggested.
+
+\item {} 
+Be sure to set any new PSI variables through lines like those below. Especially if the function returns an energy, set the `current energy' variable. This last is needed to communicate with the optimizer.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2.5 CORRELATION ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{ce\PYGZus{}mp25}\PYG{p}{)}
+\PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{MP2.5 TOTAL ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{e\PYGZus{}mp25}\PYG{p}{)}
+\PYG{n}{PsiMod}\PYG{o}{.}\PYG{n}{set\PYGZus{}variable}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{CURRENT ENERGY}\PYG{l+s}{'}\PYG{p}{,} \PYG{n}{e\PYGZus{}mp25}\PYG{p}{)}
+\end{Verbatim}
+
+\item {} 
+Once your python function is fairly stable on its own, it's potential for interoperability with energy()/opt()/cp()/db()/cbs()/etc. should be evaluated. If it makes physical sense that it should work, you should strive to make that interoperability a reality. Some steps:
+\begin{itemize}
+\item {} 
+If any interoperability is possible, define an argument xx\_func, where xx is a short name for your function. Add near the top of your function code like the below (less the final two lines). The net result of this code is that if the user specifies no *\_func arguments, then energy() gets called. If the user defines xx\_func, then its value gets called. If the user defines func, then its value gets reassigned to xx\_func, func itself is deleted, and xx\_func() gets called. Whatever is getting called is stored in func within the function.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} Establish function to call}
+\PYG{k}{if} \PYG{o+ow}{not}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{xx\PYGZus{}func}\PYG{l+s}{'} \PYG{o+ow}{in} \PYG{n}{kwargs}\PYG{p}{)}\PYG{p}{:}
+    \PYG{k}{if} \PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{func}\PYG{l+s}{'} \PYG{o+ow}{in} \PYG{n}{kwargs}\PYG{p}{)}\PYG{p}{:}
+        \PYG{n}{kwargs}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{xx\PYGZus{}func}\PYG{l+s}{'}\PYG{p}{]} \PYG{o}{=} \PYG{n}{kwargs}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{func}\PYG{l+s}{'}\PYG{p}{]}
+        \PYG{k}{del} \PYG{n}{kwargs}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{func}\PYG{l+s}{'}\PYG{p}{]}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{kwargs}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{xx\PYGZus{}func}\PYG{l+s}{'}\PYG{p}{]} \PYG{o}{=} \PYG{n}{energy}
+\PYG{n}{func} \PYG{o}{=} \PYG{n}{kwargs}\PYG{p}{[}\PYG{l+s}{'}\PYG{l+s}{xx\PYGZus{}func}\PYG{l+s}{'}\PYG{p}{]}
+\PYG{k}{if} \PYG{o+ow}{not} \PYG{n}{func}\PYG{p}{:}
+    \PYG{k}{raise} \PYG{n}{ValidationError}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{Function }\PYG{l+s+se}{\PYGZbs{}'}\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+se}{\PYGZbs{}'}\PYG{l+s}{ does not exist to be called by wrapper counterpoise\PYGZus{}correct.}\PYG{l+s}{'} \PYG{o}{\PYGZpc{}} \PYG{p}{(}\PYG{n}{func}\PYG{o}{.}\PYG{n}{\PYGZus{}\PYGZus{}name\PYGZus{}\PYGZus{}}\PYG{p}{)}\PYG{p}{)}
+\PYG{k}{if} \PYG{p}{(}\PYG{n}{func} \PYG{o+ow}{is} \PYG{n}{db}\PYG{p}{)}\PYG{p}{:}
+    \PYG{k}{raise} \PYG{n}{ValidationError}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{Wrapper xx is unhappy to be calling function }\PYG{l+s+se}{\PYGZbs{}'}\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+se}{\PYGZbs{}'}\PYG{l+s}{.}\PYG{l+s}{'} \PYG{o}{\PYGZpc{}} \PYG{p}{(}\PYG{n}{func}\PYG{o}{.}\PYG{n}{\PYGZus{}\PYGZus{}name\PYGZus{}\PYGZus{}}\PYG{p}{)}\PYG{p}{)}
+\end{Verbatim}
+
+\item {} 
+If specific interoperabilities are known, code them in. For example, if xx shouldn't call db, add the last two lines above to the xx function. If db shouldn't call xx, add the following two lines below to the db function.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k}{if} \PYG{p}{(}\PYG{n}{func} \PYG{o+ow}{is} \PYG{n}{xx}\PYG{p}{)}\PYG{p}{:}
+    \PYG{k}{raise} \PYG{n}{ValidationError}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{Wrapper database is unhappy to be calling function }\PYG{l+s+se}{\PYGZbs{}'}\PYG{l+s+si}{\PYGZpc{}s}\PYG{l+s+se}{\PYGZbs{}'}\PYG{l+s}{.}\PYG{l+s}{'} \PYG{o}{\PYGZpc{}} \PYG{p}{(}\PYG{n}{func}\PYG{o}{.}\PYG{n}{\PYGZus{}\PYGZus{}name\PYGZus{}\PYGZus{}}\PYG{p}{)}\PYG{p}{)}
+\end{Verbatim}
+
+\item {} 
+Create a multipart test case that runs some intercalls between your function and others (akin to pywrap\_all). In trials, permute the order of calls a few times to expose any calls that don't clean up after themselves and need further attention.
+
+\item {} 
+When all is validated, add your findings to the great interoperability table in the documentation.
+
+\end{itemize}
+
+\end{itemize}
 
 
 \chapter{PsiMod Methods}
@@ -1882,7 +1988,244 @@ stuff that's in README;
 \label{index:molecule-methods}
 
 \chapter{Expert}
-\label{index:module-driver}\label{index:expert}\index{driver (module)}\index{gradient() (in module driver)}
+\label{index:expert}\label{index:module-proc}\index{proc (module)}
+Module with functions that encode the sequence of PSI module
+calls for each of the \emph{name} values of the energy(), optimize(),
+response(), and frequency() function.
+\index{run\_adc() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_adc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_adc}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+an algebraic diagrammatic construction calculation.
+
+\begin{notice}{caution}{Caution:}
+Get rid of active molecule lines- should be handled in energy.
+\end{notice}
+
+\end{fulllineitems}
+
+\index{run\_bccd() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_bccd}\pysiglinewithargsret{\code{proc.}\bfcode{run\_bccd}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a Brueckner CCD calculation.
+
+\end{fulllineitems}
+
+\index{run\_bccd\_t() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_bccd_t}\pysiglinewithargsret{\code{proc.}\bfcode{run\_bccd\_t}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a Brueckner CCD(T) calculation.
+
+\end{fulllineitems}
+
+\index{run\_cc\_gradient() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_cc_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_cc\_gradient}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a CCSD and CCSD(T) gradient calculation.
+
+\end{fulllineitems}
+
+\index{run\_cc\_response() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_cc_response}\pysiglinewithargsret{\code{proc.}\bfcode{run\_cc\_response}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a CC2 and CCSD calculation.
+
+\end{fulllineitems}
+
+\index{run\_ccenergy() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_ccenergy}\pysiglinewithargsret{\code{proc.}\bfcode{run\_ccenergy}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a CCSD, CC2, and CC3 calculation.
+
+\end{fulllineitems}
+
+\index{run\_dcft() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_dcft}\pysiglinewithargsret{\code{proc.}\bfcode{run\_dcft}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a density cumulant functional theory calculation.
+
+\end{fulllineitems}
+
+\index{run\_detci() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_detci}\pysiglinewithargsret{\code{proc.}\bfcode{run\_detci}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a configuration interaction calculation, namely FCI,
+CIn, MPn, and ZAPTn.
+
+\end{fulllineitems}
+
+\index{run\_dfcc() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_dfcc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_dfcc}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a density-fitted coupled-cluster calculation.
+
+\end{fulllineitems}
+
+\index{run\_dfmp2() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_dfmp2}\pysiglinewithargsret{\code{proc.}\bfcode{run\_dfmp2}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a density-fitted MP2 calculation.
+
+\begin{notice}{caution}{Caution:}
+Get rid of madness-era restart file
+\end{notice}
+
+\end{fulllineitems}
+
+\index{run\_eom\_cc() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_eom_cc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_eom\_cc}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+an EOM-CC calculation, namely EOM-CC2, EOM-CCSD, and EOM-CC3.
+
+\end{fulllineitems}
+
+\index{run\_eom\_cc\_gradient() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_eom_cc_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_eom\_cc\_gradient}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+an EOM-CCSD gradient calculation.
+
+\end{fulllineitems}
+
+\index{run\_libfock() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_libfock}\pysiglinewithargsret{\code{proc.}\bfcode{run\_libfock}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a calculation through libfock, namely RCPHF,
+RCIS, RTDHF, RTDA, and RTDDFT.
+
+\end{fulllineitems}
+
+\index{run\_mcscf() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_mcscf}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mcscf}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a multiconfigurational self-consistent-field calculation.
+
+\end{fulllineitems}
+
+\index{run\_mp2() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_mp2}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a MP2 calculation.
+
+\end{fulllineitems}
+
+\index{run\_mp2\_gradient() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_mp2_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2\_gradient}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a MP2 gradient calculation.
+
+\end{fulllineitems}
+
+\index{run\_mp2c() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_mp2c}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2c}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a coupled MP2 calculation.
+
+\end{fulllineitems}
+
+\index{run\_mp2drpa() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_mp2drpa}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2drpa}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a MP2-DRPA calculation.
+
+\end{fulllineitems}
+
+\index{run\_mrcc() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_mrcc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mrcc}}{\emph{name}, \emph{**kwargs}}{}
+Function that prepares environment and input files
+for a calculation calling Kallay's MRCC code.
+
+\end{fulllineitems}
+
+\index{run\_sapt() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_sapt}\pysiglinewithargsret{\code{proc.}\bfcode{run\_sapt}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a SAPT calculation of any level.
+
+\end{fulllineitems}
+
+\index{run\_sapt\_ct() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_sapt_ct}\pysiglinewithargsret{\code{proc.}\bfcode{run\_sapt\_ct}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a charge-transfer SAPT calcuation of any level.
+
+\end{fulllineitems}
+
+\index{run\_scf() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_scf}\pysiglinewithargsret{\code{proc.}\bfcode{run\_scf}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a self-consistent-field theory (HF \& DFT) calculation.
+
+\end{fulllineitems}
+
+\index{run\_scf\_gradient() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_scf_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_scf\_gradient}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for
+a SCF gradient calculation.
+
+\end{fulllineitems}
+
+\index{scf\_helper() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.scf_helper}\pysiglinewithargsret{\code{proc.}\bfcode{scf\_helper}}{\emph{name}, \emph{**kwargs}}{}
+Function serving as helper to SCF, choosing whether to cast
+up or just run SCF with a standard guess. This preserves
+previous SCF options set by other procedures (e.g., SAPT
+output file types for SCF).
+
+\end{fulllineitems}
+
+\phantomsection\label{index:module-driver}\index{driver (module)}
+Module with a \emph{procedures} dictionary specifying available quantum
+chemical methods and functions driving the main quantum chemical
+functionality, namely single-point energies, geometry optimizations,
+response properties, and vibrational frequency calculations.
+\index{gradient() (in module driver)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:driver.gradient}\pysiglinewithargsret{\code{driver.}\bfcode{gradient}}{\emph{name}, \emph{**kwargs}}{}
@@ -1908,7 +2251,11 @@ level information like 4 for CISDTQ or MRCCSDTQ.
 
 \end{fulllineitems}
 
-\phantomsection\label{index:module-wrappers}\index{wrappers (module)}\index{call\_function\_in\_1st\_argument() (in module wrappers)}
+\phantomsection\label{index:module-wrappers}\index{wrappers (module)}
+Module with functions that call the four main {\hyperref[index:module-driver]{\code{driver}}}
+functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, {\hyperref[index:driver.optimize]{\code{driver.optimize}}}, 
+{\hyperref[index:driver.response]{\code{driver.response}}}, and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}.
+\index{call\_function\_in\_1st\_argument() (in module wrappers)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.call_function_in_1st_argument}\pysiglinewithargsret{\code{wrappers.}\bfcode{call\_function\_in\_1st\_argument}}{\emph{funcarg}, \emph{**largs}}{}
@@ -1938,7 +2285,7 @@ entries. There is no guarantee of which duplicate entry is dropped.
 \phantomsection\label{index:wrappers.reconstitute_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{reconstitute\_bracketed\_basis}}{\emph{needarray}}{}
 Function to reform a bracketed basis set string from a sequential series
 of basis sets (e.g, form `cc-pv{[}q5{]}z' from array {[}cc-pvqz, cc-pv5z{]}). The
-basis set array is extracted from the f\_basis field of a NEED dictionary in
+basis set array is extracted from the \emph{f\_basis} field of a \emph{NEED} dictionary in
 {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}. Result is used to print a nicely
 formatted basis set string in the results table.
 
@@ -1958,8 +2305,8 @@ into {[}scf, tot{]} and `mp2corl' into {[}mp2, corl{]}.
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.tblhead}\pysiglinewithargsret{\code{wrappers.}\bfcode{tblhead}}{\emph{tbl\_maxrgt}, \emph{tbl\_delimit}, \emph{ttype}}{}
 Function that prints the header for the changable-width results tables in db().
-tbl\_maxrgt is the number of reagent columns the table must plan for. tbl\_delimit
-is a string of dashes of the correct length to set off the table. ttype is 1 for
+\emph{tbl\_maxrgt} is the number of reagent columns the table must plan for. \emph{tbl\_delimit}
+is a string of dashes of the correct length to set off the table. \emph{ttype} is 1 for
 tables comparing the computed values to the reference or 2 for simple tabulation
 and sum of the computed values.
 
@@ -1969,9 +2316,9 @@ and sum of the computed values.
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.validate_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{validate\_bracketed\_basis}}{\emph{basisstring}}{}
-Function to transform and validate basis sets for cbs(). A basis set with no 
+Function to transform and validate basis sets for cbs(). A basis set with no
 paired square brackets is passed through with zeta level 0 (e.g., `6-31+G(d,p)'
-is returned as {[}6-31+G(d,p){]} and {[}0{]}). A basis set with square brackets is 
+is returned as {[}6-31+G(d,p){]} and {[}0{]}). A basis set with square brackets is
 checked for sensible sequence and Dunning-ness and returned as separate basis
 sets (e.g., `cc-pV{[}Q5{]}Z' is returned as {[}cc-pVQZ, cc-pV5Z{]} and {[}4, 5{]}). Note
 that this function has no communication with the basis set library to check
@@ -2030,46 +2377,166 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 \end{gather}
 \end{fulllineitems}
 
-\phantomsection\label{index:module-pubchem}\index{pubchem (module)}\index{PubChemObj (class in pubchem)}
+\phantomsection\label{index:module-procutil}\index{procutil (module)}\index{format\_kwargs\_for\_input() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj}\pysiglinewithargsret{\strong{class }\code{pubchem.}\bfcode{PubChemObj}}{\emph{cid}, \emph{mf}, \emph{iupac}}{}~\index{getCartesian() (pubchem.PubChemObj method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getCartesian}\pysiglinewithargsret{\bfcode{getCartesian}}{}{}
+\phantomsection\label{index:procutil.format_kwargs_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_kwargs\_for\_input}}{\emph{filename}, \emph{lmode=1}, \emph{**kwargs}}{}
 \end{fulllineitems}
 
-\index{getMoleculeString() (pubchem.PubChemObj method)}
+\index{format\_molecule\_for\_input() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getMoleculeString}\pysiglinewithargsret{\bfcode{getMoleculeString}}{}{}
+\phantomsection\label{index:procutil.format_molecule_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_molecule\_for\_input}}{\emph{mol}}{}
 \end{fulllineitems}
 
-\index{getSDF() (pubchem.PubChemObj method)}
+\index{format\_options\_for\_input() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getSDF}\pysiglinewithargsret{\bfcode{getSDF}}{}{}
+\phantomsection\label{index:procutil.format_options_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_options\_for\_input}}{}{}
 \end{fulllineitems}
 
-\index{getXYZFile() (pubchem.PubChemObj method)}
+\index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getXYZFile}\pysiglinewithargsret{\bfcode{getXYZFile}}{}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`21061'}}{}
 \end{fulllineitems}
 
-\index{name() (pubchem.PubChemObj method)}
+\index{kwargs\_lower() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.name}\pysiglinewithargsret{\bfcode{name}}{}{}
+\phantomsection\label{index:procutil.kwargs_lower}\pysiglinewithargsret{\code{procutil.}\bfcode{kwargs\_lower}}{\emph{kwargs}}{}
 \end{fulllineitems}
 
-
-\end{fulllineitems}
-
-\index{getPubChemResults() (in module pubchem)}
+\phantomsection\label{index:module-psiexceptions}\index{psiexceptions (module)}\index{PsiException}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pubchem.getPubChemResults}\pysiglinewithargsret{\code{pubchem.}\bfcode{getPubChemResults}}{\emph{name}}{}
+\phantomsection\label{index:psiexceptions.PsiException}\pysigline{\strong{exception }\code{psiexceptions.}\bfcode{PsiException}}
+\end{fulllineitems}
+
+\index{ValidationError}
+
+\begin{fulllineitems}
+\phantomsection\label{index:psiexceptions.ValidationError}\pysiglinewithargsret{\strong{exception }\code{psiexceptions.}\bfcode{ValidationError}}{\emph{msg}}{}
+\end{fulllineitems}
+
+\phantomsection\label{index:module-text}\index{text (module)}\index{Table (class in text)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table}\pysiglinewithargsret{\strong{class }\code{text.}\bfcode{Table}}{\emph{rows=()}, \emph{row\_label\_width=10}, \emph{row\_label\_precision=4}, \emph{cols=()}, \emph{width=16}, \emph{precision=10}}{}~\index{absolute\_to\_relative() (text.Table method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table.absolute_to_relative}\pysiglinewithargsret{\bfcode{absolute\_to\_relative}}{\emph{Factor=627.5095}}{}
+\end{fulllineitems}
+
+\index{copy() (text.Table method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table.copy}\pysiglinewithargsret{\bfcode{copy}}{}{}
+\end{fulllineitems}
+
+\index{format\_label() (text.Table method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table.format_label}\pysiglinewithargsret{\bfcode{format\_label}}{}{}
+\end{fulllineitems}
+
+\index{format\_values() (text.Table method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table.format_values}\pysiglinewithargsret{\bfcode{format\_values}}{\emph{values}}{}
+\end{fulllineitems}
+
+\index{save() (text.Table method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table.save}\pysiglinewithargsret{\bfcode{save}}{\emph{file}}{}
+\end{fulllineitems}
+
+\index{scale() (text.Table method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table.scale}\pysiglinewithargsret{\bfcode{scale}}{\emph{Factor=627.5095}}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{banner() (in module text)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.banner}\pysiglinewithargsret{\code{text.}\bfcode{banner}}{\emph{text}, \emph{type=1}, \emph{width=35}}{}
+\end{fulllineitems}
+
+\index{print\_stderr() (in module text)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.print_stderr}\pysiglinewithargsret{\code{text.}\bfcode{print\_stderr}}{\emph{stuff}}{}
+\end{fulllineitems}
+
+\index{print\_stdout() (in module text)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.print_stdout}\pysiglinewithargsret{\code{text.}\bfcode{print\_stdout}}{\emph{stuff}}{}
+\end{fulllineitems}
+
+\phantomsection\label{index:module-util}\index{util (module)}\index{compare\_integers() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.compare_integers}\pysiglinewithargsret{\code{util.}\bfcode{compare\_integers}}{\emph{expected}, \emph{computed}, \emph{label}}{}
+\end{fulllineitems}
+
+\index{compare\_matrices() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.compare_matrices}\pysiglinewithargsret{\code{util.}\bfcode{compare\_matrices}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+\end{fulllineitems}
+
+\index{compare\_strings() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.compare_strings}\pysiglinewithargsret{\code{util.}\bfcode{compare\_strings}}{\emph{expected}, \emph{computed}, \emph{label}}{}
+\end{fulllineitems}
+
+\index{compare\_values() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.compare_values}\pysiglinewithargsret{\code{util.}\bfcode{compare\_values}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+\end{fulllineitems}
+
+\index{compare\_vectors() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.compare_vectors}\pysiglinewithargsret{\code{util.}\bfcode{compare\_vectors}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+\end{fulllineitems}
+
+\index{get\_memory() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.get_memory}\pysiglinewithargsret{\code{util.}\bfcode{get\_memory}}{}{}
+\end{fulllineitems}
+
+\index{get\_num\_threads() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.get_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{get\_num\_threads}}{}{}
+\end{fulllineitems}
+
+\index{set\_memory() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.set_memory}\pysiglinewithargsret{\code{util.}\bfcode{set\_memory}}{\emph{bytes}}{}
+\end{fulllineitems}
+
+\index{set\_num\_threads() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.set_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{set\_num\_threads}}{\emph{nthread}}{}
+\end{fulllineitems}
+
+\index{success() (in module util)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:util.success}\pysiglinewithargsret{\code{util.}\bfcode{success}}{\emph{label}}{}
 \end{fulllineitems}
 
 \phantomsection\label{index:module-qmmm}\index{qmmm (module)}\index{Diffuse (class in qmmm)}
@@ -2124,6 +2591,156 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 \end{fulllineitems}
 
 
+\end{fulllineitems}
+
+\phantomsection\label{index:module-input}\index{input (module)}\index{bad\_option\_syntax() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.bad_option_syntax}\pysiglinewithargsret{\code{input.}\bfcode{bad\_option\_syntax}}{\emph{line}}{}
+\end{fulllineitems}
+
+\index{check\_parentheses\_and\_brackets() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.check_parentheses_and_brackets}\pysiglinewithargsret{\code{input.}\bfcode{check\_parentheses\_and\_brackets}}{\emph{input\_string}, \emph{exit\_on\_error}}{}
+\end{fulllineitems}
+
+\index{parse\_multiline\_array() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.parse_multiline_array}\pysiglinewithargsret{\code{input.}\bfcode{parse\_multiline\_array}}{\emph{input\_list}}{}
+\end{fulllineitems}
+
+\index{process\_basis\_block() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_basis_block}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_block}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_basis\_file() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_basis_file}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_file}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_external\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_external_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_external\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_extract\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_extract_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_extract\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_input() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{raw\_input}, \emph{print\_level=1}}{}
+\end{fulllineitems}
+
+\index{process\_memory\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_memory_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_memory\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_molecule\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_molecule_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_molecule\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_multiline\_arrays() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_multiline_arrays}\pysiglinewithargsret{\code{input.}\bfcode{process\_multiline\_arrays}}{\emph{inputfile}}{}
+\end{fulllineitems}
+
+\index{process\_option() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_option}\pysiglinewithargsret{\code{input.}\bfcode{process\_option}}{\emph{spaces}, \emph{module}, \emph{key}, \emph{value}, \emph{line}}{}
+\end{fulllineitems}
+
+\index{process\_print\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_print_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_print\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_pubchem\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_pubchem_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_pubchem\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_set\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_set_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_set\_commands() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_set_commands}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_commands}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_word\_quotes() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_word_quotes}\pysiglinewithargsret{\code{input.}\bfcode{process\_word\_quotes}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{quotify() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.quotify}\pysiglinewithargsret{\code{input.}\bfcode{quotify}}{\emph{string}}{}
+\end{fulllineitems}
+
+\phantomsection\label{index:module-physconst}\index{physconst (module)}\phantomsection\label{index:module-pubchem}\index{pubchem (module)}\index{PubChemObj (class in pubchem)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pubchem.PubChemObj}\pysiglinewithargsret{\strong{class }\code{pubchem.}\bfcode{PubChemObj}}{\emph{cid}, \emph{mf}, \emph{iupac}}{}~\index{getCartesian() (pubchem.PubChemObj method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pubchem.PubChemObj.getCartesian}\pysiglinewithargsret{\bfcode{getCartesian}}{}{}
+\end{fulllineitems}
+
+\index{getMoleculeString() (pubchem.PubChemObj method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pubchem.PubChemObj.getMoleculeString}\pysiglinewithargsret{\bfcode{getMoleculeString}}{}{}
+\end{fulllineitems}
+
+\index{getSDF() (pubchem.PubChemObj method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pubchem.PubChemObj.getSDF}\pysiglinewithargsret{\bfcode{getSDF}}{}{}
+\end{fulllineitems}
+
+\index{getXYZFile() (pubchem.PubChemObj method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pubchem.PubChemObj.getXYZFile}\pysiglinewithargsret{\bfcode{getXYZFile}}{}{}
+\end{fulllineitems}
+
+\index{name() (pubchem.PubChemObj method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pubchem.PubChemObj.name}\pysiglinewithargsret{\bfcode{name}}{}{}
+\end{fulllineitems}
+
+
+\end{fulllineitems}
+
+\index{getPubChemResults() (in module pubchem)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:pubchem.getPubChemResults}\pysiglinewithargsret{\code{pubchem.}\bfcode{getPubChemResults}}{\emph{name}}{}
 \end{fulllineitems}
 
 \phantomsection\label{index:module-inpsight}\index{inpsight (module)}\index{InPsight (class in inpsight)}
@@ -2316,420 +2933,6 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 \end{fulllineitems}
 
 
-\end{fulllineitems}
-
-\phantomsection\label{index:module-input}\index{input (module)}\index{bad\_option\_syntax() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.bad_option_syntax}\pysiglinewithargsret{\code{input.}\bfcode{bad\_option\_syntax}}{\emph{line}}{}
-\end{fulllineitems}
-
-\index{check\_parentheses\_and\_brackets() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.check_parentheses_and_brackets}\pysiglinewithargsret{\code{input.}\bfcode{check\_parentheses\_and\_brackets}}{\emph{input\_string}, \emph{exit\_on\_error}}{}
-\end{fulllineitems}
-
-\index{parse\_multiline\_array() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.parse_multiline_array}\pysiglinewithargsret{\code{input.}\bfcode{parse\_multiline\_array}}{\emph{input\_list}}{}
-\end{fulllineitems}
-
-\index{process\_basis\_block() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_basis_block}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_block}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_basis\_file() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_basis_file}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_file}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_external\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_external_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_external\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_extract\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_extract_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_extract\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_input() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{raw\_input}, \emph{print\_level=1}}{}
-\end{fulllineitems}
-
-\index{process\_memory\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_memory_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_memory\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_molecule\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_molecule_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_molecule\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_multiline\_arrays() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_multiline_arrays}\pysiglinewithargsret{\code{input.}\bfcode{process\_multiline\_arrays}}{\emph{inputfile}}{}
-\end{fulllineitems}
-
-\index{process\_option() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_option}\pysiglinewithargsret{\code{input.}\bfcode{process\_option}}{\emph{spaces}, \emph{module}, \emph{key}, \emph{value}, \emph{line}}{}
-\end{fulllineitems}
-
-\index{process\_print\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_print_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_print\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_pubchem\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_pubchem_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_pubchem\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_set\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_set_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_set\_commands() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_set_commands}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_commands}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_word\_quotes() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_word_quotes}\pysiglinewithargsret{\code{input.}\bfcode{process\_word\_quotes}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{quotify() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.quotify}\pysiglinewithargsret{\code{input.}\bfcode{quotify}}{\emph{string}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-physconst}\index{physconst (module)}\phantomsection\label{index:module-proc}\index{proc (module)}\index{run\_adc() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_adc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_adc}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_bccd() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_bccd}\pysiglinewithargsret{\code{proc.}\bfcode{run\_bccd}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_bccd\_t() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_bccd_t}\pysiglinewithargsret{\code{proc.}\bfcode{run\_bccd\_t}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_cc\_gradient() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_cc_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_cc\_gradient}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_cc\_response() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_cc_response}\pysiglinewithargsret{\code{proc.}\bfcode{run\_cc\_response}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_ccenergy() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_ccenergy}\pysiglinewithargsret{\code{proc.}\bfcode{run\_ccenergy}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_dcft() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_dcft}\pysiglinewithargsret{\code{proc.}\bfcode{run\_dcft}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_detci() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_detci}\pysiglinewithargsret{\code{proc.}\bfcode{run\_detci}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_dfcc() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_dfcc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_dfcc}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_dfmp2() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_dfmp2}\pysiglinewithargsret{\code{proc.}\bfcode{run\_dfmp2}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_eom\_cc() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_eom_cc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_eom\_cc}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_eom\_cc\_gradient() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_eom_cc_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_eom\_cc\_gradient}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_libfock() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_libfock}\pysiglinewithargsret{\code{proc.}\bfcode{run\_libfock}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_mcscf() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_mcscf}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mcscf}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_mp2() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_mp2}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_mp2\_gradient() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_mp2_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2\_gradient}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_mp2c() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_mp2c}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2c}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_mp2drpa() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_mp2drpa}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mp2drpa}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_mrcc() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_mrcc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_mrcc}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_sapt() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_sapt}\pysiglinewithargsret{\code{proc.}\bfcode{run\_sapt}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_sapt\_ct() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_sapt_ct}\pysiglinewithargsret{\code{proc.}\bfcode{run\_sapt\_ct}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_scf() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_scf}\pysiglinewithargsret{\code{proc.}\bfcode{run\_scf}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{run\_scf\_gradient() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.run_scf_gradient}\pysiglinewithargsret{\code{proc.}\bfcode{run\_scf\_gradient}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{scf\_helper() (in module proc)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:proc.scf_helper}\pysiglinewithargsret{\code{proc.}\bfcode{scf\_helper}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-procutil}\index{procutil (module)}\index{format\_kwargs\_for\_input() (in module procutil)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:procutil.format_kwargs_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_kwargs\_for\_input}}{\emph{filename}, \emph{lmode=1}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{format\_molecule\_for\_input() (in module procutil)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:procutil.format_molecule_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_molecule\_for\_input}}{\emph{mol}}{}
-\end{fulllineitems}
-
-\index{format\_options\_for\_input() (in module procutil)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:procutil.format_options_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_options\_for\_input}}{}{}
-\end{fulllineitems}
-
-\index{get\_psifile() (in module procutil)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`16888'}}{}
-\end{fulllineitems}
-
-\index{kwargs\_lower() (in module procutil)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:procutil.kwargs_lower}\pysiglinewithargsret{\code{procutil.}\bfcode{kwargs\_lower}}{\emph{kwargs}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-psiexceptions}\index{psiexceptions (module)}\index{PsiException}
-
-\begin{fulllineitems}
-\phantomsection\label{index:psiexceptions.PsiException}\pysigline{\strong{exception }\code{psiexceptions.}\bfcode{PsiException}}
-\end{fulllineitems}
-
-\index{ValidationError}
-
-\begin{fulllineitems}
-\phantomsection\label{index:psiexceptions.ValidationError}\pysiglinewithargsret{\strong{exception }\code{psiexceptions.}\bfcode{ValidationError}}{\emph{msg}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-text}\index{text (module)}\index{Table (class in text)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.Table}\pysiglinewithargsret{\strong{class }\code{text.}\bfcode{Table}}{\emph{rows=()}, \emph{row\_label\_width=10}, \emph{row\_label\_precision=4}, \emph{cols=()}, \emph{width=16}, \emph{precision=10}}{}~\index{absolute\_to\_relative() (text.Table method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.Table.absolute_to_relative}\pysiglinewithargsret{\bfcode{absolute\_to\_relative}}{\emph{Factor=627.5095}}{}
-\end{fulllineitems}
-
-\index{copy() (text.Table method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.Table.copy}\pysiglinewithargsret{\bfcode{copy}}{}{}
-\end{fulllineitems}
-
-\index{format\_label() (text.Table method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.Table.format_label}\pysiglinewithargsret{\bfcode{format\_label}}{}{}
-\end{fulllineitems}
-
-\index{format\_values() (text.Table method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.Table.format_values}\pysiglinewithargsret{\bfcode{format\_values}}{\emph{values}}{}
-\end{fulllineitems}
-
-\index{save() (text.Table method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.Table.save}\pysiglinewithargsret{\bfcode{save}}{\emph{file}}{}
-\end{fulllineitems}
-
-\index{scale() (text.Table method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.Table.scale}\pysiglinewithargsret{\bfcode{scale}}{\emph{Factor=627.5095}}{}
-\end{fulllineitems}
-
-
-\end{fulllineitems}
-
-\index{banner() (in module text)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.banner}\pysiglinewithargsret{\code{text.}\bfcode{banner}}{\emph{text}, \emph{type=1}, \emph{width=35}}{}
-\end{fulllineitems}
-
-\index{print\_stderr() (in module text)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.print_stderr}\pysiglinewithargsret{\code{text.}\bfcode{print\_stderr}}{\emph{stuff}}{}
-\end{fulllineitems}
-
-\index{print\_stdout() (in module text)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.print_stdout}\pysiglinewithargsret{\code{text.}\bfcode{print\_stdout}}{\emph{stuff}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-util}\index{util (module)}\index{compare\_integers() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_integers}\pysiglinewithargsret{\code{util.}\bfcode{compare\_integers}}{\emph{expected}, \emph{computed}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_matrices() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_matrices}\pysiglinewithargsret{\code{util.}\bfcode{compare\_matrices}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_strings() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_strings}\pysiglinewithargsret{\code{util.}\bfcode{compare\_strings}}{\emph{expected}, \emph{computed}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_values() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_values}\pysiglinewithargsret{\code{util.}\bfcode{compare\_values}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_vectors() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_vectors}\pysiglinewithargsret{\code{util.}\bfcode{compare\_vectors}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{get\_memory() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.get_memory}\pysiglinewithargsret{\code{util.}\bfcode{get\_memory}}{}{}
-\end{fulllineitems}
-
-\index{get\_num\_threads() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.get_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{get\_num\_threads}}{}{}
-\end{fulllineitems}
-
-\index{set\_memory() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.set_memory}\pysiglinewithargsret{\code{util.}\bfcode{set\_memory}}{\emph{bytes}}{}
-\end{fulllineitems}
-
-\index{set\_num\_threads() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.set_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{set\_num\_threads}}{\emph{nthread}}{}
-\end{fulllineitems}
-
-\index{success() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.success}\pysiglinewithargsret{\code{util.}\bfcode{success}}{\emph{label}}{}
 \end{fulllineitems}
 
 

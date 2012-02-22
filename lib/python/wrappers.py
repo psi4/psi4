@@ -1,3 +1,9 @@
+"""Module with functions that call the four main :py:mod:`driver`
+functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`, 
+:py:mod:`driver.response`, and :py:mod:`driver.frequency()`.
+
+"""
+
 import PsiMod
 import re
 import os
@@ -426,6 +432,7 @@ def cp(name, **kwargs):
     :returns: (*float*) Counterpoise-corrected interaction energy in kcal/mol
 
     :PSI variables:
+
     .. envvar:: CP-CORRECTED 2-BODY INTERACTION ENERGY
         UNCP-CORRECTED 2-BODY INTERACTION ENERGY
 
@@ -440,22 +447,22 @@ def cp(name, **kwargs):
     :type name: string
     :param name: ``'scf'`` || ``'ccsd(t)'`` || etc.
 
-        First argument, usually unlabeled. Indicates the computational method 
-        to be applied to the molecule. May be any valid argument to 
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the molecule. May be any valid argument to
         :py:func:`driver.energy`; however, SAPT is not appropriate.
 
     :type func: function
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
-    
+
         Indicates the type of calculation to be performed on the molecule
-        and each of its monomers. The default performs a single-point 
-        ``energy('name')``, while ``optimize`` perfoms a geometry optimization 
-        on each system, and ``cbs`` performs a compound single-point energy. 
-        If a nested series of python functions is intended 
-        (see :ref:`sec_intercalls`), use keyword ``cp_func`` instead of ``func``.
+        and each of its monomers. The default performs a single-point
+        ``energy('name')``, while ``optimize`` perfoms a geometry optimization
+        on each system, and ``cbs`` performs a compound single-point energy.
+        If a nested series of python functions is intended
+        (see `Function Intercalls`_), use keyword ``cp_func`` instead of ``func``.
 
     :type check_bsse: bool
-    :param check_bsse: |dl| ``'off'`` |dr| || ``'on'``
+    :param check_bsse: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether to additionally compute un-counterpoise corrected
         monomers and thus obtain an estimate for the basis set superposition error.
@@ -625,13 +632,14 @@ def database(name, db_name, **kwargs):
     :returns: (*float*) Mean absolute deviation of the database in kcal/mol
 
     :PSI variables:
+
     .. envvar:: db_name DATABASE MEAN SIGNED DEVIATION
         db_name DATABASE MEAN ABSOLUTE DEVIATION
         db_name DATABASE ROOT-MEAN-SQUARE DEVIATION
 
     .. note:: It is very easy to make a database from a collection of xyz files
         using the script ``$PSIDATADIR/databases/ixyz2database.pl``.
-        See :ref:`sec_beginner_newdatabase` for details.
+        See `Creating a New Database`_ for details.
 
     .. caution:: Some features are not yet implemented. Buy a developer some coffee.
 
@@ -642,25 +650,25 @@ def database(name, db_name, **kwargs):
     :type name: string
     :param name: ``'scf'`` || ``'sapt0'`` || ``'ccsd(t)'`` || etc.
 
-        First argument, usually unlabeled. Indicates the computational method 
-        to be applied to the database. May be any valid argument to 
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the database. May be any valid argument to
         :py:func:`driver.energy`.
 
     :type db_name: string
     :param db_name: ``'BASIC'`` || ``'S22'`` || ``'HTBH'`` || etc.
 
-        Second argument, usually unlabeled. Indicates the requested database 
-        name, matching the name of a python file in ``psi4/lib/databases``. 
+        Second argument, usually unlabeled. Indicates the requested database
+        name, matching the name of a python file in ``psi4/lib/databases``.
         Consult that directory for available databases and literature citations.
 
     :type func: function
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
-    
+
         Indicates the type of calculation to be performed on each database
         member. The default performs a single-point ``energy('name')``, while
         ``optimize`` perfoms a geometry optimization on each reagent, and
         ``cbs`` performs a compound single-point energy. If a nested series
-        of python functions is intended (see :ref:`sec_intercalls`), use
+        of python functions is intended (see `Function Intercalls`_), use
         keyword ``db_func`` instead of ``func``.
 
     :type mode: string
@@ -673,7 +681,7 @@ def database(name, db_name, **kwargs):
         ``'sow'`` and follow instructions in its output file.
 
     :type cp: bool
-    :param cp: |dl| ``'off'`` |dr| || ``'on'``
+    :param cp: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether counterpoise correction is employed in computing
         interaction energies. Use this option and NOT the :py:func:`wrappers.cp`
@@ -681,7 +689,7 @@ def database(name, db_name, **kwargs):
         valid only for databases consisting of bimolecular complexes.
 
     :type rlxd: bool
-    :param rlxd: |dl| ``'off'`` |dr| || ``'on'``
+    :param rlxd: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether correction for the deformation energy is
         employed in computing interaction energies.  Option valid only for
@@ -697,7 +705,7 @@ def database(name, db_name, **kwargs):
         symmetry, and this will be set by the database() wrapper.
 
     :type zpe: bool
-    :param zpe: |dl| ``'off'`` |dr| || ``'on'``
+    :param zpe: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether zero-point-energy corrections are appended to
         single-point energy values. Option valid only for certain
@@ -715,12 +723,12 @@ def database(name, db_name, **kwargs):
         Indicates whether to form tables of variables other than the
         primary requested energy.  Available for any PSI variable.
 
-    :type subset: string or array of strings 
+    :type subset: string or array of strings
     :param subset:
 
         Indicates a subset of the full database to run. This is a very
         flexible option and can be used in three distinct ways, outlined
-        below. Note that two take a string and the last takes an array.  
+        below. Note that two take a string and the last takes an array.
 
         * ``'small'`` || ``'large'`` || ``'equilibrium'``
             Calls predefined subsets of the requested database, either
@@ -1326,8 +1334,8 @@ def drop_duplicates(seq):
 
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
     """Function that prints the header for the changable-width results tables in db().
-    tbl_maxrgt is the number of reagent columns the table must plan for. tbl_delimit
-    is a string of dashes of the correct length to set off the table. ttype is 1 for
+    *tbl_maxrgt* is the number of reagent columns the table must plan for. *tbl_delimit*
+    is a string of dashes of the correct length to set off the table. *ttype* is 1 for
     tables comparing the computed values to the reference or 2 for simple tabulation
     and sum of the computed values.
 
@@ -1390,31 +1398,31 @@ def complete_basis_set(name, **kwargs):
 
        - No way to tell function to boost fitting basis size for all calculations.
 
-    As represented in the equation below, a CBS energy method is defined in four 
-    sequential stages (scf, corl, delta, delta2) covering treatment of the 
+    As represented in the equation below, a CBS energy method is defined in four
+    sequential stages (scf, corl, delta, delta2) covering treatment of the
     reference total energy, the correlation energy, a delta correction to the
-    correlation energy, and a second delta correction. Each is activated by its 
+    correlation energy, and a second delta correction. Each is activated by its
     stage_wfn keyword and is only allowed if all preceding stages are active.
 
     .. include:: cbs_eqn.rst
 
-    Keywords
+    **Keywords**
+
+    * Energy Methods
+        The presence of a stage_wfn keyword is the indicator to incorporate
+        (and check for stage_basis and stage_scheme keywords) and compute
+        that stage in defining the CBS energy.
 
     The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
         keywords to be specified for reference-step only jobs and ``name`` and
-        ``corl_basis`` keywords for correlated jobs. 
+        ``corl_basis`` keywords for correlated jobs.
 
     :type name: string
     :param name: ``'scf'`` || ``'ccsd'`` || etc.
 
-        First argument, usually unlabeled. Indicates the computational method 
+        First argument, usually unlabeled. Indicates the computational method
         for the correlation energy, unless only reference step to be performed,
         in which case should be ``'scf'``. Overruled if stage_wfn keywords supplied.
-
-    Energy Methods
-        The presence of a stage_wfn keyword is the indicator to incorporate
-        (and check for stage_basis and stage_scheme keywords) and compute
-        that stage in defining the CBS energy.
 
     :type corl_wfn: string
     :param corl_wfn: ``'mp2'`` || ``'ccsd(t)'`` || etc.
@@ -1426,25 +1434,25 @@ def complete_basis_set(name, **kwargs):
     :type delta_wfn: string
     :param delta_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
 
-        Indicates the (superior) energy method for which a delta correction 
+        Indicates the (superior) energy method for which a delta correction
         to the correlation energy is to be obtained.
 
     :type delta_wfn_lesser: string
     :param delta_wfn_lesser: |dl| ``'mp2'`` |dr| || ``'ccsd'`` || etc.
 
-        Indicates the inferior energy method for which a delta correction 
+        Indicates the inferior energy method for which a delta correction
         to the correlation energy is to be obtained.
 
     :type delta2_wfn: string
     :param delta2_wfn: ``'ccsd'`` || ``'ccsd(t)'`` || etc.
 
-        Indicates the (superior) energy method for which a second delta correction 
+        Indicates the (superior) energy method for which a second delta correction
         to the correlation energy is to be obtained.
 
     :type delta2_wfn_lesser: string
     :param delta2_wfn_lesser: |dl| ``'mp2'`` |dr| || ``'ccsd(t)'`` || etc.
 
-        Indicates the inferior energy method for which a second delta correction 
+        Indicates the inferior energy method for which a second delta correction
         to the correlation energy is to be obtained.
 
     * Basis Sets
@@ -1480,7 +1488,7 @@ def complete_basis_set(name, **kwargs):
         stage of the CBS definition. A complaint is generated if number of basis
         sets in stage_basis does not exactly satisfy requirements of stage_scheme.
         An exception is the default, ``'highest_1'``, which uses the best basis
-        set available. See :ref:`sec_cbs_xtpl` for all available schemes.
+        set available. See `Extrapolation Schemes`_ for all available schemes.
 
     :type scf_scheme: function
     :param scf_scheme: |dl| ``highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.
@@ -1893,9 +1901,9 @@ def complete_basis_set(name, **kwargs):
 
 # Transform and validate basis sets from 'cc-pV[Q5]Z' into [cc-pVQZ, cc-pV5Z] and [4, 5]
 def validate_bracketed_basis(basisstring):
-    """Function to transform and validate basis sets for cbs(). A basis set with no 
+    """Function to transform and validate basis sets for cbs(). A basis set with no
     paired square brackets is passed through with zeta level 0 (e.g., '6-31+G(d,p)'
-    is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is 
+    is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is
     checked for sensible sequence and Dunning-ness and returned as separate basis
     sets (e.g., 'cc-pV[Q5]Z' is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note
     that this function has no communication with the basis set library to check
@@ -1935,7 +1943,7 @@ def validate_bracketed_basis(basisstring):
 def reconstitute_bracketed_basis(needarray):
     """Function to reform a bracketed basis set string from a sequential series
     of basis sets (e.g, form 'cc-pv[q5]z' from array [cc-pvqz, cc-pv5z]). The
-    basis set array is extracted from the f_basis field of a NEED dictionary in
+    basis set array is extracted from the *f_basis* field of a *NEED* dictionary in
     :py:func:`wrappers.complete_basis_set`. Result is used to print a nicely
     formatted basis set string in the results table.
 

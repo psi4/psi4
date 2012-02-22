@@ -120,18 +120,6 @@ all insensitive to case.</p>
 <tt class="descname">CURRENT CORRELATION ENERGY</tt><a class="headerlink" href="#envvar-CURRENTCORRELATIONENERGY" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<p><strong>Keywords</strong></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
-to be applied to the system.</p>
-</td>
-</tr>
-</tbody>
-</table>
 <table border="1" class="docutils">
 <colgroup>
 <col width="22%" />
@@ -377,6 +365,26 @@ to be applied to the system.</p>
 </tr>
 </tbody>
 </table>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method 
+to be applied to the system.</p>
+</li>
+<li><strong>bypass_scf</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
+<p>Indicates whether, for <em>name</em> values built atop of scf calculations,
+the scf step is skipped. Suitable when special steps are taken to get
+the scf to converge in an explicit preceeding scf step.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 <p><strong>Examples</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Coupled-cluster singles and doubles calculation with psi code</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">)</span>
@@ -397,7 +405,7 @@ to be applied to the system.</p>
 <h1>Optimize<a class="headerlink" href="#optimize" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The derivative level type for <tt class="docutils literal"><span class="pre">optimize()</span></tt> and <tt class="docutils literal"><span class="pre">frequencies()</span></tt>
+<p class="last">The derivative level type for <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
 functions can be specified by <tt class="docutils literal"><span class="pre">energy</span></tt>, <tt class="docutils literal"><span class="pre">none</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for 0th derivative,
 <tt class="docutils literal"><span class="pre">gradient</span></tt>, <tt class="docutils literal"><span class="pre">first</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt> for 1st derivative, and <tt class="docutils literal"><span class="pre">hessian</span></tt>,
 <tt class="docutils literal"><span class="pre">second</span></tt>, or <tt class="docutils literal"><span class="pre">2</span></tt> for 2nd derivative.</p>
@@ -436,40 +444,6 @@ by finite differences.</p>
 <li>Need to check that all methods do return electronic energy. I think gradient got changed at one point.</li>
 </ul>
 </div>
-<p><strong>Keywords</strong></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
-to be applied to the database. May be any valid argument to 
-<a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
-</li>
-<li><strong>func</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">gradient</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">energy</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
-<p>Indicates the type of calculation to be performed on the molecule.
-The default dertype accesses``&#8217;gradient&#8217;`` or <tt class="docutils literal"><span class="pre">'energy'</span></tt>, while
-<tt class="docutils literal"><span class="pre">'cbs'</span></tt> performs a multistage finite difference calculation.
-If a nested series of python functions is intended (see <a class="reference internal" href="#sec-intercalls"><em>Function Intercalls</em></a>),
-use keyword <tt class="docutils literal"><span class="pre">opt_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
-</li>
-<li><strong>mode</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
-<p>Indicates whether the calculation required to complete the
-optimization are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
-farmed out in an embarrassingly parallel fashion
-(<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
-<tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</p>
-</li>
-<li><strong>dertype</strong> (<em>dertype</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'gradient'</span></tt> || <tt class="docutils literal"><span class="pre">'energy'</span></tt></p>
-<p>Indicates whether analytic (if available) or finite difference
-optimization is to be performed.</p>
-</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
 <table border="1" class="docutils">
 <colgroup>
 <col width="22%" />
@@ -495,6 +469,40 @@ optimization is to be performed.</p>
 </tr>
 <tr class="row-even"><td>eom-ccsd</td>
 <td>equation of motion (EOM) CCSD</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method 
+to be applied to the database. May be any valid argument to 
+<a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
+</li>
+<li><strong>func</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">gradient</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">energy</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
+<p>Indicates the type of calculation to be performed on the molecule.
+The default dertype accesses``&#8217;gradient&#8217;`` or <tt class="docutils literal"><span class="pre">'energy'</span></tt>, while
+<tt class="docutils literal"><span class="pre">'cbs'</span></tt> performs a multistage finite difference calculation.
+If a nested series of python functions is intended (see <a class="reference internal" href="#function-intercalls">Function Intercalls</a>),
+use keyword <tt class="docutils literal"><span class="pre">opt_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
+</li>
+<li><strong>mode</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
+<p>Indicates whether the calculation required to complete the
+optimization are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
+farmed out in an embarrassingly parallel fashion
+(<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
+<tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</p>
+</li>
+<li><strong>dertype</strong> (<em>dertype</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'gradient'</span></tt> || <tt class="docutils literal"><span class="pre">'energy'</span></tt></p>
+<p>Indicates whether analytic (if available) or finite difference
+optimization is to be performed.</p>
+</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -536,18 +544,6 @@ optimization is to be performed.</p>
 <li>Check if ther&#8217;re some PSI variables that ought to be set.</li>
 </ul>
 </div>
-<p><strong>Keywords</strong></p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
-to be applied to the system.</p>
-</td>
-</tr>
-</tbody>
-</table>
 <table border="1" class="docutils">
 <colgroup>
 <col width="22%" />
@@ -564,6 +560,18 @@ to be applied to the system.</p>
 </tr>
 <tr class="row-odd"><td>ccsd</td>
 <td>coupled cluster singles and doubles (CCSD)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method 
+to be applied to the system.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -585,37 +593,19 @@ to be applied to the system.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">frequency(), freq()</td>
+<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">frequencies(), freq()</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Total electronic energy in Hartrees.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Psi variables:</th><td class="field-body"></td>
-</tr>
 </tbody>
 </table>
-<dl class="envvar">
-<dt id="envvar-&lt;PSIVARIABLESETBYFUNCTION&gt;">
-<tt class="descname">&lt;PSI VARIABLE SET BY FUNCTION&gt;</tt><a class="headerlink" href="#envvar-<PSIVARIABLESETBYFUNCTION>" title="Permalink to this definition">¶</a></dt>
-<dt id="envvar-&lt;ANOTHERPSIVARIABLEWITHnonstandardPORTIONOFNAME&gt;">
-<tt class="descname">&lt;ANOTHER PSI VARIABLE WITH nonstandard PORTION OF NAME&gt;</tt><a class="headerlink" href="#envvar-<ANOTHERPSIVARIABLEWITHnonstandardPORTIONOFNAME>" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
-<p class="last">&lt;Notes for the user
-of an informative nature.&gt;</p>
-</div>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">&lt;Notes for the user
-of a cautionary nature.&gt;</p>
-</div>
 <div class="admonition caution">
 <p class="first admonition-title">Caution</p>
 <p>Some features are not yet implemented. Buy a developer a coffee.</p>
 <ul class="last simple">
-<li>RAK, why are you adding OPTKING options as GLOBALS? (And should they be Py-side not C-side options.)</li>
-<li>Put in a dictionary, so IRREPS can be called by point group or &#8216;all&#8217;</li>
+<li>RAK, why are you adding OPTKING options as GLOBALS? And shouldn&#8217;t they be Py-side not C-side options?</li>
+<li>Put in a dictionary, so IRREPS can be called by symmetry element or &#8216;all&#8217;</li>
+<li>Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.</li>
 </ul>
 </div>
 <p><strong>Keywords</strong></p>
@@ -696,19 +686,19 @@ for complexes composed of arbitrary numbers of monomers.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
-to be applied to the molecule. May be any valid argument to 
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the molecule. May be any valid argument to
 <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>; however, SAPT is not appropriate.</p>
 </li>
 <li><strong>func</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">energy</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">optimize</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
 <p>Indicates the type of calculation to be performed on the molecule
-and each of its monomers. The default performs a single-point 
-<tt class="docutils literal"><span class="pre">energy('name')</span></tt>, while <tt class="docutils literal"><span class="pre">optimize</span></tt> perfoms a geometry optimization 
-on each system, and <tt class="docutils literal"><span class="pre">cbs</span></tt> performs a compound single-point energy. 
-If a nested series of python functions is intended 
-(see <a class="reference internal" href="#sec-intercalls"><em>Function Intercalls</em></a>), use keyword <tt class="docutils literal"><span class="pre">cp_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
+and each of its monomers. The default performs a single-point
+<tt class="docutils literal"><span class="pre">energy('name')</span></tt>, while <tt class="docutils literal"><span class="pre">optimize</span></tt> perfoms a geometry optimization
+on each system, and <tt class="docutils literal"><span class="pre">cbs</span></tt> performs a compound single-point energy.
+If a nested series of python functions is intended
+(see <a class="reference internal" href="#function-intercalls">Function Intercalls</a>), use keyword <tt class="docutils literal"><span class="pre">cp_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
 </li>
-<li><strong>check_bsse</strong> (<em>bool</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'on'</span></tt></p>
+<li><strong>check_bsse</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
 <p>Indicates whether to additionally compute un-counterpoise corrected
 monomers and thus obtain an estimate for the basis set superposition error.</p>
 </li>
@@ -757,7 +747,7 @@ popular chemical databases.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">It is very easy to make a database from a collection of xyz files
 using the script <tt class="docutils literal"><span class="pre">$PSIDATADIR/databases/ixyz2database.pl</span></tt>.
-See <a class="reference internal" href="#sec-beginner-newdatabase"><em>Creating a New Database</em></a> for details.</p>
+See <a class="reference internal" href="#creating-a-new-database">Creating a New Database</a> for details.</p>
 </div>
 <div class="admonition caution">
 <p class="first admonition-title">Caution</p>
@@ -773,13 +763,13 @@ See <a class="reference internal" href="#sec-beginner-newdatabase"><em>Creating 
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'sapt0'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
-to be applied to the database. May be any valid argument to 
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the database. May be any valid argument to
 <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
 </li>
 <li><strong>db_name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'BASIC'</span></tt> || <tt class="docutils literal"><span class="pre">'S22'</span></tt> || <tt class="docutils literal"><span class="pre">'HTBH'</span></tt> || etc.</p>
-<p>Second argument, usually unlabeled. Indicates the requested database 
-name, matching the name of a python file in <tt class="docutils literal"><span class="pre">psi4/lib/databases</span></tt>. 
+<p>Second argument, usually unlabeled. Indicates the requested database
+name, matching the name of a python file in <tt class="docutils literal"><span class="pre">psi4/lib/databases</span></tt>.
 Consult that directory for available databases and literature citations.</p>
 </li>
 <li><strong>func</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">energy</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">optimize</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
@@ -787,7 +777,7 @@ Consult that directory for available databases and literature citations.</p>
 member. The default performs a single-point <tt class="docutils literal"><span class="pre">energy('name')</span></tt>, while
 <tt class="docutils literal"><span class="pre">optimize</span></tt> perfoms a geometry optimization on each reagent, and
 <tt class="docutils literal"><span class="pre">cbs</span></tt> performs a compound single-point energy. If a nested series
-of python functions is intended (see <a class="reference internal" href="#sec-intercalls"><em>Function Intercalls</em></a>), use
+of python functions is intended (see <a class="reference internal" href="#function-intercalls">Function Intercalls</a>), use
 keyword <tt class="docutils literal"><span class="pre">db_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
 </li>
 <li><strong>mode</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
@@ -797,13 +787,13 @@ farmed out in an embarrassingly parallel fashion
 (<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
 <tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</p>
 </li>
-<li><strong>cp</strong> (<em>bool</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'on'</span></tt></p>
+<li><strong>cp</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
 <p>Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the <a class="reference internal" href="#wrappers.cp" title="wrappers.cp"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.cp()</span></tt></a>
 wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt>.  Option
 valid only for databases consisting of bimolecular complexes.</p>
 </li>
-<li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'on'</span></tt></p>
+<li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
 <p>Indicates whether correction for the deformation energy is
 employed in computing interaction energies.  Option valid only for
 databases consisting of bimolecular complexes with non-frozen
@@ -815,7 +805,7 @@ employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or wh
 (<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
 symmetry, and this will be set by the database() wrapper.</p>
 </li>
-<li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'on'</span></tt></p>
+<li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
 <p>Indicates whether zero-point-energy corrections are appended to
 single-point energy values. Option valid only for certain
 thermochemical databases. Disabled until Hessians ready.</p>
@@ -998,10 +988,10 @@ components into a minimum number of calculations.</p>
 <li>No way to tell function to boost fitting basis size for all calculations.</li>
 </ul>
 </div>
-<p>As represented in the equation below, a CBS energy method is defined in four 
-sequential stages (scf, corl, delta, delta2) covering treatment of the 
+<p>As represented in the equation below, a CBS energy method is defined in four
+sequential stages (scf, corl, delta, delta2) covering treatment of the
 reference total energy, the correlation energy, a delta correction to the
-correlation energy, and a second delta correction. Each is activated by its 
+correlation energy, and a second delta correction. Each is activated by its
 stage_wfn keyword and is only allowed if all preceding stages are active.</p>
 <div class="math">
 <p><img src="_images/math/6d9de98a82a318032a969fb41b082259f375bbf9.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\textbf{scf\_scheme}} \left(E_{total,\; \text{SCF}}^{\textbf{scf\_basis}}\right) \; + \mathcal{F}_{\textbf{corl\_scheme}} \left(E_{corl,\; \textbf{corl\_wfn}}^{\textbf{corl\_basis}}\right) \; + \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; + \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}}"/></p>
@@ -1020,7 +1010,17 @@ reference energy.</p>
 <p><img src="_images/math/234e164ef6b8d98f1bd0cac104963a877b89a88f.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\text{highest\_1}} \left(E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}}\right) \; + \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}}\right) \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}"/></p>
 </div><div class="math">
 <p><img src="_images/math/018cd7aadafa5dd49354fc8f39513fb7e73b54a4.png" alt="\delta_{\text{MP2}}^{\text{CCSD(T)}} \; = \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{CCSD(T)}}^{\text{aug-cc-pV[DT]Z}}\right) - \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[DT]Z}}\right)"/></p>
-</div><p>Keywords</p>
+</div><p><strong>Keywords</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt>Energy Methods</dt>
+<dd><p class="first last">The presence of a stage_wfn keyword is the indicator to incorporate
+(and check for stage_basis and stage_scheme keywords) and compute
+that stage in defining the CBS energy.</p>
+</dd>
+</dl>
+</li>
+</ul>
 <dl class="docutils">
 <dt>The cbs() function requires, at a minimum, <tt class="docutils literal"><span class="pre">name='scf'</span></tt> and <tt class="docutils literal"><span class="pre">scf_basis</span></tt></dt>
 <dd>keywords to be specified for reference-step only jobs and <tt class="docutils literal"><span class="pre">name</span></tt> and
@@ -1030,44 +1030,31 @@ reference energy.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
 for the correlation energy, unless only reference step to be performed,
 in which case should be <tt class="docutils literal"><span class="pre">'scf'</span></tt>. Overruled if stage_wfn keywords supplied.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>Energy Methods</dt>
-<dd>The presence of a stage_wfn keyword is the indicator to incorporate
-(and check for stage_basis and stage_scheme keywords) and compute
-that stage in defining the CBS energy.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+</li>
 <li><strong>corl_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
 <p>Indicates the energy method for which the correlation energy is to be
 obtained. Can also be specified with <tt class="docutils literal"><span class="pre">name</span></tt> or as the unlabeled
 first argument to the function.</p>
 </li>
 <li><strong>delta_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the (superior) energy method for which a delta correction 
+<p>Indicates the (superior) energy method for which a delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta_wfn_lesser</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
-<p>Indicates the inferior energy method for which a delta correction 
+<p>Indicates the inferior energy method for which a delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta2_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the (superior) energy method for which a second delta correction 
+<p>Indicates the (superior) energy method for which a second delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta2_wfn_lesser</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the inferior energy method for which a second delta correction 
+<p>Indicates the inferior energy method for which a second delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 </ul>
@@ -1117,7 +1104,7 @@ to the correlation energy.</p>
 stage of the CBS definition. A complaint is generated if number of basis
 sets in stage_basis does not exactly satisfy requirements of stage_scheme.
 An exception is the default, <tt class="docutils literal"><span class="pre">'highest_1'</span></tt>, which uses the best basis
-set available. See <a class="reference internal" href="#sec-cbs-xtpl"><em>Extrapolation Schemes</em></a> for all available schemes.</p>
+set available. See <a class="reference internal" href="#extrapolation-schemes">Extrapolation Schemes</a> for all available schemes.</p>
 </dd>
 </dl>
 </li>
@@ -1247,7 +1234,7 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 </div>
 </div>
 <div class="section" id="extrapolation-schemes">
-<span id="sec-cbs-xtpl"></span><h2>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Permalink to this headline">¶</a></h2>
+<h2>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="wrappers.highest_1">
 <tt class="descclassname">wrappers.</tt><tt class="descname">highest_1</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#highest_1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.highest_1" title="Permalink to this definition">¶</a></dt>
@@ -1312,7 +1299,7 @@ Used by <a class="reference internal" href="#wrappers.complete_basis_set" title=
 files in <tt class="docutils literal"><span class="pre">$PSIDATADIR</span></tt>, including those described below.</p>
 </div>
 <div class="section" id="defining-a-method-alias">
-<span id="sec-beginner-newalias"></span><h2>Defining a Method Alias<a class="headerlink" href="#defining-a-method-alias" title="Permalink to this headline">¶</a></h2>
+<h2>Defining a Method Alias<a class="headerlink" href="#defining-a-method-alias" title="Permalink to this headline">¶</a></h2>
 <p>Since quantum chemical methods in PSI4 are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward
 to create aliases to commonly run calculations or to define hybrid methods. The
@@ -1392,7 +1379,7 @@ with the following command.</p>
 </div>
 </div>
 <div class="section" id="creating-a-new-database">
-<span id="sec-beginner-newdatabase"></span><h2>Creating a New Database<a class="headerlink" href="#creating-a-new-database" title="Permalink to this headline">¶</a></h2>
+<h2>Creating a New Database<a class="headerlink" href="#creating-a-new-database" title="Permalink to this headline">¶</a></h2>
 <p>A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system
 (may be a dimer) whose geometry you are possession of and whose electronic
@@ -1465,7 +1452,7 @@ variable for the next step.</p>
 </div>
 </div>
 <div class="section" id="function-intercalls">
-<span id="sec-intercalls"></span><h1>Function Intercalls<a class="headerlink" href="#function-intercalls" title="Permalink to this headline">¶</a></h1>
+<h1>Function Intercalls<a class="headerlink" href="#function-intercalls" title="Permalink to this headline">¶</a></h1>
 <p>table; handling func; no sow/reap</p>
 </div>
 <div class="section" id="embarrassing-parallelism">
@@ -1474,7 +1461,90 @@ variable for the next step.</p>
 </div>
 <div class="html-toggle section" id="psithon-programming-best-practices">
 <h1>Psithon Programming Best Practices<a class="headerlink" href="#psithon-programming-best-practices" title="Permalink to this headline">¶</a></h1>
-<p>stuff that&#8217;s in README;</p>
+<ul>
+<li><p class="first">Thy python functions shall always have final argument **kwargs, that they may take in and pass on keywords meant for other functions. Yea, even the run_mcscf(), and run_ccsd() -type functions that have no use for kwargs. The exceptions are python functions that are only helpers called by a driver function.</p>
+</li>
+<li><p class="first">Python functions should read the kwargs dictionary and (possibly) add to it. Functions should not pop or remove keywords from kwargs, even those keywords meaningful only to itself. This will ensure that the complete kwargs is available for pickling and sow/reap procedures. The exception is the molecule argument, which is read by the first function that gets ahold of it. This first function activates the molecule and pops it out of kwargs, effectively setting molecule for all subsequent functions. The code below should suffice.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Make sure the molecule the user provided is the active one</span>
+<span class="k">if</span> <span class="s">&#39;molecule&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+    <span class="n">activate</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">])</span>
+    <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">]</span>
+<span class="n">molecule</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
+<span class="n">molecule</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Preferrably, the python function signature (for functions intended to be called in input files) is <tt class="docutils literal"><span class="pre">function(name,</span> <span class="pre">**kwargs)</span></tt>. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see <a class="reference internal" href="#wrappers.database" title="wrappers.database"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.database()</span></tt></a> argument db_name for example).</p>
+</li>
+<li><p class="first">After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Case sensitivity for kwargs dictionary values still needs to be handled. The first line below shows how to convert argument values to lowercase for matching. When not matching a whole value such that regular expressions are needed, the second line below performs a case insensitive match.</p>
+<div class="highlight-python"><pre>if (kwargs['db_mode'].lower() == 'continuous'):
+if re.match(r'^sapt', name, flags=re.IGNORECASE):</pre>
+</div>
+</li>
+<li><p class="first">Match boolean keywords (db_cp in the example below) with expressions like the following, which allow case insensitive yes/true/on/1/no/false/off/0 user input. If your argument&#8217;s value is a derivative level, similarly, use input.der0th, input.der1st, and input.der2nd.</p>
+<div class="highlight-python"><pre>if input.yes.match(str(db_cp)):
+elif input.no.match(str(db_cp)):</pre>
+</div>
+</li>
+<li><p class="first">For keywords that might be used in other functions as well as your own, prepend the argument name with a short representation of your function name. For example, there are keywords cp_func, db_func, and opt_func to request what python function, if not energy(), is called by cp(), database(), and optimize().</p>
+</li>
+<li><p class="first">Upon checking in a new python file, edit the file <tt class="docutils literal"><span class="pre">psi4/doc/userman/source/index.rst</span></tt> and follow the instructions therein that your file may be autodocumented here.</p>
+</li>
+<li><p class="first">Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in <tt class="docutils literal"><span class="pre">psi4/lib/python/example_docstring</span></tt> and replace anything that looks like <tt class="docutils literal"><span class="pre">&lt;this&gt;</span></tt>. For a behind-the-scenes function or if you don&#8217;t want the bother of dealing with <a class="reference external" href="http://docutils.sourceforge.net/docs/user/rst/quickref.html">reStructuredText</a>, just write an ordinary docstring. It will get slurped into the documentation in plain text.</p>
+</li>
+<li><p class="first">Your python function should follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> conventions (without the line-length restriction). I&#8217;m aiming for files to pass the line below, unless for good reason.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span> <span class="n">pythonfile</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Your python function should not prevent any test case (<tt class="docutils literal"><span class="pre">make</span> <span class="pre">tests</span></tt>, NOT <tt class="docutils literal"><span class="pre">make</span> <span class="pre">longtests</span></tt>) from passing. A test case(s) should be written and checked in for any major python function, so that others do not break your code. If most of your work was on the python (as opposed to c++) side, the test case prefix pywrap_ is suggested.</p>
+</li>
+<li><p class="first">Be sure to set any new PSI variables through lines like those below. Especially if the function returns an energy, set the &#8216;current energy&#8217; variable. This last is needed to communicate with the optimizer.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>
+<span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 TOTAL ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+<span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Once your python function is fairly stable on its own, it&#8217;s potential for interoperability with energy()/opt()/cp()/db()/cbs()/etc. should be evaluated. If it makes physical sense that it should work, you should strive to make that interoperability a reality. Some steps:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">If any interoperability is possible, define an argument xx_func, where xx is a short name for your function. Add near the top of your function code like the below (less the final two lines). The net result of this code is that if the user specifies no *_func arguments, then energy() gets called. If the user defines xx_func, then its value gets called. If the user defines func, then its value gets reassigned to xx_func, func itself is deleted, and xx_func() gets called. Whatever is getting called is stored in func within the function.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Establish function to call</span>
+<span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="s">&#39;xx_func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;xx_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;xx_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;xx_func&#39;</span><span class="p">]</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">func</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s"> does not exist to be called by wrapper counterpoise_correct.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">db</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Wrapper xx is unhappy to be calling function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">If specific interoperabilities are known, code them in. For example, if xx shouldn&#8217;t call db, add the last two lines above to the xx function. If db shouldn&#8217;t call xx, add the following two lines below to the db function.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">xx</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Wrapper database is unhappy to be calling function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a multipart test case that runs some intercalls between your function and others (akin to pywrap_all). In trials, permute the order of calls a few times to expose any calls that don&#8217;t clean up after themselves and need further attention.</p>
+</li>
+<li><p class="first">When all is validated, add your findings to the great interoperability table in the documentation.</p>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
 </div>
 <div class="html-toggle section" id="psimod-methods">
 <h1>PsiMod Methods<a class="headerlink" href="#psimod-methods" title="Permalink to this headline">¶</a></h1>
@@ -1482,8 +1552,195 @@ variable for the next step.</p>
 <div class="html-toggle section" id="molecule-methods">
 <h1>Molecule Methods<a class="headerlink" href="#molecule-methods" title="Permalink to this headline">¶</a></h1>
 </div>
-<div class="html-toggle section" id="module-driver">
-<span id="expert"></span><h1>Expert<a class="headerlink" href="#module-driver" title="Permalink to this headline">¶</a></h1>
+<div class="html-toggle section" id="module-proc">
+<span id="expert"></span><h1>Expert<a class="headerlink" href="#module-proc" title="Permalink to this headline">¶</a></h1>
+<p>Module with functions that encode the sequence of PSI module
+calls for each of the <em>name</em> values of the energy(), optimize(),
+response(), and frequency() function.</p>
+<dl class="function">
+<dt id="proc.run_adc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_adc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_adc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_adc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+an algebraic diagrammatic construction calculation.</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">Get rid of active molecule lines- should be handled in energy.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_bccd">
+<tt class="descclassname">proc.</tt><tt class="descname">run_bccd</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_bccd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_bccd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a Brueckner CCD calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_bccd_t">
+<tt class="descclassname">proc.</tt><tt class="descname">run_bccd_t</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_bccd_t"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_bccd_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a Brueckner CCD(T) calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_cc_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_cc_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_cc_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_cc_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a CCSD and CCSD(T) gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_cc_response">
+<tt class="descclassname">proc.</tt><tt class="descname">run_cc_response</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_cc_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_cc_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a CC2 and CCSD calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_ccenergy">
+<tt class="descclassname">proc.</tt><tt class="descname">run_ccenergy</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_ccenergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_ccenergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a CCSD, CC2, and CC3 calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_dcft">
+<tt class="descclassname">proc.</tt><tt class="descname">run_dcft</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dcft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dcft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a density cumulant functional theory calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_detci">
+<tt class="descclassname">proc.</tt><tt class="descname">run_detci</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_detci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_detci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a configuration interaction calculation, namely FCI,
+CIn, MPn, and ZAPTn.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_dfcc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_dfcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dfcc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a density-fitted coupled-cluster calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_dfmp2">
+<tt class="descclassname">proc.</tt><tt class="descname">run_dfmp2</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dfmp2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dfmp2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a density-fitted MP2 calculation.</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">Get rid of madness-era restart file</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_eom_cc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_eom_cc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_eom_cc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_eom_cc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+an EOM-CC calculation, namely EOM-CC2, EOM-CCSD, and EOM-CC3.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_eom_cc_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_eom_cc_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_eom_cc_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_eom_cc_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+an EOM-CCSD gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_libfock">
+<tt class="descclassname">proc.</tt><tt class="descname">run_libfock</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_libfock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_libfock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a calculation through libfock, namely RCPHF,
+RCIS, RTDHF, RTDA, and RTDDFT.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mcscf">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mcscf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mcscf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mcscf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a multiconfigurational self-consistent-field calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a MP2 calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a MP2 gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2c">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2c</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a coupled MP2 calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2drpa">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2drpa</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2drpa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2drpa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a MP2-DRPA calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mrcc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mrcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mrcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mrcc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that prepares environment and input files
+for a calculation calling Kallay&#8217;s MRCC code.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_sapt">
+<tt class="descclassname">proc.</tt><tt class="descname">run_sapt</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_sapt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_sapt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a SAPT calculation of any level.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_sapt_ct">
+<tt class="descclassname">proc.</tt><tt class="descname">run_sapt_ct</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_sapt_ct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_sapt_ct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a charge-transfer SAPT calcuation of any level.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_scf">
+<tt class="descclassname">proc.</tt><tt class="descname">run_scf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_scf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_scf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a self-consistent-field theory (HF &amp; DFT) calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_scf_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_scf_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_scf_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_scf_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a SCF gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.scf_helper">
+<tt class="descclassname">proc.</tt><tt class="descname">scf_helper</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#scf_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.scf_helper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function serving as helper to SCF, choosing whether to cast
+up or just run SCF with a standard guess. This preserves
+previous SCF options set by other procedures (e.g., SAPT
+output file types for SCF).</p>
+</dd></dl>
+
+<span class="target" id="module-driver"></span><p>Module with a <em>procedures</em> dictionary specifying available quantum
+chemical methods and functions driving the main quantum chemical
+functionality, namely single-point energies, geometry optimizations,
+response properties, and vibrational frequency calculations.</p>
 <dl class="function">
 <dt id="driver.gradient">
 <tt class="descclassname">driver.</tt><tt class="descname">gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.gradient" title="Permalink to this definition">¶</a></dt>
@@ -1504,7 +1761,10 @@ deciding analytic or finite difference.</p>
 level information like 4 for CISDTQ or MRCCSDTQ.</p>
 </dd></dl>
 
-<span class="target" id="module-wrappers"></span><dl class="function">
+<span class="target" id="module-wrappers"></span><p>Module with functions that call the four main <a class="reference internal" href="#module-driver" title="driver"><tt class="xref py py-mod docutils literal"><span class="pre">driver</span></tt></a>
+functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>, 
+<a class="reference internal" href="#driver.response" title="driver.response"><tt class="xref py py-mod docutils literal"><span class="pre">driver.response</span></tt></a>, and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-mod docutils literal"><span class="pre">driver.frequency()</span></tt></a>.</p>
+<dl class="function">
 <dt id="wrappers.call_function_in_1st_argument">
 <tt class="descclassname">wrappers.</tt><tt class="descname">call_function_in_1st_argument</tt><big>(</big><em>funcarg</em>, <em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#call_function_in_1st_argument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.call_function_in_1st_argument" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to make primary function call to energy(), opt(), etc.
@@ -1528,7 +1788,7 @@ entries. There is no guarantee of which duplicate entry is dropped.</p>
 <tt class="descclassname">wrappers.</tt><tt class="descname">reconstitute_bracketed_basis</tt><big>(</big><em>needarray</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#reconstitute_bracketed_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.reconstitute_bracketed_basis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to reform a bracketed basis set string from a sequential series
 of basis sets (e.g, form &#8216;cc-pv[q5]z&#8217; from array [cc-pvqz, cc-pv5z]). The
-basis set array is extracted from the f_basis field of a NEED dictionary in
+basis set array is extracted from the <em>f_basis</em> field of a <em>NEED</em> dictionary in
 <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>. Result is used to print a nicely
 formatted basis set string in the results table.</p>
 </dd></dl>
@@ -1544,8 +1804,8 @@ into [scf, tot] and &#8216;mp2corl&#8217; into [mp2, corl].</p>
 <dt id="wrappers.tblhead">
 <tt class="descclassname">wrappers.</tt><tt class="descname">tblhead</tt><big>(</big><em>tbl_maxrgt</em>, <em>tbl_delimit</em>, <em>ttype</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#tblhead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.tblhead" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function that prints the header for the changable-width results tables in db().
-tbl_maxrgt is the number of reagent columns the table must plan for. tbl_delimit
-is a string of dashes of the correct length to set off the table. ttype is 1 for
+<em>tbl_maxrgt</em> is the number of reagent columns the table must plan for. <em>tbl_delimit</em>
+is a string of dashes of the correct length to set off the table. <em>ttype</em> is 1 for
 tables comparing the computed values to the reference or 2 for simple tabulation
 and sum of the computed values.</p>
 </dd></dl>
@@ -1553,9 +1813,9 @@ and sum of the computed values.</p>
 <dl class="function">
 <dt id="wrappers.validate_bracketed_basis">
 <tt class="descclassname">wrappers.</tt><tt class="descname">validate_bracketed_basis</tt><big>(</big><em>basisstring</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#validate_bracketed_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.validate_bracketed_basis" title="Permalink to this definition">¶</a></dt>
-<dd><p>Function to transform and validate basis sets for cbs(). A basis set with no 
+<dd><p>Function to transform and validate basis sets for cbs(). A basis set with no
 paired square brackets is passed through with zeta level 0 (e.g., &#8216;6-31+G(d,p)&#8217;
-is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is 
+is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is
 checked for sensible sequence and Dunning-ness and returned as separate basis
 sets (e.g., &#8216;cc-pV[Q5]Z&#8217; is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note
 that this function has no communication with the basis set library to check
@@ -1603,39 +1863,139 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 <p><img src="_images/math/4633e65e7989d388aa3eaf4c2a0163a8603d06db.png" alt="E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}"/></p>
 </div></dd></dl>
 
-<span class="target" id="module-pubchem"></span><dl class="class">
-<dt id="pubchem.PubChemObj">
-<em class="property">class </em><tt class="descclassname">pubchem.</tt><tt class="descname">PubChemObj</tt><big>(</big><em>cid</em>, <em>mf</em>, <em>iupac</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-procutil"></span><dl class="function">
+<dt id="procutil.format_kwargs_for_input">
+<tt class="descclassname">procutil.</tt><tt class="descname">format_kwargs_for_input</tt><big>(</big><em>filename</em>, <em>lmode=1</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/procutil.html#format_kwargs_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_kwargs_for_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="procutil.format_molecule_for_input">
+<tt class="descclassname">procutil.</tt><tt class="descname">format_molecule_for_input</tt><big>(</big><em>mol</em><big>)</big><a class="reference internal" href="_modules/procutil.html#format_molecule_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_molecule_for_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="procutil.format_options_for_input">
+<tt class="descclassname">procutil.</tt><tt class="descname">format_options_for_input</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/procutil.html#format_options_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_options_for_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="procutil.get_psifile">
+<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='21061'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="procutil.kwargs_lower">
+<tt class="descclassname">procutil.</tt><tt class="descname">kwargs_lower</tt><big>(</big><em>kwargs</em><big>)</big><a class="reference internal" href="_modules/procutil.html#kwargs_lower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.kwargs_lower" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-psiexceptions"></span><dl class="exception">
+<dt id="psiexceptions.PsiException">
+<em class="property">exception </em><tt class="descclassname">psiexceptions.</tt><tt class="descname">PsiException</tt><a class="reference internal" href="_modules/psiexceptions.html#PsiException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psiexceptions.PsiException" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="exception">
+<dt id="psiexceptions.ValidationError">
+<em class="property">exception </em><tt class="descclassname">psiexceptions.</tt><tt class="descname">ValidationError</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="_modules/psiexceptions.html#ValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psiexceptions.ValidationError" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-text"></span><dl class="class">
+<dt id="text.Table">
+<em class="property">class </em><tt class="descclassname">text.</tt><tt class="descname">Table</tt><big>(</big><em>rows=()</em>, <em>row_label_width=10</em>, <em>row_label_precision=4</em>, <em>cols=()</em>, <em>width=16</em>, <em>precision=10</em><big>)</big><a class="reference internal" href="_modules/text.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
-<dt id="pubchem.PubChemObj.getCartesian">
-<tt class="descname">getCartesian</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getCartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getCartesian" title="Permalink to this definition">¶</a></dt>
+<dt id="text.Table.absolute_to_relative">
+<tt class="descname">absolute_to_relative</tt><big>(</big><em>Factor=627.5095</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.absolute_to_relative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.absolute_to_relative" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pubchem.PubChemObj.getMoleculeString">
-<tt class="descname">getMoleculeString</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getMoleculeString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getMoleculeString" title="Permalink to this definition">¶</a></dt>
+<dt id="text.Table.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/text.html#Table.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.copy" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pubchem.PubChemObj.getSDF">
-<tt class="descname">getSDF</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getSDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getSDF" title="Permalink to this definition">¶</a></dt>
+<dt id="text.Table.format_label">
+<tt class="descname">format_label</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/text.html#Table.format_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.format_label" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pubchem.PubChemObj.getXYZFile">
-<tt class="descname">getXYZFile</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getXYZFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getXYZFile" title="Permalink to this definition">¶</a></dt>
+<dt id="text.Table.format_values">
+<tt class="descname">format_values</tt><big>(</big><em>values</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.format_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.format_values" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="method">
-<dt id="pubchem.PubChemObj.name">
-<tt class="descname">name</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.name" title="Permalink to this definition">¶</a></dt>
+<dt id="text.Table.save">
+<tt class="descname">save</tt><big>(</big><em>file</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.save" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="text.Table.scale">
+<tt class="descname">scale</tt><big>(</big><em>Factor=627.5095</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.scale" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="function">
-<dt id="pubchem.getPubChemResults">
-<tt class="descclassname">pubchem.</tt><tt class="descname">getPubChemResults</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#getPubChemResults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.getPubChemResults" title="Permalink to this definition">¶</a></dt>
+<dt id="text.banner">
+<tt class="descclassname">text.</tt><tt class="descname">banner</tt><big>(</big><em>text</em>, <em>type=1</em>, <em>width=35</em><big>)</big><a class="reference internal" href="_modules/text.html#banner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.banner" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="text.print_stderr">
+<tt class="descclassname">text.</tt><tt class="descname">print_stderr</tt><big>(</big><em>stuff</em><big>)</big><a class="reference internal" href="_modules/text.html#print_stderr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.print_stderr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="text.print_stdout">
+<tt class="descclassname">text.</tt><tt class="descname">print_stdout</tt><big>(</big><em>stuff</em><big>)</big><a class="reference internal" href="_modules/text.html#print_stdout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.print_stdout" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-util"></span><dl class="function">
+<dt id="util.compare_integers">
+<tt class="descclassname">util.</tt><tt class="descname">compare_integers</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_integers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_integers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.compare_matrices">
+<tt class="descclassname">util.</tt><tt class="descname">compare_matrices</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_matrices" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.compare_strings">
+<tt class="descclassname">util.</tt><tt class="descname">compare_strings</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_strings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_strings" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.compare_values">
+<tt class="descclassname">util.</tt><tt class="descname">compare_values</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.compare_vectors">
+<tt class="descclassname">util.</tt><tt class="descname">compare_vectors</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_vectors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.get_memory">
+<tt class="descclassname">util.</tt><tt class="descname">get_memory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_memory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.get_num_threads">
+<tt class="descclassname">util.</tt><tt class="descname">get_num_threads</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_num_threads" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.set_memory">
+<tt class="descclassname">util.</tt><tt class="descname">set_memory</tt><big>(</big><em>bytes</em><big>)</big><a class="reference internal" href="_modules/util.html#set_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_memory" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.set_num_threads">
+<tt class="descclassname">util.</tt><tt class="descname">set_num_threads</tt><big>(</big><em>nthread</em><big>)</big><a class="reference internal" href="_modules/util.html#set_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_num_threads" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="util.success">
+<tt class="descclassname">util.</tt><tt class="descname">success</tt><big>(</big><em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#success"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.success" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <span class="target" id="module-qmmm"></span><dl class="class">
@@ -1682,6 +2042,131 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 <dd></dd></dl>
 
 </dd></dl>
+
+<span class="target" id="module-input"></span><dl class="function">
+<dt id="input.bad_option_syntax">
+<tt class="descclassname">input.</tt><tt class="descname">bad_option_syntax</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#bad_option_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.bad_option_syntax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.check_parentheses_and_brackets">
+<tt class="descclassname">input.</tt><tt class="descname">check_parentheses_and_brackets</tt><big>(</big><em>input_string</em>, <em>exit_on_error</em><big>)</big><a class="reference internal" href="_modules/input.html#check_parentheses_and_brackets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.check_parentheses_and_brackets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.parse_multiline_array">
+<tt class="descclassname">input.</tt><tt class="descname">parse_multiline_array</tt><big>(</big><em>input_list</em><big>)</big><a class="reference internal" href="_modules/input.html#parse_multiline_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.parse_multiline_array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_basis_block">
+<tt class="descclassname">input.</tt><tt class="descname">process_basis_block</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_basis_file">
+<tt class="descclassname">input.</tt><tt class="descname">process_basis_file</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_external_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_external_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_external_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_external_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_extract_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_extract_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_extract_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_extract_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_input">
+<tt class="descclassname">input.</tt><tt class="descname">process_input</tt><big>(</big><em>raw_input</em>, <em>print_level=1</em><big>)</big><a class="reference internal" href="_modules/input.html#process_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_memory_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_memory_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_memory_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_memory_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_molecule_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_molecule_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_molecule_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_molecule_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_multiline_arrays">
+<tt class="descclassname">input.</tt><tt class="descname">process_multiline_arrays</tt><big>(</big><em>inputfile</em><big>)</big><a class="reference internal" href="_modules/input.html#process_multiline_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_multiline_arrays" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_option">
+<tt class="descclassname">input.</tt><tt class="descname">process_option</tt><big>(</big><em>spaces</em>, <em>module</em>, <em>key</em>, <em>value</em>, <em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#process_option"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_option" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_print_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_print_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_print_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_print_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_pubchem_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_pubchem_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_pubchem_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_pubchem_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_set_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_set_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_set_commands">
+<tt class="descclassname">input.</tt><tt class="descname">process_set_commands</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_commands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_word_quotes">
+<tt class="descclassname">input.</tt><tt class="descname">process_word_quotes</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_word_quotes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_word_quotes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.quotify">
+<tt class="descclassname">input.</tt><tt class="descname">quotify</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/input.html#quotify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.quotify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<span class="target" id="module-physconst"></span><span class="target" id="module-pubchem"></span><dl class="class">
+<dt id="pubchem.PubChemObj">
+<em class="property">class </em><tt class="descclassname">pubchem.</tt><tt class="descname">PubChemObj</tt><big>(</big><em>cid</em>, <em>mf</em>, <em>iupac</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pubchem.PubChemObj.getCartesian">
+<tt class="descname">getCartesian</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getCartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getCartesian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.getMoleculeString">
+<tt class="descname">getMoleculeString</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getMoleculeString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getMoleculeString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.getSDF">
+<tt class="descname">getSDF</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getSDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getSDF" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.getXYZFile">
+<tt class="descname">getXYZFile</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getXYZFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getXYZFile" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.name">
+<tt class="descname">name</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pubchem.getPubChemResults">
+<tt class="descclassname">pubchem.</tt><tt class="descname">getPubChemResults</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#getPubChemResults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.getPubChemResults" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 <span class="target" id="module-inpsight"></span><dl class="class">
 <dt id="inpsight.InPsight">
@@ -1843,351 +2328,6 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 
 </dd></dl>
 
-<span class="target" id="module-input"></span><dl class="function">
-<dt id="input.bad_option_syntax">
-<tt class="descclassname">input.</tt><tt class="descname">bad_option_syntax</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#bad_option_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.bad_option_syntax" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.check_parentheses_and_brackets">
-<tt class="descclassname">input.</tt><tt class="descname">check_parentheses_and_brackets</tt><big>(</big><em>input_string</em>, <em>exit_on_error</em><big>)</big><a class="reference internal" href="_modules/input.html#check_parentheses_and_brackets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.check_parentheses_and_brackets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.parse_multiline_array">
-<tt class="descclassname">input.</tt><tt class="descname">parse_multiline_array</tt><big>(</big><em>input_list</em><big>)</big><a class="reference internal" href="_modules/input.html#parse_multiline_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.parse_multiline_array" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_basis_block">
-<tt class="descclassname">input.</tt><tt class="descname">process_basis_block</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_block" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_basis_file">
-<tt class="descclassname">input.</tt><tt class="descname">process_basis_file</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_file" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_external_command">
-<tt class="descclassname">input.</tt><tt class="descname">process_external_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_external_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_external_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_extract_command">
-<tt class="descclassname">input.</tt><tt class="descname">process_extract_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_extract_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_extract_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_input">
-<tt class="descclassname">input.</tt><tt class="descname">process_input</tt><big>(</big><em>raw_input</em>, <em>print_level=1</em><big>)</big><a class="reference internal" href="_modules/input.html#process_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_memory_command">
-<tt class="descclassname">input.</tt><tt class="descname">process_memory_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_memory_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_memory_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_molecule_command">
-<tt class="descclassname">input.</tt><tt class="descname">process_molecule_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_molecule_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_molecule_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_multiline_arrays">
-<tt class="descclassname">input.</tt><tt class="descname">process_multiline_arrays</tt><big>(</big><em>inputfile</em><big>)</big><a class="reference internal" href="_modules/input.html#process_multiline_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_multiline_arrays" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_option">
-<tt class="descclassname">input.</tt><tt class="descname">process_option</tt><big>(</big><em>spaces</em>, <em>module</em>, <em>key</em>, <em>value</em>, <em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#process_option"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_option" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_print_command">
-<tt class="descclassname">input.</tt><tt class="descname">process_print_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_print_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_print_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_pubchem_command">
-<tt class="descclassname">input.</tt><tt class="descname">process_pubchem_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_pubchem_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_pubchem_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_set_command">
-<tt class="descclassname">input.</tt><tt class="descname">process_set_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_set_commands">
-<tt class="descclassname">input.</tt><tt class="descname">process_set_commands</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_commands" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.process_word_quotes">
-<tt class="descclassname">input.</tt><tt class="descname">process_word_quotes</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_word_quotes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_word_quotes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="input.quotify">
-<tt class="descclassname">input.</tt><tt class="descname">quotify</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/input.html#quotify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.quotify" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<span class="target" id="module-physconst"></span><span class="target" id="module-proc"></span><dl class="function">
-<dt id="proc.run_adc">
-<tt class="descclassname">proc.</tt><tt class="descname">run_adc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_adc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_adc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_bccd">
-<tt class="descclassname">proc.</tt><tt class="descname">run_bccd</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_bccd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_bccd" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_bccd_t">
-<tt class="descclassname">proc.</tt><tt class="descname">run_bccd_t</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_bccd_t"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_bccd_t" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_cc_gradient">
-<tt class="descclassname">proc.</tt><tt class="descname">run_cc_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_cc_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_cc_gradient" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_cc_response">
-<tt class="descclassname">proc.</tt><tt class="descname">run_cc_response</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_cc_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_cc_response" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_ccenergy">
-<tt class="descclassname">proc.</tt><tt class="descname">run_ccenergy</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_ccenergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_ccenergy" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_dcft">
-<tt class="descclassname">proc.</tt><tt class="descname">run_dcft</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dcft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dcft" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_detci">
-<tt class="descclassname">proc.</tt><tt class="descname">run_detci</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_detci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_detci" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_dfcc">
-<tt class="descclassname">proc.</tt><tt class="descname">run_dfcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dfcc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_dfmp2">
-<tt class="descclassname">proc.</tt><tt class="descname">run_dfmp2</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dfmp2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dfmp2" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_eom_cc">
-<tt class="descclassname">proc.</tt><tt class="descname">run_eom_cc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_eom_cc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_eom_cc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_eom_cc_gradient">
-<tt class="descclassname">proc.</tt><tt class="descname">run_eom_cc_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_eom_cc_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_eom_cc_gradient" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_libfock">
-<tt class="descclassname">proc.</tt><tt class="descname">run_libfock</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_libfock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_libfock" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_mcscf">
-<tt class="descclassname">proc.</tt><tt class="descname">run_mcscf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mcscf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mcscf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_mp2">
-<tt class="descclassname">proc.</tt><tt class="descname">run_mp2</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_mp2_gradient">
-<tt class="descclassname">proc.</tt><tt class="descname">run_mp2_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2_gradient" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_mp2c">
-<tt class="descclassname">proc.</tt><tt class="descname">run_mp2c</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2c" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_mp2drpa">
-<tt class="descclassname">proc.</tt><tt class="descname">run_mp2drpa</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2drpa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2drpa" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_mrcc">
-<tt class="descclassname">proc.</tt><tt class="descname">run_mrcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mrcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mrcc" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_sapt">
-<tt class="descclassname">proc.</tt><tt class="descname">run_sapt</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_sapt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_sapt" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_sapt_ct">
-<tt class="descclassname">proc.</tt><tt class="descname">run_sapt_ct</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_sapt_ct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_sapt_ct" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_scf">
-<tt class="descclassname">proc.</tt><tt class="descname">run_scf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_scf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_scf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.run_scf_gradient">
-<tt class="descclassname">proc.</tt><tt class="descname">run_scf_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_scf_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_scf_gradient" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="proc.scf_helper">
-<tt class="descclassname">proc.</tt><tt class="descname">scf_helper</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#scf_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.scf_helper" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<span class="target" id="module-procutil"></span><dl class="function">
-<dt id="procutil.format_kwargs_for_input">
-<tt class="descclassname">procutil.</tt><tt class="descname">format_kwargs_for_input</tt><big>(</big><em>filename</em>, <em>lmode=1</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/procutil.html#format_kwargs_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_kwargs_for_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="procutil.format_molecule_for_input">
-<tt class="descclassname">procutil.</tt><tt class="descname">format_molecule_for_input</tt><big>(</big><em>mol</em><big>)</big><a class="reference internal" href="_modules/procutil.html#format_molecule_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_molecule_for_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="procutil.format_options_for_input">
-<tt class="descclassname">procutil.</tt><tt class="descname">format_options_for_input</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/procutil.html#format_options_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_options_for_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="procutil.get_psifile">
-<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='16888'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="procutil.kwargs_lower">
-<tt class="descclassname">procutil.</tt><tt class="descname">kwargs_lower</tt><big>(</big><em>kwargs</em><big>)</big><a class="reference internal" href="_modules/procutil.html#kwargs_lower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.kwargs_lower" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<span class="target" id="module-psiexceptions"></span><dl class="exception">
-<dt id="psiexceptions.PsiException">
-<em class="property">exception </em><tt class="descclassname">psiexceptions.</tt><tt class="descname">PsiException</tt><a class="reference internal" href="_modules/psiexceptions.html#PsiException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psiexceptions.PsiException" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="exception">
-<dt id="psiexceptions.ValidationError">
-<em class="property">exception </em><tt class="descclassname">psiexceptions.</tt><tt class="descname">ValidationError</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="_modules/psiexceptions.html#ValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psiexceptions.ValidationError" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<span class="target" id="module-text"></span><dl class="class">
-<dt id="text.Table">
-<em class="property">class </em><tt class="descclassname">text.</tt><tt class="descname">Table</tt><big>(</big><em>rows=()</em>, <em>row_label_width=10</em>, <em>row_label_precision=4</em>, <em>cols=()</em>, <em>width=16</em>, <em>precision=10</em><big>)</big><a class="reference internal" href="_modules/text.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="method">
-<dt id="text.Table.absolute_to_relative">
-<tt class="descname">absolute_to_relative</tt><big>(</big><em>Factor=627.5095</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.absolute_to_relative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.absolute_to_relative" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="text.Table.copy">
-<tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/text.html#Table.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.copy" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="text.Table.format_label">
-<tt class="descname">format_label</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/text.html#Table.format_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.format_label" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="text.Table.format_values">
-<tt class="descname">format_values</tt><big>(</big><em>values</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.format_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.format_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="text.Table.save">
-<tt class="descname">save</tt><big>(</big><em>file</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.save" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="method">
-<dt id="text.Table.scale">
-<tt class="descname">scale</tt><big>(</big><em>Factor=627.5095</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.scale" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="text.banner">
-<tt class="descclassname">text.</tt><tt class="descname">banner</tt><big>(</big><em>text</em>, <em>type=1</em>, <em>width=35</em><big>)</big><a class="reference internal" href="_modules/text.html#banner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.banner" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="text.print_stderr">
-<tt class="descclassname">text.</tt><tt class="descname">print_stderr</tt><big>(</big><em>stuff</em><big>)</big><a class="reference internal" href="_modules/text.html#print_stderr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.print_stderr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="text.print_stdout">
-<tt class="descclassname">text.</tt><tt class="descname">print_stdout</tt><big>(</big><em>stuff</em><big>)</big><a class="reference internal" href="_modules/text.html#print_stdout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.print_stdout" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<span class="target" id="module-util"></span><dl class="function">
-<dt id="util.compare_integers">
-<tt class="descclassname">util.</tt><tt class="descname">compare_integers</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_integers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_integers" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.compare_matrices">
-<tt class="descclassname">util.</tt><tt class="descname">compare_matrices</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_matrices" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.compare_strings">
-<tt class="descclassname">util.</tt><tt class="descname">compare_strings</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_strings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_strings" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.compare_values">
-<tt class="descclassname">util.</tt><tt class="descname">compare_values</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_values" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.compare_vectors">
-<tt class="descclassname">util.</tt><tt class="descname">compare_vectors</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_vectors" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.get_memory">
-<tt class="descclassname">util.</tt><tt class="descname">get_memory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_memory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.get_num_threads">
-<tt class="descclassname">util.</tt><tt class="descname">get_num_threads</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_num_threads" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.set_memory">
-<tt class="descclassname">util.</tt><tt class="descname">set_memory</tt><big>(</big><em>bytes</em><big>)</big><a class="reference internal" href="_modules/util.html#set_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_memory" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.set_num_threads">
-<tt class="descclassname">util.</tt><tt class="descname">set_num_threads</tt><big>(</big><em>nthread</em><big>)</big><a class="reference internal" href="_modules/util.html#set_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_num_threads" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="function">
-<dt id="util.success">
-<tt class="descclassname">util.</tt><tt class="descname">success</tt><big>(</big><em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#success"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.success" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and Tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
@@ -2232,7 +2372,7 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 <li><a class="reference internal" href="#psithon-programming-best-practices">Psithon Programming Best Practices</a></li>
 <li><a class="reference internal" href="#psimod-methods">PsiMod Methods</a></li>
 <li><a class="reference internal" href="#molecule-methods">Molecule Methods</a></li>
-<li><a class="reference internal" href="#module-driver">Expert</a></li>
+<li><a class="reference internal" href="#module-proc">Expert</a></li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and Tables</a></li>
 </ul>
 
@@ -2277,7 +2417,7 @@ performed according to <a class="reference internal" href="#wrappers.corl_xtpl_h
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 21, 2012.
+      Last updated on Feb 22, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
