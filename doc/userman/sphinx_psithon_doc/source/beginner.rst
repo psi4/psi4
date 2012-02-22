@@ -2,8 +2,6 @@
 .. note:: No recompile of the PSI program is necessary for changes made to
     files in ``$PSIDATADIR``, including those described below.
 
-.. _sec_beginner_newalias:
-
 Defining a Method Alias
 =======================
 
@@ -85,8 +83,6 @@ with the following command. ::
 
     energy('mp2.5')
 
-
-.. _sec_beginner_newdatabase:
 
 Creating a New Database
 =======================

@@ -110,13 +110,13 @@ Beginner Psithon Programming
 
 .. include:: ./beginner.rst
 
-.. _sec_intercalls:
 
 ===================
 Function Intercalls
 ===================
 
 table; handling func; no sow/reap
+
 
 ========================
 Embarrassing Parallelism
@@ -130,22 +130,29 @@ what functions; no intercalls; no local set; special section in parameter list
 Psithon Programming Best Practices
 ==================================
 
-stuff that's in README;
+.. include:: ./bestpractices.rst
+
 
 .. rst-class:: html-toggle
 ==============
 PsiMod Methods
 ==============
 
+
 .. rst-class:: html-toggle
 ================
 Molecule Methods 
 ================
 
+
 .. rst-class:: html-toggle
 ======
 Expert
 ======
+
+.. automodule:: proc
+    :members:
+    :undoc-members:
 
 .. automodule:: driver
     :members:
@@ -162,30 +169,6 @@ Expert
     :members:
     :undoc-members:
 
-.. automodule:: pubchem
-    :members:
-    :undoc-members:
-
-.. automodule:: qmmm
-    :members:
-    :undoc-members:
-
-.. automodule:: inpsight
-    :members:
-    :undoc-members:
-
-.. automodule:: input
-    :members:
-    :undoc-members:
-
-.. automodule:: physconst
-    :members:
-    :undoc-members:
-
-.. automodule:: proc
-    :members:
-    :undoc-members:
-
 .. automodule:: procutil
     :members:
     :undoc-members:
@@ -199,6 +182,26 @@ Expert
     :undoc-members:
 
 .. automodule:: util
+    :members:
+    :undoc-members:
+
+.. automodule:: qmmm
+    :members:
+    :undoc-members:
+
+.. automodule:: input
+    :members:
+    :undoc-members:
+
+.. automodule:: physconst
+    :members:
+    :undoc-members:
+
+.. automodule:: pubchem
+    :members:
+    :undoc-members:
+
+.. automodule:: inpsight
     :members:
     :undoc-members:
 

@@ -86,7 +86,7 @@ popular chemical databases.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">It is very easy to make a database from a collection of xyz files
 using the script <tt class="docutils literal"><span class="pre">$PSIDATADIR/databases/ixyz2database.pl</span></tt>.
-See <a class="reference internal" href="index.html#sec-beginner-newdatabase"><em>Creating a New Database</em></a> for details.</p>
+See <a href="#id33"><span class="problematic" id="id34">`Creating a New Database`_</span></a> for details.</p>
 </div>
 <div class="admonition caution">
 <p class="first admonition-title">Caution</p>
@@ -102,13 +102,13 @@ See <a class="reference internal" href="index.html#sec-beginner-newdatabase"><em
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'sapt0'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
-to be applied to the database. May be any valid argument to 
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the database. May be any valid argument to
 <a class="reference internal" href="index.html#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
 </li>
 <li><strong>db_name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'BASIC'</span></tt> || <tt class="docutils literal"><span class="pre">'S22'</span></tt> || <tt class="docutils literal"><span class="pre">'HTBH'</span></tt> || etc.</p>
-<p>Second argument, usually unlabeled. Indicates the requested database 
-name, matching the name of a python file in <tt class="docutils literal"><span class="pre">psi4/lib/databases</span></tt>. 
+<p>Second argument, usually unlabeled. Indicates the requested database
+name, matching the name of a python file in <tt class="docutils literal"><span class="pre">psi4/lib/databases</span></tt>.
 Consult that directory for available databases and literature citations.</p>
 </li>
 <li><strong>func</strong> (<em>function</em>) &#8211; <p><a href="#id1"><span class="problematic" id="id2">|dl|</span></a> <tt class="docutils literal"><span class="pre">energy</span></tt> <a href="#id3"><span class="problematic" id="id4">|dr|</span></a> || <tt class="docutils literal"><span class="pre">optimize</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
@@ -116,7 +116,7 @@ Consult that directory for available databases and literature citations.</p>
 member. The default performs a single-point <tt class="docutils literal"><span class="pre">energy('name')</span></tt>, while
 <tt class="docutils literal"><span class="pre">optimize</span></tt> perfoms a geometry optimization on each reagent, and
 <tt class="docutils literal"><span class="pre">cbs</span></tt> performs a compound single-point energy. If a nested series
-of python functions is intended (see <a class="reference internal" href="index.html#sec-intercalls"><em>Function Intercalls</em></a>), use
+of python functions is intended (see <a href="#id35"><span class="problematic" id="id36">`Function Intercalls`_</span></a>), use
 keyword <tt class="docutils literal"><span class="pre">db_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
 </li>
 <li><strong>mode</strong> (<em>string</em>) &#8211; <p><a href="#id5"><span class="problematic" id="id6">|dl|</span></a> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <a href="#id7"><span class="problematic" id="id8">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
@@ -126,13 +126,13 @@ farmed out in an embarrassingly parallel fashion
 (<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
 <tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</p>
 </li>
-<li><strong>cp</strong> (<em>bool</em>) &#8211; <p><a href="#id9"><span class="problematic" id="id10">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id11"><span class="problematic" id="id12">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'on'</span></tt></p>
+<li><strong>cp</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id9"><span class="problematic" id="id10">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id11"><span class="problematic" id="id12">|dr|</span></a></p>
 <p>Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the <a class="reference internal" href="index.html#wrappers.cp" title="wrappers.cp"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.cp()</span></tt></a>
 wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt>.  Option
 valid only for databases consisting of bimolecular complexes.</p>
 </li>
-<li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><a href="#id13"><span class="problematic" id="id14">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id15"><span class="problematic" id="id16">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'on'</span></tt></p>
+<li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id13"><span class="problematic" id="id14">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id15"><span class="problematic" id="id16">|dr|</span></a></p>
 <p>Indicates whether correction for the deformation energy is
 employed in computing interaction energies.  Option valid only for
 databases consisting of bimolecular complexes with non-frozen
@@ -144,7 +144,7 @@ employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or wh
 (<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
 symmetry, and this will be set by the database() wrapper.</p>
 </li>
-<li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><a href="#id21"><span class="problematic" id="id22">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id23"><span class="problematic" id="id24">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'on'</span></tt></p>
+<li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id21"><span class="problematic" id="id22">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id23"><span class="problematic" id="id24">|dr|</span></a></p>
 <p>Indicates whether zero-point-energy corrections are appended to
 single-point energy values. Option valid only for certain
 thermochemical databases. Disabled until Hessians ready.</p>
@@ -330,7 +330,7 @@ Mean Absolute Dev                         0.0201
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 21, 2012.
+      Last updated on Feb 22, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
