@@ -3083,35 +3083,12 @@ void PSJK::postiterations()
 }
 void PSJK::compute_JK()
 {
-    build_JK_debug("SR", theta_);
-
-    for (int A = 0; A < D_.size(); A++) {
-        J_ao_[A]->zero();
-        K_ao_[A]->zero();
-    }
-
     // Short Range 
     build_JK_SR(); 
-
-    for (int A = 0; A < D_.size(); A++) {
-        J_ao_[A]->print();
-        K_ao_[A]->print();
-    }
-
-    build_JK_debug("LR", theta_);
-
-    for (int A = 0; A < D_.size(); A++) {
-        J_ao_[A]->zero();
-        K_ao_[A]->zero();
-    }
 
     // Long Range
     build_JK_LR();
 
-    for (int A = 0; A < D_.size(); A++) {
-        J_ao_[A]->print();
-        K_ao_[A]->print();
-    }
 
     // TODO wK
 }
@@ -3345,7 +3322,7 @@ void PSJK::block_K(double** Amnp, int Pstart, int nP, const std::vector<SharedMa
             }
         }
 
-        C_DGEMM('T','N',nbf,nbf,nP,1.0,Vp[0],nbf,Wp[0],nbf,1.0,Kp[0],nbf);
+        C_DGEMM('N','N',nbf,nbf,nP,1.0,&Rp[0][Pstart],npoints,Wp[0],nbf,1.0,Kp[0],nbf);
     }
 }
 void PSJK::build_JK_SR()
