@@ -546,10 +546,19 @@ def run_dfcc(name, **kwargs):
     return e_dfcc
 
 def run_psimrcc(name, **kwargs):
+    """Function encoding sequence of PSI module calls for a PSIMRCC computation
+     using a reference from the MCSCF module
+
+    """  
     run_mcscf(name, **kwargs)
     return PsiMod.psimrcc()
 
 def run_psimrcc_scf(name, **kwargs):
+    """Function encoding sequence of PSI module calls for a PSIMRCC computation
+     using a reference from the SCF module
+
+    """ 
+
     run_scf(name, **kwargs)
     return PsiMod.psimrcc()
 
