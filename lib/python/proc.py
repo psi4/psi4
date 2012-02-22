@@ -9,7 +9,7 @@ import shutil
 import os
 import subprocess
 import re
-from input import yes, no, der0th, der1st, der2nd
+import input
 import physconst
 from molecule import *
 from text import *

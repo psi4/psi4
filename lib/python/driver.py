@@ -6,7 +6,7 @@ response properties, and vibrational frequency calculations.
 """
 
 import PsiMod
-from input import yes, no, der0th, der1st, der2nd
+import input
 from proc import *
 from text import *
 from procutil import *
