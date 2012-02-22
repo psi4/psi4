@@ -214,8 +214,9 @@ void CGRSolver::setup()
     if (shifts_.size() == 0) {
         shifts_.resize(diag_->nirrep());
         for (int h = 0; h < diag_->nirrep(); h++) {
+            shifts_[h].clear();
             for (int i = 0; i < b_.size(); i++) {
-                shifts_[h][i] = 0.0;
+                shifts_[h].append(0.0);
             }
         }
     }

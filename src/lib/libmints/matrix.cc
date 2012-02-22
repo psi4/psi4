@@ -1662,7 +1662,7 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool* conditioned)
     for (int h = 0; h < nirrep_; h++) {
         int m = rowspi_[h];
         int n = colspi_[h^symmetry_];
-        int k = S->dimpi()[0];
+        int k = S->dimpi()[h];
         if (!m || !n || !k) continue;
         double** Up = U->pointer(h);
         double*  Sp = S->pointer(h);
