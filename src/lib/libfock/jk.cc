@@ -3052,6 +3052,11 @@ void PSJK::print_header() const
         fprintf(outfile, "    Dealiasing:        %11s\n", dealiasing_.c_str());
         fprintf(outfile, "\n");
 
+        fprintf(outfile, "   => Quadrature Grid <=\n\n");
+        fprintf(outfile, "    Total Points:      %11d\n", grid_->rowspi()[0]);
+        fprintf(outfile, "\n");
+        // TODO print grid algorithm details 
+
         if (dealiasing_ == "DEALIAS") {
             fprintf(outfile, "   => Dealias Basis Set <=\n\n");
             dealias_->print_by_level(outfile,print_);
