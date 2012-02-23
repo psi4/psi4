@@ -1,8 +1,9 @@
 """Module with functions that call the four main :py:mod:`driver`
-functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`, 
-:py:mod:`driver.response`, and :py:mod:`driver.frequency()`.
+functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
+:py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
+
 
 import PsiMod
 import re
@@ -23,7 +24,8 @@ from procutil import *
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **largs):
     """Function to make primary function call to energy(), opt(), etc.
-    Useful when function to call is stored in variable.
+    with options dictionary *largs*.
+    Useful when *funcarg* to call is stored in variable.
 
     """
     return funcarg(**largs)
@@ -1323,7 +1325,7 @@ def database(name, db_name, **kwargs):
 
 
 def drop_duplicates(seq):
-    """Function that given an array, returns an array without any duplicate
+    """Function that given an array *seq*, returns an array without any duplicate
     entries. There is no guarantee of which duplicate entry is dropped.
 
     """
@@ -2231,8 +2233,8 @@ def validate_scheme_args(functionname, **largs):
 
 
 def split_menial(menial):
-    """Function used by :py:func:`wrappers.complete_basis_set` to separate 'scftot'
-    into [scf, tot] and 'mp2corl' into [mp2, corl].
+    """Function used by :py:func:`wrappers.complete_basis_set` to separate
+    *menial* 'scftot' into [scf, tot] and 'mp2corl' into [mp2, corl].
 
     """
     PTYP = ['tot', 'corl']

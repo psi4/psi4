@@ -59,24 +59,25 @@
           <div class="body">
             
   <h1>Source code for pubchem</h1><div class="highlight"><pre>
-<span class="c"># PubChem.py</span>
-<span class="c">#</span>
-<span class="c"># Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)</span>
-<span class="c"># to obtain a molecule string that can be passed to Molecule.</span>
-<span class="c">#</span>
-<span class="c"># Example:</span>
-<span class="c">#</span>
-<span class="c"># results = getPubChemObj(&quot;1,3,5-hexatriene&quot;)</span>
-<span class="c">#</span>
-<span class="c"># Results is an array of results from PubChem matches to your query.</span>
-<span class="c">#   for entry in results:</span>
-<span class="c">#      entry[&quot;CID&quot;]         =&gt; PubChem compound identifer</span>
-<span class="c">#      entry[&quot;IUPAC&quot;]       =&gt; IUPAC name for the resulting compound</span>
-<span class="c">#      entry[&quot;PubChemObj&quot;]  =&gt; instance of PubChemObj for this compound</span>
-<span class="c">#</span>
-<span class="c">#      entry[&quot;PubChemObj&quot;].getMoleculeString()   =&gt; returns a string compatible</span>
-<span class="c">#                                                   with PSI4&#39;s Molecule creation</span>
-<span class="c">#</span>
+<span class="sd">&quot;&quot;&quot;**PubChem.py**</span>
+<span class="sd">   </span>
+<span class="sd">   Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)</span>
+<span class="sd">   to obtain a molecule string that can be passed to Molecule.</span>
+<span class="sd">  </span>
+<span class="sd">   Example ::</span>
+<span class="sd">  </span>
+<span class="sd">      results = getPubChemObj(&quot;1,3,5-hexatriene&quot;)</span>
+<span class="sd">  </span>
+<span class="sd">      Results is an array of results from PubChem matches to your query.</span>
+<span class="sd">        for entry in results:</span>
+<span class="sd">           entry[&quot;CID&quot;]         =&gt; PubChem compound identifer</span>
+<span class="sd">           entry[&quot;IUPAC&quot;]       =&gt; IUPAC name for the resulting compound</span>
+<span class="sd">           entry[&quot;PubChemObj&quot;]  =&gt; instance of PubChemObj for this compound</span>
+<span class="sd">  </span>
+<span class="sd">           entry[&quot;PubChemObj&quot;].getMoleculeString()   =&gt; returns a string compatible</span>
+<span class="sd">                                                        with PSI4&#39;s Molecule creation</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">urllib2</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -111,6 +112,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataSDF</span>
 </div>
 <div class="viewcode-block" id="PubChemObj.name"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to return the IUPAC name of the PubChem class.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iupac</span>
 </div>
 <div class="viewcode-block" id="PubChemObj.getCartesian"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj.getCartesian">[docs]</a>    <span class="k">def</span> <span class="nf">getCartesian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -262,7 +264,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 22, 2012.
+      Last updated on Feb 23, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

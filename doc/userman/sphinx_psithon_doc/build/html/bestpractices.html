@@ -69,7 +69,7 @@
 </pre></div>
 </div>
 </li>
-<li><p class="first">Preferrably, the python function signature (for functions intended to be called in input files) is <tt class="docutils literal"><span class="pre">function(name,</span> <span class="pre">**kwargs)</span></tt>. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see <a class="reference internal" href="index.html#wrappers.database" title="wrappers.database"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.database()</span></tt></a> argument db_name for example).</p>
+<li><p class="first">Preferrably, the python function signature (for functions intended to be called in input files) is <tt class="docutils literal"><span class="pre">function(name,</span> <span class="pre">**kwargs)</span></tt>. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see <tt class="xref py py-func docutils literal"><span class="pre">wrappers.database()</span></tt> argument db_name for example).</p>
 </li>
 <li><p class="first">After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -188,7 +188,7 @@ elif input.no.match(str(db_cp)):</pre>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 21, 2012.
+      Last updated on Feb 22, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

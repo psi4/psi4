@@ -59,6 +59,12 @@
           <div class="body">
             
   <h1>Source code for wrappers</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Module with functions that call the four main :py:mod:`driver`</span>
+<span class="sd">functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`, </span>
+<span class="sd">:py:mod:`driver.response`, and :py:mod:`driver.frequency()`.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">PsiMod</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -502,22 +508,22 @@
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
-<span class="sd">        to be applied to the molecule. May be any valid argument to </span>
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
+<span class="sd">        to be applied to the molecule. May be any valid argument to</span>
 <span class="sd">        :py:func:`driver.energy`; however, SAPT is not appropriate.</span>
 
 <span class="sd">    :type func: function</span>
 <span class="sd">    :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``</span>
-<span class="sd">    </span>
+
 <span class="sd">        Indicates the type of calculation to be performed on the molecule</span>
-<span class="sd">        and each of its monomers. The default performs a single-point </span>
-<span class="sd">        ``energy(&#39;name&#39;)``, while ``optimize`` perfoms a geometry optimization </span>
-<span class="sd">        on each system, and ``cbs`` performs a compound single-point energy. </span>
-<span class="sd">        If a nested series of python functions is intended </span>
-<span class="sd">        (see :ref:`sec_intercalls`), use keyword ``cp_func`` instead of ``func``.</span>
+<span class="sd">        and each of its monomers. The default performs a single-point</span>
+<span class="sd">        ``energy(&#39;name&#39;)``, while ``optimize`` perfoms a geometry optimization</span>
+<span class="sd">        on each system, and ``cbs`` performs a compound single-point energy.</span>
+<span class="sd">        If a nested series of python functions is intended</span>
+<span class="sd">        (see `Function Intercalls`_), use keyword ``cp_func`` instead of ``func``.</span>
 
 <span class="sd">    :type check_bsse: bool</span>
-<span class="sd">    :param check_bsse: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
+<span class="sd">    :param check_bsse: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
 
 <span class="sd">        Indicates whether to additionally compute un-counterpoise corrected</span>
 <span class="sd">        monomers and thus obtain an estimate for the basis set superposition error.</span>
@@ -694,7 +700,7 @@
 
 <span class="sd">    .. note:: It is very easy to make a database from a collection of xyz files</span>
 <span class="sd">        using the script ``$PSIDATADIR/databases/ixyz2database.pl``.</span>
-<span class="sd">        See :ref:`sec_beginner_newdatabase` for details.</span>
+<span class="sd">        See `Creating a New Database`_ for details.</span>
 
 <span class="sd">    .. caution:: Some features are not yet implemented. Buy a developer some coffee.</span>
 
@@ -705,25 +711,25 @@
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;sapt0&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
-<span class="sd">        to be applied to the database. May be any valid argument to </span>
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
+<span class="sd">        to be applied to the database. May be any valid argument to</span>
 <span class="sd">        :py:func:`driver.energy`.</span>
 
 <span class="sd">    :type db_name: string</span>
 <span class="sd">    :param db_name: ``&#39;BASIC&#39;`` || ``&#39;S22&#39;`` || ``&#39;HTBH&#39;`` || etc.</span>
 
-<span class="sd">        Second argument, usually unlabeled. Indicates the requested database </span>
-<span class="sd">        name, matching the name of a python file in ``psi4/lib/databases``. </span>
+<span class="sd">        Second argument, usually unlabeled. Indicates the requested database</span>
+<span class="sd">        name, matching the name of a python file in ``psi4/lib/databases``.</span>
 <span class="sd">        Consult that directory for available databases and literature citations.</span>
 
 <span class="sd">    :type func: function</span>
 <span class="sd">    :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``</span>
-<span class="sd">    </span>
+
 <span class="sd">        Indicates the type of calculation to be performed on each database</span>
 <span class="sd">        member. The default performs a single-point ``energy(&#39;name&#39;)``, while</span>
 <span class="sd">        ``optimize`` perfoms a geometry optimization on each reagent, and</span>
 <span class="sd">        ``cbs`` performs a compound single-point energy. If a nested series</span>
-<span class="sd">        of python functions is intended (see :ref:`sec_intercalls`), use</span>
+<span class="sd">        of python functions is intended (see `Function Intercalls`_), use</span>
 <span class="sd">        keyword ``db_func`` instead of ``func``.</span>
 
 <span class="sd">    :type mode: string</span>
@@ -736,7 +742,7 @@
 <span class="sd">        ``&#39;sow&#39;`` and follow instructions in its output file.</span>
 
 <span class="sd">    :type cp: bool</span>
-<span class="sd">    :param cp: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
+<span class="sd">    :param cp: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
 
 <span class="sd">        Indicates whether counterpoise correction is employed in computing</span>
 <span class="sd">        interaction energies. Use this option and NOT the :py:func:`wrappers.cp`</span>
@@ -744,7 +750,7 @@
 <span class="sd">        valid only for databases consisting of bimolecular complexes.</span>
 
 <span class="sd">    :type rlxd: bool</span>
-<span class="sd">    :param rlxd: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
+<span class="sd">    :param rlxd: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
 
 <span class="sd">        Indicates whether correction for the deformation energy is</span>
 <span class="sd">        employed in computing interaction energies.  Option valid only for</span>
@@ -760,7 +766,7 @@
 <span class="sd">        symmetry, and this will be set by the database() wrapper.</span>
 
 <span class="sd">    :type zpe: bool</span>
-<span class="sd">    :param zpe: |dl| ``&#39;off&#39;`` |dr| || ``&#39;on&#39;``</span>
+<span class="sd">    :param zpe: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
 
 <span class="sd">        Indicates whether zero-point-energy corrections are appended to</span>
 <span class="sd">        single-point energy values. Option valid only for certain</span>
@@ -778,12 +784,12 @@
 <span class="sd">        Indicates whether to form tables of variables other than the</span>
 <span class="sd">        primary requested energy.  Available for any PSI variable.</span>
 
-<span class="sd">    :type subset: string or array of strings </span>
+<span class="sd">    :type subset: string or array of strings</span>
 <span class="sd">    :param subset:</span>
 
 <span class="sd">        Indicates a subset of the full database to run. This is a very</span>
 <span class="sd">        flexible option and can be used in three distinct ways, outlined</span>
-<span class="sd">        below. Note that two take a string and the last takes an array.  </span>
+<span class="sd">        below. Note that two take a string and the last takes an array.</span>
 
 <span class="sd">        * ``&#39;small&#39;`` || ``&#39;large&#39;`` || ``&#39;equilibrium&#39;``</span>
 <span class="sd">            Calls predefined subsets of the requested database, either</span>
@@ -1389,8 +1395,8 @@
 </div>
 <div class="viewcode-block" id="tblhead"><a class="viewcode-back" href="../index.html#wrappers.tblhead">[docs]</a><span class="k">def</span> <span class="nf">tblhead</span><span class="p">(</span><span class="n">tbl_maxrgt</span><span class="p">,</span> <span class="n">tbl_delimit</span><span class="p">,</span> <span class="n">ttype</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function that prints the header for the changable-width results tables in db().</span>
-<span class="sd">    tbl_maxrgt is the number of reagent columns the table must plan for. tbl_delimit</span>
-<span class="sd">    is a string of dashes of the correct length to set off the table. ttype is 1 for</span>
+<span class="sd">    *tbl_maxrgt* is the number of reagent columns the table must plan for. *tbl_delimit*</span>
+<span class="sd">    is a string of dashes of the correct length to set off the table. *ttype* is 1 for</span>
 <span class="sd">    tables comparing the computed values to the reference or 2 for simple tabulation</span>
 <span class="sd">    and sum of the computed values.</span>
 
@@ -1453,31 +1459,31 @@
 
 <span class="sd">       - No way to tell function to boost fitting basis size for all calculations.</span>
 
-<span class="sd">    As represented in the equation below, a CBS energy method is defined in four </span>
-<span class="sd">    sequential stages (scf, corl, delta, delta2) covering treatment of the </span>
+<span class="sd">    As represented in the equation below, a CBS energy method is defined in four</span>
+<span class="sd">    sequential stages (scf, corl, delta, delta2) covering treatment of the</span>
 <span class="sd">    reference total energy, the correlation energy, a delta correction to the</span>
-<span class="sd">    correlation energy, and a second delta correction. Each is activated by its </span>
+<span class="sd">    correlation energy, and a second delta correction. Each is activated by its</span>
 <span class="sd">    stage_wfn keyword and is only allowed if all preceding stages are active.</span>
 
 <span class="sd">    .. include:: cbs_eqn.rst</span>
 
-<span class="sd">    Keywords</span>
+<span class="sd">    **Keywords**</span>
+
+<span class="sd">    * Energy Methods</span>
+<span class="sd">        The presence of a stage_wfn keyword is the indicator to incorporate</span>
+<span class="sd">        (and check for stage_basis and stage_scheme keywords) and compute</span>
+<span class="sd">        that stage in defining the CBS energy.</span>
 
 <span class="sd">    The cbs() function requires, at a minimum, ``name=&#39;scf&#39;`` and ``scf_basis``</span>
 <span class="sd">        keywords to be specified for reference-step only jobs and ``name`` and</span>
-<span class="sd">        ``corl_basis`` keywords for correlated jobs. </span>
+<span class="sd">        ``corl_basis`` keywords for correlated jobs.</span>
 
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;ccsd&#39;`` || etc.</span>
 
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
 <span class="sd">        for the correlation energy, unless only reference step to be performed,</span>
 <span class="sd">        in which case should be ``&#39;scf&#39;``. Overruled if stage_wfn keywords supplied.</span>
-
-<span class="sd">    Energy Methods</span>
-<span class="sd">        The presence of a stage_wfn keyword is the indicator to incorporate</span>
-<span class="sd">        (and check for stage_basis and stage_scheme keywords) and compute</span>
-<span class="sd">        that stage in defining the CBS energy.</span>
 
 <span class="sd">    :type corl_wfn: string</span>
 <span class="sd">    :param corl_wfn: ``&#39;mp2&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
@@ -1489,25 +1495,25 @@
 <span class="sd">    :type delta_wfn: string</span>
 <span class="sd">    :param delta_wfn: ``&#39;ccsd&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
-<span class="sd">        Indicates the (superior) energy method for which a delta correction </span>
+<span class="sd">        Indicates the (superior) energy method for which a delta correction</span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
 
 <span class="sd">    :type delta_wfn_lesser: string</span>
 <span class="sd">    :param delta_wfn_lesser: |dl| ``&#39;mp2&#39;`` |dr| || ``&#39;ccsd&#39;`` || etc.</span>
 
-<span class="sd">        Indicates the inferior energy method for which a delta correction </span>
+<span class="sd">        Indicates the inferior energy method for which a delta correction</span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
 
 <span class="sd">    :type delta2_wfn: string</span>
 <span class="sd">    :param delta2_wfn: ``&#39;ccsd&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
-<span class="sd">        Indicates the (superior) energy method for which a second delta correction </span>
+<span class="sd">        Indicates the (superior) energy method for which a second delta correction</span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
 
 <span class="sd">    :type delta2_wfn_lesser: string</span>
 <span class="sd">    :param delta2_wfn_lesser: |dl| ``&#39;mp2&#39;`` |dr| || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
-<span class="sd">        Indicates the inferior energy method for which a second delta correction </span>
+<span class="sd">        Indicates the inferior energy method for which a second delta correction</span>
 <span class="sd">        to the correlation energy is to be obtained.</span>
 
 <span class="sd">    * Basis Sets</span>
@@ -1543,7 +1549,7 @@
 <span class="sd">        stage of the CBS definition. A complaint is generated if number of basis</span>
 <span class="sd">        sets in stage_basis does not exactly satisfy requirements of stage_scheme.</span>
 <span class="sd">        An exception is the default, ``&#39;highest_1&#39;``, which uses the best basis</span>
-<span class="sd">        set available. See :ref:`sec_cbs_xtpl` for all available schemes.</span>
+<span class="sd">        set available. See `Extrapolation Schemes`_ for all available schemes.</span>
 
 <span class="sd">    :type scf_scheme: function</span>
 <span class="sd">    :param scf_scheme: |dl| ``highest_1`` |dr| || ``scf_xtpl_helgaker_3`` || etc.</span>
@@ -1956,9 +1962,9 @@
 
 <span class="c"># Transform and validate basis sets from &#39;cc-pV[Q5]Z&#39; into [cc-pVQZ, cc-pV5Z] and [4, 5]</span></div>
 <div class="viewcode-block" id="validate_bracketed_basis"><a class="viewcode-back" href="../index.html#wrappers.validate_bracketed_basis">[docs]</a><span class="k">def</span> <span class="nf">validate_bracketed_basis</span><span class="p">(</span><span class="n">basisstring</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Function to transform and validate basis sets for cbs(). A basis set with no </span>
+    <span class="sd">&quot;&quot;&quot;Function to transform and validate basis sets for cbs(). A basis set with no</span>
 <span class="sd">    paired square brackets is passed through with zeta level 0 (e.g., &#39;6-31+G(d,p)&#39;</span>
-<span class="sd">    is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is </span>
+<span class="sd">    is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is</span>
 <span class="sd">    checked for sensible sequence and Dunning-ness and returned as separate basis</span>
 <span class="sd">    sets (e.g., &#39;cc-pV[Q5]Z&#39; is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note</span>
 <span class="sd">    that this function has no communication with the basis set library to check</span>
@@ -1998,7 +2004,7 @@
 <div class="viewcode-block" id="reconstitute_bracketed_basis"><a class="viewcode-back" href="../index.html#wrappers.reconstitute_bracketed_basis">[docs]</a><span class="k">def</span> <span class="nf">reconstitute_bracketed_basis</span><span class="p">(</span><span class="n">needarray</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to reform a bracketed basis set string from a sequential series</span>
 <span class="sd">    of basis sets (e.g, form &#39;cc-pv[q5]z&#39; from array [cc-pvqz, cc-pv5z]). The</span>
-<span class="sd">    basis set array is extracted from the f_basis field of a NEED dictionary in</span>
+<span class="sd">    basis set array is extracted from the *f_basis* field of a *NEED* dictionary in</span>
 <span class="sd">    :py:func:`wrappers.complete_basis_set`. Result is used to print a nicely</span>
 <span class="sd">    formatted basis set string in the results table.</span>
 
@@ -2349,7 +2355,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 22, 2012.
+      Last updated on Feb 23, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

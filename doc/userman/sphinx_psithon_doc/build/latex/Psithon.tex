@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 22, 2012}
+\date{February 23, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -552,7 +552,7 @@ mrccsdtqph-3
 \textbf{name} (\emph{string}) -- 
 \code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
 
-First argument, usually unlabeled. Indicates the computational method 
+First argument, usually unlabeled. Indicates the computational method
 to be applied to the system.
 
 
@@ -593,7 +593,7 @@ the scf to converge in an explicit preceeding scf step.
 \chapter{Optimize}
 \label{index:optimize}
 \begin{notice}{note}{Note:}
-The derivative level type for {\hyperref[index:driver.optimize]{\code{driver.optimize()}}} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
+The derivative level type for \code{driver.optimize()} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
 functions can be specified by \code{energy}, \code{none}, or \code{0} for 0th derivative,
 \code{gradient}, \code{first}, or \code{1} for 1st derivative, and \code{hessian},
 \code{second}, or \code{2} for 2nd derivative.
@@ -676,8 +676,8 @@ equation of motion (EOM) CCSD
 \textbf{name} (\emph{string}) -- 
 \code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
 
-First argument, usually unlabeled. Indicates the computational method 
-to be applied to the database. May be any valid argument to 
+First argument, usually unlabeled. Indicates the computational method
+to be applied to the database. May be any valid argument to
 {\hyperref[index:driver.energy]{\code{driver.energy()}}}.
 
 
@@ -786,7 +786,7 @@ coupled cluster singles and doubles (CCSD)
 \textbf{name} (\emph{string}) -- 
 \code{'ccsd'} \textbar{}\textbar{} etc.
 
-First argument, usually unlabeled. Indicates the computational method 
+First argument, usually unlabeled. Indicates the computational method
 to be applied to the system.
 
 
@@ -840,7 +840,7 @@ Make frequency look analogous to gradient, especially in matching derivative lev
 \textbf{name} (\emph{string}) -- 
 \code{'scf'} \textbar{}\textbar{} \code{'df-mp2'} \textbar{}\textbar{} \code{'ci5'} \textbar{}\textbar{} etc.
 
-First argument, usually unlabeled. Indicates the computational method 
+First argument, usually unlabeled. Indicates the computational method
 to be applied to the system.
 
 
@@ -849,7 +849,7 @@ to be applied to the system.
 $\Rightarrow$ \code{'hessian'} $\Leftarrow$ \textbar{}\textbar{} \code{'gradient'} \textbar{}\textbar{} \code{'energy'}
 
 Indicates whether analytic (if available- they're not), finite
-difference of gradients (if available) or finite difference of 
+difference of gradients (if available) or finite difference of
 energies is to be performed.
 
 
@@ -1988,7 +1988,231 @@ When all is validated, add your findings to the great interoperability table in 
 \label{index:molecule-methods}
 
 \chapter{Expert}
-\label{index:expert}\label{index:module-proc}\index{proc (module)}
+\label{index:expert}
+
+\section{aliases}
+\label{index:module-aliases}\label{index:aliases}\index{aliases (module)}
+Module with functions that call upon those in modules
+{\hyperref[index:module-proc]{\code{proc}}}, {\hyperref[index:module-driver]{\code{driver}}}, and {\hyperref[index:module-wrappers]{\code{wrappers}}}.
+\begin{description}
+\item[{Place in this file quickly defined procedures such as}] \leavevmode\begin{itemize}
+\item {} 
+aliases for complex methods
+
+\item {} 
+simple modifications to existing methods
+
+\end{itemize}
+
+\end{description}
+\index{run\_mp2\_5() (in module aliases)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:aliases.run_mp2_5}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_mp2\_5}}{\emph{name}, \emph{**kwargs}}{}
+Function that computes MP2.5 energy from results of a DETCI
+MP3 calculation.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{energy}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{mp2.5}\PYG{l+s}{'}\PYG{p}{)}
+\end{Verbatim}
+
+\end{fulllineitems}
+
+\index{run\_plugin\_ccsd\_serial() (in module aliases)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:aliases.run_plugin_ccsd_serial}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_plugin\_ccsd\_serial}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module and plugin calls so that
+Eugene DePrince's ccsd\_serial plugin can be called via {\hyperref[index:driver.energy]{\code{driver.energy()}}}.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{energy}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{plugin\PYGZus{}ccsd\PYGZus{}serial}\PYG{l+s}{'}\PYG{p}{)}
+\end{Verbatim}
+
+\end{fulllineitems}
+
+\index{run\_plugin\_omega() (in module aliases)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:aliases.run_plugin_omega}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_plugin\_omega}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module and plugin calls, as well
+as typical options, to access Rob Parrish's omega plugin.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{energy}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{plugin\PYGZus{}omega}\PYG{l+s}{'}\PYG{p}{)}
+\end{Verbatim}
+
+\end{fulllineitems}
+
+\index{sherrillgroup\_gold\_standard() (in module aliases)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:aliases.sherrillgroup_gold_standard}\pysiglinewithargsret{\code{aliases.}\bfcode{sherrillgroup\_gold\_standard}}{\emph{name='mp2'}, \emph{**kwargs}}{}
+Function to call the quantum chemical method known as `Gold Standard'
+in the Sherrill group. Uses {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}} to evaluateo
+the following expression. Two-point extrapolation of the correlation energy
+performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wrappers.corl\_xtpl\_helgaker\_2()}}}.
+\begin{gather}
+\begin{split}E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}\end{split}\notag\\\begin{split}\end{split}\notag
+\end{gather}
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{energy}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{sherrillgroup\PYGZus{}gold\PYGZus{}standard}\PYG{l+s}{'}\PYG{p}{)}
+\end{Verbatim}
+
+\end{fulllineitems}
+
+
+
+\section{driver}
+\label{index:module-driver}\label{index:driver}\index{driver (module)}
+Module with a \emph{procedures} dictionary specifying available quantum
+chemical methods and functions driving the main quantum chemical
+functionality, namely single-point energies, geometry optimizations,
+response properties, and vibrational frequency calculations.
+\index{gradient() (in module driver)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:driver.gradient}\pysiglinewithargsret{\code{driver.}\bfcode{gradient}}{\emph{name}, \emph{**kwargs}}{}
+Function complementary to optimize(). Carries out one gradient pass,
+deciding analytic or finite difference.
+
+\end{fulllineitems}
+
+\index{hessian() (in module driver)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:driver.hessian}\pysiglinewithargsret{\code{driver.}\bfcode{hessian}}{\emph{name}, \emph{**kwargs}}{}
+Function to compute force constants. Presently identical to frequency().
+
+\end{fulllineitems}
+
+\index{parse\_arbitrary\_order() (in module driver)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:driver.parse_arbitrary_order}\pysiglinewithargsret{\code{driver.}\bfcode{parse\_arbitrary\_order}}{\emph{name}}{}
+Function to parse name string into a method family like CI or MRCC and specific
+level information like 4 for CISDTQ or MRCCSDTQ.
+
+\end{fulllineitems}
+
+
+
+\section{input}
+\label{index:input}\label{index:module-input}\index{input (module)}\index{bad\_option\_syntax() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.bad_option_syntax}\pysiglinewithargsret{\code{input.}\bfcode{bad\_option\_syntax}}{\emph{line}}{}
+\end{fulllineitems}
+
+\index{check\_parentheses\_and\_brackets() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.check_parentheses_and_brackets}\pysiglinewithargsret{\code{input.}\bfcode{check\_parentheses\_and\_brackets}}{\emph{input\_string}, \emph{exit\_on\_error}}{}
+\end{fulllineitems}
+
+\index{parse\_multiline\_array() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.parse_multiline_array}\pysiglinewithargsret{\code{input.}\bfcode{parse\_multiline\_array}}{\emph{input\_list}}{}
+\end{fulllineitems}
+
+\index{process\_basis\_block() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_basis_block}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_block}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_basis\_file() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_basis_file}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_file}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_external\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_external_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_external\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_extract\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_extract_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_extract\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_input() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{raw\_input}, \emph{print\_level=1}}{}
+\end{fulllineitems}
+
+\index{process\_memory\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_memory_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_memory\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_molecule\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_molecule_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_molecule\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_multiline\_arrays() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_multiline_arrays}\pysiglinewithargsret{\code{input.}\bfcode{process\_multiline\_arrays}}{\emph{inputfile}}{}
+\end{fulllineitems}
+
+\index{process\_option() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_option}\pysiglinewithargsret{\code{input.}\bfcode{process\_option}}{\emph{spaces}, \emph{module}, \emph{key}, \emph{value}, \emph{line}}{}
+\end{fulllineitems}
+
+\index{process\_print\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_print_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_print\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_pubchem\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_pubchem_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_pubchem\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_set\_command() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_set_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_command}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_set\_commands() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_set_commands}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_commands}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{process\_word\_quotes() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.process_word_quotes}\pysiglinewithargsret{\code{input.}\bfcode{process\_word\_quotes}}{\emph{matchobj}}{}
+\end{fulllineitems}
+
+\index{quotify() (in module input)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:input.quotify}\pysiglinewithargsret{\code{input.}\bfcode{quotify}}{\emph{string}}{}
+\end{fulllineitems}
+
+
+
+\section{physconst}
+\label{index:physconst}\label{index:module-physconst}\index{physconst (module)}
+
+\section{proc}
+\label{index:proc}\label{index:module-proc}\index{proc (module)}
 Module with functions that encode the sequence of PSI module
 calls for each of the \emph{name} values of the energy(), optimize(),
 response(), and frequency() function.
@@ -2220,326 +2444,177 @@ output file types for SCF).
 
 \end{fulllineitems}
 
-\phantomsection\label{index:module-driver}\index{driver (module)}
-Module with a \emph{procedures} dictionary specifying available quantum
-chemical methods and functions driving the main quantum chemical
-functionality, namely single-point energies, geometry optimizations,
-response properties, and vibrational frequency calculations.
-\index{gradient() (in module driver)}
 
-\begin{fulllineitems}
-\phantomsection\label{index:driver.gradient}\pysiglinewithargsret{\code{driver.}\bfcode{gradient}}{\emph{name}, \emph{**kwargs}}{}
-Function complementary to optimize(). Carries out one gradient pass,
-deciding analytic or finite difference.
 
-\end{fulllineitems}
-
-\index{hessian() (in module driver)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:driver.hessian}\pysiglinewithargsret{\code{driver.}\bfcode{hessian}}{\emph{name}, \emph{**kwargs}}{}
-Function to compute force constants. Presently identical to frequency().
-
-\end{fulllineitems}
-
-\index{parse\_arbitrary\_order() (in module driver)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:driver.parse_arbitrary_order}\pysiglinewithargsret{\code{driver.}\bfcode{parse\_arbitrary\_order}}{\emph{name}}{}
-Function to parse name string into a method family like CI or MRCC and specific
-level information like 4 for CISDTQ or MRCCSDTQ.
-
-\end{fulllineitems}
-
-\phantomsection\label{index:module-wrappers}\index{wrappers (module)}
-Module with functions that call the four main {\hyperref[index:module-driver]{\code{driver}}}
-functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, {\hyperref[index:driver.optimize]{\code{driver.optimize}}}, 
-{\hyperref[index:driver.response]{\code{driver.response}}}, and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}.
-\index{call\_function\_in\_1st\_argument() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.call_function_in_1st_argument}\pysiglinewithargsret{\code{wrappers.}\bfcode{call\_function\_in\_1st\_argument}}{\emph{funcarg}, \emph{**largs}}{}
-Function to make primary function call to energy(), opt(), etc.
-Useful when function to call is stored in variable.
-
-\end{fulllineitems}
-
-\index{drop\_duplicates() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.drop_duplicates}\pysiglinewithargsret{\code{wrappers.}\bfcode{drop\_duplicates}}{\emph{seq}}{}
-Function that given an array, returns an array without any duplicate
-entries. There is no guarantee of which duplicate entry is dropped.
-
-\end{fulllineitems}
-
-\index{n\_body() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.n_body}\pysiglinewithargsret{\code{wrappers.}\bfcode{n\_body}}{\emph{name}, \emph{**kwargs}}{}
-\end{fulllineitems}
-
-\index{reconstitute\_bracketed\_basis() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.reconstitute_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{reconstitute\_bracketed\_basis}}{\emph{needarray}}{}
-Function to reform a bracketed basis set string from a sequential series
-of basis sets (e.g, form `cc-pv{[}q5{]}z' from array {[}cc-pvqz, cc-pv5z{]}). The
-basis set array is extracted from the \emph{f\_basis} field of a \emph{NEED} dictionary in
-{\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}. Result is used to print a nicely
-formatted basis set string in the results table.
-
-\end{fulllineitems}
-
-\index{split\_menial() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.split_menial}\pysiglinewithargsret{\code{wrappers.}\bfcode{split\_menial}}{\emph{menial}}{}
-Function used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}} to separate `scftot'
-into {[}scf, tot{]} and `mp2corl' into {[}mp2, corl{]}.
-
-\end{fulllineitems}
-
-\index{tblhead() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.tblhead}\pysiglinewithargsret{\code{wrappers.}\bfcode{tblhead}}{\emph{tbl\_maxrgt}, \emph{tbl\_delimit}, \emph{ttype}}{}
-Function that prints the header for the changable-width results tables in db().
-\emph{tbl\_maxrgt} is the number of reagent columns the table must plan for. \emph{tbl\_delimit}
-is a string of dashes of the correct length to set off the table. \emph{ttype} is 1 for
-tables comparing the computed values to the reference or 2 for simple tabulation
-and sum of the computed values.
-
-\end{fulllineitems}
-
-\index{validate\_bracketed\_basis() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.validate_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{validate\_bracketed\_basis}}{\emph{basisstring}}{}
-Function to transform and validate basis sets for cbs(). A basis set with no
-paired square brackets is passed through with zeta level 0 (e.g., `6-31+G(d,p)'
-is returned as {[}6-31+G(d,p){]} and {[}0{]}). A basis set with square brackets is
-checked for sensible sequence and Dunning-ness and returned as separate basis
-sets (e.g., `cc-pV{[}Q5{]}Z' is returned as {[}cc-pVQZ, cc-pV5Z{]} and {[}4, 5{]}). Note
-that this function has no communication with the basis set library to check
-if the basis actually exists. Used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
-
-\end{fulllineitems}
-
-\index{validate\_scheme\_args() (in module wrappers)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:wrappers.validate_scheme_args}\pysiglinewithargsret{\code{wrappers.}\bfcode{validate\_scheme\_args}}{\emph{functionname}, \emph{**largs}}{}
-Function called by each extrapolation scheme in {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
-Checks that all the input arguments are present and suitable so that
-the scheme function can focus on defining the extrapolation.
-
-\end{fulllineitems}
-
-\phantomsection\label{index:module-aliases}\index{aliases (module)}\index{run\_mp2\_5() (in module aliases)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:aliases.run_mp2_5}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_mp2\_5}}{\emph{name}, \emph{**kwargs}}{}
-Function that computes MP2.5 energy from results of a DETCI
-MP3 calculation.
-
-\end{fulllineitems}
-
-\index{run\_plugin\_ccsd\_serial() (in module aliases)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:aliases.run_plugin_ccsd_serial}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_plugin\_ccsd\_serial}}{\emph{name}, \emph{**kwargs}}{}
-Function encoding sequence of PSI module and plugin calls so that
-Eugene DePrince's ccsd\_serial plugin can be called via {\hyperref[index:driver.energy]{\code{driver.energy()}}}.
-
-\end{fulllineitems}
-
-\index{run\_plugin\_omega() (in module aliases)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:aliases.run_plugin_omega}\pysiglinewithargsret{\code{aliases.}\bfcode{run\_plugin\_omega}}{\emph{name}, \emph{**kwargs}}{}
-Function encoding sequence of PSI module and plugin calls, as well
-as typical options, so that Rob Parrish's omega plugin can be called
-via {\hyperref[index:driver.energy]{\code{driver.energy()}}}.
-
-\end{fulllineitems}
-
-\index{sherrillgroup\_gold\_standard() (in module aliases)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:aliases.sherrillgroup_gold_standard}\pysiglinewithargsret{\code{aliases.}\bfcode{sherrillgroup\_gold\_standard}}{\emph{name='mp2'}, \emph{**kwargs}}{}
-Function to call the quantum chemical method known as `Gold Standard'
-in the Sherrill group. Uses {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}} to evaluateo
-the following expression. Two-point extrapolation of the correlation energy
-performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wrappers.corl\_xtpl\_helgaker\_2()}}}.
-\begin{gather}
-\begin{split}E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}\end{split}\notag\\\begin{split}\end{split}\notag
-\end{gather}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-procutil}\index{procutil (module)}\index{format\_kwargs\_for\_input() (in module procutil)}
+\section{procutil}
+\label{index:procutil}\label{index:module-procutil}\index{procutil (module)}
+Module with utility functions used by several Python functions.
+\index{format\_kwargs\_for\_input() (in module procutil)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:procutil.format_kwargs_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_kwargs\_for\_input}}{\emph{filename}, \emph{lmode=1}, \emph{**kwargs}}{}
+Function to pickle to file \emph{filename} the options dictionary
+\emph{kwargs}. Mode \emph{lmode} =2 pickles appropriate settings for
+reap mode. Used to capture Python options information for
+distributed (sow/reap) input files.
+
 \end{fulllineitems}
 
 \index{format\_molecule\_for\_input() (in module procutil)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:procutil.format_molecule_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_molecule\_for\_input}}{\emph{mol}}{}
+Function to return a string of the output of
+{\hyperref[index:input.process_input]{\code{input.process\_input()}}} applied to the XYZ
+format of molecule \emph{mol}. Used to capture molecule
+information for distributed (sow/reap) input files.
+
 \end{fulllineitems}
 
 \index{format\_options\_for\_input() (in module procutil)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:procutil.format_options_for_input}\pysiglinewithargsret{\code{procutil.}\bfcode{format\_options\_for\_input}}{}{}
+Function to return a string of commands to replicate the
+current state of user-modified options. Used to capture C++
+options information for distributed (sow/reap) input files.
+
+\begin{notice}{caution}{Caution:}
+Some features are not yet implemented. Buy a developer a coffee.
+\begin{itemize}
+\item {} 
+Does not cover local (as opposed to global) options.
+
+\item {} 
+Does not work with array-type options.
+
+\end{itemize}
+\end{notice}
+
 \end{fulllineitems}
 
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`21061'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`36685'}}{}
+Function to return the full path and filename for psi file
+\emph{fileno} (e.g., psi.32) in current namespace \emph{pidspace}.
+
 \end{fulllineitems}
 
 \index{kwargs\_lower() (in module procutil)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:procutil.kwargs_lower}\pysiglinewithargsret{\code{procutil.}\bfcode{kwargs\_lower}}{\emph{kwargs}}{}
+Function to rebuild and return \emph{kwargs} dictionary
+with all keys made lowercase. Should be called by every
+function that could be called directly by the user.
+
 \end{fulllineitems}
 
-\phantomsection\label{index:module-psiexceptions}\index{psiexceptions (module)}\index{PsiException}
+
+
+\section{psiexceptions}
+\label{index:module-psiexceptions}\label{index:psiexceptions}\index{psiexceptions (module)}
+Module with non-generic exceptions classes.
+\index{PsiException}
 
 \begin{fulllineitems}
 \phantomsection\label{index:psiexceptions.PsiException}\pysigline{\strong{exception }\code{psiexceptions.}\bfcode{PsiException}}
+Error class for Psi.
+
 \end{fulllineitems}
 
 \index{ValidationError}
 
 \begin{fulllineitems}
 \phantomsection\label{index:psiexceptions.ValidationError}\pysiglinewithargsret{\strong{exception }\code{psiexceptions.}\bfcode{ValidationError}}{\emph{msg}}{}
+Error called for problems with the input file. Prints
+error message \emph{msg} to standard output stream and output file.
+
 \end{fulllineitems}
 
-\phantomsection\label{index:module-text}\index{text (module)}\index{Table (class in text)}
+
+
+\section{pubchem}
+\label{index:pubchem}\label{index:module-pubchem}\index{pubchem (module)}
+Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
+to obtain a molecule string that can be passed to Molecule.
+
+\begin{Verbatim}[commandchars=\\\{\}]
+results = getPubChemObj("1,3,5-hexatriene")
+
+Results is an array of results from PubChem matches to your query.
+  for entry in results:
+     entry["CID"]         =\textgreater{} PubChem compound identifer
+     entry["IUPAC"]       =\textgreater{} IUPAC name for the resulting compound
+     entry["PubChemObj"]  =\textgreater{} instance of PubChemObj for this compound
+
+     entry["PubChemObj"].getMoleculeString()   =\textgreater{} returns a string compatible
+                                                  with PSI4's Molecule creation
+\end{Verbatim}
+\index{PubChemObj (class in pubchem)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:text.Table}\pysiglinewithargsret{\strong{class }\code{text.}\bfcode{Table}}{\emph{rows=()}, \emph{row\_label\_width=10}, \emph{row\_label\_precision=4}, \emph{cols=()}, \emph{width=16}, \emph{precision=10}}{}~\index{absolute\_to\_relative() (text.Table method)}
+\phantomsection\label{index:pubchem.PubChemObj}\pysiglinewithargsret{\strong{class }\code{pubchem.}\bfcode{PubChemObj}}{\emph{cid}, \emph{mf}, \emph{iupac}}{}~\index{getCartesian() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:text.Table.absolute_to_relative}\pysiglinewithargsret{\bfcode{absolute\_to\_relative}}{\emph{Factor=627.5095}}{}
+\phantomsection\label{index:pubchem.PubChemObj.getCartesian}\pysiglinewithargsret{\bfcode{getCartesian}}{}{}
+Function to return a string of the atom symbol and XYZ
+coordinates of the PubChem object.
+
 \end{fulllineitems}
 
-\index{copy() (text.Table method)}
+\index{getMoleculeString() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:text.Table.copy}\pysiglinewithargsret{\bfcode{copy}}{}{}
+\phantomsection\label{index:pubchem.PubChemObj.getMoleculeString}\pysiglinewithargsret{\bfcode{getMoleculeString}}{}{}
+Function to obtain a molecule string through
+getCartesian() or fail.
+
 \end{fulllineitems}
 
-\index{format\_label() (text.Table method)}
+\index{getSDF() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:text.Table.format_label}\pysiglinewithargsret{\bfcode{format\_label}}{}{}
+\phantomsection\label{index:pubchem.PubChemObj.getSDF}\pysiglinewithargsret{\bfcode{getSDF}}{}{}
+Function to return the SDF (structure-data file) of the PubChem object.
+
 \end{fulllineitems}
 
-\index{format\_values() (text.Table method)}
+\index{getXYZFile() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:text.Table.format_values}\pysiglinewithargsret{\bfcode{format\_values}}{\emph{values}}{}
+\phantomsection\label{index:pubchem.PubChemObj.getXYZFile}\pysiglinewithargsret{\bfcode{getXYZFile}}{}{}
+Function to obtain preferentially a molecule string
+through getCartesian() or a query string otherwise.
+
 \end{fulllineitems}
 
-\index{save() (text.Table method)}
+\index{name() (pubchem.PubChemObj method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:text.Table.save}\pysiglinewithargsret{\bfcode{save}}{\emph{file}}{}
+\phantomsection\label{index:pubchem.PubChemObj.name}\pysiglinewithargsret{\bfcode{name}}{}{}
+Function to return the IUPAC name of the PubChem object.
+
 \end{fulllineitems}
 
-\index{scale() (text.Table method)}
+
+\end{fulllineitems}
+
+\index{getPubChemResults() (in module pubchem)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:text.Table.scale}\pysiglinewithargsret{\bfcode{scale}}{\emph{Factor=627.5095}}{}
+\phantomsection\label{index:pubchem.getPubChemResults}\pysiglinewithargsret{\code{pubchem.}\bfcode{getPubChemResults}}{\emph{name}}{}
+Function to query the PubChem database for molecules matching the
+input string. Builds a PubChem object if found.
+
 \end{fulllineitems}
 
 
-\end{fulllineitems}
 
-\index{banner() (in module text)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.banner}\pysiglinewithargsret{\code{text.}\bfcode{banner}}{\emph{text}, \emph{type=1}, \emph{width=35}}{}
-\end{fulllineitems}
-
-\index{print\_stderr() (in module text)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.print_stderr}\pysiglinewithargsret{\code{text.}\bfcode{print\_stderr}}{\emph{stuff}}{}
-\end{fulllineitems}
-
-\index{print\_stdout() (in module text)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:text.print_stdout}\pysiglinewithargsret{\code{text.}\bfcode{print\_stdout}}{\emph{stuff}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-util}\index{util (module)}\index{compare\_integers() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_integers}\pysiglinewithargsret{\code{util.}\bfcode{compare\_integers}}{\emph{expected}, \emph{computed}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_matrices() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_matrices}\pysiglinewithargsret{\code{util.}\bfcode{compare\_matrices}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_strings() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_strings}\pysiglinewithargsret{\code{util.}\bfcode{compare\_strings}}{\emph{expected}, \emph{computed}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_values() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_values}\pysiglinewithargsret{\code{util.}\bfcode{compare\_values}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{compare\_vectors() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.compare_vectors}\pysiglinewithargsret{\code{util.}\bfcode{compare\_vectors}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
-\end{fulllineitems}
-
-\index{get\_memory() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.get_memory}\pysiglinewithargsret{\code{util.}\bfcode{get\_memory}}{}{}
-\end{fulllineitems}
-
-\index{get\_num\_threads() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.get_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{get\_num\_threads}}{}{}
-\end{fulllineitems}
-
-\index{set\_memory() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.set_memory}\pysiglinewithargsret{\code{util.}\bfcode{set\_memory}}{\emph{bytes}}{}
-\end{fulllineitems}
-
-\index{set\_num\_threads() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.set_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{set\_num\_threads}}{\emph{nthread}}{}
-\end{fulllineitems}
-
-\index{success() (in module util)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:util.success}\pysiglinewithargsret{\code{util.}\bfcode{success}}{\emph{label}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-qmmm}\index{qmmm (module)}\index{Diffuse (class in qmmm)}
+\section{qmmm}
+\label{index:qmmm}\label{index:module-qmmm}\index{qmmm (module)}\index{Diffuse (class in qmmm)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.Diffuse}\pysiglinewithargsret{\strong{class }\code{qmmm.}\bfcode{Diffuse}}{\emph{molecule}, \emph{basisname}, \emph{ribasisname}}{}~\index{fitGeneral() (qmmm.Diffuse method)}
@@ -2593,345 +2668,280 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 
 \end{fulllineitems}
 
-\phantomsection\label{index:module-input}\index{input (module)}\index{bad\_option\_syntax() (in module input)}
+
+
+\section{text}
+\label{index:text}\label{index:module-text}\index{text (module)}
+Module with utility classes and functions related
+to data tables and text.
+\index{Table (class in text)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.bad_option_syntax}\pysiglinewithargsret{\code{input.}\bfcode{bad\_option\_syntax}}{\emph{line}}{}
+\phantomsection\label{index:text.Table}\pysiglinewithargsret{\strong{class }\code{text.}\bfcode{Table}}{\emph{rows=()}, \emph{row\_label\_width=10}, \emph{row\_label\_precision=4}, \emph{cols=()}, \emph{width=16}, \emph{precision=10}}{}
+Class defining a flexible Table object for storing data.
+\index{absolute\_to\_relative() (text.Table method)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:text.Table.absolute_to_relative}\pysiglinewithargsret{\bfcode{absolute\_to\_relative}}{\emph{Factor=627.5095}}{}
+Function to shift the data of each column of the Table object
+such that the lowest value is zero. A scaling factor of \emph{Factor} is applied.
+
 \end{fulllineitems}
 
-\index{check\_parentheses\_and\_brackets() (in module input)}
+\index{copy() (text.Table method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.check_parentheses_and_brackets}\pysiglinewithargsret{\code{input.}\bfcode{check\_parentheses\_and\_brackets}}{\emph{input\_string}, \emph{exit\_on\_error}}{}
+\phantomsection\label{index:text.Table.copy}\pysiglinewithargsret{\bfcode{copy}}{}{}
+Function to return a copy of the Table object.
+
 \end{fulllineitems}
 
-\index{parse\_multiline\_array() (in module input)}
+\index{format\_label() (text.Table method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.parse_multiline_array}\pysiglinewithargsret{\code{input.}\bfcode{parse\_multiline\_array}}{\emph{input\_list}}{}
+\phantomsection\label{index:text.Table.format_label}\pysiglinewithargsret{\bfcode{format\_label}}{}{}
+Function to pad the width of Table object labels.
+
 \end{fulllineitems}
 
-\index{process\_basis\_block() (in module input)}
+\index{format\_values() (text.Table method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_basis_block}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_block}}{\emph{matchobj}}{}
+\phantomsection\label{index:text.Table.format_values}\pysiglinewithargsret{\bfcode{format\_values}}{\emph{values}}{}
+Function to pad the width of Table object data cells.
+
 \end{fulllineitems}
 
-\index{process\_basis\_file() (in module input)}
+\index{save() (text.Table method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_basis_file}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_file}}{\emph{matchobj}}{}
+\phantomsection\label{index:text.Table.save}\pysiglinewithargsret{\bfcode{save}}{\emph{file}}{}
+Function to save string of the Table object to \emph{file}.
+
 \end{fulllineitems}
 
-\index{process\_external\_command() (in module input)}
+\index{scale() (text.Table method)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_external_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_external\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
+\phantomsection\label{index:text.Table.scale}\pysiglinewithargsret{\bfcode{scale}}{\emph{Factor=627.5095}}{}
+Function to apply a scaling factor \emph{Factor} to the
+data of the Table object.
 
-\index{process\_extract\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_extract_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_extract\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_input() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{raw\_input}, \emph{print\_level=1}}{}
-\end{fulllineitems}
-
-\index{process\_memory\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_memory_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_memory\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_molecule\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_molecule_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_molecule\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_multiline\_arrays() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_multiline_arrays}\pysiglinewithargsret{\code{input.}\bfcode{process\_multiline\_arrays}}{\emph{inputfile}}{}
-\end{fulllineitems}
-
-\index{process\_option() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_option}\pysiglinewithargsret{\code{input.}\bfcode{process\_option}}{\emph{spaces}, \emph{module}, \emph{key}, \emph{value}, \emph{line}}{}
-\end{fulllineitems}
-
-\index{process\_print\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_print_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_print\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_pubchem\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_pubchem_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_pubchem\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_set\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_set_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_set\_commands() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_set_commands}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_commands}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_word\_quotes() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_word_quotes}\pysiglinewithargsret{\code{input.}\bfcode{process\_word\_quotes}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{quotify() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.quotify}\pysiglinewithargsret{\code{input.}\bfcode{quotify}}{\emph{string}}{}
-\end{fulllineitems}
-
-\phantomsection\label{index:module-physconst}\index{physconst (module)}\phantomsection\label{index:module-pubchem}\index{pubchem (module)}\index{PubChemObj (class in pubchem)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj}\pysiglinewithargsret{\strong{class }\code{pubchem.}\bfcode{PubChemObj}}{\emph{cid}, \emph{mf}, \emph{iupac}}{}~\index{getCartesian() (pubchem.PubChemObj method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getCartesian}\pysiglinewithargsret{\bfcode{getCartesian}}{}{}
-\end{fulllineitems}
-
-\index{getMoleculeString() (pubchem.PubChemObj method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getMoleculeString}\pysiglinewithargsret{\bfcode{getMoleculeString}}{}{}
-\end{fulllineitems}
-
-\index{getSDF() (pubchem.PubChemObj method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getSDF}\pysiglinewithargsret{\bfcode{getSDF}}{}{}
-\end{fulllineitems}
-
-\index{getXYZFile() (pubchem.PubChemObj method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.getXYZFile}\pysiglinewithargsret{\bfcode{getXYZFile}}{}{}
-\end{fulllineitems}
-
-\index{name() (pubchem.PubChemObj method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:pubchem.PubChemObj.name}\pysiglinewithargsret{\bfcode{name}}{}{}
 \end{fulllineitems}
 
 
 \end{fulllineitems}
 
-\index{getPubChemResults() (in module pubchem)}
+\index{banner() (in module text)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:pubchem.getPubChemResults}\pysiglinewithargsret{\code{pubchem.}\bfcode{getPubChemResults}}{\emph{name}}{}
+\phantomsection\label{index:text.banner}\pysiglinewithargsret{\code{text.}\bfcode{banner}}{\emph{text}, \emph{type=1}, \emph{width=35}}{}
+Function to print \emph{text} to output file in a banner of
+minimum width \emph{width} and minimum three-line height for
+\emph{type} = 1 or one-line height for \emph{type} = 2.
+
 \end{fulllineitems}
 
-\phantomsection\label{index:module-inpsight}\index{inpsight (module)}\index{InPsight (class in inpsight)}
+\index{print\_stderr() (in module text)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight}\pysiglinewithargsret{\strong{class }\code{inpsight.}\bfcode{InPsight}}{\emph{molecule}}{}~\index{atoms (inpsight.InPsight attribute)}
+\phantomsection\label{index:text.print_stderr}\pysiglinewithargsret{\code{text.}\bfcode{print\_stderr}}{\emph{stuff}}{}
+Function to print \emph{stuff} to standard error stream.
 
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.atoms}\pysigline{\bfcode{atoms}\strong{ = {[}{]}}}
 \end{fulllineitems}
 
-\index{azimuth (inpsight.InPsight attribute)}
+\index{print\_stdout() (in module text)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.azimuth}\pysigline{\bfcode{azimuth}\strong{ = 0.0}}
+\phantomsection\label{index:text.print_stdout}\pysiglinewithargsret{\code{text.}\bfcode{print\_stdout}}{\emph{stuff}}{}
+Function to print \emph{stuff} to standard output stream.
+
 \end{fulllineitems}
 
-\index{bohr\_per\_ang (inpsight.InPsight attribute)}
+
+
+\section{util}
+\label{index:util}\label{index:module-util}\index{util (module)}
+Module with utility functions for use in input files.
+\index{compare\_integers() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.bohr_per_ang}\pysigline{\bfcode{bohr\_per\_ang}\strong{ = 1.8897161646320724}}
+\phantomsection\label{index:util.compare_integers}\pysiglinewithargsret{\code{util.}\bfcode{compare\_integers}}{\emph{expected}, \emph{computed}, \emph{label}}{}
+Function to compare two integers. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when value \emph{computed} matches value \emph{expected}.
+Performs a system exit on failure. Used in input files in the test suite.
+
 \end{fulllineitems}
 
-\index{bond\_width (inpsight.InPsight attribute)}
+\index{compare\_matrices() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.bond_width}\pysigline{\bfcode{bond\_width}\strong{ = 0.2}}
+\phantomsection\label{index:util.compare_matrices}\pysiglinewithargsret{\code{util.}\bfcode{compare\_matrices}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+Function to compare two matrices. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when elements of matrix \emph{computed} match elements of matrix \emph{expected} to
+number of \emph{digits}. Performs a system exit on failure to match symmetry
+structure, dimensions, or element values. Used in input files in the test suite.
+
 \end{fulllineitems}
 
-\index{bonding\_alpha (inpsight.InPsight attribute)}
+\index{compare\_strings() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.bonding_alpha}\pysigline{\bfcode{bonding\_alpha}\strong{ = 0.65}}
+\phantomsection\label{index:util.compare_strings}\pysiglinewithargsret{\code{util.}\bfcode{compare\_strings}}{\emph{expected}, \emph{computed}, \emph{label}}{}
+Function to compare two strings. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when string \emph{computed} exactly matches string \emph{expected}.
+Performs a system exit on failure. Used in input files in the test suite.
+
 \end{fulllineitems}
 
-\index{bonds (inpsight.InPsight attribute)}
+\index{compare\_values() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.bonds}\pysigline{\bfcode{bonds}\strong{ = {[}{]}}}
+\phantomsection\label{index:util.compare_values}\pysiglinewithargsret{\code{util.}\bfcode{compare\_values}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+Function to compare two values. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when value \emph{computed} matches value \emph{expected} to number of \emph{digits}.
+Performs a system exit on failure. Used in input files in the test suite.
+
 \end{fulllineitems}
 
-\index{colors (inpsight.InPsight attribute)}
+\index{compare\_vectors() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.colors}\pysigline{\bfcode{colors}\strong{ = {[}{[}0, 0, 0{]}, {[}255, 255, 255{]}, {[}217, 255, 255{]}, {[}204, 128, 255{]}, {[}194, 255, 0{]}, {[}255, 181, 181{]}, {[}144, 144, 144{]}, {[}48, 80, 248{]}, {[}255, 13, 13{]}, {[}144, 224, 80{]}, {[}179, 227, 245{]}, {[}171, 92, 242{]}, {[}138, 255, 0{]}, {[}191, 166, 166{]}, {[}240, 200, 160{]}, {[}255, 128, 0{]}, {[}255, 255, 48{]}, {[}31, 240, 31{]}, {[}128, 209, 227{]}, {[}143, 64, 212{]}, {[}61, 255, 0{]}, {[}230, 230, 230{]}, {[}191, 194, 199{]}, {[}166, 166, 171{]}, {[}138, 153, 199{]}, {[}156, 122, 199{]}, {[}224, 102, 51{]}, {[}240, 144, 160{]}, {[}80, 208, 80{]}, {[}200, 128, 51{]}, {[}125, 128, 176{]}, {[}194, 143, 143{]}, {[}102, 143, 143{]}, {[}189, 128, 227{]}, {[}255, 161, 0{]}, {[}166, 41, 41{]}, {[}92, 184, 209{]}, {[}112, 46, 176{]}, {[}0, 255, 0{]}, {[}148, 255, 255{]}, {[}148, 224, 224{]}, {[}115, 194, 201{]}, {[}84, 181, 181{]}, {[}59, 158, 158{]}, {[}36, 143, 143{]}, {[}10, 125, 140{]}, {[}0, 105, 133{]}, {[}192, 192, 192{]}, {[}255, 217, 143{]}, {[}166, 117, 115{]}, {[}102, 128, 128{]}, {[}158, 99, 181{]}, {[}212, 122, 0{]}, {[}148, 0, 148{]}, {[}66, 158, 176{]}, {[}87, 23, 143{]}, {[}0, 201, 0{]}, {[}112, 212, 255{]}, {[}255, 255, 199{]}, {[}217, 255, 199{]}, {[}199, 255, 199{]}, {[}163, 255, 199{]}, {[}143, 255, 199{]}, {[}97, 255, 199{]}, {[}69, 255, 199{]}, {[}48, 255, 199{]}, {[}31, 255, 199{]}, {[}0, 255, 156{]}, {[}0, 230, 117{]}, {[}0, 212, 82{]}, {[}0, 191, 56{]}, {[}0, 171, 36{]}, {[}77, 194, 255{]}, {[}77, 166, 255{]}, {[}33, 148, 214{]}, {[}38, 125, 171{]}, {[}38, 102, 150{]}, {[}23, 84, 135{]}, {[}208, 208, 224{]}, {[}255, 209, 35{]}, {[}184, 184, 208{]}, {[}166, 84, 77{]}, {[}87, 89, 97{]}, {[}158, 79, 181{]}, {[}171, 92, 0{]}, {[}117, 79, 69{]}, {[}66, 130, 150{]}, {[}66, 0, 102{]}, {[}0, 125, 0{]}, {[}112, 171, 250{]}, {[}0, 186, 255{]}, {[}0, 161, 255{]}, {[}0, 143, 255{]}, {[}0, 128, 255{]}, {[}0, 107, 255{]}, {[}84, 92, 242{]}, {[}120, 92, 227{]}, {[}138, 79, 227{]}, {[}161, 54, 212{]}, {[}179, 31, 212{]}, {[}179, 31, 186{]}, {[}179, 13, 166{]}, {[}189, 13, 135{]}, {[}199, 0, 102{]}, {[}204, 0, 89{]}, {[}209, 0, 79{]}, {[}217, 0, 69{]}, {[}224, 0, 56{]}, {[}230, 0, 46{]}, {[}235, 0, 38{]}{]}}}
+\phantomsection\label{index:util.compare_vectors}\pysiglinewithargsret{\code{util.}\bfcode{compare\_vectors}}{\emph{expected}, \emph{computed}, \emph{digits}, \emph{label}}{}
+Function to compare two vectors. Prints {\hyperref[index:util.success]{\code{util.success()}}}
+when elements of vector \emph{computed} match elements of vector \emph{expected} to
+number of \emph{digits}. Performs a system exit on failure to match symmetry
+structure, dimension, or element values. Used in input files in the test suite.
+
 \end{fulllineitems}
 
-\index{defines (inpsight.InPsight attribute)}
+\index{get\_memory() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.defines}\pysigline{\bfcode{defines}\strong{ = \{`Shadows': `false', `Output\_Alpha': `true', `Filepath': `/Users/loriab/linux/psi4/doc/userman/sphinx\_psithon\_doc', `Output\_File\_Type': `N', `Antialias': `true', `Filename': `inpsight', `Light\_Color': `\textless{}1,1,1\textgreater{}', `Antialias\_Threshold': `0.1', `Background\_Color': `\textless{}0.6,0.6,0.6\textgreater{}'\}}}
+\phantomsection\label{index:util.get_memory}\pysiglinewithargsret{\code{util.}\bfcode{get\_memory}}{}{}
+Function to return the total memory allocation.
+
 \end{fulllineitems}
 
-\index{elevation (inpsight.InPsight attribute)}
+\index{get\_num\_threads() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.elevation}\pysigline{\bfcode{elevation}\strong{ = 0.0}}
+\phantomsection\label{index:util.get_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{get\_num\_threads}}{}{}
+Function to return the number of threads to parallelize across.
+
 \end{fulllineitems}
 
-\index{height (inpsight.InPsight attribute)}
+\index{set\_memory() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.height}\pysigline{\bfcode{height}\strong{ = 900}}
+\phantomsection\label{index:util.set_memory}\pysiglinewithargsret{\code{util.}\bfcode{set\_memory}}{\emph{bytes}}{}
+Function to reset the total memory allocation.
+
 \end{fulllineitems}
 
-\index{light (inpsight.InPsight attribute)}
+\index{set\_num\_threads() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.light}\pysigline{\bfcode{light}\strong{ = {[}1.0, 0.0, 0.0{]}}}
+\phantomsection\label{index:util.set_num_threads}\pysiglinewithargsret{\code{util.}\bfcode{set\_num\_threads}}{\emph{nthread}}{}
+Function to reset the number of threads to parallelize across.
+
 \end{fulllineitems}
 
-\index{light\_color (inpsight.InPsight attribute)}
+\index{success() (in module util)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.light_color}\pysigline{\bfcode{light\_color}\strong{ = {[}0.6, 0.6, 0.6{]}}}
+\phantomsection\label{index:util.success}\pysiglinewithargsret{\code{util.}\bfcode{success}}{\emph{label}}{}
+Function to print a `\emph{label}...PASSED' line to screen.
+Used by {\hyperref[index:util.compare_values]{\code{util.compare\_values()}}} family when functions pass.
+
 \end{fulllineitems}
 
-\index{location (inpsight.InPsight attribute)}
+
+
+\section{wrappers}
+\label{index:wrappers}\label{index:module-wrappers}\index{wrappers (module)}
+Module with functions that call the four main {\hyperref[index:module-driver]{\code{driver}}}
+functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, \code{driver.optimize},
+{\hyperref[index:driver.response]{\code{driver.response}}}, and {\hyperref[index:driver.frequency]{\code{driver.frequency}}}.
+\index{call\_function\_in\_1st\_argument() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.location}\pysigline{\bfcode{location}\strong{ = {[}1.0, 0.0, 0.0{]}}}
+\phantomsection\label{index:wrappers.call_function_in_1st_argument}\pysiglinewithargsret{\code{wrappers.}\bfcode{call\_function\_in\_1st\_argument}}{\emph{funcarg}, \emph{**largs}}{}
+Function to make primary function call to energy(), opt(), etc.
+with options dictionary \emph{largs}.
+Useful when \emph{funcarg} to call is stored in variable.
+
 \end{fulllineitems}
 
-\index{look\_at (inpsight.InPsight attribute)}
+\index{drop\_duplicates() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.look_at}\pysigline{\bfcode{look\_at}\strong{ = {[}0.0, 0.0, 0.0{]}}}
+\phantomsection\label{index:wrappers.drop_duplicates}\pysiglinewithargsret{\code{wrappers.}\bfcode{drop\_duplicates}}{\emph{seq}}{}
+Function that given an array \emph{seq}, returns an array without any duplicate
+entries. There is no guarantee of which duplicate entry is dropped.
+
 \end{fulllineitems}
 
-\index{position\_camera() (inpsight.InPsight method)}
+\index{n\_body() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.position_camera}\pysiglinewithargsret{\bfcode{position\_camera}}{}{}
+\phantomsection\label{index:wrappers.n_body}\pysiglinewithargsret{\code{wrappers.}\bfcode{n\_body}}{\emph{name}, \emph{**kwargs}}{}
 \end{fulllineitems}
 
-\index{radial\_scale (inpsight.InPsight attribute)}
+\index{reconstitute\_bracketed\_basis() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.radial_scale}\pysigline{\bfcode{radial\_scale}\strong{ = 0.25}}
+\phantomsection\label{index:wrappers.reconstitute_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{reconstitute\_bracketed\_basis}}{\emph{needarray}}{}
+Function to reform a bracketed basis set string from a sequential series
+of basis sets (e.g, form `cc-pv{[}q5{]}z' from array {[}cc-pvqz, cc-pv5z{]}). The
+basis set array is extracted from the \emph{f\_basis} field of a \emph{NEED} dictionary in
+{\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}. Result is used to print a nicely
+formatted basis set string in the results table.
+
 \end{fulllineitems}
 
-\index{radii (inpsight.InPsight attribute)}
+\index{split\_menial() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.radii}\pysigline{\bfcode{radii}\strong{ = {[}2.0, 1.001, 1.012, 0.825, 1.408, 1.485, 1.452, 1.397, 1.342, 1.287, 1.243, 1.144, 1.364, 1.639, 1.716, 1.705, 1.683, 1.639, 1.595, 1.485, 1.474, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.562, 1.65, 1.727, 1.76, 1.771, 1.749, 1.727, 1.628, 1.606, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.639, 1.672, 1.804, 1.881, 1.892, 1.892, 1.881, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0{]}}}
+\phantomsection\label{index:wrappers.split_menial}\pysiglinewithargsret{\code{wrappers.}\bfcode{split\_menial}}{\emph{menial}}{}
+Function used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}} to separate
+\emph{menial} `scftot' into {[}scf, tot{]} and `mp2corl' into {[}mp2, corl{]}.
+
 \end{fulllineitems}
 
-\index{right (inpsight.InPsight attribute)}
+\index{tblhead() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.right}\pysigline{\bfcode{right}\strong{ = {[}1.0, 0.0, 0.0{]}}}
+\phantomsection\label{index:wrappers.tblhead}\pysiglinewithargsret{\code{wrappers.}\bfcode{tblhead}}{\emph{tbl\_maxrgt}, \emph{tbl\_delimit}, \emph{ttype}}{}
+Function that prints the header for the changable-width results tables in db().
+\emph{tbl\_maxrgt} is the number of reagent columns the table must plan for. \emph{tbl\_delimit}
+is a string of dashes of the correct length to set off the table. \emph{ttype} is 1 for
+tables comparing the computed values to the reference or 2 for simple tabulation
+and sum of the computed values.
+
 \end{fulllineitems}
 
-\index{save\_density() (inpsight.InPsight method)}
+\index{validate\_bracketed\_basis() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.save_density}\pysiglinewithargsret{\bfcode{save\_density}}{\emph{filename='rho', overlap=2.0, n={[}40, 40, 40{]}, caxis={[}0.0, 1.0{]}}}{}
+\phantomsection\label{index:wrappers.validate_bracketed_basis}\pysiglinewithargsret{\code{wrappers.}\bfcode{validate\_bracketed\_basis}}{\emph{basisstring}}{}
+Function to transform and validate basis sets for cbs(). A basis set with no
+paired square brackets is passed through with zeta level 0 (e.g., `6-31+G(d,p)'
+is returned as {[}6-31+G(d,p){]} and {[}0{]}). A basis set with square brackets is
+checked for sensible sequence and Dunning-ness and returned as separate basis
+sets (e.g., `cc-pV{[}Q5{]}Z' is returned as {[}cc-pVQZ, cc-pV5Z{]} and {[}4, 5{]}). Note
+that this function has no communication with the basis set library to check
+if the basis actually exists. Used by {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
+
 \end{fulllineitems}
 
-\index{save\_molecule() (inpsight.InPsight method)}
+\index{validate\_scheme\_args() (in module wrappers)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.save_molecule}\pysiglinewithargsret{\bfcode{save\_molecule}}{\emph{filename}}{}
-\end{fulllineitems}
-
-\index{set\_camera() (inpsight.InPsight method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.set_camera}\pysiglinewithargsret{\bfcode{set\_camera}}{\emph{location}, \emph{sky}, \emph{up}, \emph{right}, \emph{look\_at}, \emph{light}, \emph{light\_color}}{}
-\end{fulllineitems}
-
-\index{set\_color() (inpsight.InPsight method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.set_color}\pysiglinewithargsret{\bfcode{set\_color}}{\emph{Z}, \emph{color}}{}
-\end{fulllineitems}
-
-\index{set\_define() (inpsight.InPsight method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.set_define}\pysiglinewithargsret{\bfcode{set\_define}}{\emph{key}, \emph{value}}{}
-\end{fulllineitems}
-
-\index{set\_radius() (inpsight.InPsight method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.set_radius}\pysiglinewithargsret{\bfcode{set\_radius}}{\emph{Z}, \emph{radius}}{}
-\end{fulllineitems}
-
-\index{set\_size() (inpsight.InPsight method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.set_size}\pysiglinewithargsret{\bfcode{set\_size}}{\emph{width}, \emph{height}}{}
-\end{fulllineitems}
-
-\index{set\_view() (inpsight.InPsight method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.set_view}\pysiglinewithargsret{\bfcode{set\_view}}{\emph{azimuth}, \emph{elevation}, \emph{zoom=0.7}}{}
-\end{fulllineitems}
-
-\index{sky (inpsight.InPsight attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.sky}\pysigline{\bfcode{sky}\strong{ = {[}0.0, -1.0, 0.0{]}}}
-\end{fulllineitems}
-
-\index{up (inpsight.InPsight attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.up}\pysigline{\bfcode{up}\strong{ = {[}0.0, 0.75, 0.0{]}}}
-\end{fulllineitems}
-
-\index{update\_geometry() (inpsight.InPsight method)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.update_geometry}\pysiglinewithargsret{\bfcode{update\_geometry}}{}{}
-\end{fulllineitems}
-
-\index{width (inpsight.InPsight attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.width}\pysigline{\bfcode{width}\strong{ = 1200}}
-\end{fulllineitems}
-
-\index{zoom (inpsight.InPsight attribute)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:inpsight.InPsight.zoom}\pysigline{\bfcode{zoom}\strong{ = 0.5}}
-\end{fulllineitems}
-
+\phantomsection\label{index:wrappers.validate_scheme_args}\pysiglinewithargsret{\code{wrappers.}\bfcode{validate\_scheme\_args}}{\emph{functionname}, \emph{**largs}}{}
+Function called by each extrapolation scheme in {\hyperref[index:wrappers.complete_basis_set]{\code{wrappers.complete\_basis\_set()}}}.
+Checks that all the input arguments are present and suitable so that
+the scheme function can focus on defining the extrapolation.
 
 \end{fulllineitems}
 
@@ -2964,7 +2974,6 @@ performed according to {\hyperref[index:wrappers.corl_xtpl_helgaker_2]{\code{wra
 \item {\texttt{frac}}, \pageref{index:module-frac}
 \indexspace
 \bigletter{i}
-\item {\texttt{inpsight}}, \pageref{index:module-inpsight}
 \item {\texttt{input}}, \pageref{index:module-input}
 \indexspace
 \bigletter{p}

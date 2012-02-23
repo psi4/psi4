@@ -1,24 +1,21 @@
-# PubChem.py
-#
-# Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
-# to obtain a molecule string that can be passed to Molecule.
-#
-# Example:
-#
-# results = getPubChemObj("1,3,5-hexatriene")
-#
-# Results is an array of results from PubChem matches to your query.
-#   for entry in results:
-#      entry["CID"]         => PubChem compound identifer
-#      entry["IUPAC"]       => IUPAC name for the resulting compound
-#      entry["PubChemObj"]  => instance of PubChemObj for this compound
-#
-#      entry["PubChemObj"].getMoleculeString()   => returns a string compatible
-#                                                   with PSI4's Molecule creation
-#
+"""Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
+   to obtain a molecule string that can be passed to Molecule. ::
 
+      results = getPubChemObj("1,3,5-hexatriene")
+
+      Results is an array of results from PubChem matches to your query.
+        for entry in results:
+           entry["CID"]         => PubChem compound identifer
+           entry["IUPAC"]       => IUPAC name for the resulting compound
+           entry["PubChemObj"]  => instance of PubChemObj for this compound
+
+           entry["PubChemObj"].getMoleculeString()   => returns a string compatible
+                                                        with PSI4's Molecule creation
+
+"""
 import urllib2
 import re
+
 
 class PubChemObj:
 
@@ -34,13 +31,14 @@ class PubChemObj:
         return "%17d   %s\n" % (self.cid, self.iupac)
 
     def getSDF(self):
+        """Function to return the SDF (structure-data file) of the PubChem object."""
         if (len(self.dataSDF) == 0):
             # When completed uncomment the following:
-            url = self.url+'?cid='+urllib2.quote(str(self.cid))+'&disopt=3DDisplaySDF'
+            url = self.url + '?cid=' + urllib2.quote(str(self.cid)) + '&disopt=3DDisplaySDF'
             try:
                 location = urllib2.urlopen(url)
             except urllib2.URLError, e:
-                msg =  "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e),  url)
+                msg = "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e), url)
                 msg += "\tCheck your internet connection, and the above URL, and try again.\n"
                 raise Exception(msg)
             print "\tRetrieved entry for chemical ID %d\n" % self.cid
@@ -50,9 +48,14 @@ class PubChemObj:
         return self.dataSDF
 
     def name(self):
+        """Function to return the IUPAC name of the PubChem object."""
         return self.iupac
 
     def getCartesian(self):
+        """Function to return a string of the atom symbol and XYZ
+        coordinates of the PubChem object.
+
+        """
         try:
             sdfText = self.getSDF()
         except Exception as e:
@@ -100,6 +103,10 @@ class PubChemObj:
         return molecule_string
 
     def getXYZFile(self):
+        """Function to obtain preferentially a molecule string
+        through getCartesian() or a query string otherwise.
+
+        """
         try:
             temp = self.getCartesian()
         except Exception as e:
@@ -108,18 +115,26 @@ class PubChemObj:
         return molstr
 
     def getMoleculeString(self):
+        """Function to obtain a molecule string through
+        getCartesian() or fail.
+        """
         try:
             return self.getCartesian()
         except Exception as e:
             return e.message
-   
+
+
 def getPubChemResults(name):
+    """Function to query the PubChem database for molecules matching the
+    input string. Builds a PubChem object if found.
+
+    """
     url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % (urllib2.quote(name))
     print "\tSearching PubChem database for %s" % (name)
     try:
         loc = urllib2.urlopen(url)
     except urllib2.URLError as e:
-        msg =  "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e),  url)
+        msg = "\tPubchemError\n%s\n\treceived when trying to open\n\t%s\n" % (str(e), url)
         msg += "\tCheck your internet connection, and the above URL, and try again.\n"
         raise Exception(msg)
     data = loc.read()
@@ -139,7 +154,7 @@ def getPubChemResults(name):
         #if l == 4:
         #    break
         cid = int(data[l:data.find("\n", l)])
-        l = data.find("\t", l)+1
+        l = data.find("\t", l) + 1
 
         pubobj = PubChemObj(cid, mf, iupac)
         ans.append(pubobj)
@@ -157,4 +172,3 @@ if __name__ == "__main__":
     for r in obj:
         print r
         print r.getMoleculeString()
-
