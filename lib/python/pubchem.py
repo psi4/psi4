@@ -1,9 +1,5 @@
-"""**PubChem.py**
-
-   Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
-   to obtain a molecule string that can be passed to Molecule.
-
-   Example ::
+"""Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
+   to obtain a molecule string that can be passed to Molecule. ::
 
       results = getPubChemObj("1,3,5-hexatriene")
 
@@ -17,7 +13,6 @@
                                                         with PSI4's Molecule creation
 
 """
-
 import urllib2
 import re
 

@@ -150,14 +150,86 @@ Molecule Methods
 Expert
 ======
 
-.. automodule:: proc
+aliases
+=======
+
+.. automodule:: aliases
     :members:
     :undoc-members:
+
+driver
+======
 
 .. automodule:: driver
     :members:
     :undoc-members:
     :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq 
+
+input
+=====
+
+.. automodule:: input
+    :members:
+    :undoc-members:
+
+physconst
+=========
+
+.. automodule:: physconst
+    :members:
+    :undoc-members:
+
+proc
+====
+
+.. automodule:: proc
+    :members:
+    :undoc-members:
+
+procutil
+========
+
+.. automodule:: procutil
+    :members:
+    :undoc-members:
+
+psiexceptions
+=============
+
+.. automodule:: psiexceptions
+    :members:
+    :undoc-members:
+
+pubchem
+=======
+
+.. automodule:: pubchem
+    :members:
+    :undoc-members:
+
+qmmm
+====
+
+.. automodule:: qmmm
+    :members:
+    :undoc-members:
+
+text
+====
+
+.. automodule:: text
+    :members:
+    :undoc-members:
+
+util
+====
+
+.. automodule:: util
+    :members:
+    :undoc-members:
+
+wrappers
+========
 
 .. automodule:: wrappers
     :members:
@@ -165,43 +237,7 @@ Expert
     :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction, db, database, complete_basis_set, cbs,
         highest_1, scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2
 
-.. automodule:: aliases
-    :members:
-    :undoc-members:
-
-.. automodule:: procutil
-    :members:
-    :undoc-members:
-
-.. automodule:: psiexceptions
-    :members:
-    :undoc-members:
-
-.. automodule:: text
-    :members:
-    :undoc-members:
-
-.. automodule:: util
-    :members:
-    :undoc-members:
-
-.. automodule:: qmmm
-    :members:
-    :undoc-members:
-
-.. automodule:: input
-    :members:
-    :undoc-members:
-
-.. automodule:: physconst
-    :members:
-    :undoc-members:
-
-.. automodule:: pubchem
-    :members:
-    :undoc-members:
-
-.. automodule:: inpsight
+.. slated_for_removal automodule:: inpsight
     :members:
     :undoc-members:
 

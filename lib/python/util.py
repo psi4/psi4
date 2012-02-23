@@ -1,3 +1,4 @@
+"""Module with utility functions for use in input files."""
 import PsiMod
 import sys
 from psiexceptions import *
