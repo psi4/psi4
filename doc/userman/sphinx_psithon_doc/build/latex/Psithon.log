@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  22 FEB 2012 17:26
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  23 FEB 2012 00:58
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -869,27 +869,25 @@ LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <17.28> not available
 ] (./Psithon.toc
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 2.
-)
-\tf@toc=\write7
-\openout7 = `Psithon.toc'.
-
-
-Adding blank page after the table of contents.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <10> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 113.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 30.
 pdfTeX warning (ext4): destination with the same identifier (name{page.i}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.113 \tableofcontents
-                       [1
+l.30 ...{\numberline {15.9}qmmm}{47}{section.15.9}
+                                                   [1
 
-]pdfTeX warning (ext4): destination with the same identifier (name{page.ii}) ha
-s been already used, duplicate ignored
+])
+\tf@toc=\write7
+\openout7 = `Psithon.toc'.
+
+pdfTeX warning (ext4): destination with the same identifier (name{page.ii}) has
+ been already used, duplicate ignored
 <to be read again> 
                    \relax 
 l.113 \tableofcontents
-                       [2] <PSI4_3.png, id=138, 874.76813pt x 218.31563pt>
+                       [2] <PSI4_3.png, id=198, 874.76813pt x 218.31563pt>
 File: PSI4_3.png Graphic file (type png)
 
 <use PSI4_3.png>
@@ -1031,21 +1029,26 @@ Chapter 14.
 
 ]
 Chapter 15.
-
-Underfull \hbox (badness 10000) in paragraph at lines 2004--2005
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 2090--2091
+[43] [44]
+Underfull \hbox (badness 10000) in paragraph at lines 2228--2229
 
  []
 
-[43] [44] [45] [46] [47] [48] [49] [50
 
-]
+Underfull \hbox (badness 10000) in paragraph at lines 2314--2315
+
+ []
+
+[45]
+Underfull \hbox (badness 10000) in paragraph at lines 2492--2493
+
+ []
+
+[46] [47] [48] [49] [50]
 Chapter 16.
-[51] [52
+[51
+
+] [52
 
 ] [53
 
@@ -1054,47 +1057,45 @@ Chapter 16.
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 53--54
+Underfull \hbox (badness 10000) in paragraph at lines 44--45
 []| \T1/ptm/m/n/10 CP-CORRECTED2-
  []
 
 
-Overfull \hbox (15.00143pt too wide) in paragraph at lines 57--58
+Overfull \hbox (15.00143pt too wide) in paragraph at lines 48--49
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANABSOLUTEDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 58--59
+Underfull \hbox (badness 10000) in paragraph at lines 49--50
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANSIGNEDDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 59--60
+Underfull \hbox (badness 10000) in paragraph at lines 50--51
 []| \T1/ptm/m/n/10 db_nameDATABASEROOT-MEAN-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 60--61
+Underfull \hbox (badness 10000) in paragraph at lines 51--52
 []| \T1/ptm/m/n/10 UNCP-CORRECTED2-
  []
 
 [55
 
-] [56] [57
-
-]) (./Psithon.aux)
+] [56]) (./Psithon.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 8391 strings out of 493848
- 116915 string characters out of 3149207
- 212526 words of memory out of 3000000
- 11206 multiletter control sequences out of 15000+200000
+ 8349 strings out of 493848
+ 115762 string characters out of 3149207
+ 212022 words of memory out of 3000000
+ 11197 multiletter control sequences out of 15000+200000
  63666 words of font info for 72 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
- 45i,18n,45p,2295b,551s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 45i,18n,51p,930b,551s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/local/texlive/2009/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
 exlive/2009/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/te
 xlive/2009/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/tex
@@ -1111,9 +1112,9 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (61 pages, 523602 bytes).
+Output written on Psithon.pdf (60 pages, 517933 bytes).
 PDF statistics:
- 903 PDF objects out of 1000 (max. 8388607)
- 260 named destinations out of 1000 (max. 500000)
- 190 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 874 PDF objects out of 1000 (max. 8388607)
+ 227 named destinations out of 1000 (max. 500000)
+ 286 words of extra memory for PDF output out of 10000 (max. 10000000)
 
