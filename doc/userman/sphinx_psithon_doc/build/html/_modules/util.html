@@ -63,42 +63,80 @@
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">psiexceptions</span> <span class="kn">import</span> <span class="o">*</span>
 
+
 <div class="viewcode-block" id="set_memory"><a class="viewcode-back" href="../index.html#util.set_memory">[docs]</a><span class="k">def</span> <span class="nf">set_memory</span><span class="p">(</span><span class="nb">bytes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to reset the total memory allocation.&quot;&quot;&quot;</span>
     <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_memory</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="get_memory"><a class="viewcode-back" href="../index.html#util.get_memory">[docs]</a><span class="k">def</span> <span class="nf">get_memory</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Function to return the total memory allocation.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_memory</span><span class="p">()</span>
+
 </div>
 <div class="viewcode-block" id="set_num_threads"><a class="viewcode-back" href="../index.html#util.set_num_threads">[docs]</a><span class="k">def</span> <span class="nf">set_num_threads</span><span class="p">(</span><span class="n">nthread</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to reset the number of threads to parallelize across.&quot;&quot;&quot;</span>
     <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_nthread</span><span class="p">(</span><span class="n">nthread</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="get_num_threads"><a class="viewcode-back" href="../index.html#util.get_num_threads">[docs]</a><span class="k">def</span> <span class="nf">get_num_threads</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">PsiMol</span><span class="o">.</span><span class="n">nthread</span><span class="p">()</span>
+    <span class="sd">&quot;&quot;&quot;Function to return the number of threads to parallelize across.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">nthread</span><span class="p">()</span>
+
 </div>
 <div class="viewcode-block" id="success"><a class="viewcode-back" href="../index.html#util.success">[docs]</a><span class="k">def</span> <span class="nf">success</span><span class="p">(</span><span class="n">label</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to print a &#39;*label*...PASSED&#39; line to screen.</span>
+<span class="sd">    Used by :py:func:`util.compare_values` family when functions pass.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">print</span> <span class="s">&#39;</span><span class="se">\t</span><span class="s">{0:.&lt;66}PASSED&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
 
+
 <span class="c"># Test functions</span></div>
 <div class="viewcode-block" id="compare_values"><a class="viewcode-back" href="../index.html#util.compare_values">[docs]</a><span class="k">def</span> <span class="nf">compare_values</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">digits</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
-    <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">expected</span><span class="o">-</span><span class="n">computed</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">digits</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compare two values. Prints :py:func:`util.success`</span>
+<span class="sd">    when value *computed* matches value *expected* to number of *digits*.</span>
+<span class="sd">    Performs a system exit on failure. Used in input files in the test suite.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">expected</span> <span class="o">-</span> <span class="n">computed</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">digits</span><span class="p">)):</span>
         <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: computed value (</span><span class="si">%f</span><span class="s">) does not match (</span><span class="si">%f</span><span class="s">) to </span><span class="si">%d</span><span class="s"> digits.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">digits</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">success</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="compare_integers"><a class="viewcode-back" href="../index.html#util.compare_integers">[docs]</a><span class="k">def</span> <span class="nf">compare_integers</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compare two integers. Prints :py:func:`util.success`</span>
+<span class="sd">    when value *computed* matches value *expected*.</span>
+<span class="sd">    Performs a system exit on failure. Used in input files in the test suite.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">expected</span> <span class="o">!=</span> <span class="n">computed</span><span class="p">):</span>
         <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: computed value (</span><span class="si">%d</span><span class="s">) does not match (</span><span class="si">%d</span><span class="s">).&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">success</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="compare_strings"><a class="viewcode-back" href="../index.html#util.compare_strings">[docs]</a><span class="k">def</span> <span class="nf">compare_strings</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compare two strings. Prints :py:func:`util.success`</span>
+<span class="sd">    when string *computed* exactly matches string *expected*.</span>
+<span class="sd">    Performs a system exit on failure. Used in input files in the test suite.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span><span class="p">(</span><span class="n">expected</span> <span class="o">!=</span> <span class="n">computed</span><span class="p">):</span>
         <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: computed value (</span><span class="si">%s</span><span class="s">) does not match (</span><span class="si">%s</span><span class="s">).&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">expected</span><span class="p">)</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="n">success</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="compare_matrices"><a class="viewcode-back" href="../index.html#util.compare_matrices">[docs]</a><span class="k">def</span> <span class="nf">compare_matrices</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">digits</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compare two matrices. Prints :py:func:`util.success`</span>
+<span class="sd">    when elements of matrix *computed* match elements of matrix *expected* to</span>
+<span class="sd">    number of *digits*. Performs a system exit on failure to match symmetry</span>
+<span class="sd">    structure, dimensions, or element values. Used in input files in the test suite.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">nirrep</span><span class="p">()</span> <span class="o">!=</span> <span class="n">computed</span><span class="o">.</span><span class="n">nirrep</span><span class="p">()):</span>
         <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s"> has </span><span class="si">%d</span><span class="s"> irreps, but </span><span class="si">%s</span><span class="s"> has </span><span class="si">%d</span><span class="se">\n</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">expected</span><span class="o">.</span><span class="n">nirrep</span><span class="p">(),</span> <span class="n">computed</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">computed</span><span class="o">.</span><span class="n">nirrep</span><span class="p">())</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -116,13 +154,13 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">rows</span> <span class="o">=</span> <span class="n">expected</span><span class="o">.</span><span class="n">rows</span><span class="p">(</span><span class="n">irrep</span><span class="p">)</span>
         <span class="n">cols</span> <span class="o">=</span> <span class="n">expected</span><span class="o">.</span><span class="n">cols</span><span class="p">(</span><span class="n">irrep</span> <span class="o">^</span> <span class="n">symmetry</span><span class="p">)</span>
-        <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
-                <span class="k">if</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">digits</span><span class="p">)):</span>
-                     <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: computed value (</span><span class="si">%s</span><span class="s">) does not match (</span><span class="si">%s</span><span class="s">).&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="p">,</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
-                     <span class="n">failed</span> <span class="o">=</span> <span class="mi">1</span>
-                     <span class="k">break</span>
+                <span class="k">if</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="o">-</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">digits</span><span class="p">)):</span>
+                    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: computed value (</span><span class="si">%s</span><span class="s">) does not match (</span><span class="si">%s</span><span class="s">).&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">),</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">col</span><span class="p">))</span>
+                    <span class="n">failed</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">break</span>
 
         <span class="k">if</span><span class="p">(</span><span class="n">failed</span><span class="p">):</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;The Failed Test Matrices</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
@@ -133,6 +171,12 @@
 
 </div>
 <div class="viewcode-block" id="compare_vectors"><a class="viewcode-back" href="../index.html#util.compare_vectors">[docs]</a><span class="k">def</span> <span class="nf">compare_vectors</span><span class="p">(</span><span class="n">expected</span><span class="p">,</span> <span class="n">computed</span><span class="p">,</span> <span class="n">digits</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to compare two vectors. Prints :py:func:`util.success`</span>
+<span class="sd">    when elements of vector *computed* match elements of vector *expected* to</span>
+<span class="sd">    number of *digits*. Performs a system exit on failure to match symmetry</span>
+<span class="sd">    structure, dimension, or element values. Used in input files in the test suite.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">nirrep</span><span class="p">()</span> <span class="o">!=</span> <span class="n">computed</span><span class="o">.</span><span class="n">nirrep</span><span class="p">()):</span>
         <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s"> has </span><span class="si">%d</span><span class="s"> irreps, but </span><span class="si">%s</span><span class="s"> has </span><span class="si">%d</span><span class="se">\n</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">expected</span><span class="o">.</span><span class="n">nirrep</span><span class="p">(),</span> <span class="n">computed</span><span class="o">.</span><span class="n">name</span><span class="p">(),</span> <span class="n">computed</span><span class="o">.</span><span class="n">nirrep</span><span class="p">())</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -142,12 +186,12 @@
             <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">The reference has </span><span class="si">%d</span><span class="s"> entries in irrep </span><span class="si">%d</span><span class="s">, but the computed vector has </span><span class="si">%d</span><span class="se">\n</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">dim</span><span class="p">(</span><span class="n">irrep</span><span class="p">),</span> <span class="n">irrep</span><span class="p">,</span> <span class="n">computed</span><span class="o">.</span><span class="n">dim</span><span class="p">(</span><span class="n">irrep</span><span class="p">))</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">dim</span> <span class="o">=</span> <span class="n">expected</span><span class="o">.</span><span class="n">dim</span><span class="p">(</span><span class="n">irrep</span><span class="p">)</span>
-        <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="n">failed</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
-            <span class="k">if</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span> <span class="o">-</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="n">digits</span><span class="p">)):</span>
-                 <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: computed value (</span><span class="si">%s</span><span class="s">) does not match (</span><span class="si">%s</span><span class="s">).&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">),</span> <span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">))</span>
-                 <span class="n">failed</span> <span class="o">=</span> <span class="mi">1</span>
-                 <span class="k">break</span>
+            <span class="k">if</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">)</span> <span class="o">-</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="o">**</span> <span class="p">(</span><span class="o">-</span><span class="n">digits</span><span class="p">)):</span>
+                <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s">: computed value (</span><span class="si">%s</span><span class="s">) does not match (</span><span class="si">%s</span><span class="s">).&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">computed</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">),</span> <span class="n">expected</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">irrep</span><span class="p">,</span> <span class="n">entry</span><span class="p">))</span>
+                <span class="n">failed</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">break</span>
 
         <span class="k">if</span><span class="p">(</span><span class="n">failed</span><span class="p">):</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;The computed vector</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
@@ -200,7 +244,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 22, 2012.
+      Last updated on Feb 23, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

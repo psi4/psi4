@@ -28,110 +28,69 @@
 \indexentry{frac\_nuke() (in module frac)|hyperpage}{25}
 \indexentry{frac\_traverse() (in module frac)|hyperpage}{25}
 \indexentry{ip\_fitting() (in module frac)|hyperpage}{25}
-\indexentry{proc (module)|hyperpage}{43}
-\indexentry{run\_adc() (in module proc)|hyperpage}{43}
-\indexentry{run\_bccd() (in module proc)|hyperpage}{43}
-\indexentry{run\_bccd\_t() (in module proc)|hyperpage}{43}
-\indexentry{run\_cc\_gradient() (in module proc)|hyperpage}{43}
-\indexentry{run\_cc\_response() (in module proc)|hyperpage}{43}
-\indexentry{run\_ccenergy() (in module proc)|hyperpage}{43}
-\indexentry{run\_dcft() (in module proc)|hyperpage}{43}
-\indexentry{run\_detci() (in module proc)|hyperpage}{43}
-\indexentry{run\_dfcc() (in module proc)|hyperpage}{43}
-\indexentry{run\_dfmp2() (in module proc)|hyperpage}{43}
-\indexentry{run\_eom\_cc() (in module proc)|hyperpage}{43}
-\indexentry{run\_eom\_cc\_gradient() (in module proc)|hyperpage}{43}
-\indexentry{run\_libfock() (in module proc)|hyperpage}{43}
-\indexentry{run\_mcscf() (in module proc)|hyperpage}{44}
-\indexentry{run\_mp2() (in module proc)|hyperpage}{44}
-\indexentry{run\_mp2\_gradient() (in module proc)|hyperpage}{44}
-\indexentry{run\_mp2c() (in module proc)|hyperpage}{44}
-\indexentry{run\_mp2drpa() (in module proc)|hyperpage}{44}
-\indexentry{run\_mrcc() (in module proc)|hyperpage}{44}
-\indexentry{run\_sapt() (in module proc)|hyperpage}{44}
-\indexentry{run\_sapt\_ct() (in module proc)|hyperpage}{44}
-\indexentry{run\_scf() (in module proc)|hyperpage}{44}
-\indexentry{run\_scf\_gradient() (in module proc)|hyperpage}{44}
-\indexentry{scf\_helper() (in module proc)|hyperpage}{44}
+\indexentry{aliases (module)|hyperpage}{43}
+\indexentry{run\_mp2\_5() (in module aliases)|hyperpage}{43}
+\indexentry{run\_plugin\_ccsd\_serial() (in module aliases)|hyperpage}{43}
+\indexentry{run\_plugin\_omega() (in module aliases)|hyperpage}{43}
+\indexentry{sherrillgroup\_gold\_standard() (in module aliases)|hyperpage}{43}
 \indexentry{driver (module)|hyperpage}{44}
 \indexentry{gradient() (in module driver)|hyperpage}{44}
 \indexentry{hessian() (in module driver)|hyperpage}{44}
 \indexentry{parse\_arbitrary\_order() (in module driver)|hyperpage}{44}
-\indexentry{wrappers (module)|hyperpage}{44}
-\indexentry{call\_function\_in\_1st\_argument() (in module wrappers)|hyperpage}{44}
-\indexentry{drop\_duplicates() (in module wrappers)|hyperpage}{44}
-\indexentry{n\_body() (in module wrappers)|hyperpage}{44}
-\indexentry{reconstitute\_bracketed\_basis() (in module wrappers)|hyperpage}{44}
-\indexentry{split\_menial() (in module wrappers)|hyperpage}{45}
-\indexentry{tblhead() (in module wrappers)|hyperpage}{45}
-\indexentry{validate\_bracketed\_basis() (in module wrappers)|hyperpage}{45}
-\indexentry{validate\_scheme\_args() (in module wrappers)|hyperpage}{45}
-\indexentry{aliases (module)|hyperpage}{45}
-\indexentry{run\_mp2\_5() (in module aliases)|hyperpage}{45}
-\indexentry{run\_plugin\_ccsd\_serial() (in module aliases)|hyperpage}{45}
-\indexentry{run\_plugin\_omega() (in module aliases)|hyperpage}{45}
-\indexentry{sherrillgroup\_gold\_standard() (in module aliases)|hyperpage}{45}
-\indexentry{procutil (module)|hyperpage}{45}
-\indexentry{format\_kwargs\_for\_input() (in module procutil)|hyperpage}{45}
-\indexentry{format\_molecule\_for\_input() (in module procutil)|hyperpage}{45}
-\indexentry{format\_options\_for\_input() (in module procutil)|hyperpage}{45}
-\indexentry{get\_psifile() (in module procutil)|hyperpage}{45}
-\indexentry{kwargs\_lower() (in module procutil)|hyperpage}{45}
-\indexentry{psiexceptions (module)|hyperpage}{45}
-\indexentry{PsiException|hyperpage}{45}
-\indexentry{ValidationError|hyperpage}{45}
-\indexentry{text (module)|hyperpage}{45}
-\indexentry{Table (class in text)|hyperpage}{45}
-\indexentry{absolute\_to\_relative() (text.Table method)|hyperpage}{46}
-\indexentry{copy() (text.Table method)|hyperpage}{46}
-\indexentry{format\_label() (text.Table method)|hyperpage}{46}
-\indexentry{format\_values() (text.Table method)|hyperpage}{46}
-\indexentry{save() (text.Table method)|hyperpage}{46}
-\indexentry{scale() (text.Table method)|hyperpage}{46}
-\indexentry{banner() (in module text)|hyperpage}{46}
-\indexentry{print\_stderr() (in module text)|hyperpage}{46}
-\indexentry{print\_stdout() (in module text)|hyperpage}{46}
-\indexentry{util (module)|hyperpage}{46}
-\indexentry{compare\_integers() (in module util)|hyperpage}{46}
-\indexentry{compare\_matrices() (in module util)|hyperpage}{46}
-\indexentry{compare\_strings() (in module util)|hyperpage}{46}
-\indexentry{compare\_values() (in module util)|hyperpage}{46}
-\indexentry{compare\_vectors() (in module util)|hyperpage}{46}
-\indexentry{get\_memory() (in module util)|hyperpage}{46}
-\indexentry{get\_num\_threads() (in module util)|hyperpage}{46}
-\indexentry{set\_memory() (in module util)|hyperpage}{46}
-\indexentry{set\_num\_threads() (in module util)|hyperpage}{46}
-\indexentry{success() (in module util)|hyperpage}{46}
-\indexentry{qmmm (module)|hyperpage}{46}
-\indexentry{Diffuse (class in qmmm)|hyperpage}{46}
-\indexentry{fitGeneral() (qmmm.Diffuse method)|hyperpage}{46}
-\indexentry{fitScf() (qmmm.Diffuse method)|hyperpage}{46}
-\indexentry{populateExtern() (qmmm.Diffuse method)|hyperpage}{46}
-\indexentry{QMMM (class in qmmm)|hyperpage}{46}
-\indexentry{addChargeAngstrom() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{addChargeBohr() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{addDiffuse() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{populateExtern() (qmmm.QMMM method)|hyperpage}{46}
-\indexentry{input (module)|hyperpage}{46}
-\indexentry{bad\_option\_syntax() (in module input)|hyperpage}{46}
-\indexentry{check\_parentheses\_and\_brackets() (in module input)|hyperpage}{46}
-\indexentry{parse\_multiline\_array() (in module input)|hyperpage}{46}
-\indexentry{process\_basis\_block() (in module input)|hyperpage}{46}
-\indexentry{process\_basis\_file() (in module input)|hyperpage}{46}
-\indexentry{process\_external\_command() (in module input)|hyperpage}{46}
-\indexentry{process\_extract\_command() (in module input)|hyperpage}{47}
-\indexentry{process\_input() (in module input)|hyperpage}{47}
-\indexentry{process\_memory\_command() (in module input)|hyperpage}{47}
-\indexentry{process\_molecule\_command() (in module input)|hyperpage}{47}
-\indexentry{process\_multiline\_arrays() (in module input)|hyperpage}{47}
-\indexentry{process\_option() (in module input)|hyperpage}{47}
-\indexentry{process\_print\_command() (in module input)|hyperpage}{47}
-\indexentry{process\_pubchem\_command() (in module input)|hyperpage}{47}
-\indexentry{process\_set\_command() (in module input)|hyperpage}{47}
-\indexentry{process\_set\_commands() (in module input)|hyperpage}{47}
-\indexentry{process\_word\_quotes() (in module input)|hyperpage}{47}
-\indexentry{quotify() (in module input)|hyperpage}{47}
-\indexentry{physconst (module)|hyperpage}{47}
+\indexentry{input (module)|hyperpage}{44}
+\indexentry{bad\_option\_syntax() (in module input)|hyperpage}{44}
+\indexentry{check\_parentheses\_and\_brackets() (in module input)|hyperpage}{44}
+\indexentry{parse\_multiline\_array() (in module input)|hyperpage}{44}
+\indexentry{process\_basis\_block() (in module input)|hyperpage}{44}
+\indexentry{process\_basis\_file() (in module input)|hyperpage}{44}
+\indexentry{process\_external\_command() (in module input)|hyperpage}{44}
+\indexentry{process\_extract\_command() (in module input)|hyperpage}{44}
+\indexentry{process\_input() (in module input)|hyperpage}{44}
+\indexentry{process\_memory\_command() (in module input)|hyperpage}{44}
+\indexentry{process\_molecule\_command() (in module input)|hyperpage}{44}
+\indexentry{process\_multiline\_arrays() (in module input)|hyperpage}{44}
+\indexentry{process\_option() (in module input)|hyperpage}{44}
+\indexentry{process\_print\_command() (in module input)|hyperpage}{44}
+\indexentry{process\_pubchem\_command() (in module input)|hyperpage}{44}
+\indexentry{process\_set\_command() (in module input)|hyperpage}{44}
+\indexentry{process\_set\_commands() (in module input)|hyperpage}{44}
+\indexentry{process\_word\_quotes() (in module input)|hyperpage}{44}
+\indexentry{quotify() (in module input)|hyperpage}{44}
+\indexentry{physconst (module)|hyperpage}{45}
+\indexentry{proc (module)|hyperpage}{45}
+\indexentry{run\_adc() (in module proc)|hyperpage}{45}
+\indexentry{run\_bccd() (in module proc)|hyperpage}{45}
+\indexentry{run\_bccd\_t() (in module proc)|hyperpage}{45}
+\indexentry{run\_cc\_gradient() (in module proc)|hyperpage}{45}
+\indexentry{run\_cc\_response() (in module proc)|hyperpage}{45}
+\indexentry{run\_ccenergy() (in module proc)|hyperpage}{45}
+\indexentry{run\_dcft() (in module proc)|hyperpage}{45}
+\indexentry{run\_detci() (in module proc)|hyperpage}{45}
+\indexentry{run\_dfcc() (in module proc)|hyperpage}{45}
+\indexentry{run\_dfmp2() (in module proc)|hyperpage}{45}
+\indexentry{run\_eom\_cc() (in module proc)|hyperpage}{45}
+\indexentry{run\_eom\_cc\_gradient() (in module proc)|hyperpage}{45}
+\indexentry{run\_libfock() (in module proc)|hyperpage}{45}
+\indexentry{run\_mcscf() (in module proc)|hyperpage}{45}
+\indexentry{run\_mp2() (in module proc)|hyperpage}{45}
+\indexentry{run\_mp2\_gradient() (in module proc)|hyperpage}{45}
+\indexentry{run\_mp2c() (in module proc)|hyperpage}{46}
+\indexentry{run\_mp2drpa() (in module proc)|hyperpage}{46}
+\indexentry{run\_mrcc() (in module proc)|hyperpage}{46}
+\indexentry{run\_sapt() (in module proc)|hyperpage}{46}
+\indexentry{run\_sapt\_ct() (in module proc)|hyperpage}{46}
+\indexentry{run\_scf() (in module proc)|hyperpage}{46}
+\indexentry{run\_scf\_gradient() (in module proc)|hyperpage}{46}
+\indexentry{scf\_helper() (in module proc)|hyperpage}{46}
+\indexentry{procutil (module)|hyperpage}{46}
+\indexentry{format\_kwargs\_for\_input() (in module procutil)|hyperpage}{46}
+\indexentry{format\_molecule\_for\_input() (in module procutil)|hyperpage}{46}
+\indexentry{format\_options\_for\_input() (in module procutil)|hyperpage}{46}
+\indexentry{get\_psifile() (in module procutil)|hyperpage}{46}
+\indexentry{kwargs\_lower() (in module procutil)|hyperpage}{46}
+\indexentry{psiexceptions (module)|hyperpage}{47}
+\indexentry{PsiException|hyperpage}{47}
+\indexentry{ValidationError|hyperpage}{47}
 \indexentry{pubchem (module)|hyperpage}{47}
 \indexentry{PubChemObj (class in pubchem)|hyperpage}{47}
 \indexentry{getCartesian() (pubchem.PubChemObj method)|hyperpage}{47}
@@ -140,36 +99,44 @@
 \indexentry{getXYZFile() (pubchem.PubChemObj method)|hyperpage}{47}
 \indexentry{name() (pubchem.PubChemObj method)|hyperpage}{47}
 \indexentry{getPubChemResults() (in module pubchem)|hyperpage}{47}
-\indexentry{inpsight (module)|hyperpage}{47}
-\indexentry{InPsight (class in inpsight)|hyperpage}{47}
-\indexentry{atoms (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{azimuth (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bohr\_per\_ang (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bond\_width (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bonding\_alpha (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{bonds (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{colors (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{defines (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{elevation (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{height (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{light (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{light\_color (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{location (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{look\_at (inpsight.InPsight attribute)|hyperpage}{47}
-\indexentry{position\_camera() (inpsight.InPsight method)|hyperpage}{47}
-\indexentry{radial\_scale (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{radii (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{right (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{save\_density() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{save\_molecule() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_camera() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_color() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_define() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_radius() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_size() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{set\_view() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{sky (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{up (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{update\_geometry() (inpsight.InPsight method)|hyperpage}{48}
-\indexentry{width (inpsight.InPsight attribute)|hyperpage}{48}
-\indexentry{zoom (inpsight.InPsight attribute)|hyperpage}{48}
+\indexentry{qmmm (module)|hyperpage}{47}
+\indexentry{Diffuse (class in qmmm)|hyperpage}{47}
+\indexentry{fitGeneral() (qmmm.Diffuse method)|hyperpage}{47}
+\indexentry{fitScf() (qmmm.Diffuse method)|hyperpage}{47}
+\indexentry{populateExtern() (qmmm.Diffuse method)|hyperpage}{47}
+\indexentry{QMMM (class in qmmm)|hyperpage}{48}
+\indexentry{addChargeAngstrom() (qmmm.QMMM method)|hyperpage}{48}
+\indexentry{addChargeBohr() (qmmm.QMMM method)|hyperpage}{48}
+\indexentry{addDiffuse() (qmmm.QMMM method)|hyperpage}{48}
+\indexentry{populateExtern() (qmmm.QMMM method)|hyperpage}{48}
+\indexentry{text (module)|hyperpage}{48}
+\indexentry{Table (class in text)|hyperpage}{48}
+\indexentry{absolute\_to\_relative() (text.Table method)|hyperpage}{48}
+\indexentry{copy() (text.Table method)|hyperpage}{48}
+\indexentry{format\_label() (text.Table method)|hyperpage}{48}
+\indexentry{format\_values() (text.Table method)|hyperpage}{48}
+\indexentry{save() (text.Table method)|hyperpage}{48}
+\indexentry{scale() (text.Table method)|hyperpage}{48}
+\indexentry{banner() (in module text)|hyperpage}{48}
+\indexentry{print\_stderr() (in module text)|hyperpage}{48}
+\indexentry{print\_stdout() (in module text)|hyperpage}{48}
+\indexentry{util (module)|hyperpage}{48}
+\indexentry{compare\_integers() (in module util)|hyperpage}{48}
+\indexentry{compare\_matrices() (in module util)|hyperpage}{48}
+\indexentry{compare\_strings() (in module util)|hyperpage}{49}
+\indexentry{compare\_values() (in module util)|hyperpage}{49}
+\indexentry{compare\_vectors() (in module util)|hyperpage}{49}
+\indexentry{get\_memory() (in module util)|hyperpage}{49}
+\indexentry{get\_num\_threads() (in module util)|hyperpage}{49}
+\indexentry{set\_memory() (in module util)|hyperpage}{49}
+\indexentry{set\_num\_threads() (in module util)|hyperpage}{49}
+\indexentry{success() (in module util)|hyperpage}{49}
+\indexentry{wrappers (module)|hyperpage}{49}
+\indexentry{call\_function\_in\_1st\_argument() (in module wrappers)|hyperpage}{49}
+\indexentry{drop\_duplicates() (in module wrappers)|hyperpage}{49}
+\indexentry{n\_body() (in module wrappers)|hyperpage}{49}
+\indexentry{reconstitute\_bracketed\_basis() (in module wrappers)|hyperpage}{49}
+\indexentry{split\_menial() (in module wrappers)|hyperpage}{49}
+\indexentry{tblhead() (in module wrappers)|hyperpage}{49}
+\indexentry{validate\_bracketed\_basis() (in module wrappers)|hyperpage}{50}
+\indexentry{validate\_scheme\_args() (in module wrappers)|hyperpage}{50}
