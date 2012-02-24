@@ -12,7 +12,7 @@ additional-docs.tex cc.tex detcas.tex detci.tex  \
 introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
 psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex \
 psithon.tex basissets.tex pywrappers.tex dfmp2.tex sapt.tex adc.tex \
-mrcc.tex general.tex
+mrcc.tex psimrcc.tex general.tex
 
 OTFTEX = \
 tests_descriptions.tex keywords.tex expert_keywords.tex options.tex psi4bases.tex variables_list.tex physconst.tex
@@ -30,7 +30,7 @@ $(OTFTEX):
 
 # special rule here to do bibliography; not needed in other docs
 ifdef PDFLATEX
-$(TARGET_PDF): $(TEX) $(SUBTEX) $(OTFTEX)
+$(TARGET_PDF): $(TEX) $(SUBTEX) $(OTFTEX) Psithon.pdf
 	echo $(srcdir)
 	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
 	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
@@ -40,5 +40,14 @@ userman.dvi: $(TEX) $(SUBTEX) $(OTFTEX)
 	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
 	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
 	$(LATEX) $< && $(BIBTEX) $(MAN) && $(LATEX) $< && $(LATEX) $<
+endif
+
+ifdef SPHINX
+Psithon.pdf:
+	cd @srcdir@/sphinx_psithon_doc; make html; make latexpdf; cd -
+	cp -p @srcdir@/sphinx_psithon_doc/build/latex/Psithon.pdf .
+else
+Psithon.pdf:
+	cp -p @srcdir@/sphinx_psithon_doc/build/latex/Psithon.pdf .
 endif
 

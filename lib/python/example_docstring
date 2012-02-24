@@ -1,0 +1,53 @@
+Place this immediately after the function definition of a major (kwargs passthrough)
+python function. Fill in as needed <angle brackets and contents>.
+
+    """<One sentence description
+    of function purpose.>
+
+    :aliases: <any other name function aliased to>()
+
+    :returns: (*<string || bool || int || float || array || etc.>*) <Quantity returned by function including units>
+
+    :PSI variables:
+    
+    .. envvar:: <PSI VARIABLE SET BY FUNCTION>
+        <ANOTHER PSI VARIABLE WITH nonstandard PORTION OF NAME>
+
+    .. note:: <Notes for the user
+        of an informative nature.>
+
+    .. warning:: <Notes for the user
+        of a cautionary nature.>
+
+    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
+
+       - <NYI functionality>
+
+       - <NYI functionality>
+
+    .. math:: <any LaTeX expression. Be sure to escape shell sequences \infty vs. \\beta>
+
+    **Keywords**
+
+    :type name: string
+    :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
+
+        First argument, usually unlabeled. Indicates the computational method 
+        to be applied to the system.
+
+    :type <keyword name>: <string || bool || float || array || etc.>
+    :param name: |dl| ``<default value 1>`` |dr| || ``<value 2>`` || etc.
+
+        <Description of keyword function with references to
+        ``option value 1`` and :py:func:`file.function` etc. as necessary.
+
+    **Examples**
+
+    >>> # [1] <example description>
+    >>> <example python command>
+
+    >>> # [2] <example description>
+    >>> <example python command>
+
+    """
+

@@ -310,9 +310,9 @@ void HF::integrals()
     }
 
     // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
-    if (scf_type_ == "DF") {
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
-        jk_ = JK::build_JK(options_, true);
+        jk_ = JK::build_JK();
         // Tell the JK to print
         jk_->set_print(print_);
         // Give the JK 70% of the memory
@@ -354,8 +354,10 @@ void HF::finalize()
     pk_integrals_.reset();
     eri_.reset();
 
-    // TODO: This will be the only one
-    jk_.reset();
+    // This will be the only one
+    if (!options_.get_bool("SAVE_JK")) {
+        jk_.reset();
+    }
 
     // Clean up after DIIS
     if(initialized_diis_manager_)

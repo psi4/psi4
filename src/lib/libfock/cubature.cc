@@ -1318,14 +1318,6 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
 
     return R;
 }
-boost::shared_ptr<GridBlock> MolecularGrid::fullGrid()
-{
-    boost::shared_ptr<GridBlock>g(new GridBlock());
-    g->setMaxPoints(npoints_);
-    g->setTruePoints(npoints_);
-    g->setGrid(x_,y_,z_,w_);
-    return g;
-}
 void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms, const std::string& scheme,
    boost::shared_ptr<BasisExtents> extents, int max_points, int min_points, double max_radius)
 {

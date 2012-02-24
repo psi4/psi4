@@ -1,6 +1,0 @@
-\select@language {english}
-\contentsline {chapter}{\numberline {1}Database}{3}{chapter.1}
-\contentsline {chapter}{\numberline {2}Misc}{5}{chapter.2}
-\contentsline {chapter}{\numberline {3}Indices and tables}{7}{chapter.3}
-\contentsline {chapter}{Python Module Index}{9}{section*.6}
-\contentsline {chapter}{Index}{11}{section*.7}
