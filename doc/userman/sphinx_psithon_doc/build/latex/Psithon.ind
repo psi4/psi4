@@ -18,8 +18,8 @@
   \bigletter C
   \item call\_function\_in\_1st\_argument() (in module wrappers), \hyperpage{50}
   \item check\_parentheses\_and\_brackets() (in module input), \hyperpage{44}
-  \item compare\_integers() (in module util), \hyperpage{49}
-  \item compare\_matrices() (in module util), \hyperpage{49}
+  \item compare\_integers() (in module util), \hyperpage{50}
+  \item compare\_matrices() (in module util), \hyperpage{50}
   \item compare\_strings() (in module util), \hyperpage{50}
   \item compare\_values() (in module util), \hyperpage{50}
   \item compare\_vectors() (in module util), \hyperpage{50}
@@ -31,7 +31,7 @@
   \indexspace
   \bigletter D
   \item database() (in module wrappers), \hyperpage{15}
-  \item Diffuse (class in qmmm), \hyperpage{48}
+  \item Diffuse (class in qmmm), \hyperpage{49}
   \item driver (module), \hyperpage{44}
   \item drop\_duplicates() (in module wrappers), \hyperpage{50}
   \item dynamic\_variable\_bind() (in module molutil), \hyperpage{45}
@@ -56,8 +56,8 @@
 
   \indexspace
   \bigletter F
-  \item fitGeneral() (qmmm.Diffuse method), \hyperpage{48}
-  \item fitScf() (qmmm.Diffuse method), \hyperpage{48}
+  \item fitGeneral() (qmmm.Diffuse method), \hyperpage{49}
+  \item fitScf() (qmmm.Diffuse method), \hyperpage{49}
   \item format\_kwargs\_for\_input() (in module procutil), \hyperpage{47}
   \item format\_label() (text.Table method), \hyperpage{49}
   \item format\_molecule\_for\_input() (in module procutil), \hyperpage{47}
@@ -115,7 +115,7 @@
   \item parse\_arbitrary\_order() (in module driver), \hyperpage{44}
   \item parse\_multiline\_array() (in module input), \hyperpage{44}
   \item physconst (module), \hyperpage{46}
-  \item populateExtern() (qmmm.Diffuse method), \hyperpage{48}
+  \item populateExtern() (qmmm.Diffuse method), \hyperpage{49}
   \item populateExtern() (qmmm.QMMM method), \hyperpage{49}
   \item print\_stderr() (in module text), \hyperpage{49}
   \item print\_stdout() (in module text), \hyperpage{49}
@@ -143,7 +143,7 @@
   \indexspace
   \bigletter Q
   \item QMMM (class in qmmm), \hyperpage{49}
-  \item qmmm (module), \hyperpage{48}
+  \item qmmm (module), \hyperpage{49}
   \item quotify() (in module input), \hyperpage{45}
 
   \indexspace
@@ -172,6 +172,8 @@
   \item run\_mrcc() (in module proc), \hyperpage{47}
   \item run\_plugin\_ccsd\_serial() (in module aliases), \hyperpage{43}
   \item run\_plugin\_omega() (in module aliases), \hyperpage{43}
+  \item run\_psimrcc() (in module proc), \hyperpage{47}
+  \item run\_psimrcc\_scf() (in module proc), \hyperpage{47}
   \item run\_sapt() (in module proc), \hyperpage{47}
   \item run\_sapt\_ct() (in module proc), \hyperpage{47}
   \item run\_scf() (in module proc), \hyperpage{47}
@@ -187,18 +189,18 @@
   \item set\_memory() (in module util), \hyperpage{50}
   \item set\_num\_threads() (in module util), \hyperpage{50}
   \item sherrillgroup\_gold\_standard() (in module aliases), \hyperpage{43}
-  \item split\_menial() (in module wrappers), \hyperpage{50}
+  \item split\_menial() (in module wrappers), \hyperpage{51}
   \item success() (in module util), \hyperpage{50}
 
   \indexspace
   \bigletter T
   \item Table (class in text), \hyperpage{49}
-  \item tblhead() (in module wrappers), \hyperpage{50}
+  \item tblhead() (in module wrappers), \hyperpage{51}
   \item text (module), \hyperpage{49}
 
   \indexspace
   \bigletter U
-  \item util (module), \hyperpage{49}
+  \item util (module), \hyperpage{50}
 
   \indexspace
   \bigletter V

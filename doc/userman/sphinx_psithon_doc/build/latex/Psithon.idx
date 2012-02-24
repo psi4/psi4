@@ -85,6 +85,8 @@
 \indexentry{run\_mp2c() (in module proc)|hyperpage}{47}
 \indexentry{run\_mp2drpa() (in module proc)|hyperpage}{47}
 \indexentry{run\_mrcc() (in module proc)|hyperpage}{47}
+\indexentry{run\_psimrcc() (in module proc)|hyperpage}{47}
+\indexentry{run\_psimrcc\_scf() (in module proc)|hyperpage}{47}
 \indexentry{run\_sapt() (in module proc)|hyperpage}{47}
 \indexentry{run\_sapt\_ct() (in module proc)|hyperpage}{47}
 \indexentry{run\_scf() (in module proc)|hyperpage}{47}
@@ -107,11 +109,11 @@
 \indexentry{getXYZFile() (pubchem.PubChemObj method)|hyperpage}{48}
 \indexentry{name() (pubchem.PubChemObj method)|hyperpage}{48}
 \indexentry{getPubChemResults() (in module pubchem)|hyperpage}{48}
-\indexentry{qmmm (module)|hyperpage}{48}
-\indexentry{Diffuse (class in qmmm)|hyperpage}{48}
-\indexentry{fitGeneral() (qmmm.Diffuse method)|hyperpage}{48}
-\indexentry{fitScf() (qmmm.Diffuse method)|hyperpage}{48}
-\indexentry{populateExtern() (qmmm.Diffuse method)|hyperpage}{48}
+\indexentry{qmmm (module)|hyperpage}{49}
+\indexentry{Diffuse (class in qmmm)|hyperpage}{49}
+\indexentry{fitGeneral() (qmmm.Diffuse method)|hyperpage}{49}
+\indexentry{fitScf() (qmmm.Diffuse method)|hyperpage}{49}
+\indexentry{populateExtern() (qmmm.Diffuse method)|hyperpage}{49}
 \indexentry{QMMM (class in qmmm)|hyperpage}{49}
 \indexentry{addChargeAngstrom() (qmmm.QMMM method)|hyperpage}{49}
 \indexentry{addChargeBohr() (qmmm.QMMM method)|hyperpage}{49}
@@ -128,9 +130,9 @@
 \indexentry{banner() (in module text)|hyperpage}{49}
 \indexentry{print\_stderr() (in module text)|hyperpage}{49}
 \indexentry{print\_stdout() (in module text)|hyperpage}{49}
-\indexentry{util (module)|hyperpage}{49}
-\indexentry{compare\_integers() (in module util)|hyperpage}{49}
-\indexentry{compare\_matrices() (in module util)|hyperpage}{49}
+\indexentry{util (module)|hyperpage}{50}
+\indexentry{compare\_integers() (in module util)|hyperpage}{50}
+\indexentry{compare\_matrices() (in module util)|hyperpage}{50}
 \indexentry{compare\_strings() (in module util)|hyperpage}{50}
 \indexentry{compare\_values() (in module util)|hyperpage}{50}
 \indexentry{compare\_vectors() (in module util)|hyperpage}{50}
@@ -144,7 +146,7 @@
 \indexentry{drop\_duplicates() (in module wrappers)|hyperpage}{50}
 \indexentry{n\_body() (in module wrappers)|hyperpage}{50}
 \indexentry{reconstitute\_bracketed\_basis() (in module wrappers)|hyperpage}{50}
-\indexentry{split\_menial() (in module wrappers)|hyperpage}{50}
-\indexentry{tblhead() (in module wrappers)|hyperpage}{50}
+\indexentry{split\_menial() (in module wrappers)|hyperpage}{51}
+\indexentry{tblhead() (in module wrappers)|hyperpage}{51}
 \indexentry{validate\_bracketed\_basis() (in module wrappers)|hyperpage}{51}
 \indexentry{validate\_scheme\_args() (in module wrappers)|hyperpage}{51}
