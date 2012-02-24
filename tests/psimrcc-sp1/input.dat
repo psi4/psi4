@@ -37,9 +37,7 @@ set psimrcc {
   wfn_sym         B1g                    # Select the B1g state
 }
 
-mcscf()
-psimrcc()
-
+energy('psimrcc')
 compare_values(refnuc, o2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
 compare_values(refmkccsd, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST 

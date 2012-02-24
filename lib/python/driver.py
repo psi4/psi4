@@ -57,7 +57,9 @@ procedures = {
             'tdhf'          : run_libfock,
             'cpks'          : run_libfock,
             'tda'           : run_libfock,
-            'tddft'         : run_libfock
+            'tddft'         : run_libfock,
+            'psimrcc'       : run_psimrcc,
+            'psimrcc_scf'  : run_psimrcc_scf
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
