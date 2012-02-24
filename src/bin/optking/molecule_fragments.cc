@@ -123,7 +123,19 @@ void MOLECULE::fragmentize(void) {
               }
             }
           }
-          fragments[0]->connect(i,j);
+          fragments[0]->connect(i,j); // connect closest atoms
+          // Now check for possibly symmetry related atoms which are just as close
+          // we need them all to avoid symmetry breaking.
+          for (int f1_atom=0; f1_atom<frag_natom[f1]; ++f1_atom) {
+            for (int f2_atom=0; f2_atom<frag_natom[f2]; ++f2_atom) {
+              tval = v3d_dist(geom[frag_offset[f1]+f1_atom], geom[frag_offset[f2]+f2_atom]);
+              if (fabs(tval - min) < 1.0e-14) {
+                i = frag_offset[f1]+f1_atom;
+                j = frag_offset[f2]+f2_atom;
+                fragments[0]->connect(i,j);
+              }
+            }
+          }
         }
       }
     }
