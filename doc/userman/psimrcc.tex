@@ -3,9 +3,9 @@
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 \subsubsection{Introduction to Mk-MRCC}
-State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in \PSIfour implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC).  
+State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in \PSIfour implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC). This method is implemented and shown to be a powerful tool in F. A. Evangelista, W. D. Allen, and H. F. Schaefer, III, J. Chem. Phys. 125 (2006) and F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss, J. Chem. Phys. 128, 124104 (2008).    
 \\
-Mk-MRCC is based on the Jeziorski-Monkhorst ansatz for the wavefunction, $\Psi$
+Mk-MRCC is based on the Jeziorski-Monkhorst ansatz [B. Jeziorski and H. J. Monkhorst, Phys. Rev. A 24, 1668 (1981)] for the wavefunction, $\Psi$
 \begin{equation*}
 \left| \Psi \right \rangle = \sum_\mu^d e^{\hat{T}^\mu} \left| \Phi_\mu \right\rangle c_\mu \, \text{,}
 \end{equation*}
@@ -29,7 +29,7 @@ where
 \begin{equation*}
 \textrm{H}^{eff}_{\mu \nu} = \left \langle \Phi_\mu \right | \hat{H}e^{\hat{T}^\nu} \left | \Phi_\nu \right \rangle \, \textrm{.}
 \end{equation*}
- \PSIfour currently has Mk-MRCC with singles and doubles [Mk-MRCCSD], single and doubles with perturbative triples[Mk-MRCCSD(T)]. In addition, a companion perturbation method(Mk-MRPT2) has been developed based on the Mukherjee formalisim. 
+ \PSIfour currently has Mk-MRCC with singles and doubles [Mk-MRCCSD], single and doubles with perturbative triples[Mk-MRCCSD(T)]. A companion perturbation method(Mk-MRPT2) has been developed based on the Mukherjee formalisim as shown in F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, III, D. Mukherjee, and W. D. Allen, Phys. Chem. Chem. Phys. 11, 4728 (2009). 
 \\
 \subsubsection{Orbital ordering and selection of the model space}
 The reference determinants $\Phi_\mu$ are specified in PSIMRCC via occupational numbers. PSIMRCC requires that four arrays be specified for this purpose.
