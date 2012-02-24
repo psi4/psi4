@@ -2240,6 +2240,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Convergence criterion for geometry optmization: rms displacement (internal coordinates, atomic units). 
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
+      /*- Even if a user-defined threshold is set, allow for normal, flexible convergence criteria -*/
+      options.add_bool("FLEXIBLE_G_CONVERGENCE", false);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
