@@ -1032,6 +1032,8 @@ AC_CONFIG_FILES([
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
+          tests/fd-freq-gradient/Makefile
+          tests/fd-freq-gradient-large/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
           tests/sapt2/Makefile
