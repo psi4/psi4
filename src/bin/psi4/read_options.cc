@@ -760,7 +760,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Auxiliary basis set for SCF density fitting computations. Defaults to BASIS-JKFIT. -*/
     options.add_str("DF_BASIS_SCF", "");
     /*- What algorithm to use for the SCF computation -*/
-    options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF");
+    options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
+    /*- Keep JK object for later use? -*/
+    options.add_bool("SAVE_JK", false);
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies.
@@ -982,7 +984,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FITTING_ALGORITHM", 0);
     /*- SCF Type 
      -*/
-    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF GPUDF");
+    options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Auxiliary basis for SCF 
      -*/
     options.add_str("RI_BASIS_SCF", ""); 
@@ -2002,6 +2004,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PS_ALPHA", 1.0);
     /*- Do use range-separation procedure in PS? -*/
     options.add_bool("PS_USE_OMEGA", true);
+    /*- Random stuff for LibFock -*/
+    options.add_double("PS_THETA", 0.3);
+    /*- Random stuff for LibFock -*/
+    options.add_str("PS_DEALIASING", "QUADRATURE", "QUADRATURE RENORMALIZED DEALIASED");
+    /*- Random stuff for LibFock -*/
+    options.add_str("DEALIAS_BASIS_SCF", ""); 
+    
 
     // => DENOMINATOR <= //
 

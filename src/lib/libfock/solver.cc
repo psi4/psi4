@@ -214,13 +214,14 @@ void CGRSolver::setup()
     if (shifts_.size() == 0) {
         shifts_.resize(diag_->nirrep());
         for (int h = 0; h < diag_->nirrep(); h++) {
+            shifts_[h].clear();
             for (int i = 0; i < b_.size(); i++) {
-                shifts_[h][i] = 0.0;
+                shifts_[h].push_back(0.0);
             }
         }
     }
 
-    if (precondition_ == "SUBSPACE" && !A_) {
+    if ((precondition_ == "SUBSPACE") && !A_) {
 
         // Find the nguess strongest diagonals in the A matrix
         Dimension rank(diag_->nirrep());
@@ -1414,6 +1415,7 @@ void RayleighRSolver::correctors()
         force = r_;
     }
 
+    std::vector<int> sig_inds;
     std::vector<std::vector<double> > shifts(diag_->nirrep());
     for (int i = 0; i < nroot_; i++) {
         if (n_[i] > criteria_) {
@@ -1421,6 +1423,7 @@ void RayleighRSolver::correctors()
                 shifts[h].push_back(E_[i][h]);
             }
             b.push_back(force[i]);
+            sig_inds.push_back(i);
         } else {
             d_.push_back(force[i]);
         }
@@ -1438,6 +1441,13 @@ void RayleighRSolver::correctors()
             if (!dimension) continue;
 
             double* dp = d_[i]->pointer(h);
+            //if (quantity_ == "EIGENVECTOR") {
+                int i_abs = sig_inds[i];
+                double* cp = c_[i]->pointer(h);
+                double S = C_DDOT(dimension, dp, 1, cp, 1);
+                C_DAXPY(dimension,-S,cp,1,dp,1);
+            //}
+            
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             double scale = 1.0 / norm;
             if (scale != scale || isinf(scale)) {
@@ -1450,12 +1460,6 @@ void RayleighRSolver::correctors()
     }
 
     cg_->finalize();
-    
-    if (quantity_ == "EIGENVECTOR") {
-        b_.clear();
-        s_.clear();
-        nsubspace_ = 0;
-    }
 }
 
 DLRXSolver::DLRXSolver(boost::shared_ptr<RHamiltonian> H) :

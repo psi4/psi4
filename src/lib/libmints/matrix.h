@@ -36,6 +36,13 @@ class Molecule;
 
 extern FILE *outfile;
 
+enum diagonalize_order {
+    evals_only_ascending = 0,
+    ascending = 1,
+    evals_only_descending = 2,
+    descending = 3
+};
+
 /*! \ingroup MINTS
  *  \class Matrix
  *  \brief Makes using matrices just a little earlier.
@@ -73,13 +80,6 @@ protected:
     void print_mat(const double *const *const a, int m, int n, FILE *out) const;
 
 public:
-
-    enum DiagonalizeOrder {
-        EvalsOnlyAscending = 0,
-        Ascending = 1,
-        EvalsOnlyDescending = 2,
-        Descending = 3
-    };
 
     /// Default constructor, zeros everything out
     Matrix();
@@ -736,14 +736,14 @@ public:
 
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
-    void diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder nMatz = Ascending);
-    void diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
-    void diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz = Ascending);
+    void diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz = ascending);
+    void diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
+    void diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
     /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.
-    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
+    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz = ascending);
     /// @}
 
     /// @{
@@ -755,6 +755,18 @@ public:
     /// Matrices/Vectors U (m x k), S (k), V (k x n) to feed to Matrix::svd
     boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
     ///@}
+
+    ///@{
+    /// Matrix of size (m x n) which is the conditioned pseudoinverse of this (m x n)
+    SharedMatrix pseudoinverse(double condition = 0.0, bool* conditioned = NULL);
+    ///@}
+
+    /*! Extract a conditioned orthonormal basis from this SPD matrix
+     *  via canonical orthogonalization.
+     *  @param delta, the relative condition to maintain
+     *  @return X, a SharedMatrix with m x m' dimension (m' < m if conditioning occurred)
+     */
+    SharedMatrix canonical_orthogonalization(double delta = 0.0);
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.

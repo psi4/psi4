@@ -1,0 +1,2428 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>General &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="#" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="#" /> 
+    <script type="text/javascript" src="_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="#">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<img alt="PSI4 Project Logo" src="_images/PSI4_3.png" style="width: 100%;" />
+<div class="section" id="general">
+<h1>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h1>
+<p>To allow arbitrarily complex computations to be performed, PSI4 was built
+upon the Python interpreter, with modifications termed Psithon. Chapter 3
+of the User&#8217;s Manual described the non-standard Python associated with
+molecule, basis, and option specification. This documentation addresses
+the Python side- what functions allow the proper, compiled code to be run,
+what functions post-process and interact with that output, and how the
+ordinary (or ambitious) user can extent PSI4&#8217;s functionality.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Python naming practices of file_that_includes_function.function_name()
+are followed below. In psi4 input files, it is only necessary to call the
+function name alone. That is, use <tt class="docutils literal"><span class="pre">energy('scf')</span></tt>, not <tt class="docutils literal"><span class="pre">driver.energy('scf')</span></tt>.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The options documented below are placed as arguments in the command that
+calls the Python function, not in the <tt class="docutils literal"><span class="pre">set</span> <span class="pre">globals</span></tt> block or with any
+other <tt class="docutils literal"><span class="pre">set</span></tt> command.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Psithon keyword names and values are insensitive to case. The few
+exceptions are documented for the <tt class="docutils literal"><span class="pre">database()</span></tt> function, where case
+structure must match the database file.</p>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Boolean arguments can be specified by <tt class="docutils literal"><span class="pre">yes</span></tt>, <tt class="docutils literal"><span class="pre">on</span></tt>, <tt class="docutils literal"><span class="pre">true</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt>
+for affirmative and <tt class="docutils literal"><span class="pre">no</span></tt>, <tt class="docutils literal"><span class="pre">off</span></tt>, <tt class="docutils literal"><span class="pre">false</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for negative,
+all insensitive to case.</p>
+</div>
+</div>
+<div class="section" id="energy">
+<h1>Energy<a class="headerlink" href="#energy" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="driver.energy">
+<tt class="descclassname">driver.</tt><tt class="descname">energy</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compute the single-point electronic energy.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Total electronic energy in Hartrees. SAPT returns interaction energy.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Psi variables:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="envvar">
+<dt id="envvar-CURRENTENERGY">
+<tt class="descname">CURRENT ENERGY</tt><a class="headerlink" href="#envvar-CURRENTENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-CURRENTREFERENCEENERGY">
+<tt class="descname">CURRENT REFERENCE ENERGY</tt><a class="headerlink" href="#envvar-CURRENTREFERENCEENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-CURRENTCORRELATIONENERGY">
+<tt class="descname">CURRENT CORRELATION ENERGY</tt><a class="headerlink" href="#envvar-CURRENTCORRELATIONENERGY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">calls method</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>scf</td>
+<td>Hartree&#8211;Fock (HF) or density functional theory (DFT)</td>
+</tr>
+<tr class="row-odd"><td>mp2</td>
+<td>2nd-order Moller-Plesset perturbation theory (MP2)</td>
+</tr>
+<tr class="row-even"><td>df-mp2</td>
+<td>MP2 with density fitting</td>
+</tr>
+<tr class="row-odd"><td>dcft</td>
+<td>density cumulant functional theory</td>
+</tr>
+<tr class="row-even"><td>mcscf</td>
+<td>multiconfigurational self consistent field (SCF)</td>
+</tr>
+<tr class="row-odd"><td>dfcc</td>
+<td>coupled cluster with density fitting</td>
+</tr>
+<tr class="row-even"><td>mp2c</td>
+<td>coupled MP2 (MP2C)</td>
+</tr>
+<tr class="row-odd"><td>mp2-drpa</td>
+<td>random phase approximation?</td>
+</tr>
+<tr class="row-even"><td>sapt0</td>
+<td>0th-order symmetry adapted perturbation theory (SAPT)</td>
+</tr>
+<tr class="row-odd"><td>sapt2</td>
+<td>2nd-order SAPT, traditional definition</td>
+</tr>
+<tr class="row-even"><td>sapt2+</td>
+<td>SAPT including all 2nd-order terms</td>
+</tr>
+<tr class="row-odd"><td>sapt2+(3)</td>
+<td>SAPT including perturbative triples</td>
+</tr>
+<tr class="row-even"><td>sapt2+3</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>sapt0-ct</td>
+<td>0th-order SAPT plus charge transfer (CT) calculation</td>
+</tr>
+<tr class="row-even"><td>sapt2-ct</td>
+<td>SAPT2 plus CT</td>
+</tr>
+<tr class="row-odd"><td>sapt2+-ct</td>
+<td>SAPT2+ plus CT</td>
+</tr>
+<tr class="row-even"><td>sapt2+(3)-ct</td>
+<td>SAPT2+(3) plus CT</td>
+</tr>
+<tr class="row-odd"><td>sapt2+3-ct</td>
+<td>SAPT2+3 plus CT</td>
+</tr>
+<tr class="row-even"><td>cc2</td>
+<td>approximate coupled cluster singles and doubles (CC2)</td>
+</tr>
+<tr class="row-odd"><td>ccsd</td>
+<td>coupled cluster singles and doubles (CCSD)</td>
+</tr>
+<tr class="row-even"><td>bccd</td>
+<td>Brueckner coupled cluster doubles (BCCD)</td>
+</tr>
+<tr class="row-odd"><td>cc3</td>
+<td>approximate coupled cluster singles, doubles, and triples (CC3)</td>
+</tr>
+<tr class="row-even"><td>ccsd(t)</td>
+<td>CCSD with perturbative triples</td>
+</tr>
+<tr class="row-odd"><td>bccd(t)</td>
+<td>BCCD with perturbative triples</td>
+</tr>
+<tr class="row-even"><td>ccenergy</td>
+<td><strong>expert</strong> full control over ccenergy module</td>
+</tr>
+<tr class="row-odd"><td>mp <em>n</em></td>
+<td><em>n</em> th-order Moller&#8211;Plesset perturbation theory</td>
+</tr>
+<tr class="row-even"><td>zapt <em>n</em></td>
+<td><em>n</em> th-order z-averaged perturbation theory (ZAPT)</td>
+</tr>
+<tr class="row-odd"><td>cisd</td>
+<td>configuration interaction (CI) singles and doubles (CISD)</td>
+</tr>
+<tr class="row-even"><td>cisdt</td>
+<td>CI singles, doubles, and triples (CISDT)</td>
+</tr>
+<tr class="row-odd"><td>cisdtq</td>
+<td>CI singles, doubles, triples, and quadruples (CISDTQ)</td>
+</tr>
+<tr class="row-even"><td>ci <em>n</em></td>
+<td><em>n</em> th-order CI</td>
+</tr>
+<tr class="row-odd"><td>fci</td>
+<td>full configuration interaction (FCI)</td>
+</tr>
+<tr class="row-even"><td>detci</td>
+<td><strong>expert</strong> full control over detci module</td>
+</tr>
+<tr class="row-odd"><td>cphf</td>
+<td>coupled-perturbed Hartree-Fock?</td>
+</tr>
+<tr class="row-even"><td>cpks</td>
+<td>coupled-perturbed Kohn-Sham?</td>
+</tr>
+<tr class="row-odd"><td>cis</td>
+<td>CI singles (CIS)</td>
+</tr>
+<tr class="row-even"><td>tda</td>
+<td>Tamm-Dankoff approximation (TDA)</td>
+</tr>
+<tr class="row-odd"><td>tdhf</td>
+<td>time-dependent HF (TDHF)</td>
+</tr>
+<tr class="row-even"><td>tddft</td>
+<td>time-dependent DFT (TDDFT)</td>
+</tr>
+<tr class="row-odd"><td>adc</td>
+<td>2nd-order algebraic diagrammatic construction (ADC)</td>
+</tr>
+<tr class="row-even"><td>eom-cc2</td>
+<td>EOM-CC2</td>
+</tr>
+<tr class="row-odd"><td>eom-ccsd</td>
+<td>equation of motion (EOM) CCSD</td>
+</tr>
+<tr class="row-even"><td>eom-cc3</td>
+<td>EOM-CC3</td>
+</tr>
+</tbody>
+</table>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">calls method in Kallay&#8217;s MRCC program</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>mrccsd</td>
+<td>CC through doubles</td>
+</tr>
+<tr class="row-odd"><td>mrccsdt</td>
+<td>CC through triples</td>
+</tr>
+<tr class="row-even"><td>mrccsdtq</td>
+<td>CC through quadruples</td>
+</tr>
+<tr class="row-odd"><td>mrccsdtqp</td>
+<td>CC through quintuples</td>
+</tr>
+<tr class="row-even"><td>mrccsdtqph</td>
+<td>CC through sextuples</td>
+</tr>
+<tr class="row-odd"><td>mrccsd(t)</td>
+<td>CC through doubles with perturbative triples</td>
+</tr>
+<tr class="row-even"><td>mrccsdt(q)</td>
+<td>CC through triples with perturbative quadruples</td>
+</tr>
+<tr class="row-odd"><td>mrccsdtq(p)</td>
+<td>CC through quadruples with pertubative quintuples</td>
+</tr>
+<tr class="row-even"><td>mrccsdtqp(h)</td>
+<td>CC through quintuples with pertubative sextuples</td>
+</tr>
+<tr class="row-odd"><td>mrccsd(t)_l</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdt(q)_l</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrccsdtq(p)_l</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdtqp(h)_l</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrccsdt-1a</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdtq-1a</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrccsdtqp-1a</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdtqph-1a</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrccsdt-1b</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdtq-1b</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrccsdtqp-1b</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdtqph-1b</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrcc2</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrcc3</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrcc4</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrcc5</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrcc6</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdt-3</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrccsdtq-3</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mrccsdtqp-3</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>mrccsdtqph-3</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the system.</p>
+</li>
+<li><strong>bypass_scf</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
+<p>Indicates whether, for <em>name</em> values built atop of scf calculations,
+the scf step is skipped. Suitable when special steps are taken to get
+the scf to converge in an explicit preceeding scf step.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Coupled-cluster singles and doubles calculation with psi code</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] Charge-transfer SAPT calculation with scf projection from small into requested basis</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;sapt0-ct&#39;</span><span class="p">,</span><span class="n">cast_up</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [3] Arbitrary-order MPn calculation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;mp4&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="optimize">
+<h1>Optimize<a class="headerlink" href="#optimize" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The derivative level type for <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
+functions can be specified by <tt class="docutils literal"><span class="pre">energy</span></tt>, <tt class="docutils literal"><span class="pre">none</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for 0th derivative,
+<tt class="docutils literal"><span class="pre">gradient</span></tt>, <tt class="docutils literal"><span class="pre">first</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt> for 1st derivative, and <tt class="docutils literal"><span class="pre">hessian</span></tt>,
+<tt class="docutils literal"><span class="pre">second</span></tt>, or <tt class="docutils literal"><span class="pre">2</span></tt> for 2nd derivative.</p>
+</div>
+<dl class="function">
+<dt id="driver.optimize">
+<tt class="descclassname">driver.</tt><tt class="descname">optimize</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to perform a geometry optimization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">opt()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Total electronic energy of optimized structure in Hartrees.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Psi variables:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="envvar">
+<dt id="envvar-CURRENTENERGY">
+<tt class="descname">CURRENT ENERGY</tt><a class="headerlink" href="#envvar-CURRENTENERGY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Analytic gradients area available for all methods in the table
+below. Optimizations with other methods in the energy table proceed
+by finite differences.</p>
+</div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer a coffee.</p>
+<ul class="last simple">
+<li>Need to check that all methods do return electronic energy. I think gradient got changed at one point.</li>
+</ul>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">calls method</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>scf</td>
+<td>Hartree&#8211;Fock (HF) or density functional theory (DFT)</td>
+</tr>
+<tr class="row-odd"><td>mp2</td>
+<td>2nd-order Moller-Plesset perturbation theory (MP2)</td>
+</tr>
+<tr class="row-even"><td>ccsd</td>
+<td>coupled cluster singles and doubles (CCSD)</td>
+</tr>
+<tr class="row-odd"><td>ccsd(t)</td>
+<td>CCSD with perturbative triples</td>
+</tr>
+<tr class="row-even"><td>eom-ccsd</td>
+<td>equation of motion (EOM) CCSD</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the database. May be any valid argument to
+<a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
+</li>
+<li><strong>func</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">gradient</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">energy</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
+<p>Indicates the type of calculation to be performed on the molecule.
+The default dertype accesses``&#8217;gradient&#8217;`` or <tt class="docutils literal"><span class="pre">'energy'</span></tt>, while
+<tt class="docutils literal"><span class="pre">'cbs'</span></tt> performs a multistage finite difference calculation.
+If a nested series of python functions is intended (see <a class="reference internal" href="#function-intercalls">Function Intercalls</a>),
+use keyword <tt class="docutils literal"><span class="pre">opt_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
+</li>
+<li><strong>mode</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
+<p>Indicates whether the calculation required to complete the
+optimization are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
+farmed out in an embarrassingly parallel fashion
+(<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
+<tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</p>
+</li>
+<li><strong>dertype</strong> (<em>dertype</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'gradient'</span></tt> || <tt class="docutils literal"><span class="pre">'energy'</span></tt></p>
+<p>Indicates whether analytic (if available) or finite difference
+optimization is to be performed.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Analytic scf optimization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimize</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] Finite difference mp3 optimization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="p">(</span><span class="s">&#39;mp3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [3] Forced finite difference ccsd optimization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimize</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">,</span> <span class="n">dertype</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="response">
+<h1>Response<a class="headerlink" href="#response" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="driver.response">
+<tt class="descclassname">driver.</tt><tt class="descname">response</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compute linear response properties.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Total electronic energy in Hartrees.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer a coffee.</p>
+<ul class="last simple">
+<li>Check that energy is actually being returned.</li>
+<li>Check if ther&#8217;re some PSI variables that ought to be set.</li>
+</ul>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">calls method</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>cc2</td>
+<td>2nd-order approximate CCSD</td>
+</tr>
+<tr class="row-odd"><td>ccsd</td>
+<td>coupled cluster singles and doubles (CCSD)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the system.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] CCSD-LR properties calculation</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">response</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="frequency">
+<h1>Frequency<a class="headerlink" href="#frequency" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="driver.frequency">
+<tt class="descclassname">driver.</tt><tt class="descname">frequency</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#frequency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compute harmonic vibrational frequencies.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">frequencies(), freq()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Total electronic energy in Hartrees.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer a coffee.</p>
+<ul class="last simple">
+<li>RAK, why are you adding OPTKING options as GLOBALS? And shouldn&#8217;t they be Py-side not C-side options?</li>
+<li>Put in a dictionary, so IRREPS can be called by symmetry element or &#8216;all&#8217;</li>
+<li>Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.</li>
+</ul>
+</div>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the system.</p>
+</li>
+<li><strong>dertype</strong> (<em>dertype</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'hessian'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'gradient'</span></tt> || <tt class="docutils literal"><span class="pre">'energy'</span></tt></p>
+<p>Indicates whether analytic (if available- they&#8217;re not), finite
+difference of gradients (if available) or finite difference of
+energies is to be performed.</p>
+</li>
+<li><strong>irrep</strong> (<em>int</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">-1</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">1</span></tt> || etc.</p>
+<p>Indicates which symmetry block of vibrational freqiencies to be
+computed. 1 represents <img class="math" src="_images/math/1ab39d761413804680d26d972381f028001562f5.png" alt="a_1"/>, requesting only the totally symmetric modes.
+<tt class="docutils literal"><span class="pre">-1</span></tt> indicates a full frequency calculation.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] &lt;example description&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="o">&lt;</span><span class="n">example</span> <span class="n">python</span> <span class="n">command</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] Frequency calculation for b2 modes through finite difference of gradients</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frequencies</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span> <span class="n">dertype</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">irrep</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="counterpoise-correct">
+<h1>Counterpoise Correct<a class="headerlink" href="#counterpoise-correct" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="wrappers.cp">
+<tt class="descclassname">wrappers.</tt><tt class="descname">cp</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>func</em>, <em>check_bsse</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/wrappers.html#cp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.cp" title="Permalink to this definition">¶</a></dt>
+<dd><p>The cp function computes counterpoise-corrected two-body interaction energies
+for complexes composed of arbitrary numbers of monomers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">counterpoise_correct(), counterpoise_correction()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Counterpoise-corrected interaction energy in kcal/mol</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Psi variables:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="envvar">
+<dt id="envvar-CP-CORRECTED2-BODYINTERACTIONENERGY">
+<tt class="descname">CP-CORRECTED 2-BODY INTERACTION ENERGY</tt><a class="headerlink" href="#envvar-CP-CORRECTED2-BODYINTERACTIONENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-UNCP-CORRECTED2-BODYINTERACTIONENERGY">
+<tt class="descname">UNCP-CORRECTED 2-BODY INTERACTION ENERGY</tt><a class="headerlink" href="#envvar-UNCP-CORRECTED2-BODYINTERACTIONENERGY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer a coffee.</p>
+<ul class="last simple">
+<li>No values of func besides energy have been tested.</li>
+<li>Table print-out needs improving. Add some PSI variables.</li>
+</ul>
+</div>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the molecule. May be any valid argument to
+<a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>; however, SAPT is not appropriate.</p>
+</li>
+<li><strong>func</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">energy</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">optimize</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
+<p>Indicates the type of calculation to be performed on the molecule
+and each of its monomers. The default performs a single-point
+<tt class="docutils literal"><span class="pre">energy('name')</span></tt>, while <tt class="docutils literal"><span class="pre">optimize</span></tt> perfoms a geometry optimization
+on each system, and <tt class="docutils literal"><span class="pre">cbs</span></tt> performs a compound single-point energy.
+If a nested series of python functions is intended
+(see <a class="reference internal" href="#function-intercalls">Function Intercalls</a>), use keyword <tt class="docutils literal"><span class="pre">cp_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
+</li>
+<li><strong>check_bsse</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
+<p>Indicates whether to additionally compute un-counterpoise corrected
+monomers and thus obtain an estimate for the basis set superposition error.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] counterpoise-corrected mp2 interaction energy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cp</span><span class="p">(</span><span class="s">&#39;dfmp2&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="database">
+<h1>Database<a class="headerlink" href="#database" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="wrappers.database">
+<tt class="descclassname">wrappers.</tt><tt class="descname">database</tt><big>(</big><em>name</em>, <em>db_name</em><span class="optional">[</span>, <em>func</em>, <em>mode</em>, <em>cp</em>, <em>rlxd</em>, <em>symm</em>, <em>zpe</em>, <em>benchmark</em>, <em>tabulate</em>, <em>subset</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/wrappers.html#database"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.database" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to access the molecule objects and reference energies of
+popular chemical databases.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">db()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Mean absolute deviation of the database in kcal/mol</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Psi variables:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="envvar">
+<dt id="envvar-db_nameDATABASEMEANSIGNEDDEVIATION">
+<tt class="descname">db_name DATABASE MEAN SIGNED DEVIATION</tt><a class="headerlink" href="#envvar-db_nameDATABASEMEANSIGNEDDEVIATION" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-db_nameDATABASEMEANABSOLUTEDEVIATION">
+<tt class="descname">db_name DATABASE MEAN ABSOLUTE DEVIATION</tt><a class="headerlink" href="#envvar-db_nameDATABASEMEANABSOLUTEDEVIATION" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-db_nameDATABASEROOT-MEAN-SQUAREDEVIATION">
+<tt class="descname">db_name DATABASE ROOT-MEAN-SQUARE DEVIATION</tt><a class="headerlink" href="#envvar-db_nameDATABASEROOT-MEAN-SQUAREDEVIATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">It is very easy to make a database from a collection of xyz files
+using the script <tt class="docutils literal"><span class="pre">$PSIDATADIR/databases/ixyz2database.pl</span></tt>.
+See <a class="reference internal" href="#creating-a-new-database">Creating a New Database</a> for details.</p>
+</div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer some coffee.</p>
+<ul class="last simple">
+<li>In sow/reap mode, use only global options (e.g., the local option set by <tt class="docutils literal"><span class="pre">set</span> <span class="pre">scf</span> <span class="pre">scf_type</span> <span class="pre">df</span></tt> will not be respected).</li>
+</ul>
+</div>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'sapt0'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the database. May be any valid argument to
+<a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
+</li>
+<li><strong>db_name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'BASIC'</span></tt> || <tt class="docutils literal"><span class="pre">'S22'</span></tt> || <tt class="docutils literal"><span class="pre">'HTBH'</span></tt> || etc.</p>
+<p>Second argument, usually unlabeled. Indicates the requested database
+name, matching the name of a python file in <tt class="docutils literal"><span class="pre">psi4/lib/databases</span></tt>.
+Consult that directory for available databases and literature citations.</p>
+</li>
+<li><strong>func</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">energy</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">optimize</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
+<p>Indicates the type of calculation to be performed on each database
+member. The default performs a single-point <tt class="docutils literal"><span class="pre">energy('name')</span></tt>, while
+<tt class="docutils literal"><span class="pre">optimize</span></tt> perfoms a geometry optimization on each reagent, and
+<tt class="docutils literal"><span class="pre">cbs</span></tt> performs a compound single-point energy. If a nested series
+of python functions is intended (see <a class="reference internal" href="#function-intercalls">Function Intercalls</a>), use
+keyword <tt class="docutils literal"><span class="pre">db_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
+</li>
+<li><strong>mode</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
+<p>Indicates whether the calculation required to complete the
+database are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
+farmed out in an embarrassingly parallel fashion
+(<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
+<tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</p>
+</li>
+<li><strong>cp</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
+<p>Indicates whether counterpoise correction is employed in computing
+interaction energies. Use this option and NOT the <a class="reference internal" href="#wrappers.cp" title="wrappers.cp"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.cp()</span></tt></a>
+wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt>.  Option
+valid only for databases consisting of bimolecular complexes.</p>
+</li>
+<li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
+<p>Indicates whether correction for the deformation energy is
+employed in computing interaction energies.  Option valid only for
+databases consisting of bimolecular complexes with non-frozen
+monomers, e.g., HBC6.</p>
+</li>
+<li><strong>symm</strong> (<em>bool</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'on'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'off'</span></tt></p>
+<p>Indicates whether the native symmetry of the database molecules is
+employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or whether it is forced to <img class="math" src="_images/math/70b97eb4ad6e4e7a5a97e2547d9ed6e965960d0c.png" alt="C_1"/> symmetry
+(<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
+symmetry, and this will be set by the database() wrapper.</p>
+</li>
+<li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
+<p>Indicates whether zero-point-energy corrections are appended to
+single-point energy values. Option valid only for certain
+thermochemical databases. Disabled until Hessians ready.</p>
+</li>
+<li><strong>benchmark</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'default'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'S22A'</span></tt> || etc.</p>
+<p>Indicates whether a non-default set of reference energies, if
+available, are employed for the calculation of error statistics.</p>
+</li>
+<li><strong>tabulate</strong> (<em>array of strings</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">[]</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">['scf</span> <span class="pre">total</span> <span class="pre">energy',</span> <span class="pre">'natom']</span></tt> || etc.</p>
+<p>Indicates whether to form tables of variables other than the
+primary requested energy.  Available for any PSI variable.</p>
+</li>
+<li><strong>subset</strong> (<em>string or array of strings</em>) &#8211; <p>Indicates a subset of the full database to run. This is a very
+flexible option and can be used in three distinct ways, outlined
+below. Note that two take a string and the last takes an array.</p>
+<ul>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">'small'</span></tt> || <tt class="docutils literal"><span class="pre">'large'</span></tt> || <tt class="docutils literal"><span class="pre">'equilibrium'</span></tt></dt>
+<dd>Calls predefined subsets of the requested database, either
+<tt class="docutils literal"><span class="pre">'small'</span></tt>, a few of the smallest database members,
+<tt class="docutils literal"><span class="pre">'large'</span></tt>, the largest of the database members, or
+<tt class="docutils literal"><span class="pre">'equilibrium'</span></tt>, the equilibrium geometries for a database
+composed of dissociation curves.</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">'BzBz_S'</span></tt> || <tt class="docutils literal"><span class="pre">'FaOOFaON'</span></tt> || <tt class="docutils literal"><span class="pre">'ArNe'</span></tt> || etc.</dt>
+<dd>For databases composed of dissociation curves, individual
+curves can be called by name. Consult the database python
+files for available molecular systems.  The choices for this
+keyword are case sensitive and must match the database python file</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">[1,2,5]</span></tt> || <tt class="docutils literal"><span class="pre">['1','2','5']</span></tt> || <tt class="docutils literal"><span class="pre">['BzMe-3.5',</span> <span class="pre">'MeMe-5.0']</span></tt> || etc.</dt>
+<dd>Specify a list of database members to run. Consult the
+database python files for available molecular systems.  The
+choices for this keyword are case sensitive and must match the
+database python file</dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span><span class="s">&#39;RGC10&#39;</span><span class="p">,</span><span class="n">cast_up</span><span class="o">=</span><span class="s">&#39;sto-3g&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;HeHe-0.85&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.0&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.5&#39;</span><span class="p">],</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;scf total energy&#39;</span><span class="p">,</span><span class="s">&#39;natom&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] Counterpoise-corrected interaction energies for three complexes in S22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c">#     Error statistics computed wrt an old benchmark, S22A</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="p">(</span><span class="s">&#39;dfmp2&#39;</span><span class="p">,</span><span class="s">&#39;S22&#39;</span><span class="p">,</span><span class="n">cp</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="mi">16</span><span class="p">,</span><span class="mi">17</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">benchmark</span><span class="o">=</span><span class="s">&#39;S22A&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [3] SAPT0 on the neon dimer dissociation curve</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;sapt0&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="s">&#39;NeNe&#39;</span><span class="p">,</span><span class="n">cp</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">symm</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">db_name</span><span class="o">=</span><span class="s">&#39;RGC10&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [4] Optimize system 1 in database S22, producing tables of scf and mp2 energy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span><span class="s">&#39;S22&#39;</span><span class="p">,</span><span class="n">db_func</span><span class="o">=</span><span class="n">optimize</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;mp2 total energy&#39;</span><span class="p">,</span><span class="s">&#39;current energy&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [5] CCSD on the smallest systems of HTBH, a hydrogen-transfer database</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">,</span><span class="s">&#39;HTBH&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="s">&#39;small&#39;</span><span class="p">,</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;ccsd total energy&#39;</span><span class="p">,</span> <span class="s">&#39;mp2 total energy&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>At the beginning of a database job is printed a listing of the individual system
+calculations which will be performed. The output snippet below is from the example job [1]
+above. It shows each reagent required for the subset of database reactions requested.
+Note that this is an un-counterpoise-corrected example, and the wrapper is smart enough
+to compute only once the monomer whose energy will be subtracted from each of the three dimers.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">RGC1</span><span class="o">-</span><span class="n">HeHe</span><span class="o">-</span><span class="mf">0.85</span><span class="o">-</span><span class="n">dimer</span>
+<span class="n">RGC1</span><span class="o">-</span><span class="n">He</span><span class="o">-</span><span class="n">mono</span><span class="o">-</span><span class="n">unCP</span>
+<span class="n">RGC1</span><span class="o">-</span><span class="n">HeHe</span><span class="o">-</span><span class="mf">1.0</span><span class="o">-</span><span class="n">dimer</span>
+<span class="n">RGC1</span><span class="o">-</span><span class="n">HeHe</span><span class="o">-</span><span class="mf">1.5</span><span class="o">-</span><span class="n">dimer</span>
+</pre></div>
+</div>
+<p>At the end of the job, the Requested Energy table is printed that gives the total
+energies for the requested model chemistry for each reagent and each reaction, as
+well as the stoichoimetric weights by which the reagent energies are transfromed
+into the reaction energy. In this case, the dimer is +1 and the monomer is -2,
+indicating the the interaction energy is computed from dimer less first monomer
+less second (identical) monomer. Error statistics are computed with respect to the reference
+energies stored in the database. One of these, the mean absolute deviation, is
+returned by the wrapper as an ordinary Python variable. (For databases
+without a stored reference energy, e.g., BASIC, large and meaningless numbers are
+printed for error.) The other two tables tabulate the PSI variables requested
+through :param tabulate:, in this case the total SCF energy and the number
+of atoms in each reagent.</p>
+<div class="highlight-python"><pre>==&gt; Scf Total Energy &lt;==
+
+-----------------------------------------------------------------------------------
+         Reaction          Reaction Value              Reagent 1       Reagent 2
+                                                        Value Wt        Value Wt
+-----------------------------------------------------------------------------------
+   RGC1-HeHe-0.85              0.00011520         -5.71020576  1  -2.85516048 -2
+    RGC1-HeHe-1.0              0.00000153         -5.71031943  1  -2.85516048 -2
+    RGC1-HeHe-1.5             -0.00000000         -5.71032096  1  -2.85516048 -2
+-----------------------------------------------------------------------------------
+
+==&gt; Natom &lt;==
+
+-----------------------------------------------------------------------------------
+         Reaction          Reaction Value              Reagent 1       Reagent 2
+                                                        Value Wt        Value Wt
+-----------------------------------------------------------------------------------
+   RGC1-HeHe-0.85              0.00000000          2.00000000  1   1.00000000 -2
+    RGC1-HeHe-1.0              0.00000000          2.00000000  1   1.00000000 -2
+    RGC1-HeHe-1.5              0.00000000          2.00000000  1   1.00000000 -2
+-----------------------------------------------------------------------------------
+
+==&gt; Requested Energy &lt;==
+
+-----------------------------------------------------------------------------------
+         Reaction     Reaction Energy      Error       Reagent 1       Reagent 2
+                         Ref     Calc [kcal/mol]          [H] Wt          [H] Wt
+-----------------------------------------------------------------------------------
+   RGC1-HeHe-0.85     0.0376   0.0723     0.0347  -5.71020576  1  -2.85516048 -2
+    RGC1-HeHe-1.0    -0.0219   0.0010     0.0228  -5.71031943  1  -2.85516048 -2
+    RGC1-HeHe-1.5    -0.0029  -0.0000     0.0029  -5.71032096  1  -2.85516048 -2
+-----------------------------------------------------------------------------------
+      Minimal Dev                         0.0029
+      Maximal Dev                         0.0347
+  Mean Signed Dev                         0.0201
+Mean Absolute Dev                         0.0201
+          RMS Dev                         0.0240
+-----------------------------------------------------------------------------------</pre>
+</div>
+</div>
+</div>
+<div class="section" id="complete-basis-set">
+<h1>Complete Basis Set<a class="headerlink" href="#complete-basis-set" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="wrappers.complete_basis_set">
+<tt class="descclassname">wrappers.</tt><tt class="descname">complete_basis_set</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>scf_basis</em>, <em>scf_scheme</em>, <em>corl_wfn</em>, <em>corl_basis</em>, <em>corl_scheme</em>, <em>delta_wfn</em>, <em>delta_wfn_lesser</em>, <em>delta_basis</em>, <em>delta_scheme</em>, <em>delta2_wfn</em>, <em>delta2_wfn_lesser</em>, <em>delta2_basis</em>, <em>delta2_scheme</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/wrappers.html#complete_basis_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.complete_basis_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to define a multistage energy method from combinations of
+basis set extrapolations and delta corrections, and condenses the
+components into a minimum number of calculations.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">cbs()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) &#8211; Total electronic energy in Hartrees</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Psi variables:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="envvar">
+<dt id="envvar-CBSTOTALENERGY">
+<tt class="descname">CBS TOTAL ENERGY</tt><a class="headerlink" href="#envvar-CBSTOTALENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-CBSREFERENCEENERGY">
+<tt class="descname">CBS REFERENCE ENERGY</tt><a class="headerlink" href="#envvar-CBSREFERENCEENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-CBSCORRELATIONENERGY">
+<tt class="descname">CBS CORRELATION ENERGY</tt><a class="headerlink" href="#envvar-CBSCORRELATIONENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-CURRENTENERGY">
+<tt class="descname">CURRENT ENERGY</tt><a class="headerlink" href="#envvar-CURRENTENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-CURRENTREFERENCEENERGY">
+<tt class="descname">CURRENT REFERENCE ENERGY</tt><a class="headerlink" href="#envvar-CURRENTREFERENCEENERGY" title="Permalink to this definition">¶</a></dt>
+<dt id="envvar-CURRENTCORRELATIONENERGY">
+<tt class="descname">CURRENT CORRELATION ENERGY</tt><a class="headerlink" href="#envvar-CURRENTCORRELATIONENERGY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer a coffee.</p>
+<ul class="last simple">
+<li>Methods beyond basic scf, mp2, ccsd, ccsd(t) not yet hooked in through PSI variables, df-mp2 in particular.</li>
+<li>No scheme defaults for given basis zeta number, so scheme must be specified explicitly.</li>
+<li>No way to tell function to boost fitting basis size for all calculations.</li>
+</ul>
+</div>
+<p>As represented in the equation below, a CBS energy method is defined in four
+sequential stages (scf, corl, delta, delta2) covering treatment of the
+reference total energy, the correlation energy, a delta correction to the
+correlation energy, and a second delta correction. Each is activated by its
+stage_wfn keyword and is only allowed if all preceding stages are active.</p>
+<div class="math">
+<p><img src="_images/math/6d9de98a82a318032a969fb41b082259f375bbf9.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\textbf{scf\_scheme}} \left(E_{total,\; \text{SCF}}^{\textbf{scf\_basis}}\right) \; + \mathcal{F}_{\textbf{corl\_scheme}} \left(E_{corl,\; \textbf{corl\_wfn}}^{\textbf{corl\_basis}}\right) \; + \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; + \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}}"/></p>
+</div><p>Here, <img class="math" src="_images/math/7df6156885f7ecb884a812ae7155a0ad3ea33684.png" alt="\mathcal{F}"/> is an energy or energy extrapolation scheme, and the following also hold.</p>
+<div class="math">
+<p><img src="_images/math/42399ceb1a52adf15365b2af8997490e18e47f0e.png" alt="\delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; = \mathcal{F}_{\textbf{delta\_scheme}} \left(E_{corl,\; \textbf{delta\_wfn}}^{\textbf{delta\_basis}}\right) - \mathcal{F}_{\textbf{delta\_scheme}} \left(E_{corl,\; \textbf{delta\_wfn\_lesser}}^{\textbf{delta\_basis}}\right)"/></p>
+</div><div class="math">
+<p><img src="_images/math/ecb94ff0f829245a1e06d9c765f08f6375bbeda7.png" alt="\delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}} \; = \mathcal{F}_{\textbf{delta2\_scheme}} \left(E_{corl,\; \textbf{delta2\_wfn}}^{\textbf{delta2\_basis}}\right) - \mathcal{F}_{\textbf{delta2\_scheme}} \left(E_{corl,\; \textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_basis}}\right)"/></p>
+</div><p>A translation of this ungainly equation to example [5] below is as
+follows. In words, this is a double- and triple-zeta 2-point
+Helgaker-extrapolated CCSD(T) coupled-cluster correlation correction
+appended to a triple- and quadruple-zeta 2-point
+Helgaker-extrapolated MP2 correlation energy appended to a SCF/aug-cc-pVQZ
+reference energy.</p>
+<div class="math">
+<p><img src="_images/math/234e164ef6b8d98f1bd0cac104963a877b89a88f.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\text{highest\_1}} \left(E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}}\right) \; + \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}}\right) \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}"/></p>
+</div><div class="math">
+<p><img src="_images/math/018cd7aadafa5dd49354fc8f39513fb7e73b54a4.png" alt="\delta_{\text{MP2}}^{\text{CCSD(T)}} \; = \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{CCSD(T)}}^{\text{aug-cc-pV[DT]Z}}\right) - \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[DT]Z}}\right)"/></p>
+</div><p><strong>Keywords</strong></p>
+<ul>
+<li><dl class="first docutils">
+<dt>Energy Methods</dt>
+<dd><p class="first last">The presence of a stage_wfn keyword is the indicator to incorporate
+(and check for stage_basis and stage_scheme keywords) and compute
+that stage in defining the CBS energy.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>The cbs() function requires, at a minimum, <tt class="docutils literal"><span class="pre">name='scf'</span></tt> and <tt class="docutils literal"><span class="pre">scf_basis</span></tt></dt>
+<dd>keywords to be specified for reference-step only jobs and <tt class="docutils literal"><span class="pre">name</span></tt> and
+<tt class="docutils literal"><span class="pre">corl_basis</span></tt> keywords for correlated jobs.</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+for the correlation energy, unless only reference step to be performed,
+in which case should be <tt class="docutils literal"><span class="pre">'scf'</span></tt>. Overruled if stage_wfn keywords supplied.</p>
+</li>
+<li><strong>corl_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
+<p>Indicates the energy method for which the correlation energy is to be
+obtained. Can also be specified with <tt class="docutils literal"><span class="pre">name</span></tt> or as the unlabeled
+first argument to the function.</p>
+</li>
+<li><strong>delta_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
+<p>Indicates the (superior) energy method for which a delta correction
+to the correlation energy is to be obtained.</p>
+</li>
+<li><strong>delta_wfn_lesser</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
+<p>Indicates the inferior energy method for which a delta correction
+to the correlation energy is to be obtained.</p>
+</li>
+<li><strong>delta2_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
+<p>Indicates the (superior) energy method for which a second delta correction
+to the correlation energy is to be obtained.</p>
+</li>
+<li><strong>delta2_wfn_lesser</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
+<p>Indicates the inferior energy method for which a second delta correction
+to the correlation energy is to be obtained.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><dl class="first docutils">
+<dt>Basis Sets</dt>
+<dd><p class="first last">Currently, the basis set set through <tt class="docutils literal"><span class="pre">set</span></tt> commands have no influence
+on a cbs calculation.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>scf_basis</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">corl_basis</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'cc-pV[TQ]Z'</span></tt> || <tt class="docutils literal"><span class="pre">'jun-cc-pv[tq5]z'</span></tt> || <tt class="docutils literal"><span class="pre">'6-31G*'</span></tt> || etc.</p>
+<p>Indicates the sequence of basis sets employed for the reference energy.
+If any correlation method is specified, <tt class="docutils literal"><span class="pre">scf_basis</span></tt> can default
+to <tt class="docutils literal"><span class="pre">corl_basis</span></tt>.</p>
+</li>
+<li><strong>corl_basis</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'cc-pV[TQ]Z'</span></tt> || <tt class="docutils literal"><span class="pre">'jun-cc-pv[tq5]z'</span></tt> || <tt class="docutils literal"><span class="pre">'6-31G*'</span></tt> || etc.</p>
+<p>Indicates the sequence of basis sets employed for the correlation energy.</p>
+</li>
+<li><strong>delta_basis</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'cc-pV[TQ]Z'</span></tt> || <tt class="docutils literal"><span class="pre">'jun-cc-pv[tq5]z'</span></tt> || <tt class="docutils literal"><span class="pre">'6-31G*'</span></tt> || etc.</p>
+<p>Indicates the sequence of basis sets employed for the delta correction
+to the correlation energy.</p>
+</li>
+<li><strong>delta2_basis</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'cc-pV[TQ]Z'</span></tt> || <tt class="docutils literal"><span class="pre">'jun-cc-pv[tq5]z'</span></tt> || <tt class="docutils literal"><span class="pre">'6-31G*'</span></tt> || etc.</p>
+<p>Indicates the sequence of basis sets employed for the second delta correction
+to the correlation energy.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><dl class="first docutils">
+<dt>Schemes</dt>
+<dd><p class="first last">Transformations of the energy through basis set extrapolation for each
+stage of the CBS definition. A complaint is generated if number of basis
+sets in stage_basis does not exactly satisfy requirements of stage_scheme.
+An exception is the default, <tt class="docutils literal"><span class="pre">'highest_1'</span></tt>, which uses the best basis
+set available. See <a class="reference internal" href="#extrapolation-schemes">Extrapolation Schemes</a> for all available schemes.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>scf_scheme</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">highest_1</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">scf_xtpl_helgaker_3</span></tt> || etc.</p>
+<p>Indicates the basis set extrapolation scheme to be applied to the reference energy.</p>
+</li>
+<li><strong>corl_scheme</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">highest_1</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">corl_xtpl_helgaker_2</span></tt> || etc.</p>
+<p>Indicates the basis set extrapolation scheme to be applied to the correlation energy.</p>
+</li>
+<li><strong>delta_scheme</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">highest_1</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">corl_xtpl_helgaker_2</span></tt> || etc.</p>
+<p>Indicates the basis set extrapolation scheme to be applied to the delta correction
+to the correlation energy.</p>
+</li>
+<li><strong>delta2_scheme</strong> (<em>function</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">highest_1</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">corl_xtpl_helgaker_2</span></tt> || etc.</p>
+<p>Indicates the basis set extrapolation scheme to be applied to the second delta correction
+to the correlation energy.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy(&#39;scf&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbs</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span> <span class="n">scf_basis</span><span class="o">=</span><span class="s">&#39;cc-pVDZ&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] replicates with cbs() the simple model chemistry mp2/jun-cc-pVDZ: set basis jun-cc-pVDZ energy(&#39;mp2&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbs</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span> <span class="n">corl_basis</span><span class="o">=</span><span class="s">&#39;jun-cc-pVDZ&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [3] DTQ-zeta extrapolated scf reference energy</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbs</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span> <span class="n">scf_basis</span><span class="o">=</span><span class="s">&#39;cc-pV[DTQ]Z&#39;</span><span class="p">,</span> <span class="n">scf_scheme</span><span class="o">=</span><span class="n">scf_xtpl_helgaker_3</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [4] DT-zeta extrapolated mp2 correlation energy atop a T-zeta reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbs</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span> <span class="n">corl_basis</span><span class="o">=</span><span class="s">&#39;cc-pv[dt]z&#39;</span><span class="p">,</span> <span class="n">corl_scheme</span><span class="o">=</span><span class="n">corl_xtpl_helgaker_2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [5] a DT-zeta extrapolated coupled-cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbs</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span> <span class="n">corl_basis</span><span class="o">=</span><span class="s">&#39;aug-cc-pv[tq]z&#39;</span><span class="p">,</span> <span class="n">corl_scheme</span><span class="o">=</span><span class="n">corl_xtpl_helgaker_2</span><span class="p">,</span> <span class="n">delta_wfn</span><span class="o">=</span><span class="s">&#39;ccsd(t)&#39;</span><span class="p">,</span> <span class="n">delta_basis</span><span class="o">=</span><span class="s">&#39;aug-cc-pv[dt]z&#39;</span><span class="p">,</span> <span class="n">delta_scheme</span><span class="o">=</span><span class="n">corl_xtpl_helgaker_2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [6] a D-zeta ccsd(t) correction atop a DT-zeta extrapolated ccsd cluster correction atop a TQ-zeta extrapolated mp2 correlation energy atop a Q-zeta reference</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">cbs</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span> <span class="n">corl_basis</span><span class="o">=</span><span class="s">&#39;aug-cc-pv[tq]z&#39;</span><span class="p">,</span> <span class="n">corl_scheme</span><span class="o">=</span><span class="n">corl_xtpl_helgaker_2</span><span class="p">,</span> <span class="n">delta_wfn</span><span class="o">=</span><span class="s">&#39;ccsd&#39;</span><span class="p">,</span> <span class="n">delta_basis</span><span class="o">=</span><span class="s">&#39;aug-cc-pv[dt]z&#39;</span><span class="p">,</span> <span class="n">delta_scheme</span><span class="o">=</span><span class="n">corl_xtpl_helgaker_2</span><span class="p">,</span> <span class="n">delta2_wfn</span><span class="o">=</span><span class="s">&#39;ccsd(t)&#39;</span><span class="p">,</span> <span class="n">delta2_wfn_lesser</span><span class="o">=</span><span class="s">&#39;ccsd&#39;</span><span class="p">,</span> <span class="n">delta2_basis</span><span class="o">=</span><span class="s">&#39;aug-cc-pvdz&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [7] cbs() coupled with database()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">database</span><span class="p">(</span><span class="s">&#39;mp2&#39;</span><span class="p">,</span> <span class="s">&#39;BASIC&#39;</span><span class="p">,</span> <span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;h2o&#39;</span><span class="p">,</span><span class="s">&#39;nh3&#39;</span><span class="p">],</span> <span class="n">symm</span><span class="o">=</span><span class="s">&#39;on&#39;</span><span class="p">,</span> <span class="n">func</span><span class="o">=</span><span class="n">cbs</span><span class="p">,</span> <span class="n">corl_basis</span><span class="o">=</span><span class="s">&#39;cc-pV[tq]z&#39;</span><span class="p">,</span> <span class="n">corl_scheme</span><span class="o">=</span><span class="n">corl_xtpl_helgaker_2</span><span class="p">,</span> <span class="n">delta_wfn</span><span class="o">=</span><span class="s">&#39;ccsd(t)&#39;</span><span class="p">,</span> <span class="n">delta_basis</span><span class="o">=</span><span class="s">&#39;sto-3g&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<div class="section" id="id1">
+<h2>Output<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>At the beginning of a cbs() job is printed a listing of the individual
+energy calculations which will be performed. The output snippet below is
+from the example job [2] above. It shows first each model chemistry needed
+to compute the aggregate model chemistry requested through cbs(). Then,
+since, for example, an <tt class="docutils literal"><span class="pre">energy('ccsd(t)')</span></tt> yields CCSD(T), CCSD, MP2,
+and SCF energy values, the wrapper condenses this task into the second
+list of minimum number of calculations which will actually be run.</p>
+<div class="highlight-python"><pre>Naive listing of computations required.
+        scf / aug-cc-pvqz              for  SCF TOTAL ENERGY
+        mp2 / aug-cc-pvtz              for  MP2 CORRELATION ENERGY
+        mp2 / aug-cc-pvqz              for  MP2 CORRELATION ENERGY
+    ccsd(t) / aug-cc-pvdz              for  CCSD(T) CORRELATION ENERGY
+    ccsd(t) / aug-cc-pvtz              for  CCSD(T) CORRELATION ENERGY
+        mp2 / aug-cc-pvdz              for  MP2 CORRELATION ENERGY
+        mp2 / aug-cc-pvtz              for  MP2 CORRELATION ENERGY
+
+Enlightened listing of computations required.
+        mp2 / aug-cc-pvqz              for  MP2 CORRELATION ENERGY
+    ccsd(t) / aug-cc-pvdz              for  CCSD(T) CORRELATION ENERGY
+    ccsd(t) / aug-cc-pvtz              for  CCSD(T) CORRELATION ENERGY</pre>
+</div>
+<p>At the end of a cbs() job is printed a summary section like the one below. First,
+in the components section, are listed the results for each model chemistry available, whether
+required for the cbs job (*) or not. Next, in the stages section, are listed the results for
+each extrapolation. The energies of this section must be dotted with the weightings in column Wt
+to get the total cbs energy. Finally, in the CBS section, are listed the results for each stage
+of the cbs procedure. The stage energies of this section sum outright to the total cbs energy.</p>
+<div class="highlight-python"><pre>==&gt; Components &lt;==
+
+----------------------------------------------------------------------------------
+               Method / Basis            Rqd   Energy [H]   Variable
+----------------------------------------------------------------------------------
+                  scf / aug-cc-pvqz        *  -1.11916375   SCF TOTAL ENERGY
+                  mp2 / aug-cc-pvqz        *  -0.03407997   MP2 CORRELATION ENERGY
+                  scf / aug-cc-pvdz           -1.11662884   SCF TOTAL ENERGY
+                  mp2 / aug-cc-pvdz        *  -0.02881480   MP2 CORRELATION ENERGY
+              ccsd(t) / aug-cc-pvdz        *  -0.03893812   CCSD(T) CORRELATION ENERGY
+                 ccsd / aug-cc-pvdz           -0.03893812   CCSD CORRELATION ENERGY
+                  scf / aug-cc-pvtz           -1.11881134   SCF TOTAL ENERGY
+                  mp2 / aug-cc-pvtz        *  -0.03288936   MP2 CORRELATION ENERGY
+              ccsd(t) / aug-cc-pvtz        *  -0.04201004   CCSD(T) CORRELATION ENERGY
+                 ccsd / aug-cc-pvtz           -0.04201004   CCSD CORRELATION ENERGY
+----------------------------------------------------------------------------------
+
+==&gt; Stages &lt;==
+
+----------------------------------------------------------------------------------
+ Stage         Method / Basis             Wt   Energy [H]   Scheme
+----------------------------------------------------------------------------------
+   scf            scf / aug-cc-pvqz        1  -1.11916375   highest_1
+  corl            mp2 / aug-cc-pv[tq]z     1  -0.03494879   corl_xtpl_helgaker_2
+ delta        ccsd(t) / aug-cc-pv[dt]z     1  -0.04330347   corl_xtpl_helgaker_2
+ delta            mp2 / aug-cc-pv[dt]z    -1  -0.03460497   corl_xtpl_helgaker_2
+----------------------------------------------------------------------------------
+
+==&gt; CBS &lt;==
+
+----------------------------------------------------------------------------------
+ Stage         Method / Basis                  Energy [H]   Scheme
+----------------------------------------------------------------------------------
+   scf            scf / aug-cc-pvqz           -1.11916375   highest_1
+  corl            mp2 / aug-cc-pv[tq]z        -0.03494879   corl_xtpl_helgaker_2
+ delta  ccsd(t) - mp2 / aug-cc-pv[dt]z        -0.00869851   corl_xtpl_helgaker_2
+ total            CBS                         -1.16281105
+----------------------------------------------------------------------------------</pre>
+</div>
+</div>
+<div class="section" id="extrapolation-schemes">
+<h2>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="wrappers.highest_1">
+<tt class="descclassname">wrappers.</tt><tt class="descname">highest_1</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#highest_1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.highest_1" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scheme for total or correlation energies with a single basis or the highest
+zeta-level among an array of bases. Used by <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
+<div class="math">
+<p><img src="_images/math/3cd8ab940ea61210a7d480e8e485e76e7737a23e.png" alt="E_{total}^X = E_{total}^X"/></p>
+</div></dd></dl>
+
+<dl class="function">
+<dt id="wrappers.scf_xtpl_helgaker_2">
+<tt class="descclassname">wrappers.</tt><tt class="descname">scf_xtpl_helgaker_2</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#scf_xtpl_helgaker_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.scf_xtpl_helgaker_2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extrapolation scheme for reference energies with two adjacent zeta-level bases.
+Used by <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
+<div class="math">
+<p><img src="_images/math/72b51b4c9119c44a617acb0ec608701151a69b2e.png" alt="E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63"/></p>
+</div></dd></dl>
+
+<dl class="function">
+<dt id="wrappers.scf_xtpl_helgaker_3">
+<tt class="descclassname">wrappers.</tt><tt class="descname">scf_xtpl_helgaker_3</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#scf_xtpl_helgaker_3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.scf_xtpl_helgaker_3" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extrapolation scheme for reference energies with three adjacent zeta-level bases.
+Used by <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
+<div class="math">
+<p><img src="_images/math/8bd7e5ea597531b5c037701313a5ed3be2e5c17b.png" alt="E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}"/></p>
+</div></dd></dl>
+
+<dl class="function">
+<dt id="wrappers.corl_xtpl_helgaker_2">
+<tt class="descclassname">wrappers.</tt><tt class="descname">corl_xtpl_helgaker_2</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#corl_xtpl_helgaker_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.corl_xtpl_helgaker_2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
+Used by <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
+<div class="math">
+<p><img src="_images/math/8b701a37ac57206ea33acffe0f37054754083720.png" alt="E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}"/></p>
+</div></dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-frac">
+<span id="fractional-occupation"></span><h1>Fractional Occupation<a class="headerlink" href="#module-frac" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="frac.frac_nuke">
+<tt class="descclassname">frac.</tt><tt class="descname">frac_nuke</tt><big>(</big><em>mol</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/frac.html#frac_nuke"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frac.frac_nuke" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="frac.frac_traverse">
+<tt class="descclassname">frac.</tt><tt class="descname">frac_traverse</tt><big>(</big><em>mol</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/frac.html#frac_traverse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frac.frac_traverse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="frac.ip_fitting">
+<tt class="descclassname">frac.</tt><tt class="descname">ip_fitting</tt><big>(</big><em>mol</em>, <em>omega_l</em>, <em>omega_r</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/frac.html#ip_fitting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#frac.ip_fitting" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="beginner-psithon-programming">
+<h1>Beginner Psithon Programming<a class="headerlink" href="#beginner-psithon-programming" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">No recompile of the PSI program is necessary for changes made to
+files in <tt class="docutils literal"><span class="pre">$PSIDATADIR</span></tt>, including those described below.</p>
+</div>
+<div class="section" id="defining-a-method-alias">
+<h2>Defining a Method Alias<a class="headerlink" href="#defining-a-method-alias" title="Permalink to this headline">¶</a></h2>
+<p>Since quantum chemical methods in PSI4 are accessed through Python functions, and
+most important quantities are available as PSI variables, it is straightforward
+to create aliases to commonly run calculations or to define hybrid methods. The
+<tt class="docutils literal"><span class="pre">$PSIDATADIR/python/aliases.py</span></tt> file is intended for editing by the user for
+this purpose.</p>
+<p>As an example, the MP2.5 method is the average of MP2 and MP3. The latter is
+available through the arbitrary order MPn code and returns all lower energies
+along with it in PSI variables. The following is basic code that will compute
+and return the MP2.5 energy.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run_mp2_5</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+    <span class="n">energy</span><span class="p">(</span><span class="s">&#39;mp3&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">e_scf</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">ce_mp2</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP2 CORRELATION ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">ce_mp3</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP3 CORRELATION ENERGY&#39;</span><span class="p">)</span>
+
+    <span class="n">ce_mp25</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ce_mp2</span> <span class="o">+</span> <span class="n">ce_mp3</span><span class="p">)</span>
+    <span class="n">e_mp25</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp25</span>
+
+    <span class="k">print</span> <span class="s">&quot;&quot;&quot;  MP2.5 total energy:                      </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_mp25</span><span class="p">)</span>
+    <span class="k">print</span> <span class="s">&quot;&quot;&quot;  MP2.5 correlation energy:                </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ce_mp25</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">e_mp25</span>
+</pre></div>
+</div>
+<p>Compare the above to the method that resides in <tt class="docutils literal"><span class="pre">aliases.py</span></tt>.
+The rationale for the changes is indicated in the comments below.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run_mp2_5</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>  <span class="c"># handy variable with name keyword in lowercase</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c"># removes case sensitivity in keyword names</span>
+
+    <span class="c"># Run detci calculation and collect conventional quantities</span>
+    <span class="n">energy</span><span class="p">(</span><span class="s">&#39;mp3&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">e_scf</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">ce_mp2</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP2 CORRELATION ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">ce_mp3</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP3 CORRELATION ENERGY&#39;</span><span class="p">)</span>
+    <span class="n">e_mp2</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp2</span>  <span class="c"># reform mp2 and mp3 total energies for printing</span>
+    <span class="n">e_mp3</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp3</span>
+
+    <span class="c"># Compute quantities particular to MP2.5</span>
+    <span class="n">ce_mp25</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ce_mp2</span> <span class="o">+</span> <span class="n">ce_mp3</span><span class="p">)</span>
+    <span class="n">e_mp25</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp25</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>  <span class="c"># add new method&#39;s important results</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 TOTAL ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>         <span class="c">#     to PSI variable repository</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>  <span class="c"># geometry optimizer tracks this variable, permits</span>
+                                                   <span class="c">#     MP2.5 finite difference optimizations</span>
+    <span class="c"># build string of title banner and print results</span>
+    <span class="n">banners</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">n&#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+    <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;banner(&#39; MP2.5 &#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+    <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">n&#39;)</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
+    <span class="k">exec</span> <span class="n">banners</span>
+
+    <span class="n">tables</span>  <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  SCF total energy:                        </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_scf</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2 total energy:                        </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_mp2</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2.5 total energy:                      </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_mp25</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP3 total energy:                        </span><span class="si">%16.8f</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">e_mp3</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2 correlation energy:                  </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ce_mp2</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP2.5 correlation energy:                </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ce_mp25</span><span class="p">)</span>
+    <span class="n">tables</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;  MP3 correlation energy:                  </span><span class="si">%16.8f</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ce_mp3</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="n">tables</span><span class="p">)</span>  <span class="c"># prints nice header and table of all involved quantities to output file</span>
+
+    <span class="k">return</span> <span class="n">e_mp25</span>
+</pre></div>
+</div>
+<p>One final step is necessary. At the end of the <tt class="docutils literal"><span class="pre">aliases.py</span></tt> file, add
+the following line.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">][</span><span class="s">&#39;mp2.5&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">run_mp2_5</span>
+</pre></div>
+</div>
+<p>This permits the newly defined MP2.5 method to be called in the input file
+with the following command.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">energy</span><span class="p">(</span><span class="s">&#39;mp2.5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="creating-a-new-database">
+<h2>Creating a New Database<a class="headerlink" href="#creating-a-new-database" title="Permalink to this headline">¶</a></h2>
+<p>A necessary consideration in constructing a database is the distinction
+between reagents and reactions. A reagent is a single molecular system
+(may be a dimer) whose geometry you are possession of and whose electronic
+energy may be of interest. A reaction is a combination of one or more
+reagent energies whose value you are interested in and a reference value
+for which you may or may not be in possession of. A few examples follow.
+In a database of interaction energies, the reagents are dimers and their
+component monomers (usually derived from the dimer geometry), and the
+reactions are the dimer less monomers energies. In a database of barrier
+heights, the reagents are reactants, products, and transition-state
+structures, and the reactions are the transition-states less
+minimum-energy structures. Possibly you may have a collection of
+structures to simply be acted upon in parallel, in which case the
+structures are both the reagents and the reactions. The role of the
+database.py file is to collect arrays and dictionaries that define the
+geometries of reagents (GEOS), their combination into reactions (RXNM &amp;
+ACTV), available reference values for reactions (BIND), and brief comments
+for reagents and reactions (TAGL). The journey from reagent geometries to
+functional database.py file is largely automated, in a process described
+below.</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Prepare geometry files</dt>
+<dd><p class="first">Assemble xyz files for all intended reagent systems in a directory.
+Follow the rules below for best results. The filename for each xyz
+file should be the name of the system. lowercase or MixedCase is
+preferable (according to Sherrill lab convention). Avoid dashes and
+dots in the name as python won&#8217;t allow them. If you&#8217;re determined to
+have dashes and dots, they must be replaced by other characters in the
+process_input line, then translated back in the GEOS section; see
+NBC10.py for an example.</p>
+<ul class="last simple">
+<li>The first line for each xyz file should be the number of atoms in the system.</li>
+<li>The second line for each xyz file can be blank (interpreted as no comment), anything (interpreted as a comment), or two integers and anything (interpreted as charge, multiplicity, and remainder as comment).</li>
+<li>The third and subsequent lines have four fields: the element symbol and the three cartesian coordinates in angstroms. The atom lines should not contain any dummy atoms (what&#8217;s the use in cartesian form).  For dimer systems, an algorithm is used to apportion the atoms into two fragments; thus the atoms need not be arranged with all fragmentA atoms before all fragmentB atoms. The algorithm will fail for very closely arranged fragments. For dimers, any charge and multiplicity from the second line will be applied to fragmentA (python); charge and multiplicity may need to be redistributed later in the editing step.</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Run script ixyz2database.pl</p>
+<blockquote>
+<div><p>Move into the directory where all your xyz files are located. Run the
+script in place, probably as
+<tt class="docutils literal"><span class="pre">$PSIDATADIR/databases/ixyz2database.pl</span></tt>. It will ask a number of
+questions about your intended database and generate a python file
+named for your database. Uppercase is preferable for database names
+(according to Sherrill lab convention). Note your choice for the route
+variable for the next step.</p>
+</div></blockquote>
+</li>
+<li><p class="first">Edit file database.py</p>
+<blockquote>
+<div><ul class="simple">
+<li>All routes. Optionally, rearrange the order of reactions in HRXN as this will define the order for the database.</li>
+<li>All routes. Optionally, add sources for geometries and any reference data to commented lines above the dbse variable.</li>
+<li>All routes. Optionally, the comment lines of TAGL may be edited in plain text.</li>
+<li>All routes. Optionally, fill in reference values (in kcal/mol) into BIND.</li>
+<li>All routes. Optionally, define alternate sets of reference values in the array BIND_ALTREF in the database.py file to be called in a psi4 input file as benchmark=&#8217;ALTREF&#8217; . See S22.py as an example.</li>
+<li>All routes. Optionally, fill in the least computationally expensive 2-3 reactions into HRXN_SM and the most expensive into HRXN_LG</li>
+<li>All routes. Optionally, define subsets of reactions in the array SUBSETARRAY = [&#8216;reaction&#8217;, &#8216;reaction&#8217;] in the database.py file to be called in a psi4 input file as subset=&#8217;SUBSETARRAY&#8217;. See NBC10.py as an example.</li>
+<li>All routes. Necessarily (if charge and multiplicity not read in through line2 = cgmp and nor all neutral singlets), assign correct charge and multiplicity to all reagents.</li>
+<li>Route 3. Necessarily (if any charge and multiplicity specified for the whole reagent is not intended for fragmentA with neutral singlet fragmentB), apportion charge and multiplicity properly between fragmentA and fragmentB. This is not likely necessary if all subsystems are neutral singlets.</li>
+<li>Route 2. Necessarily, define the reagents that contribute to each reaction by filling in the empty single-quotes in ACTV. Add or delete lines as necessary if for each reaction more or fewer than three reagents contribute. See NHTBH.py as an example.</li>
+<li>Route 2. Necessarily, define the mathematical contribution of reagents to reactions by adding a number (most often +1 or -1) for each reagent to the RXNM of each reaction. See NHTBH.py as an example.</li>
+<li>All routes. Necessarily, copy your new database into <tt class="docutils literal"><span class="pre">$PSIDATADIR/databases</span></tt>.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="function-intercalls">
+<h1>Function Intercalls<a class="headerlink" href="#function-intercalls" title="Permalink to this headline">¶</a></h1>
+<p>table; handling func; no sow/reap</p>
+</div>
+<div class="section" id="embarrassing-parallelism">
+<h1>Embarrassing Parallelism<a class="headerlink" href="#embarrassing-parallelism" title="Permalink to this headline">¶</a></h1>
+<p>what functions; no intercalls; no local set; special section in parameter list</p>
+</div>
+<div class="html-toggle section" id="psithon-programming-best-practices">
+<h1>Psithon Programming Best Practices<a class="headerlink" href="#psithon-programming-best-practices" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first">Thy python functions shall always have final argument **kwargs, that they may take in and pass on keywords meant for other functions. Yea, even the run_mcscf(), and run_ccsd() -type functions that have no use for kwargs. The exceptions are python functions that are only helpers called by a driver function.</p>
+</li>
+<li><p class="first">Python functions should read the kwargs dictionary and (possibly) add to it. Functions should not pop or remove keywords from kwargs, even those keywords meaningful only to itself. This will ensure that the complete kwargs is available for pickling and sow/reap procedures. The exception is the molecule argument, which is read by the first function that gets ahold of it. This first function activates the molecule and pops it out of kwargs, effectively setting molecule for all subsequent functions. The code below should suffice.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Make sure the molecule the user provided is the active one</span>
+<span class="k">if</span> <span class="s">&#39;molecule&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+    <span class="n">activate</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">])</span>
+    <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">]</span>
+<span class="n">molecule</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
+<span class="n">molecule</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Preferrably, the python function signature (for functions intended to be called in input files) is <tt class="docutils literal"><span class="pre">function(name,</span> <span class="pre">**kwargs)</span></tt>. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see <a class="reference internal" href="#wrappers.database" title="wrappers.database"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.database()</span></tt></a> argument db_name for example).</p>
+</li>
+<li><p class="first">After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+<span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Case sensitivity for kwargs dictionary values still needs to be handled. The first line below shows how to convert argument values to lowercase for matching. When not matching a whole value such that regular expressions are needed, the second line below performs a case insensitive match.</p>
+<div class="highlight-python"><pre>if (kwargs['db_mode'].lower() == 'continuous'):
+if re.match(r'^sapt', name, flags=re.IGNORECASE):</pre>
+</div>
+</li>
+<li><p class="first">Match boolean keywords (db_cp in the example below) with expressions like the following, which allow case insensitive yes/true/on/1/no/false/off/0 user input. If your argument&#8217;s value is a derivative level, similarly, use input.der0th, input.der1st, and input.der2nd.</p>
+<div class="highlight-python"><pre>if input.yes.match(str(db_cp)):
+elif input.no.match(str(db_cp)):</pre>
+</div>
+</li>
+<li><p class="first">For keywords that might be used in other functions as well as your own, prepend the argument name with a short representation of your function name. For example, there are keywords cp_func, db_func, and opt_func to request what python function, if not energy(), is called by cp(), database(), and optimize().</p>
+</li>
+<li><p class="first">Upon checking in a new python file, edit the file <tt class="docutils literal"><span class="pre">psi4/doc/userman/source/index.rst</span></tt> and follow the instructions therein that your file may be autodocumented here.</p>
+</li>
+<li><p class="first">Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in <tt class="docutils literal"><span class="pre">psi4/lib/python/example_docstring</span></tt> and replace anything that looks like <tt class="docutils literal"><span class="pre">&lt;this&gt;</span></tt>. For a behind-the-scenes function or if you don&#8217;t want the bother of dealing with <a class="reference external" href="http://docutils.sourceforge.net/docs/user/rst/quickref.html">reStructuredText</a>, just write an ordinary docstring. It will get slurped into the documentation in plain text.</p>
+</li>
+<li><p class="first">Your python function should follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> conventions (without the line-length restriction). I&#8217;m aiming for files to pass the line below, unless for good reason.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span> <span class="n">pythonfile</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Your python function should not prevent any test case (<tt class="docutils literal"><span class="pre">make</span> <span class="pre">tests</span></tt>, NOT <tt class="docutils literal"><span class="pre">make</span> <span class="pre">longtests</span></tt>) from passing. A test case(s) should be written and checked in for any major python function, so that others do not break your code. If most of your work was on the python (as opposed to c++) side, the test case prefix pywrap_ is suggested.</p>
+</li>
+<li><p class="first">Be sure to set any new PSI variables through lines like those below. Especially if the function returns an energy, set the &#8216;current energy&#8217; variable. This last is needed to communicate with the optimizer.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>
+<span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 TOTAL ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+<span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Once your python function is fairly stable on its own, it&#8217;s potential for interoperability with energy()/opt()/cp()/db()/cbs()/etc. should be evaluated. If it makes physical sense that it should work, you should strive to make that interoperability a reality. Some steps:</p>
+<blockquote>
+<div><ul>
+<li><p class="first">If any interoperability is possible, define an argument xx_func, where xx is a short name for your function. Add near the top of your function code like the below (less the final two lines). The net result of this code is that if the user specifies no *_func arguments, then energy() gets called. If the user defines xx_func, then its value gets called. If the user defines func, then its value gets reassigned to xx_func, func itself is deleted, and xx_func() gets called. Whatever is getting called is stored in func within the function.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># Establish function to call</span>
+<span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="s">&#39;xx_func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;xx_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;xx_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">energy</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;xx_func&#39;</span><span class="p">]</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">func</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s"> does not exist to be called by wrapper counterpoise_correct.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">db</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Wrapper xx is unhappy to be calling function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">If specific interoperabilities are known, code them in. For example, if xx shouldn&#8217;t call db, add the last two lines above to the xx function. If db shouldn&#8217;t call xx, add the following two lines below to the db function.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">xx</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Wrapper database is unhappy to be calling function </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Create a multipart test case that runs some intercalls between your function and others (akin to pywrap_all). In trials, permute the order of calls a few times to expose any calls that don&#8217;t clean up after themselves and need further attention.</p>
+</li>
+<li><p class="first">When all is validated, add your findings to the great interoperability table in the documentation.</p>
+</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="html-toggle section" id="psimod-methods">
+<h1>PsiMod Methods<a class="headerlink" href="#psimod-methods" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="html-toggle section" id="molecule-methods">
+<h1>Molecule Methods<a class="headerlink" href="#molecule-methods" title="Permalink to this headline">¶</a></h1>
+</div>
+<div class="html-toggle section" id="expert">
+<h1>Expert<a class="headerlink" href="#expert" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-aliases">
+<span id="aliases"></span><h2>aliases<a class="headerlink" href="#module-aliases" title="Permalink to this headline">¶</a></h2>
+<p>Module with functions that call upon those in modules
+<a class="reference internal" href="#module-proc" title="proc"><tt class="xref py py-mod docutils literal"><span class="pre">proc</span></tt></a>, <a class="reference internal" href="#module-driver" title="driver"><tt class="xref py py-mod docutils literal"><span class="pre">driver</span></tt></a>, and <a class="reference internal" href="#module-wrappers" title="wrappers"><tt class="xref py py-mod docutils literal"><span class="pre">wrappers</span></tt></a>.</p>
+<dl class="docutils">
+<dt>Place in this file quickly defined procedures such as</dt>
+<dd><ul class="first last simple">
+<li>aliases for complex methods</li>
+<li>simple modifications to existing methods</li>
+</ul>
+</dd>
+</dl>
+<dl class="function">
+<dt id="aliases.run_mp2_5">
+<tt class="descclassname">aliases.</tt><tt class="descname">run_mp2_5</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/aliases.html#run_mp2_5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aliases.run_mp2_5" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that computes MP2.5 energy from results of a DETCI
+MP3 calculation.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;mp2.5&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="aliases.run_plugin_ccsd_serial">
+<tt class="descclassname">aliases.</tt><tt class="descname">run_plugin_ccsd_serial</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/aliases.html#run_plugin_ccsd_serial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aliases.run_plugin_ccsd_serial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module and plugin calls so that
+Eugene DePrince&#8217;s ccsd_serial plugin can be called via <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;plugin_ccsd_serial&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="aliases.run_plugin_omega">
+<tt class="descclassname">aliases.</tt><tt class="descname">run_plugin_omega</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/aliases.html#run_plugin_omega"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aliases.run_plugin_omega" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module and plugin calls, as well
+as typical options, to access Rob Parrish&#8217;s omega plugin.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;plugin_omega&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="aliases.sherrillgroup_gold_standard">
+<tt class="descclassname">aliases.</tt><tt class="descname">sherrillgroup_gold_standard</tt><big>(</big><em>name='mp2'</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/aliases.html#sherrillgroup_gold_standard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#aliases.sherrillgroup_gold_standard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to call the quantum chemical method known as &#8216;Gold Standard&#8217;
+in the Sherrill group. Uses <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a> to evaluateo
+the following expression. Two-point extrapolation of the correlation energy
+performed according to <a class="reference internal" href="#wrappers.corl_xtpl_helgaker_2" title="wrappers.corl_xtpl_helgaker_2"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.corl_xtpl_helgaker_2()</span></tt></a>.</p>
+<div class="math">
+<p><img src="_images/math/4633e65e7989d388aa3eaf4c2a0163a8603d06db.png" alt="E_{total}^{\text{Au\_std}} = E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}} \; + E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}} \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\big\vert_{\text{aug-cc-pVTZ}}"/></p>
+</div><div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;sherrillgroup_gold_standard&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-driver">
+<span id="driver"></span><h2>driver<a class="headerlink" href="#module-driver" title="Permalink to this headline">¶</a></h2>
+<p>Module with a <em>procedures</em> dictionary specifying available quantum
+chemical methods and functions driving the main quantum chemical
+functionality, namely single-point energies, geometry optimizations,
+response properties, and vibrational frequency calculations.</p>
+<dl class="function">
+<dt id="driver.gradient">
+<tt class="descclassname">driver.</tt><tt class="descname">gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function complementary to optimize(). Carries out one gradient pass,
+deciding analytic or finite difference.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="driver.hessian">
+<tt class="descclassname">driver.</tt><tt class="descname">hessian</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#hessian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compute force constants. Presently identical to frequency().</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="driver.parse_arbitrary_order">
+<tt class="descclassname">driver.</tt><tt class="descname">parse_arbitrary_order</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/driver.html#parse_arbitrary_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.parse_arbitrary_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to parse name string into a method family like CI or MRCC and specific
+level information like 4 for CISDTQ or MRCCSDTQ.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-input">
+<span id="input"></span><h2>input<a class="headerlink" href="#module-input" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="input.bad_option_syntax">
+<tt class="descclassname">input.</tt><tt class="descname">bad_option_syntax</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#bad_option_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.bad_option_syntax" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.check_parentheses_and_brackets">
+<tt class="descclassname">input.</tt><tt class="descname">check_parentheses_and_brackets</tt><big>(</big><em>input_string</em>, <em>exit_on_error</em><big>)</big><a class="reference internal" href="_modules/input.html#check_parentheses_and_brackets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.check_parentheses_and_brackets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.parse_multiline_array">
+<tt class="descclassname">input.</tt><tt class="descname">parse_multiline_array</tt><big>(</big><em>input_list</em><big>)</big><a class="reference internal" href="_modules/input.html#parse_multiline_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.parse_multiline_array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_basis_block">
+<tt class="descclassname">input.</tt><tt class="descname">process_basis_block</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_block" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_basis_file">
+<tt class="descclassname">input.</tt><tt class="descname">process_basis_file</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_external_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_external_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_external_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_external_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_extract_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_extract_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_extract_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_extract_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_input">
+<tt class="descclassname">input.</tt><tt class="descname">process_input</tt><big>(</big><em>raw_input</em>, <em>print_level=1</em><big>)</big><a class="reference internal" href="_modules/input.html#process_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_input" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_memory_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_memory_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_memory_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_memory_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_molecule_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_molecule_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_molecule_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_molecule_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_multiline_arrays">
+<tt class="descclassname">input.</tt><tt class="descname">process_multiline_arrays</tt><big>(</big><em>inputfile</em><big>)</big><a class="reference internal" href="_modules/input.html#process_multiline_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_multiline_arrays" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_option">
+<tt class="descclassname">input.</tt><tt class="descname">process_option</tt><big>(</big><em>spaces</em>, <em>module</em>, <em>key</em>, <em>value</em>, <em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#process_option"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_option" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_print_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_print_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_print_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_print_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_pubchem_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_pubchem_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_pubchem_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_pubchem_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_set_command">
+<tt class="descclassname">input.</tt><tt class="descname">process_set_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_set_commands">
+<tt class="descclassname">input.</tt><tt class="descname">process_set_commands</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_commands" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.process_word_quotes">
+<tt class="descclassname">input.</tt><tt class="descname">process_word_quotes</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_word_quotes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_word_quotes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="input.quotify">
+<tt class="descclassname">input.</tt><tt class="descname">quotify</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/input.html#quotify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.quotify" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-physconst">
+<span id="physconst"></span><h2>physconst<a class="headerlink" href="#module-physconst" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-proc">
+<span id="proc"></span><h2>proc<a class="headerlink" href="#module-proc" title="Permalink to this headline">¶</a></h2>
+<p>Module with functions that encode the sequence of PSI module
+calls for each of the <em>name</em> values of the energy(), optimize(),
+response(), and frequency() function.</p>
+<dl class="function">
+<dt id="proc.run_adc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_adc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_adc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_adc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+an algebraic diagrammatic construction calculation.</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">Get rid of active molecule lines- should be handled in energy.</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_bccd">
+<tt class="descclassname">proc.</tt><tt class="descname">run_bccd</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_bccd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_bccd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a Brueckner CCD calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_bccd_t">
+<tt class="descclassname">proc.</tt><tt class="descname">run_bccd_t</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_bccd_t"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_bccd_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a Brueckner CCD(T) calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_cc_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_cc_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_cc_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_cc_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a CCSD and CCSD(T) gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_cc_response">
+<tt class="descclassname">proc.</tt><tt class="descname">run_cc_response</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_cc_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_cc_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a CC2 and CCSD calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_ccenergy">
+<tt class="descclassname">proc.</tt><tt class="descname">run_ccenergy</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_ccenergy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_ccenergy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a CCSD, CC2, and CC3 calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_dcft">
+<tt class="descclassname">proc.</tt><tt class="descname">run_dcft</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dcft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dcft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a density cumulant functional theory calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_detci">
+<tt class="descclassname">proc.</tt><tt class="descname">run_detci</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_detci"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_detci" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a configuration interaction calculation, namely FCI,
+CIn, MPn, and ZAPTn.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_dfcc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_dfcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dfcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dfcc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a density-fitted coupled-cluster calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_dfmp2">
+<tt class="descclassname">proc.</tt><tt class="descname">run_dfmp2</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_dfmp2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_dfmp2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a density-fitted MP2 calculation.</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p class="last">Get rid of madness-era restart file</p>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_eom_cc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_eom_cc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_eom_cc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_eom_cc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+an EOM-CC calculation, namely EOM-CC2, EOM-CCSD, and EOM-CC3.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_eom_cc_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_eom_cc_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_eom_cc_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_eom_cc_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+an EOM-CCSD gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_libfock">
+<tt class="descclassname">proc.</tt><tt class="descname">run_libfock</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_libfock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_libfock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a calculation through libfock, namely RCPHF,
+RCIS, RTDHF, RTDA, and RTDDFT.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mcscf">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mcscf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mcscf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mcscf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a multiconfigurational self-consistent-field calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a MP2 calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a MP2 gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2c">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2c</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2c"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2c" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a coupled MP2 calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mp2drpa">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mp2drpa</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mp2drpa"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mp2drpa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a MP2-DRPA calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_mrcc">
+<tt class="descclassname">proc.</tt><tt class="descname">run_mrcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_mrcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_mrcc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that prepares environment and input files
+for a calculation calling Kallay&#8217;s MRCC code.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_sapt">
+<tt class="descclassname">proc.</tt><tt class="descname">run_sapt</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_sapt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_sapt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a SAPT calculation of any level.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_sapt_ct">
+<tt class="descclassname">proc.</tt><tt class="descname">run_sapt_ct</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_sapt_ct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_sapt_ct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a charge-transfer SAPT calcuation of any level.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_scf">
+<tt class="descclassname">proc.</tt><tt class="descname">run_scf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_scf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_scf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a self-consistent-field theory (HF &amp; DFT) calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.run_scf_gradient">
+<tt class="descclassname">proc.</tt><tt class="descname">run_scf_gradient</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_scf_gradient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_scf_gradient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function encoding sequence of PSI module calls for
+a SCF gradient calculation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="proc.scf_helper">
+<tt class="descclassname">proc.</tt><tt class="descname">scf_helper</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#scf_helper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.scf_helper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function serving as helper to SCF, choosing whether to cast
+up or just run SCF with a standard guess. This preserves
+previous SCF options set by other procedures (e.g., SAPT
+output file types for SCF).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-procutil">
+<span id="procutil"></span><h2>procutil<a class="headerlink" href="#module-procutil" title="Permalink to this headline">¶</a></h2>
+<p>Module with utility functions used by several Python functions.</p>
+<dl class="function">
+<dt id="procutil.format_kwargs_for_input">
+<tt class="descclassname">procutil.</tt><tt class="descname">format_kwargs_for_input</tt><big>(</big><em>filename</em>, <em>lmode=1</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/procutil.html#format_kwargs_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_kwargs_for_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to pickle to file <em>filename</em> the options dictionary
+<em>kwargs</em>. Mode <em>lmode</em> =2 pickles appropriate settings for
+reap mode. Used to capture Python options information for
+distributed (sow/reap) input files.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="procutil.format_molecule_for_input">
+<tt class="descclassname">procutil.</tt><tt class="descname">format_molecule_for_input</tt><big>(</big><em>mol</em><big>)</big><a class="reference internal" href="_modules/procutil.html#format_molecule_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_molecule_for_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return a string of the output of
+<a class="reference internal" href="#input.process_input" title="input.process_input"><tt class="xref py py-func docutils literal"><span class="pre">input.process_input()</span></tt></a> applied to the XYZ
+format of molecule <em>mol</em>. Used to capture molecule
+information for distributed (sow/reap) input files.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="procutil.format_options_for_input">
+<tt class="descclassname">procutil.</tt><tt class="descname">format_options_for_input</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/procutil.html#format_options_for_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.format_options_for_input" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return a string of commands to replicate the
+current state of user-modified options. Used to capture C++
+options information for distributed (sow/reap) input files.</p>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer a coffee.</p>
+<ul class="last simple">
+<li>Does not cover local (as opposed to global) options.</li>
+<li>Does not work with array-type options.</li>
+</ul>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="procutil.get_psifile">
+<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='36685'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return the full path and filename for psi file
+<em>fileno</em> (e.g., psi.32) in current namespace <em>pidspace</em>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="procutil.kwargs_lower">
+<tt class="descclassname">procutil.</tt><tt class="descname">kwargs_lower</tt><big>(</big><em>kwargs</em><big>)</big><a class="reference internal" href="_modules/procutil.html#kwargs_lower"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.kwargs_lower" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to rebuild and return <em>kwargs</em> dictionary
+with all keys made lowercase. Should be called by every
+function that could be called directly by the user.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-psiexceptions">
+<span id="psiexceptions"></span><h2>psiexceptions<a class="headerlink" href="#module-psiexceptions" title="Permalink to this headline">¶</a></h2>
+<p>Module with non-generic exceptions classes.</p>
+<dl class="exception">
+<dt id="psiexceptions.PsiException">
+<em class="property">exception </em><tt class="descclassname">psiexceptions.</tt><tt class="descname">PsiException</tt><a class="reference internal" href="_modules/psiexceptions.html#PsiException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psiexceptions.PsiException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error class for Psi.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="psiexceptions.ValidationError">
+<em class="property">exception </em><tt class="descclassname">psiexceptions.</tt><tt class="descname">ValidationError</tt><big>(</big><em>msg</em><big>)</big><a class="reference internal" href="_modules/psiexceptions.html#ValidationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#psiexceptions.ValidationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Error called for problems with the input file. Prints
+error message <em>msg</em> to standard output stream and output file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pubchem">
+<span id="pubchem"></span><h2>pubchem<a class="headerlink" href="#module-pubchem" title="Permalink to this headline">¶</a></h2>
+<p>Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
+to obtain a molecule string that can be passed to Molecule.</p>
+<div class="highlight-python"><pre>results = getPubChemObj("1,3,5-hexatriene")
+
+Results is an array of results from PubChem matches to your query.
+  for entry in results:
+     entry["CID"]         =&gt; PubChem compound identifer
+     entry["IUPAC"]       =&gt; IUPAC name for the resulting compound
+     entry["PubChemObj"]  =&gt; instance of PubChemObj for this compound
+
+     entry["PubChemObj"].getMoleculeString()   =&gt; returns a string compatible
+                                                  with PSI4's Molecule creation</pre>
+</div>
+<dl class="class">
+<dt id="pubchem.PubChemObj">
+<em class="property">class </em><tt class="descclassname">pubchem.</tt><tt class="descname">PubChemObj</tt><big>(</big><em>cid</em>, <em>mf</em>, <em>iupac</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="pubchem.PubChemObj.getCartesian">
+<tt class="descname">getCartesian</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getCartesian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getCartesian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return a string of the atom symbol and XYZ
+coordinates of the PubChem object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.getMoleculeString">
+<tt class="descname">getMoleculeString</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getMoleculeString"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getMoleculeString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to obtain a molecule string through
+getCartesian() or fail.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.getSDF">
+<tt class="descname">getSDF</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getSDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getSDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return the SDF (structure-data file) of the PubChem object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.getXYZFile">
+<tt class="descname">getXYZFile</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.getXYZFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.getXYZFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to obtain preferentially a molecule string
+through getCartesian() or a query string otherwise.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pubchem.PubChemObj.name">
+<tt class="descname">name</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/pubchem.html#PubChemObj.name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.PubChemObj.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return the IUPAC name of the PubChem object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="pubchem.getPubChemResults">
+<tt class="descclassname">pubchem.</tt><tt class="descname">getPubChemResults</tt><big>(</big><em>name</em><big>)</big><a class="reference internal" href="_modules/pubchem.html#getPubChemResults"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pubchem.getPubChemResults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to query the PubChem database for molecules matching the
+input string. Builds a PubChem object if found.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-qmmm">
+<span id="qmmm"></span><h2>qmmm<a class="headerlink" href="#module-qmmm" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="qmmm.Diffuse">
+<em class="property">class </em><tt class="descclassname">qmmm.</tt><tt class="descname">Diffuse</tt><big>(</big><em>molecule</em>, <em>basisname</em>, <em>ribasisname</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#Diffuse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.Diffuse" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="qmmm.Diffuse.fitGeneral">
+<tt class="descname">fitGeneral</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/qmmm.html#Diffuse.fitGeneral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.Diffuse.fitGeneral" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="qmmm.Diffuse.fitScf">
+<tt class="descname">fitScf</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/qmmm.html#Diffuse.fitScf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.Diffuse.fitScf" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="qmmm.Diffuse.populateExtern">
+<tt class="descname">populateExtern</tt><big>(</big><em>extern</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#Diffuse.populateExtern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.Diffuse.populateExtern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="qmmm.QMMM">
+<em class="property">class </em><tt class="descclassname">qmmm.</tt><tt class="descname">QMMM</tt><a class="reference internal" href="_modules/qmmm.html#QMMM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="qmmm.QMMM.addChargeAngstrom">
+<tt class="descname">addChargeAngstrom</tt><big>(</big><em>Q</em>, <em>x</em>, <em>y</em>, <em>z</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.addChargeAngstrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.addChargeAngstrom" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="qmmm.QMMM.addChargeBohr">
+<tt class="descname">addChargeBohr</tt><big>(</big><em>Q</em>, <em>x</em>, <em>y</em>, <em>z</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.addChargeBohr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.addChargeBohr" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="qmmm.QMMM.addDiffuse">
+<tt class="descname">addDiffuse</tt><big>(</big><em>diffuse</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.addDiffuse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.addDiffuse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="qmmm.QMMM.populateExtern">
+<tt class="descname">populateExtern</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.populateExtern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.populateExtern" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-text">
+<span id="text"></span><h2>text<a class="headerlink" href="#module-text" title="Permalink to this headline">¶</a></h2>
+<p>Module with utility classes and functions related
+to data tables and text.</p>
+<dl class="class">
+<dt id="text.Table">
+<em class="property">class </em><tt class="descclassname">text.</tt><tt class="descname">Table</tt><big>(</big><em>rows=()</em>, <em>row_label_width=10</em>, <em>row_label_precision=4</em>, <em>cols=()</em>, <em>width=16</em>, <em>precision=10</em><big>)</big><a class="reference internal" href="_modules/text.html#Table"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class defining a flexible Table object for storing data.</p>
+<dl class="method">
+<dt id="text.Table.absolute_to_relative">
+<tt class="descname">absolute_to_relative</tt><big>(</big><em>Factor=627.5095</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.absolute_to_relative"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.absolute_to_relative" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to shift the data of each column of the Table object
+such that the lowest value is zero. A scaling factor of <em>Factor</em> is applied.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="text.Table.copy">
+<tt class="descname">copy</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/text.html#Table.copy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.copy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return a copy of the Table object.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="text.Table.format_label">
+<tt class="descname">format_label</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/text.html#Table.format_label"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.format_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to pad the width of Table object labels.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="text.Table.format_values">
+<tt class="descname">format_values</tt><big>(</big><em>values</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.format_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.format_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to pad the width of Table object data cells.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="text.Table.save">
+<tt class="descname">save</tt><big>(</big><em>file</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to save string of the Table object to <em>file</em>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="text.Table.scale">
+<tt class="descname">scale</tt><big>(</big><em>Factor=627.5095</em><big>)</big><a class="reference internal" href="_modules/text.html#Table.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.Table.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to apply a scaling factor <em>Factor</em> to the
+data of the Table object.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="text.banner">
+<tt class="descclassname">text.</tt><tt class="descname">banner</tt><big>(</big><em>text</em>, <em>type=1</em>, <em>width=35</em><big>)</big><a class="reference internal" href="_modules/text.html#banner"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.banner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to print <em>text</em> to output file in a banner of
+minimum width <em>width</em> and minimum three-line height for
+<em>type</em> = 1 or one-line height for <em>type</em> = 2.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="text.print_stderr">
+<tt class="descclassname">text.</tt><tt class="descname">print_stderr</tt><big>(</big><em>stuff</em><big>)</big><a class="reference internal" href="_modules/text.html#print_stderr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.print_stderr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to print <em>stuff</em> to standard error stream.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="text.print_stdout">
+<tt class="descclassname">text.</tt><tt class="descname">print_stdout</tt><big>(</big><em>stuff</em><big>)</big><a class="reference internal" href="_modules/text.html#print_stdout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#text.print_stdout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to print <em>stuff</em> to standard output stream.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-util">
+<span id="util"></span><h2>util<a class="headerlink" href="#module-util" title="Permalink to this headline">¶</a></h2>
+<p>Module with utility functions for use in input files.</p>
+<dl class="function">
+<dt id="util.compare_integers">
+<tt class="descclassname">util.</tt><tt class="descname">compare_integers</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_integers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_integers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compare two integers. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when value <em>computed</em> matches value <em>expected</em>.
+Performs a system exit on failure. Used in input files in the test suite.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.compare_matrices">
+<tt class="descclassname">util.</tt><tt class="descname">compare_matrices</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compare two matrices. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when elements of matrix <em>computed</em> match elements of matrix <em>expected</em> to
+number of <em>digits</em>. Performs a system exit on failure to match symmetry
+structure, dimensions, or element values. Used in input files in the test suite.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.compare_strings">
+<tt class="descclassname">util.</tt><tt class="descname">compare_strings</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_strings"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_strings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compare two strings. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when string <em>computed</em> exactly matches string <em>expected</em>.
+Performs a system exit on failure. Used in input files in the test suite.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.compare_values">
+<tt class="descclassname">util.</tt><tt class="descname">compare_values</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compare two values. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when value <em>computed</em> matches value <em>expected</em> to number of <em>digits</em>.
+Performs a system exit on failure. Used in input files in the test suite.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.compare_vectors">
+<tt class="descclassname">util.</tt><tt class="descname">compare_vectors</tt><big>(</big><em>expected</em>, <em>computed</em>, <em>digits</em>, <em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#compare_vectors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.compare_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to compare two vectors. Prints <a class="reference internal" href="#util.success" title="util.success"><tt class="xref py py-func docutils literal"><span class="pre">util.success()</span></tt></a>
+when elements of vector <em>computed</em> match elements of vector <em>expected</em> to
+number of <em>digits</em>. Performs a system exit on failure to match symmetry
+structure, dimension, or element values. Used in input files in the test suite.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.get_memory">
+<tt class="descclassname">util.</tt><tt class="descname">get_memory</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return the total memory allocation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.get_num_threads">
+<tt class="descclassname">util.</tt><tt class="descname">get_num_threads</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/util.html#get_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.get_num_threads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return the number of threads to parallelize across.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.set_memory">
+<tt class="descclassname">util.</tt><tt class="descname">set_memory</tt><big>(</big><em>bytes</em><big>)</big><a class="reference internal" href="_modules/util.html#set_memory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_memory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to reset the total memory allocation.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.set_num_threads">
+<tt class="descclassname">util.</tt><tt class="descname">set_num_threads</tt><big>(</big><em>nthread</em><big>)</big><a class="reference internal" href="_modules/util.html#set_num_threads"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.set_num_threads" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to reset the number of threads to parallelize across.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="util.success">
+<tt class="descclassname">util.</tt><tt class="descname">success</tt><big>(</big><em>label</em><big>)</big><a class="reference internal" href="_modules/util.html#success"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#util.success" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to print a &#8216;<em>label</em>...PASSED&#8217; line to screen.
+Used by <a class="reference internal" href="#util.compare_values" title="util.compare_values"><tt class="xref py py-func docutils literal"><span class="pre">util.compare_values()</span></tt></a> family when functions pass.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-wrappers">
+<span id="wrappers"></span><h2>wrappers<a class="headerlink" href="#module-wrappers" title="Permalink to this headline">¶</a></h2>
+<p>Module with functions that call the four main <a class="reference internal" href="#module-driver" title="driver"><tt class="xref py py-mod docutils literal"><span class="pre">driver</span></tt></a>
+functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>,
+<a class="reference internal" href="#driver.response" title="driver.response"><tt class="xref py py-mod docutils literal"><span class="pre">driver.response</span></tt></a>, and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-mod docutils literal"><span class="pre">driver.frequency</span></tt></a>.</p>
+<dl class="function">
+<dt id="wrappers.call_function_in_1st_argument">
+<tt class="descclassname">wrappers.</tt><tt class="descname">call_function_in_1st_argument</tt><big>(</big><em>funcarg</em>, <em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#call_function_in_1st_argument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.call_function_in_1st_argument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to make primary function call to energy(), opt(), etc.
+with options dictionary <em>largs</em>.
+Useful when <em>funcarg</em> to call is stored in variable.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wrappers.drop_duplicates">
+<tt class="descclassname">wrappers.</tt><tt class="descname">drop_duplicates</tt><big>(</big><em>seq</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#drop_duplicates"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.drop_duplicates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that given an array <em>seq</em>, returns an array without any duplicate
+entries. There is no guarantee of which duplicate entry is dropped.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wrappers.n_body">
+<tt class="descclassname">wrappers.</tt><tt class="descname">n_body</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#n_body"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.n_body" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="wrappers.reconstitute_bracketed_basis">
+<tt class="descclassname">wrappers.</tt><tt class="descname">reconstitute_bracketed_basis</tt><big>(</big><em>needarray</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#reconstitute_bracketed_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.reconstitute_bracketed_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to reform a bracketed basis set string from a sequential series
+of basis sets (e.g, form &#8216;cc-pv[q5]z&#8217; from array [cc-pvqz, cc-pv5z]). The
+basis set array is extracted from the <em>f_basis</em> field of a <em>NEED</em> dictionary in
+<a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>. Result is used to print a nicely
+formatted basis set string in the results table.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wrappers.split_menial">
+<tt class="descclassname">wrappers.</tt><tt class="descname">split_menial</tt><big>(</big><em>menial</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#split_menial"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.split_menial" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function used by <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a> to separate
+<em>menial</em> &#8216;scftot&#8217; into [scf, tot] and &#8216;mp2corl&#8217; into [mp2, corl].</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wrappers.tblhead">
+<tt class="descclassname">wrappers.</tt><tt class="descname">tblhead</tt><big>(</big><em>tbl_maxrgt</em>, <em>tbl_delimit</em>, <em>ttype</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#tblhead"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.tblhead" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function that prints the header for the changable-width results tables in db().
+<em>tbl_maxrgt</em> is the number of reagent columns the table must plan for. <em>tbl_delimit</em>
+is a string of dashes of the correct length to set off the table. <em>ttype</em> is 1 for
+tables comparing the computed values to the reference or 2 for simple tabulation
+and sum of the computed values.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wrappers.validate_bracketed_basis">
+<tt class="descclassname">wrappers.</tt><tt class="descname">validate_bracketed_basis</tt><big>(</big><em>basisstring</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#validate_bracketed_basis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.validate_bracketed_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to transform and validate basis sets for cbs(). A basis set with no
+paired square brackets is passed through with zeta level 0 (e.g., &#8216;6-31+G(d,p)&#8217;
+is returned as [6-31+G(d,p)] and [0]). A basis set with square brackets is
+checked for sensible sequence and Dunning-ness and returned as separate basis
+sets (e.g., &#8216;cc-pV[Q5]Z&#8217; is returned as [cc-pVQZ, cc-pV5Z] and [4, 5]). Note
+that this function has no communication with the basis set library to check
+if the basis actually exists. Used by <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wrappers.validate_scheme_args">
+<tt class="descclassname">wrappers.</tt><tt class="descname">validate_scheme_args</tt><big>(</big><em>functionname</em>, <em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#validate_scheme_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.validate_scheme_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function called by each extrapolation scheme in <a class="reference internal" href="#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.
+Checks that all the input arguments are present and suitable so that
+the scheme function can focus on defining the extrapolation.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and Tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">General</a></li>
+<li><a class="reference internal" href="#energy">Energy</a></li>
+<li><a class="reference internal" href="#optimize">Optimize</a></li>
+<li><a class="reference internal" href="#response">Response</a></li>
+<li><a class="reference internal" href="#frequency">Frequency</a></li>
+<li><a class="reference internal" href="#counterpoise-correct">Counterpoise Correct</a></li>
+<li><a class="reference internal" href="#database">Database</a><ul>
+<li><a class="reference internal" href="#output">Output</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#complete-basis-set">Complete Basis Set</a><ul>
+<li><a class="reference internal" href="#id1">Output</a></li>
+<li><a class="reference internal" href="#extrapolation-schemes">Extrapolation Schemes</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-frac">Fractional Occupation</a></li>
+<li><a class="reference internal" href="#beginner-psithon-programming">Beginner Psithon Programming</a><ul>
+<li><a class="reference internal" href="#defining-a-method-alias">Defining a Method Alias</a></li>
+<li><a class="reference internal" href="#creating-a-new-database">Creating a New Database</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#function-intercalls">Function Intercalls</a></li>
+<li><a class="reference internal" href="#embarrassing-parallelism">Embarrassing Parallelism</a></li>
+<li><a class="reference internal" href="#psithon-programming-best-practices">Psithon Programming Best Practices</a></li>
+<li><a class="reference internal" href="#psimod-methods">PsiMod Methods</a></li>
+<li><a class="reference internal" href="#molecule-methods">Molecule Methods</a></li>
+<li><a class="reference internal" href="#expert">Expert</a><ul>
+<li><a class="reference internal" href="#module-aliases">aliases</a></li>
+<li><a class="reference internal" href="#module-driver">driver</a></li>
+<li><a class="reference internal" href="#module-input">input</a></li>
+<li><a class="reference internal" href="#module-physconst">physconst</a></li>
+<li><a class="reference internal" href="#module-proc">proc</a></li>
+<li><a class="reference internal" href="#module-procutil">procutil</a></li>
+<li><a class="reference internal" href="#module-psiexceptions">psiexceptions</a></li>
+<li><a class="reference internal" href="#module-pubchem">pubchem</a></li>
+<li><a class="reference internal" href="#module-qmmm">qmmm</a></li>
+<li><a class="reference internal" href="#module-text">text</a></li>
+<li><a class="reference internal" href="#module-util">util</a></li>
+<li><a class="reference internal" href="#module-wrappers">wrappers</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and Tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="#">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Feb 23, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-#ifndef HF_H
+#ifndef HF_H 
 #define HF_H
 /*
  *  hf.h
@@ -152,6 +152,9 @@ public:
 
     /// The number of iterations needed to reach convergence
     int iterations_needed() {return iterations_needed_;}
+
+    /// The JK object (or null if it has been deleted)
+    boost::shared_ptr<JK> jk() const { return jk_; }
 
     /// The RMS error in the density
     double rms_density_error() {return Drms_;}
