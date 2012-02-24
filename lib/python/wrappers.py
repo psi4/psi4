@@ -15,7 +15,7 @@ import pickle
 import copy
 import physconst
 from driver import *
-from molecule import *
+from molutil import *
 from text import *
 from collections import defaultdict
 from procutil import *
@@ -1399,6 +1399,10 @@ def complete_basis_set(name, **kwargs):
        - No scheme defaults for given basis zeta number, so scheme must be specified explicitly.
 
        - No way to tell function to boost fitting basis size for all calculations.
+
+       - No way to extrapolate def2 family basis sets
+
+       - Need to add more extrapolation schemes
 
     As represented in the equation below, a CBS energy method is defined in four
     sequential stages (scf, corl, delta, delta2) covering treatment of the

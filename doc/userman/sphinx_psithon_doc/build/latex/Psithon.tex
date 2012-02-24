@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 23, 2012}
+\date{February 24, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -1280,6 +1280,12 @@ No scheme defaults for given basis zeta number, so scheme must be specified expl
 \item {} 
 No way to tell function to boost fitting basis size for all calculations.
 
+\item {} 
+No way to extrapolate def2 family basis sets
+
+\item {} 
+Need to add more extrapolation schemes
+
 \end{itemize}
 \end{notice}
 
@@ -2098,112 +2104,234 @@ level information like 4 for CISDTQ or MRCCSDTQ.
 
 
 \section{input}
-\label{index:input}\label{index:module-input}\index{input (module)}\index{bad\_option\_syntax() (in module input)}
+\label{index:input}\label{index:module-input}\index{input (module)}
+Module with functions to parse the input file and convert
+Psithon into standard Python. Particularly, forms PsiMod
+module calls that access the C++ side of Psi4.
+\index{bad\_option\_syntax() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.bad_option_syntax}\pysiglinewithargsret{\code{input.}\bfcode{bad\_option\_syntax}}{\emph{line}}{}
+Function to report bad syntax to screen and output file.
+
 \end{fulllineitems}
 
 \index{check\_parentheses\_and\_brackets() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.check_parentheses_and_brackets}\pysiglinewithargsret{\code{input.}\bfcode{check\_parentheses\_and\_brackets}}{\emph{input\_string}, \emph{exit\_on\_error}}{}
+Function to check that all parenthesis and brackets
+in \emph{input\_string} are paired. On that condition, \emph{exit\_on\_error} =1,
+otherwise 0.
+
 \end{fulllineitems}
 
 \index{parse\_multiline\_array() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.parse_multiline_array}\pysiglinewithargsret{\code{input.}\bfcode{parse\_multiline\_array}}{\emph{input\_list}}{}
+Function to squash multiline arrays into a single line
+until all parentheses and brackets are fully paired.
+
 \end{fulllineitems}
 
 \index{process\_basis\_block() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_basis_block}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_block}}{\emph{matchobj}}{}
+Function to process match of \code{basis name \{ ... \}}.
+
 \end{fulllineitems}
 
 \index{process\_basis\_file() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_basis_file}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_file}}{\emph{matchobj}}{}
+Function to process match of \code{basis file ...}.
+
 \end{fulllineitems}
 
 \index{process\_external\_command() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_external_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_external\_command}}{\emph{matchobj}}{}
+Function to process match of \code{external name? \{ ... \}}.
+
 \end{fulllineitems}
 
 \index{process\_extract\_command() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_extract_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_extract\_command}}{\emph{matchobj}}{}
+Function to process match of \code{extract\_subsets}.
+
 \end{fulllineitems}
 
 \index{process\_input() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{raw\_input}, \emph{print\_level=1}}{}
+Function to preprocess \emph{raw input}, the text of the input file, then
+parse it, validate it for format, and convert it into legitimate Python.
+\emph{raw\_input} is printed to the output file unless \emph{print\_level} =0. Does
+a series of regular expression filters, where the matching portion of the
+input is replaced by the output of the corresponding function (in this
+module) call. Returns a string concatenating module import lines, a copy
+of the user's .psi4rc files, a setting of the scratch directory, a dummy
+molecule, and the processed \emph{raw\_input}.
+
 \end{fulllineitems}
 
 \index{process\_memory\_command() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_memory_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_memory\_command}}{\emph{matchobj}}{}
+Function to process match of \code{memory ...}.
+
 \end{fulllineitems}
 
 \index{process\_molecule\_command() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_molecule_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_molecule\_command}}{\emph{matchobj}}{}
+Function to process match of \code{molecule name? \{ ... \}}.
+
 \end{fulllineitems}
 
 \index{process\_multiline\_arrays() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_multiline_arrays}\pysiglinewithargsret{\code{input.}\bfcode{process\_multiline\_arrays}}{\emph{inputfile}}{}
+Function to find array inputs that are spread across multiple
+lines and squash them into a single line.
+
 \end{fulllineitems}
 
 \index{process\_option() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_option}\pysiglinewithargsret{\code{input.}\bfcode{process\_option}}{\emph{spaces}, \emph{module}, \emph{key}, \emph{value}, \emph{line}}{}
+Function to process a line with set or in a set block
+into global/local domain and keyword/value.
+
 \end{fulllineitems}
 
 \index{process\_print\_command() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_print_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_print\_command}}{\emph{matchobj}}{}
+Function to process match of \code{print} and transform
+it to \code{PsiMod.print\_out()}.
+
 \end{fulllineitems}
 
 \index{process\_pubchem\_command() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_pubchem_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_pubchem\_command}}{\emph{matchobj}}{}
+Function to process match of \code{pubchem} in molecule block.
+
 \end{fulllineitems}
 
 \index{process\_set\_command() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_set_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_command}}{\emph{matchobj}}{}
+Function to process match of all individual \code{set (module\_list)
+key \{{[}value\_list{]} or \$value or value\}}.
+
 \end{fulllineitems}
 
 \index{process\_set\_commands() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_set_commands}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_commands}}{\emph{matchobj}}{}
+Function to process match of \code{set name? \{ ... \}}.
+
 \end{fulllineitems}
 
 \index{process\_word\_quotes() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_word_quotes}\pysiglinewithargsret{\code{input.}\bfcode{process\_word\_quotes}}{\emph{matchobj}}{}
+Function to determine if argument needs wrapping in quotes as string.
+
 \end{fulllineitems}
 
 \index{quotify() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.quotify}\pysiglinewithargsret{\code{input.}\bfcode{quotify}}{\emph{string}}{}
+Function to wrap anything that looks like a string in quotes
+and to remove leading dollar signs from python variables.
+
+\end{fulllineitems}
+
+
+
+\section{molutil}
+\label{index:module-molutil}\label{index:molutil}\index{molutil (module)}
+Module with utility functions that act on molecule objects.
+\index{activate() (in module molutil)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:molutil.activate}\pysiglinewithargsret{\code{molutil.}\bfcode{activate}}{\emph{mol}}{}
+Function to set molecule object \emph{mol} as the current active molecule.
+
+\end{fulllineitems}
+
+\index{dynamic\_variable\_bind() (in module molutil)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:molutil.dynamic_variable_bind}\pysiglinewithargsret{\code{molutil.}\bfcode{dynamic\_variable\_bind}}{\emph{cls}}{}
+Function to bind PsiMod.Molecule class.
+
+\end{fulllineitems}
+
+\index{extract\_cluster\_indexing() (in module molutil)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:molutil.extract_cluster_indexing}\pysiglinewithargsret{\code{molutil.}\bfcode{extract\_cluster\_indexing}}{\emph{mol}, \emph{cluster\_size=0}}{}
+Function to returns a LIST of all subclusters of the molecule \emph{mol} of
+real size \emph{cluster\_size}. If \emph{cluster\_size} = 0, returns all possible
+combinations of cluster size.
+
+\end{fulllineitems}
+
+\index{extract\_clusters() (in module molutil)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:molutil.extract_clusters}\pysiglinewithargsret{\code{molutil.}\bfcode{extract\_clusters}}{\emph{mol}, \emph{ghost=True}, \emph{cluster\_size=0}}{}
+Function to return all subclusters of the molecule \emph{mol} of
+real size \emph{cluster\_size} and all other atoms ghosted if \emph{ghost}
+equals true, all other atoms discarded if \emph{ghost} is false. If
+\emph{cluster\_size} = 0, returns all possible combinations of cluster size.
+
+\end{fulllineitems}
+
+\index{geometry() (in module molutil)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:molutil.geometry}\pysiglinewithargsret{\code{molutil.}\bfcode{geometry}}{\emph{geom}, \emph{name='default'}}{}
+Function to create a molecule object of name \emph{name}
+from the geometry in string \emph{geom}.
+
+\end{fulllineitems}
+
+\index{new\_get\_attr() (in module molutil)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:molutil.new_get_attr}\pysiglinewithargsret{\code{molutil.}\bfcode{new\_get\_attr}}{\emph{self}, \emph{name}}{}
+Function to redefine get\_attr method of molecule class.
+
+\end{fulllineitems}
+
+\index{new\_set\_attr() (in module molutil)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:molutil.new_set_attr}\pysiglinewithargsret{\code{molutil.}\bfcode{new\_set\_attr}}{\emph{self}, \emph{name}, \emph{value}}{}
+Function to redefine set\_attr method of molecule class.
+
 \end{fulllineitems}
 
 
@@ -2496,7 +2624,7 @@ Does not work with array-type options.
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`36685'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`47954'}}{}
 Function to return the full path and filename for psi file
 \emph{fileno} (e.g., psi.32) in current namespace \emph{pidspace}.
 
@@ -2975,6 +3103,9 @@ the scheme function can focus on defining the extrapolation.
 \indexspace
 \bigletter{i}
 \item {\texttt{input}}, \pageref{index:module-input}
+\indexspace
+\bigletter{m}
+\item {\texttt{molutil}}, \pageref{index:module-molutil}
 \indexspace
 \bigletter{p}
 \item {\texttt{physconst}}, \pageref{index:module-physconst}

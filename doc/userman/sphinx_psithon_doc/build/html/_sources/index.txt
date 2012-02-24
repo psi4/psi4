@@ -172,6 +172,13 @@ input
     :members:
     :undoc-members:
 
+molutil
+========
+
+.. automodule:: molutil
+    :members:
+    :undoc-members:
+
 physconst
 =========
 

@@ -3,7 +3,7 @@ import re
 import os
 import input
 import math
-from molecule import * 
+from molutil import * 
 from driver import * 
 
 class Diffuse:

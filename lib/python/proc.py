@@ -11,7 +11,7 @@ import subprocess
 import re
 import input
 import physconst
-from molecule import *
+from molutil import *
 from text import *
 
 

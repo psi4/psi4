@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  23 FEB 2012 00:58
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  24 FEB 2012 01:52
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -875,7 +875,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.i}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.30 ...{\numberline {15.9}qmmm}{47}{section.15.9}
+l.30 ...umberline {15.9}pubchem}{48}{section.15.9}
                                                    [1
 
 ])
@@ -887,7 +887,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.ii}) has
 <to be read again> 
                    \relax 
 l.113 \tableofcontents
-                       [2] <PSI4_3.png, id=198, 874.76813pt x 218.31563pt>
+                       [2] <PSI4_3.png, id=203, 874.76813pt x 218.31563pt>
 File: PSI4_3.png Graphic file (type png)
 
 <use PSI4_3.png>
@@ -973,26 +973,26 @@ Underfull \hbox (badness 5345) in paragraph at lines 1130--1135
 [16] [17] [18]
 Chapter 7.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1284--1285
+Underfull \hbox (badness 10000) in paragraph at lines 1290--1291
 
  []
 
 [19
 
 ] [20] [21] [22]
-Underfull \hbox (badness 10000) in paragraph at lines 1609--1611
+Underfull \hbox (badness 10000) in paragraph at lines 1615--1617
 \T1/ptm/m/n/10 Extrapolation scheme for ref-er-ence en-er-gies with two ad-ja-c
 ent zeta-level bases. Used by
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1620--1622
+Underfull \hbox (badness 10000) in paragraph at lines 1626--1628
 \T1/ptm/m/n/10 Extrapolation scheme for ref-er-ence en-er-gies with three ad-ja
 -cent zeta-level bases. Used by
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1631--1633
+Underfull \hbox (badness 10000) in paragraph at lines 1637--1639
 \T1/ptm/m/n/10 Extrapolation scheme for cor-re-la-tion en-er-gies with two ad-j
 a-cent zeta-level bases. Used by
  []
@@ -1029,70 +1029,72 @@ Chapter 14.
 
 ]
 Chapter 15.
-[43] [44]
-Underfull \hbox (badness 10000) in paragraph at lines 2228--2229
+[43] [44] [45]
+Underfull \hbox (badness 10000) in paragraph at lines 2356--2357
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2314--2315
+Underfull \hbox (badness 10000) in paragraph at lines 2442--2443
 
  []
 
-[45]
-Underfull \hbox (badness 10000) in paragraph at lines 2492--2493
+[46]
+Underfull \hbox (badness 10000) in paragraph at lines 2620--2621
 
  []
 
-[46] [47] [48] [49] [50]
+[47] [48] [49] [50] [51] [52
+
+]
 Chapter 16.
-[51
+[53] [54
 
-] [52
-
-] [53
+] [55
 
 
-] (./Psithon.ind [54
+] (./Psithon.ind [56
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 44--45
+Underfull \hbox (badness 10000) in paragraph at lines 46--47
 []| \T1/ptm/m/n/10 CP-CORRECTED2-
  []
 
 
-Overfull \hbox (15.00143pt too wide) in paragraph at lines 48--49
+Overfull \hbox (15.00143pt too wide) in paragraph at lines 50--51
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANABSOLUTEDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 49--50
+Underfull \hbox (badness 10000) in paragraph at lines 51--52
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANSIGNEDDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 50--51
+Underfull \hbox (badness 10000) in paragraph at lines 52--53
 []| \T1/ptm/m/n/10 db_nameDATABASEROOT-MEAN-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 51--52
+Underfull \hbox (badness 10000) in paragraph at lines 53--54
 []| \T1/ptm/m/n/10 UNCP-CORRECTED2-
  []
 
-[55
+[57
 
-] [56]) (./Psithon.aux)
+] [58] [59
+
+]) (./Psithon.aux)
 
 LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 8349 strings out of 493848
- 115762 string characters out of 3149207
- 212022 words of memory out of 3000000
- 11197 multiletter control sequences out of 15000+200000
+ 8370 strings out of 493848
+ 116145 string characters out of 3149207
+ 212377 words of memory out of 3000000
+ 11207 multiletter control sequences out of 15000+200000
  63666 words of font info for 72 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
  45i,18n,51p,930b,551s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1112,9 +1114,9 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (60 pages, 517933 bytes).
+Output written on Psithon.pdf (63 pages, 526740 bytes).
 PDF statistics:
- 874 PDF objects out of 1000 (max. 8388607)
- 227 named destinations out of 1000 (max. 500000)
- 286 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 910 PDF objects out of 1000 (max. 8388607)
+ 238 named destinations out of 1000 (max. 500000)
+ 294 words of extra memory for PDF output out of 10000 (max. 10000000)
 

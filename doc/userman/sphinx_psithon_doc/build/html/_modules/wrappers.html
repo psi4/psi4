@@ -60,10 +60,11 @@
             
   <h1>Source code for wrappers</h1><div class="highlight"><pre>
 <span class="sd">&quot;&quot;&quot;Module with functions that call the four main :py:mod:`driver`</span>
-<span class="sd">functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`, </span>
-<span class="sd">:py:mod:`driver.response`, and :py:mod:`driver.frequency()`.</span>
+<span class="sd">functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,</span>
+<span class="sd">:py:mod:`driver.response`, and :py:mod:`driver.frequency`.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
+
 
 <span class="kn">import</span> <span class="nn">PsiMod</span>
 <span class="kn">import</span> <span class="nn">re</span>
@@ -75,7 +76,7 @@
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">physconst</span>
 <span class="kn">from</span> <span class="nn">driver</span> <span class="kn">import</span> <span class="o">*</span>
-<span class="kn">from</span> <span class="nn">molecule</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">molutil</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">text</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
 <span class="kn">from</span> <span class="nn">procutil</span> <span class="kn">import</span> <span class="o">*</span>
@@ -84,7 +85,8 @@
 <span class="c"># Function to make calls among wrappers(), energy(), optimize(), etc.</span>
 <div class="viewcode-block" id="call_function_in_1st_argument"><a class="viewcode-back" href="../index.html#wrappers.call_function_in_1st_argument">[docs]</a><span class="k">def</span> <span class="nf">call_function_in_1st_argument</span><span class="p">(</span><span class="n">funcarg</span><span class="p">,</span> <span class="o">**</span><span class="n">largs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to make primary function call to energy(), opt(), etc.</span>
-<span class="sd">    Useful when function to call is stored in variable.</span>
+<span class="sd">    with options dictionary *largs*.</span>
+<span class="sd">    Useful when *funcarg* to call is stored in variable.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">funcarg</span><span class="p">(</span><span class="o">**</span><span class="n">largs</span><span class="p">)</span>
@@ -1384,7 +1386,7 @@
 
 </div>
 <div class="viewcode-block" id="drop_duplicates"><a class="viewcode-back" href="../index.html#wrappers.drop_duplicates">[docs]</a><span class="k">def</span> <span class="nf">drop_duplicates</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Function that given an array, returns an array without any duplicate</span>
+    <span class="sd">&quot;&quot;&quot;Function that given an array *seq*, returns an array without any duplicate</span>
 <span class="sd">    entries. There is no guarantee of which duplicate entry is dropped.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -1458,6 +1460,10 @@
 <span class="sd">       - No scheme defaults for given basis zeta number, so scheme must be specified explicitly.</span>
 
 <span class="sd">       - No way to tell function to boost fitting basis size for all calculations.</span>
+
+<span class="sd">       - No way to extrapolate def2 family basis sets</span>
+
+<span class="sd">       - Need to add more extrapolation schemes</span>
 
 <span class="sd">    As represented in the equation below, a CBS energy method is defined in four</span>
 <span class="sd">    sequential stages (scf, corl, delta, delta2) covering treatment of the</span>
@@ -2292,8 +2298,8 @@
 
 </div>
 <div class="viewcode-block" id="split_menial"><a class="viewcode-back" href="../index.html#wrappers.split_menial">[docs]</a><span class="k">def</span> <span class="nf">split_menial</span><span class="p">(</span><span class="n">menial</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Function used by :py:func:`wrappers.complete_basis_set` to separate &#39;scftot&#39;</span>
-<span class="sd">    into [scf, tot] and &#39;mp2corl&#39; into [mp2, corl].</span>
+    <span class="sd">&quot;&quot;&quot;Function used by :py:func:`wrappers.complete_basis_set` to separate</span>
+<span class="sd">    *menial* &#39;scftot&#39; into [scf, tot] and &#39;mp2corl&#39; into [mp2, corl].</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">PTYP</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;tot&#39;</span><span class="p">,</span> <span class="s">&#39;corl&#39;</span><span class="p">]</span>
@@ -2355,7 +2361,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 23, 2012.
+      Last updated on Feb 24, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

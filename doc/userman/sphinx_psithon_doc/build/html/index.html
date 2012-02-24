@@ -986,6 +986,8 @@ components into a minimum number of calculations.</p>
 <li>Methods beyond basic scf, mp2, ccsd, ccsd(t) not yet hooked in through PSI variables, df-mp2 in particular.</li>
 <li>No scheme defaults for given basis zeta number, so scheme must be specified explicitly.</li>
 <li>No way to tell function to boost fitting basis size for all calculations.</li>
+<li>No way to extrapolate def2 family basis sets</li>
+<li>Need to add more extrapolation schemes</li>
 </ul>
 </div>
 <p>As represented in the equation below, a CBS energy method is defined in four
@@ -1640,95 +1642,183 @@ level information like 4 for CISDTQ or MRCCSDTQ.</p>
 </div>
 <div class="section" id="module-input">
 <span id="input"></span><h2>input<a class="headerlink" href="#module-input" title="Permalink to this headline">¶</a></h2>
+<p>Module with functions to parse the input file and convert
+Psithon into standard Python. Particularly, forms PsiMod
+module calls that access the C++ side of Psi4.</p>
 <dl class="function">
 <dt id="input.bad_option_syntax">
 <tt class="descclassname">input.</tt><tt class="descname">bad_option_syntax</tt><big>(</big><em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#bad_option_syntax"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.bad_option_syntax" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to report bad syntax to screen and output file.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.check_parentheses_and_brackets">
 <tt class="descclassname">input.</tt><tt class="descname">check_parentheses_and_brackets</tt><big>(</big><em>input_string</em>, <em>exit_on_error</em><big>)</big><a class="reference internal" href="_modules/input.html#check_parentheses_and_brackets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.check_parentheses_and_brackets" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to check that all parenthesis and brackets
+in <em>input_string</em> are paired. On that condition, <em>exit_on_error</em> =1,
+otherwise 0.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.parse_multiline_array">
 <tt class="descclassname">input.</tt><tt class="descname">parse_multiline_array</tt><big>(</big><em>input_list</em><big>)</big><a class="reference internal" href="_modules/input.html#parse_multiline_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.parse_multiline_array" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to squash multiline arrays into a single line
+until all parentheses and brackets are fully paired.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_basis_block">
 <tt class="descclassname">input.</tt><tt class="descname">process_basis_block</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_block"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_block" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">basis</span> <span class="pre">name</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_basis_file">
 <tt class="descclassname">input.</tt><tt class="descname">process_basis_file</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_basis_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_basis_file" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">basis</span> <span class="pre">file</span> <span class="pre">...</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_external_command">
 <tt class="descclassname">input.</tt><tt class="descname">process_external_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_external_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_external_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">external</span> <span class="pre">name?</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_extract_command">
 <tt class="descclassname">input.</tt><tt class="descname">process_extract_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_extract_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_extract_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">extract_subsets</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_input">
 <tt class="descclassname">input.</tt><tt class="descname">process_input</tt><big>(</big><em>raw_input</em>, <em>print_level=1</em><big>)</big><a class="reference internal" href="_modules/input.html#process_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_input" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to preprocess <em>raw input</em>, the text of the input file, then
+parse it, validate it for format, and convert it into legitimate Python.
+<em>raw_input</em> is printed to the output file unless <em>print_level</em> =0. Does
+a series of regular expression filters, where the matching portion of the
+input is replaced by the output of the corresponding function (in this
+module) call. Returns a string concatenating module import lines, a copy
+of the user&#8217;s .psi4rc files, a setting of the scratch directory, a dummy
+molecule, and the processed <em>raw_input</em>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_memory_command">
 <tt class="descclassname">input.</tt><tt class="descname">process_memory_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_memory_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_memory_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">memory</span> <span class="pre">...</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_molecule_command">
 <tt class="descclassname">input.</tt><tt class="descname">process_molecule_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_molecule_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_molecule_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">molecule</span> <span class="pre">name?</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_multiline_arrays">
 <tt class="descclassname">input.</tt><tt class="descname">process_multiline_arrays</tt><big>(</big><em>inputfile</em><big>)</big><a class="reference internal" href="_modules/input.html#process_multiline_arrays"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_multiline_arrays" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to find array inputs that are spread across multiple
+lines and squash them into a single line.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_option">
 <tt class="descclassname">input.</tt><tt class="descname">process_option</tt><big>(</big><em>spaces</em>, <em>module</em>, <em>key</em>, <em>value</em>, <em>line</em><big>)</big><a class="reference internal" href="_modules/input.html#process_option"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_option" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process a line with set or in a set block
+into global/local domain and keyword/value.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_print_command">
 <tt class="descclassname">input.</tt><tt class="descname">process_print_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_print_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_print_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">print</span></tt> and transform
+it to <tt class="docutils literal"><span class="pre">PsiMod.print_out()</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_pubchem_command">
 <tt class="descclassname">input.</tt><tt class="descname">process_pubchem_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_pubchem_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_pubchem_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">pubchem</span></tt> in molecule block.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_set_command">
 <tt class="descclassname">input.</tt><tt class="descname">process_set_command</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_command" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of all individual <tt class="docutils literal"><span class="pre">set</span> <span class="pre">(module_list)</span>
+<span class="pre">key</span> <span class="pre">{[value_list]</span> <span class="pre">or</span> <span class="pre">$value</span> <span class="pre">or</span> <span class="pre">value}</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_set_commands">
 <tt class="descclassname">input.</tt><tt class="descname">process_set_commands</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_set_commands"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_set_commands" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to process match of <tt class="docutils literal"><span class="pre">set</span> <span class="pre">name?</span> <span class="pre">{</span> <span class="pre">...</span> <span class="pre">}</span></tt>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.process_word_quotes">
 <tt class="descclassname">input.</tt><tt class="descname">process_word_quotes</tt><big>(</big><em>matchobj</em><big>)</big><a class="reference internal" href="_modules/input.html#process_word_quotes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_word_quotes" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to determine if argument needs wrapping in quotes as string.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="input.quotify">
 <tt class="descclassname">input.</tt><tt class="descname">quotify</tt><big>(</big><em>string</em><big>)</big><a class="reference internal" href="_modules/input.html#quotify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.quotify" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to wrap anything that looks like a string in quotes
+and to remove leading dollar signs from python variables.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-molutil">
+<span id="molutil"></span><h2>molutil<a class="headerlink" href="#module-molutil" title="Permalink to this headline">¶</a></h2>
+<p>Module with utility functions that act on molecule objects.</p>
+<dl class="function">
+<dt id="molutil.activate">
+<tt class="descclassname">molutil.</tt><tt class="descname">activate</tt><big>(</big><em>mol</em><big>)</big><a class="reference internal" href="_modules/molutil.html#activate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#molutil.activate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to set molecule object <em>mol</em> as the current active molecule.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molutil.dynamic_variable_bind">
+<tt class="descclassname">molutil.</tt><tt class="descname">dynamic_variable_bind</tt><big>(</big><em>cls</em><big>)</big><a class="reference internal" href="_modules/molutil.html#dynamic_variable_bind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#molutil.dynamic_variable_bind" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to bind PsiMod.Molecule class.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molutil.extract_cluster_indexing">
+<tt class="descclassname">molutil.</tt><tt class="descname">extract_cluster_indexing</tt><big>(</big><em>mol</em>, <em>cluster_size=0</em><big>)</big><a class="reference internal" href="_modules/molutil.html#extract_cluster_indexing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#molutil.extract_cluster_indexing" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to returns a LIST of all subclusters of the molecule <em>mol</em> of
+real size <em>cluster_size</em>. If <em>cluster_size</em> = 0, returns all possible
+combinations of cluster size.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molutil.extract_clusters">
+<tt class="descclassname">molutil.</tt><tt class="descname">extract_clusters</tt><big>(</big><em>mol</em>, <em>ghost=True</em>, <em>cluster_size=0</em><big>)</big><a class="reference internal" href="_modules/molutil.html#extract_clusters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#molutil.extract_clusters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to return all subclusters of the molecule <em>mol</em> of
+real size <em>cluster_size</em> and all other atoms ghosted if <em>ghost</em>
+equals true, all other atoms discarded if <em>ghost</em> is false. If
+<em>cluster_size</em> = 0, returns all possible combinations of cluster size.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molutil.geometry">
+<tt class="descclassname">molutil.</tt><tt class="descname">geometry</tt><big>(</big><em>geom</em>, <em>name='default'</em><big>)</big><a class="reference internal" href="_modules/molutil.html#geometry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#molutil.geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to create a molecule object of name <em>name</em>
+from the geometry in string <em>geom</em>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molutil.new_get_attr">
+<tt class="descclassname">molutil.</tt><tt class="descname">new_get_attr</tt><big>(</big><em>self</em>, <em>name</em><big>)</big><a class="reference internal" href="_modules/molutil.html#new_get_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#molutil.new_get_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to redefine get_attr method of molecule class.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="molutil.new_set_attr">
+<tt class="descclassname">molutil.</tt><tt class="descname">new_set_attr</tt><big>(</big><em>self</em>, <em>name</em>, <em>value</em><big>)</big><a class="reference internal" href="_modules/molutil.html#new_set_attr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#molutil.new_set_attr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to redefine set_attr method of molecule class.</p>
+</dd></dl>
 
 </div>
 <div class="section" id="module-physconst">
@@ -1959,7 +2049,7 @@ options information for distributed (sow/reap) input files.</p>
 
 <dl class="function">
 <dt id="procutil.get_psifile">
-<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='36685'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='47954'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to return the full path and filename for psi file
 <em>fileno</em> (e.g., psi.32) in current namespace <em>pidspace</em>.</p>
 </dd></dl>
@@ -2366,6 +2456,7 @@ the scheme function can focus on defining the extrapolation.</p>
 <li><a class="reference internal" href="#module-aliases">aliases</a></li>
 <li><a class="reference internal" href="#module-driver">driver</a></li>
 <li><a class="reference internal" href="#module-input">input</a></li>
+<li><a class="reference internal" href="#module-molutil">molutil</a></li>
 <li><a class="reference internal" href="#module-physconst">physconst</a></li>
 <li><a class="reference internal" href="#module-proc">proc</a></li>
 <li><a class="reference internal" href="#module-procutil">procutil</a></li>
@@ -2421,7 +2512,7 @@ the scheme function can focus on defining the extrapolation.</p>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 23, 2012.
+      Last updated on Feb 24, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
