@@ -1,0 +1,229 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>&lt;no title&gt; &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="#" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="index.html" /> 
+    <script type="text/javascript" src="_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The derivative level type for <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="index.html#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
+functions can be specified by <tt class="docutils literal"><span class="pre">energy</span></tt>, <tt class="docutils literal"><span class="pre">none</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for 0th derivative,
+<tt class="docutils literal"><span class="pre">gradient</span></tt>, <tt class="docutils literal"><span class="pre">first</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt> for 1st derivative, and <tt class="docutils literal"><span class="pre">hessian</span></tt>,
+<tt class="docutils literal"><span class="pre">second</span></tt>, or <tt class="docutils literal"><span class="pre">2</span></tt> for 2nd derivative.</p>
+</div>
+<dl class="function">
+<dt id="driver.optimize">
+<tt class="descclassname">driver.</tt><tt class="descname">optimize</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/driver.html#optimize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#driver.optimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to perform a geometry optimization.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Aliases :</th><td class="field-body">opt()</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(<em>float</em>) Total electronic energy of optimized structure in Hartrees.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Psi variables:</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<dl class="envvar">
+<dt id="envvar-CURRENTENERGY">
+<tt class="descname">CURRENT ENERGY</tt><a class="headerlink" href="#envvar-CURRENTENERGY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Analytic gradients area available for all methods in the table
+below. Optimizations with other methods in the energy table proceed
+by finite differences.</p>
+</div>
+<div class="admonition caution">
+<p class="first admonition-title">Caution</p>
+<p>Some features are not yet implemented. Buy a developer a coffee.</p>
+<ul class="last simple">
+<li>Need to check that all methods do return electronic energy. I think gradient got changed at one point.</li>
+</ul>
+</div>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">name</th>
+<th class="head">calls method</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>scf</td>
+<td>Hartree&#8211;Fock (HF) or density functional theory (DFT)</td>
+</tr>
+<tr class="row-odd"><td>mp2</td>
+<td>2nd-order Moller-Plesset perturbation theory (MP2)</td>
+</tr>
+<tr class="row-even"><td>ccsd</td>
+<td>coupled cluster singles and doubles (CCSD)</td>
+</tr>
+<tr class="row-odd"><td>ccsd(t)</td>
+<td>CCSD with perturbative triples</td>
+</tr>
+<tr class="row-even"><td>eom-ccsd</td>
+<td>equation of motion (EOM) CCSD</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keywords</strong></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
+to be applied to the database. May be any valid argument to
+<a class="reference internal" href="index.html#driver.energy" title="driver.energy"><tt class="xref py py-func docutils literal"><span class="pre">driver.energy()</span></tt></a>.</p>
+</li>
+<li><strong>func</strong> (<em>function</em>) &#8211; <p><a href="#id1"><span class="problematic" id="id2">|dl|</span></a> <tt class="docutils literal"><span class="pre">gradient</span></tt> <a href="#id3"><span class="problematic" id="id4">|dr|</span></a> || <tt class="docutils literal"><span class="pre">energy</span></tt> || <tt class="docutils literal"><span class="pre">cbs</span></tt></p>
+<p>Indicates the type of calculation to be performed on the molecule.
+The default dertype accesses``&#8217;gradient&#8217;`` or <tt class="docutils literal"><span class="pre">'energy'</span></tt>, while
+<tt class="docutils literal"><span class="pre">'cbs'</span></tt> performs a multistage finite difference calculation.
+If a nested series of python functions is intended (see <a href="#id9"><span class="problematic" id="id10">`Function Intercalls`_</span></a>),
+use keyword <tt class="docutils literal"><span class="pre">opt_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
+</li>
+<li><strong>mode</strong> (<em>string</em>) &#8211; <p><a href="#id5"><span class="problematic" id="id6">|dl|</span></a> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <a href="#id7"><span class="problematic" id="id8">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
+<p>Indicates whether the calculation required to complete the
+optimization are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
+farmed out in an embarrassingly parallel fashion
+(<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
+<tt class="docutils literal"><span class="pre">'sow'</span></tt> and follow instructions in its output file.</p>
+</li>
+<li><strong>dertype</strong> (<em>dertype</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'gradient'</span></tt> || <tt class="docutils literal"><span class="pre">'energy'</span></tt></p>
+<p>Indicates whether analytic (if available) or finite difference
+optimization is to be performed.</p>
+</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Analytic scf optimization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimize</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [2] Finite difference mp3 optimization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">opt</span><span class="p">(</span><span class="s">&#39;mp3&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [3] Forced finite difference ccsd optimization</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">optimize</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">,</span> <span class="n">dertype</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/opt.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Feb 23, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

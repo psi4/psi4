@@ -243,6 +243,10 @@ void set_params(void)
       Opt_params.i_rms_disp = true;
       Opt_params.conv_rms_disp = fabs(options.get_double("RMS_DISP_G_CONVERGENCE"));
     }
+ 
+    // even if a specific threshold were given, allow for Molpro/Qchem/G03 flex criteria
+    if (options.get_bool("FLEXIBLE_G_CONVERGENCE"))
+      Opt_params.i_untampered = true;
 
 // Whether to test B matrix and derivative B matrix numerically
 //  Opt_params.test_B = false;

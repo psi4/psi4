@@ -103,8 +103,8 @@ void CC::get_params()
   free(evals_t);
   free_block(C_t);
 
-  sss_ = options_.get_double("SCALE_SS");
-  oss_ = options_.get_double("SCALE_OS");
+  sss_ = options_.get_double("CC_SCALE_SS");
+  oss_ = options_.get_double("CC_SCALE_OS");
   // We're almost always using Laplace, but, just in case
   denominator_algorithm_ = options_.get_str("DENOMINATOR_ALGORITHM");
   denominator_delta_ = options_.get_double("DENOMINATOR_DELTA");

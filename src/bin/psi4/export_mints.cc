@@ -68,7 +68,6 @@ void export_mints()
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
 
-
     class_<Vector, boost::shared_ptr<Vector> >( "Vector").
             def(init<int>()).
             def("get", vector_getitem_1(&Vector::get)).
@@ -93,13 +92,13 @@ void export_mints()
             def("dim", &IntVector::dim).
             def("nirrep", &IntVector::nirrep);
 
-    enum_<Matrix::DiagonalizeOrder>("DiagonalizeOrder")
-            .value("Ascending", Matrix::Ascending)
-            .value("Descending", Matrix::Descending)
+    enum_<diagonalize_order>("DiagonalizeOrder")
+            .value("Ascending", ascending)
+            .value("Descending", descending)
             .export_values();
 
     typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
-    typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, Matrix::DiagonalizeOrder);
+    typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, diagonalize_order);
     typedef void   (Matrix::*matrix_one)(const SharedMatrix&);
     typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
     typedef void   (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);

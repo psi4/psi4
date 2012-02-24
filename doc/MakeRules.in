@@ -84,7 +84,7 @@ endif
 #
 
 realclean:: dviclean psclean htmlclean otfclean
-	-rm -f *.aux *.log *.toc *.bbl
+	-rm -f *.aux *.log *.toc *.bbl *blg *out *html Psithon.pdf
 	-rm -rf html
 
 clean:: dviclean psclean htmlclean otfclean

@@ -456,7 +456,7 @@ void ROHF::form_G()
     /*
      * This just builds the same Ga and Gb matrices used in UHF
      */
-    if (scf_type_ == "DF") {
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
 
         std::vector<SharedMatrix> & C = jk_->C_left();
         C.clear();

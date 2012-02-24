@@ -126,6 +126,10 @@ protected:
     virtual std::pair<SharedMatrix, boost::shared_ptr<Vector> > Nso(SharedMatrix T1, bool diff = false);
     virtual std::pair<SharedMatrix, boost::shared_ptr<Vector> > Nao(SharedMatrix T1, bool diff = false);
 
+    virtual std::pair<SharedMatrix, SharedMatrix > ADmo(SharedMatrix T1);
+    virtual std::pair<SharedMatrix, SharedMatrix > ADso(SharedMatrix T1);
+    virtual std::pair<SharedMatrix, SharedMatrix > ADao(SharedMatrix T1);
+
 public:
     RCIS();
     virtual ~RCIS();
