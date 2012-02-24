@@ -541,7 +541,7 @@ void RDFMP2::form_energy()
     #endif
 
     // Memory
-    ULI Iab_memory = naocc * (ULI) navir;
+    ULI Iab_memory = navir * (ULI) navir;
     ULI Qa_memory  = naux  * (ULI) navir;
     ULI doubles = ((ULI) (options_.get_double("DFMP2_MEM_FACTOR") * memory_ / 8L));
     if (doubles < nthread * Iab_memory) {
