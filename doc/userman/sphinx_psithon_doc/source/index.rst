@@ -44,13 +44,14 @@
 General
 =======
 
-To allow arbitrarily complex computations to be performed, PSI4 was built
+To allow arbitrarily complex computations to be performed, PSI4 is built
 upon the Python interpreter, with modifications termed Psithon. Chapter 3
-of the User's Manual described the non-standard Python associated with
-molecule, basis, and option specification. This documentation addresses
-the Python side- what functions allow the proper, compiled code to be run,
-what functions post-process and interact with that output, and how the
-ordinary (or ambitious) user can extent PSI4's functionality.
+of the User's Manual describes the non-standard Python associated with
+clean molecule, basis, and option specification in the PSI4 input file.
+This documentation addresses the pure Python side- what functions allow
+the efficient compiled code to be run, what functions post-process and
+interact with that output, and how the ordinary (or ambitious) user can
+extent PSI4's functionality.
 
 .. include:: notes.rst
 
@@ -115,8 +116,7 @@ Beginner Psithon Programming
 Function Intercalls
 ===================
 
-table; handling func; no sow/reap
-
+.. include:: ./intercalls.rst
 
 ========================
 Embarrassing Parallelism

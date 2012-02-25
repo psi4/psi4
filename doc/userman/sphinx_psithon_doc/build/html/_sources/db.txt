@@ -25,7 +25,7 @@ energies stored in the database. One of these, the mean absolute deviation, is
 returned by the wrapper as an ordinary Python variable. (For databases
 without a stored reference energy, e.g., BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
-through :param tabulate:, in this case the total SCF energy and the number
+through keyword ``tabulate``, in this case the total SCF energy and the number
 of atoms in each reagent. ::
 
     ==> Scf Total Energy <==

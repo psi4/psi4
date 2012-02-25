@@ -791,3 +791,22 @@ on line 26, before being printed again. The relative energies are reported with
 respect to the lowest value in each column. More examples of how to control the
 formatting of the tables can be found in the sample input files provided; see
 Appendix \ref{sec:test_suite} for a complete listing.
+
+
+\subsection{Python Wrappers}
+
+The Python foundations of the \PSIfour driver and Psithon syntax permit
+many commonly performed post-processing procedures to be integrated into
+the \PSIfour suite.
+Among these are automated computations of interaction energies through
+\texttt{cp()}, of a model chemistry applied to a database of systems through
+\texttt{db()}, and of several model chemistries together approximating greater
+accuracy through \texttt{cbs()}. 
+These are discussed separately in Appendix \ref{sphinxpsithon} (also exists in
+html form with better formatting).
+Note that the options documented for Python functions are placed as arguments
+in the command that calls the function (formatted in this manual as
+\pyoptionname{option = } \pyoptionval{value}),
+not in the \texttt{set globals} block or with any other \texttt{set} command.
+
+

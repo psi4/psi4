@@ -120,7 +120,7 @@ of python functions is intended (see <a href="#id35"><span class="problematic" i
 keyword <tt class="docutils literal"><span class="pre">db_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
 </li>
 <li><strong>mode</strong> (<em>string</em>) &#8211; <p><a href="#id5"><span class="problematic" id="id6">|dl|</span></a> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <a href="#id7"><span class="problematic" id="id8">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
-<p>Indicates whether the calculation required to complete the
+<p>Indicates whether the calculations required to complete the
 database are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
 farmed out in an embarrassingly parallel fashion
 (<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
@@ -129,20 +129,20 @@ farmed out in an embarrassingly parallel fashion
 <li><strong>cp</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id9"><span class="problematic" id="id10">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id11"><span class="problematic" id="id12">|dr|</span></a></p>
 <p>Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the <a class="reference internal" href="index.html#wrappers.cp" title="wrappers.cp"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.cp()</span></tt></a>
-wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt>.  Option
+function for BSSE correction in database().  Option
 valid only for databases consisting of bimolecular complexes.</p>
 </li>
 <li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id13"><span class="problematic" id="id14">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id15"><span class="problematic" id="id16">|dr|</span></a></p>
-<p>Indicates whether correction for the deformation energy is
+<p>Indicates whether correction for deformation energy is
 employed in computing interaction energies.  Option valid only for
 databases consisting of bimolecular complexes with non-frozen
 monomers, e.g., HBC6.</p>
 </li>
 <li><strong>symm</strong> (<em>bool</em>) &#8211; <p><a href="#id17"><span class="problematic" id="id18">|dl|</span></a> <tt class="docutils literal"><span class="pre">'on'</span></tt> <a href="#id19"><span class="problematic" id="id20">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'off'</span></tt></p>
-<p>Indicates whether the native symmetry of the database molecules is
+<p>Indicates whether the native symmetry of the database reagents is
 employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or whether it is forced to <img class="math" src="_images/math/70b97eb4ad6e4e7a5a97e2547d9ed6e965960d0c.png" alt="C_1"/> symmetry
 (<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
-symmetry, and this will be set by the database() wrapper.</p>
+symmetry, and this will be set by database().</p>
 </li>
 <li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id21"><span class="problematic" id="id22">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id23"><span class="problematic" id="id24">|dr|</span></a></p>
 <p>Indicates whether zero-point-energy corrections are appended to
@@ -240,7 +240,7 @@ energies stored in the database. One of these, the mean absolute deviation, is
 returned by the wrapper as an ordinary Python variable. (For databases
 without a stored reference energy, e.g., BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
-through :param tabulate:, in this case the total SCF energy and the number
+through keyword <tt class="docutils literal"><span class="pre">tabulate</span></tt>, in this case the total SCF energy and the number
 of atoms in each reagent.</p>
 <div class="highlight-python"><pre>==&gt; Scf Total Energy &lt;==
 
