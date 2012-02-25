@@ -676,7 +676,7 @@ def database(name, db_name, **kwargs):
     :type mode: string
     :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
 
-        Indicates whether the calculation required to complete the
+        Indicates whether the calculations required to complete the
         database are to be run in one file (``'continuous'``) or are to be
         farmed out in an embarrassingly parallel fashion
         (``'sow'``/``'reap'``).  For the latter, run an initial job with
@@ -687,13 +687,13 @@ def database(name, db_name, **kwargs):
 
         Indicates whether counterpoise correction is employed in computing
         interaction energies. Use this option and NOT the :py:func:`wrappers.cp`
-        wrapper for BSSE correction in the ``database()``.  Option
+        function for BSSE correction in database().  Option
         valid only for databases consisting of bimolecular complexes.
 
     :type rlxd: bool
     :param rlxd: ``'on'`` || |dl| ``'off'`` |dr|
 
-        Indicates whether correction for the deformation energy is
+        Indicates whether correction for deformation energy is
         employed in computing interaction energies.  Option valid only for
         databases consisting of bimolecular complexes with non-frozen
         monomers, e.g., HBC6.
@@ -701,10 +701,10 @@ def database(name, db_name, **kwargs):
     :type symm: bool
     :param symm: |dl| ``'on'`` |dr| || ``'off'``
 
-        Indicates whether the native symmetry of the database molecules is
+        Indicates whether the native symmetry of the database reagents is
         employed (``'on'``) or whether it is forced to :math:`C_1` symmetry
         (``'off'``). Some computational methods (e.g., SAPT) require no
-        symmetry, and this will be set by the database() wrapper.
+        symmetry, and this will be set by database().
 
     :type zpe: bool
     :param zpe: ``'on'`` || |dl| ``'off'`` |dr|
@@ -1376,7 +1376,7 @@ db = database
 
 def complete_basis_set(name, **kwargs):
     """Function to define a multistage energy method from combinations of
-    basis set extrapolations and delta corrections, and condenses the
+    basis set extrapolations and delta corrections and condense the
     components into a minimum number of calculations.
 
     :aliases: cbs()

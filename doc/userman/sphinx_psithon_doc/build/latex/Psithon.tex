@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 24, 2012}
+\date{February 25, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -116,13 +116,14 @@
 
 
 
-To allow arbitrarily complex computations to be performed, PSI4 was built
+To allow arbitrarily complex computations to be performed, PSI4 is built
 upon the Python interpreter, with modifications termed Psithon. Chapter 3
-of the User's Manual described the non-standard Python associated with
-molecule, basis, and option specification. This documentation addresses
-the Python side- what functions allow the proper, compiled code to be run,
-what functions post-process and interact with that output, and how the
-ordinary (or ambitious) user can extent PSI4's functionality.
+of the User's Manual describes the non-standard Python associated with
+clean molecule, basis, and option specification in the PSI4 input file.
+This documentation addresses the pure Python side- what functions allow
+the efficient compiled code to be run, what functions post-process and
+interact with that output, and how the ordinary (or ambitious) user can
+extent PSI4's functionality.
 
 \begin{notice}{warning}{Warning:}
 Python naming practices of file\_that\_includes\_function.function\_name()
@@ -593,7 +594,7 @@ the scf to converge in an explicit preceeding scf step.
 \chapter{Optimize}
 \label{index:optimize}
 \begin{notice}{note}{Note:}
-The derivative level type for \code{driver.optimize()} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
+The derivative level type for {\hyperref[index:driver.optimize]{\code{driver.optimize()}}} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
 functions can be specified by \code{energy}, \code{none}, or \code{0} for 0th derivative,
 \code{gradient}, \code{first}, or \code{1} for 1st derivative, and \code{hessian},
 \code{second}, or \code{2} for 2nd derivative.
@@ -1039,7 +1040,7 @@ keyword \code{db\_func} instead of \code{func}.
 \textbf{mode} (\emph{string}) -- 
 $\Rightarrow$ \code{'continuous'} $\Leftarrow$ \textbar{}\textbar{} \code{'sow'} \textbar{}\textbar{} \code{'reap'}
 
-Indicates whether the calculation required to complete the
+Indicates whether the calculations required to complete the
 database are to be run in one file (\code{'continuous'}) or are to be
 farmed out in an embarrassingly parallel fashion
 (\code{'sow'}/\code{'reap'}).  For the latter, run an initial job with
@@ -1052,7 +1053,7 @@ farmed out in an embarrassingly parallel fashion
 
 Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the {\hyperref[index:wrappers.cp]{\code{wrappers.cp()}}}
-wrapper for BSSE correction in the \code{database()}.  Option
+function for BSSE correction in database().  Option
 valid only for databases consisting of bimolecular complexes.
 
 
@@ -1060,7 +1061,7 @@ valid only for databases consisting of bimolecular complexes.
 \textbf{rlxd} (\emph{bool}) -- 
 \code{'on'} \textbar{}\textbar{} $\Rightarrow$ \code{'off'} $\Leftarrow$
 
-Indicates whether correction for the deformation energy is
+Indicates whether correction for deformation energy is
 employed in computing interaction energies.  Option valid only for
 databases consisting of bimolecular complexes with non-frozen
 monomers, e.g., HBC6.
@@ -1070,10 +1071,10 @@ monomers, e.g., HBC6.
 \textbf{symm} (\emph{bool}) -- 
 $\Rightarrow$ \code{'on'} $\Leftarrow$ \textbar{}\textbar{} \code{'off'}
 
-Indicates whether the native symmetry of the database molecules is
+Indicates whether the native symmetry of the database reagents is
 employed (\code{'on'}) or whether it is forced to $C_1$ symmetry
 (\code{'off'}). Some computational methods (e.g., SAPT) require no
-symmetry, and this will be set by the database() wrapper.
+symmetry, and this will be set by database().
 
 
 \item {} 
@@ -1199,7 +1200,7 @@ energies stored in the database. One of these, the mean absolute deviation, is
 returned by the wrapper as an ordinary Python variable. (For databases
 without a stored reference energy, e.g., BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
-through :param tabulate:, in this case the total SCF energy and the number
+through keyword \code{tabulate}, in this case the total SCF energy and the number
 of atoms in each reagent.
 
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1250,7 +1251,7 @@ Mean Absolute Dev                         0.0201
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.complete_basis_set}\pysiglinewithargsret{\code{wrappers.}\bfcode{complete\_basis\_set}}{\emph{name}\optional{, \emph{scf\_basis}, \emph{scf\_scheme}, \emph{corl\_wfn}, \emph{corl\_basis}, \emph{corl\_scheme}, \emph{delta\_wfn}, \emph{delta\_wfn\_lesser}, \emph{delta\_basis}, \emph{delta\_scheme}, \emph{delta2\_wfn}, \emph{delta2\_wfn\_lesser}, \emph{delta2\_basis}, \emph{delta2\_scheme}}}{}
 Function to define a multistage energy method from combinations of
-basis set extrapolations and delta corrections, and condenses the
+basis set extrapolations and delta corrections and condense the
 components into a minimum number of calculations.
 \begin{quote}\begin{description}
 \item[{Aliases }] \leavevmode
@@ -1528,7 +1529,7 @@ energy calculations which will be performed. The output snippet below is
 from the example job {[}2{]} above. It shows first each model chemistry needed
 to compute the aggregate model chemistry requested through cbs(). Then,
 since, for example, an \code{energy('ccsd(t)')} yields CCSD(T), CCSD, MP2,
-and SCF energy values, the wrapper condenses this task into the second
+and SCF energy values, the wrapper condenses this task list into the second
 list of minimum number of calculations which will actually be run.
 
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1867,7 +1868,96 @@ All routes. Necessarily, copy your new database into \code{\$PSIDATADIR/database
 
 \chapter{Function Intercalls}
 \label{index:function-intercalls}
-table; handling func; no sow/reap
+For many of the PSI4 Python functions described above, it makes scientific sense that they could be called in combination. For instance, one could optimize all the reagents in a database or compute a counterpoise-corrected interaction energy with an extrapolated method. The table below outlines permitted intercalls between functions, showing that db(opt(cbs(energy()))) is allowed, while db(cp(energy())) is not. This table is not yet validated for calls with cp().
+\begin{quote}
+
+\begin{tabulary}{\linewidth}{|L|L|L|L|L|L|}
+\hline
+\textbf{
+Caller
+} &  \multicolumn{5}{l|}{\textbf{
+Callee
+}}\\\hline
+\textbf{} & \textbf{
+cp
+} & \textbf{
+db
+} & \textbf{
+opt
+} & \textbf{
+cbs
+} & \textbf{
+energy
+}\\\hline
+
+cp
+ &  & 
+---
+ & 
+Y
+ & 
+Y
+ & 
+Y
+\\\hline
+
+db
+ & 
+---
+ &  & 
+Y
+ & 
+Y
+ & 
+Y
+\\\hline
+
+opt
+ & 
+---
+ & 
+---
+ &  & 
+Y
+ & 
+Y
+\\\hline
+
+cbs
+ & 
+---
+ & 
+---
+ & 
+---
+ &  & 
+Y
+\\\hline
+
+energy
+ & 
+---
+ & 
+---
+ & 
+---
+ & 
+---
+ & \\\hline
+\end{tabulary}
+
+\end{quote}
+\begin{itemize}
+\item {} 
+The command db(opt(cbs(energy()))) is actually expressed as \code{db(..., db\_func=opt, opt\_func=cbs)}. The perhaps expected final argument of \code{cbs\_func=energy} is not necessary since energy() is always the function called by default. Also, the outermost internal function call (\code{db\_func} above can be called as just \code{func}. Several examples of intercalls between Python functions can be found in sample input \emph{pywrap\_all}.
+
+\item {} 
+All keyword arguments are passed along to each function traversed in the Python driver, so there should be no concern for separating them, grouping them, or designating them for a particular function when undertaking a nested calculation. Where the same keyword is used by multiple functions, prefixes are added, e.g., \textbf{db\_mode} and \textbf{opt\_mode}.
+
+\item {} 
+Function intercalls should not be used in sow/reap mode.
+
+\end{itemize}
 
 
 \chapter{Embarrassing Parallelism}
@@ -2642,7 +2732,7 @@ Does not work with array-type options.
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`61838'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`63993'}}{}
 Function to return the full path and filename for psi file
 \emph{fileno} (e.g., psi.32) in current namespace \emph{pidspace}.
 
@@ -3007,7 +3097,7 @@ Used by {\hyperref[index:util.compare_values]{\code{util.compare\_values()}}} fa
 \section{wrappers}
 \label{index:wrappers}\label{index:module-wrappers}\index{wrappers (module)}
 Module with functions that call the four main {\hyperref[index:module-driver]{\code{driver}}}
-functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, \code{driver.optimize},
+functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, {\hyperref[index:driver.optimize]{\code{driver.optimize}}},
 {\hyperref[index:driver.response]{\code{driver.response}}}, and {\hyperref[index:driver.frequency]{\code{driver.frequency}}}.
 \index{call\_function\_in\_1st\_argument() (in module wrappers)}
 

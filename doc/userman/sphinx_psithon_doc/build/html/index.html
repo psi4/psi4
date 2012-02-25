@@ -63,13 +63,14 @@
 <img alt="PSI4 Project Logo" src="_images/PSI4_3.png" style="width: 100%;" />
 <div class="section" id="general">
 <h1>General<a class="headerlink" href="#general" title="Permalink to this headline">¶</a></h1>
-<p>To allow arbitrarily complex computations to be performed, PSI4 was built
+<p>To allow arbitrarily complex computations to be performed, PSI4 is built
 upon the Python interpreter, with modifications termed Psithon. Chapter 3
-of the User&#8217;s Manual described the non-standard Python associated with
-molecule, basis, and option specification. This documentation addresses
-the Python side- what functions allow the proper, compiled code to be run,
-what functions post-process and interact with that output, and how the
-ordinary (or ambitious) user can extent PSI4&#8217;s functionality.</p>
+of the User&#8217;s Manual describes the non-standard Python associated with
+clean molecule, basis, and option specification in the PSI4 input file.
+This documentation addresses the pure Python side- what functions allow
+the efficient compiled code to be run, what functions post-process and
+interact with that output, and how the ordinary (or ambitious) user can
+extent PSI4&#8217;s functionality.</p>
 <div class="admonition warning">
 <p class="first admonition-title">Warning</p>
 <p class="last">Python naming practices of file_that_includes_function.function_name()
@@ -405,7 +406,7 @@ the scf to converge in an explicit preceeding scf step.</p>
 <h1>Optimize<a class="headerlink" href="#optimize" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The derivative level type for <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
+<p class="last">The derivative level type for <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
 functions can be specified by <tt class="docutils literal"><span class="pre">energy</span></tt>, <tt class="docutils literal"><span class="pre">none</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for 0th derivative,
 <tt class="docutils literal"><span class="pre">gradient</span></tt>, <tt class="docutils literal"><span class="pre">first</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt> for 1st derivative, and <tt class="docutils literal"><span class="pre">hessian</span></tt>,
 <tt class="docutils literal"><span class="pre">second</span></tt>, or <tt class="docutils literal"><span class="pre">2</span></tt> for 2nd derivative.</p>
@@ -781,7 +782,7 @@ of python functions is intended (see <a class="reference internal" href="#functi
 keyword <tt class="docutils literal"><span class="pre">db_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
 </li>
 <li><strong>mode</strong> (<em>string</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
-<p>Indicates whether the calculation required to complete the
+<p>Indicates whether the calculations required to complete the
 database are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
 farmed out in an embarrassingly parallel fashion
 (<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
@@ -790,20 +791,20 @@ farmed out in an embarrassingly parallel fashion
 <li><strong>cp</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
 <p>Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the <a class="reference internal" href="#wrappers.cp" title="wrappers.cp"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.cp()</span></tt></a>
-wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt>.  Option
+function for BSSE correction in database().  Option
 valid only for databases consisting of bimolecular complexes.</p>
 </li>
 <li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
-<p>Indicates whether correction for the deformation energy is
+<p>Indicates whether correction for deformation energy is
 employed in computing interaction energies.  Option valid only for
 databases consisting of bimolecular complexes with non-frozen
 monomers, e.g., HBC6.</p>
 </li>
 <li><strong>symm</strong> (<em>bool</em>) &#8211; <p><img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'on'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/> || <tt class="docutils literal"><span class="pre">'off'</span></tt></p>
-<p>Indicates whether the native symmetry of the database molecules is
+<p>Indicates whether the native symmetry of the database reagents is
 employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or whether it is forced to <img class="math" src="_images/math/70b97eb4ad6e4e7a5a97e2547d9ed6e965960d0c.png" alt="C_1"/> symmetry
 (<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
-symmetry, and this will be set by the database() wrapper.</p>
+symmetry, and this will be set by database().</p>
 </li>
 <li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <img class="math" src="_images/math/843622567e12d686e4e2f94ddfcb444e8ecde0d2.png" alt="\Rightarrow"/> <tt class="docutils literal"><span class="pre">'off'</span></tt> <img class="math" src="_images/math/d773375e7bd7f973b121cd9403ad90d3806d6996.png" alt="\Leftarrow"/></p>
 <p>Indicates whether zero-point-energy corrections are appended to
@@ -901,7 +902,7 @@ energies stored in the database. One of these, the mean absolute deviation, is
 returned by the wrapper as an ordinary Python variable. (For databases
 without a stored reference energy, e.g., BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
-through :param tabulate:, in this case the total SCF energy and the number
+through keyword <tt class="docutils literal"><span class="pre">tabulate</span></tt>, in this case the total SCF energy and the number
 of atoms in each reagent.</p>
 <div class="highlight-python"><pre>==&gt; Scf Total Energy &lt;==
 
@@ -950,7 +951,7 @@ Mean Absolute Dev                         0.0201
 <dt id="wrappers.complete_basis_set">
 <tt class="descclassname">wrappers.</tt><tt class="descname">complete_basis_set</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>scf_basis</em>, <em>scf_scheme</em>, <em>corl_wfn</em>, <em>corl_basis</em>, <em>corl_scheme</em>, <em>delta_wfn</em>, <em>delta_wfn_lesser</em>, <em>delta_basis</em>, <em>delta_scheme</em>, <em>delta2_wfn</em>, <em>delta2_wfn_lesser</em>, <em>delta2_basis</em>, <em>delta2_scheme</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/wrappers.html#complete_basis_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.complete_basis_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to define a multistage energy method from combinations of
-basis set extrapolations and delta corrections, and condenses the
+basis set extrapolations and delta corrections and condense the
 components into a minimum number of calculations.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -1173,7 +1174,7 @@ energy calculations which will be performed. The output snippet below is
 from the example job [2] above. It shows first each model chemistry needed
 to compute the aggregate model chemistry requested through cbs(). Then,
 since, for example, an <tt class="docutils literal"><span class="pre">energy('ccsd(t)')</span></tt> yields CCSD(T), CCSD, MP2,
-and SCF energy values, the wrapper condenses this task into the second
+and SCF energy values, the wrapper condenses this task list into the second
 list of minimum number of calculations which will actually be run.</p>
 <div class="highlight-python"><pre>Naive listing of computations required.
         scf / aug-cc-pvqz              for  SCF TOTAL ENERGY
@@ -1455,7 +1456,73 @@ variable for the next step.</p>
 </div>
 <div class="section" id="function-intercalls">
 <h1>Function Intercalls<a class="headerlink" href="#function-intercalls" title="Permalink to this headline">¶</a></h1>
-<p>table; handling func; no sow/reap</p>
+<p>For many of the PSI4 Python functions described above, it makes scientific sense that they could be called in combination. For instance, one could optimize all the reagents in a database or compute a counterpoise-corrected interaction energy with an extrapolated method. The table below outlines permitted intercalls between functions, showing that db(opt(cbs(energy()))) is allowed, while db(cp(energy())) is not. This table is not yet validated for calls with cp().</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="13%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Caller</th>
+<th class="head" colspan="5">Callee</th>
+</tr>
+<tr class="row-even"><th class="head">&nbsp;</th>
+<th class="head">cp</th>
+<th class="head">db</th>
+<th class="head">opt</th>
+<th class="head">cbs</th>
+<th class="head">energy</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-odd"><td>cp</td>
+<td>&nbsp;</td>
+<td>&#8212;</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr class="row-even"><td>db</td>
+<td>&#8212;</td>
+<td>&nbsp;</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr class="row-odd"><td>opt</td>
+<td>&#8212;</td>
+<td>&#8212;</td>
+<td>&nbsp;</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr class="row-even"><td>cbs</td>
+<td>&#8212;</td>
+<td>&#8212;</td>
+<td>&#8212;</td>
+<td>&nbsp;</td>
+<td>Y</td>
+</tr>
+<tr class="row-odd"><td>energy</td>
+<td>&#8212;</td>
+<td>&#8212;</td>
+<td>&#8212;</td>
+<td>&#8212;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<ul class="simple">
+<li>The command db(opt(cbs(energy()))) is actually expressed as <tt class="docutils literal"><span class="pre">db(...,</span> <span class="pre">db_func=opt,</span> <span class="pre">opt_func=cbs)</span></tt>. The perhaps expected final argument of <tt class="docutils literal"><span class="pre">cbs_func=energy</span></tt> is not necessary since energy() is always the function called by default. Also, the outermost internal function call (<tt class="docutils literal"><span class="pre">db_func</span></tt> above can be called as just <tt class="docutils literal"><span class="pre">func</span></tt>. Several examples of intercalls between Python functions can be found in sample input <em>pywrap_all</em>.</li>
+<li>All keyword arguments are passed along to each function traversed in the Python driver, so there should be no concern for separating them, grouping them, or designating them for a particular function when undertaking a nested calculation. Where the same keyword is used by multiple functions, prefixes are added, e.g., <strong>db_mode</strong> and <strong>opt_mode</strong>.</li>
+<li>Function intercalls should not be used in sow/reap mode.</li>
+</ul>
 </div>
 <div class="section" id="embarrassing-parallelism">
 <h1>Embarrassing Parallelism<a class="headerlink" href="#embarrassing-parallelism" title="Permalink to this headline">¶</a></h1>
@@ -2063,7 +2130,7 @@ options information for distributed (sow/reap) input files.</p>
 
 <dl class="function">
 <dt id="procutil.get_psifile">
-<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='61838'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='63993'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to return the full path and filename for psi file
 <em>fileno</em> (e.g., psi.32) in current namespace <em>pidspace</em>.</p>
 </dd></dl>
@@ -2352,7 +2419,7 @@ Used by <a class="reference internal" href="#util.compare_values" title="util.co
 <div class="section" id="module-wrappers">
 <span id="wrappers"></span><h2>wrappers<a class="headerlink" href="#module-wrappers" title="Permalink to this headline">¶</a></h2>
 <p>Module with functions that call the four main <a class="reference internal" href="#module-driver" title="driver"><tt class="xref py py-mod docutils literal"><span class="pre">driver</span></tt></a>
-functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>,
+functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>,
 <a class="reference internal" href="#driver.response" title="driver.response"><tt class="xref py py-mod docutils literal"><span class="pre">driver.response</span></tt></a>, and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-mod docutils literal"><span class="pre">driver.frequency</span></tt></a>.</p>
 <dl class="function">
 <dt id="wrappers.call_function_in_1st_argument">
@@ -2526,7 +2593,7 @@ the scheme function can focus on defining the extrapolation.</p>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 24, 2012.
+      Last updated on Feb 25, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

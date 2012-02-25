@@ -60,7 +60,7 @@
 <dt id="wrappers.complete_basis_set">
 <tt class="descclassname">wrappers.</tt><tt class="descname">complete_basis_set</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>scf_basis</em>, <em>scf_scheme</em>, <em>corl_wfn</em>, <em>corl_basis</em>, <em>corl_scheme</em>, <em>delta_wfn</em>, <em>delta_wfn_lesser</em>, <em>delta_basis</em>, <em>delta_scheme</em>, <em>delta2_wfn</em>, <em>delta2_wfn_lesser</em>, <em>delta2_basis</em>, <em>delta2_scheme</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/wrappers.html#complete_basis_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.complete_basis_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to define a multistage energy method from combinations of
-basis set extrapolations and delta corrections, and condenses the
+basis set extrapolations and delta corrections and condense the
 components into a minimum number of calculations.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -283,7 +283,7 @@ energy calculations which will be performed. The output snippet below is
 from the example job [2] above. It shows first each model chemistry needed
 to compute the aggregate model chemistry requested through cbs(). Then,
 since, for example, an <tt class="docutils literal"><span class="pre">energy('ccsd(t)')</span></tt> yields CCSD(T), CCSD, MP2,
-and SCF energy values, the wrapper condenses this task into the second
+and SCF energy values, the wrapper condenses this task list into the second
 list of minimum number of calculations which will actually be run.</p>
 <div class="highlight-python"><pre>Naive listing of computations required.
         scf / aug-cc-pvqz              for  SCF TOTAL ENERGY
