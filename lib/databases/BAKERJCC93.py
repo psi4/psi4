@@ -1,10 +1,28 @@
+"""
+**BAKERJCC93**
+
+| Database of molecules that are challenging to optimize.
+| Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
+  in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
+  further corrections.
+| No reference energies defined.
+
+- **cp**  ``'off'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+
+----
+
+"""
 import re
 import input
 
 # <<< BAKERJCC93 Database Module >>>
-# Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
-# in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
-# further corrections.
 dbse = 'BAKERJCC93'
 isOS = 'true'
 

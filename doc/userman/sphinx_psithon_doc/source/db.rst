@@ -68,3 +68,51 @@ of atoms in each reagent. ::
     -----------------------------------------------------------------------------------
 
 
+Available Databases
+===================
+
+Below are documented for particular databases the availibility of the generic
+database function options **cp**, **rlxd**, **benchmark**, and the string
+options for **subset**. The full reagent member list, which can also be used
+in conjunction with **subset**, is not included here for consideration of space
+and may be found in the database file. The database Python files are very
+readable and should be consulted for more particular questions.
+
+----
+
+.. automodule:: ACENES
+
+.. automodule:: BAKERJCC93
+
+.. automodule:: BASIC
+
+.. automodule:: BBI
+
+.. automodule:: CFLOW
+
+.. automodule:: CORE
+
+.. automodule:: G2
+
+.. automodule:: HBC6
+
+.. automodule:: HSG
+
+.. automodule:: HTBH
+
+.. automodule:: JSCH
+
+.. automodule:: NBC10
+
+.. automodule:: NHTBH
+
+.. automodule:: RGC10
+
+.. automodule:: S22
+
+.. automodule:: S22by5
+
+.. automodule:: S66
+
+.. automodule:: SSI
+

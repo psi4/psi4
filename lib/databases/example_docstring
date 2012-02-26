@@ -1,0 +1,26 @@
+"""
+**<DATABASE_NAME>**
+
+| Database of <description of members and reference energy type>.
+| Geometries from <Reference>.
+| Reference interaction energies from <Reference>.
+
+- **cp**  ``'off'`` <erase this comment and after unless on is a valid option> || ``'on'``
+
+- **rlxd** ``'off'`` <erase this comment and after unless on is valid option> || ``'on'``
+
+- **benchmark**
+
+  - ``'<benchmark_name>'`` <Reference>.
+  - |dl| ``'<default_benchmark_name>'`` |dr| <Reference>.
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'<subset>'`` <members_description>
+
+----
+
+"""
+

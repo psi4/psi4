@@ -1,10 +1,30 @@
+"""
+**HSG**
+
+| Database (Merz) of interaction energies for bimolecular complexes from protein-indinavir reaction site.
+| Geometries from Faver et al. JCTC 7 790 (2011).
+| Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **benchmark**
+
+  - ``'HSG0'`` Faver et al. JCTC 7 790 (2011).
+  - |dl| ``'HSGA'`` |dr| Marshall et al. JCP 135 194102 (2011).
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+
+----
+
+"""
 import input
 
 # <<< HSG Database Module >>>
-# Geometries from Faver et al. JCTC 7 790 (2011).
-# Reference interaction energies from from the following articles:
-#   HSG0: Faver et al. JCTC 7 790 (2011).
-#   HSGA: Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
 dbse = 'HSG'
 
 # <<< Database Memobers >>>
@@ -934,8 +954,8 @@ GEOS = {}
 for rxn in HRXN:
 
    GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
-   GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_CP
-   GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_CP
-   GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_unCP
-   GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_unCP
+   GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
+   GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
+   GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
+   GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP
 

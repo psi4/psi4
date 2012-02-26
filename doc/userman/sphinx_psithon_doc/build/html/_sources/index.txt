@@ -4,7 +4,7 @@
    contain the root `toctree` directive.
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
 
 .. image:: PSI4_3.png
    :width: 100 %

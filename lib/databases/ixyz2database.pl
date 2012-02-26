@@ -425,11 +425,26 @@ print GPL_OUT "}\n\nreturn 1;\n";
 
 
 # python database file
+print SPY_OUT "\"\"\"\n";
+print SPY_OUT "**<DATABASE_NAME>**\n\n";
+print SPY_OUT "| Database of <description of members and reference energy type>.\n";
+print SPY_OUT "| Geometries from <Reference>.\n";
+print SPY_OUT "| Reference interaction energies from <Reference>.\n\n";
+print SPY_OUT "- **cp**  ``'off'`` <erase this comment and after unless on is a valid option> || ``'on'``\n\n";
+print SPY_OUT "- **rlxd** ``'off'`` <erase this comment and after unless on is valid option> || ``'on'``\n\n";
+print SPY_OUT "- **benchmark**\n\n";
+print SPY_OUT "  - ``'<benchmark_name>'`` <Reference>.\n";
+print SPY_OUT "  - |dl| ``'<default_benchmark_name>'`` |dr| <Reference>.\n\n";
+print SPY_OUT "- **subset**\n\n";
+print SPY_OUT "  - ``'small'``\n";
+print SPY_OUT "  - ``'large'``\n";
+print SPY_OUT "  - ``'<subset>'`` <members_description>\n\n";
+print SPY_OUT "----\n\n";
+print SPY_OUT "\"\"\"\n";
 print SPY_OUT "import re\n";
 print SPY_OUT "import input\n";
 
 print SPY_OUT "\n# <<< $set Database Module >>>\n";
-print SPY_OUT "# Geometries and Reference energies from.\n";
 print SPY_OUT "dbse = '$set'\n";
 if ($isOS eq "true") { print SPY_OUT "isOS = '$isOS'\n"; }
 
@@ -528,10 +543,10 @@ if ( ($route == 1) || ($route == 2) ) {
 elsif ($route == 3) {
 
    print GPY_OUT "\n    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP\n";
 }
 
 
