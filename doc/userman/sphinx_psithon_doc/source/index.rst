@@ -37,6 +37,7 @@
       meaning (e.g., \t for tab, \b for bell, \n for newline) must be
       escaped (e.g., \\text or \\beta).
 
+.. These are abbreviations for arrows indicating default values
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
 
