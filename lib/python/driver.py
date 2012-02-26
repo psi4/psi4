@@ -246,8 +246,6 @@ def energy(name, **kwargs):
     | mrccsdtqph-3            |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
@@ -261,7 +259,8 @@ def energy(name, **kwargs):
         the scf step is skipped. Suitable when special steps are taken to get
         the scf to converge in an explicit preceeding scf step.
 
-    **Examples**
+    Examples
+    ========
 
     >>> # [1] Coupled-cluster singles and doubles calculation with psi code
     >>> energy('ccsd')
@@ -616,8 +615,6 @@ def optimize(name, **kwargs):
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
@@ -649,7 +646,7 @@ def optimize(name, **kwargs):
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
 
-    **Examples**
+    :Examples:
 
     >>> # [1] Analytic scf optimization
     >>> optimize('scf')

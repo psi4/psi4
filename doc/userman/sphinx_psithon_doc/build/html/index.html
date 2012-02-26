@@ -366,7 +366,6 @@ all insensitive to case.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Keywords</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -386,7 +385,6 @@ the scf to converge in an explicit preceeding scf step.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Examples</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Coupled-cluster singles and doubles calculation with psi code</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">energy</span><span class="p">(</span><span class="s">&#39;ccsd&#39;</span><span class="p">)</span>
 </pre></div>
@@ -406,7 +404,7 @@ the scf to converge in an explicit preceeding scf step.</p>
 <h1>Optimize<a class="headerlink" href="#optimize" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The derivative level type for <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
+<p class="last">The derivative level type for <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
 functions can be specified by <tt class="docutils literal"><span class="pre">energy</span></tt>, <tt class="docutils literal"><span class="pre">none</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for 0th derivative,
 <tt class="docutils literal"><span class="pre">gradient</span></tt>, <tt class="docutils literal"><span class="pre">first</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt> for 1st derivative, and <tt class="docutils literal"><span class="pre">hessian</span></tt>,
 <tt class="docutils literal"><span class="pre">second</span></tt>, or <tt class="docutils literal"><span class="pre">2</span></tt> for 2nd derivative.</p>
@@ -473,12 +471,11 @@ by finite differences.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Keywords</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'df-mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ci5'</span></tt> || etc.</p>
 <p>First argument, usually unlabeled. Indicates the computational method
 to be applied to the database. May be any valid argument to
@@ -505,9 +502,10 @@ optimization is to be performed.</p>
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Examples :</th><td class="field-body"></td>
+</tr>
 </tbody>
 </table>
-<p><strong>Examples</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Analytic scf optimization</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">optimize</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
 </pre></div>
@@ -2041,14 +2039,14 @@ for a calculation calling Kallay&#8217;s MRCC code.</p>
 
 <dl class="function">
 <dt id="proc.run_psimrcc">
-<tt class="descclassname">proc.</tt><tt class="descname">run_psimrcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#proc.run_psimrcc" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">proc.</tt><tt class="descname">run_psimrcc</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_psimrcc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_psimrcc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function encoding sequence of PSI module calls for a PSIMRCC computation
 using a reference from the MCSCF module</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="proc.run_psimrcc_scf">
-<tt class="descclassname">proc.</tt><tt class="descname">run_psimrcc_scf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#proc.run_psimrcc_scf" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">proc.</tt><tt class="descname">run_psimrcc_scf</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/proc.html#run_psimrcc_scf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#proc.run_psimrcc_scf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function encoding sequence of PSI module calls for a PSIMRCC computation
 using a reference from the SCF module</p>
 </dd></dl>
@@ -2130,7 +2128,7 @@ options information for distributed (sow/reap) input files.</p>
 
 <dl class="function">
 <dt id="procutil.get_psifile">
-<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='63993'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='72672'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to return the full path and filename for psi file
 <em>fileno</em> (e.g., psi.32) in current namespace <em>pidspace</em>.</p>
 </dd></dl>
@@ -2419,7 +2417,7 @@ Used by <a class="reference internal" href="#util.compare_values" title="util.co
 <div class="section" id="module-wrappers">
 <span id="wrappers"></span><h2>wrappers<a class="headerlink" href="#module-wrappers" title="Permalink to this headline">¶</a></h2>
 <p>Module with functions that call the four main <a class="reference internal" href="#module-driver" title="driver"><tt class="xref py py-mod docutils literal"><span class="pre">driver</span></tt></a>
-functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>,
+functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>,
 <a class="reference internal" href="#driver.response" title="driver.response"><tt class="xref py py-mod docutils literal"><span class="pre">driver.response</span></tt></a>, and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-mod docutils literal"><span class="pre">driver.frequency</span></tt></a>.</p>
 <dl class="function">
 <dt id="wrappers.call_function_in_1st_argument">

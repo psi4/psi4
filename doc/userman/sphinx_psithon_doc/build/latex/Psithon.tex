@@ -545,8 +545,6 @@ mrccsdtqph-3
  & \\\hline
 \end{longtable}
 
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -570,8 +568,6 @@ the scf to converge in an explicit preceeding scf step.
 
 \end{description}\end{quote}
 
-\textbf{Examples}
-
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] Coupled-cluster singles and doubles calculation with psi code}
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{energy}\PYG{p}{(}\PYG{l+s}{'}\PYG{l+s}{ccsd}\PYG{l+s}{'}\PYG{p}{)}
@@ -594,7 +590,7 @@ the scf to converge in an explicit preceeding scf step.
 \chapter{Optimize}
 \label{index:optimize}
 \begin{notice}{note}{Note:}
-The derivative level type for {\hyperref[index:driver.optimize]{\code{driver.optimize()}}} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
+The derivative level type for \code{driver.optimize()} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
 functions can be specified by \code{energy}, \code{none}, or \code{0} for 0th derivative,
 \code{gradient}, \code{first}, or \code{1} for 1st derivative, and \code{hessian},
 \code{second}, or \code{2} for 2nd derivative.
@@ -669,8 +665,6 @@ equation of motion (EOM) CCSD
 \\\hline
 \end{tabulary}
 
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -714,9 +708,8 @@ optimization is to be performed.
 
 \end{itemize}
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] Analytic scf optimization}
@@ -2732,7 +2725,7 @@ Does not work with array-type options.
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`63993'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`72672'}}{}
 Function to return the full path and filename for psi file
 \emph{fileno} (e.g., psi.32) in current namespace \emph{pidspace}.
 
@@ -3097,7 +3090,7 @@ Used by {\hyperref[index:util.compare_values]{\code{util.compare\_values()}}} fa
 \section{wrappers}
 \label{index:wrappers}\label{index:module-wrappers}\index{wrappers (module)}
 Module with functions that call the four main {\hyperref[index:module-driver]{\code{driver}}}
-functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, {\hyperref[index:driver.optimize]{\code{driver.optimize}}},
+functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, \code{driver.optimize},
 {\hyperref[index:driver.response]{\code{driver.response}}}, and {\hyperref[index:driver.frequency]{\code{driver.frequency}}}.
 \index{call\_function\_in\_1st\_argument() (in module wrappers)}
 

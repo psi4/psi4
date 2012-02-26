@@ -118,7 +118,9 @@
             <span class="s">&#39;tdhf&#39;</span>          <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
             <span class="s">&#39;cpks&#39;</span>          <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
             <span class="s">&#39;tda&#39;</span>           <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
-            <span class="s">&#39;tddft&#39;</span>         <span class="p">:</span> <span class="n">run_libfock</span>
+            <span class="s">&#39;tddft&#39;</span>         <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
+            <span class="s">&#39;psimrcc&#39;</span>       <span class="p">:</span> <span class="n">run_psimrcc</span><span class="p">,</span>
+            <span class="s">&#39;psimrcc_scf&#39;</span>  <span class="p">:</span> <span class="n">run_psimrcc_scf</span>
             <span class="c"># Upon adding a method to this list, add it to the docstring in energy() below</span>
         <span class="p">},</span>
         <span class="s">&#39;gradient&#39;</span> <span class="p">:</span> <span class="p">{</span>
@@ -305,8 +307,6 @@
 <span class="sd">    | mrccsdtqph-3            |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 
-<span class="sd">    **Keywords**</span>
-
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
 
@@ -320,7 +320,8 @@
 <span class="sd">        the scf step is skipped. Suitable when special steps are taken to get</span>
 <span class="sd">        the scf to converge in an explicit preceeding scf step.</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    Examples</span>
+<span class="sd">    ========</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] Coupled-cluster singles and doubles calculation with psi code</span>
 <span class="sd">    &gt;&gt;&gt; energy(&#39;ccsd&#39;)</span>
@@ -643,7 +644,7 @@
         <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Response method </span><span class="si">%s</span><span class="s"> not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lowername</span><span class="p">))</span>
 
 </div>
-<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../index.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../opt.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to perform a geometry optimization.</span>
 
 <span class="sd">    :aliases: opt()</span>
@@ -674,8 +675,6 @@
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-
-<span class="sd">    **Keywords**</span>
 
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
@@ -708,7 +707,7 @@
 <span class="sd">        Indicates whether analytic (if available) or finite difference</span>
 <span class="sd">        optimization is to be performed.</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :Examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] Analytic scf optimization</span>
 <span class="sd">    &gt;&gt;&gt; optimize(&#39;scf&#39;)</span>

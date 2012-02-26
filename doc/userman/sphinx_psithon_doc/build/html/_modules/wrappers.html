@@ -737,7 +737,7 @@
 <span class="sd">    :type mode: string</span>
 <span class="sd">    :param mode: |dl| ``&#39;continuous&#39;`` |dr| || ``&#39;sow&#39;`` || ``&#39;reap&#39;``</span>
 
-<span class="sd">        Indicates whether the calculation required to complete the</span>
+<span class="sd">        Indicates whether the calculations required to complete the</span>
 <span class="sd">        database are to be run in one file (``&#39;continuous&#39;``) or are to be</span>
 <span class="sd">        farmed out in an embarrassingly parallel fashion</span>
 <span class="sd">        (``&#39;sow&#39;``/``&#39;reap&#39;``).  For the latter, run an initial job with</span>
@@ -748,13 +748,13 @@
 
 <span class="sd">        Indicates whether counterpoise correction is employed in computing</span>
 <span class="sd">        interaction energies. Use this option and NOT the :py:func:`wrappers.cp`</span>
-<span class="sd">        wrapper for BSSE correction in the ``database()``.  Option</span>
+<span class="sd">        function for BSSE correction in database().  Option</span>
 <span class="sd">        valid only for databases consisting of bimolecular complexes.</span>
 
 <span class="sd">    :type rlxd: bool</span>
 <span class="sd">    :param rlxd: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
 
-<span class="sd">        Indicates whether correction for the deformation energy is</span>
+<span class="sd">        Indicates whether correction for deformation energy is</span>
 <span class="sd">        employed in computing interaction energies.  Option valid only for</span>
 <span class="sd">        databases consisting of bimolecular complexes with non-frozen</span>
 <span class="sd">        monomers, e.g., HBC6.</span>
@@ -762,10 +762,10 @@
 <span class="sd">    :type symm: bool</span>
 <span class="sd">    :param symm: |dl| ``&#39;on&#39;`` |dr| || ``&#39;off&#39;``</span>
 
-<span class="sd">        Indicates whether the native symmetry of the database molecules is</span>
+<span class="sd">        Indicates whether the native symmetry of the database reagents is</span>
 <span class="sd">        employed (``&#39;on&#39;``) or whether it is forced to :math:`C_1` symmetry</span>
 <span class="sd">        (``&#39;off&#39;``). Some computational methods (e.g., SAPT) require no</span>
-<span class="sd">        symmetry, and this will be set by the database() wrapper.</span>
+<span class="sd">        symmetry, and this will be set by database().</span>
 
 <span class="sd">    :type zpe: bool</span>
 <span class="sd">    :param zpe: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
@@ -1437,7 +1437,7 @@
 
 <div class="viewcode-block" id="complete_basis_set"><a class="viewcode-back" href="../index.html#wrappers.complete_basis_set">[docs]</a><span class="k">def</span> <span class="nf">complete_basis_set</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to define a multistage energy method from combinations of</span>
-<span class="sd">    basis set extrapolations and delta corrections, and condenses the</span>
+<span class="sd">    basis set extrapolations and delta corrections and condense the</span>
 <span class="sd">    components into a minimum number of calculations.</span>
 
 <span class="sd">    :aliases: cbs()</span>
