@@ -1,12 +1,30 @@
+"""
+**S22by5**
+
+| Database (Hobza) of interaction energies for dissociation curves of bimolecular complexes.
+| Geometries and reference interaction energies from Grafova et al. JCTC 6 2365 (2010).
+| Note that the S22by5-N-1.0 members are essentially the same geometries as S22-N (there's trivial round-off error) but the reference interaction energies for S22by5 are of lower quality than those of S22.
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'equilibrium'``
+  - ``'mol1'`` five-point (0.9, 1.0, 1.2, 1.5, 2.0) :math:`\\times R_{eq}` dissociation curve for molecule 1
+  - ...
+  - ``'mol22'`` five-point (0.9, 1.0, 1.2, 1.5, 2.0) :math:`\\times R_{eq}` dissociation curve for molecule 22
+
+----
+
+"""
 import re
 import input
 
 # <<< S22by5 Database Module >>>
-# Geometries and interaction energies from
-#   Grafova et al. JCTC 6 2365 (2010).
-# Note that the S22by5-N-1.0 members are essentially the same geometries as
-#   S22-N (there's trivial round-off error) but the reference interaction
-#   energies for S22by5 are of lower quality than those of S22
 dbse = 'S22by5'
 
 # <<< Database Members >>>
@@ -3475,8 +3493,8 @@ for rxn in HRXN:
    molname = rxnpattern.match(rxn)
 
    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_unCP
+   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_CP
+   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_CP
+   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_unCP
+   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_unCP
 

@@ -1,8 +1,28 @@
+"""
+**ACENES**
+
+| Database of Ed and Rob's favorite linear acene dimers.
+| Geometries from nowhere special, and reference energies undefined.
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'FIRST3'`` benzene, napthalene, and anthracene dimers
+  - ``'FIRST5'`` benzene - pentacene dimers
+  - ``'FIRST10'`` benzene - decacene dimers
+
+----
+
+"""
 import re
 import input
 
 # <<< ACENES Database Module >>>
-# Ed and Rob's favorite linear acene dimers
 dbse = 'ACENES'
 
 # <<< Database Members >>>
@@ -3134,8 +3154,8 @@ GEOS = {}
 for rxn in HRXN:
 
    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP
+   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
+   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
+   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
+   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP
 

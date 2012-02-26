@@ -2,109 +2,123 @@
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 
   \bigletter A
-  \item absolute\_to\_relative() (text.Table method), \hyperpage{49}
-  \item activate() (in module molutil), \hyperpage{45}
-  \item addChargeAngstrom() (qmmm.QMMM method), \hyperpage{49}
-  \item addChargeBohr() (qmmm.QMMM method), \hyperpage{49}
-  \item addDiffuse() (qmmm.QMMM method), \hyperpage{49}
-  \item aliases (module), \hyperpage{43}
+  \item absolute\_to\_relative() (text.Table method), \hyperpage{56}
+  \item ACENES (module), \hyperpage{18}
+  \item activate() (in module molutil), \hyperpage{52}
+  \item addChargeAngstrom() (qmmm.QMMM method), \hyperpage{56}
+  \item addChargeBohr() (qmmm.QMMM method), \hyperpage{56}
+  \item addDiffuse() (qmmm.QMMM method), \hyperpage{56}
+  \item aliases (module), \hyperpage{51}
 
   \indexspace
   \bigletter B
-  \item bad\_option\_syntax() (in module input), \hyperpage{44}
-  \item banner() (in module text), \hyperpage{49}
+  \item BAKERJCC93 (module), \hyperpage{18}
+  \item banner() (in module text), \hyperpage{56}
+  \item BASIC (module), \hyperpage{19}
+  \item BBI (module), \hyperpage{19}
 
   \indexspace
   \bigletter C
-  \item call\_function\_in\_1st\_argument() (in module wrappers), \hyperpage{50}
-  \item check\_parentheses\_and\_brackets() (in module input), \hyperpage{44}
-  \item compare\_integers() (in module util), \hyperpage{50}
-  \item compare\_matrices() (in module util), \hyperpage{50}
-  \item compare\_strings() (in module util), \hyperpage{50}
-  \item compare\_values() (in module util), \hyperpage{50}
-  \item compare\_vectors() (in module util), \hyperpage{50}
-  \item complete\_basis\_set() (in module wrappers), \hyperpage{19}
-  \item copy() (text.Table method), \hyperpage{49}
-  \item corl\_xtpl\_helgaker\_2() (in module wrappers), \hyperpage{23}
+  \item call\_function\_in\_1st\_argument() (in module wrappers), \hyperpage{57}
+  \item CFLOW (module), \hyperpage{19}
+  \item compare\_integers() (in module util), \hyperpage{57}
+  \item compare\_matrices() (in module util), \hyperpage{57}
+  \item compare\_strings() (in module util), \hyperpage{57}
+  \item compare\_values() (in module util), \hyperpage{57}
+  \item compare\_vectors() (in module util), \hyperpage{57}
+  \item complete\_basis\_set() (in module wrappers), \hyperpage{27}
+  \item copy() (text.Table method), \hyperpage{56}
+  \item CORE (module), \hyperpage{20}
+  \item corl\_xtpl\_helgaker\_2() (in module wrappers), \hyperpage{31}
   \item cp() (in module wrappers), \hyperpage{13}
 
   \indexspace
   \bigletter D
   \item database() (in module wrappers), \hyperpage{15}
-  \item Diffuse (class in qmmm), \hyperpage{49}
-  \item driver (module), \hyperpage{44}
-  \item drop\_duplicates() (in module wrappers), \hyperpage{50}
-  \item dynamic\_variable\_bind() (in module molutil), \hyperpage{45}
+  \item Diffuse (class in qmmm), \hyperpage{56}
+  \item driver (module), \hyperpage{52}
+  \item drop\_duplicates() (in module wrappers), \hyperpage{57}
+  \item dynamic\_variable\_bind() (in module molutil), \hyperpage{52}
 
   \indexspace
   \bigletter E
   \item energy() (in module driver), \hyperpage{3}
   \item environment variable
-    \subitem CBSCORRELATIONENERGY, \hyperpage{19}
-    \subitem CBSREFERENCEENERGY, \hyperpage{19}
-    \subitem CBSTOTALENERGY, \hyperpage{19}
+    \subitem CBSCORRELATIONENERGY, \hyperpage{27}
+    \subitem CBSREFERENCEENERGY, \hyperpage{27}
+    \subitem CBSTOTALENERGY, \hyperpage{27}
     \subitem CP-CORRECTED2-BODYINTERACTIONENERGY, \hyperpage{13}
-    \subitem CURRENTCORRELATIONENERGY, \hyperpage{3}, \hyperpage{19}
-    \subitem CURRENTENERGY, \hyperpage{3}, \hyperpage{7}, \hyperpage{19}
-    \subitem CURRENTREFERENCEENERGY, \hyperpage{3}, \hyperpage{19}
+    \subitem CURRENTCORRELATIONENERGY, \hyperpage{3}, \hyperpage{27}
+    \subitem CURRENTENERGY, \hyperpage{3}, \hyperpage{7}, \hyperpage{27}
+    \subitem CURRENTREFERENCEENERGY, \hyperpage{3}, \hyperpage{27}
     \subitem db\_nameDATABASEMEANABSOLUTEDEVIATION, \hyperpage{15}
     \subitem db\_nameDATABASEMEANSIGNEDDEVIATION, \hyperpage{15}
     \subitem db\_nameDATABASEROOT-MEAN-SQUAREDEVIATION, \hyperpage{15}
     \subitem UNCP-CORRECTED2-BODYINTERACTIONENERGY, \hyperpage{13}
-  \item extract\_cluster\_indexing() (in module molutil), \hyperpage{45}
-  \item extract\_clusters() (in module molutil), \hyperpage{45}
+  \item extract\_cluster\_indexing() (in module molutil), \hyperpage{52}
+  \item extract\_clusters() (in module molutil), \hyperpage{52}
 
   \indexspace
   \bigletter F
-  \item fitGeneral() (qmmm.Diffuse method), \hyperpage{49}
-  \item fitScf() (qmmm.Diffuse method), \hyperpage{49}
-  \item format\_kwargs\_for\_input() (in module procutil), \hyperpage{47}
-  \item format\_label() (text.Table method), \hyperpage{49}
-  \item format\_molecule\_for\_input() (in module procutil), \hyperpage{47}
-  \item format\_options\_for\_input() (in module procutil), \hyperpage{47}
-  \item format\_values() (text.Table method), \hyperpage{49}
-  \item frac (module), \hyperpage{25}
-  \item frac\_nuke() (in module frac), \hyperpage{25}
-  \item frac\_traverse() (in module frac), \hyperpage{25}
+  \item fitGeneral() (qmmm.Diffuse method), \hyperpage{56}
+  \item fitScf() (qmmm.Diffuse method), \hyperpage{56}
+  \item format\_kwargs\_for\_input() (in module procutil), \hyperpage{54}
+  \item format\_label() (text.Table method), \hyperpage{56}
+  \item format\_molecule\_for\_input() (in module procutil), \hyperpage{54}
+  \item format\_options\_for\_input() (in module procutil), \hyperpage{54}
+  \item format\_values() (text.Table method), \hyperpage{56}
+  \item frac (module), \hyperpage{33}
+  \item frac\_nuke() (in module frac), \hyperpage{33}
+  \item frac\_traverse() (in module frac), \hyperpage{33}
   \item frequency() (in module driver), \hyperpage{11}
 
   \indexspace
   \bigletter G
-  \item geometry() (in module molutil), \hyperpage{45}
-  \item get\_memory() (in module util), \hyperpage{50}
-  \item get\_num\_threads() (in module util), \hyperpage{50}
-  \item get\_psifile() (in module procutil), \hyperpage{47}
-  \item getCartesian() (pubchem.PubChemObj method), \hyperpage{48}
-  \item getMoleculeString() (pubchem.PubChemObj method), \hyperpage{48}
-  \item getPubChemResults() (in module pubchem), \hyperpage{48}
-  \item getSDF() (pubchem.PubChemObj method), \hyperpage{48}
-  \item getXYZFile() (pubchem.PubChemObj method), \hyperpage{48}
-  \item gradient() (in module driver), \hyperpage{44}
+  \item G2 (module), \hyperpage{20}
+  \item geometry() (in module molutil), \hyperpage{52}
+  \item get\_memory() (in module util), \hyperpage{57}
+  \item get\_num\_threads() (in module util), \hyperpage{57}
+  \item get\_psifile() (in module procutil), \hyperpage{54}
+  \item getCartesian() (pubchem.PubChemObj method), \hyperpage{55}
+  \item getMoleculeString() (pubchem.PubChemObj method), \hyperpage{55}
+  \item getPubChemResults() (in module pubchem), \hyperpage{55}
+  \item getSDF() (pubchem.PubChemObj method), \hyperpage{55}
+  \item getXYZFile() (pubchem.PubChemObj method), \hyperpage{55}
+  \item gradient() (in module driver), \hyperpage{52}
 
   \indexspace
   \bigletter H
-  \item hessian() (in module driver), \hyperpage{44}
-  \item highest\_1() (in module wrappers), \hyperpage{23}
+  \item HBC6 (module), \hyperpage{20}
+  \item hessian() (in module driver), \hyperpage{52}
+  \item highest\_1() (in module wrappers), \hyperpage{31}
+  \item HSG (module), \hyperpage{21}
+  \item HTBH (module), \hyperpage{21}
 
   \indexspace
   \bigletter I
-  \item input (module), \hyperpage{44}
-  \item ip\_fitting() (in module frac), \hyperpage{25}
+  \item input (module), \hyperpage{52}
+  \item ip\_fitting() (in module frac), \hyperpage{33}
+
+  \indexspace
+  \bigletter J
+  \item JSCH (module), \hyperpage{22}
 
   \indexspace
   \bigletter K
-  \item kwargs\_lower() (in module procutil), \hyperpage{47}
+  \item kwargs\_lower() (in module procutil), \hyperpage{54}
 
   \indexspace
   \bigletter M
-  \item molutil (module), \hyperpage{45}
+  \item molutil (module), \hyperpage{52}
 
   \indexspace
   \bigletter N
-  \item n\_body() (in module wrappers), \hyperpage{50}
-  \item name() (pubchem.PubChemObj method), \hyperpage{48}
-  \item new\_get\_attr() (in module molutil), \hyperpage{45}
-  \item new\_set\_attr() (in module molutil), \hyperpage{45}
+  \item n\_body() (in module wrappers), \hyperpage{57}
+  \item name() (pubchem.PubChemObj method), \hyperpage{55}
+  \item NBC10 (module), \hyperpage{22}
+  \item new\_get\_attr() (in module molutil), \hyperpage{52}
+  \item new\_set\_attr() (in module molutil), \hyperpage{52}
+  \item NHTBH (module), \hyperpage{23}
 
   \indexspace
   \bigletter O
@@ -112,104 +126,94 @@
 
   \indexspace
   \bigletter P
-  \item parse\_arbitrary\_order() (in module driver), \hyperpage{44}
-  \item parse\_multiline\_array() (in module input), \hyperpage{44}
-  \item physconst (module), \hyperpage{46}
-  \item populateExtern() (qmmm.Diffuse method), \hyperpage{49}
-  \item populateExtern() (qmmm.QMMM method), \hyperpage{49}
-  \item print\_stderr() (in module text), \hyperpage{49}
-  \item print\_stdout() (in module text), \hyperpage{49}
-  \item proc (module), \hyperpage{46}
-  \item process\_basis\_block() (in module input), \hyperpage{44}
-  \item process\_basis\_file() (in module input), \hyperpage{44}
-  \item process\_external\_command() (in module input), \hyperpage{44}
-  \item process\_extract\_command() (in module input), \hyperpage{44}
-  \item process\_input() (in module input), \hyperpage{44}
-  \item process\_memory\_command() (in module input), \hyperpage{44}
-  \item process\_molecule\_command() (in module input), \hyperpage{44}
-  \item process\_multiline\_arrays() (in module input), \hyperpage{44}
-  \item process\_option() (in module input), \hyperpage{44}
-  \item process\_print\_command() (in module input), \hyperpage{45}
-  \item process\_pubchem\_command() (in module input), \hyperpage{45}
-  \item process\_set\_command() (in module input), \hyperpage{45}
-  \item process\_set\_commands() (in module input), \hyperpage{45}
-  \item process\_word\_quotes() (in module input), \hyperpage{45}
-  \item procutil (module), \hyperpage{47}
-  \item PsiException, \hyperpage{48}
-  \item psiexceptions (module), \hyperpage{48}
-  \item pubchem (module), \hyperpage{48}
-  \item PubChemObj (class in pubchem), \hyperpage{48}
+  \item parse\_arbitrary\_order() (in module driver), \hyperpage{52}
+  \item physconst (module), \hyperpage{53}
+  \item populateExtern() (qmmm.Diffuse method), \hyperpage{56}
+  \item populateExtern() (qmmm.QMMM method), \hyperpage{56}
+  \item print\_stderr() (in module text), \hyperpage{56}
+  \item print\_stdout() (in module text), \hyperpage{56}
+  \item proc (module), \hyperpage{53}
+  \item process\_input() (in module input), \hyperpage{52}
+  \item procutil (module), \hyperpage{54}
+  \item PsiException, \hyperpage{55}
+  \item psiexceptions (module), \hyperpage{55}
+  \item pubchem (module), \hyperpage{55}
+  \item PubChemObj (class in pubchem), \hyperpage{55}
 
   \indexspace
   \bigletter Q
-  \item QMMM (class in qmmm), \hyperpage{49}
-  \item qmmm (module), \hyperpage{49}
-  \item quotify() (in module input), \hyperpage{45}
+  \item QMMM (class in qmmm), \hyperpage{56}
+  \item qmmm (module), \hyperpage{56}
 
   \indexspace
   \bigletter R
-  \item reconstitute\_bracketed\_basis() (in module wrappers), \hyperpage{50}
+  \item reconstitute\_bracketed\_basis() (in module wrappers), \hyperpage{57}
   \item response() (in module driver), \hyperpage{9}
-  \item run\_adc() (in module proc), \hyperpage{46}
-  \item run\_bccd() (in module proc), \hyperpage{46}
-  \item run\_bccd\_t() (in module proc), \hyperpage{46}
-  \item run\_cc\_gradient() (in module proc), \hyperpage{46}
-  \item run\_cc\_response() (in module proc), \hyperpage{46}
-  \item run\_ccenergy() (in module proc), \hyperpage{46}
-  \item run\_dcft() (in module proc), \hyperpage{46}
-  \item run\_detci() (in module proc), \hyperpage{46}
-  \item run\_dfcc() (in module proc), \hyperpage{46}
-  \item run\_dfmp2() (in module proc), \hyperpage{46}
-  \item run\_eom\_cc() (in module proc), \hyperpage{46}
-  \item run\_eom\_cc\_gradient() (in module proc), \hyperpage{46}
-  \item run\_libfock() (in module proc), \hyperpage{46}
-  \item run\_mcscf() (in module proc), \hyperpage{46}
-  \item run\_mp2() (in module proc), \hyperpage{46}
-  \item run\_mp2\_5() (in module aliases), \hyperpage{43}
-  \item run\_mp2\_gradient() (in module proc), \hyperpage{46}
-  \item run\_mp2c() (in module proc), \hyperpage{47}
-  \item run\_mp2drpa() (in module proc), \hyperpage{47}
-  \item run\_mrcc() (in module proc), \hyperpage{47}
-  \item run\_plugin\_ccsd\_serial() (in module aliases), \hyperpage{43}
-  \item run\_plugin\_omega() (in module aliases), \hyperpage{43}
-  \item run\_psimrcc() (in module proc), \hyperpage{47}
-  \item run\_psimrcc\_scf() (in module proc), \hyperpage{47}
-  \item run\_sapt() (in module proc), \hyperpage{47}
-  \item run\_sapt\_ct() (in module proc), \hyperpage{47}
-  \item run\_scf() (in module proc), \hyperpage{47}
-  \item run\_scf\_gradient() (in module proc), \hyperpage{47}
+  \item RGC10 (module), \hyperpage{23}
+  \item run\_adc() (in module proc), \hyperpage{53}
+  \item run\_bccd() (in module proc), \hyperpage{53}
+  \item run\_bccd\_t() (in module proc), \hyperpage{53}
+  \item run\_cc\_gradient() (in module proc), \hyperpage{53}
+  \item run\_cc\_response() (in module proc), \hyperpage{53}
+  \item run\_ccenergy() (in module proc), \hyperpage{53}
+  \item run\_dcft() (in module proc), \hyperpage{53}
+  \item run\_detci() (in module proc), \hyperpage{53}
+  \item run\_dfcc() (in module proc), \hyperpage{53}
+  \item run\_dfmp2() (in module proc), \hyperpage{53}
+  \item run\_eom\_cc() (in module proc), \hyperpage{53}
+  \item run\_eom\_cc\_gradient() (in module proc), \hyperpage{53}
+  \item run\_libfock() (in module proc), \hyperpage{53}
+  \item run\_mcscf() (in module proc), \hyperpage{53}
+  \item run\_mp2() (in module proc), \hyperpage{53}
+  \item run\_mp2\_5() (in module aliases), \hyperpage{51}
+  \item run\_mp2\_gradient() (in module proc), \hyperpage{53}
+  \item run\_mp2c() (in module proc), \hyperpage{54}
+  \item run\_mp2drpa() (in module proc), \hyperpage{54}
+  \item run\_mrcc() (in module proc), \hyperpage{54}
+  \item run\_plugin\_ccsd\_serial() (in module aliases), \hyperpage{51}
+  \item run\_plugin\_omega() (in module aliases), \hyperpage{51}
+  \item run\_psimrcc() (in module proc), \hyperpage{54}
+  \item run\_psimrcc\_scf() (in module proc), \hyperpage{54}
+  \item run\_sapt() (in module proc), \hyperpage{54}
+  \item run\_sapt\_ct() (in module proc), \hyperpage{54}
+  \item run\_scf() (in module proc), \hyperpage{54}
+  \item run\_scf\_gradient() (in module proc), \hyperpage{54}
 
   \indexspace
   \bigletter S
-  \item save() (text.Table method), \hyperpage{49}
-  \item scale() (text.Table method), \hyperpage{49}
-  \item scf\_helper() (in module proc), \hyperpage{47}
-  \item scf\_xtpl\_helgaker\_2() (in module wrappers), \hyperpage{23}
-  \item scf\_xtpl\_helgaker\_3() (in module wrappers), \hyperpage{23}
-  \item set\_memory() (in module util), \hyperpage{50}
-  \item set\_num\_threads() (in module util), \hyperpage{50}
-  \item sherrillgroup\_gold\_standard() (in module aliases), \hyperpage{43}
-  \item split\_menial() (in module wrappers), \hyperpage{51}
-  \item success() (in module util), \hyperpage{50}
+  \item S22 (module), \hyperpage{24}
+  \item S22by5 (module), \hyperpage{24}
+  \item S66 (module), \hyperpage{25}
+  \item save() (text.Table method), \hyperpage{56}
+  \item scale() (text.Table method), \hyperpage{56}
+  \item scf\_helper() (in module proc), \hyperpage{54}
+  \item scf\_xtpl\_helgaker\_2() (in module wrappers), \hyperpage{31}
+  \item scf\_xtpl\_helgaker\_3() (in module wrappers), \hyperpage{31}
+  \item set\_memory() (in module util), \hyperpage{57}
+  \item set\_num\_threads() (in module util), \hyperpage{57}
+  \item sherrillgroup\_gold\_standard() (in module aliases), \hyperpage{51}
+  \item split\_menial() (in module wrappers), \hyperpage{58}
+  \item SSI (module), \hyperpage{25}
+  \item success() (in module util), \hyperpage{57}
 
   \indexspace
   \bigletter T
-  \item Table (class in text), \hyperpage{49}
-  \item tblhead() (in module wrappers), \hyperpage{51}
-  \item text (module), \hyperpage{49}
+  \item Table (class in text), \hyperpage{56}
+  \item tblhead() (in module wrappers), \hyperpage{58}
+  \item text (module), \hyperpage{56}
 
   \indexspace
   \bigletter U
-  \item util (module), \hyperpage{50}
+  \item util (module), \hyperpage{57}
 
   \indexspace
   \bigletter V
-  \item validate\_bracketed\_basis() (in module wrappers), \hyperpage{51}
-  \item validate\_scheme\_args() (in module wrappers), \hyperpage{51}
-  \item ValidationError, \hyperpage{48}
+  \item validate\_bracketed\_basis() (in module wrappers), \hyperpage{58}
+  \item validate\_scheme\_args() (in module wrappers), \hyperpage{58}
+  \item ValidationError, \hyperpage{55}
 
   \indexspace
   \bigletter W
-  \item wrappers (module), \hyperpage{50}
+  \item wrappers (module), \hyperpage{57}
 
 \end{theindex}

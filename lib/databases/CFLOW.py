@@ -1,19 +1,51 @@
+"""
+**CFLOW**
+
+| Database of extended conjugated bimolecular systems.
+| Geometries and Reference interaction energies from the following articles:
+|   Polyene geometries from Marshall et al. JCTC 6 3681 (2010).
+|   Polyene reference interaction energies from Sherrill group by ccsd(t**)-f12b/heavy-aug-cc-pvdz.
+|   Acene geometries (except benzene) from Sherrill group by df-mp2/cc-pvtz c.2011.
+|   Benzene geometry from NBC10 database and citations therein.
+|   Acene reference interaction energies (incl. benzene dimer) from Sherrill group by ccsd(t**)-f12b/aug-cc-pvdz.
+|   Buckybowl (Pulay-labeled) geometries from Sherrill group by PBE1PBE/6-31G*, following Pulay's instructions in Janowski et al. CPL 512 155 (2011).
+|   Buckybowl (Pulay-labeled) reference interaction energies from Janowski et al. CPL 512 155 (2011).
+|   Buckyware (Grimme-labeled) geometries from Grimme PCCP 12 7091 (2010).
+|   Buckyware (Grimme-labeled) reference interaction energies from Grimme PCCP 12 7091 (2010) by B97-D2/TZVP.
+|   Collection into CFLOW by Parrish et al. XXX XXX XXXXXX (2012).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'equilibrium'``
+  - ``'Polyenes'`` equilibrium for linear polyene dimers for 2 through 16 monomer carbons
+  - ``'cBzBz'`` 5-point dissociation curve for benzene dimer
+  - ``'c2BzBz'`` 5-point dissociation curve for napthalene-benzene complex
+  - ``'c2Bz2Bz'`` 5-point dissociation curve for napthalene dimer 
+  - ``'c3Bz2Bz'`` 5-point dissociation curve for anthracene-napthalene complex
+  - ``'c3Bz3Bz'`` 5-point dissociation curve for anthracene dimer 
+  - ``'c4Bz3Bz'`` 5-point dissociation curve for tetracene-anthracene complex
+  - ``'Arenes'`` equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
+  - ``'cArenes'`` 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
+  - ``'cPulay'`` 4-point dissociation curve for bowl-in-bowl corannulene dimer
+  - ``'Pulay'`` Pulay bowl-in-bowl corannulene dimer dissociation curve and extra point
+  - ``'Grimme60'`` Grimme corannulene dimer, C60 @ buckybowl, and C60 @ buckycatcher
+  - ``'Grimme70'`` Grimme C70 @ buckycatcher at three orientations
+  - ``'Paper'`` linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+  - ``'cPaper'`` linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+
+----
+
+"""
 import re
 import input
 
 # <<< CFLOW Database Module >>>
-# Geometries and Reference interaction energies from the following articles:
-#   Polyene geometries from Marshall et al. JCTC 6 3681 (2010).
-#   Polyene reference interaction energies from Sherrill group by ccsd(t**)-f12b/heavy-aug-cc-pvdz.
-#   Acene geometries (except benzene) from Sherrill group by df-mp2/cc-pvtz c.2011.
-#   Benzene geometry from NBC10 database and citations therein.
-#   Acene reference interaction energies (incl. benzene dimer) from Sherrill group by ccsd(t**)-f12b/aug-cc-pvdz.
-#   Buckybowl (Pulay-labeled) geometries from Sherrill group by PBE1PBE/6-31G*, 
-#     following Pulay's instructions in Janowski et al. CPL 512 155 (2011).
-#   Buckybowl (Pulay-labeled) reference interaction energies from Janowski et al. CPL 512 155 (2011).
-#   Buckyware (Grimme-labeled) geometries from Grimme PCCP 12 7091 (2010).
-#   Buckyware (Grimme-labeled) reference interaction energies from Grimme PCCP 12 7091 (2010) by B97-D2/TZVP.
-#   Collection into CFLOW by Parrish et al. XXX XXX XXXXXX (2012).
 dbse = 'CFLOW'
 
 # <<< Database Members >>>
@@ -21,51 +53,48 @@ HRXN_SM = ['2Ae2Ae-3.8', 'BzBz_S-3.9']
 HRXN_LG = ['C70Bkycatch']
 
 # Polyenes
-Polyenes = []  #DOC equilibrium for linear polyene dimers for 2 through 16 monomer carbons
 Polyenes = ['2Ae2Ae-3.8', '4Ae4Ae-3.8', '6Ae6Ae-3.8', '8Ae8Ae-3.8', '10Ae10Ae-3.8', '12Ae12Ae-3.8', '14Ae14Ae-3.8', '16Ae16Ae-3.8',]
 
 # Arenes
 # geometries are flexible; dist arrays may be filled with any positive intermonomer distance
-cBzBz = []  #DOC 5-point dissociation curve for benzene dimer
+cBzBz = []
 dist = [3.7,3.8,3.9,4.0,4.1]
 for d in dist: cBzBz.append('BzBz_S-' + str(d))
-c2BzBz = []  #DOC 5-point dissociation curve for napthalene-benzene complex
+c2BzBz = []
 dist = [3.3,3.4,3.5,3.6,3.7]
 for d in dist: c2BzBz.append('2BzBz_S-' + str(d))
-c2Bz2Bz = []  #DOC 5-point dissociation curve for napthalene dimer 
+c2Bz2Bz = []
 dist = [3.6,3.7,3.8,3.9,4.0]
 for d in dist: c2Bz2Bz.append('2Bz2Bz_S-' + str(d))
-c3Bz2Bz = []  #DOC 5-point dissociation curve for anthracene-napthalene complex
+c3Bz2Bz = []
 dist = [3.3,3.4,3.5,3.6,3.7]
 for d in dist: c3Bz2Bz.append('3Bz2Bz_S-' + str(d))
-c3Bz3Bz = []  #DOC 5-point dissociation curve for anthracene dimer 
+c3Bz3Bz = []
 dist = [3.5,3.6,3.7,3.8,3.9]
 for d in dist: c3Bz3Bz.append('3Bz3Bz_S-' + str(d))
-c4Bz3Bz = []  #DOC 5-point dissociation curve for tetracene-anthracene complex
+c4Bz3Bz = []
 dist = [3.3,3.4,3.5,3.6,3.7]
 for d in dist: c4Bz3Bz.append('4Bz3Bz_S-' + str(d))
-Arenes = []  #DOC equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
 Arenes = ['BzBz_S-3.9', '2BzBz_S-3.5', '2Bz2Bz_S-3.8', '3Bz2Bz_S-3.5', '3Bz3Bz_S-3.7', '4Bz3Bz_S-3.5',]
 temp = [cBzBz, c2BzBz, c2Bz2Bz, c3Bz2Bz, c3Bz3Bz, c4Bz3Bz]
-cArenes = sum(temp, [])  #DOC 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
+cArenes = sum(temp, [])
 
 # Pulay Buckyware
-cPulay = []  #DOC 4-point dissociation curve for bowl-in-bowl corannulene dimer
 cPulay = ['BkybowlBkybowl-3.54', 'BkybowlBkybowl-3.64', 'BkybowlBkybowl-3.74', 'BkybowlBkybowl-3.84',]
 temp = [cPulay, ['BkybowlBkybowl-3.73'],]
-Pulay = sum(temp, [])  #DOC Pulay bowl-in-bowl corannulene dimer dissociation curve and extra point
+Pulay = sum(temp, [])
 
 # Grimme Buckyware
-Grimme60 = ['BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]  #DOC Grimme corannulene dimer, C60@buckybowl, and C60@buckycatcher
-Grimme70 = ['C70Bkycatch', 'C70Bkycatch_W', 'C70Bkycatch_T', ]  #DOC Grimme C70@buckycatcher at three orientations
+Grimme60 = ['BkybowlBkybowl-3.63', 'C60Bkybowl', 'C60Bkycatch', ]
+Grimme70 = ['C70Bkycatch', 'C70Bkycatch_W', 'C70Bkycatch_T', ]
 
 # Aggregates
 temp = [Polyenes, Arenes, ['BkybowlBkybowl-3.73'], Grimme60, ['C70Bkycatch'],]
 HRXN_EQ = sum(temp, [])
 temp = [Polyenes, Arenes, Pulay, Grimme60]
-Paper = sum(temp, [])  #DOC linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+Paper = sum(temp, [])
 temp = [Polyenes, cArenes, Pulay, Grimme60]
-cPaper = sum(temp, [])  #DOC linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+cPaper = sum(temp, [])
 temp = [Polyenes, cArenes, Pulay, Grimme60, Grimme70]
 HRXN = sum(temp, [])
 
@@ -2417,18 +2446,18 @@ for rxn in HRXN:
 
    if (rxn is 'C60Bkybowl') or (rxn is 'C60Bkycatch') or (rxn in Grimme70):
       GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn ))
-      GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn )) + monoA_CP
-      GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn )) + monoB_CP
-      GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn )) + monoA_unCP
-      GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn )) + monoB_unCP
+      GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn ))) + monoA_CP
+      GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn ))) + monoB_CP
+      GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn ))) + monoA_unCP
+      GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn ))) + monoB_unCP
 
    else:
       distance = rxnpattern.match(rxn)
       GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
-      GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoA_CP
-      GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_CP
-      GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoA_unCP
-      GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_unCP
+      GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoA_CP
+      GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoB_CP
+      GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoA_unCP
+      GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoB_unCP
 
 
 GEOS['%s-Bz-mono-unCP'         % (dbse)] = eval('%s_Benzene_monomer'        % (dbse))

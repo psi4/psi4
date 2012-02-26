@@ -1,12 +1,33 @@
+"""
+**HBC6**
+
+| Database (Sherrill) of interaction energies for dissociation curves of doubly hydrogen-bonded bimolecular complexes.
+| Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).
+| Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'`` || ``'on'``
+
+- **benchmark**
+
+  - ``'HBC60'`` Thanthiriwatte et al. JCTC 7 88 (2011).
+  - |dl| ``'HBC6A'`` |dr| Marshall et al. JCP 135 194102 (2011).
+  - ``'HBC6ARLX'`` Sherrill group, unpublished.
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'equilibrium'``
+
+----
+
+"""
 import re
 import input
 
 # <<< HBC6 Database Module >>>
-# Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).
-# Reference interaction energies from the following articles:
-#   HBC60:    Thanthiriwatte et al. JCTC 7 88 (2011).
-#   HBC6A:    Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
-#   HBC6ARLX: Sherrill group, unpublished.
 dbse = 'HBC1'
 
 # <<< Database Members >>>
@@ -3074,10 +3095,10 @@ for rxn in HRXN:
    molname = rxnpattern.match(rxn)
 
    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_unCP
+   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_CP
+   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_CP
+   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_unCP
+   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_unCP
 
 GEOS['%s-FaOO-mono-RLX' % (dbse)] = eval('%s_FaOO_monomer_RLX' % (dbse))
 GEOS['%s-FaON-mono-RLX' % (dbse)] = eval('%s_FaON_monomer_RLX' % (dbse))

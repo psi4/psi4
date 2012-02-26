@@ -320,8 +320,7 @@
 <span class="sd">        the scf step is skipped. Suitable when special steps are taken to get</span>
 <span class="sd">        the scf to converge in an explicit preceeding scf step.</span>
 
-<span class="sd">    Examples</span>
-<span class="sd">    ========</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] Coupled-cluster singles and doubles calculation with psi code</span>
 <span class="sd">    &gt;&gt;&gt; energy(&#39;ccsd&#39;)</span>
@@ -333,7 +332,6 @@
 <span class="sd">    &gt;&gt;&gt; energy(&#39;mp4&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -613,15 +611,13 @@
 <span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 
-<span class="sd">    **Keywords**</span>
-
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;ccsd&#39;`` || etc.</span>
 
 <span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
 <span class="sd">        to be applied to the system.</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] CCSD-LR properties calculation</span>
 <span class="sd">    &gt;&gt;&gt; response(&#39;ccsd&#39;)</span>
@@ -644,7 +640,7 @@
         <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Response method </span><span class="si">%s</span><span class="s"> not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lowername</span><span class="p">))</span>
 
 </div>
-<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../opt.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../index.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to perform a geometry optimization.</span>
 
 <span class="sd">    :aliases: opt()</span>
@@ -707,7 +703,7 @@
 <span class="sd">        Indicates whether analytic (if available) or finite difference</span>
 <span class="sd">        optimization is to be performed.</span>
 
-<span class="sd">    :Examples:</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] Analytic scf optimization</span>
 <span class="sd">    &gt;&gt;&gt; optimize(&#39;scf&#39;)</span>
@@ -878,8 +874,6 @@
 
 <span class="sd">       - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.</span>
 
-<span class="sd">    **Keywords**</span>
-
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
 
@@ -900,7 +894,7 @@
 <span class="sd">        computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.</span>
 <span class="sd">        ``-1`` indicates a full frequency calculation.</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] &lt;example description&gt;</span>
 <span class="sd">    &gt;&gt;&gt; &lt;example python command&gt;</span>
@@ -909,7 +903,6 @@
 <span class="sd">    &gt;&gt;&gt; frequencies(&#39;scf&#39;, dertype=1, irrep=4)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -1109,7 +1102,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 25, 2012.
+      Last updated on Feb 26, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

@@ -3,8 +3,6 @@ functions: :py:mod:`driver.energy`, :py:mod:`driver.optimize`,
 :py:mod:`driver.response`, and :py:mod:`driver.frequency`.
 
 """
-
-
 import PsiMod
 import re
 import os
@@ -444,8 +442,6 @@ def cp(name, **kwargs):
 
        - Table print-out needs improving. Add some PSI variables.
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'ccsd(t)'`` || etc.
 
@@ -469,13 +465,12 @@ def cp(name, **kwargs):
         Indicates whether to additionally compute un-counterpoise corrected
         monomers and thus obtain an estimate for the basis set superposition error.
 
-    **Examples**
+    :examples:
 
     >>> # [1] counterpoise-corrected mp2 interaction energy
     >>> cp('dfmp2')
 
     """
-
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -647,8 +642,6 @@ def database(name, db_name, **kwargs):
 
        - In sow/reap mode, use only global options (e.g., the local option set by ``set scf scf_type df`` will not be respected).
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'sapt0'`` || ``'ccsd(t)'`` || etc.
 
@@ -687,16 +680,16 @@ def database(name, db_name, **kwargs):
 
         Indicates whether counterpoise correction is employed in computing
         interaction energies. Use this option and NOT the :py:func:`wrappers.cp`
-        function for BSSE correction in database().  Option
-        valid only for databases consisting of bimolecular complexes.
+        function for BSSE correction in database().  Option available
+        (See `Available Databases`_) only for databases of bimolecular complexes.
 
     :type rlxd: bool
     :param rlxd: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether correction for deformation energy is
-        employed in computing interaction energies.  Option valid only for
-        databases consisting of bimolecular complexes with non-frozen
-        monomers, e.g., HBC6.
+        employed in computing interaction energies.  Option available
+        (See `Available Databases`_) only for databases of bimolecular complexes 
+        with non-frozen monomers, e.g., HBC6.
 
     :type symm: bool
     :param symm: |dl| ``'on'`` |dr| || ``'off'``
@@ -717,7 +710,8 @@ def database(name, db_name, **kwargs):
     :param benchmark: |dl| ``'default'`` |dr| || ``'S22A'`` || etc.
 
         Indicates whether a non-default set of reference energies, if
-        available, are employed for the calculation of error statistics.
+        available (See `Available Databases`_), are employed for the
+        calculation of error statistics.
 
     :type tabulate: array of strings
     :param tabulate: |dl| ``[]`` |dr| || ``['scf total energy', 'natom']`` || etc.
@@ -731,6 +725,7 @@ def database(name, db_name, **kwargs):
         Indicates a subset of the full database to run. This is a very
         flexible option and can be used in three distinct ways, outlined
         below. Note that two take a string and the last takes an array.
+        See `Available Databases`_ for available values.
 
         * ``'small'`` || ``'large'`` || ``'equilibrium'``
             Calls predefined subsets of the requested database, either
@@ -749,7 +744,7 @@ def database(name, db_name, **kwargs):
             choices for this keyword are case sensitive and must match the
             database python file
 
-    **Examples**
+    :examples:
 
     >>> # [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer
     >>> db('scf','RGC10',cast_up='sto-3g',subset=['HeHe-0.85','HeHe-1.0','HeHe-1.5'], tabulate=['scf total energy','natom'])
@@ -768,7 +763,6 @@ def database(name, db_name, **kwargs):
     >>> database('ccsd','HTBH',subset='small', tabulate=['ccsd total energy', 'mp2 total energy'])
 
     """
-
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     #hartree2kcalmol = 627.509469  # consistent with perl SETS scripts
@@ -1412,8 +1406,6 @@ def complete_basis_set(name, **kwargs):
 
     .. include:: cbs_eqn.rst
 
-    **Keywords**
-
     * Energy Methods
         The presence of a stage_wfn keyword is the indicator to incorporate
         (and check for stage_basis and stage_scheme keywords) and compute
@@ -1518,7 +1510,7 @@ def complete_basis_set(name, **kwargs):
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
 
-    **Examples**
+    :examples:
 
     >>> # [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy('scf')
     >>> cbs('scf', scf_basis='cc-pVDZ')
@@ -1542,7 +1534,6 @@ def complete_basis_set(name, **kwargs):
     >>> database('mp2', 'BASIC', subset=['h2o','nh3'], symm='on', func=cbs, corl_basis='cc-pV[tq]z', corl_scheme=corl_xtpl_helgaker_2, delta_wfn='ccsd(t)', delta_basis='sto-3g')
 
     """
-
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -1986,7 +1977,6 @@ def highest_1(**largs):
     .. math:: E_{total}^X = E_{total}^X
 
     """
-
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name
     f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
@@ -2034,7 +2024,6 @@ def corl_xtpl_helgaker_2(**largs):
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
 
     """
-
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name
     f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
@@ -2083,7 +2072,6 @@ def scf_xtpl_helgaker_3(**largs):
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}
 
     """
-
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name
     f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
@@ -2139,7 +2127,6 @@ def scf_xtpl_helgaker_2(**largs):
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63
 
     """
-
     energypiece = 0.0
     functionname = sys._getframe().f_code.co_name
     f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']

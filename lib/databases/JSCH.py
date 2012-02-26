@@ -1,9 +1,25 @@
+"""
+**JSCH**
+
+| Database (Hobza) of interaction energies for nucelobase pairs.
+| Geometries and reference interaction energies from Jurecka et al. PCCP 8 1985 (2006).
+| Corrections implemented from footnote 92 of Burns et al., JCP 134 084107 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+
+----
+
+"""
 import input
 
 # <<< JSCH Database Module >>>
-# Geometries and Reference interaction energies from 
-#   Jurecka et al. PCCP 8 1985 (2006).
-#   Corrections implemented from footnote 92 of Burns et al., JCP 134 084107 (2011).
 dbse = 'JSCH'
 
 # <<< Database Members >>>
@@ -5731,8 +5747,8 @@ GEOS = {}
 for rxn in HRXN:
 
    GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
-   GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_CP
-   GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_CP
-   GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_unCP
-   GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_unCP
+   GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
+   GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
+   GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
+   GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP
 

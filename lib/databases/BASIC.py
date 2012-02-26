@@ -1,3 +1,18 @@
+"""
+**BASIC**
+
+| Database of simple molecules, mostly for testing.
+| Geometries from nowhere special, and no reference energies defined.
+
+- **cp**  ``'off'``
+
+- **rlxd** ``'off'``
+
+- **subset** [``'h2o'``, ``'nh3'``, ``'ch4'``]
+
+----
+
+"""
 import re
 import input
 

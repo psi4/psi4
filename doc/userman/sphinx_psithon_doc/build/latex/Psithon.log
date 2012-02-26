@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  25 FEB 2012 22:26
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  26 FEB 2012 17:21
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -875,7 +875,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.i}) has
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.30 ...umberline {15.9}pubchem}{48}{section.15.9}
+l.30 ...ine {15.8}psiexceptions}{55}{section.15.8}
                                                    [1
 
 ])
@@ -887,7 +887,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.ii}) has
 <to be read again> 
                    \relax 
 l.113 \tableofcontents
-                       [2] <PSI4_3.png, id=203, 874.76813pt x 218.31563pt>
+                       [2] <PSI4_3.png, id=208, 874.76813pt x 218.31563pt>
 File: PSI4_3.png Graphic file (type png)
 
 <use PSI4_3.png>
@@ -916,23 +916,23 @@ LaTeX Font Info:    Try loading font information for TS1+ptm on input line 550.
 File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
 ) [4]
 LaTeX Font Info:    Font shape `T1/pcr/bx/n' in size <9> not available
-(Font)              Font shape `T1/pcr/b/n' tried instead on input line 572.
+(Font)              Font shape `T1/pcr/b/n' tried instead on input line 573.
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <9> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 572.
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 573.
 
 [5] [6
 
 ]
 Chapter 2.
 
-Underfull \hbox (badness 10000) in paragraph at lines 632--633
+Underfull \hbox (badness 10000) in paragraph at lines 633--634
 
  []
 
 [7] [8]
 Chapter 3.
 
-Underfull \hbox (badness 10000) in paragraph at lines 755--756
+Underfull \hbox (badness 10000) in paragraph at lines 756--757
 
  []
 
@@ -942,154 +942,138 @@ Underfull \hbox (badness 10000) in paragraph at lines 755--756
 
 ]
 Chapter 4.
-
-Underfull \hbox (badness 10000) in paragraph at lines 828--829
-
- []
-
 [11] [12
 
 ]
 Chapter 5.
-
-Underfull \hbox (badness 10000) in paragraph at lines 912--913
-
- []
-
 [13] [14
 
 ]
 Chapter 6.
-
-Underfull \hbox (badness 10000) in paragraph at lines 997--998
-
- []
-
 [15]
-Underfull \hbox (badness 5345) in paragraph at lines 1124--1129
+Underfull \hbox (badness 5345) in paragraph at lines 1116--1121
 []\T1/ptm/m/n/10 Specify a
  []
 
-[16] [17] [18]
+[16] [17] [18] [19] [20] [21] [22] [23] [24] [25] [26
+
+]
 Chapter 7.
 
-Underfull \hbox (badness 10000) in paragraph at lines 1284--1285
+Underfull \hbox (badness 10000) in paragraph at lines 2014--2015
 
  []
 
-[19
-
-] [20] [21] [22]
-Underfull \hbox (badness 10000) in paragraph at lines 1609--1611
+[27] [28] [29] [30]
+Underfull \hbox (badness 10000) in paragraph at lines 2336--2338
 \T1/ptm/m/n/10 Extrapolation scheme for ref-er-ence en-er-gies with two ad-ja-c
 ent zeta-level bases. Used by
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1620--1622
+Underfull \hbox (badness 10000) in paragraph at lines 2347--2349
 \T1/ptm/m/n/10 Extrapolation scheme for ref-er-ence en-er-gies with three ad-ja
 -cent zeta-level bases. Used by
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 1631--1633
+Underfull \hbox (badness 10000) in paragraph at lines 2358--2360
 \T1/ptm/m/n/10 Extrapolation scheme for cor-re-la-tion en-er-gies with two ad-j
 a-cent zeta-level bases. Used by
- []
-
-[23] [24
-
-]
-Chapter 8.
-[25] [26
-
-]
-Chapter 9.
-[27] [28] [29] [30
-
-]
-Chapter 10.
-
-Underfull \hbox (badness 10000) in paragraph at lines 1945--1946
-[]\T1/ptm/m/n/10 The com-mand db(opt(cbs(energy()))) is ac-tu-ally ex-pressed a
-s \T1/pcr/m/n/10 db(..., db_func=opt,
  []
 
 [31] [32
 
 ]
-Chapter 11.
+Chapter 8.
 [33] [34
 
 ]
-Chapter 12.
+Chapter 9.
 [35] [36] [37] [38
 
 ]
-Chapter 13.
+Chapter 10.
+
+Underfull \hbox (badness 10000) in paragraph at lines 2672--2673
+[]\T1/ptm/m/n/10 The com-mand db(opt(cbs(energy()))) is ac-tu-ally ex-pressed a
+s \T1/pcr/m/n/10 db(..., db_func=opt,
+ []
+
 [39] [40
 
 ]
-Chapter 14.
+Chapter 11.
 [41] [42
 
 ]
+Chapter 12.
+[43] [44] [45] [46
+
+]
+Chapter 13.
+[47] [48
+
+]
+Chapter 14.
+[49] [50
+
+]
 Chapter 15.
-[43] [44] [45]
-Underfull \hbox (badness 10000) in paragraph at lines 2439--2440
+[51] [52]
+Underfull \hbox (badness 10000) in paragraph at lines 3011--3012
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 2525--2526
+Underfull \hbox (badness 10000) in paragraph at lines 3097--3098
 
  []
 
-[46]
-Underfull \hbox (badness 10000) in paragraph at lines 2721--2722
+[53]
+Underfull \hbox (badness 10000) in paragraph at lines 3293--3294
 
  []
 
-[47] [48] [49] [50] [51] [52
-
-]
+[54] [55] [56] [57] [58]
 Chapter 16.
-[53] [54
+[59
 
-] [55
+] [60
 
+] [61
 
-] (./Psithon.ind [56
+] (./Psithon.ind [62
 
 
 ]
-Underfull \hbox (badness 10000) in paragraph at lines 46--47
+Underfull \hbox (badness 10000) in paragraph at lines 50--51
 []| \T1/ptm/m/n/10 CP-CORRECTED2-
  []
 
 
-Overfull \hbox (15.00143pt too wide) in paragraph at lines 50--51
+Overfull \hbox (15.00143pt too wide) in paragraph at lines 54--55
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANABSOLUTEDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 51--52
+Underfull \hbox (badness 10000) in paragraph at lines 55--56
 []| \T1/ptm/m/n/10 db_nameDATABASEMEANSIGNEDDEVIATION,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 52--53
+Underfull \hbox (badness 10000) in paragraph at lines 56--57
 []| \T1/ptm/m/n/10 db_nameDATABASEROOT-MEAN-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 53--54
+Underfull \hbox (badness 10000) in paragraph at lines 57--58
 []| \T1/ptm/m/n/10 UNCP-CORRECTED2-
  []
 
-[57
+[63
 
-] [58] [59
+] [64] [65
 
 ]) (./Psithon.aux)
 
@@ -1097,13 +1081,13 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 8382 strings out of 493848
- 116257 string characters out of 3149207
- 213447 words of memory out of 3000000
- 11217 multiletter control sequences out of 15000+200000
+ 8393 strings out of 493848
+ 116129 string characters out of 3149207
+ 213765 words of memory out of 3000000
+ 11220 multiletter control sequences out of 15000+200000
  63666 words of font info for 72 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
- 45i,18n,51p,930b,551s stack positions out of 5000i,500n,10000p,200000b,50000s
+ 45i,18n,51p,930b,547s stack positions out of 5000i,500n,10000p,200000b,50000s
 {/usr/local/texlive/2009/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/local/t
 exlive/2009/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/te
 xlive/2009/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/tex
@@ -1120,9 +1104,9 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (63 pages, 529100 bytes).
+Output written on Psithon.pdf (69 pages, 548308 bytes).
 PDF statistics:
- 914 PDF objects out of 1000 (max. 8388607)
- 240 named destinations out of 1000 (max. 500000)
- 294 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 975 PDF objects out of 1000 (max. 8388607)
+ 248 named destinations out of 1000 (max. 500000)
+ 302 words of extra memory for PDF output out of 10000 (max. 10000000)
 

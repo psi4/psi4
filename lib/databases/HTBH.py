@@ -1,12 +1,26 @@
+"""
+**HTBH**
+
+| Database (Truhlar) of hydrogen-transfer barrier height reactions.
+| Geometries from Truhlar and coworkers at site http://t1.chem.umn.edu/misc/database_group/database_therm_bh/raw_geom.cgi .
+| Reference energies from Zhao et al. JPCA, 109 2012-2018 (2005) doi: 10.1021/jp045141s [in supporting information].
+
+- **cp**  ``'off'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+
+----
+
+"""
 import re
 import input
 
 # <<< HTBH Database Module >>>
-# Geometries from Truhlar and coworkers at site
-# http://t1.chem.umn.edu/misc/database_group/database_therm_bh/raw_geom.cgi
-# Reference energies from Zhao and coworkers paper
-# J. Phy. Chem. A, 2005, 109 (9), pp 2012-2018 doi: 10.1021/jp045141s [in supporting information]
-
 dbse = 'HTBH'
 isOS = 'true'
 

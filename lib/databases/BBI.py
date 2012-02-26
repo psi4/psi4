@@ -1,8 +1,21 @@
+"""
+**BBI**
+
+| Database (Merz) of protein backbone-backbone interactions.
+| Geometries from Kenneth Merz Group, Univ. of Florida.
+| Reference interaction energies from Sherrill group, Georgia Tech.
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+----
+
+"""
 import re
 import input
 
 # <<< BBI Database Module >>>
-# Geometries from Kenneth Merz Group, Univ. of Florida
 dbse = 'BBI'
 
 # <<< Database Members >>>
@@ -160,7 +173,7 @@ TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 for rxn in HRXN:
    molname = rxnpattern.match(rxn)
-   TAGL['%s-%s'            % (dbse, rxn)] = """Residue %s and %s interaction No. %s""" (molname.group(1), molname.group(2), molname.group(3))
+   TAGL['%s-%s'            % (dbse, rxn)] = """Residue %s and %s interaction No. %s""" % (molname.group(1), molname.group(2), molname.group(3))
    TAGL['%s-%s-dimer'      % (dbse, rxn)] = """Dimer from %s""" % (rxn)
    TAGL['%s-%s-monoA-CP'   % (dbse, rxn)] = """Monomer A from %s""" % (rxn)
    TAGL['%s-%s-monoB-CP'   % (dbse, rxn)] = """Monomer B from %s""" % (rxn)
@@ -173,7 +186,7 @@ monoB_unCP = 'monoB = dimer.extract_subsets(2)\nmonoB.set_name("monoB")\nPsiMod.
 monoA_CP   = 'monoA = dimer.extract_subsets(1,2)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
 monoB_CP   = 'monoB = dimer.extract_subsets(2,1)\nmonoB.set_name("monoB")\nPsiMod.set_active_molecule(monoB)\nPsiMod.IO.set_default_namespace("monoB")\n'
 
-BBI_004GLU-063LEU-2 = input.process_input("""
+BBI_004GLU_063LEU_2 = input.process_input("""
 molecule dimer {
 0 1
 C       31.01400000    -3.84200000     7.91700000
@@ -206,7 +219,7 @@ units angstrom
 }
 """)
 
-BBI_005ASP-008SER-2 = input.process_input("""
+BBI_005ASP_008SER_2 = input.process_input("""
 molecule dimer {
 0 1
 C       26.24300000    -6.23800000    -1.26400000
@@ -239,7 +252,7 @@ units angstrom
 }
 """)
 
-BBI_005LEU-008VAL-2 = input.process_input("""
+BBI_005LEU_008VAL_2 = input.process_input("""
 molecule dimer {
 0 1
 C       14.16900000    62.02000000     7.59200000
@@ -272,7 +285,7 @@ units angstrom
 }
 """)
 
-BBI_007GLN-010ASN-1 = input.process_input("""
+BBI_007GLN_010ASN_1 = input.process_input("""
 molecule dimer {
 0 1
 C        2.71600000     0.82000000    22.90400000
@@ -305,7 +318,7 @@ units angstrom
 }
 """)
 
-BBI_007VAL-041VAL-1 = input.process_input("""
+BBI_007VAL_041VAL_1 = input.process_input("""
 molecule dimer {
 0 1
 C       22.55700000     0.21000000     5.45400000
@@ -338,7 +351,7 @@ units angstrom
 }
 """)
 
-BBI_008ILE-012LEU-1 = input.process_input("""
+BBI_008ILE_012LEU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       32.59400000    -4.62600000    57.97600000
@@ -371,7 +384,7 @@ units angstrom
 }
 """)
 
-BBI_008TRP-251HIE-2 = input.process_input("""
+BBI_008TRP_251HIE_2 = input.process_input("""
 molecule dimer {
 0 1
 C       27.44300000    25.35600000    25.79500000
@@ -404,7 +417,7 @@ units angstrom
 }
 """)
 
-BBI_011ILE-014PHE-1 = input.process_input("""
+BBI_011ILE_014PHE_1 = input.process_input("""
 molecule dimer {
 0 1
 C        6.60700000    -3.99700000    21.99700000
@@ -437,7 +450,7 @@ units angstrom
 }
 """)
 
-BBI_012LEU-085ASP-1 = input.process_input("""
+BBI_012LEU_085ASP_1 = input.process_input("""
 molecule dimer {
 0 1
 C       12.00300000     7.41700000     2.33500000
@@ -470,7 +483,7 @@ units angstrom
 }
 """)
 
-BBI_014LYS-018GLU-1 = input.process_input("""
+BBI_014LYS_018GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       16.22000000    16.91300000    11.79900000
@@ -503,7 +516,7 @@ units angstrom
 }
 """)
 
-BBI_014VAL-017GLU-1 = input.process_input("""
+BBI_014VAL_017GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       10.38200000    95.07800000    19.05400000
@@ -536,7 +549,7 @@ units angstrom
 }
 """)
 
-BBI_015GLN-018LEU-1 = input.process_input("""
+BBI_015GLN_018LEU_1 = input.process_input("""
 molecule dimer {
 0 1
 C        1.80300000     4.53500000    38.27400000
@@ -569,7 +582,7 @@ units angstrom
 }
 """)
 
-BBI_015LEU-026LEU-1 = input.process_input("""
+BBI_015LEU_026LEU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       39.68500000     9.51600000     9.12800000
@@ -602,7 +615,7 @@ units angstrom
 }
 """)
 
-BBI_017ASN-021LYS-2 = input.process_input("""
+BBI_017ASN_021LYS_2 = input.process_input("""
 molecule dimer {
 0 1
 C       18.31000000    53.33500000    13.55200000
@@ -635,7 +648,7 @@ units angstrom
 }
 """)
 
-BBI_017LEU-025ILE-1 = input.process_input("""
+BBI_017LEU_025ILE_1 = input.process_input("""
 molecule dimer {
 0 1
 C        7.17000000    24.28800000     3.37300000
@@ -668,7 +681,7 @@ units angstrom
 }
 """)
 
-BBI_019LEU-022MET-1 = input.process_input("""
+BBI_019LEU_022MET_1 = input.process_input("""
 molecule dimer {
 0 1
 C       15.07200000     3.59400000     7.20300000
@@ -701,7 +714,7 @@ units angstrom
 }
 """)
 
-BBI_023LYS-146SER-2 = input.process_input("""
+BBI_023LYS_146SER_2 = input.process_input("""
 molecule dimer {
 0 1
 C        0.57400000   -11.81000000     5.51200000
@@ -734,7 +747,7 @@ units angstrom
 }
 """)
 
-BBI_024PHE-028ALA-1 = input.process_input("""
+BBI_024PHE_028ALA_1 = input.process_input("""
 molecule dimer {
 0 1
 C       13.10800000    32.54900000    28.14000000
@@ -767,7 +780,7 @@ units angstrom
 }
 """)
 
-BBI_024THR-041GLU-2 = input.process_input("""
+BBI_024THR_041GLU_2 = input.process_input("""
 molecule dimer {
 0 1
 C        1.19400000    22.61400000     8.20600000
@@ -800,7 +813,7 @@ units angstrom
 }
 """)
 
-BBI_025GLY-029SER-2 = input.process_input("""
+BBI_025GLY_029SER_2 = input.process_input("""
 molecule dimer {
 0 1
 C        7.13200000    67.30800000    -0.96500000
@@ -833,7 +846,7 @@ units angstrom
 }
 """)
 
-BBI_025ILE-070TRP-1 = input.process_input("""
+BBI_025ILE_070TRP_1 = input.process_input("""
 molecule dimer {
 0 1
 C        6.01900000   -13.17600000    -7.12800000
@@ -866,7 +879,7 @@ units angstrom
 }
 """)
 
-BBI_027VAL-031LEU-1 = input.process_input("""
+BBI_027VAL_031LEU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       10.66300000    30.69400000    23.84300000
@@ -899,7 +912,7 @@ units angstrom
 }
 """)
 
-BBI_027VAL-068GLU-2 = input.process_input("""
+BBI_027VAL_068GLU_2 = input.process_input("""
 molecule dimer {
 0 1
 C        1.24900000   -16.76400000    -5.34400000
@@ -932,7 +945,7 @@ units angstrom
 }
 """)
 
-BBI_029GLU-032VAL-1 = input.process_input("""
+BBI_029GLU_032VAL_1 = input.process_input("""
 molecule dimer {
 0 1
 C        5.68300000     7.08200000     2.74100000
@@ -965,7 +978,7 @@ units angstrom
 }
 """)
 
-BBI_030TRP-178GLY-2 = input.process_input("""
+BBI_030TRP_178GLY_2 = input.process_input("""
 molecule dimer {
 0 1
 C       48.55800000    20.43700000    27.72000000
@@ -998,7 +1011,7 @@ units angstrom
 }
 """)
 
-BBI_033ASN-036TRP-2 = input.process_input("""
+BBI_033ASN_036TRP_2 = input.process_input("""
 molecule dimer {
 0 1
 C      -15.84200000   -16.31900000    11.52700000
@@ -1031,7 +1044,7 @@ units angstrom
 }
 """)
 
-BBI_033VAL-115VAL-1 = input.process_input("""
+BBI_033VAL_115VAL_1 = input.process_input("""
 molecule dimer {
 0 1
 C        3.50000000   -15.42200000    -8.51000000
@@ -1064,7 +1077,7 @@ units angstrom
 }
 """)
 
-BBI_035TRP-056ILE-1 = input.process_input("""
+BBI_035TRP_056ILE_1 = input.process_input("""
 molecule dimer {
 0 1
 C       26.94200000     3.32900000    60.85700000
@@ -1097,7 +1110,7 @@ units angstrom
 }
 """)
 
-BBI_037PRO-041ALA-1 = input.process_input("""
+BBI_037PRO_041ALA_1 = input.process_input("""
 molecule dimer {
 0 1
 C        1.45400000     4.71900000    34.53000000
@@ -1130,7 +1143,7 @@ units angstrom
 }
 """)
 
-BBI_038ALA-041GLY-1 = input.process_input("""
+BBI_038ALA_041GLY_1 = input.process_input("""
 molecule dimer {
 0 1
 C       17.65300000     1.60500000    -0.70200000
@@ -1163,7 +1176,7 @@ units angstrom
 }
 """)
 
-BBI_038GLU-047GLU-2 = input.process_input("""
+BBI_038GLU_047GLU_2 = input.process_input("""
 molecule dimer {
 0 1
 C      -16.11100000    27.50200000   -23.68000000
@@ -1196,7 +1209,7 @@ units angstrom
 }
 """)
 
-BBI_039SER-046MET-1 = input.process_input("""
+BBI_039SER_046MET_1 = input.process_input("""
 molecule dimer {
 0 1
 C       37.13200000    14.35600000    -9.09000000
@@ -1229,7 +1242,7 @@ units angstrom
 }
 """)
 
-BBI_040THR-048VAL-2 = input.process_input("""
+BBI_040THR_048VAL_2 = input.process_input("""
 molecule dimer {
 0 1
 C        7.24400000    -6.35700000     9.43600000
@@ -1262,7 +1275,7 @@ units angstrom
 }
 """)
 
-BBI_040THR-049GLN-2 = input.process_input("""
+BBI_040THR_049GLN_2 = input.process_input("""
 molecule dimer {
 0 1
 C        7.24400000    -6.35700000     9.43600000
@@ -1295,7 +1308,7 @@ units angstrom
 }
 """)
 
-BBI_041GLY-045LEU-2 = input.process_input("""
+BBI_041GLY_045LEU_2 = input.process_input("""
 molecule dimer {
 0 1
 C       13.83700000     3.27200000     2.04300000
@@ -1328,7 +1341,7 @@ units angstrom
 }
 """)
 
-BBI_041LEU-045LEU-1 = input.process_input("""
+BBI_041LEU_045LEU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       36.48200000    37.02700000     7.19500000
@@ -1361,7 +1374,7 @@ units angstrom
 }
 """)
 
-BBI_042LEU-047ILE-2 = input.process_input("""
+BBI_042LEU_047ILE_2 = input.process_input("""
 molecule dimer {
 0 1
 C       27.98600000    25.44300000    -1.06900000
@@ -1394,7 +1407,7 @@ units angstrom
 }
 """)
 
-BBI_044SER-047GLU-1 = input.process_input("""
+BBI_044SER_047GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       -4.41100000    -1.31100000     3.89100000
@@ -1427,7 +1440,7 @@ units angstrom
 }
 """)
 
-BBI_044TRP-054LEU-1 = input.process_input("""
+BBI_044TRP_054LEU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       10.95000000   -17.77800000    14.61300000
@@ -1460,7 +1473,7 @@ units angstrom
 }
 """)
 
-BBI_048GLU-052LYS-1 = input.process_input("""
+BBI_048GLU_052LYS_1 = input.process_input("""
 molecule dimer {
 0 1
 C       29.19600000    -4.52700000    -8.01800000
@@ -1493,7 +1506,7 @@ units angstrom
 }
 """)
 
-BBI_051ALA-054VAL-1 = input.process_input("""
+BBI_051ALA_054VAL_1 = input.process_input("""
 molecule dimer {
 0 1
 C       11.19000000    25.57800000    16.41500000
@@ -1526,7 +1539,7 @@ units angstrom
 }
 """)
 
-BBI_051ALA-055ASN-1 = input.process_input("""
+BBI_051ALA_055ASN_1 = input.process_input("""
 molecule dimer {
 0 1
 C       15.43500000    31.69400000    28.98700000
@@ -1559,7 +1572,7 @@ units angstrom
 }
 """)
 
-BBI_052CYS-056ALA-1 = input.process_input("""
+BBI_052CYS_056ALA_1 = input.process_input("""
 molecule dimer {
 0 1
 C       26.72000000    17.60100000    -3.75600000
@@ -1592,7 +1605,7 @@ units angstrom
 }
 """)
 
-BBI_054ARG-062GLN-1 = input.process_input("""
+BBI_054ARG_062GLN_1 = input.process_input("""
 molecule dimer {
 0 1
 C       -5.93600000    14.71300000    11.54100000
@@ -1625,7 +1638,7 @@ units angstrom
 }
 """)
 
-BBI_055ASN-058GLU-2 = input.process_input("""
+BBI_055ASN_058GLU_2 = input.process_input("""
 molecule dimer {
 0 1
 C        3.19200000    17.07400000    -9.88600000
@@ -1658,7 +1671,7 @@ units angstrom
 }
 """)
 
-BBI_060LEU-064TYR-1 = input.process_input("""
+BBI_060LEU_064TYR_1 = input.process_input("""
 molecule dimer {
 0 1
 C       26.99500000     5.04200000    -5.25200000
@@ -1691,7 +1704,7 @@ units angstrom
 }
 """)
 
-BBI_060TYR-064LEU-2 = input.process_input("""
+BBI_060TYR_064LEU_2 = input.process_input("""
 molecule dimer {
 0 1
 C        0.74400000    20.88200000     9.46700000
@@ -1724,7 +1737,7 @@ units angstrom
 }
 """)
 
-BBI_061VAL-064TYR-2 = input.process_input("""
+BBI_061VAL_064TYR_2 = input.process_input("""
 molecule dimer {
 0 1
 C       27.19000000     8.05900000    14.90900000
@@ -1757,7 +1770,7 @@ units angstrom
 }
 """)
 
-BBI_062LEU-066LYS-2 = input.process_input("""
+BBI_062LEU_066LYS_2 = input.process_input("""
 molecule dimer {
 0 1
 C       17.65400000    16.07700000    -4.70500000
@@ -1790,7 +1803,7 @@ units angstrom
 }
 """)
 
-BBI_064GLN-067ARG-1 = input.process_input("""
+BBI_064GLN_067ARG_1 = input.process_input("""
 molecule dimer {
 0 1
 C       10.81800000   -25.83400000    -6.60000000
@@ -1823,7 +1836,7 @@ units angstrom
 }
 """)
 
-BBI_064TYR-067GLU-1 = input.process_input("""
+BBI_064TYR_067GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       31.49500000   -10.17100000     9.56100000
@@ -1856,7 +1869,7 @@ units angstrom
 }
 """)
 
-BBI_066PHE-072THR-1 = input.process_input("""
+BBI_066PHE_072THR_1 = input.process_input("""
 molecule dimer {
 0 1
 C       38.12400000    19.12600000    10.45700000
@@ -1889,7 +1902,7 @@ units angstrom
 }
 """)
 
-BBI_068ASP-072GLN-1 = input.process_input("""
+BBI_068ASP_072GLN_1 = input.process_input("""
 molecule dimer {
 0 1
 C      -12.64500000    14.92300000   -14.97700000
@@ -1922,7 +1935,7 @@ units angstrom
 }
 """)
 
-BBI_071GLU-075ASP-1 = input.process_input("""
+BBI_071GLU_075ASP_1 = input.process_input("""
 molecule dimer {
 0 1
 C       15.57200000    63.34800000    -3.02500000
@@ -1955,7 +1968,7 @@ units angstrom
 }
 """)
 
-BBI_072ASN-075ARG-2 = input.process_input("""
+BBI_072ASN_075ARG_2 = input.process_input("""
 molecule dimer {
 0 1
 C       33.89600000     6.61200000     3.83600000
@@ -1988,7 +2001,7 @@ units angstrom
 }
 """)
 
-BBI_072THR-075PRO-1 = input.process_input("""
+BBI_072THR_075PRO_1 = input.process_input("""
 molecule dimer {
 0 1
 C       24.87800000    30.59800000    37.00200000
@@ -2021,7 +2034,7 @@ units angstrom
 }
 """)
 
-BBI_081ASN-084GLY-1 = input.process_input("""
+BBI_081ASN_084GLY_1 = input.process_input("""
 molecule dimer {
 0 1
 C       13.82900000     2.70400000    76.43400000
@@ -2054,7 +2067,7 @@ units angstrom
 }
 """)
 
-BBI_081LEU-084LYS-1 = input.process_input("""
+BBI_081LEU_084LYS_1 = input.process_input("""
 molecule dimer {
 0 1
 C       34.35100000    -7.61400000     4.94900000
@@ -2087,7 +2100,7 @@ units angstrom
 }
 """)
 
-BBI_082LEU-106LEU-2 = input.process_input("""
+BBI_082LEU_106LEU_2 = input.process_input("""
 molecule dimer {
 0 1
 C       21.00100000     3.07600000     2.09400000
@@ -2120,7 +2133,7 @@ units angstrom
 }
 """)
 
-BBI_084LEU-088MET-2 = input.process_input("""
+BBI_084LEU_088MET_2 = input.process_input("""
 molecule dimer {
 0 1
 C       29.89300000    14.63600000     9.04800000
@@ -2153,7 +2166,7 @@ units angstrom
 }
 """)
 
-BBI_087ALA-171PRO-2 = input.process_input("""
+BBI_087ALA_171PRO_2 = input.process_input("""
 molecule dimer {
 0 1
 C       24.55400000    -8.66200000    -7.54600000
@@ -2186,7 +2199,7 @@ units angstrom
 }
 """)
 
-BBI_087LEU-090TYR-1 = input.process_input("""
+BBI_087LEU_090TYR_1 = input.process_input("""
 molecule dimer {
 0 1
 C       16.60300000     4.96400000    15.18700000
@@ -2219,7 +2232,7 @@ units angstrom
 }
 """)
 
-BBI_088PHE-091ALA-1 = input.process_input("""
+BBI_088PHE_091ALA_1 = input.process_input("""
 molecule dimer {
 0 1
 C        8.88700000    97.91800000    24.54500000
@@ -2252,7 +2265,7 @@ units angstrom
 }
 """)
 
-BBI_089MET-093GLY-1 = input.process_input("""
+BBI_089MET_093GLY_1 = input.process_input("""
 molecule dimer {
 0 1
 C       10.15500000    28.16600000    14.94000000
@@ -2285,7 +2298,7 @@ units angstrom
 }
 """)
 
-BBI_092SER-096ARG-2 = input.process_input("""
+BBI_092SER_096ARG_2 = input.process_input("""
 molecule dimer {
 0 1
 C       20.72500000     2.77400000    15.80200000
@@ -2318,7 +2331,7 @@ units angstrom
 }
 """)
 
-BBI_095GLN-183ILE-1 = input.process_input("""
+BBI_095GLN_183ILE_1 = input.process_input("""
 molecule dimer {
 0 1
 C       12.33100000     5.30600000   -10.12800000
@@ -2351,7 +2364,7 @@ units angstrom
 }
 """)
 
-BBI_095LYS-107ILE-2 = input.process_input("""
+BBI_095LYS_107ILE_2 = input.process_input("""
 molecule dimer {
 0 1
 C       16.07000000    16.05100000    25.83200000
@@ -2384,7 +2397,7 @@ units angstrom
 }
 """)
 
-BBI_097GLU-100THR-2 = input.process_input("""
+BBI_097GLU_100THR_2 = input.process_input("""
 molecule dimer {
 0 1
 C        9.39000000    -7.30300000    29.75300000
@@ -2417,7 +2430,7 @@ units angstrom
 }
 """)
 
-BBI_102GLN-106ILE-1 = input.process_input("""
+BBI_102GLN_106ILE_1 = input.process_input("""
 molecule dimer {
 0 1
 C       15.81800000   -10.94900000     7.38500000
@@ -2450,7 +2463,7 @@ units angstrom
 }
 """)
 
-BBI_104VAL-108ILE-1 = input.process_input("""
+BBI_104VAL_108ILE_1 = input.process_input("""
 molecule dimer {
 0 1
 C       37.23300000    -8.66000000    10.91900000
@@ -2483,7 +2496,7 @@ units angstrom
 }
 """)
 
-BBI_108LYS-112TYR-1 = input.process_input("""
+BBI_108LYS_112TYR_1 = input.process_input("""
 molecule dimer {
 0 1
 C       -0.54400000     1.81600000    15.86000000
@@ -2516,7 +2529,7 @@ units angstrom
 }
 """)
 
-BBI_108TYR-129TRP-1 = input.process_input("""
+BBI_108TYR_129TRP_1 = input.process_input("""
 molecule dimer {
 0 1
 C       21.45900000    16.82300000    27.28600000
@@ -2549,7 +2562,7 @@ units angstrom
 }
 """)
 
-BBI_112SER-115ALA-2 = input.process_input("""
+BBI_112SER_115ALA_2 = input.process_input("""
 molecule dimer {
 0 1
 C       19.26500000   -11.56600000    27.68600000
@@ -2582,7 +2595,7 @@ units angstrom
 }
 """)
 
-BBI_112TRP-115ARG-1 = input.process_input("""
+BBI_112TRP_115ARG_1 = input.process_input("""
 molecule dimer {
 0 1
 C       12.99700000   107.58400000    30.66100000
@@ -2615,7 +2628,7 @@ units angstrom
 }
 """)
 
-BBI_113TRP-124HIE-2 = input.process_input("""
+BBI_113TRP_124HIE_2 = input.process_input("""
 molecule dimer {
 0 1
 C       15.69200000    18.90600000    -3.72600000
@@ -2648,7 +2661,7 @@ units angstrom
 }
 """)
 
-BBI_115GLN-118ARG-2 = input.process_input("""
+BBI_115GLN_118ARG_2 = input.process_input("""
 molecule dimer {
 0 1
 C       30.32800000    52.65700000    61.95600000
@@ -2681,7 +2694,7 @@ units angstrom
 }
 """)
 
-BBI_119MET-122VAL-1 = input.process_input("""
+BBI_119MET_122VAL_1 = input.process_input("""
 molecule dimer {
 0 1
 C       45.95400000    -1.61800000     9.16300000
@@ -2714,7 +2727,7 @@ units angstrom
 }
 """)
 
-BBI_121LYS-125ALA-1 = input.process_input("""
+BBI_121LYS_125ALA_1 = input.process_input("""
 molecule dimer {
 0 1
 C       44.76000000    -2.15600000     3.84700000
@@ -2747,7 +2760,7 @@ units angstrom
 }
 """)
 
-BBI_121VAL-155THR-2 = input.process_input("""
+BBI_121VAL_155THR_2 = input.process_input("""
 molecule dimer {
 0 1
 C       13.19700000    20.16700000    11.57000000
@@ -2780,7 +2793,7 @@ units angstrom
 }
 """)
 
-BBI_126VAL-129ALA-1 = input.process_input("""
+BBI_126VAL_129ALA_1 = input.process_input("""
 molecule dimer {
 0 1
 C       19.00600000    31.54700000    21.22500000
@@ -2813,7 +2826,7 @@ units angstrom
 }
 """)
 
-BBI_133LYS-137ASN-1 = input.process_input("""
+BBI_133LYS_137ASN_1 = input.process_input("""
 molecule dimer {
 0 1
 C        0.71300000     5.33600000    27.76300000
@@ -2846,7 +2859,7 @@ units angstrom
 }
 """)
 
-BBI_134GLU-138ARG-1 = input.process_input("""
+BBI_134GLU_138ARG_1 = input.process_input("""
 molecule dimer {
 0 1
 C       -5.47100000    -3.30200000    72.20800000
@@ -2879,7 +2892,7 @@ units angstrom
 }
 """)
 
-BBI_135ARG-152ALA-2 = input.process_input("""
+BBI_135ARG_152ALA_2 = input.process_input("""
 molecule dimer {
 0 1
 C       14.42800000     5.43400000    10.89000000
@@ -2912,7 +2925,7 @@ units angstrom
 }
 """)
 
-BBI_137SER-144LYS-1 = input.process_input("""
+BBI_137SER_144LYS_1 = input.process_input("""
 molecule dimer {
 0 1
 C       26.86200000    49.40800000    54.49800000
@@ -2945,7 +2958,7 @@ units angstrom
 }
 """)
 
-BBI_140SER-144THR-2 = input.process_input("""
+BBI_140SER_144THR_2 = input.process_input("""
 molecule dimer {
 0 1
 C      -27.66700000    11.00300000   -22.84300000
@@ -2978,7 +2991,7 @@ units angstrom
 }
 """)
 
-BBI_142ALA-146PHE-1 = input.process_input("""
+BBI_142ALA_146PHE_1 = input.process_input("""
 molecule dimer {
 0 1
 C       33.55000000    94.86800000    46.73100000
@@ -3011,7 +3024,7 @@ units angstrom
 }
 """)
 
-BBI_143VAL-147GLU-1 = input.process_input("""
+BBI_143VAL_147GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       -1.86200000     9.06900000    -7.73200000
@@ -3044,7 +3057,7 @@ units angstrom
 }
 """)
 
-BBI_146PHE-150LEU-1 = input.process_input("""
+BBI_146PHE_150LEU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       35.29100000     3.15000000    19.07200000
@@ -3077,7 +3090,7 @@ units angstrom
 }
 """)
 
-BBI_150LYS-158LEU-2 = input.process_input("""
+BBI_150LYS_158LEU_2 = input.process_input("""
 molecule dimer {
 0 1
 C        9.85300000     2.84200000    -3.55200000
@@ -3110,7 +3123,7 @@ units angstrom
 }
 """)
 
-BBI_157LYS-160VAL-1 = input.process_input("""
+BBI_157LYS_160VAL_1 = input.process_input("""
 molecule dimer {
 0 1
 C        3.73200000     8.86900000     8.77600000
@@ -3143,7 +3156,7 @@ units angstrom
 }
 """)
 
-BBI_162ALA-176GLY-1 = input.process_input("""
+BBI_162ALA_176GLY_1 = input.process_input("""
 molecule dimer {
 0 1
 C      -17.74000000    15.19200000    -3.17800000
@@ -3176,7 +3189,7 @@ units angstrom
 }
 """)
 
-BBI_167GLY-232GLY-1 = input.process_input("""
+BBI_167GLY_232GLY_1 = input.process_input("""
 molecule dimer {
 0 1
 C      -21.57600000     9.57000000    -2.09200000
@@ -3209,7 +3222,7 @@ units angstrom
 }
 """)
 
-BBI_168GLY-172LYS-2 = input.process_input("""
+BBI_168GLY_172LYS_2 = input.process_input("""
 molecule dimer {
 0 1
 C       29.97500000    85.51300000    43.09100000
@@ -3242,7 +3255,7 @@ units angstrom
 }
 """)
 
-BBI_171ALA-175GLU-1 = input.process_input("""
+BBI_171ALA_175GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       14.98600000    -3.67500000    22.14700000
@@ -3275,7 +3288,7 @@ units angstrom
 }
 """)
 
-BBI_172GLY-175TRP-1 = input.process_input("""
+BBI_172GLY_175TRP_1 = input.process_input("""
 molecule dimer {
 0 1
 C      -28.21300000    14.47800000    -2.71000000
@@ -3308,7 +3321,7 @@ units angstrom
 }
 """)
 
-BBI_197TYR-201LEU-2 = input.process_input("""
+BBI_197TYR_201LEU_2 = input.process_input("""
 molecule dimer {
 0 1
 C       19.26600000    20.16900000     9.99800000
@@ -3341,7 +3354,7 @@ units angstrom
 }
 """)
 
-BBI_199SER-202TYR-1 = input.process_input("""
+BBI_199SER_202TYR_1 = input.process_input("""
 molecule dimer {
 0 1
 C       43.86400000    26.88100000    10.53600000
@@ -3374,7 +3387,7 @@ units angstrom
 }
 """)
 
-BBI_205THR-208GLU-1 = input.process_input("""
+BBI_205THR_208GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       27.52100000    12.50600000    26.48200000
@@ -3407,7 +3420,7 @@ units angstrom
 }
 """)
 
-BBI_205THR-209LEU-2 = input.process_input("""
+BBI_205THR_209LEU_2 = input.process_input("""
 molecule dimer {
 0 1
 C       27.52100000    12.50600000    26.48200000
@@ -3440,7 +3453,7 @@ units angstrom
 }
 """)
 
-BBI_228ARG-232GLU-1 = input.process_input("""
+BBI_228ARG_232GLU_1 = input.process_input("""
 molecule dimer {
 0 1
 C       48.27300000    30.47900000    27.65500000
@@ -3477,10 +3490,11 @@ units angstrom
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
+   distance = rxnpattern.match(rxn)
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP
+   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))
+   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoA_CP
+   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoB_CP
+   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoA_unCP
+   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoB_unCP
 

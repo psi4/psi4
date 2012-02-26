@@ -1,17 +1,48 @@
+"""
+**NBC10**
+
+| Database (Sherrill) of interaction energies for dissociation curves of dispersion-bound bimolecular complexes.
+| Geometries and Reference interaction energies from the following articles:
+|   Benzene Dimers from Sherrill et al. JPCA 113 10146 (2009).
+|   Benzene-Hydrogen Sulfide from Sherrill et al. JPCA 113 10146 (2009).
+|   Benzene-Methane from Sherrill et al. JPCA 113 10146 (2009).
+|   Methane Dimer from Takatani et al. PCCP 9 6106 (2007).
+|   Pyridine Dimers from Hohenstein et al. JPCA 113 878 (2009).
+|   Collection into NBC10 from Burns et al. JCP 134 084107 (2011).
+|   Reference from Marshall et al. JCP 135 194102 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **benchmark**
+
+  - ``'NBC100'`` Burns et al. JCP 134 084107 (2011).
+  - |dl| ``'NBC10A'`` |dr| Marshall et al. JCP 135 194102 (2011).
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'equilibrium'``
+  - ``'BzBz_S'`` dissociation curve for benzene dimer, sandwich
+  - ``'BzBz_T'`` dissociation curve for benzene dimer, t-shaped
+  - ``'BzBz_PD34'`` dissociation curve for benzene dimer, parallel displaced by 3.4A
+  - ``'BzH2S'`` dissociation curve for benzene-H2S
+  - ``'BzMe'`` dissociation curve for benzene-methane
+  - ``'MeMe'`` dissociation curve for methane dimer
+  - ``'PyPy_S2'`` dissociation curve for pyridine dimer, sandwich
+  - ``'PyPy_T3'`` dissociation curve for pyridine dimer, t-shaped
+  - ``'BzBz_PD32'`` dissociation curve for benzene dimer, parallel displaced by 3.2A
+  - ``'BzBz_PD36'`` dissociation curve for benzene dimer, parallel displaced by 3.6A
+
+----
+
+"""
 import re
 import input
 
 # <<< NBC10 Database Module >>>
-# Geometries and Reference interaction energies from the following articles:
-#   Benzene Dimers from Sherrill et al. JPCA 113 10146 (2009).
-#   Benzene-Hydrogen Sulfide from Sherrill et al. JPCA 113 10146 (2009).
-#   Benzene-Methane from Sherrill et al. JPCA 113 10146 (2009).
-#   Methane Dimer from Takatani et al. PCCP 9 6106 (2007).
-#   Pyridine Dimers from Hohenstein et al. JPCA 113 878 (2009).
-#   Collection into NBC10 from Burns et al. JCP 134 084107 (2011).
-#
-#   NBC100: Burns et al. JCP 134 084107 (2011).
-#   NBC10A: Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
 dbse = 'NBC1'
 
 # <<< Database Members >>>
@@ -6168,8 +6199,8 @@ for rxn in HRXN:
    distance = rxnpattern.match(rxn)
 
    GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
-   GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoA_CP
-   GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_CP
+   GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoA_CP
+   GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoB_CP
 
 GEOS['%s-Bz-mono-unCP'  % (dbse)] = eval('%s_Bz_monomer'  % (dbse))
 GEOS['%s-H2S-mono-unCP' % (dbse)] = eval('%s_H2S_monomer' % (dbse))

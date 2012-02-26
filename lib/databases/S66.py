@@ -1,8 +1,28 @@
+"""
+**S66**
+
+| Database (Hobza) of interaction energies for bimolecular complexes.
+| Geometries and reference energies from Rezac et al. JCTC 7 2427 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'HB'`` hydrogen-bonded systems
+  - ``'MX'`` mixed-influence systems
+  - ``'DD'`` dispersion-dominated systems
+
+----
+
+"""
 import re
 import input
 
 # <<< S66 Database Module >>>
-# Geometries and Reference energies from Rezac et al. JCTC xx xxxx (2011).
 dbse = 'S66'
 
 # <<< Database Members >>>
@@ -2424,8 +2444,8 @@ GEOS = {}
 for rxn in HRXN:
 
    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP
+   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
+   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
+   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
+   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP
 

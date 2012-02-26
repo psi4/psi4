@@ -64,8 +64,6 @@
 <span class="sd">:py:mod:`driver.response`, and :py:mod:`driver.frequency`.</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
-
-
 <span class="kn">import</span> <span class="nn">PsiMod</span>
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">os</span>
@@ -505,8 +503,6 @@
 
 <span class="sd">       - Table print-out needs improving. Add some PSI variables.</span>
 
-<span class="sd">    **Keywords**</span>
-
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
@@ -530,13 +526,12 @@
 <span class="sd">        Indicates whether to additionally compute un-counterpoise corrected</span>
 <span class="sd">        monomers and thus obtain an estimate for the basis set superposition error.</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] counterpoise-corrected mp2 interaction energy</span>
 <span class="sd">    &gt;&gt;&gt; cp(&#39;dfmp2&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -708,8 +703,6 @@
 
 <span class="sd">       - In sow/reap mode, use only global options (e.g., the local option set by ``set scf scf_type df`` will not be respected).</span>
 
-<span class="sd">    **Keywords**</span>
-
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;sapt0&#39;`` || ``&#39;ccsd(t)&#39;`` || etc.</span>
 
@@ -748,16 +741,16 @@
 
 <span class="sd">        Indicates whether counterpoise correction is employed in computing</span>
 <span class="sd">        interaction energies. Use this option and NOT the :py:func:`wrappers.cp`</span>
-<span class="sd">        function for BSSE correction in database().  Option</span>
-<span class="sd">        valid only for databases consisting of bimolecular complexes.</span>
+<span class="sd">        function for BSSE correction in database().  Option available</span>
+<span class="sd">        (See `Available Databases`_) only for databases of bimolecular complexes.</span>
 
 <span class="sd">    :type rlxd: bool</span>
 <span class="sd">    :param rlxd: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
 
 <span class="sd">        Indicates whether correction for deformation energy is</span>
-<span class="sd">        employed in computing interaction energies.  Option valid only for</span>
-<span class="sd">        databases consisting of bimolecular complexes with non-frozen</span>
-<span class="sd">        monomers, e.g., HBC6.</span>
+<span class="sd">        employed in computing interaction energies.  Option available</span>
+<span class="sd">        (See `Available Databases`_) only for databases of bimolecular complexes </span>
+<span class="sd">        with non-frozen monomers, e.g., HBC6.</span>
 
 <span class="sd">    :type symm: bool</span>
 <span class="sd">    :param symm: |dl| ``&#39;on&#39;`` |dr| || ``&#39;off&#39;``</span>
@@ -778,7 +771,8 @@
 <span class="sd">    :param benchmark: |dl| ``&#39;default&#39;`` |dr| || ``&#39;S22A&#39;`` || etc.</span>
 
 <span class="sd">        Indicates whether a non-default set of reference energies, if</span>
-<span class="sd">        available, are employed for the calculation of error statistics.</span>
+<span class="sd">        available (See `Available Databases`_), are employed for the</span>
+<span class="sd">        calculation of error statistics.</span>
 
 <span class="sd">    :type tabulate: array of strings</span>
 <span class="sd">    :param tabulate: |dl| ``[]`` |dr| || ``[&#39;scf total energy&#39;, &#39;natom&#39;]`` || etc.</span>
@@ -792,6 +786,7 @@
 <span class="sd">        Indicates a subset of the full database to run. This is a very</span>
 <span class="sd">        flexible option and can be used in three distinct ways, outlined</span>
 <span class="sd">        below. Note that two take a string and the last takes an array.</span>
+<span class="sd">        See `Available Databases`_ for available values.</span>
 
 <span class="sd">        * ``&#39;small&#39;`` || ``&#39;large&#39;`` || ``&#39;equilibrium&#39;``</span>
 <span class="sd">            Calls predefined subsets of the requested database, either</span>
@@ -810,7 +805,7 @@
 <span class="sd">            choices for this keyword are case sensitive and must match the</span>
 <span class="sd">            database python file</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer</span>
 <span class="sd">    &gt;&gt;&gt; db(&#39;scf&#39;,&#39;RGC10&#39;,cast_up=&#39;sto-3g&#39;,subset=[&#39;HeHe-0.85&#39;,&#39;HeHe-1.0&#39;,&#39;HeHe-1.5&#39;], tabulate=[&#39;scf total energy&#39;,&#39;natom&#39;])</span>
@@ -829,7 +824,6 @@
 <span class="sd">    &gt;&gt;&gt; database(&#39;ccsd&#39;,&#39;HTBH&#39;,subset=&#39;small&#39;, tabulate=[&#39;ccsd total energy&#39;, &#39;mp2 total energy&#39;])</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="c">#hartree2kcalmol = 627.509469  # consistent with perl SETS scripts</span>
@@ -1473,8 +1467,6 @@
 
 <span class="sd">    .. include:: cbs_eqn.rst</span>
 
-<span class="sd">    **Keywords**</span>
-
 <span class="sd">    * Energy Methods</span>
 <span class="sd">        The presence of a stage_wfn keyword is the indicator to incorporate</span>
 <span class="sd">        (and check for stage_basis and stage_scheme keywords) and compute</span>
@@ -1579,7 +1571,7 @@
 <span class="sd">        Indicates the basis set extrapolation scheme to be applied to the second delta correction</span>
 <span class="sd">        to the correlation energy.</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy(&#39;scf&#39;)</span>
 <span class="sd">    &gt;&gt;&gt; cbs(&#39;scf&#39;, scf_basis=&#39;cc-pVDZ&#39;)</span>
@@ -1603,7 +1595,6 @@
 <span class="sd">    &gt;&gt;&gt; database(&#39;mp2&#39;, &#39;BASIC&#39;, subset=[&#39;h2o&#39;,&#39;nh3&#39;], symm=&#39;on&#39;, func=cbs, corl_basis=&#39;cc-pV[tq]z&#39;, corl_scheme=corl_xtpl_helgaker_2, delta_wfn=&#39;ccsd(t)&#39;, delta_basis=&#39;sto-3g&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
@@ -2047,7 +2038,6 @@
 <span class="sd">    .. math:: E_{total}^X = E_{total}^X</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">energypiece</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">functionname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
     <span class="n">f_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;f_wfn&#39;</span><span class="p">,</span> <span class="s">&#39;f_portion&#39;</span><span class="p">,</span> <span class="s">&#39;f_basis&#39;</span><span class="p">,</span> <span class="s">&#39;f_zeta&#39;</span><span class="p">,</span> <span class="s">&#39;f_energy&#39;</span><span class="p">]</span>
@@ -2095,7 +2085,6 @@
 <span class="sd">    .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">energypiece</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">functionname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
     <span class="n">f_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;f_wfn&#39;</span><span class="p">,</span> <span class="s">&#39;f_portion&#39;</span><span class="p">,</span> <span class="s">&#39;f_basis&#39;</span><span class="p">,</span> <span class="s">&#39;f_zeta&#39;</span><span class="p">,</span> <span class="s">&#39;f_energy&#39;</span><span class="p">]</span>
@@ -2144,7 +2133,6 @@
 <span class="sd">    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">energypiece</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">functionname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
     <span class="n">f_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;f_wfn&#39;</span><span class="p">,</span> <span class="s">&#39;f_portion&#39;</span><span class="p">,</span> <span class="s">&#39;f_basis&#39;</span><span class="p">,</span> <span class="s">&#39;f_zeta&#39;</span><span class="p">,</span> <span class="s">&#39;f_energy&#39;</span><span class="p">]</span>
@@ -2200,7 +2188,6 @@
 <span class="sd">    .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">energypiece</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">functionname</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
     <span class="n">f_fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;f_wfn&#39;</span><span class="p">,</span> <span class="s">&#39;f_portion&#39;</span><span class="p">,</span> <span class="s">&#39;f_basis&#39;</span><span class="p">,</span> <span class="s">&#39;f_zeta&#39;</span><span class="p">,</span> <span class="s">&#39;f_energy&#39;</span><span class="p">]</span>
@@ -2361,7 +2348,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 25, 2012.
+      Last updated on Feb 26, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
