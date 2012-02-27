@@ -47,49 +47,59 @@ dbse = 'NBC1'
 
 # <<< Database Members >>>
 BzBz_S = []
-dist = [3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.5,5.0,5.5,6.0,6.5,10.0]
-for d in dist: BzBz_S.append('BzBz_S-' + str(d))
-    
+dist = [3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.5, 5.0, 5.5, 6.0, 6.5, 10.0]
+for d in dist:
+    BzBz_S.append('BzBz_S-' + str(d))
+
 BzBz_T = []
-dist = [4.4,4.5,4.6,4.7,4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.6,6.0,6.5,7.0,7.5,8.0]
-for d in dist: BzBz_T.append('BzBz_T-' + str(d))
+dist = [4.4, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 6.0, 6.5, 7.0, 7.5, 8.0]
+for d in dist:
+    BzBz_T.append('BzBz_T-' + str(d))
 
 BzBz_PD34 = []
-dist = [0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0]
-for d in dist: BzBz_PD34.append('BzBz_PD34-' + str(d))
+dist = [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]
+for d in dist:
+    BzBz_PD34.append('BzBz_PD34-' + str(d))
 
 BzH2S = []
-dist = [3.2,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.5,4.75,5.0,5.25,5.5,6.0,6.5,7.0,7.5]
-for d in dist: BzH2S.append('BzH2S-' + str(d))
+dist = [3.2, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.5, 4.75, 5.0, 5.25, 5.5, 6.0, 6.5, 7.0, 7.5]
+for d in dist:
+    BzH2S.append('BzH2S-' + str(d))
 
 BzMe = []
-dist = [3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.4,4.6,4.8,5.0,5.2,5.4,5.6,6.0]
-for d in dist: BzMe.append('BzMe-' + str(d))
+dist = [3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.4, 4.6, 4.8, 5.0, 5.2, 5.4, 5.6, 6.0]
+for d in dist:
+    BzMe.append('BzMe-' + str(d))
 
 MeMe = []
-dist = [3.2,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.6,4.8,5.0,5.4,5.8]
-for d in dist: MeMe.append('MeMe-' + str(d))
+dist = [3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.6, 4.8, 5.0, 5.4, 5.8]
+for d in dist:
+    MeMe.append('MeMe-' + str(d))
 
 PyPy_S2 = []
-dist = [3.1,3.3,3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.5,4.7,5.0,5.5,6.0,6.5,7.0]
-for d in dist: PyPy_S2.append('PyPy_S2-' + str(d))
+dist = [3.1, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.5, 4.7, 5.0, 5.5, 6.0, 6.5, 7.0]
+for d in dist:
+    PyPy_S2.append('PyPy_S2-' + str(d))
 
 PyPy_T3 = []
-dist = [4.1,4.3,4.5,4.6,4.7,4.8,4.9,5.0,5.1,5.2,5.3,5.4,5.5,5.7,6.0,6.5,7.0,8.0,9.0]
-for d in dist: PyPy_T3.append('PyPy_T3-' + str(d))
+dist = [4.1, 4.3, 4.5, 4.6, 4.7, 4.8, 4.9, 5.0, 5.1, 5.2, 5.3, 5.4, 5.5, 5.7, 6.0, 6.5, 7.0, 8.0, 9.0]
+for d in dist:
+    PyPy_T3.append('PyPy_T3-' + str(d))
 
 BzBz_PD32 = []
-dist = [0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0]
-for d in dist: BzBz_PD32.append('BzBz_PD32-' + str(d))
+dist = [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]
+for d in dist:
+    BzBz_PD32.append('BzBz_PD32-' + str(d))
 
 BzBz_PD36 = []
-dist = [0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.5,1.6,1.7,1.8,1.9,2.0,2.2,2.4,2.6,2.8,3.0]
-for d in dist: BzBz_PD36.append('BzBz_PD36-' + str(d))
+dist = [0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0]
+for d in dist:
+    BzBz_PD36.append('BzBz_PD36-' + str(d))
 
 temp = [BzBz_S, BzBz_T, BzBz_PD34, BzH2S, BzMe, MeMe, PyPy_S2, PyPy_T3, BzBz_PD32, BzBz_PD36]
 HRXN = sum(temp, [])
 
-HRXN_SM = ['BzMe-6.0','MeMe-5.0']
+HRXN_SM = ['BzMe-6.0', 'MeMe-5.0']
 HRXN_LG = ['BzBz_T-5.0']
 HRXN_EQ = ['BzBz_S-3.9', 'BzBz_T-5.0', 'BzBz_PD34-1.8', 'BzH2S-3.8', 'BzMe-3.8',
            'MeMe-3.6', 'PyPy_S2-3.7', 'PyPy_T3-4.9', 'BzBz_PD32-1.9', 'BzBz_PD36-1.7']
@@ -101,108 +111,108 @@ ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
 ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
-   if (rxn in BzBz_S) or (rxn in BzBz_PD34) or (rxn in BzBz_PD32) or (rxn in BzBz_PD36):
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-Bz-mono-unCP'  % (dbse)      : -2 }
+    if (rxn in BzBz_S) or (rxn in BzBz_PD34) or (rxn in BzBz_PD32) or (rxn in BzBz_PD36):
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                          '%s-Bz-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Bz-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Bz-mono-unCP'  % (dbse) ]
 
-   elif rxn in BzBz_T:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-Bz-mono-unCP'  % (dbse)      : -2 }
+    elif rxn in BzBz_T:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-Bz-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Bz-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Bz-mono-unCP'  % (dbse) ]
 
-   elif rxn in BzH2S:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-Bz-mono-unCP'  % (dbse)      : -1,
-                                        '%s-H2S-mono-unCP' % (dbse)      : -1 }
+    elif rxn in BzH2S:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-Bz-mono-unCP'  % (dbse)      : -1,
+                                          '%s-H2S-mono-unCP' % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Bz-mono-unCP'  % (dbse),
-                                        '%s-H2S-mono-unCP' % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Bz-mono-unCP'  % (dbse),
+                                          '%s-H2S-mono-unCP' % (dbse) ]
 
-   elif rxn in BzMe:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-Bz2-mono-unCP' % (dbse)      : -1,
-                                        '%s-Me-mono-unCP'  % (dbse)      : -1 }
+    elif rxn in BzMe:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-Bz2-mono-unCP' % (dbse)      : -1,
+                                          '%s-Me-mono-unCP'  % (dbse)      : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Bz2-mono-unCP' % (dbse),
-                                        '%s-Me-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Bz2-mono-unCP' % (dbse),
+                                          '%s-Me-mono-unCP'  % (dbse) ]
 
-   elif rxn in MeMe:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-Me-mono-unCP'  % (dbse)      : -2 }
+    elif rxn in MeMe:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                          '%s-Me-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Me-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Me-mono-unCP'  % (dbse) ]
 
-   elif rxn in PyPy_S2:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-Py-mono-unCP'  % (dbse)      : -2 }
+    elif rxn in PyPy_S2:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                          '%s-Py-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Py-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Py-mono-unCP'  % (dbse) ]
 
-   elif rxn in PyPy_T3:
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-Py-mono-unCP'  % (dbse)      : -2 }
+    elif rxn in PyPy_T3:
+        RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                          '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                          '%s-Py-mono-unCP'  % (dbse)      : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-%s-monoA-CP'   % (dbse, rxn),
+                                          '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-Py-mono-unCP'  % (dbse) ]
+        ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                          '%s-Py-mono-unCP'  % (dbse) ]
 
 # <<< Reference Values >>>
 BIND = {}
@@ -604,68 +614,68 @@ TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)$')
 
 for item in BzBz_S:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Sandwich Benzene Dimer at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Sandwich Benzene Dimer at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Sandwich Benzene Dimer at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Sandwich Benzene Dimer at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Sandwich Benzene Dimer at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Sandwich Benzene Dimer at %s A' % (distance.group(2))
 
 for item in BzBz_T:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'T-shaped Benzene Dimer at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'T-shaped Benzene Dimer at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from T-shaped Benzene Dimer at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Benzene from T-shaped Benzene Dimer at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'T-shaped Benzene Dimer at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'T-shaped Benzene Dimer at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from T-shaped Benzene Dimer at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Benzene from T-shaped Benzene Dimer at %s A' % (distance.group(2))
 
 for item in BzBz_PD34:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.4 at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.4 at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Parallel Displaced Benzene Dimer Interplane 3.4 at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.4 at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.4 at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Parallel Displaced Benzene Dimer Interplane 3.4 at %s A' % (distance.group(2))
 
 for item in BzH2S:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Benzene-H2S at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Benzene-H2S at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Benzene-Methane at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Hydrogen Sulfide from Benzene-Methane at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Benzene-H2S at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Benzene-H2S at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Benzene-Methane at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Hydrogen Sulfide from Benzene-Methane at %s A' % (distance.group(2))
 
 for item in BzMe:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Benzene-Methane at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Benzene-Methane at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Benzene-Methane at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Methane from Benzene-Methane at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Benzene-Methane at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Benzene-Methane at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Benzene-Methane at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Methane from Benzene-Methane at %s A' % (distance.group(2))
 
 for item in MeMe:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Methane Dimer at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Methane Dimer at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Methane from Methane Dimer at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Methane Dimer at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Methane Dimer at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Methane from Methane Dimer at %s A' % (distance.group(2))
 
 for item in PyPy_S2:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Pyridine Dimer S2 Configuration at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Pyridine Dimer S2 Configuration at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Pyridine from Pyridine Dimer S2 Configuration at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Pyridine Dimer S2 Configuration at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Pyridine Dimer S2 Configuration at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Pyridine from Pyridine Dimer S2 Configuration at %s A' % (distance.group(2))
 
 for item in PyPy_T3:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Pyridine from Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Pyridine from Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Pyridine from Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoB-CP' % (dbse, item)] = 'Pyridine from Pyridine Dimer T3 Configuration at %s A' % (distance.group(2))
 
 for item in BzBz_PD32:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.2 at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.2 at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Parallel Displaced Benzene Dimer Interplane 3.2 at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.2 at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.2 at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Parallel Displaced Benzene Dimer Interplane 3.2 at %s A' % (distance.group(2))
 
 for item in BzBz_PD36:
-   distance = rxnpattern.match(item)
-   TAGL['%s-%s'          % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.6 at %s A' % (distance.group(2))
-   TAGL['%s-%s-dimer'    % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.6 at %s A' % (distance.group(2))
-   TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Parallel Displaced Benzene Dimer Interplane 3.6 at %s A' % (distance.group(2))
+    distance = rxnpattern.match(item)
+    TAGL['%s-%s'          % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.6 at %s A' % (distance.group(2))
+    TAGL['%s-%s-dimer'    % (dbse, item)] = 'Parallel Displaced Benzene Dimer Interplane 3.6 at %s A' % (distance.group(2))
+    TAGL['%s-%s-monoA-CP' % (dbse, item)] = 'Benzene from Parallel Displaced Benzene Dimer Interplane 3.6 at %s A' % (distance.group(2))
 
 TAGL['%s-Bz-mono-unCP'  % (dbse)] = 'Benzene'
 TAGL['%s-H2S-mono-unCP' % (dbse)] = 'Hydrogen Sulfide'
@@ -6196,16 +6206,14 @@ units angstrom
 #<<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
-   distance = rxnpattern.match(rxn)
+    distance = rxnpattern.match(rxn)
 
-   GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
-   GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoA_CP
-   GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoB_CP
+    GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
+    GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoA_CP
+    GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoB_CP
 
 GEOS['%s-Bz-mono-unCP'  % (dbse)] = eval('%s_Bz_monomer'  % (dbse))
 GEOS['%s-H2S-mono-unCP' % (dbse)] = eval('%s_H2S_monomer' % (dbse))
 GEOS['%s-Bz2-mono-unCP' % (dbse)] = eval('%s_Bz2_monomer' % (dbse))
 GEOS['%s-Me-mono-unCP'  % (dbse)] = eval('%s_Me_monomer'  % (dbse))
 GEOS['%s-Py-mono-unCP'  % (dbse)] = eval('%s_Py_monomer'  % (dbse))
-
-

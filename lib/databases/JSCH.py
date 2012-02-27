@@ -24,7 +24,7 @@ dbse = 'JSCH'
 
 # <<< Database Members >>>
 HRXN = range(1, 125)
-HRXN_SM = [9,97]
+HRXN_SM = [9, 97]
 HRXN_LG = [63]
 
 # <<< Chemical Systems Involved >>>
@@ -34,148 +34,148 @@ ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
 ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
-   RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                     '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                     '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+    RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                      '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
 
-   ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+    ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-   ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                     '%s-%s-monoA-CP'   % (dbse, rxn),
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) ]
+    ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-CP'   % (dbse, rxn),
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-   ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                     '%s-%s-monoA-unCP' % (dbse, rxn),
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) ]
+    ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-unCP' % (dbse, rxn),
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values >>>
 BIND = {}
-BIND['%s-%s' % (dbse,   1)] = -32.06;
-BIND['%s-%s' % (dbse,   2)] = -31.59;
-BIND['%s-%s' % (dbse,   3)] = -16.86;
-BIND['%s-%s' % (dbse,   4)] = -18.16;
-BIND['%s-%s' % (dbse,   5)] = -33.30;
-BIND['%s-%s' % (dbse,   6)] = -24.90;
-BIND['%s-%s' % (dbse,   7)] = -19.10;
-BIND['%s-%s' % (dbse,   8)] = -51.40;
-BIND['%s-%s' % (dbse,   9)] = -10.30;
-BIND['%s-%s' % (dbse,  10)] = -13.70;
-BIND['%s-%s' % (dbse,  11)] = -29.50;
-BIND['%s-%s' % (dbse,  12)] = -14.20;
-BIND['%s-%s' % (dbse,  13)] = -19.50;
-BIND['%s-%s' % (dbse,  14)] = -19.70;
-BIND['%s-%s' % (dbse,  15)] =  -5.20;
-BIND['%s-%s' % (dbse,  16)] = -17.80;
-BIND['%s-%s' % (dbse,  17)] = -16.60;
-BIND['%s-%s' % (dbse,  18)] = -17.60;
-BIND['%s-%s' % (dbse,  19)] = -21.30;
-BIND['%s-%s' % (dbse,  20)] = -21.80;
-BIND['%s-%s' % (dbse,  21)] = -22.70;
-BIND['%s-%s' % (dbse,  22)] = -19.40;
-BIND['%s-%s' % (dbse,  23)] = -18.90;
-BIND['%s-%s' % (dbse,  24)] = -14.40;
-BIND['%s-%s' % (dbse,  25)] = -12.80;
-BIND['%s-%s' % (dbse,  26)] = -18.80;
-BIND['%s-%s' % (dbse,  27)] = -13.50;
-BIND['%s-%s' % (dbse,  28)] = -14.50;
-BIND['%s-%s' % (dbse,  29)] = -13.70;
-BIND['%s-%s' % (dbse,  30)] = -12.20;
-BIND['%s-%s' % (dbse,  31)] = -22.80;
-BIND['%s-%s' % (dbse,  32)] = -12.60;
-BIND['%s-%s' % (dbse,  33)] = -16.40;
-BIND['%s-%s' % (dbse,  34)] = -35.80;
-BIND['%s-%s' % (dbse,  35)] = -18.40;
-BIND['%s-%s' % (dbse,  36)] = -11.30;
-BIND['%s-%s' % (dbse,  37)] = -30.70;
-BIND['%s-%s' % (dbse,  38)] = -31.40;
-BIND['%s-%s' % (dbse,  39)] =  -3.68;
-BIND['%s-%s' % (dbse,  40)] =  -4.82;
-BIND['%s-%s' % (dbse,  41)] =  -2.34;
-BIND['%s-%s' % (dbse,  42)] =  -2.16;
-BIND['%s-%s' % (dbse,  43)] =   3.09;
-BIND['%s-%s' % (dbse,  44)] =   1.93;
-BIND['%s-%s' % (dbse,  45)] =  -3.91;
-BIND['%s-%s' % (dbse,  46)] =   1.24;
-BIND['%s-%s' % (dbse,  47)] =  -0.31;
-BIND['%s-%s' % (dbse,  48)] =   0.58;
-BIND['%s-%s' % (dbse,  49)] =  -0.47;
-BIND['%s-%s' % (dbse,  50)] =  -0.18;
-BIND['%s-%s' % (dbse,  51)] =  -4.22;
-BIND['%s-%s' % (dbse,  52)] =  -1.15;
-BIND['%s-%s' % (dbse,  53)] =   0.30;
-BIND['%s-%s' % (dbse,  54)] =  -4.06;
-BIND['%s-%s' % (dbse,  55)] =   0.88;
-BIND['%s-%s' % (dbse,  56)] =  -0.92;
-BIND['%s-%s' % (dbse,  57)] =  -1.55;
-BIND['%s-%s' % (dbse,  58)] =   0.70;
-BIND['%s-%s' % (dbse,  59)] =  -1.71;
-BIND['%s-%s' % (dbse,  60)] =  -1.30;
-BIND['%s-%s' % (dbse,  61)] =  -0.70;
-BIND['%s-%s' % (dbse,  62)] =   1.00;
-BIND['%s-%s' % (dbse,  63)] =  -4.50;
-BIND['%s-%s' % (dbse,  64)] =   1.40;
-BIND['%s-%s' % (dbse,  65)] =  -4.80;
-BIND['%s-%s' % (dbse,  66)] =  -0.10;
-BIND['%s-%s' % (dbse,  67)] =  -3.00;
-BIND['%s-%s' % (dbse,  68)] =  -5.20;
-BIND['%s-%s' % (dbse,  69)] =   0.80;
-BIND['%s-%s' % (dbse,  70)] =   3.10;
-BIND['%s-%s' % (dbse,  71)] = -19.02;
-BIND['%s-%s' % (dbse,  72)] = -20.35;
-BIND['%s-%s' % (dbse,  73)] = -12.30;
-BIND['%s-%s' % (dbse,  74)] = -14.57;
-BIND['%s-%s' % (dbse,  75)] =   2.45;
-BIND['%s-%s' % (dbse,  76)] =  -3.85;
-BIND['%s-%s' % (dbse,  77)] =  -8.88;
-BIND['%s-%s' % (dbse,  78)] =  -9.92;
-BIND['%s-%s' % (dbse,  79)] =   0.32;
-BIND['%s-%s' % (dbse,  80)] =   0.64;
-BIND['%s-%s' % (dbse,  81)] =  -0.98;
-BIND['%s-%s' % (dbse,  82)] =  -9.10;
-BIND['%s-%s' % (dbse,  83)] =  -9.11;
-BIND['%s-%s' % (dbse,  84)] =  -8.27;
-BIND['%s-%s' % (dbse,  85)] =  -9.43;
-BIND['%s-%s' % (dbse,  86)] =  -7.43;
-BIND['%s-%s' % (dbse,  87)] =  -8.80;
-BIND['%s-%s' % (dbse,  88)] =  -9.11;
-BIND['%s-%s' % (dbse,  89)] =  -8.58;
-BIND['%s-%s' % (dbse,  90)] = -12.67;
-BIND['%s-%s' % (dbse,  91)] = -10.22;
-BIND['%s-%s' % (dbse,  92)] = -11.38;
-BIND['%s-%s' % (dbse,  93)] = -10.02;
-BIND['%s-%s' % (dbse,  94)] =  -9.79;
-BIND['%s-%s' % (dbse,  95)] = -10.60;
-BIND['%s-%s' % (dbse,  96)] = -10.42;
-BIND['%s-%s' % (dbse,  97)] =  -7.46;
-BIND['%s-%s' % (dbse,  98)] = -12.09;
-BIND['%s-%s' % (dbse,  99)] =  -3.54;
-BIND['%s-%s' % (dbse, 100)] =  -1.62;
-BIND['%s-%s' % (dbse, 101)] =  -6.06;
-BIND['%s-%s' % (dbse, 102)] =  -4.18;
-BIND['%s-%s' % (dbse, 103)] = -10.80;
-BIND['%s-%s' % (dbse, 104)] =  -7.88;
-BIND['%s-%s' % (dbse, 105)] =  -9.14;
-BIND['%s-%s' % (dbse, 106)] =  -4.69;
-BIND['%s-%s' % (dbse, 107)] =  -7.58;
-BIND['%s-%s' % (dbse, 108)] =  -6.07;
-BIND['%s-%s' % (dbse, 109)] =  -5.67;
-BIND['%s-%s' % (dbse, 110)] =  -4.96;
-BIND['%s-%s' % (dbse, 111)] =  -4.96;
-BIND['%s-%s' % (dbse, 112)] =  -5.44;
-BIND['%s-%s' % (dbse, 113)] =  -6.64;
-BIND['%s-%s' % (dbse, 114)] =  -6.07;
-BIND['%s-%s' % (dbse, 115)] =  -6.25;
-BIND['%s-%s' % (dbse, 116)] =  -3.86;
-BIND['%s-%s' % (dbse, 117)] =  -8.10;
-BIND['%s-%s' % (dbse, 118)] =  -7.90;
-BIND['%s-%s' % (dbse, 119)] =  -6.70;
-BIND['%s-%s' % (dbse, 120)] =  -6.20;
-BIND['%s-%s' % (dbse, 121)] =  -7.70;
-BIND['%s-%s' % (dbse, 122)] =  -6.50;
-BIND['%s-%s' % (dbse, 123)] = -12.40;
-BIND['%s-%s' % (dbse, 124)] = -11.60;
+BIND['%s-%s' % (dbse,   1)] = -32.06
+BIND['%s-%s' % (dbse,   2)] = -31.59
+BIND['%s-%s' % (dbse,   3)] = -16.86
+BIND['%s-%s' % (dbse,   4)] = -18.16
+BIND['%s-%s' % (dbse,   5)] = -33.30
+BIND['%s-%s' % (dbse,   6)] = -24.90
+BIND['%s-%s' % (dbse,   7)] = -19.10
+BIND['%s-%s' % (dbse,   8)] = -51.40
+BIND['%s-%s' % (dbse,   9)] = -10.30
+BIND['%s-%s' % (dbse,  10)] = -13.70
+BIND['%s-%s' % (dbse,  11)] = -29.50
+BIND['%s-%s' % (dbse,  12)] = -14.20
+BIND['%s-%s' % (dbse,  13)] = -19.50
+BIND['%s-%s' % (dbse,  14)] = -19.70
+BIND['%s-%s' % (dbse,  15)] =  -5.20
+BIND['%s-%s' % (dbse,  16)] = -17.80
+BIND['%s-%s' % (dbse,  17)] = -16.60
+BIND['%s-%s' % (dbse,  18)] = -17.60
+BIND['%s-%s' % (dbse,  19)] = -21.30
+BIND['%s-%s' % (dbse,  20)] = -21.80
+BIND['%s-%s' % (dbse,  21)] = -22.70
+BIND['%s-%s' % (dbse,  22)] = -19.40
+BIND['%s-%s' % (dbse,  23)] = -18.90
+BIND['%s-%s' % (dbse,  24)] = -14.40
+BIND['%s-%s' % (dbse,  25)] = -12.80
+BIND['%s-%s' % (dbse,  26)] = -18.80
+BIND['%s-%s' % (dbse,  27)] = -13.50
+BIND['%s-%s' % (dbse,  28)] = -14.50
+BIND['%s-%s' % (dbse,  29)] = -13.70
+BIND['%s-%s' % (dbse,  30)] = -12.20
+BIND['%s-%s' % (dbse,  31)] = -22.80
+BIND['%s-%s' % (dbse,  32)] = -12.60
+BIND['%s-%s' % (dbse,  33)] = -16.40
+BIND['%s-%s' % (dbse,  34)] = -35.80
+BIND['%s-%s' % (dbse,  35)] = -18.40
+BIND['%s-%s' % (dbse,  36)] = -11.30
+BIND['%s-%s' % (dbse,  37)] = -30.70
+BIND['%s-%s' % (dbse,  38)] = -31.40
+BIND['%s-%s' % (dbse,  39)] =  -3.68
+BIND['%s-%s' % (dbse,  40)] =  -4.82
+BIND['%s-%s' % (dbse,  41)] =  -2.34
+BIND['%s-%s' % (dbse,  42)] =  -2.16
+BIND['%s-%s' % (dbse,  43)] =   3.09
+BIND['%s-%s' % (dbse,  44)] =   1.93
+BIND['%s-%s' % (dbse,  45)] =  -3.91
+BIND['%s-%s' % (dbse,  46)] =   1.24
+BIND['%s-%s' % (dbse,  47)] =  -0.31
+BIND['%s-%s' % (dbse,  48)] =   0.58
+BIND['%s-%s' % (dbse,  49)] =  -0.47
+BIND['%s-%s' % (dbse,  50)] =  -0.18
+BIND['%s-%s' % (dbse,  51)] =  -4.22
+BIND['%s-%s' % (dbse,  52)] =  -1.15
+BIND['%s-%s' % (dbse,  53)] =   0.30
+BIND['%s-%s' % (dbse,  54)] =  -4.06
+BIND['%s-%s' % (dbse,  55)] =   0.88
+BIND['%s-%s' % (dbse,  56)] =  -0.92
+BIND['%s-%s' % (dbse,  57)] =  -1.55
+BIND['%s-%s' % (dbse,  58)] =   0.70
+BIND['%s-%s' % (dbse,  59)] =  -1.71
+BIND['%s-%s' % (dbse,  60)] =  -1.30
+BIND['%s-%s' % (dbse,  61)] =  -0.70
+BIND['%s-%s' % (dbse,  62)] =   1.00
+BIND['%s-%s' % (dbse,  63)] =  -4.50
+BIND['%s-%s' % (dbse,  64)] =   1.40
+BIND['%s-%s' % (dbse,  65)] =  -4.80
+BIND['%s-%s' % (dbse,  66)] =  -0.10
+BIND['%s-%s' % (dbse,  67)] =  -3.00
+BIND['%s-%s' % (dbse,  68)] =  -5.20
+BIND['%s-%s' % (dbse,  69)] =   0.80
+BIND['%s-%s' % (dbse,  70)] =   3.10
+BIND['%s-%s' % (dbse,  71)] = -19.02
+BIND['%s-%s' % (dbse,  72)] = -20.35
+BIND['%s-%s' % (dbse,  73)] = -12.30
+BIND['%s-%s' % (dbse,  74)] = -14.57
+BIND['%s-%s' % (dbse,  75)] =   2.45
+BIND['%s-%s' % (dbse,  76)] =  -3.85
+BIND['%s-%s' % (dbse,  77)] =  -8.88
+BIND['%s-%s' % (dbse,  78)] =  -9.92
+BIND['%s-%s' % (dbse,  79)] =   0.32
+BIND['%s-%s' % (dbse,  80)] =   0.64
+BIND['%s-%s' % (dbse,  81)] =  -0.98
+BIND['%s-%s' % (dbse,  82)] =  -9.10
+BIND['%s-%s' % (dbse,  83)] =  -9.11
+BIND['%s-%s' % (dbse,  84)] =  -8.27
+BIND['%s-%s' % (dbse,  85)] =  -9.43
+BIND['%s-%s' % (dbse,  86)] =  -7.43
+BIND['%s-%s' % (dbse,  87)] =  -8.80
+BIND['%s-%s' % (dbse,  88)] =  -9.11
+BIND['%s-%s' % (dbse,  89)] =  -8.58
+BIND['%s-%s' % (dbse,  90)] = -12.67
+BIND['%s-%s' % (dbse,  91)] = -10.22
+BIND['%s-%s' % (dbse,  92)] = -11.38
+BIND['%s-%s' % (dbse,  93)] = -10.02
+BIND['%s-%s' % (dbse,  94)] =  -9.79
+BIND['%s-%s' % (dbse,  95)] = -10.60
+BIND['%s-%s' % (dbse,  96)] = -10.42
+BIND['%s-%s' % (dbse,  97)] =  -7.46
+BIND['%s-%s' % (dbse,  98)] = -12.09
+BIND['%s-%s' % (dbse,  99)] =  -3.54
+BIND['%s-%s' % (dbse, 100)] =  -1.62
+BIND['%s-%s' % (dbse, 101)] =  -6.06
+BIND['%s-%s' % (dbse, 102)] =  -4.18
+BIND['%s-%s' % (dbse, 103)] = -10.80
+BIND['%s-%s' % (dbse, 104)] =  -7.88
+BIND['%s-%s' % (dbse, 105)] =  -9.14
+BIND['%s-%s' % (dbse, 106)] =  -4.69
+BIND['%s-%s' % (dbse, 107)] =  -7.58
+BIND['%s-%s' % (dbse, 108)] =  -6.07
+BIND['%s-%s' % (dbse, 109)] =  -5.67
+BIND['%s-%s' % (dbse, 110)] =  -4.96
+BIND['%s-%s' % (dbse, 111)] =  -4.96
+BIND['%s-%s' % (dbse, 112)] =  -5.44
+BIND['%s-%s' % (dbse, 113)] =  -6.64
+BIND['%s-%s' % (dbse, 114)] =  -6.07
+BIND['%s-%s' % (dbse, 115)] =  -6.25
+BIND['%s-%s' % (dbse, 116)] =  -3.86
+BIND['%s-%s' % (dbse, 117)] =  -8.10
+BIND['%s-%s' % (dbse, 118)] =  -7.90
+BIND['%s-%s' % (dbse, 119)] =  -6.70
+BIND['%s-%s' % (dbse, 120)] =  -6.20
+BIND['%s-%s' % (dbse, 121)] =  -7.70
+BIND['%s-%s' % (dbse, 122)] =  -6.50
+BIND['%s-%s' % (dbse, 123)] = -12.40
+BIND['%s-%s' % (dbse, 124)] = -11.60
 
 # <<< Comment Lines >>>
 TAGL = {}
@@ -5746,9 +5746,8 @@ units angstrom
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
-   GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
-   GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
-   GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
-   GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP
-
+    GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
+    GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
+    GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
+    GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
+    GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP

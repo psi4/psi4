@@ -37,19 +37,21 @@ FaNNFaNN = []
 FaOOFaON = []
 FaONFaNN = []
 FaOOFaNN = []
-dist = [3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.6,4.8,5.0,5.4,5.8,6.4,7.0,8.0,10.0]
-for d in dist: FaOOFaOO.append('FaOOFaOO-' + str(d))
-for d in dist: FaONFaON.append('FaONFaON-' + str(d))
-for d in dist: FaNNFaNN.append('FaNNFaNN-' + str(d))
-for d in dist: FaOOFaON.append('FaOOFaON-' + str(d))
-for d in dist: FaONFaNN.append('FaONFaNN-' + str(d))
-dist = [3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.6,4.8,5.0,5.4,5.8,6.4,7.0,8.0,10.0]
-for d in dist: FaOOFaNN.append('FaOOFaNN-' + str(d))
+dist = [3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.6, 4.8, 5.0, 5.4, 5.8, 6.4, 7.0, 8.0, 10.0]
+for d in dist:
+    FaOOFaOO.append('FaOOFaOO-' + str(d))
+    FaONFaON.append('FaONFaON-' + str(d))
+    FaNNFaNN.append('FaNNFaNN-' + str(d))
+    FaOOFaON.append('FaOOFaON-' + str(d))
+    FaONFaNN.append('FaONFaNN-' + str(d))
+dist = [3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.6, 4.8, 5.0, 5.4, 5.8, 6.4, 7.0, 8.0, 10.0]
+for d in dist:
+    FaOOFaNN.append('FaOOFaNN-' + str(d))
 
 temp = [FaOOFaOO, FaONFaON, FaNNFaNN, FaOOFaON, FaONFaNN, FaOOFaNN]
 HRXN = sum(temp, [])
 
-HRXN_SM = ['FaOOFaOO-8.0','FaOOFaON-5.0']
+HRXN_SM = ['FaOOFaOO-8.0', 'FaOOFaON-5.0']
 HRXN_LG = ['FaNNFaNN-3.6']
 HRXN_EQ = ['FaOOFaOO-3.6', 'FaONFaON-4.0', 'FaNNFaNN-4.1', 'FaOOFaON-3.8', 'FaONFaNN-4.0', 'FaOOFaNN-3.6']
 
@@ -63,73 +65,73 @@ ACTV_RLX = {}    # order of active reagents for deformation-corrected reaction
 ACTV_CPRLX = {}  # order of active reagents for counterpoise- and deformation-corrected reaction
 monopattern = re.compile(r'^(....)(....)-(.+)$')
 for rxn in HRXN:
-   molname = monopattern.match(rxn)
+    molname = monopattern.match(rxn)
 
-   if (rxn in FaOOFaOO) or (rxn in FaONFaON) or (rxn in FaNNFaNN):
-      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -2,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -2 }
+    if (rxn in FaOOFaOO) or (rxn in FaONFaON) or (rxn in FaNNFaNN):
+        RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -2,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): -2,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -2 }
 
-      RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : +2,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -2 }
+        RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -2,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): +2,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -2 }
 
-      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
+        ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
 
-      ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
+        ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
 
-      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) ]
+        ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn) ]
 
-   elif (rxn in FaOOFaON) or (rxn in FaONFaNN) or (rxn in FaOOFaNN):
-      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) : -1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) : -1 }
+    elif (rxn in FaOOFaON) or (rxn in FaONFaNN) or (rxn in FaOOFaNN):
+        RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoB-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): -1,
+                                             '%s-%s-monoB-unCP' % (dbse, rxn): -1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)): -1 }
 
-      RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : +1,
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) : +1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) : -1 }
+        RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoB-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): +1,
+                                             '%s-%s-monoB-unCP' % (dbse, rxn): +1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)): -1 }
 
-      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn),
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn),
+                                             '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
+        ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
 
-      ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn),
-                                           '%s-%s-monoB-CP'   % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn),
-                                           '%s-%s-monoB-unCP' % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
+        ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn),
+                                             '%s-%s-monoB-CP'   % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn),
+                                             '%s-%s-monoB-unCP' % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
 
-      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn),
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) ]
+        ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn),
+                                             '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values >>>
 BIND = {}
@@ -515,52 +517,52 @@ BIND = BIND_HBC6A
 TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)$')
 for item in FaOOFaOO:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
 
 for item in FaONFaON:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
 
 for item in FaNNFaNN:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
 
 for item in FaOOFaON:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
 
 for item in FaONFaNN:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
 
 for item in FaOOFaNN:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
 
 TAGL['%s-FaOO-mono-RLX'  % (dbse)]  = 'Formic Acid Relaxed Monomer'
 TAGL['%s-FaON-mono-RLX'  % (dbse)]  = 'Formamide Relaxed Monomer'
@@ -3092,15 +3094,14 @@ units angstrom
 #<<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
-   molname = rxnpattern.match(rxn)
+    molname = rxnpattern.match(rxn)
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_unCP
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_unCP
 
 GEOS['%s-FaOO-mono-RLX' % (dbse)] = eval('%s_FaOO_monomer_RLX' % (dbse))
 GEOS['%s-FaON-mono-RLX' % (dbse)] = eval('%s_FaON_monomer_RLX' % (dbse))
 GEOS['%s-FaNN-mono-RLX' % (dbse)] = eval('%s_FaNN_monomer_RLX' % (dbse))
-

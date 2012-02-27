@@ -25,9 +25,9 @@ dbse = 'HTBH'
 isOS = 'true'
 
 # <<< Database Members >>>
-HRXN = range (1, 39)
-HRXN_SM = ['5','6','9','10','23','24']
-HRXN_LG = ['13','14','33','34','37','38']
+HRXN = range(1, 39)
+HRXN_SM = ['5', '6', '9', '10', '23', '24']
+HRXN_LG = ['13', '14', '33', '34', '37', '38']
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -222,55 +222,55 @@ RXNM['%s-%s'            % (dbse, 38)] = dict(zip(ACTV['%s-%s' % (dbse, 38)], [-1
 
 # <<< Reference Values [kcal/mol] >>>
 BIND = {}
-BIND['%s-%s'% (dbse,  1)] =    5.7
-BIND['%s-%s'% (dbse,  2)] =    8.7
-BIND['%s-%s'% (dbse,  3)] =    5.1
-BIND['%s-%s'% (dbse,  4)] =   21.2
-BIND['%s-%s'% (dbse,  5)] =   12.1
-BIND['%s-%s'% (dbse,  6)] =   15.3
-BIND['%s-%s'% (dbse,  7)] =    6.7
-BIND['%s-%s'% (dbse,  8)] =   19.6
-BIND['%s-%s'% (dbse,  9)] =    9.6
-BIND['%s-%s'% (dbse, 10)] =    9.6
-BIND['%s-%s'% (dbse, 11)] =    3.2
-BIND['%s-%s'% (dbse, 12)] =   12.7
-BIND['%s-%s'% (dbse, 13)] =    1.7
-BIND['%s-%s'% (dbse, 14)] =    7.9
-BIND['%s-%s'% (dbse, 15)] =    3.4
-BIND['%s-%s'% (dbse, 16)] =   19.9
-BIND['%s-%s'% (dbse, 17)] =    1.8
-BIND['%s-%s'% (dbse, 18)] =   33.4
-BIND['%s-%s'% (dbse, 19)] =   13.7
-BIND['%s-%s'% (dbse, 20)] =    8.1
-BIND['%s-%s'% (dbse, 21)] =    3.1
-BIND['%s-%s'% (dbse, 22)] =   23.2
-BIND['%s-%s'% (dbse, 23)] =   10.7
-BIND['%s-%s'% (dbse, 24)] =   13.1
-BIND['%s-%s'% (dbse, 25)] =    3.5
-BIND['%s-%s'% (dbse, 26)] =   17.3
-BIND['%s-%s'% (dbse, 27)] =    9.8
-BIND['%s-%s'% (dbse, 28)] =   10.4
-BIND['%s-%s'% (dbse, 29)] =    8.0
-BIND['%s-%s'% (dbse, 30)] =   22.4
-BIND['%s-%s'% (dbse, 31)] =    7.5
-BIND['%s-%s'% (dbse, 32)] =   18.3
-BIND['%s-%s'% (dbse, 33)] =   10.4
-BIND['%s-%s'% (dbse, 34)] =   17.4
-BIND['%s-%s'% (dbse, 35)] =   14.5
-BIND['%s-%s'% (dbse, 36)] =   17.8
-BIND['%s-%s'% (dbse, 37)] =   38.4
-BIND['%s-%s'% (dbse, 38)] =   38.4
+BIND['%s-%s' % (dbse,  1)] =    5.7
+BIND['%s-%s' % (dbse,  2)] =    8.7
+BIND['%s-%s' % (dbse,  3)] =    5.1
+BIND['%s-%s' % (dbse,  4)] =   21.2
+BIND['%s-%s' % (dbse,  5)] =   12.1
+BIND['%s-%s' % (dbse,  6)] =   15.3
+BIND['%s-%s' % (dbse,  7)] =    6.7
+BIND['%s-%s' % (dbse,  8)] =   19.6
+BIND['%s-%s' % (dbse,  9)] =    9.6
+BIND['%s-%s' % (dbse, 10)] =    9.6
+BIND['%s-%s' % (dbse, 11)] =    3.2
+BIND['%s-%s' % (dbse, 12)] =   12.7
+BIND['%s-%s' % (dbse, 13)] =    1.7
+BIND['%s-%s' % (dbse, 14)] =    7.9
+BIND['%s-%s' % (dbse, 15)] =    3.4
+BIND['%s-%s' % (dbse, 16)] =   19.9
+BIND['%s-%s' % (dbse, 17)] =    1.8
+BIND['%s-%s' % (dbse, 18)] =   33.4
+BIND['%s-%s' % (dbse, 19)] =   13.7
+BIND['%s-%s' % (dbse, 20)] =    8.1
+BIND['%s-%s' % (dbse, 21)] =    3.1
+BIND['%s-%s' % (dbse, 22)] =   23.2
+BIND['%s-%s' % (dbse, 23)] =   10.7
+BIND['%s-%s' % (dbse, 24)] =   13.1
+BIND['%s-%s' % (dbse, 25)] =    3.5
+BIND['%s-%s' % (dbse, 26)] =   17.3
+BIND['%s-%s' % (dbse, 27)] =    9.8
+BIND['%s-%s' % (dbse, 28)] =   10.4
+BIND['%s-%s' % (dbse, 29)] =    8.0
+BIND['%s-%s' % (dbse, 30)] =   22.4
+BIND['%s-%s' % (dbse, 31)] =    7.5
+BIND['%s-%s' % (dbse, 32)] =   18.3
+BIND['%s-%s' % (dbse, 33)] =   10.4
+BIND['%s-%s' % (dbse, 34)] =   17.4
+BIND['%s-%s' % (dbse, 35)] =   14.5
+BIND['%s-%s' % (dbse, 36)] =   17.8
+BIND['%s-%s' % (dbse, 37)] =   38.4
+BIND['%s-%s' % (dbse, 38)] =   38.4
 
 # <<< Comment Lines >>>
 TAGL = {}
 TAGL['%s-%s' % (dbse,  1)] = '{ H + HCl <-- [HHCl] } --> H2 + Cl'
-TAGL['%s-%s' % (dbse,  2)] = 'H + HCl <-- { [HHCl] --> H2 + Cl }' 
-TAGL['%s-%s' % (dbse,  3)] = '{ OH + H2 <-- [OHH2] } --> H + H2O' 
+TAGL['%s-%s' % (dbse,  2)] = 'H + HCl <-- { [HHCl] --> H2 + Cl }'
+TAGL['%s-%s' % (dbse,  3)] = '{ OH + H2 <-- [OHH2] } --> H + H2O'
 TAGL['%s-%s' % (dbse,  4)] = 'OH + HCl <-- { [OHH2] --> H + H2O }'
 TAGL['%s-%s' % (dbse,  5)] = '{ CH3 + H2 <-- [CH3H2] } --> H + CH4'
-TAGL['%s-%s' % (dbse,  6)] = 'CH3 + H2 <-- { [CH3H2] --> H + CH4 }' 
+TAGL['%s-%s' % (dbse,  6)] = 'CH3 + H2 <-- { [CH3H2] --> H + CH4 }'
 TAGL['%s-%s' % (dbse,  7)] = '{ OH + CH4 <-- [OHCH4] } --> CH3 + H2O'
-TAGL['%s-%s' % (dbse,  8)] = 'OH + CH4 <-- { [OHCH4] --> CH3 + H2O }' 
+TAGL['%s-%s' % (dbse,  8)] = 'OH + CH4 <-- { [OHCH4] --> CH3 + H2O }'
 TAGL['%s-%s' % (dbse,  9)] = '{ H + H2 <-- [HH2] } --> H2 + H'
 TAGL['%s-%s' % (dbse, 10)] =  'H + H2 <-- { [HH2] -- >H2 + H }'
 TAGL['%s-%s' % (dbse, 11)] = '{ OH + NH3 <-- [OHNH3] } --> H2O + NH2'
@@ -322,7 +322,7 @@ TAGL['%s-%s-reagent'    % (dbse, 'HClCH3ts'     )] = 'Transition state of HCl + 
 TAGL['%s-%s-reagent'    % (dbse, 'HHClts'       )] = 'Transition state of H + HCl <--> H2 + Cl'
 TAGL['%s-%s-reagent'    % (dbse, 'HF'           )] = 'Hydrogen Fluoride'
 TAGL['%s-%s-reagent'    % (dbse, 'HH2Sts'       )] = 'Transition state of H + H2S <--> H2 + HS'
-TAGL['%s-%s-reagent'    % (dbse, 'HH2ts'        )] = 'Transition state of H + H2 <--> H2 + H' 
+TAGL['%s-%s-reagent'    % (dbse, 'HH2ts'        )] = 'Transition state of H + H2 <--> H2 + H'
 TAGL['%s-%s-reagent'    % (dbse, 'NH'           )] = 'NH'
 TAGL['%s-%s-reagent'    % (dbse, 'HPH3ts'       )] = 'Transition state of H + PH3 <--> PH2 + H2'
 TAGL['%s-%s-reagent'    % (dbse, 'NH2'          )] = 'NH2'
@@ -818,8 +818,7 @@ units angstrom
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
 
-            molname = rxnpattern.match(rgt)
-            GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
-
+        molname = rxnpattern.match(rgt)
+        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))

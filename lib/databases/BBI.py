@@ -19,25 +19,25 @@ import input
 dbse = 'BBI'
 
 # <<< Database Members >>>
-HRXN = ['004GLU-063LEU-2', '005ASP-008SER-2', '005LEU-008VAL-2', '007GLN-010ASN-1', '007VAL-041VAL-1', 
-        '008ILE-012LEU-1', '008TRP-251HIE-2', '011ILE-014PHE-1', '012LEU-085ASP-1', '014LYS-018GLU-1', 
-        '014VAL-017GLU-1', '015GLN-018LEU-1', '015LEU-026LEU-1', '017ASN-021LYS-2', '017LEU-025ILE-1', 
-        '019LEU-022MET-1', '023LYS-146SER-2', '024PHE-028ALA-1', '024THR-041GLU-2', '025GLY-029SER-2', 
-        '025ILE-070TRP-1', '027VAL-031LEU-1', '027VAL-068GLU-2', '029GLU-032VAL-1', '030TRP-178GLY-2', 
-        '033ASN-036TRP-2', '033VAL-115VAL-1', '035TRP-056ILE-1', '037PRO-041ALA-1', '038ALA-041GLY-1', 
-        '038GLU-047GLU-2', '039SER-046MET-1', '040THR-048VAL-2', '040THR-049GLN-2', '041GLY-045LEU-2', 
-        '041LEU-045LEU-1', '042LEU-047ILE-2', '044SER-047GLU-1', '044TRP-054LEU-1', '048GLU-052LYS-1', 
-        '051ALA-054VAL-1', '051ALA-055ASN-1', '052CYS-056ALA-1', '054ARG-062GLN-1', '055ASN-058GLU-2', 
-        '060LEU-064TYR-1', '060TYR-064LEU-2', '061VAL-064TYR-2', '062LEU-066LYS-2', '064GLN-067ARG-1', 
-        '064TYR-067GLU-1', '066PHE-072THR-1', '068ASP-072GLN-1', '071GLU-075ASP-1', '072ASN-075ARG-2', 
-        '072THR-075PRO-1', '081ASN-084GLY-1', '081LEU-084LYS-1', '082LEU-106LEU-2', '084LEU-088MET-2', 
-        '087ALA-171PRO-2', '087LEU-090TYR-1', '088PHE-091ALA-1', '089MET-093GLY-1', '092SER-096ARG-2', 
-        '095GLN-183ILE-1', '095LYS-107ILE-2', '097GLU-100THR-2', '102GLN-106ILE-1', '104VAL-108ILE-1', 
-        '108LYS-112TYR-1', '108TYR-129TRP-1', '112SER-115ALA-2', '112TRP-115ARG-1', '113TRP-124HIE-2', 
-        '115GLN-118ARG-2', '119MET-122VAL-1', '121LYS-125ALA-1', '121VAL-155THR-2', '126VAL-129ALA-1', 
-        '133LYS-137ASN-1', '134GLU-138ARG-1', '135ARG-152ALA-2', '137SER-144LYS-1', '140SER-144THR-2', 
-        '142ALA-146PHE-1', '143VAL-147GLU-1', '146PHE-150LEU-1', '150LYS-158LEU-2', '157LYS-160VAL-1', 
-        '162ALA-176GLY-1', '167GLY-232GLY-1', '168GLY-172LYS-2', '171ALA-175GLU-1', '172GLY-175TRP-1', 
+HRXN = ['004GLU-063LEU-2', '005ASP-008SER-2', '005LEU-008VAL-2', '007GLN-010ASN-1', '007VAL-041VAL-1',
+        '008ILE-012LEU-1', '008TRP-251HIE-2', '011ILE-014PHE-1', '012LEU-085ASP-1', '014LYS-018GLU-1',
+        '014VAL-017GLU-1', '015GLN-018LEU-1', '015LEU-026LEU-1', '017ASN-021LYS-2', '017LEU-025ILE-1',
+        '019LEU-022MET-1', '023LYS-146SER-2', '024PHE-028ALA-1', '024THR-041GLU-2', '025GLY-029SER-2',
+        '025ILE-070TRP-1', '027VAL-031LEU-1', '027VAL-068GLU-2', '029GLU-032VAL-1', '030TRP-178GLY-2',
+        '033ASN-036TRP-2', '033VAL-115VAL-1', '035TRP-056ILE-1', '037PRO-041ALA-1', '038ALA-041GLY-1',
+        '038GLU-047GLU-2', '039SER-046MET-1', '040THR-048VAL-2', '040THR-049GLN-2', '041GLY-045LEU-2',
+        '041LEU-045LEU-1', '042LEU-047ILE-2', '044SER-047GLU-1', '044TRP-054LEU-1', '048GLU-052LYS-1',
+        '051ALA-054VAL-1', '051ALA-055ASN-1', '052CYS-056ALA-1', '054ARG-062GLN-1', '055ASN-058GLU-2',
+        '060LEU-064TYR-1', '060TYR-064LEU-2', '061VAL-064TYR-2', '062LEU-066LYS-2', '064GLN-067ARG-1',
+        '064TYR-067GLU-1', '066PHE-072THR-1', '068ASP-072GLN-1', '071GLU-075ASP-1', '072ASN-075ARG-2',
+        '072THR-075PRO-1', '081ASN-084GLY-1', '081LEU-084LYS-1', '082LEU-106LEU-2', '084LEU-088MET-2',
+        '087ALA-171PRO-2', '087LEU-090TYR-1', '088PHE-091ALA-1', '089MET-093GLY-1', '092SER-096ARG-2',
+        '095GLN-183ILE-1', '095LYS-107ILE-2', '097GLU-100THR-2', '102GLN-106ILE-1', '104VAL-108ILE-1',
+        '108LYS-112TYR-1', '108TYR-129TRP-1', '112SER-115ALA-2', '112TRP-115ARG-1', '113TRP-124HIE-2',
+        '115GLN-118ARG-2', '119MET-122VAL-1', '121LYS-125ALA-1', '121VAL-155THR-2', '126VAL-129ALA-1',
+        '133LYS-137ASN-1', '134GLU-138ARG-1', '135ARG-152ALA-2', '137SER-144LYS-1', '140SER-144THR-2',
+        '142ALA-146PHE-1', '143VAL-147GLU-1', '146PHE-150LEU-1', '150LYS-158LEU-2', '157LYS-160VAL-1',
+        '162ALA-176GLY-1', '167GLY-232GLY-1', '168GLY-172LYS-2', '171ALA-175GLU-1', '172GLY-175TRP-1',
         '197TYR-201LEU-2', '199SER-202TYR-1', '205THR-208GLU-1', '205THR-209LEU-2', '228ARG-232GLU-1', ]
 HRXN_SM = []
 HRXN_LG = []
@@ -172,13 +172,13 @@ BIND['%s-%s'            % (dbse, '228ARG-232GLU-1'       )] =    0.000
 TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 for rxn in HRXN:
-   molname = rxnpattern.match(rxn)
-   TAGL['%s-%s'            % (dbse, rxn)] = """Residue %s and %s interaction No. %s""" % (molname.group(1), molname.group(2), molname.group(3))
-   TAGL['%s-%s-dimer'      % (dbse, rxn)] = """Dimer from %s""" % (rxn)
-   TAGL['%s-%s-monoA-CP'   % (dbse, rxn)] = """Monomer A from %s""" % (rxn)
-   TAGL['%s-%s-monoB-CP'   % (dbse, rxn)] = """Monomer B from %s""" % (rxn)
-   TAGL['%s-%s-monoA-unCP' % (dbse, rxn)] = """Monomer A from %s""" % (rxn)
-   TAGL['%s-%s-monoB-unCP' % (dbse, rxn)] = """Monomer B from %s""" % (rxn)
+    molname = rxnpattern.match(rxn)
+    TAGL['%s-%s'            % (dbse, rxn)] = """Residue %s and %s interaction No. %s""" % (molname.group(1), molname.group(2), molname.group(3))
+    TAGL['%s-%s-dimer'      % (dbse, rxn)] = """Dimer from %s""" % (rxn)
+    TAGL['%s-%s-monoA-CP'   % (dbse, rxn)] = """Monomer A from %s""" % (rxn)
+    TAGL['%s-%s-monoB-CP'   % (dbse, rxn)] = """Monomer B from %s""" % (rxn)
+    TAGL['%s-%s-monoA-unCP' % (dbse, rxn)] = """Monomer A from %s""" % (rxn)
+    TAGL['%s-%s-monoB-unCP' % (dbse, rxn)] = """Monomer B from %s""" % (rxn)
 
 # <<< Molecule Specifications >>>
 monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
@@ -3490,11 +3490,10 @@ units angstrom
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   distance = rxnpattern.match(rxn)
+    distance = rxnpattern.match(rxn)
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoB_unCP
-
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s_%s' % (dbse, distance.group(1), distance.group(2), distance.group(3)))) + monoB_unCP

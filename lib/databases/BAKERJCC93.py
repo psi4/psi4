@@ -28,8 +28,8 @@ isOS = 'true'
 
 # <<< Database Members >>>
 HRXN = ['1_3_5_trifluorobenzene', '1_3_5_trisilacyclohexane', '1_3_difluorobenzene', '1_5_difluoronaphthalene', '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10', 'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'histidine', 'hydroxysulphane', 'menthone', 'mesityl_oxide', 'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
-HRXN_SM = ['1_3_5_trisilacyclohexane','2_hydroxybicyclopentane','acetone','acetylene','allene','ammonia','benzene','disilyl_ether','ethane','ethanol','furan','hydroxysulphane','methylamine','neopentane','water',]
-HRXN_LG = ['1_3_difluorobenzene','1_3_5_trifluorobenzene','1_5_difluoronaphthalene','ACANIL01','ACHTAR10','benzaldehyde','benzidine','caffeine','difuropyrazine','dimethylpentane','histidine','menthone','mesityl_oxide','naphthalene','pterin']
+HRXN_SM = ['1_3_5_trisilacyclohexane', '2_hydroxybicyclopentane', 'acetone', 'acetylene', 'allene', 'ammonia', 'benzene', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'hydroxysulphane', 'methylamine', 'neopentane', 'water']
+HRXN_LG = ['1_3_difluorobenzene', '1_3_5_trifluorobenzene', '1_5_difluoronaphthalene', 'ACANIL01', 'ACHTAR10', 'benzaldehyde', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'histidine', 'menthone', 'mesityl_oxide', 'naphthalene', 'pterin']
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -854,8 +854,7 @@ units bohr
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
 
-            molname = rxnpattern.match(rgt)
-            GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
-
+        molname = rxnpattern.match(rgt)
+        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))

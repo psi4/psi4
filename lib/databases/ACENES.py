@@ -26,9 +26,9 @@ import input
 dbse = 'ACENES'
 
 # <<< Database Members >>>
-HRXN = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'] 
+HRXN = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']
 HRXN_SM = ['1', '2', '3', '4', '5']
-HRXN_LG = ['11','12','13','14','15','16','17','18','19','20']
+HRXN_LG = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20']
 FIRST3  = ['1', '2', '3']
 FIRST5  = ['1', '2', '3', '4', '5']
 FIRST10 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
@@ -3153,9 +3153,8 @@ rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP
-
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP

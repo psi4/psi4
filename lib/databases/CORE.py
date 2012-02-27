@@ -46,11 +46,11 @@ for rxn in HRXN:
                                       '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values [kcal/mol] >>>
-# Taken from 
+# Taken from
 BIND = {}
 BIND['%s-%s'            % (dbse, 'dimer3_54'             )] =    -14.8000
 BIND['%s-%s'            % (dbse, 'dimer3_64'             )] =    -15.4000
-BIND['%s-%s'            % (dbse, 'dimer3_73'             )] =    -15.6000 # Bootstrapped, Pulay does not report 
+BIND['%s-%s'            % (dbse, 'dimer3_73'             )] =    -15.6000  # Bootstrapped, Pulay does not report
 BIND['%s-%s'            % (dbse, 'dimer3_74'             )] =    -15.4000
 BIND['%s-%s'            % (dbse, 'dimer3_84'             )] =    -15.0000
 
@@ -443,9 +443,8 @@ rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP
-
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP
