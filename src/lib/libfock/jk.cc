@@ -140,6 +140,10 @@ boost::shared_ptr<JK> JK::build_JK()
         throw PSIEXCEPTION("JK::build_JK: Unknown SCF Type");
     }
 }
+SharedVector JK::iaia(SharedMatrix Ci, SharedMatrix Ca)
+{
+    throw PSIEXCEPTION("JK: (ia|ia) integrals not implemented");
+}
 void JK::common_init()
 {
     print_ = 1;
@@ -1327,6 +1331,185 @@ void DFJK::common_init()
     is_core_ = true;
     psio_ = PSIO::shared_object();
 }
+SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
+{
+    // Target quantity
+    Dimension dim(Ci->nirrep());
+    for (int symm = 0; symm < Ci->nirrep(); symm++) {
+        int rank = 0;
+        for (int h = 0; h < Ci->nirrep(); symm++) {
+            rank += Ci->colspi()[h] * Ca->colspi()[h^symm];
+        }
+        dim[symm] = rank;
+    }
+
+    SharedVector Iia(new Vector("(ia|ia)", dim));
+
+    // AO-basis quantities
+    int nirrep = Ci->nirrep();
+    int nocc = Ci->ncol();
+    int nvir = Ca->ncol();
+    int nso  = AO2USO_->rowspi()[0];
+
+    SharedMatrix Ci_ao(new Matrix("Ci AO", nso, nocc));
+    SharedMatrix Ca_ao(new Matrix("Ca AO", nso, nvir));
+    SharedVector Iia_ao(new Vector("(ia|ia) AO", nocc*(ULI)nvir));
+
+    int offset = 0;
+    for (int h = 0; h < nirrep; h++) {
+        int ni = Ci->colspi()[h];
+        int nm = Ci->rowspi()[h];
+        if (!ni || !nm) continue;
+        double** Cip = Ci->pointer(h);
+        double** Cp = Ci_ao->pointer();
+        double** Up = AO2USO_->pointer(h);
+        C_DGEMM('N','N',nso,ni,nm,1.0,Up[0],nm,Cip[0],ni,0.0,&Cp[0][offset],nocc); 
+        offset += ni; 
+    }
+
+    offset = 0;
+    for (int h = 0; h < nirrep; h++) {
+        int ni = Ca->colspi()[h];
+        int nm = Ca->rowspi()[h];
+        if (!ni || !nm) continue;
+        double** Cip = Ca->pointer(h);
+        double** Cp = Ca_ao->pointer();
+        double** Up = AO2USO_->pointer(h);
+        C_DGEMM('N','N',nso,ni,nm,1.0,Up[0],nm,Cip[0],ni,0.0,&Cp[0][offset],nocc); 
+        offset += ni; 
+    }
+
+    // Memory size 
+    int naux = auxiliary_->nbf();
+    int maxrows = max_rows();
+    
+    const std::vector<std::pair<int, int> >& function_pairs = sieve_->function_pairs();
+    const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
+    unsigned long int num_nm = function_pairs.size();
+
+    // Temps
+    #ifdef _OPENMP
+    int temp_nthread = omp_get_max_threads();
+    omp_set_num_threads(omp_nthread_);
+    C_temp_.resize(omp_nthread_);
+    Q_temp_.resize(omp_nthread_);
+    #pragma omp parallel
+    {
+        C_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Ctemp", nocc, nso));
+        Q_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Qtemp", maxrows, nso));
+    }
+    omp_set_num_threads(temp_nthread);
+    #else
+    for (int thread = 0; thread < omp_nthread_; thread++) {
+        C_temp_.push_back(SharedMatrix(new Matrix("Ctemp", nocc, nso)));
+        Q_temp_.push_back(SharedMatrix(new Matrix("Qtemp", maxrows, nso)));
+    }
+    #endif
+
+    E_left_ = SharedMatrix(new Matrix("E_left", nso, maxrows * nocc));
+    E_right_ = SharedMatrix(new Matrix("E_right", nvir, maxrows * nocc));
+
+    // Disk overhead
+    psio_address addr = PSIO_ZERO;
+    if (!is_core()) {
+        Qmn_ = SharedMatrix(new Matrix("(Q|mn) Block", maxrows, num_nm));
+        psio_->open(unit_,PSIO_OPEN_OLD);
+    }
+
+    // Blocks of Q
+    double** Qmnp;
+    double** Clp  = Ci_ao->pointer();
+    double** Crp  = Ca_ao->pointer();
+    double** Elp  = E_left_->pointer();
+    double** Erp  = E_right_->pointer();
+    double*  Iiap = Iia_ao->pointer();
+    for (int Q = 0; Q < naux; Q += maxrows) {
+
+        // Read block of (Q|mn) in
+        int rows = (naux - Q <= maxrows ? naux - Q : maxrows);
+        if (is_core()) {
+            Qmnp = &Qmn_->pointer()[Q]; 
+        } else {
+            Qmnp = Qmn_->pointer();
+            psio_->read(unit_,"(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]),sizeof(double)*naux*num_nm,addr,&addr);
+        }
+
+        // (mi|Q)
+        #pragma omp parallel for schedule (dynamic)
+        for (int m = 0; m < nso; m++) {
+
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            double** Ctp = C_temp_[thread]->pointer();
+            double** QSp = Q_temp_[thread]->pointer();
+
+            const std::vector<int>& pairs = sieve_->function_to_function()[m];
+            int mrows = pairs.size();
+
+            for (int i = 0; i < mrows; i++) {
+                int n = pairs[i];
+                long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                C_DCOPY(rows,&Qmnp[0][ij],num_nm,&QSp[0][i],nso);
+                C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nso);
+            }
+
+            C_DGEMM('N','T',nocc,rows,mrows,1.0,Ctp[0],nso,QSp[0],nso,0.0,&Elp[0][m*(ULI)nocc*rows],rows);
+        }
+
+        // (ai|Q)
+        C_DGEMM('T','N',nvir,nocc*(ULI)rows,nso,1.0,Crp[0],nvir,Elp[0],nocc*(ULI)rows,0.0,Erp[0],nocc*(ULI)rows);
+    
+        // (ia|Q)(Q|ia)
+        for (int i = 0; i < nocc; i++) {
+            for (int a = 0; a < nvir; a++) {
+                double* Ep = &Erp[0][a * (ULI) nocc * rows + i * rows];
+                Iiap[i * nvir + a] += C_DDOT(rows, Ep, 1, Ep, 1);
+            }
+        } 
+        
+    }
+    
+    // Free disk overhead
+    if (!is_core()) {
+        Qmn_.reset();
+        psio_->close(unit_,1);
+    }
+
+    // Free Temps
+    E_left_.reset();
+    E_right_.reset();
+    C_temp_.clear();
+    Q_temp_.clear();
+
+    // SO-basis (ia|ia)    
+    Dimension i_offsets(Ci->nirrep());
+    Dimension a_offsets(Ci->nirrep());
+    for (int h = 1; h < Ci->nirrep(); h++) {
+        i_offsets[h] = i_offsets[h-1] + Ci->colspi()[h-1];
+        a_offsets[h] = a_offsets[h-1] + Ca->colspi()[h-1];
+    }
+    
+    for (int symm = 0; symm < Ci->nirrep(); symm++) {
+        offset = 0;
+        for (int h = 0; h < Ci->nirrep(); h++) {
+            int ni = Ci->colspi()[h];
+            int na = Ca->colspi()[h^symm];
+            int ioff = i_offsets[h];
+            int aoff = a_offsets[h^symm];
+            for (int i = 0; i < ni; i++) {
+                for (int a = 0; a < na; a++) {
+                    Iia->set(symm, i * na + a + offset, Iiap[(ioff + i) * nvir + (aoff + a)]);
+                }
+            }
+            offset += ni * na;
+        }
+    }
+
+    return Iia;
+}
 void DFJK::print_header() const
 {
     if (print_) {
@@ -1413,13 +1596,13 @@ void DFJK::initialize_temps()
     #ifdef _OPENMP
     int temp_nthread = omp_get_max_threads();
     omp_set_num_threads(omp_nthread_);
-        C_temp_.resize(omp_nthread_);
-        Q_temp_.resize(omp_nthread_);
-        #pragma omp parallel
-        {
-            C_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf()));
-            Q_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Qtemp", max_rows_, primary_->nbf()));
-        }
+    C_temp_.resize(omp_nthread_);
+    Q_temp_.resize(omp_nthread_);
+    #pragma omp parallel
+    {
+        C_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf()));
+        Q_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Qtemp", max_rows_, primary_->nbf()));
+    }
     omp_set_num_threads(temp_nthread);
     #else
         for (int thread = 0; thread < omp_nthread_; thread++) {
