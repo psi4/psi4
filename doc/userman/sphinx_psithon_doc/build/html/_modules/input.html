@@ -9,7 +9,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>psiexceptions &mdash; Psithon for PSI4 documentation</title>
+    <title>input &mdash; Psithon for PSI4 documentation</title>
     
     <link rel="stylesheet" href="../_static/psi4.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -58,26 +58,12 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <h1>Source code for psiexceptions</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;Module with non-generic exceptions classes.&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">PsiMod</span>
+  <h1>Source code for input</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Module import&quot;&quot;&quot;</span>
 
-
-<div class="viewcode-block" id="PsiException"><a class="viewcode-back" href="../index.html#psiexceptions.PsiException">[docs]</a><span class="k">class</span> <span class="nc">PsiException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Error class for Psi.&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="process_input"><a class="viewcode-back" href="../index.html#input.process_input">[docs]</a><span class="k">def</span> <span class="nf">process_input</span><span class="p">(</span><span class="nb">raw_input</span><span class="p">,</span> <span class="n">print_level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="k">pass</span>
-
-</div>
-<div class="viewcode-block" id="ValidationError"><a class="viewcode-back" href="../index.html#psiexceptions.ValidationError">[docs]</a><span class="k">class</span> <span class="nc">ValidationError</span><span class="p">(</span><span class="n">PsiException</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Error called for problems with the input file. Prints</span>
-<span class="sd">    error message *msg* to standard output stream and output file.</span>
-
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
-        <span class="n">PsiException</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span>
-        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">PsiException: </span><span class="si">%s</span><span class="se">\n\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">msg</span><span class="p">))</span></div>
-</pre></div>
+</pre></div></div>
 
           </div>
         </div>
