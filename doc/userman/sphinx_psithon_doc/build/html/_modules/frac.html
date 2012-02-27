@@ -1,0 +1,765 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>frac &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+    <script type="text/javascript" src="../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for frac</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">PsiMod</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">input</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">molecule</span> <span class="kn">import</span> <span class="o">*</span> 
+<span class="kn">from</span> <span class="nn">driver</span> <span class="kn">import</span> <span class="o">*</span> 
+<span class="kn">from</span> <span class="nn">procutil</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="c"># Scan from +1 electron to -1 electron</span>
+<div class="viewcode-block" id="frac_traverse"><a class="viewcode-back" href="../index.html#frac.frac_traverse">[docs]</a><span class="k">def</span> <span class="nf">frac_traverse</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c"># The molecule is required, and should be the neutral species</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+    <span class="n">activate</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+    <span class="n">charge0</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">molecular_charge</span><span class="p">()</span>
+    <span class="n">mult0</span>   <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span><span class="p">()</span> 
+
+    <span class="n">chargep</span> <span class="o">=</span> <span class="n">charge0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">chargem</span> <span class="o">=</span> <span class="n">charge0</span> <span class="o">-</span> <span class="mi">1</span>
+    
+    <span class="c"># By default, the multiplicity of the cation/anion are mult0 + 1</span>
+    <span class="c"># These are overridden with the cation_mult and anion_mult kwargs</span>
+    <span class="n">multp</span> <span class="o">=</span> <span class="n">mult0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">multm</span> <span class="o">=</span> <span class="n">mult0</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;cation_mult&#39;</span><span class="p">):</span>
+        <span class="n">multp</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;cation_mult&#39;</span><span class="p">]</span> 
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;anion_mult&#39;</span><span class="p">):</span>
+        <span class="n">multm</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;anion_mult&#39;</span><span class="p">]</span> 
+    
+    <span class="c"># By default, we start the frac procedure on the 25th iteration </span>
+    <span class="c"># when not reading a previous guess</span>
+    <span class="n">frac_start</span> <span class="o">=</span> <span class="mi">25</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;frac_start&#39;</span><span class="p">):</span>
+        <span class="n">frac_start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;frac_start&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, we occupy by tenths of electrons</span>
+    <span class="n">LUMO_occs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+    <span class="n">HOMO_occs</span>  <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;HOMO_occs&#39;</span><span class="p">):</span>
+        <span class="n">HOMO_occs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;HOMO_occs&#39;</span><span class="p">]</span>    
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;LUMO_occs&#39;</span><span class="p">):</span>
+        <span class="n">LUMO_occs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;LUMO_occs&#39;</span><span class="p">]</span>    
+
+    <span class="c"># By default, HOMO and LUMO are both in alpha</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">A</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natom</span><span class="p">()):</span>
+        <span class="n">Z</span> <span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">Z</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">Z</span> <span class="o">-=</span> <span class="n">charge0</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Z</span><span class="o">%</span><span class="mi">2</span><span class="p">):</span>
+        <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Z</span><span class="o">/</span><span class="mi">2</span><span class="o">+</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Z</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">LUMO</span> <span class="o">=</span> <span class="n">HOMO</span><span class="o">+</span><span class="mi">1</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;HOMO&#39;</span><span class="p">):</span>
+        <span class="n">HOMO</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;HOMO&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;LUMO&#39;</span><span class="p">):</span>
+        <span class="n">LUMO</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;LUMO&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, DIIS in FRAC (1.0 occupation is always DIIS&#39;d)</span>
+    <span class="n">frac_diis</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;frac_diis&#39;</span><span class="p">):</span>
+        <span class="n">frac_diis</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;frac_diis&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, use the neutral orbitals as a guess for the anion</span>
+    <span class="n">neutral_guess</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;neutral_guess&#39;</span><span class="p">):</span>
+        <span class="n">neutral_guess</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;neutral_guess&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, burn-in with UHF first, if UKS</span>
+    <span class="n">hf_guess</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;REFERENCE&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="s">&#39;UKS&#39;</span><span class="p">:</span>
+        <span class="n">hf_guess</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;hf_guess&#39;</span><span class="p">):</span>
+            <span class="n">hf_guess</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;hf_guess&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, re-guess at each N </span>
+    <span class="n">continuous_guess</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;continuous_guess&#39;</span><span class="p">):</span>
+         <span class="n">continuous_guess</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;continuous_guess&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, drop the files to the molecule&#39;s name</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;filename&#39;</span><span class="p">):</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;filename&#39;</span><span class="p">]</span>
+    <span class="n">traverse_filename</span> <span class="o">=</span> <span class="n">root</span> <span class="o">+</span> <span class="s">&#39;.traverse.dat&#39;</span>
+    <span class="c"># =&gt; Traverse &lt;= #</span>
+    <span class="n">occs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">convs</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c"># =&gt; Run the neutral for its orbitals, if requested &lt;= #</span>
+
+    <span class="n">old_df_ints_io</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;SAVE&quot;</span><span class="p">)</span>
+
+    <span class="n">old_guess</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">neutral_guess</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hf_guess</span><span class="p">):</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;REFERENCE&quot;</span><span class="p">,</span><span class="s">&quot;UHF&quot;</span><span class="p">)</span>
+        <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="s">&quot;READ&quot;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;LOAD&quot;</span><span class="p">)</span>
+
+    <span class="c"># =&gt; Run the anion first &lt;= #</span>
+
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">chargem</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">multm</span><span class="p">)</span>
+    
+    <span class="c"># =&gt; Burn the anion in with hf, if requested &lt;= #</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">hf_guess</span><span class="p">):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;REFERENCE&quot;</span><span class="p">,</span><span class="s">&quot;UHF&quot;</span><span class="p">)</span>
+        <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;REFERENCE&quot;</span><span class="p">,</span><span class="s">&quot;UKS&quot;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="s">&quot;READ&quot;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;SAVE&quot;</span><span class="p">)</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_START&quot;</span><span class="p">,</span> <span class="n">frac_start</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_RENORMALIZE&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_LOAD&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">occ</span> <span class="ow">in</span> <span class="n">LUMO_occs</span><span class="p">:</span>
+       
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_OCC&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">LUMO</span><span class="p">])</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_VAL&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">occ</span><span class="p">])</span> 
+
+        <span class="n">E</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">E</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="n">E</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF ITERATION ENERGY&#39;</span><span class="p">)</span>
+            <span class="n">C</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">occs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">occ</span><span class="p">)</span>
+        <span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+        <span class="n">convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_START&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_LOAD&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="s">&quot;READ&quot;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_DIIS&quot;</span><span class="p">,</span> <span class="n">frac_diis</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;LOAD&quot;</span><span class="p">)</span>
+
+
+    <span class="c"># =&gt; Run the neutral next &lt;= #</span>
+
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge0</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult0</span><span class="p">)</span>
+
+    <span class="c"># Burn the neutral in with hf, if requested &lt;= #</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">continuous_guess</span><span class="p">):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="n">old_guess</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">hf_guess</span><span class="p">):</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_START&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;REFERENCE&quot;</span><span class="p">,</span><span class="s">&quot;UHF&quot;</span><span class="p">)</span>
+            <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;REFERENCE&quot;</span><span class="p">,</span><span class="s">&quot;UKS&quot;</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="s">&quot;READ&quot;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_LOAD&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_START&quot;</span><span class="p">,</span> <span class="n">frac_start</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_RENORMALIZE&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">occ</span> <span class="ow">in</span> <span class="n">HOMO_occs</span><span class="p">:</span>
+       
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_OCC&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">HOMO</span><span class="p">])</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_VAL&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">occ</span><span class="p">])</span> 
+
+        <span class="n">E</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+        <span class="n">C</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">E</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+            <span class="n">E</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF ITERATION ENERGY&#39;</span><span class="p">)</span>
+            <span class="n">C</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">occs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">occ</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+        <span class="n">convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_START&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_LOAD&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="s">&quot;READ&quot;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_DIIS&quot;</span><span class="p">,</span> <span class="n">frac_diis</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;LOAD&quot;</span><span class="p">)</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="n">old_df_ints_io</span><span class="p">)</span>
+
+    <span class="c"># =&gt; Print the results out &lt;= #</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">    ==&gt; Fractional Occupation Traverse Results &lt;==</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%-11s</span><span class="s"> </span><span class="si">%-24s</span><span class="s"> </span><span class="si">%11s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="s">&#39;Delta&#39;</span><span class="p">,</span> <span class="s">&#39;Energy&#39;</span><span class="p">,</span> <span class="s">&#39;Converged&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">occs</span><span class="p">)):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%11.3E</span><span class="s"> </span><span class="si">%24.16E</span><span class="s"> </span><span class="si">%11d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">occs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">convs</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+        <span class="n">E</span><span class="p">[</span><span class="n">occs</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">&quot;You trying to be a hero Watkins?&quot;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&quot;Just trying to kill some bugs sir!&quot;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t\t\t</span><span class="s">-Starship Troopers</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="c"># Drop the files out</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">traverse_filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%-11s</span><span class="s"> </span><span class="si">%-24s</span><span class="s"> </span><span class="si">%11s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="s">&#39;Energy&#39;</span><span class="p">,</span> <span class="s">&#39;Converged&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">occs</span><span class="p">)):</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%11.3E</span><span class="s"> </span><span class="si">%24.16E</span><span class="s"> </span><span class="si">%11d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">occs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">convs</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">E</span>    
+
+<span class="c"># Pull all the electrons out, one at a time </span></div>
+<div class="viewcode-block" id="frac_nuke"><a class="viewcode-back" href="../index.html#frac.frac_nuke">[docs]</a><span class="k">def</span> <span class="nf">frac_nuke</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c"># The molecule is required, and should be the neutral species</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+    <span class="n">activate</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+    <span class="n">charge0</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">molecular_charge</span><span class="p">()</span>
+    <span class="n">mult0</span>   <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span><span class="p">()</span> 
+
+    <span class="c"># By default, we start the frac procedure on the 25th iteration </span>
+    <span class="c"># when not reading a previous guess</span>
+    <span class="n">frac_start</span> <span class="o">=</span> <span class="mi">25</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;frac_start&#39;</span><span class="p">):</span>
+        <span class="n">frac_start</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;frac_start&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, we occupy by tenths of electrons</span>
+    <span class="n">foccs</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;foccs&#39;</span><span class="p">):</span>
+        <span class="n">foccs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;foccs&#39;</span><span class="p">]</span>    
+
+    <span class="c"># By default, HOMO and LUMO are both in alpha</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">A</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natom</span><span class="p">()):</span>
+        <span class="n">N</span> <span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">Z</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">-=</span> <span class="n">charge0</span>
+    <span class="n">N</span>  <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">Nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">N</span> <span class="o">-</span> <span class="n">mult0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Na</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nb</span><span class="p">)</span>
+
+    <span class="n">charge</span> <span class="o">=</span> <span class="n">charge0</span>
+    <span class="n">mult</span> <span class="o">=</span> <span class="n">mult0</span>
+    
+    <span class="c"># By default, nuke all the electrons</span>
+    <span class="n">Nmin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;nmax&#39;</span><span class="p">)):</span>
+        <span class="n">Nmin</span> <span class="o">=</span> <span class="n">N</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;nmax&#39;</span><span class="p">])</span>
+
+    <span class="c"># By default, DIIS in FRAC (1.0 occupation is always DIIS&#39;d)</span>
+    <span class="n">frac_diis</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;frac_diis&#39;</span><span class="p">):</span>
+        <span class="n">frac_diis</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;frac_diis&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, drop the files to the molecule&#39;s name</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">name</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;filename&#39;</span><span class="p">):</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;filename&#39;</span><span class="p">]</span>
+    <span class="n">traverse_filename</span> <span class="o">=</span> <span class="n">root</span> <span class="o">+</span> <span class="s">&#39;.traverse.dat&#39;</span>
+    <span class="n">stats_filename</span> <span class="o">=</span> <span class="n">root</span> <span class="o">+</span> <span class="s">&#39;.stats.dat&#39;</span> 
+
+    <span class="c"># =&gt; Traverse &lt;= #</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;SAVE&quot;</span><span class="p">)</span>
+
+    <span class="n">Ns</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">convs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">stats</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c"># Run one SCF to burn things in</span>
+    <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+
+    <span class="c"># Determine HOMO</span>
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span>
+    <span class="n">eps_a</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_a</span><span class="p">()</span>
+    <span class="n">eps_b</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_b</span><span class="p">()</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Na</span> <span class="o">==</span> <span class="n">Nb</span><span class="p">):</span>
+        <span class="n">HOMO</span> <span class="o">=</span> <span class="o">-</span><span class="n">Nb</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">Nb</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Na</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">E_a</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="n">E_b</span> <span class="o">=</span> <span class="n">eps_b</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="k">if</span> <span class="p">(</span><span class="n">E_a</span> <span class="o">&gt;=</span> <span class="n">E_b</span><span class="p">):</span>
+            <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Na</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">HOMO</span> <span class="o">=</span> <span class="o">-</span><span class="n">Nb</span>
+
+    <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">Na</span><span class="p">,</span> <span class="n">Nb</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">mult</span><span class="p">,</span> <span class="n">HOMO</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">HOMO</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">Na</span> <span class="o">=</span> <span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Nb</span> <span class="o">=</span> <span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">charge</span> <span class="o">=</span> <span class="n">charge</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="n">mult</span> <span class="o">=</span> <span class="n">Na</span> <span class="o">-</span> <span class="n">Nb</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;LOAD&quot;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_START&quot;</span><span class="p">,</span> <span class="n">frac_start</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_RENORMALIZE&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+    <span class="c"># Nuke &#39;em Rico! </span>
+    <span class="k">for</span> <span class="n">Nintegral</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">Nmin</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+
+        <span class="c"># Nuke the current HOMO</span>
+        <span class="k">for</span> <span class="n">occ</span> <span class="ow">in</span> <span class="n">foccs</span><span class="p">:</span>
+
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_OCC&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">HOMO</span><span class="p">])</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_VAL&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">occ</span><span class="p">])</span> 
+
+            <span class="n">E</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+            <span class="n">C</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">E</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+                <span class="n">E</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF ITERATION ENERGY&#39;</span><span class="p">)</span>
+                <span class="n">C</span> <span class="o">=</span> <span class="mi">0</span>
+
+            <span class="n">Ns</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Nintegral</span> <span class="o">+</span> <span class="n">occ</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span>
+            <span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+            <span class="n">convs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_START&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_LOAD&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;FRAC_DIIS&quot;</span><span class="p">,</span> <span class="n">frac_diis</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="s">&quot;READ&quot;</span><span class="p">)</span>
+
+        <span class="c"># Set the next charge/mult</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge</span><span class="p">)</span>    
+        <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult</span><span class="p">)</span>
+
+        <span class="c"># Determine HOMO</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span>
+        <span class="n">eps_a</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_a</span><span class="p">()</span>
+        <span class="n">eps_b</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_b</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">Na</span> <span class="o">==</span> <span class="n">Nb</span><span class="p">):</span>
+            <span class="n">HOMO</span> <span class="o">=</span> <span class="o">-</span><span class="n">Nb</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">Nb</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Na</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">E_a</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+            <span class="n">E_b</span> <span class="o">=</span> <span class="n">eps_b</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+            <span class="k">if</span> <span class="p">(</span><span class="n">E_a</span> <span class="o">&gt;=</span> <span class="n">E_b</span><span class="p">):</span>
+                <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Na</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">HOMO</span> <span class="o">=</span> <span class="o">-</span><span class="n">Nb</span>
+
+        <span class="n">stats</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">Nintegral</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">Na</span><span class="p">,</span> <span class="n">Nb</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">mult</span><span class="p">,</span> <span class="n">HOMO</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">HOMO</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">Na</span> <span class="o">=</span> <span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">Nb</span> <span class="o">=</span> <span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">charge</span> <span class="o">=</span> <span class="n">charge</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">mult</span> <span class="o">=</span> <span class="n">Na</span> <span class="o">-</span> <span class="n">Nb</span> <span class="o">+</span> <span class="mi">1</span>
+    
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;NONE&quot;</span><span class="p">)</span>
+
+    <span class="c"># =&gt; Print the results out &lt;= #</span>
+    <span class="n">E</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">    ==&gt; Fractional Occupation Nuke Results &lt;==</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%-11s</span><span class="s"> </span><span class="si">%-24s</span><span class="s"> </span><span class="si">%11s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="s">&#39;Energy&#39;</span><span class="p">,</span> <span class="s">&#39;Converged&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Ns</span><span class="p">)):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%11.3E</span><span class="s"> </span><span class="si">%24.16E</span><span class="s"> </span><span class="si">%11d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Ns</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">convs</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+        <span class="n">E</span><span class="p">[</span><span class="n">Ns</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="s">&#39;Na&#39;</span><span class="p">,</span> <span class="s">&#39;Nb&#39;</span><span class="p">,</span> <span class="s">&#39;Charge&#39;</span><span class="p">,</span> <span class="s">&#39;Mult&#39;</span><span class="p">,</span> <span class="s">&#39;HOMO&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span> 
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">&quot;You shoot a nuke down a bug hole, you got a lot of dead bugs&quot;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t\t\t</span><span class="s">-Starship Troopers</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="c"># Drop the files out</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">traverse_filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%-11s</span><span class="s"> </span><span class="si">%-24s</span><span class="s"> </span><span class="si">%11s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="s">&#39;Energy&#39;</span><span class="p">,</span> <span class="s">&#39;Converged&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Ns</span><span class="p">)):</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%11.3E</span><span class="s"> </span><span class="si">%24.16E</span><span class="s"> </span><span class="si">%11d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">Ns</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">convs</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">fh</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">stats_filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="s">&#39;Na&#39;</span><span class="p">,</span> <span class="s">&#39;Nb&#39;</span><span class="p">,</span> <span class="s">&#39;Charge&#39;</span><span class="p">,</span> <span class="s">&#39;Mult&#39;</span><span class="p">,</span> <span class="s">&#39;HOMO&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span> 
+        <span class="n">fh</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">E</span>    
+</div>
+<div class="viewcode-block" id="ip_fitting"><a class="viewcode-back" href="../index.html#frac.ip_fitting">[docs]</a><span class="k">def</span> <span class="nf">ip_fitting</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">omega_l</span><span class="p">,</span> <span class="n">omega_r</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c"># By default, zero the omega to 3 digits</span>
+    <span class="n">omega_tol</span> <span class="o">=</span> <span class="mf">1.0E-3</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;omega_tolerance&#39;</span><span class="p">)):</span>  
+        <span class="n">omega_tol</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;omega_tolerance&#39;</span><span class="p">]</span>
+
+    <span class="c"># By default, do up to twenty iterations</span>
+    <span class="n">maxiter</span> <span class="o">=</span> <span class="mi">20</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;maxiter&#39;</span><span class="p">)):</span>  
+        <span class="n">maxiter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;maxiter&#39;</span><span class="p">]</span>
+
+    <span class="c"># The molecule is required, and should be the neutral species</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+    <span class="n">activate</span><span class="p">(</span><span class="n">mol</span><span class="p">)</span>
+    <span class="n">charge0</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">molecular_charge</span><span class="p">()</span>
+    <span class="n">mult0</span>   <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">multiplicity</span><span class="p">()</span> 
+
+    <span class="c"># How many electrons are there?</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">for</span> <span class="n">A</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">natom</span><span class="p">()):</span>
+        <span class="n">N</span> <span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">Z</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">N</span> <span class="o">-=</span> <span class="n">charge0</span>
+    <span class="n">N</span>  <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">Nb</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">N</span> <span class="o">-</span> <span class="n">mult0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">Na</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">N</span> <span class="o">-</span> <span class="n">Nb</span><span class="p">)</span>
+
+    <span class="c"># Work in the ot namespace for this procedure</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">set_default_namespace</span><span class="p">(</span><span class="s">&quot;ot&quot;</span><span class="p">)</span>
+
+    <span class="c"># Burn in to determine orbital eigenvalues</span>
+    <span class="n">old_guess</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;SAVE&quot;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting SCF: Burn-in &lt;==</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;LOAD&quot;</span><span class="p">)</span>
+
+    <span class="c"># Determine HOMO, to determine mult1</span>
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span>
+    <span class="n">eps_a</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_a</span><span class="p">()</span>
+    <span class="n">eps_b</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_b</span><span class="p">()</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Na</span> <span class="o">==</span> <span class="n">Nb</span><span class="p">):</span>
+        <span class="n">HOMO</span> <span class="o">=</span> <span class="o">-</span><span class="n">Nb</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">Nb</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Na</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">E_a</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="n">E_b</span> <span class="o">=</span> <span class="n">eps_b</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="k">if</span> <span class="p">(</span><span class="n">E_a</span> <span class="o">&gt;=</span> <span class="n">E_b</span><span class="p">):</span>
+            <span class="n">HOMO</span> <span class="o">=</span> <span class="n">Na</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">HOMO</span> <span class="o">=</span> <span class="o">-</span><span class="n">Nb</span>
+
+    <span class="n">Na1</span> <span class="o">=</span> <span class="n">Na</span><span class="p">;</span>
+    <span class="n">Nb1</span> <span class="o">=</span> <span class="n">Nb</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">HOMO</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">Na1</span> <span class="o">=</span> <span class="n">Na1</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">Nb1</span> <span class="o">=</span> <span class="n">Nb1</span><span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+    
+    <span class="n">charge1</span> <span class="o">=</span> <span class="n">charge0</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> 
+    <span class="n">mult1</span> <span class="o">=</span> <span class="n">Na1</span> <span class="o">-</span> <span class="n">Nb1</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">omegas</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="n">E0s</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="n">E1s</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="n">kIPs</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="n">IPs</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="n">types</span> <span class="o">=</span> <span class="p">[];</span>
+    
+    <span class="c"># Right endpoint</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;DFT_OMEGA&#39;</span><span class="p">,</span><span class="n">omega_r</span><span class="p">)</span>
+
+    <span class="c"># Neutral</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge0</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult0</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting SCF: Neutral, Right Endpoint &lt;==</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">E0r</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span>
+    <span class="n">eps_a</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_a</span><span class="p">()</span>
+    <span class="n">eps_b</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_b</span><span class="p">()</span>
+    <span class="n">E_HOMO</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Nb</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">E_a</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="n">E_b</span> <span class="o">=</span> <span class="n">eps_b</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="k">if</span> <span class="p">(</span><span class="n">E_a</span> <span class="o">&gt;=</span> <span class="n">E_b</span><span class="p">):</span>
+            <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">E_a</span><span class="p">;</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">E_b</span><span class="p">;</span>
+    <span class="n">E_HOMOr</span> <span class="o">=</span> <span class="n">E_HOMO</span><span class="p">;</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">,</span><span class="s">&quot;neutral&quot;</span><span class="p">)</span>
+    
+    <span class="c"># Cation</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge1</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult1</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting SCF: Cation, Right Endpoint &lt;==</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">E1r</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">,</span><span class="s">&quot;cation&quot;</span><span class="p">)</span>
+
+    <span class="n">IPr</span> <span class="o">=</span> <span class="n">E1r</span> <span class="o">-</span> <span class="n">E0r</span><span class="p">;</span>
+    <span class="n">kIPr</span> <span class="o">=</span> <span class="o">-</span><span class="n">E_HOMOr</span><span class="p">;</span>
+    <span class="n">delta_r</span> <span class="o">=</span> <span class="n">IPr</span> <span class="o">-</span> <span class="n">kIPr</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">IPr</span> <span class="o">&gt;</span> <span class="n">kIPr</span><span class="p">):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">***IP Fitting Error: Right Omega limit should have kIP &gt; IP&#39;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="p">,</span><span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">omegas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">omega_r</span><span class="p">)</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;Right Limit&#39;</span><span class="p">)</span>
+    <span class="n">E0s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E0r</span><span class="p">)</span>
+    <span class="n">E1s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E1r</span><span class="p">)</span>
+    <span class="n">IPs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">IPr</span><span class="p">)</span>
+    <span class="n">kIPs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kIPr</span><span class="p">)</span>
+
+    <span class="c"># Use previous orbitals from here out</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span><span class="s">&quot;READ&quot;</span><span class="p">)</span>
+    
+    <span class="c"># Left endpoint</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;DFT_OMEGA&#39;</span><span class="p">,</span><span class="n">omega_l</span><span class="p">)</span>
+
+    <span class="c"># Neutral</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;neutral&quot;</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge0</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult0</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting SCF: Neutral, Left Endpoint &lt;==</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">E0l</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+    <span class="n">ref</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span>
+    <span class="n">eps_a</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_a</span><span class="p">()</span>
+    <span class="n">eps_b</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_b</span><span class="p">()</span>
+    <span class="n">E_HOMO</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">Nb</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">E_a</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="n">E_b</span> <span class="o">=</span> <span class="n">eps_b</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+        <span class="k">if</span> <span class="p">(</span><span class="n">E_a</span> <span class="o">&gt;=</span> <span class="n">E_b</span><span class="p">):</span>
+            <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">E_a</span><span class="p">;</span>
+        <span class="k">else</span><span class="p">:</span> 
+            <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">E_b</span><span class="p">;</span>
+    <span class="n">E_HOMOl</span> <span class="o">=</span> <span class="n">E_HOMO</span><span class="p">;</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">,</span><span class="s">&quot;neutral&quot;</span><span class="p">)</span>
+    
+    <span class="c"># Cation</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;cation&quot;</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge1</span><span class="p">)</span>
+    <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult1</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting SCF: Cation, Left Endpoint &lt;==</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">E1l</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">,</span><span class="s">&quot;cation&quot;</span><span class="p">)</span>
+
+    <span class="n">IPl</span> <span class="o">=</span> <span class="n">E1l</span> <span class="o">-</span> <span class="n">E0l</span><span class="p">;</span>
+    <span class="n">kIPl</span> <span class="o">=</span> <span class="o">-</span><span class="n">E_HOMOl</span><span class="p">;</span>
+    <span class="n">delta_l</span> <span class="o">=</span> <span class="n">IPl</span> <span class="o">-</span> <span class="n">kIPl</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">IPl</span> <span class="o">&lt;</span> <span class="n">kIPl</span><span class="p">):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">***IP Fitting Error: Left Omega limit should have kIP &lt; IP&#39;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="p">,</span><span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">omegas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">omega_l</span><span class="p">)</span>
+    <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;Left Limit&#39;</span><span class="p">)</span>
+    <span class="n">E0s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E0l</span><span class="p">)</span>
+    <span class="n">E1s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E1l</span><span class="p">)</span>
+    <span class="n">IPs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">IPl</span><span class="p">)</span>
+    <span class="n">kIPs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kIPl</span><span class="p">)</span>
+    
+    <span class="n">converged</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="n">repeat_l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">repeat_r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">step</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+
+        <span class="n">step</span> <span class="o">=</span> <span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        
+        <span class="c"># Regula Falsi (modified)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">repeat_l</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">delta_l</span> <span class="o">=</span> <span class="n">delta_l</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">repeat_r</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">delta_r</span> <span class="o">=</span> <span class="n">delta_r</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">;</span>
+        <span class="n">omega</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="n">omega_r</span> <span class="o">-</span> <span class="n">omega_l</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">delta_r</span> <span class="o">-</span> <span class="n">delta_l</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_l</span> <span class="o">+</span> <span class="n">omega_l</span><span class="p">;</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;DFT_OMEGA&#39;</span><span class="p">,</span><span class="n">omega</span><span class="p">)</span>
+
+        <span class="c"># Neutral</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;neutral&quot;</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">)</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge0</span><span class="p">)</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult0</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting SCF: Neutral, Omega = </span><span class="si">%11.3E</span><span class="s"> &lt;==</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">omega</span><span class="p">)</span>
+        <span class="n">E0</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+        <span class="n">ref</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span>
+        <span class="n">eps_a</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_a</span><span class="p">()</span>
+        <span class="n">eps_b</span> <span class="o">=</span> <span class="n">ref</span><span class="o">.</span><span class="n">epsilon_b</span><span class="p">()</span>
+        <span class="n">E_HOMO</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">Nb</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span><span class="o">-</span><span class="mi">1</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">E_a</span> <span class="o">=</span> <span class="n">eps_a</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Na</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+            <span class="n">E_b</span> <span class="o">=</span> <span class="n">eps_b</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">Nb</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)]</span> 
+            <span class="k">if</span> <span class="p">(</span><span class="n">E_a</span> <span class="o">&gt;=</span> <span class="n">E_b</span><span class="p">):</span>
+                <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">E_a</span><span class="p">;</span>
+            <span class="k">else</span><span class="p">:</span> 
+                <span class="n">E_HOMO</span> <span class="o">=</span> <span class="n">E_b</span><span class="p">;</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">,</span><span class="s">&quot;neutral&quot;</span><span class="p">)</span>
+        
+        <span class="c"># Cation</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;cation&quot;</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">)</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">set_molecular_charge</span><span class="p">(</span><span class="n">charge1</span><span class="p">)</span>
+        <span class="n">mol</span><span class="o">.</span><span class="n">set_multiplicity</span><span class="p">(</span><span class="n">mult1</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting SCF: Cation, Omega = </span><span class="si">%11.3E</span><span class="s"> &lt;==</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">omega</span><span class="p">)</span>
+        <span class="n">E1</span> <span class="o">=</span> <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">change_file_namespace</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="s">&quot;ot&quot;</span><span class="p">,</span><span class="s">&quot;cation&quot;</span><span class="p">)</span>
+
+        <span class="n">IP</span> <span class="o">=</span> <span class="n">E1</span> <span class="o">-</span> <span class="n">E0</span><span class="p">;</span>
+        <span class="n">kIP</span> <span class="o">=</span> <span class="o">-</span><span class="n">E_HOMO</span><span class="p">;</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">IP</span> <span class="o">-</span> <span class="n">kIP</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">kIP</span> <span class="o">&gt;</span> <span class="n">IP</span><span class="p">):</span>
+            <span class="n">omega_r</span> <span class="o">=</span> <span class="n">omega</span>
+            <span class="n">E0r</span> <span class="o">=</span> <span class="n">E0</span>
+            <span class="n">E1r</span> <span class="o">=</span> <span class="n">E1</span>
+            <span class="n">IPr</span> <span class="o">=</span> <span class="n">IP</span>
+            <span class="n">kIPr</span> <span class="o">=</span> <span class="n">kIP</span>
+            <span class="n">delta_r</span> <span class="o">=</span> <span class="n">delta</span>
+            <span class="n">repeat_r</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="n">repeat_l</span> <span class="o">=</span> <span class="n">repeat_l</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">omega_l</span> <span class="o">=</span> <span class="n">omega</span>
+            <span class="n">E0l</span> <span class="o">=</span> <span class="n">E0</span>
+            <span class="n">E1l</span> <span class="o">=</span> <span class="n">E1</span>
+            <span class="n">IPl</span> <span class="o">=</span> <span class="n">IP</span>
+            <span class="n">kIPl</span> <span class="o">=</span> <span class="n">kIP</span>
+            <span class="n">delta_l</span> <span class="o">=</span> <span class="n">delta</span>
+            <span class="n">repeat_l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="n">repeat_r</span> <span class="o">=</span> <span class="n">repeat_r</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+        
+        <span class="n">omegas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">omega</span><span class="p">)</span>
+        <span class="n">types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;Regula-Falsi&#39;</span><span class="p">)</span>
+        <span class="n">E0s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E0</span><span class="p">)</span>
+        <span class="n">E1s</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E1</span><span class="p">)</span>
+        <span class="n">IPs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">IP</span><span class="p">)</span>
+        <span class="n">kIPs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">kIP</span><span class="p">)</span>
+    
+        <span class="c"># Termination</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">omega_l</span> <span class="o">-</span> <span class="n">omega_r</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">omega_tol</span> <span class="ow">or</span> <span class="n">step</span> <span class="o">&gt;</span> <span class="n">maxiter</span><span class="p">):</span>
+            <span class="n">converged</span> <span class="o">=</span> <span class="bp">True</span><span class="p">;</span>
+            <span class="k">break</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">set_default_namespace</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">==&gt; IP Fitting Results &lt;==</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s"> =&gt; Occupation Determination &lt;= </span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">          </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="s"> </span><span class="si">%6s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span> <span class="s">&#39;Na&#39;</span><span class="p">,</span> <span class="s">&#39;Nb&#39;</span><span class="p">,</span> <span class="s">&#39;Charge&#39;</span><span class="p">,</span> <span class="s">&#39;Mult&#39;</span><span class="p">,</span> <span class="s">&#39;HOMO&#39;</span><span class="p">))</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s"> Neutral: </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">Na</span><span class="p">,</span> <span class="n">Nb</span><span class="p">,</span> <span class="n">charge0</span><span class="p">,</span> <span class="n">mult0</span><span class="p">,</span> <span class="n">HOMO</span><span class="p">))</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s"> Cation:  </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="s"> </span><span class="si">%6d</span><span class="se">\n\n</span><span class="s">&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">Na1</span><span class="p">,</span> <span class="n">Nb1</span><span class="p">,</span> <span class="n">charge1</span><span class="p">,</span> <span class="n">mult1</span><span class="p">))</span>
+
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s"> =&gt; Regula Falsi Iterations &lt;=</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%3s</span><span class="s"> </span><span class="si">%11s</span><span class="s"> </span><span class="si">%14s</span><span class="s"> </span><span class="si">%14s</span><span class="s"> </span><span class="si">%14s</span><span class="s"> </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;N&#39;</span><span class="p">,</span><span class="s">&#39;Omega&#39;</span><span class="p">,</span><span class="s">&#39;IP&#39;</span><span class="p">,</span><span class="s">&#39;kIP&#39;</span><span class="p">,</span><span class="s">&#39;Delta&#39;</span><span class="p">,</span><span class="s">&#39;Type&#39;</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">omegas</span><span class="p">)):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="si">%3d</span><span class="s"> </span><span class="si">%11.3E</span><span class="s"> </span><span class="si">%14.6E</span><span class="s"> </span><span class="si">%14.6E</span><span class="s"> </span><span class="si">%14.6E</span><span class="s"> </span><span class="si">%s</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">omegas</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">IPs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">kIPs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="n">IPs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">kIPs</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">types</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">converged</span><span class="p">):</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">IP Fitting Converged</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">Final omega = </span><span class="si">%14.6E</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">omega_l</span> <span class="o">+</span> <span class="n">omega_r</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">&quot;M,I. does the dying. Fleet just does the flying.&quot;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t\t\t</span><span class="s">-Starship Troopers</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n\t</span><span class="s">IP Fitting did not converge!</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+    
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;DF_INTS_IO&quot;</span><span class="p">,</span> <span class="s">&quot;NONE&quot;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;GUESS&quot;</span><span class="p">,</span> <span class="n">old_guess</span><span class="p">)</span>
+</pre></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+
+          <li><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Feb 23, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

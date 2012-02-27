@@ -1,4 +1,4 @@
-#ifndef JK_H 
+#ifndef JK_H
 #define JK_H
 
 #include <vector>
@@ -75,15 +75,10 @@ class PSIO;
  *
  * The typical calling convention for a JK instance is:
  * 
- *      // These do not even need to be filled yet, 
- *      // jk just needs the reference
- *      std::vector<SharedMatrix > C_left;
- *      std::vector<SharedMatrix > C_right;
- *
- *      // Nonymmetric constructor, Algorithm corresponds 
+ *      // Constructor, Algorithm corresponds 
  *      // to Type 
  *      boost::shared_ptr<JKType> jk(new JKType(
- *          C_left, C_right, basis, ...));
+ *          basis, ...));
  *
  *      // Set any desired knobs
  *      
@@ -103,11 +98,12 @@ class PSIO;
  *      // Enter iterations or whatever
  *      // In each iteration:
  *      
- *      // Modify your reference to C_left/C_right
- *      // You can do whatever, resize, delete/rebuild,
- *      // or just change the double** of each element.
- *      // All that matters is that you still refer to 
- *      // C_left/C_right
+ *      // Clear and pack the C_left/C_right arrays
+ *      // If C_left == C_right, only pack C_left
+ *      // Make sure to declare your handles as references (&)
+ *      std::vector<SharedMatrix>& C_left = jk->C_left();
+ *      C_left.clear()
+ *      C_left.push_back(Cocc)
  *      ...
  *
  *      // Let jk compute for the given C_left/C_right
@@ -141,6 +137,8 @@ protected:
     int print_;     
     /// Debug flag, defaults to 0
     int debug_;     
+    /// Bench flag, defaults to 0
+    int bench_;     
     /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
     unsigned long int memory_;
     /// Number of OpenMP threads (defaults to 1 in no OpenMP, omp_get_max_thread() otherwise)
@@ -160,10 +158,11 @@ protected:
     /// Omega, defaults to 0.0
     double omega_;
 
+    /// Left-right symmetric? Determined in each call of compute()
+    bool lr_symmetric_;
+
     // => Architecture-Level State Variables (Spatial Symmetry) <= // 
 
-    /// C_left_ = C_right_?
-    bool lr_symmetric_;
     /// Pseudo-occupied C matrices, left side
     std::vector<SharedMatrix > C_left_;
     /// Pseudo-occupied C matrices, right side 
@@ -229,33 +228,14 @@ public:
     // => Constructors <= //
 
     /**
-     * Non-Symmetric Constructor
-     * @param C_left reference to std::vector that will hold 
-     *        left-side C matrices
-     * @param C_right reference to std::vector that will hold 
-     *        right-side C matrices
      * @param primary primary basis set for this system. 
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    JK(std::vector<SharedMatrix >& C_left, 
-       std::vector<SharedMatrix >& C_right,
-       boost::shared_ptr<BasisSet> primary);
+    JK(boost::shared_ptr<BasisSet> primary);
 
-    /**
-     * Symmetric Constructor
-     * @param C_symm reference to std::vector that will hold 
-     *        both left- and right-side C matrices
-     * @param primary primary basis set for this system. 
-     *        AO2USO transforms will be built with the molecule
-     *        contained in this basis object, so the incoming
-     *        C matrices must have the same spatial symmetry
-     *        structure as this molecule
-     */
-    JK(std::vector<SharedMatrix >& C_symm,
-       boost::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~JK();
 
@@ -264,10 +244,9 @@ public:
     * Static instance constructor, used to get prebuilt DFJK/DirectJK objects
     * using knobs in options. 
     * @param options Options reference, with preset parameters
-    * @param lr_symmetric left/right symmetric or not? defaults to false
     * @return abstract JK object, tuned in with preset options
     */
-    static boost::shared_ptr<JK> build_JK(Options& options, bool lr_symmetric = false);
+    static boost::shared_ptr<JK> build_JK();
 
     // => Knobs <= // 
 
@@ -297,8 +276,10 @@ public:
     void set_omp_nthread(int omp_nthread) { omp_nthread_ = omp_nthread; }
     /// Print flag (defaults to 1)
     void set_print(int print) { print_ = print; }
-    /// Debug flag (defaults to 1)
+    /// Debug flag (defaults to 0)
     void set_debug(int debug) { debug_ = debug; }
+    /// Bench flag (defaults to 0)
+    void set_bench(int bench) { bench_ = bench; }
     /**
     * Set to do J tasks
     * @param do_J do J matrices or not,
@@ -436,34 +417,84 @@ public:
     // => Constructors < = //
         
     /**
-     * Non-Symmetric Constructor
-     * @param C_left reference to std::vector that will hold 
-     *        left-side C matrices
-     * @param C_right reference to std::vector that will hold 
-     *        right-side C matrices
      * @param primary primary basis set for this system. 
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DiskJK(std::vector<SharedMatrix >& C_left, 
-       std::vector<SharedMatrix >& C_right,
-       boost::shared_ptr<BasisSet> primary);
-    /**
-     * Symmetric Constructor
-     * @param C_symm reference to std::vector that will hold 
-     *        left- and right-side C matrices
-     * @param primary primary basis set for this system. 
-     *        AO2USO transforms will be built with the molecule
-     *        contained in this basis object, so the incoming
-     *        C matrices must have the same spatial symmetry
-     *        structure as this molecule
-     */
-    DiskJK(std::vector<SharedMatrix >& C_symm,
-       boost::shared_ptr<BasisSet> primary);
+    DiskJK(boost::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~DiskJK();
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+};
+
+/**
+ * Class PKJK
+ *
+ * JK implementation using disk-based
+ * integral technology
+ */
+class PKJK : public JK {
+
+    /// The PSIO instance to use for I/O
+    boost::shared_ptr<PSIO> psio_;
+
+    /// Absolute AO index to relative SO index
+    int* so2index_;
+    /// Absolute AO index to irrep
+    int* so2symblk_;
+
+    /// The pk file to use for storing the pk batches
+    int pk_file_;
+
+    /// The number of integrals in the P and K arrays
+    size_t pk_size_;
+    /// The number of totally symmetric pairs that contribute
+    size_t pk_pairs_;
+
+    /// The index of the first pair in each batch
+    std::vector<size_t> batch_pq_min_;
+    /// The index of the last pair in each batch
+    std::vector<size_t> batch_pq_max_;
+    /// The index of the first integral in each batch
+    std::vector<size_t> batch_index_min_;
+    /// The index of the last integral in each batch
+    std::vector<size_t> batch_index_max_;
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return false; }
+    /// Setup integrals, files, etc
+    virtual void preiterations();
+    /// Compute J/K for current C/D
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations();
+
+    /// Common initialization
+    void common_init();
+
+public:
+    // => Constructors < = //
+
+    /**
+     * Symmetric Constructor
+     * @param primary primary basis set for this system.
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    PKJK(boost::shared_ptr<BasisSet> primary);
+    /// Destructor
+    virtual ~PKJK();
 
     // => Accessors <= //
 
@@ -515,32 +546,13 @@ public:
     // => Constructors < = //
         
     /**
-     * Non-Symmetric Constructor
-     * @param C_left reference to std::vector that will hold 
-     *        left-side C matrices
-     * @param C_right reference to std::vector that will hold 
-     *        right-side C matrices
      * @param primary primary basis set for this system. 
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DirectJK(std::vector<SharedMatrix >& C_left, 
-       std::vector<SharedMatrix >& C_right,
-       boost::shared_ptr<BasisSet> primary);
-    /**
-     * Symmetric Constructor
-     * @param C_symm reference to std::vector that will hold 
-     *        left- and right-side C matrices
-     * @param primary primary basis set for this system. 
-     *        AO2USO transforms will be built with the molecule
-     *        contained in this basis object, so the incoming
-     *        C matrices must have the same spatial symmetry
-     *        structure as this molecule
-     */
-    DirectJK(std::vector<SharedMatrix >& C_symm,
-       boost::shared_ptr<BasisSet> primary);
+    DirectJK(boost::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~DirectJK();
 
@@ -646,11 +658,6 @@ public:
     // => Constructors < = //
         
     /**
-     * Non-Symmetric Constructor
-     * @param C_left reference to std::vector that will hold 
-     *        left-side C matrices
-     * @param C_right reference to std::vector that will hold 
-     *        right-side C matrices
      * @param primary primary basis set for this system. 
      *        AO2USO transforms will be built with the molecule
      *        contained in this basis object, so the incoming
@@ -658,25 +665,9 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DFJK(std::vector<SharedMatrix >& C_left, 
-       std::vector<SharedMatrix >& C_right,
-       boost::shared_ptr<BasisSet> primary,
+    DFJK( boost::shared_ptr<BasisSet> primary,
        boost::shared_ptr<BasisSet> auxiliary);
 
-    /**
-     * Symmetric Constructor
-     * @param C_symm reference to std::vector that will hold 
-     *        left- and right-side C matrices
-     * @param primary primary basis set for this system. 
-     *        AO2USO transforms will be built with the molecule
-     *        contained in this basis object, so the incoming
-     *        C matrices must have the same spatial symmetry
-     *        structure as this molecule
-     * @param auxiliary auxiliary basis set for this system.
-     */
-    DFJK(std::vector<SharedMatrix >& C_symm,
-       boost::shared_ptr<BasisSet> primary,
-       boost::shared_ptr<BasisSet> auxiliary);
     /// Destructor
     virtual ~DFJK();
 
@@ -715,6 +706,130 @@ public:
     virtual void print_header() const;
 };
 
+/**
+ * Class PSJK
+ *
+ * JK implementation using sieved, threaded,
+ * range-separated PS technology
+ */
+class PSJK : public JK {
+
+protected:
+
+    /// Options reference (needed to build grid)
+    Options& options_;
+    /// Dealiasing basis (if needed)
+    boost::shared_ptr<BasisSet> dealias_;
+    /// Number of threads for three-center integrals
+    int df_ints_num_threads_;
+    /// File number for (Q|mn) tensor
+    unsigned int unit_; 
+    /// Range separation for integrand smoothing
+    double theta_;
+    /// QUADRATURE, RENORMALIZATION, or DEALIASING
+    std::string dealiasing_;
+    /// PSIO object
+    boost::shared_ptr<PSIO> psio_;
+    /// Sieve, must be static throughout the life of the object
+    boost::shared_ptr<ERISieve> sieve_;
+    /// Q_m^P matrix
+    SharedMatrix Q_;
+    /// R_m^P matrix
+    SharedMatrix R_;
+    /// Grid definition [P x [x y z w]]
+    SharedMatrix grid_;
+    /// 4-center integrators
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > ints_4c_;
+    /// Q R D (for J)
+    SharedVector d_;
+    /// R D (for K)
+    SharedMatrix V_;
+    /// V A (for K)
+    SharedMatrix W_;
+    /// Temporary triangular J
+    SharedVector J_temp_;
+    
+    // => Required Algorithm-Specific Methods <= //
+
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return true; }
+    /// Setup integrals, files, etc
+    virtual void preiterations(); 
+    /// Compute J/K for current C/D 
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations(); 
+
+    /// Common initialization
+    void common_init();
+
+    // => Magic <= //
+    void build_QR();
+    void build_Amn_disk(double theta, const std::string& entry);
+    void block_J(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& J);
+    void block_K(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& K);
+    void build_JK_SR(); 
+    void build_JK_LR(); 
+
+    void build_JK_debug(const std::string& op = "", double theta = 0.0);
+    
+    int max_rows();
+
+public:
+
+    // => Constructors < = //
+        
+    /**
+     * @param primary primary basis set for this system. 
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     * @param options, Options reference used to build grid
+     */
+    PSJK(boost::shared_ptr<BasisSet> primary,
+        Options& options);
+
+    /// Destructor
+    virtual ~PSJK();
+
+    // => Knobs <= //
+
+    /**
+     * What number of threads to compute integrals on?
+     * @param val a positive integer 
+     */ 
+    void set_df_ints_num_threads(int val) { df_ints_num_threads_ = val; }    
+    /**
+     * What value of range-separation parameter for integral smoothing?
+     * @param theta a positive double
+     */
+    void set_theta(double theta) { theta_ = theta; }
+    /** 
+     * How to handle the renormalization or dealiasing?
+     * @param type QUADRATURE, RENORMALIZATION, or DEALIASING 
+     */
+    void set_dealiasing(const std::string& dealiasing) { dealiasing_ = dealiasing; }
+    /**
+     * Custom dealias basis
+     * @param dealias, new dealias basis
+     */
+    void set_dealias_basis(boost::shared_ptr<BasisSet> dealias) { dealias_ = dealias; }
+    /**
+     * Which file number should the (Q|mn) integrals go in
+     * @param unit Unit number
+     */
+    void set_unit(unsigned int unit) { unit_ = unit; }
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+
+};
 
 }
 #endif

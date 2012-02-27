@@ -11,6 +11,8 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+m4_include([m4/ac_prog_sphinx.m4])
+m4_include([m4/ac_prog_pdflatex.m4])
 m4_include([m4/ac_prog_latex.m4])
 m4_include([m4/ax_boost_base.m4])
 m4_include([m4/ax_boost_filesystem.m4])

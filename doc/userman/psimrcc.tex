@@ -1,0 +1,48 @@
+%written by Alexander E Vaughn(CCQC, 2012) based on Francesco Evangelista's PSIMRCC manual  
+\subsection{PSIMRCC implementation of Mk-MRCC theory} \label{sec:psimrcc}
+\renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
+
+\subsubsection{Introduction to Mk-MRCC}
+State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in \PSIfour implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC).  
+\\
+Mk-MRCC is based on the Jeziorski-Monkhorst ansatz for the wavefunction, $\Psi$
+\begin{equation*}
+\left| \Psi \right \rangle = \sum_\mu^d e^{\hat{T}^\mu} \left| \Phi_\mu \right\rangle c_\mu \, \text{,}
+\end{equation*}
+where $\Phi_\mu$ are the reference determinants, $\hat{T}^\mu$ are reference-specific excitation operators, and $c_\mu$ are expansion coefficients obtained through diagonalization of the Mk-MRCC effective Hamiltonian matrix that allows the various reference determinants to interact. As an example of how this works the Mk-MRCCSD excitation operators for each reference is contracted two-body terms
+\begin{equation*}
+\hat{T}^\mu = \hat{T}^\mu_1 + \hat{T}^\mu_2
+\end{equation*} 
+where
+\begin{equation*}
+\hat{T}^\mu_1 = \sum_i^{\textrm{occ}(\mu)} \sum_a^{\textrm{vir}(\mu)} t_i^a (\mu) \hat{a}^\dagger_a \hat{a}_i
+\end{equation*}
+and
+\begin{equation*}
+\hat{T}^\mu_2 =\frac{1}{4} \sum_i^{\textrm{occ}(\mu)} \sum_a^{\textrm{vir}(\mu)} t_{ij}^{ab} (\mu) \hat{a}^\dagger_b \hat{a}_j \hat{a}^\dagger_a \hat{a}_i  
+\end{equation*}
+The Mk-MRCC energy is a chosen eigenvalue of the effective Hamiltonian, $\textrm{H}^{eff}_{\mu \nu}$
+ \begin{equation*}
+\sum_\nu \textrm{H}^{eff}_{\mu \nu} c_\nu =E c_\nu
+ \end{equation*}
+where 
+\begin{equation*}
+\textrm{H}^{eff}_{\mu \nu} = \left \langle \Phi_\mu \right | \hat{H}e^{\hat{T}^\nu} \left | \Phi_\nu \right \rangle \, \textrm{.}
+\end{equation*}
+ \PSIfour currently has Mk-MRCC with singles and doubles [Mk-MRCCSD], single and doubles with perturbative triples[Mk-MRCCSD(T)]. In addition, a companion perturbation method(Mk-MRPT2) has been developed based on the Mukherjee formalisim. 
+\\
+\subsubsection{Orbital ordering and selection of the model space}
+The reference determinants $\Phi_\mu$ are specified in PSIMRCC via occupational numbers. PSIMRCC requires that four arrays be specified for this purpose.
+
+\begin{itemize}
+\item Frozen doubly occupied orbitals(FROZEN\_DOCC) are doubly occupied in each reference determinant and are not correlated in the MRCC procedure.
+\item Doubly occupied orbitals(RESTRICTED\_DOCC)  are doubly occupied in each reference determinant and are correlated in the MRCC procedure.
+\item Active orbitals(ACTIVE) are partially occupied in each reference determinant.
+\item Frozen virtual orbitals (FROZEN\_UOCC) are unoccupied in all reference determinants and are excluded from the correlated wave function.
+\end{itemize} 
+
+The model space is selected by considering all possible occupations of the electrons among the orbitals in the active space that result in determinants with the correct symmetry(WFN\_SYM) and the correct $\textrm{M}_s$ value specified by the keyword MULTP. Note that this does not consider the multiplicity of the wavefunction. Thus, in order to obtain the wavefunction with a set of $\textrm{M}_s = 0$ reference determinants for an open-shell system you should request a MULTP of 1 within the PSIMRCC module, and select the root of the effective Hamiltonian that corresponds to the state of interest. In addition, the WFN\_SYM keyword needs to be specified otherwise the wavefunction belonging to the all-symmetric irrep will be selected. In addition, it should be noted that for an open-shell singlet based on two $\textrm{M}_s = 0$ determinants the eigenvector is [$\frac{1}{\sqrt{2}}\text{,}\frac{1}{\sqrt{2}}$], which corresponds to a wavefunction of the following form:
+\begin{equation*}
+\frac{1}{\sqrt{2}} \left( \chi_1 \alpha (1) \chi_2 \beta (2) + \chi_2 \alpha(1) \chi_1 \beta (2) \right)
+\end{equation*}  
+

@@ -1,6 +1,7 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+#include <boost/tuple/tuple_comparison.hpp>
 #include "hamiltonian.h"
 #include "jk.h"
 #include "v.h"
@@ -19,13 +20,21 @@ namespace psi {
 Hamiltonian::Hamiltonian(boost::shared_ptr<JK> jk) :
     jk_(jk)
 {
+    common_init();
 }
 Hamiltonian::Hamiltonian(boost::shared_ptr<JK> jk, boost::shared_ptr<VBase> v) :
     jk_(jk), v_(v)
 {
+    common_init();
 }
 Hamiltonian::~Hamiltonian()
 {
+}
+void Hamiltonian::common_init()
+{
+    print_ = 1;
+    debug_ = 0;
+    bench_ = 0;
 }
 
 RHamiltonian::RHamiltonian(boost::shared_ptr<JK> jk) :
@@ -174,7 +183,7 @@ CISRHamiltonian::CISRHamiltonian(boost::shared_ptr<JK> jk,
                                  boost::shared_ptr<Vector> eps_aocc,
                                  boost::shared_ptr<Vector> eps_avir,
                                  boost::shared_ptr<VBase> v) :
-    RHamiltonian(jk,v), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir), singlet_(true) 
+    RHamiltonian(jk,v), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir), singlet_(true)
 {
 }
 CISRHamiltonian::~CISRHamiltonian()
@@ -236,33 +245,90 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     for (int symm = 0; symm < nirrep; ++symm) {
         for (int N = 0; N < x.size(); ++N) {
-            C_left.push_back(Caocc_);
             double* xp = x[N]->pointer(symm);
-
-            std::stringstream ss;
-            ss << "C_right, h = " << symm << ", N = " << N;
-            SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
-            
             long int offset = 0L;
-            for (int h = 0; h < Caocc_->nirrep(); ++h) {
 
+            // Is this a delta (low-rank) vector?
+            bool delta_vector = true;
+            int  delta_h = 0;
+            int  delta_i = 0;
+            int  delta_a = 0;
+            double delta_sum = 0.0;
+            for (int h = 0; h < Caocc_->nirrep(); ++h) {
                 int nocc = Caocc_->colspi()[h];
                 int nvir = Cavir_->colspi()[h^symm];
-                int nso  = Cavir_->rowspi()[h^symm];
-
-                if (!nso || !nocc || !nvir) continue;
-
-                double** Cvp = Cavir_->pointer(h^symm);
-                double** Crp = Cr->pointer(h^symm);
-
-                C_DGEMM('N','T',nso,nocc,nvir,1.0,Cvp[0],nvir,&xp[offset],nvir,0.0,Crp[0],nocc);
-
+                for (int i = 0; i < nocc; i++) {
+                    for (int a = 0; a < nvir; a++) {    
+                        double x = xp[i * nvir + a + offset];
+                        if (x != 0.0 && x != 1.0) {
+                            delta_vector = false;
+                            break;
+                        }
+                        delta_sum += x;
+                        if (x == 1.0) {
+                            delta_i = i;
+                            delta_a = a;
+                            delta_h = h;
+                        }
+                    }
+                }
                 offset += nocc * nvir;
             }
+            if (delta_sum != 1.0) {
+                delta_vector = false;
+            }
 
-            C_right.push_back(Cr); 
+            if (delta_vector) {
+                
+                Dimension rank(Caocc_->nirrep());
+                rank[delta_h] = 1;
+
+                std::stringstream ss;
+                ss << "C_left, h = " << symm << ", N = " << N;
+                SharedMatrix Cl(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank));
+
+                double** Clp = Cl->pointer(delta_h);
+                double** Cop = Caocc_->pointer(delta_h);
+                C_DCOPY(Caocc_->rowspi()[delta_h],&Cop[0][delta_i],Caocc_->colspi()[delta_h],Clp[0],1);
+
+                std::stringstream ss2;
+                ss2 << "C_right, h = " << symm << ", N = " << N;
+                SharedMatrix Cr(new Matrix(ss2.str(), Caocc_->nirrep(), Caocc_->rowspi(), rank, symm));
+
+                double** Crp = Cr->pointer(delta_h);
+                double** Cvp = Cavir_->pointer(delta_h^symm);
+                C_DCOPY(Cavir_->rowspi()[delta_h^symm],&Cvp[0][delta_a],Cavir_->colspi()[delta_h^symm],Crp[0],1);
+
+                C_left.push_back(Cl);
+                C_right.push_back(Cr);
+
+            } else {
+                std::stringstream ss;
+                ss << "C_right, h = " << symm << ", N = " << N;
+                SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+                
+                offset = 0L;
+                for (int h = 0; h < Caocc_->nirrep(); ++h) {
+    
+                    int nocc = Caocc_->colspi()[h];
+                    int nvir = Cavir_->colspi()[h^symm];
+                    int nso  = Cavir_->rowspi()[h^symm];
+    
+                    if (!nso || !nocc || !nvir) continue;
+    
+                    double** Cvp = Cavir_->pointer(h^symm);
+                    double** Crp = Cr->pointer(h^symm);
+    
+                    C_DGEMM('N','T',nso,nocc,nvir,1.0,Cvp[0],nvir,&xp[offset],nvir,0.0,Crp[0],nocc);
+    
+                    offset += nocc * nvir;
+                }
+    
+                C_left.push_back(Caocc_);
+                C_right.push_back(Cr); 
+            }
         }
-    }
+    } 
 
     jk_->compute();
 
@@ -802,9 +868,17 @@ TDARHamiltonian::TDARHamiltonian(boost::shared_ptr<JK> jk,
                     boost::shared_ptr<Vector> eps_avir) : 
     CISRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix> C = v->C();
+    std::vector<SharedMatrix>& C = v->C();
     C.clear();
     C.push_back(Cocc);
+
+    std::vector<SharedMatrix>& Cao = v->Caocc();
+    Cao.clear();
+    Cao.push_back(Caocc);
+
+    std::vector<SharedMatrix>& Cav = v->Cavir();
+    Cav.clear();
+    Cav.push_back(Cavir);
 }
 TDARHamiltonian::~TDARHamiltonian()
 {
@@ -818,13 +892,13 @@ void TDARHamiltonian::print_header() const
 void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                                      std::vector<boost::shared_ptr<Vector> >& b)
 {
-    // TODO V
-
     std::vector<SharedMatrix >& C_left = jk_->C_left();
     std::vector<SharedMatrix >& C_right = jk_->C_right();
+    std::vector<SharedMatrix >& P = v_->P();
 
     C_left.clear();
     C_right.clear();
+    P.clear();
 
     int nirrep = (x.size() ? x[0]->nirrep() : 0);
 
@@ -855,13 +929,32 @@ void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
             }
 
             C_right.push_back(Cr); 
+
+            std::stringstream ss2;
+            ss2 << "P, h = " << symm << ", N = " << N;
+            SharedMatrix P2(new Matrix(ss2.str(), Caocc_->colspi(), Cavir_->colspi(), symm));
+
+            offset = 0L;
+            for (int h = 0; h < Caocc_->nirrep(); ++h) {
+                double* xp = x[N]->pointer(symm);
+                int nocc = Caocc_->colspi()[h];
+                int nvir = Cavir_->colspi()[h^symm];
+                if (!nocc || ! nvir) continue;
+                double** P2p = P2->pointer(h);
+                ::memcpy((void*) P2p[0], (void*) &xp[offset], sizeof(double) * nocc * nvir);
+                offset += nocc * nvir;
+            }
+
+            P.push_back(P2);
         }
     }
 
     jk_->compute();
+    v_->compute();
 
     const std::vector<SharedMatrix >& J = jk_->J();
     const std::vector<SharedMatrix >& K = jk_->K();
+    const std::vector<SharedMatrix >& V = v_->V();
 
     double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
@@ -888,10 +981,12 @@ void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
                 double** Jp  = J[symm * x.size() + N]->pointer(h);
                 double** Kp  = K[symm * x.size() + N]->pointer(h);
+                double** Vp  = V[symm * x.size() + N]->pointer(h);
     
+                // TODO: hybrid/RC terms
                 // -(ij|ab)P_jb = C_im K_mn C_na
-                C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Kp[0],nsovir,0.0,Tp,nsovir);
-                C_DGEMM('N','N',nocc,nvir,nsovir,-1.0,Tp,nsovir,Cvp[0],nvir,0.0,&bp[offset],nvir);
+                //C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Kp[0],nsovir,0.0,Tp,nsovir);
+                //C_DGEMM('N','N',nocc,nvir,nsovir,-1.0,Tp,nsovir,Cvp[0],nvir,0.0,&bp[offset],nvir);
     
                 if (singlet_) {
                     // 2(ia|jb)P_jb = C_im J_mn C_na
@@ -899,6 +994,10 @@ void TDARHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                     C_DGEMM('N','N',nocc,nvir,nsovir,2.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
                 }
             
+                // V matrix
+                C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Vp[0],nsovir,0.0,Tp,nsovir);
+                C_DGEMM('N','N',nocc,nvir,nsovir,1.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
+
                 for (int i = 0; i < nocc; ++i) {
                     for (int a = 0; a < nvir; ++a) {
                         bp[i * nvir + a + offset] += (evp[a] - eop[i]) * xp[i * nvir + a + offset];        
@@ -929,9 +1028,17 @@ TDDFTRHamiltonian::TDDFTRHamiltonian(boost::shared_ptr<JK> jk,
                     boost::shared_ptr<Vector> eps_avir) : 
     TDHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix> C = v->C();
+    std::vector<SharedMatrix>& C = v->C();
     C.clear();
     C.push_back(Cocc);
+
+    std::vector<SharedMatrix>& Cao = v->Caocc();
+    Cao.clear();
+    Cao.push_back(Caocc);
+
+    std::vector<SharedMatrix>& Cav = v->Cavir();
+    Cav.clear();
+    Cav.push_back(Cavir);
 }
 TDDFTRHamiltonian::~TDDFTRHamiltonian()
 {
@@ -1123,9 +1230,17 @@ CPKSRHamiltonian::CPKSRHamiltonian(boost::shared_ptr<JK> jk,
                     boost::shared_ptr<Vector> eps_avir) : 
     CPHFRHamiltonian(jk,Caocc,Cavir,eps_aocc,eps_avir,v), Cocc_(Cocc)
 {
-    std::vector<SharedMatrix> C = v->C();
+    std::vector<SharedMatrix>& C = v->C();
     C.clear();
     C.push_back(Cocc);
+
+    std::vector<SharedMatrix>& Cao = v->Caocc();
+    Cao.clear();
+    Cao.push_back(Caocc);
+
+    std::vector<SharedMatrix>& Cav = v->Cavir();
+    Cav.clear();
+    Cav.push_back(Cavir);
 }
 CPKSRHamiltonian::~CPKSRHamiltonian()
 {

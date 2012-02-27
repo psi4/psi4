@@ -139,21 +139,11 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   fprintf(outfile, "\n");
 
   fprintf(outfile, "    Convergence Criteria");
-  if (Opt_params.i_max_DE) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_max_force) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_rms_force) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_max_disp) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
-  if (Opt_params.i_rms_disp) { 
-    fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*");
-  } else { fprintf(outfile, "             %1s", "o"); } 
+  Opt_params.i_max_DE ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_DE, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_max_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_force, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_rms_force ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_force, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_max_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_max_disp, "*") : fprintf(outfile, "             %1s", "o");
+  Opt_params.i_rms_disp ? fprintf(outfile, "  %10.2e %1s", Opt_params.conv_rms_disp, "*") : fprintf(outfile, "             %1s", "o");
   if (g_iteration() == 1) fprintf(outfile, "  ~");
   fprintf(outfile, "\n");
 
@@ -263,7 +253,7 @@ void OPT_DATA::summary(void) const {
     max_force = array_abs_max(f, Nintco);
 
     dq =  g_dq_pointer(i);
-    max_disp = array_abs_max(f, Nintco);
+    max_disp = array_abs_max(dq, Nintco);
 
     fprintf(outfile,"\t %3d  %18.12lf  %18.12lf  %10.2e   %10.2e\n", i+1, g_energy(i),
       DE, max_force, max_disp);

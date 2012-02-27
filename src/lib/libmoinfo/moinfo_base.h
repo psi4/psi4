@@ -14,7 +14,6 @@
 
 #include <string>
 #include <libutil/libutil.h>
-#include "orbital_space.h"
 
 typedef std::vector<int>                    intvec;
 typedef std::vector<bool>                   boolvec;
@@ -77,9 +76,6 @@ protected:
   int         nbel;
   int         nactive_ael;
   int         nactive_bel;
-
-  OrbitalSpace mo_spaces;
-
 
   size_t*     ioff;
   intvec      sopi;

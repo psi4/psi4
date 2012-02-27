@@ -125,7 +125,7 @@ void RKS::form_G()
     form_V();
     timer_off("Form V");
 
-    if (scf_type_ == "DF") {
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
 
         // Push the C matrix on
         std::vector<SharedMatrix> & C = jk_->C_left();
@@ -287,7 +287,7 @@ void UKS::form_G()
     form_V();
     timer_off("Form V");
 
-    if (scf_type_ == "DF") {
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
 
         // Push the C matrix on
         std::vector<SharedMatrix> & C = jk_->C_left();

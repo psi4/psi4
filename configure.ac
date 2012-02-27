@@ -304,11 +304,13 @@ AC_PYTHON([2.4])
 
 
 
+AC_PROG_PDFLATEX
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
 AC_PROG_DVIPS
 AC_PROG_PS2PDF
 AC_PROG_BIBTEX
+AC_PROG_SPHINX
 
 
 
@@ -1030,6 +1032,8 @@ AC_CONFIG_FILES([
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
+          tests/fd-freq-gradient/Makefile
+          tests/fd-freq-gradient-large/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
           tests/sapt2/Makefile
@@ -1138,6 +1142,16 @@ AC_CONFIG_FILES([
           tests/plugin_backtrans/Makefile
           tests/plugin_backtrans/input.dat
           tests/plugin_backtrans/backtrans.cc
+          tests/plugin_rqchf/main.cc
+          tests/plugin_rqchf/Makefile
+          tests/plugin_rqchf/input.dat
+          tests/plugin_rqchf/rqchf.cc
+          tests/plugin_rqchf/rqchf.h
+          tests/plugin_fqdft/input.dat
+          tests/plugin_fqdft/Makefile
+          tests/plugin_fqdft/main.cc
+          tests/plugin_fqdft/fqdft.cc
+          tests/plugin_fqdft/fqdft.h
           tests/plugin_mp2/Makefile
           tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h
           tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc
