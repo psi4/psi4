@@ -93,8 +93,9 @@ elif input.no.match(str(db_cp)):</pre>
 </li>
 <li><p class="first">Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in <tt class="docutils literal"><span class="pre">psi4/lib/python/example_docstring</span></tt> and replace anything that looks like <tt class="docutils literal"><span class="pre">&lt;this&gt;</span></tt>. For a behind-the-scenes function or if you don&#8217;t want the bother of dealing with <a class="reference external" href="http://docutils.sourceforge.net/docs/user/rst/quickref.html">reStructuredText</a>, just write an ordinary docstring. It will get slurped into the documentation in plain text.</p>
 </li>
-<li><p class="first">Your python function should follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> conventions (without the line-length restriction). I&#8217;m aiming for files to pass the line below, unless for good reason.</p>
+<li><p class="first">Your python function should follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> conventions (without the line-length restriction). I&#8217;m aiming for files to pass the line below, unless for good reason. The second line is for database Python files.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span> <span class="n">pythonfile</span><span class="o">.</span><span class="n">py</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span><span class="p">,</span><span class="n">E221</span><span class="p">,</span><span class="n">E222</span><span class="p">,</span><span class="n">E241</span><span class="p">,</span><span class="n">E201</span><span class="p">,</span><span class="n">E202</span> <span class="n">databasefile</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </li>
@@ -188,7 +189,7 @@ elif input.no.match(str(db_cp)):</pre>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 26, 2012.
+      Last updated on Feb 27, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

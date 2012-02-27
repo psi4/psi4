@@ -35,7 +35,7 @@
   \indexspace
   \bigletter D
   \item database() (in module wrappers), \hyperpage{15}
-  \item Diffuse (class in qmmm), \hyperpage{56}
+  \item Diffuse (class in qmmm), \hyperpage{55}
   \item driver (module), \hyperpage{52}
   \item drop\_duplicates() (in module wrappers), \hyperpage{57}
   \item dynamic\_variable\_bind() (in module molutil), \hyperpage{52}
@@ -113,7 +113,7 @@
 
   \indexspace
   \bigletter N
-  \item n\_body() (in module wrappers), \hyperpage{57}
+  \item n\_body() (in module wrappers), \hyperpage{58}
   \item name() (pubchem.PubChemObj method), \hyperpage{55}
   \item NBC10 (module), \hyperpage{22}
   \item new\_get\_attr() (in module molutil), \hyperpage{52}
@@ -143,11 +143,11 @@
   \indexspace
   \bigletter Q
   \item QMMM (class in qmmm), \hyperpage{56}
-  \item qmmm (module), \hyperpage{56}
+  \item qmmm (module), \hyperpage{55}
 
   \indexspace
   \bigletter R
-  \item reconstitute\_bracketed\_basis() (in module wrappers), \hyperpage{57}
+  \item reconstitute\_bracketed\_basis() (in module wrappers), \hyperpage{58}
   \item response() (in module driver), \hyperpage{9}
   \item RGC10 (module), \hyperpage{23}
   \item run\_adc() (in module proc), \hyperpage{53}

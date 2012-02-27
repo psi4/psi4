@@ -718,7 +718,7 @@ H       4.200000     2.140382     2.235750
 H       4.200000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_3p3 = input.process_input("""
 molecule dimer {
@@ -751,7 +751,7 @@ H       4.300000     2.140382     2.235750
 H       4.300000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_3p4 = input.process_input("""
 molecule dimer {
@@ -784,7 +784,7 @@ H       4.400000     2.140382     2.235750
 H       4.400000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_3p5 = input.process_input("""
 molecule dimer {
@@ -817,7 +817,7 @@ H       4.500000     2.140382     2.235750
 H       4.500000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_3p6 = input.process_input("""
 molecule dimer {
@@ -850,7 +850,7 @@ H       4.600000     2.140382     2.235750
 H       4.600000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_3p7 = input.process_input("""
 molecule dimer {
@@ -883,7 +883,7 @@ H       4.700000     2.140382     2.235750
 H       4.700000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_3p8 = input.process_input("""
 molecule dimer {
@@ -916,7 +916,7 @@ H       4.800000     2.140382     2.235750
 H       4.800000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_3p9 = input.process_input("""
 molecule dimer {
@@ -949,7 +949,7 @@ H       4.900000     2.140382     2.235750
 H       4.900000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_4p0 = input.process_input("""
 molecule dimer {
@@ -982,7 +982,7 @@ H       5.000000     2.140382     2.235750
 H       5.000000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_4p1 = input.process_input("""
 molecule dimer {
@@ -1015,7 +1015,7 @@ H       5.100000     2.140382     2.235750
 H       5.100000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_4p2 = input.process_input("""
 molecule dimer {
@@ -1048,7 +1048,7 @@ H       5.200000     2.140382     2.235750
 H       5.200000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_4p5 = input.process_input("""
 molecule dimer {
@@ -1081,7 +1081,7 @@ H       5.500000     2.140382     2.235750
 H       5.500000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_5p0 = input.process_input("""
 molecule dimer {
@@ -1114,7 +1114,7 @@ H       6.000000     2.140382     2.235750
 H       6.000000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_5p5 = input.process_input("""
 molecule dimer {
@@ -1147,7 +1147,7 @@ H       6.500000     2.140382     2.235750
 H       6.500000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_6p0 = input.process_input("""
 molecule dimer {
@@ -1180,7 +1180,7 @@ H       7.000000     2.140382     2.235750
 H       7.000000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_6p5 = input.process_input("""
 molecule dimer {
@@ -1213,7 +1213,7 @@ H       7.500000     2.140382     2.235750
 H       7.500000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_S_10p0 = input.process_input("""
 molecule dimer {
@@ -1246,7 +1246,7 @@ H      11.000000     2.140382     2.235750
 H      11.000000     2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_4p4 = input.process_input("""
 molecule dimer {
@@ -1279,7 +1279,7 @@ H      -4.635750     2.140382     1.000000
 H      -2.164250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_4p5 = input.process_input("""
 molecule dimer {
@@ -1312,7 +1312,7 @@ H      -4.735750     2.140382     1.000000
 H      -2.264250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_4p6 = input.process_input("""
 molecule dimer {
@@ -1345,7 +1345,7 @@ H      -4.835750     2.140382     1.000000
 H      -2.364250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_4p7 = input.process_input("""
 molecule dimer {
@@ -1378,7 +1378,7 @@ H      -4.935750     2.140382     1.000000
 H      -2.464250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_4p8 = input.process_input("""
 molecule dimer {
@@ -1411,7 +1411,7 @@ H      -5.035750     2.140382     1.000000
 H      -2.564250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_4p9 = input.process_input("""
 molecule dimer {
@@ -1444,7 +1444,7 @@ H      -5.135750     2.140382     1.000000
 H      -2.664250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_5p0 = input.process_input("""
 molecule dimer {
@@ -1477,7 +1477,7 @@ H      -5.235750     2.140382     1.000000
 H      -2.764250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_5p1 = input.process_input("""
 molecule dimer {
@@ -1510,7 +1510,7 @@ H      -5.335750     2.140382     1.000000
 H      -2.864250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_5p2 = input.process_input("""
 molecule dimer {
@@ -1543,7 +1543,7 @@ H      -5.435750     2.140382     1.000000
 H      -2.964250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_5p3 = input.process_input("""
 molecule dimer {
@@ -1576,7 +1576,7 @@ H      -5.535750     2.140382     1.000000
 H      -3.064250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_5p4 = input.process_input("""
 molecule dimer {
@@ -1609,7 +1609,7 @@ H      -5.635750     2.140382     1.000000
 H      -3.164250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_5p5 = input.process_input("""
 molecule dimer {
@@ -1642,7 +1642,7 @@ H      -5.735750     2.140382     1.000000
 H      -3.264250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_5p6 = input.process_input("""
 molecule dimer {
@@ -1675,7 +1675,7 @@ H      -5.835750     2.140382     1.000000
 H      -3.364250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_6p0 = input.process_input("""
 molecule dimer {
@@ -1708,7 +1708,7 @@ H      -6.235750     2.140382     1.000000
 H      -3.764250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_6p5 = input.process_input("""
 molecule dimer {
@@ -1741,7 +1741,7 @@ H      -6.735750     2.140382     1.000000
 H      -4.264250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_7p0 = input.process_input("""
 molecule dimer {
@@ -1774,7 +1774,7 @@ H      -7.235750     2.140382     1.000000
 H      -4.764250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_7p5 = input.process_input("""
 molecule dimer {
@@ -1807,7 +1807,7 @@ H      -7.735750     2.140382     1.000000
 H      -5.264250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_T_8p0 = input.process_input("""
 molecule dimer {
@@ -1840,7 +1840,7 @@ H      -8.235750     2.140382     1.000000
 H      -5.764250     2.140382     1.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_0p2 = input.process_input("""
 molecule dimer {
@@ -1873,7 +1873,7 @@ H       0.000000    -2.340382    -0.235750
 H       0.000000    -2.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_0p4 = input.process_input("""
 molecule dimer {
@@ -1906,7 +1906,7 @@ H       0.000000    -2.540382    -0.235750
 H       0.000000    -2.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_0p6 = input.process_input("""
 molecule dimer {
@@ -1939,7 +1939,7 @@ H       0.000000    -2.740382    -0.235750
 H       0.000000    -2.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_0p8 = input.process_input("""
 molecule dimer {
@@ -1972,7 +1972,7 @@ H       0.000000    -2.940382    -0.235750
 H       0.000000    -2.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p0 = input.process_input("""
 molecule dimer {
@@ -2005,7 +2005,7 @@ H       0.000000    -3.140382    -0.235750
 H       0.000000    -3.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p2 = input.process_input("""
 molecule dimer {
@@ -2038,7 +2038,7 @@ H       0.000000    -3.340382    -0.235750
 H       0.000000    -3.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p4 = input.process_input("""
 molecule dimer {
@@ -2071,7 +2071,7 @@ H       0.000000    -3.540382    -0.235750
 H       0.000000    -3.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p5 = input.process_input("""
 molecule dimer {
@@ -2104,7 +2104,7 @@ H       0.000000    -3.640382    -0.235750
 H       0.000000    -3.640382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p6 = input.process_input("""
 molecule dimer {
@@ -2137,7 +2137,7 @@ H       0.000000    -3.740382    -0.235750
 H       0.000000    -3.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p7 = input.process_input("""
 molecule dimer {
@@ -2170,7 +2170,7 @@ H       0.000000    -3.840382    -0.235750
 H       0.000000    -3.840382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p8 = input.process_input("""
 molecule dimer {
@@ -2203,7 +2203,7 @@ H       0.000000    -3.940382    -0.235750
 H       0.000000    -3.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_1p9 = input.process_input("""
 molecule dimer {
@@ -2236,7 +2236,7 @@ H       0.000000    -4.040382    -0.235750
 H       0.000000    -4.040382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_2p0 = input.process_input("""
 molecule dimer {
@@ -2269,7 +2269,7 @@ H       0.000000    -4.140382    -0.235750
 H       0.000000    -4.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_2p2 = input.process_input("""
 molecule dimer {
@@ -2302,7 +2302,7 @@ H       0.000000    -4.340382    -0.235750
 H       0.000000    -4.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_2p4 = input.process_input("""
 molecule dimer {
@@ -2335,7 +2335,7 @@ H       0.000000    -4.540382    -0.235750
 H       0.000000    -4.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_2p6 = input.process_input("""
 molecule dimer {
@@ -2368,7 +2368,7 @@ H       0.000000    -4.740382    -0.235750
 H       0.000000    -4.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_2p8 = input.process_input("""
 molecule dimer {
@@ -2401,7 +2401,7 @@ H       0.000000    -4.940382    -0.235750
 H       0.000000    -4.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD34_3p0 = input.process_input("""
 molecule dimer {
@@ -2434,7 +2434,7 @@ H       0.000000    -5.140382    -0.235750
 H       0.000000    -5.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_3p2 = input.process_input("""
 molecule dimer {
@@ -2458,7 +2458,7 @@ H      -0.961721     0.000000    -1.273221
 H       0.961721     0.000000    -1.273221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_3p4 = input.process_input("""
 molecule dimer {
@@ -2482,7 +2482,7 @@ H      -0.961721     0.000000    -1.473221
 H       0.961721     0.000000    -1.473221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_3p5 = input.process_input("""
 molecule dimer {
@@ -2506,7 +2506,7 @@ H      -0.961721     0.000000    -1.573221
 H       0.961721     0.000000    -1.573221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_3p6 = input.process_input("""
 molecule dimer {
@@ -2530,7 +2530,7 @@ H      -0.961721     0.000000    -1.673221
 H       0.961721     0.000000    -1.673221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_3p7 = input.process_input("""
 molecule dimer {
@@ -2554,7 +2554,7 @@ H      -0.961721     0.000000    -1.773221
 H       0.961721     0.000000    -1.773221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_3p8 = input.process_input("""
 molecule dimer {
@@ -2578,7 +2578,7 @@ H      -0.961721     0.000000    -1.873221
 H       0.961721     0.000000    -1.873221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_3p9 = input.process_input("""
 molecule dimer {
@@ -2602,7 +2602,7 @@ H      -0.961721     0.000000    -1.973221
 H       0.961721     0.000000    -1.973221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_4p0 = input.process_input("""
 molecule dimer {
@@ -2626,7 +2626,7 @@ H      -0.961721     0.000000    -2.073221
 H       0.961721     0.000000    -2.073221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_4p1 = input.process_input("""
 molecule dimer {
@@ -2650,7 +2650,7 @@ H      -0.961721     0.000000    -2.173221
 H       0.961721     0.000000    -2.173221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_4p2 = input.process_input("""
 molecule dimer {
@@ -2674,7 +2674,7 @@ H      -0.961721     0.000000    -2.273221
 H       0.961721     0.000000    -2.273221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_4p5 = input.process_input("""
 molecule dimer {
@@ -2698,7 +2698,7 @@ H      -0.961721     0.000000    -2.573221
 H       0.961721     0.000000    -2.573221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_4p75 = input.process_input("""
 molecule dimer {
@@ -2722,7 +2722,7 @@ H      -0.961721     0.000000    -2.823221
 H       0.961721     0.000000    -2.823221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_5p0 = input.process_input("""
 molecule dimer {
@@ -2746,7 +2746,7 @@ H      -0.961721     0.000000    -3.073221
 H       0.961721     0.000000    -3.073221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_5p25 = input.process_input("""
 molecule dimer {
@@ -2770,7 +2770,7 @@ H      -0.961721     0.000000    -3.323221
 H       0.961721     0.000000    -3.323221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_5p5 = input.process_input("""
 molecule dimer {
@@ -2794,7 +2794,7 @@ H      -0.961721     0.000000    -3.573221
 H       0.961721     0.000000    -3.573221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_6p0 = input.process_input("""
 molecule dimer {
@@ -2818,7 +2818,7 @@ H      -0.961721     0.000000    -4.073221
 H       0.961721     0.000000    -4.073221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_6p5 = input.process_input("""
 molecule dimer {
@@ -2842,7 +2842,7 @@ H      -0.961721     0.000000    -4.573221
 H       0.961721     0.000000    -4.573221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_7p0 = input.process_input("""
 molecule dimer {
@@ -2866,7 +2866,7 @@ H      -0.961721     0.000000    -5.073221
 H       0.961721     0.000000    -5.073221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzH2S_7p5 = input.process_input("""
 molecule dimer {
@@ -2890,7 +2890,7 @@ H      -0.961721     0.000000    -5.573221
 H       0.961721     0.000000    -5.573221
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p2 = input.process_input("""
 molecule dimer {
@@ -2916,7 +2916,7 @@ H      -0.518311    -0.897741    -2.566501
 H      -0.518311     0.897741    -2.566501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p3 = input.process_input("""
 molecule dimer {
@@ -2942,7 +2942,7 @@ H      -0.518311    -0.897741    -2.666501
 H      -0.518311     0.897741    -2.666501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p4 = input.process_input("""
 molecule dimer {
@@ -2968,7 +2968,7 @@ H      -0.518311    -0.897741    -2.766501
 H      -0.518311     0.897741    -2.766501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p5 = input.process_input("""
 molecule dimer {
@@ -2994,7 +2994,7 @@ H      -0.518311    -0.897741    -2.866501
 H      -0.518311     0.897741    -2.866501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p6 = input.process_input("""
 molecule dimer {
@@ -3020,7 +3020,7 @@ H      -0.518311    -0.897741    -2.966501
 H      -0.518311     0.897741    -2.966501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p7 = input.process_input("""
 molecule dimer {
@@ -3046,7 +3046,7 @@ H      -0.518311    -0.897741    -3.066501
 H      -0.518311     0.897741    -3.066501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p8 = input.process_input("""
 molecule dimer {
@@ -3072,7 +3072,7 @@ H      -0.518311    -0.897741    -3.166501
 H      -0.518311     0.897741    -3.166501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_3p9 = input.process_input("""
 molecule dimer {
@@ -3098,7 +3098,7 @@ H      -0.518311    -0.897741    -3.266501
 H      -0.518311     0.897741    -3.266501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_4p0 = input.process_input("""
 molecule dimer {
@@ -3124,7 +3124,7 @@ H      -0.518311    -0.897741    -3.366501
 H      -0.518311     0.897741    -3.366501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_4p1 = input.process_input("""
 molecule dimer {
@@ -3150,7 +3150,7 @@ H      -0.518311    -0.897741    -3.466501
 H      -0.518311     0.897741    -3.466501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_4p2 = input.process_input("""
 molecule dimer {
@@ -3176,7 +3176,7 @@ H      -0.518311    -0.897741    -3.566501
 H      -0.518311     0.897741    -3.566501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_4p4 = input.process_input("""
 molecule dimer {
@@ -3202,7 +3202,7 @@ H      -0.518311    -0.897741    -3.766501
 H      -0.518311     0.897741    -3.766501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_4p6 = input.process_input("""
 molecule dimer {
@@ -3228,7 +3228,7 @@ H      -0.518311    -0.897741    -3.966501
 H      -0.518311     0.897741    -3.966501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_4p8 = input.process_input("""
 molecule dimer {
@@ -3254,7 +3254,7 @@ H      -0.518311    -0.897741    -4.166501
 H      -0.518311     0.897741    -4.166501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_5p0 = input.process_input("""
 molecule dimer {
@@ -3280,7 +3280,7 @@ H      -0.518311    -0.897741    -4.366501
 H      -0.518311     0.897741    -4.366501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_5p2 = input.process_input("""
 molecule dimer {
@@ -3306,7 +3306,7 @@ H      -0.518311    -0.897741    -4.566501
 H      -0.518311     0.897741    -4.566501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_5p4 = input.process_input("""
 molecule dimer {
@@ -3332,7 +3332,7 @@ H      -0.518311    -0.897741    -4.766501
 H      -0.518311     0.897741    -4.766501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_5p6 = input.process_input("""
 molecule dimer {
@@ -3358,7 +3358,7 @@ H      -0.518311    -0.897741    -4.966501
 H      -0.518311     0.897741    -4.966501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzMe_6p0 = input.process_input("""
 molecule dimer {
@@ -3384,7 +3384,7 @@ H      -0.518311    -0.897741    -5.366501
 H      -0.518311     0.897741    -5.366501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p2 = input.process_input("""
 molecule dimer {
@@ -3403,7 +3403,7 @@ H       0.518311     0.897741    -2.833499
 H       0.518311    -0.897741    -2.833499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p3 = input.process_input("""
 molecule dimer {
@@ -3422,7 +3422,7 @@ H       0.518311     0.897741    -2.933499
 H       0.518311    -0.897741    -2.933499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p4 = input.process_input("""
 molecule dimer {
@@ -3441,7 +3441,7 @@ H       0.518311     0.897741    -3.033499
 H       0.518311    -0.897741    -3.033499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p5 = input.process_input("""
 molecule dimer {
@@ -3460,7 +3460,7 @@ H       0.518311     0.897741    -3.133499
 H       0.518311    -0.897741    -3.133499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p6 = input.process_input("""
 molecule dimer {
@@ -3479,7 +3479,7 @@ H       0.518311     0.897741    -3.233499
 H       0.518311    -0.897741    -3.233499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p7 = input.process_input("""
 molecule dimer {
@@ -3498,7 +3498,7 @@ H       0.518311     0.897741    -3.333499
 H       0.518311    -0.897741    -3.333499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p8 = input.process_input("""
 molecule dimer {
@@ -3517,7 +3517,7 @@ H       0.518311     0.897741    -3.433499
 H       0.518311    -0.897741    -3.433499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_3p9 = input.process_input("""
 molecule dimer {
@@ -3536,7 +3536,7 @@ H       0.518311     0.897741    -3.533499
 H       0.518311    -0.897741    -3.533499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_4p0 = input.process_input("""
 molecule dimer {
@@ -3555,7 +3555,7 @@ H       0.518311     0.897741    -3.633499
 H       0.518311    -0.897741    -3.633499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_4p1 = input.process_input("""
 molecule dimer {
@@ -3574,7 +3574,7 @@ H       0.518311     0.897741    -3.733499
 H       0.518311    -0.897741    -3.733499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_4p2 = input.process_input("""
 molecule dimer {
@@ -3593,7 +3593,7 @@ H       0.518311     0.897741    -3.833499
 H       0.518311    -0.897741    -3.833499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_4p3 = input.process_input("""
 molecule dimer {
@@ -3612,7 +3612,7 @@ H       0.518311     0.897741    -3.933499
 H       0.518311    -0.897741    -3.933499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_4p4 = input.process_input("""
 molecule dimer {
@@ -3631,7 +3631,7 @@ H       0.518311     0.897741    -4.033499
 H       0.518311    -0.897741    -4.033499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_4p6 = input.process_input("""
 molecule dimer {
@@ -3650,7 +3650,7 @@ H       0.518311     0.897741    -4.233499
 H       0.518311    -0.897741    -4.233499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_4p8 = input.process_input("""
 molecule dimer {
@@ -3669,7 +3669,7 @@ H       0.518311     0.897741    -4.433499
 H       0.518311    -0.897741    -4.433499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_5p0 = input.process_input("""
 molecule dimer {
@@ -3688,7 +3688,7 @@ H       0.518311     0.897741    -4.633499
 H       0.518311    -0.897741    -4.633499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_5p4 = input.process_input("""
 molecule dimer {
@@ -3707,7 +3707,7 @@ H       0.518311     0.897741    -5.033499
 H       0.518311    -0.897741    -5.033499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_MeMe_5p8 = input.process_input("""
 molecule dimer {
@@ -3726,7 +3726,7 @@ H       0.518311     0.897741    -5.433499
 H       0.518311    -0.897741    -5.433499
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p1 = input.process_input("""
 molecule dimer {
@@ -3757,7 +3757,7 @@ H       1.199925    -2.152548     3.100000
 H      -1.281669    -2.056885     3.100000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p3 = input.process_input("""
 molecule dimer {
@@ -3788,7 +3788,7 @@ H       1.199925    -2.152548     3.300000
 H      -1.281669    -2.056885     3.300000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p4 = input.process_input("""
 molecule dimer {
@@ -3819,7 +3819,7 @@ H       1.199925    -2.152548     3.400000
 H      -1.281669    -2.056885     3.400000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p5 = input.process_input("""
 molecule dimer {
@@ -3850,7 +3850,7 @@ H       1.199925    -2.152548     3.500000
 H      -1.281669    -2.056885     3.500000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p6 = input.process_input("""
 molecule dimer {
@@ -3881,7 +3881,7 @@ H       1.199925    -2.152548     3.600000
 H      -1.281669    -2.056885     3.600000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p7 = input.process_input("""
 molecule dimer {
@@ -3912,7 +3912,7 @@ H       1.199925    -2.152548     3.700000
 H      -1.281669    -2.056885     3.700000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p8 = input.process_input("""
 molecule dimer {
@@ -3943,7 +3943,7 @@ H       1.199925    -2.152548     3.800000
 H      -1.281669    -2.056885     3.800000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_3p9 = input.process_input("""
 molecule dimer {
@@ -3974,7 +3974,7 @@ H       1.199925    -2.152548     3.900000
 H      -1.281669    -2.056885     3.900000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_4p0 = input.process_input("""
 molecule dimer {
@@ -4005,7 +4005,7 @@ H       1.199925    -2.152548     4.000000
 H      -1.281669    -2.056885     4.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_4p1 = input.process_input("""
 molecule dimer {
@@ -4036,7 +4036,7 @@ H       1.199925    -2.152548     4.100000
 H      -1.281669    -2.056885     4.100000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_4p2 = input.process_input("""
 molecule dimer {
@@ -4067,7 +4067,7 @@ H       1.199925    -2.152548     4.200000
 H      -1.281669    -2.056885     4.200000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_4p3 = input.process_input("""
 molecule dimer {
@@ -4098,7 +4098,7 @@ H       1.199925    -2.152548     4.300000
 H      -1.281669    -2.056885     4.300000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_4p4 = input.process_input("""
 molecule dimer {
@@ -4129,7 +4129,7 @@ H       1.199925    -2.152548     4.400000
 H      -1.281669    -2.056885     4.400000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_4p5 = input.process_input("""
 molecule dimer {
@@ -4160,7 +4160,7 @@ H       1.199925    -2.152548     4.500000
 H      -1.281669    -2.056885     4.500000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_4p7 = input.process_input("""
 molecule dimer {
@@ -4191,7 +4191,7 @@ H       1.199925    -2.152548     4.700000
 H      -1.281669    -2.056885     4.700000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_5p0 = input.process_input("""
 molecule dimer {
@@ -4222,7 +4222,7 @@ H       1.199925    -2.152548     5.000000
 H      -1.281669    -2.056885     5.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_5p5 = input.process_input("""
 molecule dimer {
@@ -4253,7 +4253,7 @@ H       1.199925    -2.152548     5.500000
 H      -1.281669    -2.056885     5.500000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_6p0 = input.process_input("""
 molecule dimer {
@@ -4284,7 +4284,7 @@ H       1.199925    -2.152548     6.000000
 H      -1.281669    -2.056885     6.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_6p5 = input.process_input("""
 molecule dimer {
@@ -4315,7 +4315,7 @@ H       1.199925    -2.152548     6.500000
 H      -1.281669    -2.056885     6.500000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_S2_7p0 = input.process_input("""
 molecule dimer {
@@ -4346,7 +4346,7 @@ H       1.199925    -2.152548     7.000000
 H      -1.281669    -2.056885     7.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_4p1 = input.process_input("""
 molecule dimer {
@@ -4377,7 +4377,7 @@ H       1.199925     0.000000     1.947452
 H      -1.281669     0.000000     2.043115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_4p3 = input.process_input("""
 molecule dimer {
@@ -4408,7 +4408,7 @@ H       1.199925     0.000000     2.147452
 H      -1.281669     0.000000     2.243115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_4p5 = input.process_input("""
 molecule dimer {
@@ -4439,7 +4439,7 @@ H       1.199925     0.000000     2.347452
 H      -1.281669     0.000000     2.443115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_4p6 = input.process_input("""
 molecule dimer {
@@ -4470,7 +4470,7 @@ H       1.199925     0.000000     2.447452
 H      -1.281669     0.000000     2.543115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_4p7 = input.process_input("""
 molecule dimer {
@@ -4501,7 +4501,7 @@ H       1.199925     0.000000     2.547452
 H      -1.281669     0.000000     2.643115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_4p8 = input.process_input("""
 molecule dimer {
@@ -4532,7 +4532,7 @@ H       1.199925     0.000000     2.647452
 H      -1.281669     0.000000     2.743115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_4p9 = input.process_input("""
 molecule dimer {
@@ -4563,7 +4563,7 @@ H       1.199925     0.000000     2.747452
 H      -1.281669     0.000000     2.843115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_5p0 = input.process_input("""
 molecule dimer {
@@ -4594,7 +4594,7 @@ H       1.199925     0.000000     2.847452
 H      -1.281669     0.000000     2.943115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_5p1 = input.process_input("""
 molecule dimer {
@@ -4625,7 +4625,7 @@ H       1.199925     0.000000     2.947452
 H      -1.281669     0.000000     3.043115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_5p2 = input.process_input("""
 molecule dimer {
@@ -4656,7 +4656,7 @@ H       1.199925     0.000000     3.047452
 H      -1.281669     0.000000     3.143115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_5p3 = input.process_input("""
 molecule dimer {
@@ -4687,7 +4687,7 @@ H       1.199925     0.000000     3.147452
 H      -1.281669     0.000000     3.243115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_5p4 = input.process_input("""
 molecule dimer {
@@ -4718,7 +4718,7 @@ H       1.199925     0.000000     3.247452
 H      -1.281669     0.000000     3.343115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_5p5 = input.process_input("""
 molecule dimer {
@@ -4749,7 +4749,7 @@ H       1.199925     0.000000     3.347452
 H      -1.281669     0.000000     3.443115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_5p7 = input.process_input("""
 molecule dimer {
@@ -4780,7 +4780,7 @@ H       1.199925     0.000000     3.547452
 H      -1.281669     0.000000     3.643115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_6p0 = input.process_input("""
 molecule dimer {
@@ -4811,7 +4811,7 @@ H       1.199925     0.000000     3.847452
 H      -1.281669     0.000000     3.943115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_6p5 = input.process_input("""
 molecule dimer {
@@ -4842,7 +4842,7 @@ H       1.199925     0.000000     4.347452
 H      -1.281669     0.000000     4.443115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_7p0 = input.process_input("""
 molecule dimer {
@@ -4873,7 +4873,7 @@ H       1.199925     0.000000     4.847452
 H      -1.281669     0.000000     4.943115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_8p0 = input.process_input("""
 molecule dimer {
@@ -4904,7 +4904,7 @@ H       1.199925     0.000000     5.847452
 H      -1.281669     0.000000     5.943115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_PyPy_T3_9p0 = input.process_input("""
 molecule dimer {
@@ -4935,7 +4935,7 @@ H       1.199925     0.000000     6.847452
 H      -1.281669     0.000000     6.943115
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_0p2 = input.process_input("""
 molecule dimer {
@@ -4968,7 +4968,7 @@ H       0.000000    -2.340382    -0.235750
 H       0.000000    -2.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_0p4 = input.process_input("""
 molecule dimer {
@@ -5001,7 +5001,7 @@ H       0.000000    -2.540382    -0.235750
 H       0.000000    -2.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_0p6 = input.process_input("""
 molecule dimer {
@@ -5034,7 +5034,7 @@ H       0.000000    -2.740382    -0.235750
 H       0.000000    -2.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_0p8 = input.process_input("""
 molecule dimer {
@@ -5067,7 +5067,7 @@ H       0.000000    -2.940382    -0.235750
 H       0.000000    -2.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p0 = input.process_input("""
 molecule dimer {
@@ -5100,7 +5100,7 @@ H       0.000000    -3.140382    -0.235750
 H       0.000000    -3.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p2 = input.process_input("""
 molecule dimer {
@@ -5133,7 +5133,7 @@ H       0.000000    -3.340382    -0.235750
 H       0.000000    -3.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p4 = input.process_input("""
 molecule dimer {
@@ -5166,7 +5166,7 @@ H       0.000000    -3.540382    -0.235750
 H       0.000000    -3.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p5 = input.process_input("""
 molecule dimer {
@@ -5199,7 +5199,7 @@ H       0.000000    -3.640382    -0.235750
 H       0.000000    -3.640382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p6 = input.process_input("""
 molecule dimer {
@@ -5232,7 +5232,7 @@ H       0.000000    -3.740382    -0.235750
 H       0.000000    -3.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p7 = input.process_input("""
 molecule dimer {
@@ -5265,7 +5265,7 @@ H       0.000000    -3.840382    -0.235750
 H       0.000000    -3.840382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p8 = input.process_input("""
 molecule dimer {
@@ -5298,7 +5298,7 @@ H       0.000000    -3.940382    -0.235750
 H       0.000000    -3.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_1p9 = input.process_input("""
 molecule dimer {
@@ -5331,7 +5331,7 @@ H       0.000000    -4.040382    -0.235750
 H       0.000000    -4.040382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_2p0 = input.process_input("""
 molecule dimer {
@@ -5364,7 +5364,7 @@ H       0.000000    -4.140382    -0.235750
 H       0.000000    -4.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_2p2 = input.process_input("""
 molecule dimer {
@@ -5397,7 +5397,7 @@ H       0.000000    -4.340382    -0.235750
 H       0.000000    -4.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_2p4 = input.process_input("""
 molecule dimer {
@@ -5430,7 +5430,7 @@ H       0.000000    -4.540382    -0.235750
 H       0.000000    -4.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_2p6 = input.process_input("""
 molecule dimer {
@@ -5463,7 +5463,7 @@ H       0.000000    -4.740382    -0.235750
 H       0.000000    -4.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_2p8 = input.process_input("""
 molecule dimer {
@@ -5496,7 +5496,7 @@ H       0.000000    -4.940382    -0.235750
 H       0.000000    -4.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD32_3p0 = input.process_input("""
 molecule dimer {
@@ -5529,7 +5529,7 @@ H       0.000000    -5.140382    -0.235750
 H       0.000000    -5.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_0p2 = input.process_input("""
 molecule dimer {
@@ -5562,7 +5562,7 @@ H       0.000000    -2.340382    -0.235750
 H       0.000000    -2.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_0p4 = input.process_input("""
 molecule dimer {
@@ -5595,7 +5595,7 @@ H       0.000000    -2.540382    -0.235750
 H       0.000000    -2.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_0p6 = input.process_input("""
 molecule dimer {
@@ -5628,7 +5628,7 @@ H       0.000000    -2.740382    -0.235750
 H       0.000000    -2.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_0p8 = input.process_input("""
 molecule dimer {
@@ -5661,7 +5661,7 @@ H       0.000000    -2.940382    -0.235750
 H       0.000000    -2.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p0 = input.process_input("""
 molecule dimer {
@@ -5694,7 +5694,7 @@ H       0.000000    -3.140382    -0.235750
 H       0.000000    -3.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p2 = input.process_input("""
 molecule dimer {
@@ -5727,7 +5727,7 @@ H       0.000000    -3.340382    -0.235750
 H       0.000000    -3.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p4 = input.process_input("""
 molecule dimer {
@@ -5760,7 +5760,7 @@ H       0.000000    -3.540382    -0.235750
 H       0.000000    -3.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p5 = input.process_input("""
 molecule dimer {
@@ -5793,7 +5793,7 @@ H       0.000000    -3.640382    -0.235750
 H       0.000000    -3.640382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p6 = input.process_input("""
 molecule dimer {
@@ -5826,7 +5826,7 @@ H       0.000000    -3.740382    -0.235750
 H       0.000000    -3.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p7 = input.process_input("""
 molecule dimer {
@@ -5859,7 +5859,7 @@ H       0.000000    -3.840382    -0.235750
 H       0.000000    -3.840382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p8 = input.process_input("""
 molecule dimer {
@@ -5892,7 +5892,7 @@ H       0.000000    -3.940382    -0.235750
 H       0.000000    -3.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_1p9 = input.process_input("""
 molecule dimer {
@@ -5925,7 +5925,7 @@ H       0.000000    -4.040382    -0.235750
 H       0.000000    -4.040382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_2p0 = input.process_input("""
 molecule dimer {
@@ -5958,7 +5958,7 @@ H       0.000000    -4.140382    -0.235750
 H       0.000000    -4.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_2p2 = input.process_input("""
 molecule dimer {
@@ -5991,7 +5991,7 @@ H       0.000000    -4.340382    -0.235750
 H       0.000000    -4.340382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_2p4 = input.process_input("""
 molecule dimer {
@@ -6024,7 +6024,7 @@ H       0.000000    -4.540382    -0.235750
 H       0.000000    -4.540382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_2p6 = input.process_input("""
 molecule dimer {
@@ -6057,7 +6057,7 @@ H       0.000000    -4.740382    -0.235750
 H       0.000000    -4.740382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_2p8 = input.process_input("""
 molecule dimer {
@@ -6090,7 +6090,7 @@ H       0.000000    -4.940382    -0.235750
 H       0.000000    -4.940382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_BzBz_PD36_3p0 = input.process_input("""
 molecule dimer {
@@ -6123,7 +6123,7 @@ H       0.000000    -5.140382    -0.235750
 H       0.000000    -5.140382     2.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_Bz_monomer = input.process_input("""
 molecule monomer {
@@ -6142,7 +6142,7 @@ H       1.000000    -2.140382     2.235750
 H       1.000000    -2.140382    -0.235750
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_H2S_monomer = input.process_input("""
 molecule monomer {
@@ -6152,7 +6152,7 @@ H      -0.961721     0.000000     0.926779
 H       0.961721     0.000000     0.926779
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_Bz2_monomer = input.process_input("""
 molecule monomer {
@@ -6171,7 +6171,7 @@ H      -1.250470    -2.165878     0.000000
 H       1.250471    -2.165878     0.000000
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_Me_monomer = input.process_input("""
 molecule monomer {
@@ -6183,7 +6183,7 @@ H      -0.518311    -0.897741    -0.366501
 H      -0.518311     0.897741    -0.366501
 units angstrom
 }
-""")
+""", 0)
 
 NBC1_Py_monomer = input.process_input("""
 molecule monomer {
@@ -6201,7 +6201,7 @@ H      -1.199925    -2.152548     0.000000
 H       1.281669    -2.056885     0.000000
 units angstrom
 }
-""")
+""", 0)
 
 #<<< Geometry Specification Strings >>>
 GEOS = {}

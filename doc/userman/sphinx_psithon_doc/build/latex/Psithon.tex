@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 26, 2012}
+\date{February 27, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -591,7 +591,7 @@ the scf to converge in an explicit preceeding scf step.
 \chapter{Optimize}
 \label{index:optimize}
 \begin{notice}{note}{Note:}
-The derivative level type for {\hyperref[index:driver.optimize]{\code{driver.optimize()}}} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
+The derivative level type for \code{driver.optimize()} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
 functions can be specified by \code{energy}, \code{none}, or \code{0} for 0th derivative,
 \code{gradient}, \code{first}, or \code{1} for 1st derivative, and \code{hessian},
 \code{second}, or \code{2} for 2nd derivative.
@@ -2739,10 +2739,11 @@ Upon checking in a new python file, edit the file \code{psi4/doc/userman/source/
 Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in \code{psi4/lib/python/example\_docstring} and replace anything that looks like \code{\textless{}this\textgreater{}}. For a behind-the-scenes function or if you don't want the bother of dealing with \href{http://docutils.sourceforge.net/docs/user/rst/quickref.html}{reStructuredText}, just write an ordinary docstring. It will get slurped into the documentation in plain text.
 
 \item {} 
-Your python function should follow \href{http://www.python.org/dev/peps/pep-0008/}{PEP8} conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason.
+Your python function should follow \href{http://www.python.org/dev/peps/pep-0008/}{PEP8} conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason. The second line is for database Python files.
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{pep8}\PYG{o}{.}\PYG{n}{py} \PYG{o}{-}\PYG{n}{r} \PYG{o}{-}\PYG{o}{-}\PYG{n}{ignore}\PYG{o}{=}\PYG{n}{E501} \PYG{n}{pythonfile}\PYG{o}{.}\PYG{n}{py}
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{pep8}\PYG{o}{.}\PYG{n}{py} \PYG{o}{-}\PYG{n}{r} \PYG{o}{-}\PYG{o}{-}\PYG{n}{ignore}\PYG{o}{=}\PYG{n}{E501}\PYG{p}{,}\PYG{n}{E221}\PYG{p}{,}\PYG{n}{E222}\PYG{p}{,}\PYG{n}{E241}\PYG{p}{,}\PYG{n}{E201}\PYG{p}{,}\PYG{n}{E202} \PYG{n}{databasefile}\PYG{o}{.}\PYG{n}{py}
 \end{Verbatim}
 
 \item {} 
@@ -2915,11 +2916,11 @@ level information like 4 for CISDTQ or MRCCSDTQ.
 
 \section{input}
 \label{index:input}\label{index:module-input}\index{input (module)}
-dummy module
+Module import
 \index{process\_input() (in module input)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{string}, \emph{int=0}}{}
+\phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{raw\_input}, \emph{print\_level=1}}{}
 \end{fulllineitems}
 
 
@@ -3297,7 +3298,7 @@ Does not work with array-type options.
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`81799'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`83189'}}{}
 Function to return the full path and filename for psi file
 \emph{fileno} (e.g., psi.32) in current namespace \emph{pidspace}.
 
@@ -3415,19 +3416,28 @@ input string. Builds a PubChem object if found.
 
 
 \section{qmmm}
-\label{index:qmmm}\label{index:module-qmmm}\index{qmmm (module)}\index{Diffuse (class in qmmm)}
+\label{index:qmmm}\label{index:module-qmmm}\index{qmmm (module)}
+Module with classes to integrate MM charges into
+a QM calculation.
+\index{Diffuse (class in qmmm)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.Diffuse}\pysiglinewithargsret{\strong{class }\code{qmmm.}\bfcode{Diffuse}}{\emph{molecule}, \emph{basisname}, \emph{ribasisname}}{}~\index{fitGeneral() (qmmm.Diffuse method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.Diffuse.fitGeneral}\pysiglinewithargsret{\bfcode{fitGeneral}}{}{}
+Function to perform a general fit of diffuse charges
+to wavefunction density.
+
 \end{fulllineitems}
 
 \index{fitScf() (qmmm.Diffuse method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.Diffuse.fitScf}\pysiglinewithargsret{\bfcode{fitScf}}{}{}
+Function to run scf and fit a system of diffuse charges to
+resulting density.
+
 \end{fulllineitems}
 
 \index{populateExtern() (qmmm.Diffuse method)}
@@ -3446,24 +3456,35 @@ input string. Builds a PubChem object if found.
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.addChargeAngstrom}\pysiglinewithargsret{\bfcode{addChargeAngstrom}}{\emph{Q}, \emph{x}, \emph{y}, \emph{z}}{}
+Function to add a point charge of magnitude \emph{Q} at
+position (\emph{x}, \emph{y}, \emph{z}) Angstroms.
+
 \end{fulllineitems}
 
 \index{addChargeBohr() (qmmm.QMMM method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.addChargeBohr}\pysiglinewithargsret{\bfcode{addChargeBohr}}{\emph{Q}, \emph{x}, \emph{y}, \emph{z}}{}
+Function to add a point charge of magnitude \emph{Q} at
+position (\emph{x}, \emph{y}, \emph{z}) Bohr.
+
 \end{fulllineitems}
 
 \index{addDiffuse() (qmmm.QMMM method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.addDiffuse}\pysiglinewithargsret{\bfcode{addDiffuse}}{\emph{diffuse}}{}
+Function to add a diffuse charge field \emph{diffuse}.
+
 \end{fulllineitems}
 
 \index{populateExtern() (qmmm.QMMM method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.populateExtern}\pysiglinewithargsret{\bfcode{populateExtern}}{}{}
+Function to define a charge field external to the
+molecule through point and diffuse charges.
+
 \end{fulllineitems}
 
 
@@ -3662,7 +3683,7 @@ Used by {\hyperref[index:util.compare_values]{\code{util.compare\_values()}}} fa
 \section{wrappers}
 \label{index:wrappers}\label{index:module-wrappers}\index{wrappers (module)}
 Module with functions that call the four main {\hyperref[index:module-driver]{\code{driver}}}
-functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, {\hyperref[index:driver.optimize]{\code{driver.optimize}}},
+functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, \code{driver.optimize},
 {\hyperref[index:driver.response]{\code{driver.response}}}, and {\hyperref[index:driver.frequency]{\code{driver.frequency}}}.
 \index{call\_function\_in\_1st\_argument() (in module wrappers)}
 

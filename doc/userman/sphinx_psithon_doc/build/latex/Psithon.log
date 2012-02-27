@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  26 FEB 2012 17:21
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  27 FEB 2012 01:15
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -1021,17 +1021,17 @@ Chapter 14.
 ]
 Chapter 15.
 [51] [52]
-Underfull \hbox (badness 10000) in paragraph at lines 3011--3012
+Underfull \hbox (badness 10000) in paragraph at lines 3012--3013
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3097--3098
+Underfull \hbox (badness 10000) in paragraph at lines 3098--3099
 
  []
 
 [53]
-Underfull \hbox (badness 10000) in paragraph at lines 3293--3294
+Underfull \hbox (badness 10000) in paragraph at lines 3294--3295
 
  []
 
@@ -1104,9 +1104,9 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (69 pages, 548308 bytes).
+Output written on Psithon.pdf (69 pages, 548382 bytes).
 PDF statistics:
- 975 PDF objects out of 1000 (max. 8388607)
+ 973 PDF objects out of 1000 (max. 8388607)
  248 named destinations out of 1000 (max. 500000)
  302 words of extra memory for PDF output out of 10000 (max. 10000000)
 

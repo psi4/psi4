@@ -64,7 +64,7 @@ H        0.00000000    -1.02633900     1.49486800
 H        0.00000000     0.00008900     2.94828400
 units angstrom
 }
-""")
+""", 0)
 
 BASIC_h2o = input.process_input("""
 molecule dimer {
@@ -74,7 +74,7 @@ H       -1.93425900     0.76250300     0.00000000
 H       -0.59967700     0.04071200     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 BASIC_nh3 = input.process_input("""
 molecule dimer {
@@ -85,7 +85,7 @@ H       -2.15862100     0.13639600     0.80956500
 H       -0.84947100     0.65819300     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')

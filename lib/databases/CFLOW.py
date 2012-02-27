@@ -440,7 +440,7 @@ H        3.80000000     0.94916400    -0.79997000
 H        3.80000000    -0.94916400    -0.79997000
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_4Ae4Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -469,7 +469,7 @@ H        3.80000000    -2.27504800    -2.89744000
 H        3.80000000    -0.37672100    -2.89744000
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_6Ae6Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -506,7 +506,7 @@ H        3.80000000     2.27504800     3.72547000
 H        3.80000000     0.37672100     3.72547000
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_8Ae8Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -551,7 +551,7 @@ H        3.80000000     3.60093300     5.82294100
 H        3.80000000     1.70260600     5.82294100
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_10Ae10Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -604,7 +604,7 @@ H        3.80000000    -3.60093300    -4.99491100
 H        3.80000000    -1.70260600    -4.99491100
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_12Ae12Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -665,7 +665,7 @@ H        3.80000000     4.92681800     7.92041100
 H        3.80000000     3.02849000     7.92041100
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_14Ae14Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -734,7 +734,7 @@ H        3.80000000     6.25270300    10.01788100
 H        3.80000000     4.35437500    10.01788100
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_16Ae16Ae_3p8 = input.process_input("""
 molecule dimer {
@@ -811,7 +811,7 @@ H        3.80000000    -4.92681800    -7.09238100
 H        3.80000000    -3.02849000    -7.09238100
 units angstrom
 }
-""")
+""", 0)
 
 for item in cBzBz:
     distance = rxnpattern.match(item)
@@ -1192,7 +1192,7 @@ H        4.24094400     0.10729578     2.92626003
 H        3.49401500     2.40602178     2.92632803
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_BkybowlBkybowl_3p64 = input.process_input("""
 molecule dimer {
@@ -1261,7 +1261,7 @@ H        4.24094400     0.10729578     3.02626003
 H        3.49401500     2.40602178     3.02632803
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_BkybowlBkybowl_3p73 = input.process_input("""
 molecule dimer {
@@ -1330,7 +1330,7 @@ H        4.24094400     0.10729578     3.11626003
 H        3.49401500     2.40602178     3.11632803
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_BkybowlBkybowl_3p74 = input.process_input("""
 molecule dimer {
@@ -1399,7 +1399,7 @@ H        4.24094400     0.10729578     3.12626003
 H        3.49401500     2.40602178     3.12632803
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_BkybowlBkybowl_3p84 = input.process_input("""
 molecule dimer {
@@ -1468,7 +1468,7 @@ H        4.24094400     0.10729578     3.22626003
 H        3.49401500     2.40602178     3.22632803
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_BkybowlBkybowl_3p63 = input.process_input("""
 molecule dimer {
@@ -1537,7 +1537,7 @@ H        4.22588700     0.09388800    -2.48428500
 H        3.47400100     2.40795700    -2.48428500
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_C60Bkybowl = input.process_input("""
 molecule dimer {
@@ -1636,7 +1636,7 @@ H       -0.10220000     3.85419200     4.24246700
 H       -2.41195000     3.83189900     3.49341900
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_C60Bkycatch = input.process_input("""
 molecule dimer {
@@ -1793,7 +1793,7 @@ H       -1.01634978    -8.36944419     3.80511677
 H       -2.28490570    -6.80366055     2.35468970
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_C70Bkycatch = input.process_input("""
 molecule dimer {
@@ -1960,7 +1960,7 @@ H       -9.11570303     1.25103930     3.23207489
 H       -7.39394496     2.47512523     1.92680562
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_C70Bkycatch_W = input.process_input("""
 molecule dimer {
@@ -2127,7 +2127,7 @@ H        8.50950791    -1.75406635     3.77909453
 H        6.83476091    -2.88178047     2.33438053
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_C70Bkycatch_T = input.process_input("""
 molecule dimer {
@@ -2294,7 +2294,7 @@ H       -8.60234201    -3.83259883     1.25136916
 H       -7.01096558    -2.37180000     2.47413143
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_Benzene_monomer = input.process_input("""
 molecule monomer {
@@ -2313,7 +2313,7 @@ H       -2.14038200     1.23575000     0.00000000
 H       -2.14038200    -1.23575000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_Napthalene_monomer = input.process_input("""
 molecule monomer {
@@ -2338,7 +2338,7 @@ H        3.35016300     1.23782500     0.00000000
 H        3.35016300    -1.23782500     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_Anthracene_monomer = input.process_input("""
 molecule monomer {
@@ -2369,7 +2369,7 @@ H        4.56737900     1.23960400     0.00000000
 H        2.45137100     2.47594200     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 # 4Bz geometry NOT finalized
 CFLOW_Tetracene_monomer = input.process_input("""
@@ -2407,7 +2407,7 @@ H       -1.23575000     9.37082600     0.00000000
 H        1.23575000     9.37082600     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 CFLOW_Bkybowl_Pulay_monomer = input.process_input("""
 molecule monomer {
@@ -2444,7 +2444,7 @@ H        4.24094400     0.10729578    -0.61373997
 H        3.49401500     2.40602178    -0.61367197
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 GEOS = {}

@@ -110,8 +110,8 @@
 \indexentry{getXYZFile() (pubchem.PubChemObj method)|hyperpage}{55}
 \indexentry{name() (pubchem.PubChemObj method)|hyperpage}{55}
 \indexentry{getPubChemResults() (in module pubchem)|hyperpage}{55}
-\indexentry{qmmm (module)|hyperpage}{56}
-\indexentry{Diffuse (class in qmmm)|hyperpage}{56}
+\indexentry{qmmm (module)|hyperpage}{55}
+\indexentry{Diffuse (class in qmmm)|hyperpage}{55}
 \indexentry{fitGeneral() (qmmm.Diffuse method)|hyperpage}{56}
 \indexentry{fitScf() (qmmm.Diffuse method)|hyperpage}{56}
 \indexentry{populateExtern() (qmmm.Diffuse method)|hyperpage}{56}
@@ -145,8 +145,8 @@
 \indexentry{wrappers (module)|hyperpage}{57}
 \indexentry{call\_function\_in\_1st\_argument() (in module wrappers)|hyperpage}{57}
 \indexentry{drop\_duplicates() (in module wrappers)|hyperpage}{57}
-\indexentry{n\_body() (in module wrappers)|hyperpage}{57}
-\indexentry{reconstitute\_bracketed\_basis() (in module wrappers)|hyperpage}{57}
+\indexentry{n\_body() (in module wrappers)|hyperpage}{58}
+\indexentry{reconstitute\_bracketed\_basis() (in module wrappers)|hyperpage}{58}
 \indexentry{split\_menial() (in module wrappers)|hyperpage}{58}
 \indexentry{tblhead() (in module wrappers)|hyperpage}{58}
 \indexentry{validate\_bracketed\_basis() (in module wrappers)|hyperpage}{58}

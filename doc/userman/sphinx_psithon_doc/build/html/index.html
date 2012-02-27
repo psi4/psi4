@@ -406,7 +406,7 @@ the scf to converge in an explicit preceeding scf step.</p>
 <h1>Optimize<a class="headerlink" href="#optimize" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">The derivative level type for <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
+<p class="last">The derivative level type for <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
 functions can be specified by <tt class="docutils literal"><span class="pre">energy</span></tt>, <tt class="docutils literal"><span class="pre">none</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for 0th derivative,
 <tt class="docutils literal"><span class="pre">gradient</span></tt>, <tt class="docutils literal"><span class="pre">first</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt> for 1st derivative, and <tt class="docutils literal"><span class="pre">hessian</span></tt>,
 <tt class="docutils literal"><span class="pre">second</span></tt>, or <tt class="docutils literal"><span class="pre">2</span></tt> for 2nd derivative.</p>
@@ -1928,8 +1928,9 @@ elif input.no.match(str(db_cp)):</pre>
 </li>
 <li><p class="first">Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in <tt class="docutils literal"><span class="pre">psi4/lib/python/example_docstring</span></tt> and replace anything that looks like <tt class="docutils literal"><span class="pre">&lt;this&gt;</span></tt>. For a behind-the-scenes function or if you don&#8217;t want the bother of dealing with <a class="reference external" href="http://docutils.sourceforge.net/docs/user/rst/quickref.html">reStructuredText</a>, just write an ordinary docstring. It will get slurped into the documentation in plain text.</p>
 </li>
-<li><p class="first">Your python function should follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> conventions (without the line-length restriction). I&#8217;m aiming for files to pass the line below, unless for good reason.</p>
+<li><p class="first">Your python function should follow <a class="reference external" href="http://www.python.org/dev/peps/pep-0008/">PEP8</a> conventions (without the line-length restriction). I&#8217;m aiming for files to pass the line below, unless for good reason. The second line is for database Python files.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span> <span class="n">pythonfile</span><span class="o">.</span><span class="n">py</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pep8</span><span class="o">.</span><span class="n">py</span> <span class="o">-</span><span class="n">r</span> <span class="o">--</span><span class="n">ignore</span><span class="o">=</span><span class="n">E501</span><span class="p">,</span><span class="n">E221</span><span class="p">,</span><span class="n">E222</span><span class="p">,</span><span class="n">E241</span><span class="p">,</span><span class="n">E201</span><span class="p">,</span><span class="n">E202</span> <span class="n">databasefile</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </li>
@@ -2070,10 +2071,10 @@ level information like 4 for CISDTQ or MRCCSDTQ.</p>
 </div>
 <div class="section" id="module-input">
 <span id="input"></span><h2>input<a class="headerlink" href="#module-input" title="Permalink to this headline">¶</a></h2>
-<p>dummy module</p>
+<p>Module import</p>
 <dl class="function">
 <dt id="input.process_input">
-<tt class="descclassname">input.</tt><tt class="descname">process_input</tt><big>(</big><em>string</em>, <em>int=0</em><big>)</big><a class="headerlink" href="#input.process_input" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">input.</tt><tt class="descname">process_input</tt><big>(</big><em>raw_input</em>, <em>print_level=1</em><big>)</big><a class="reference internal" href="_modules/input.html#process_input"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#input.process_input" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -2371,7 +2372,7 @@ options information for distributed (sow/reap) input files.</p>
 
 <dl class="function">
 <dt id="procutil.get_psifile">
-<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='81799'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">procutil.</tt><tt class="descname">get_psifile</tt><big>(</big><em>fileno</em>, <em>pidspace='83189'</em><big>)</big><a class="reference internal" href="_modules/procutil.html#get_psifile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#procutil.get_psifile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to return the full path and filename for psi file
 <em>fileno</em> (e.g., psi.32) in current namespace <em>pidspace</em>.</p>
 </dd></dl>
@@ -2465,18 +2466,24 @@ input string. Builds a PubChem object if found.</p>
 </div>
 <div class="section" id="module-qmmm">
 <span id="qmmm"></span><h2>qmmm<a class="headerlink" href="#module-qmmm" title="Permalink to this headline">¶</a></h2>
+<p>Module with classes to integrate MM charges into
+a QM calculation.</p>
 <dl class="class">
 <dt id="qmmm.Diffuse">
 <em class="property">class </em><tt class="descclassname">qmmm.</tt><tt class="descname">Diffuse</tt><big>(</big><em>molecule</em>, <em>basisname</em>, <em>ribasisname</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#Diffuse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.Diffuse" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="method">
 <dt id="qmmm.Diffuse.fitGeneral">
 <tt class="descname">fitGeneral</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/qmmm.html#Diffuse.fitGeneral"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.Diffuse.fitGeneral" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to perform a general fit of diffuse charges
+to wavefunction density.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="qmmm.Diffuse.fitScf">
 <tt class="descname">fitScf</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/qmmm.html#Diffuse.fitScf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.Diffuse.fitScf" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to run scf and fit a system of diffuse charges to
+resulting density.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="qmmm.Diffuse.populateExtern">
@@ -2491,22 +2498,29 @@ input string. Builds a PubChem object if found.</p>
 <dd><dl class="method">
 <dt id="qmmm.QMMM.addChargeAngstrom">
 <tt class="descname">addChargeAngstrom</tt><big>(</big><em>Q</em>, <em>x</em>, <em>y</em>, <em>z</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.addChargeAngstrom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.addChargeAngstrom" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to add a point charge of magnitude <em>Q</em> at
+position (<em>x</em>, <em>y</em>, <em>z</em>) Angstroms.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="qmmm.QMMM.addChargeBohr">
 <tt class="descname">addChargeBohr</tt><big>(</big><em>Q</em>, <em>x</em>, <em>y</em>, <em>z</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.addChargeBohr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.addChargeBohr" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to add a point charge of magnitude <em>Q</em> at
+position (<em>x</em>, <em>y</em>, <em>z</em>) Bohr.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="qmmm.QMMM.addDiffuse">
 <tt class="descname">addDiffuse</tt><big>(</big><em>diffuse</em><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.addDiffuse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.addDiffuse" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to add a diffuse charge field <em>diffuse</em>.</p>
+</dd></dl>
 
 <dl class="method">
 <dt id="qmmm.QMMM.populateExtern">
 <tt class="descname">populateExtern</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/qmmm.html#QMMM.populateExtern"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#qmmm.QMMM.populateExtern" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Function to define a charge field external to the
+molecule through point and diffuse charges.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -2660,7 +2674,7 @@ Used by <a class="reference internal" href="#util.compare_values" title="util.co
 <div class="section" id="module-wrappers">
 <span id="wrappers"></span><h2>wrappers<a class="headerlink" href="#module-wrappers" title="Permalink to this headline">¶</a></h2>
 <p>Module with functions that call the four main <a class="reference internal" href="#module-driver" title="driver"><tt class="xref py py-mod docutils literal"><span class="pre">driver</span></tt></a>
-functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>,
+functions: <a class="reference internal" href="#driver.energy" title="driver.energy"><tt class="xref py py-mod docutils literal"><span class="pre">driver.energy</span></tt></a>, <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-mod docutils literal"><span class="pre">driver.optimize</span></tt></a>,
 <a class="reference internal" href="#driver.response" title="driver.response"><tt class="xref py py-mod docutils literal"><span class="pre">driver.response</span></tt></a>, and <a class="reference internal" href="#driver.frequency" title="driver.frequency"><tt class="xref py py-mod docutils literal"><span class="pre">driver.frequency</span></tt></a>.</p>
 <dl class="function">
 <dt id="wrappers.call_function_in_1st_argument">
@@ -2835,7 +2849,7 @@ the scheme function can focus on defining the extrapolation.</p>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 26, 2012.
+      Last updated on Feb 27, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

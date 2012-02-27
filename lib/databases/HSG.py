@@ -271,7 +271,7 @@ H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
 }
-""")
+""", 0)
 
 HSG_2 = input.process_input("""
 molecule dimer {
@@ -308,7 +308,7 @@ H   19.96600       19.54000       5.876000
 H   16.54908       20.59917       5.712962
 units angstrom
 }
-""")
+""", 0)
 
 HSG_3 = input.process_input("""
 molecule dimer {
@@ -342,7 +342,7 @@ H   18.32800       22.76900       7.913000
 H   15.93631       22.42849       8.649437
 units angstrom
 }
-""")
+""", 0)
 
 HSG_4 = input.process_input("""
 molecule dimer {
@@ -372,7 +372,7 @@ H   13.45976       24.69373       4.731124
 H   14.36576       23.85731       6.174161
 units angstrom
 }
-""")
+""", 0)
 
 HSG_5 = input.process_input("""
 molecule dimer {
@@ -404,7 +404,7 @@ H   17.07047       19.34799       5.667876
 H   18.18777       18.06583       5.307547
 units angstrom
 }
-""")
+""", 0)
 
 HSG_6 = input.process_input("""
 molecule dimer {
@@ -432,7 +432,7 @@ H   16.61088       19.36781       5.137980
 H   18.01270       17.77884       4.709692
 units angstrom
 }
-""")
+""", 0)
 
 HSG_7 = input.process_input("""
 molecule dimer {
@@ -471,7 +471,7 @@ H   10.82891       23.34622       2.612456
 H   14.36576       23.85731       6.174161
 units angstrom
 }
-""")
+""", 0)
 
 HSG_8 = input.process_input("""
 molecule dimer {
@@ -504,7 +504,7 @@ H   6.274000       22.37100       4.504000
 H   7.673767       23.27955       2.693205
 units angstrom
 }
-""")
+""", 0)
 
 HSG_9 = input.process_input("""
 molecule dimer {
@@ -538,7 +538,7 @@ H   9.572130       27.21869       8.594352
 H   11.09040       26.32976       8.929603
 units angstrom
 }
-""")
+""", 0)
 
 HSG_10 = input.process_input("""
 molecule dimer {
@@ -571,7 +571,7 @@ H   17.63853       19.12101       5.827124
 H   16.55212       19.14519       4.519021
 units angstrom
 }
-""")
+""", 0)
 
 HSG_11 = input.process_input("""
 molecule dimer {
@@ -605,7 +605,7 @@ H   17.63853       19.12101       5.827124
 H   16.55212       19.14519       4.519021
 units angstrom
 }
-""")
+""", 0)
 
 HSG_12 = input.process_input("""
 molecule dimer {
@@ -643,7 +643,7 @@ H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
 }
-""")
+""", 0)
 
 HSG_13 = input.process_input("""
 molecule dimer {
@@ -678,7 +678,7 @@ H   18.01270       17.77884       4.709692
 H   16.61088       19.36781       5.137980
 units angstrom
 }
-""")
+""", 0)
 
 HSG_14 = input.process_input("""
 molecule dimer {
@@ -719,7 +719,7 @@ H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
 }
-""")
+""", 0)
 
 HSG_15 = input.process_input("""
 molecule dimer {
@@ -748,7 +748,7 @@ H   10.95781       24.70625       4.782907
 H   12.80321       24.79031       4.522592
 units angstrom
 }
-""")
+""", 0)
 
 HSG_16 = input.process_input("""
 molecule dimer {
@@ -786,7 +786,7 @@ H   14.68200       22.28100       8.905000
 H   15.59011       22.79893       7.431346
 units angstrom
 }
-""")
+""", 0)
 
 HSG_17 = input.process_input("""
 molecule dimer {
@@ -817,7 +817,7 @@ H   6.798000       25.19700       1.318000
 H   8.936083       23.65540       2.904981
 units angstrom
 }
-""")
+""", 0)
 
 HSG_18 = input.process_input("""
 molecule dimer {
@@ -852,7 +852,7 @@ H   11.93200       25.39300       8.957000
 H   10.61998       24.85900       5.366911
 units angstrom
 }
-""")
+""", 0)
 
 HSG_19 = input.process_input("""
 molecule dimer {
@@ -884,7 +884,7 @@ H   18.32800       22.76900       7.913000
 H   15.93631       22.42849       8.649437
 units angstrom
 }
-""")
+""", 0)
 
 HSG_20 = input.process_input("""
 molecule dimer {
@@ -916,7 +916,7 @@ H   18.01270       17.77884       4.709692
 H   16.61088       19.36781       5.137980
 units angstrom
 }
-""")
+""", 0)
 
 HSG_21 = input.process_input("""
 molecule dimer {
@@ -947,7 +947,7 @@ H   11.53119       24.41376       4.514093
 H   9.792144       24.23767       4.611163
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 GEOS = {}
