@@ -25,7 +25,7 @@ isOS = 'true'
 
 # <<< Database Members >>>
 HRXN = range(1, 39)
-HRXN_SM = [3,4,31,32]
+HRXN_SM = [3, 4, 31, 32]
 HRXN_LG = [36]
 
 # <<< Chemical Systems Involved >>>
@@ -338,7 +338,7 @@ TAGL['%s-%s-reagent' % (dbse, 'OH'         )] = 'OH'
 # <<< Molecule Specifications >>>
 NHTBH_C2H4 = input.process_input("""
 molecule dimer {
-0 1 
+0 1
 C        0.00000000     0.00000000     0.66559300
 C        0.00000000    -0.00000000    -0.66559300
 H        0.00000000     0.92149500     1.23166800
@@ -365,7 +365,7 @@ units angstrom
 
 NHTBH_C2H5 = input.process_input("""
 molecule dimer {
-0 2 
+0 2
 C       -0.25871900    -0.81682900     0.00000000
 C       -0.25098700     0.67419100     0.00000000
 H        0.75883000    -1.22593900     0.00000000
@@ -379,7 +379,7 @@ units angstrom
 
 NHTBH_C3H7ts = input.process_input("""
 molecule dimer {
-0 2 
+0 2
 C       -0.47213200     0.64593300    -0.00004300
 C       -1.38261700    -0.36388500    -0.00000200
 H       -0.23204400     1.16457500    -0.91726400
@@ -855,9 +855,7 @@ units angstrom
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
 
-      molname = rxnpattern.match(rgt)
-      GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
-
-
+        molname = rxnpattern.match(rgt)
+        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
