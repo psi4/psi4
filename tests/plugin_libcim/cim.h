@@ -18,8 +18,10 @@ class CIM{
      * build occupied domains:
      * central orbitals | central mo domain | environmental domain
      */
-    int*cdomainsizes,**cdomains,*ncentral,**central;
+    int*cdomainsizes,**cdomains,ndomains;
+    int**central,*ncentral;
     int**env,*nenv;
+    int**modomain,*nmodomain;
     void OccupiedDomains();
 };
 };
