@@ -1,0 +1,16 @@
+molecule {
+H
+H 1 3.0
+R = .9
+}
+
+plugin_load("./plugin_fqdft.so")
+
+set {
+basis sto-3g
+debug 1
+}
+
+energy('scf')
+plugin("./plugin_fqdft.so")
+

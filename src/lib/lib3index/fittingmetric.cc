@@ -313,8 +313,8 @@ void FittingMetric::form_fitting_metric()
     }
 
     // Form indexing
-    pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
-    rev_pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
+    pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi));
+    rev_pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi));
     for (int h = 0; h < auxpet->nirrep(); h++) {
         int* piv = pivots_->pointer(h);
         int* rpiv = pivots_->pointer(h);

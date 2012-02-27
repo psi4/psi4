@@ -26,8 +26,16 @@ $(TARGET_DVI): $(TEX) $(SUBTEX) $(OTFTEX)
 $(TARGET_PS): $(DVI)
 	$(DVIPS) -o $@ $<
 
+# If we have pdflatex installed, then use it instead of LaTeX
+ifdef PDFLATEX
+$(TARGET_PDF): $(TEX) $(SUBTEX) $(OTFTEX)
+	echo $(srcdir)
+	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
+	$(PDFLATEX) $< && $(PDFLATEX) $< && $(PDFLATEX) $<
+else
 $(TARGET_PDF): $(PS)
 	$(PS2PDF) -dEmbedAllFonts=true $<
+endif
 
 $(TARGET_HTML): $(TEX) $(SUBTEX) $(OTFTEX)
 	TEXINPUTS=$(TEXINPUTS); export TEXINPUTS; \
@@ -39,7 +47,11 @@ $(LATEX2HTML) -tmp /tmp -dir $(currdir)/html_sectioned -external_file $(currdir)
 #
 
 
+ifdef PDFLATEX
+install:: install_pdf install_html
+else
 install:: install_dvi install_ps install_pdf install_html
+endif
 
 ifdef TARGET_DVI
 install_dvi:: $(TARGET_DVI)
@@ -72,7 +84,7 @@ endif
 #
 
 realclean:: dviclean psclean htmlclean otfclean
-	-rm -f *.aux *.log *.toc *.bbl
+	-rm -f *.aux *.log *.toc *.bbl *blg *out *html Psithon.pdf
 	-rm -rf html
 
 clean:: dviclean psclean htmlclean otfclean
