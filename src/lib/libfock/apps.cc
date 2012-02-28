@@ -971,6 +971,7 @@ double RCIS::compute_energy()
     H->set_print(print_);
     H->set_debug(debug_);
     H->set_bench(bench_);
+    H->set_exact_diagonal(options_.get_bool("SOLVER_EXACT_DIAGONAL"));
     solver->set_convergence(convergence_);
 
     // Initialization/Memory

@@ -1337,7 +1337,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
     Dimension dim(Ci->nirrep());
     for (int symm = 0; symm < Ci->nirrep(); symm++) {
         int rank = 0;
-        for (int h = 0; h < Ci->nirrep(); symm++) {
+        for (int h = 0; h < Ci->nirrep(); h++) {
             rank += Ci->colspi()[h] * Ca->colspi()[h^symm];
         }
         dim[symm] = rank;
@@ -1375,7 +1375,7 @@ SharedVector DFJK::iaia(SharedMatrix Ci, SharedMatrix Ca)
         double** Cip = Ca->pointer(h);
         double** Cp = Ca_ao->pointer();
         double** Up = AO2USO_->pointer(h);
-        C_DGEMM('N','N',nso,ni,nm,1.0,Up[0],nm,Cip[0],ni,0.0,&Cp[0][offset],nocc); 
+        C_DGEMM('N','N',nso,ni,nm,1.0,Up[0],nm,Cip[0],ni,0.0,&Cp[0][offset],nvir);
         offset += ni; 
     }
 
