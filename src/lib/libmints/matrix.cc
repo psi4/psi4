@@ -1507,7 +1507,7 @@ double Matrix::vector_dot(const SharedMatrix& rhs)
     return vector_dot(rhs.get());
 }
 
-void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder nMatz)
+void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, diagonalize_order nMatz)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
@@ -1520,17 +1520,17 @@ void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder
     }
 }
 
-void Matrix::diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
+void Matrix::diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz)
 {
     diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
 }
 
-void Matrix::diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz)
+void Matrix::diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, diagonalize_order nMatz)
 {
     diagonalize(eigvectors.get(), &eigvalues, nMatz);
 }
 
-void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
+void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, diagonalize_order nMatz)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix non-totally symmetric.");
@@ -1588,7 +1588,7 @@ boost::tuple<SharedMatrix, SharedVector, SharedMatrix> Matrix::svd_temps()
 }
 void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 {
-    // Actually, this routine takes mn + mk + nk 
+    // Actually, this routine takes mn + mk + nk
     for (int h = 0; h < nirrep_; h++) {
         if (!rowspi_[h] && !colspi_[h])
             continue;
@@ -1598,7 +1598,7 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
         int k = (m < n ? m : n);
 
         double** Ap = Matrix::matrix(m,n);
-        ::memcpy((void*) Ap[0], (void*) matrix_[h][0], sizeof(double) * m * n); 
+        ::memcpy((void*) Ap[0], (void*) matrix_[h][0], sizeof(double) * m * n);
         double*  Sp = S->pointer(h);
         double** Up = U->pointer(h);
         double** Vp = V->pointer(h^symmetry_);
@@ -1654,13 +1654,13 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool* conditioned)
                 conditioned_here = true;
             }
         }
-    }    
+    }
     if (conditioned) {
         *conditioned = conditioned_here;
     }
 
     SharedMatrix Q(clone());
-    
+
     for (int h = 0; h < nirrep_; h++) {
         int m = rowspi_[h];
         int n = colspi_[h^symmetry_];
@@ -1688,10 +1688,10 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta)
     SharedMatrix U(clone());
     SharedVector a(new Vector("a",rowspi_));
 
-    diagonalize(U,a,Matrix::Descending);
-    
+    diagonalize(U,a, descending);
+
     Dimension rank(nirrep_);
-    
+
     for (int h = 0; h < nirrep_; h++) {
         int k = a->dimpi()[h];
         if (!k) continue;
@@ -1707,7 +1707,7 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta)
             }
         }
         rank[h] = sig;
-    } 
+    }
 
     SharedMatrix X(new Matrix("X",rowspi_,rank));
 
@@ -1722,8 +1722,8 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta)
             C_DAXPY(m,ap[i],&Up[0][i],m,&Xp[0][i],k);
         }
     }
-    
-    return X; 
+
+    return X;
 }
 
 void Matrix::swap_rows(int h, int i, int j)

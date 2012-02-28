@@ -37,6 +37,7 @@
       meaning (e.g., \t for tab, \b for bell, \n for newline) must be
       escaped (e.g., \\text or \\beta).
 
+.. These are abbreviations for arrows indicating default values
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
 
@@ -44,13 +45,14 @@
 General
 =======
 
-To allow arbitrarily complex computations to be performed, PSI4 was built
+To allow arbitrarily complex computations to be performed, PSI4 is built
 upon the Python interpreter, with modifications termed Psithon. Chapter 3
-of the User's Manual described the non-standard Python associated with
-molecule, basis, and option specification. This documentation addresses
-the Python side- what functions allow the proper, compiled code to be run,
-what functions post-process and interact with that output, and how the
-ordinary (or ambitious) user can extent PSI4's functionality.
+of the User's Manual describes the non-standard Python associated with
+clean molecule, basis, and option specification in the PSI4 input file.
+This documentation addresses the pure Python side- what functions allow
+the efficient compiled code to be run, what functions post-process and
+interact with that output, and how the ordinary (or ambitious) user can
+extent PSI4's functionality.
 
 .. include:: notes.rst
 
@@ -115,8 +117,7 @@ Beginner Psithon Programming
 Function Intercalls
 ===================
 
-table; handling func; no sow/reap
-
+.. include:: ./intercalls.rst
 
 ========================
 Embarrassing Parallelism
@@ -150,14 +151,93 @@ Molecule Methods
 Expert
 ======
 
-.. automodule:: proc
+aliases
+=======
+
+.. automodule:: aliases
     :members:
     :undoc-members:
+
+driver
+======
 
 .. automodule:: driver
     :members:
     :undoc-members:
     :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq 
+
+input
+=====
+
+.. automodule:: input
+    :members:
+    :undoc-members:
+
+molutil
+========
+
+.. automodule:: molutil
+    :members:
+    :undoc-members:
+
+physconst
+=========
+
+.. automodule:: physconst
+    :members:
+    :undoc-members:
+
+proc
+====
+
+.. automodule:: proc
+    :members:
+    :undoc-members:
+
+procutil
+========
+
+.. automodule:: procutil
+    :members:
+    :undoc-members:
+
+psiexceptions
+=============
+
+.. automodule:: psiexceptions
+    :members:
+    :undoc-members:
+
+pubchem
+=======
+
+.. automodule:: pubchem
+    :members:
+    :undoc-members:
+
+qmmm
+====
+
+.. automodule:: qmmm
+    :members:
+    :undoc-members:
+
+text
+====
+
+.. automodule:: text
+    :members:
+    :undoc-members:
+
+util
+====
+
+.. automodule:: util
+    :members:
+    :undoc-members:
+
+wrappers
+========
 
 .. automodule:: wrappers
     :members:
@@ -165,43 +245,7 @@ Expert
     :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction, db, database, complete_basis_set, cbs,
         highest_1, scf_xtpl_helgaker_3, scf_xtpl_helgaker_2, corl_xtpl_helgaker_2
 
-.. automodule:: aliases
-    :members:
-    :undoc-members:
-
-.. automodule:: procutil
-    :members:
-    :undoc-members:
-
-.. automodule:: psiexceptions
-    :members:
-    :undoc-members:
-
-.. automodule:: text
-    :members:
-    :undoc-members:
-
-.. automodule:: util
-    :members:
-    :undoc-members:
-
-.. automodule:: qmmm
-    :members:
-    :undoc-members:
-
-.. automodule:: input
-    :members:
-    :undoc-members:
-
-.. automodule:: physconst
-    :members:
-    :undoc-members:
-
-.. automodule:: pubchem
-    :members:
-    :undoc-members:
-
-.. automodule:: inpsight
+.. slated_for_removal automodule:: inpsight
     :members:
     :undoc-members:
 

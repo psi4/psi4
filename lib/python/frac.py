@@ -2,7 +2,7 @@ import PsiMod
 import os
 import input
 import math
-from molecule import * 
+from molutil import * 
 from driver import * 
 from procutil import *
 

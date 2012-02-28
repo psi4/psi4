@@ -86,7 +86,7 @@ popular chemical databases.</p>
 <p class="first admonition-title">Note</p>
 <p class="last">It is very easy to make a database from a collection of xyz files
 using the script <tt class="docutils literal"><span class="pre">$PSIDATADIR/databases/ixyz2database.pl</span></tt>.
-See <a href="#id33"><span class="problematic" id="id34">`Creating a New Database`_</span></a> for details.</p>
+See <a href="#id49"><span class="problematic" id="id50">`Creating a New Database`_</span></a> for details.</p>
 </div>
 <div class="admonition caution">
 <p class="first admonition-title">Caution</p>
@@ -95,12 +95,11 @@ See <a href="#id33"><span class="problematic" id="id34">`Creating a New Database
 <li>In sow/reap mode, use only global options (e.g., the local option set by <tt class="docutils literal"><span class="pre">set</span> <span class="pre">scf</span> <span class="pre">scf_type</span> <span class="pre">df</span></tt> will not be respected).</li>
 </ul>
 </div>
-<p><strong>Keywords</strong></p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'sapt0'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
 <p>First argument, usually unlabeled. Indicates the computational method
 to be applied to the database. May be any valid argument to
@@ -116,11 +115,11 @@ Consult that directory for available databases and literature citations.</p>
 member. The default performs a single-point <tt class="docutils literal"><span class="pre">energy('name')</span></tt>, while
 <tt class="docutils literal"><span class="pre">optimize</span></tt> perfoms a geometry optimization on each reagent, and
 <tt class="docutils literal"><span class="pre">cbs</span></tt> performs a compound single-point energy. If a nested series
-of python functions is intended (see <a href="#id35"><span class="problematic" id="id36">`Function Intercalls`_</span></a>), use
+of python functions is intended (see <a href="#id51"><span class="problematic" id="id52">`Function Intercalls`_</span></a>), use
 keyword <tt class="docutils literal"><span class="pre">db_func</span></tt> instead of <tt class="docutils literal"><span class="pre">func</span></tt>.</p>
 </li>
 <li><strong>mode</strong> (<em>string</em>) &#8211; <p><a href="#id5"><span class="problematic" id="id6">|dl|</span></a> <tt class="docutils literal"><span class="pre">'continuous'</span></tt> <a href="#id7"><span class="problematic" id="id8">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'sow'</span></tt> || <tt class="docutils literal"><span class="pre">'reap'</span></tt></p>
-<p>Indicates whether the calculation required to complete the
+<p>Indicates whether the calculations required to complete the
 database are to be run in one file (<tt class="docutils literal"><span class="pre">'continuous'</span></tt>) or are to be
 farmed out in an embarrassingly parallel fashion
 (<tt class="docutils literal"><span class="pre">'sow'</span></tt>/<tt class="docutils literal"><span class="pre">'reap'</span></tt>).  For the latter, run an initial job with
@@ -129,20 +128,20 @@ farmed out in an embarrassingly parallel fashion
 <li><strong>cp</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id9"><span class="problematic" id="id10">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id11"><span class="problematic" id="id12">|dr|</span></a></p>
 <p>Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the <a class="reference internal" href="index.html#wrappers.cp" title="wrappers.cp"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.cp()</span></tt></a>
-wrapper for BSSE correction in the <tt class="docutils literal"><span class="pre">database()</span></tt>.  Option
-valid only for databases consisting of bimolecular complexes.</p>
+function for BSSE correction in database().  Option available
+(See <a class="reference internal" href="#available-databases">Available Databases</a>) only for databases of bimolecular complexes.</p>
 </li>
 <li><strong>rlxd</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id13"><span class="problematic" id="id14">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id15"><span class="problematic" id="id16">|dr|</span></a></p>
-<p>Indicates whether correction for the deformation energy is
-employed in computing interaction energies.  Option valid only for
-databases consisting of bimolecular complexes with non-frozen
-monomers, e.g., HBC6.</p>
+<p>Indicates whether correction for deformation energy is
+employed in computing interaction energies.  Option available
+(See <a class="reference internal" href="#available-databases">Available Databases</a>) only for databases of bimolecular complexes 
+with non-frozen monomers, e.g., HBC6.</p>
 </li>
 <li><strong>symm</strong> (<em>bool</em>) &#8211; <p><a href="#id17"><span class="problematic" id="id18">|dl|</span></a> <tt class="docutils literal"><span class="pre">'on'</span></tt> <a href="#id19"><span class="problematic" id="id20">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'off'</span></tt></p>
-<p>Indicates whether the native symmetry of the database molecules is
+<p>Indicates whether the native symmetry of the database reagents is
 employed (<tt class="docutils literal"><span class="pre">'on'</span></tt>) or whether it is forced to <img class="math" src="_images/math/70b97eb4ad6e4e7a5a97e2547d9ed6e965960d0c.png" alt="C_1"/> symmetry
 (<tt class="docutils literal"><span class="pre">'off'</span></tt>). Some computational methods (e.g., SAPT) require no
-symmetry, and this will be set by the database() wrapper.</p>
+symmetry, and this will be set by database().</p>
 </li>
 <li><strong>zpe</strong> (<em>bool</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'on'</span></tt> || <a href="#id21"><span class="problematic" id="id22">|dl|</span></a> <tt class="docutils literal"><span class="pre">'off'</span></tt> <a href="#id23"><span class="problematic" id="id24">|dr|</span></a></p>
 <p>Indicates whether zero-point-energy corrections are appended to
@@ -151,7 +150,8 @@ thermochemical databases. Disabled until Hessians ready.</p>
 </li>
 <li><strong>benchmark</strong> (<em>string</em>) &#8211; <p><a href="#id25"><span class="problematic" id="id26">|dl|</span></a> <tt class="docutils literal"><span class="pre">'default'</span></tt> <a href="#id27"><span class="problematic" id="id28">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'S22A'</span></tt> || etc.</p>
 <p>Indicates whether a non-default set of reference energies, if
-available, are employed for the calculation of error statistics.</p>
+available (See <a class="reference internal" href="#available-databases">Available Databases</a>), are employed for the
+calculation of error statistics.</p>
 </li>
 <li><strong>tabulate</strong> (<em>array of strings</em>) &#8211; <p><a href="#id29"><span class="problematic" id="id30">|dl|</span></a> <tt class="docutils literal"><span class="pre">[]</span></tt> <a href="#id31"><span class="problematic" id="id32">|dr|</span></a> || <tt class="docutils literal"><span class="pre">['scf</span> <span class="pre">total</span> <span class="pre">energy',</span> <span class="pre">'natom']</span></tt> || etc.</p>
 <p>Indicates whether to form tables of variables other than the
@@ -159,7 +159,8 @@ primary requested energy.  Available for any PSI variable.</p>
 </li>
 <li><strong>subset</strong> (<em>string or array of strings</em>) &#8211; <p>Indicates a subset of the full database to run. This is a very
 flexible option and can be used in three distinct ways, outlined
-below. Note that two take a string and the last takes an array.</p>
+below. Note that two take a string and the last takes an array.
+See <a class="reference internal" href="#available-databases">Available Databases</a> for available values.</p>
 <ul>
 <li><dl class="first docutils">
 <dt><tt class="docutils literal"><span class="pre">'small'</span></tt> || <tt class="docutils literal"><span class="pre">'large'</span></tt> || <tt class="docutils literal"><span class="pre">'equilibrium'</span></tt></dt>
@@ -191,9 +192,10 @@ database python file</dd>
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Examples :</th><td class="field-body"></td>
+</tr>
 </tbody>
 </table>
-<p><strong>Examples</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">db</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span><span class="s">&#39;RGC10&#39;</span><span class="p">,</span><span class="n">cast_up</span><span class="o">=</span><span class="s">&#39;sto-3g&#39;</span><span class="p">,</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;HeHe-0.85&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.0&#39;</span><span class="p">,</span><span class="s">&#39;HeHe-1.5&#39;</span><span class="p">],</span> <span class="n">tabulate</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;scf total energy&#39;</span><span class="p">,</span><span class="s">&#39;natom&#39;</span><span class="p">])</span>
 </pre></div>
@@ -240,7 +242,7 @@ energies stored in the database. One of these, the mean absolute deviation, is
 returned by the wrapper as an ordinary Python variable. (For databases
 without a stored reference energy, e.g., BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
-through :param tabulate:, in this case the total SCF energy and the number
+through keyword <tt class="docutils literal"><span class="pre">tabulate</span></tt>, in this case the total SCF energy and the number
 of atoms in each reagent.</p>
 <div class="highlight-python"><pre>==&gt; Scf Total Energy &lt;==
 
@@ -282,6 +284,365 @@ Mean Absolute Dev                         0.0201
 -----------------------------------------------------------------------------------</pre>
 </div>
 </div>
+<div class="section" id="available-databases">
+<h1>Available Databases<a class="headerlink" href="#available-databases" title="Permalink to this headline">¶</a></h1>
+<p>Below are documented for particular databases the availibility of the generic
+database function options <strong>cp</strong>, <strong>rlxd</strong>, <strong>benchmark</strong>, and the string
+options for <strong>subset</strong>. The full reagent member list, which can also be used
+in conjunction with <strong>subset</strong>, is not included here for consideration of space
+and may be found in the database file. The database Python files are very
+readable and should be consulted for more particular questions.</p>
+<hr class="docutils" />
+<span class="target" id="module-ACENES"></span><p><strong>ACENES</strong></p>
+<div class="line-block">
+<div class="line">Database of Ed and Rob&#8217;s favorite linear acene dimers.</div>
+<div class="line">Geometries from nowhere special, and reference energies undefined.</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'FIRST3'</span></tt> benzene, napthalene, and anthracene dimers</li>
+<li><tt class="docutils literal"><span class="pre">'FIRST5'</span></tt> benzene - pentacene dimers</li>
+<li><tt class="docutils literal"><span class="pre">'FIRST10'</span></tt> benzene - decacene dimers</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-BAKERJCC93"></span><p><strong>BAKERJCC93</strong></p>
+<div class="line-block">
+<div class="line">Database of molecules that are challenging to optimize.</div>
+<div class="line">Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
+in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
+further corrections.</div>
+<div class="line">No reference energies defined.</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-BASIC"></span><p><strong>BASIC</strong></p>
+<div class="line-block">
+<div class="line">Database of simple molecules, mostly for testing.</div>
+<div class="line">Geometries from nowhere special, and no reference energies defined.</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong> [<tt class="docutils literal"><span class="pre">'h2o'</span></tt>, <tt class="docutils literal"><span class="pre">'nh3'</span></tt>, <tt class="docutils literal"><span class="pre">'ch4'</span></tt>]</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-BBI"></span><p><strong>BBI</strong></p>
+<div class="line-block">
+<div class="line">Database (Merz) of protein backbone-backbone interactions.</div>
+<div class="line">Geometries from Kenneth Merz Group, Univ. of Florida.</div>
+<div class="line">Reference interaction energies from Sherrill group, Georgia Tech.</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-CFLOW"></span><p><strong>CFLOW</strong></p>
+<div class="line-block">
+<div class="line">Database of extended conjugated bimolecular systems.</div>
+<div class="line">Geometries and Reference interaction energies from the following articles:</div>
+<div class="line-block">
+<div class="line">Polyene geometries from Marshall et al. JCTC 6 3681 (2010).</div>
+<div class="line">Polyene reference interaction energies from Sherrill group by ccsd(t**)-f12b/heavy-aug-cc-pvdz.</div>
+<div class="line">Acene geometries (except benzene) from Sherrill group by df-mp2/cc-pvtz c.2011.</div>
+<div class="line">Benzene geometry from NBC10 database and citations therein.</div>
+<div class="line">Acene reference interaction energies (incl. benzene dimer) from Sherrill group by ccsd(t**)-f12b/aug-cc-pvdz.</div>
+<div class="line">Buckybowl (Pulay-labeled) geometries from Sherrill group by PBE1PBE/6-31G*, following Pulay&#8217;s instructions in Janowski et al. CPL 512 155 (2011).</div>
+<div class="line">Buckybowl (Pulay-labeled) reference interaction energies from Janowski et al. CPL 512 155 (2011).</div>
+<div class="line">Buckyware (Grimme-labeled) geometries from Grimme PCCP 12 7091 (2010).</div>
+<div class="line">Buckyware (Grimme-labeled) reference interaction energies from Grimme PCCP 12 7091 (2010) by B97-D2/TZVP.</div>
+<div class="line">Collection into CFLOW by Parrish et al. XXX XXX XXXXXX (2012).</div>
+</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'equilibrium'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'Polyenes'</span></tt> equilibrium for linear polyene dimers for 2 through 16 monomer carbons</li>
+<li><tt class="docutils literal"><span class="pre">'cBzBz'</span></tt> 5-point dissociation curve for benzene dimer</li>
+<li><tt class="docutils literal"><span class="pre">'c2BzBz'</span></tt> 5-point dissociation curve for napthalene-benzene complex</li>
+<li><tt class="docutils literal"><span class="pre">'c2Bz2Bz'</span></tt> 5-point dissociation curve for napthalene dimer</li>
+<li><tt class="docutils literal"><span class="pre">'c3Bz2Bz'</span></tt> 5-point dissociation curve for anthracene-napthalene complex</li>
+<li><tt class="docutils literal"><span class="pre">'c3Bz3Bz'</span></tt> 5-point dissociation curve for anthracene dimer</li>
+<li><tt class="docutils literal"><span class="pre">'c4Bz3Bz'</span></tt> 5-point dissociation curve for tetracene-anthracene complex</li>
+<li><tt class="docutils literal"><span class="pre">'Arenes'</span></tt> equilibrium for benzene dimer through tetracene-anthracene complex linear arenes</li>
+<li><tt class="docutils literal"><span class="pre">'cArenes'</span></tt> 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes</li>
+<li><tt class="docutils literal"><span class="pre">'cPulay'</span></tt> 4-point dissociation curve for bowl-in-bowl corannulene dimer</li>
+<li><tt class="docutils literal"><span class="pre">'Pulay'</span></tt> Pulay bowl-in-bowl corannulene dimer dissociation curve and extra point</li>
+<li><tt class="docutils literal"><span class="pre">'Grimme60'</span></tt> Grimme corannulene dimer, C60 &#64; buckybowl, and C60 &#64; buckycatcher</li>
+<li><tt class="docutils literal"><span class="pre">'Grimme70'</span></tt> Grimme C70 &#64; buckycatcher at three orientations</li>
+<li><tt class="docutils literal"><span class="pre">'Paper'</span></tt> linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes</li>
+<li><tt class="docutils literal"><span class="pre">'cPaper'</span></tt> linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-CORE"></span><p><strong>CORE</strong></p>
+<p>Database of Pulay corannulene structures. Subsumed into CFLOW.</p>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-G2"></span><p><strong>G2</strong></p>
+<div class="line-block">
+<div class="line">Database of thermodynamic reactions.</div>
+<div class="line">WIP</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-HBC6"></span><p><strong>HBC6</strong></p>
+<div class="line-block">
+<div class="line">Database (Sherrill) of interaction energies for dissociation curves of doubly hydrogen-bonded bimolecular complexes.</div>
+<div class="line">Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).</div>
+<div class="line">Reference interaction energies from Marshall et al. JCP 135 194102 (2011).</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>benchmark</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'HBC60'</span></tt> Thanthiriwatte et al. JCTC 7 88 (2011).</li>
+<li><a href="#id33"><span class="problematic" id="id34">|dl|</span></a> <tt class="docutils literal"><span class="pre">'HBC6A'</span></tt> <a href="#id35"><span class="problematic" id="id36">|dr|</span></a> Marshall et al. JCP 135 194102 (2011).</li>
+<li><tt class="docutils literal"><span class="pre">'HBC6ARLX'</span></tt> Sherrill group, unpublished.</li>
+</ul>
+</li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'equilibrium'</span></tt></li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-HSG"></span><p><strong>HSG</strong></p>
+<div class="line-block">
+<div class="line">Database (Merz) of interaction energies for bimolecular complexes from protein-indinavir reaction site.</div>
+<div class="line">Geometries from Faver et al. JCTC 7 790 (2011).</div>
+<div class="line">Reference interaction energies from Marshall et al. JCP 135 194102 (2011).</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>benchmark</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'HSG0'</span></tt> Faver et al. JCTC 7 790 (2011).</li>
+<li><a href="#id37"><span class="problematic" id="id38">|dl|</span></a> <tt class="docutils literal"><span class="pre">'HSGA'</span></tt> <a href="#id39"><span class="problematic" id="id40">|dr|</span></a> Marshall et al. JCP 135 194102 (2011).</li>
+</ul>
+</li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-HTBH"></span><p><strong>HTBH</strong></p>
+<div class="line-block">
+<div class="line">Database (Truhlar) of hydrogen-transfer barrier height reactions.</div>
+<div class="line">Geometries from Truhlar and coworkers at site <a class="reference external" href="http://t1.chem.umn.edu/misc/database_group/database_therm_bh/raw_geom.cgi">http://t1.chem.umn.edu/misc/database_group/database_therm_bh/raw_geom.cgi</a> .</div>
+<div class="line">Reference energies from Zhao et al. JPCA, 109 2012-2018 (2005) doi: 10.1021/jp045141s [in supporting information].</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-JSCH"></span><p><strong>JSCH</strong></p>
+<div class="line-block">
+<div class="line">Database (Hobza) of interaction energies for nucelobase pairs.</div>
+<div class="line">Geometries and reference interaction energies from Jurecka et al. PCCP 8 1985 (2006).</div>
+<div class="line">Corrections implemented from footnote 92 of Burns et al., JCP 134 084107 (2011).</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-NBC10"></span><p><strong>NBC10</strong></p>
+<div class="line-block">
+<div class="line">Database (Sherrill) of interaction energies for dissociation curves of dispersion-bound bimolecular complexes.</div>
+<div class="line">Geometries and Reference interaction energies from the following articles:</div>
+<div class="line-block">
+<div class="line">Benzene Dimers from Sherrill et al. JPCA 113 10146 (2009).</div>
+<div class="line">Benzene-Hydrogen Sulfide from Sherrill et al. JPCA 113 10146 (2009).</div>
+<div class="line">Benzene-Methane from Sherrill et al. JPCA 113 10146 (2009).</div>
+<div class="line">Methane Dimer from Takatani et al. PCCP 9 6106 (2007).</div>
+<div class="line">Pyridine Dimers from Hohenstein et al. JPCA 113 878 (2009).</div>
+<div class="line">Collection into NBC10 from Burns et al. JCP 134 084107 (2011).</div>
+<div class="line">Reference from Marshall et al. JCP 135 194102 (2011).</div>
+</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>benchmark</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'NBC100'</span></tt> Burns et al. JCP 134 084107 (2011).</li>
+<li><a href="#id41"><span class="problematic" id="id42">|dl|</span></a> <tt class="docutils literal"><span class="pre">'NBC10A'</span></tt> <a href="#id43"><span class="problematic" id="id44">|dr|</span></a> Marshall et al. JCP 135 194102 (2011).</li>
+</ul>
+</li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'equilibrium'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'BzBz_S'</span></tt> dissociation curve for benzene dimer, sandwich</li>
+<li><tt class="docutils literal"><span class="pre">'BzBz_T'</span></tt> dissociation curve for benzene dimer, t-shaped</li>
+<li><tt class="docutils literal"><span class="pre">'BzBz_PD34'</span></tt> dissociation curve for benzene dimer, parallel displaced by 3.4A</li>
+<li><tt class="docutils literal"><span class="pre">'BzH2S'</span></tt> dissociation curve for benzene-H2S</li>
+<li><tt class="docutils literal"><span class="pre">'BzMe'</span></tt> dissociation curve for benzene-methane</li>
+<li><tt class="docutils literal"><span class="pre">'MeMe'</span></tt> dissociation curve for methane dimer</li>
+<li><tt class="docutils literal"><span class="pre">'PyPy_S2'</span></tt> dissociation curve for pyridine dimer, sandwich</li>
+<li><tt class="docutils literal"><span class="pre">'PyPy_T3'</span></tt> dissociation curve for pyridine dimer, t-shaped</li>
+<li><tt class="docutils literal"><span class="pre">'BzBz_PD32'</span></tt> dissociation curve for benzene dimer, parallel displaced by 3.2A</li>
+<li><tt class="docutils literal"><span class="pre">'BzBz_PD36'</span></tt> dissociation curve for benzene dimer, parallel displaced by 3.6A</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-NHTBH"></span><p><strong>NHTBH</strong></p>
+<div class="line-block">
+<div class="line">Database (Truhlar) of non-hydrogen-transfer barrier height reactions.</div>
+<div class="line">Geometries and Reaction energies from Truhlar and coworkers at site <a class="reference external" href="http://t1.chem.umn.edu/misc/database_group/database_therm_bh/non_H.htm">http://t1.chem.umn.edu/misc/database_group/database_therm_bh/non_H.htm</a>.</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-RGC10"></span><p><strong>RGC10</strong></p>
+<div class="line-block">
+<div class="line">Database (Sherrill) of interaction energies for dissociation curves of rare-gas biatomic complexes.</div>
+<div class="line">Geometries and reference interaction energies from Tang et al. JCP 118 4976 (2003).</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'equilibrium'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'HeHe'</span></tt> 18-point dissociation curve for helium dimer</li>
+<li><tt class="docutils literal"><span class="pre">'HeNe'</span></tt> 18-point dissociation curve for helium-neon complex</li>
+<li><tt class="docutils literal"><span class="pre">'HeAr'</span></tt> 18-point dissociation curve for helium-argon complex</li>
+<li><tt class="docutils literal"><span class="pre">'HeKr'</span></tt> 18-point dissociation curve for helium-krypton complex</li>
+<li><tt class="docutils literal"><span class="pre">'NeNe'</span></tt> 18-point dissociation curve for neon dimer</li>
+<li><tt class="docutils literal"><span class="pre">'NeAr'</span></tt> 18-point dissociation curve for neon-argon complex</li>
+<li><tt class="docutils literal"><span class="pre">'NeKr'</span></tt> 18-point dissociation curve for neon-krypton complex</li>
+<li><tt class="docutils literal"><span class="pre">'ArAr'</span></tt> 18-point dissociation curve for argon dimer</li>
+<li><tt class="docutils literal"><span class="pre">'ArKr'</span></tt> 18-point dissociation curve for argon-krypton complex</li>
+<li><tt class="docutils literal"><span class="pre">'KrKr'</span></tt> 18-point dissociation curve for krypton dimer</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-S22"></span><p><strong>S22</strong></p>
+<div class="line-block">
+<div class="line">Database (Hobza) of interaction energies for bimolecular complexes.</div>
+<div class="line">Geometries from Jurecka et al. PCCP 8 1985 (2006).</div>
+<div class="line">Reference interaction energies from Marshall et al. JCP 135 194102 (2011).</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>benchmark</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'S220'</span></tt> Jurecka et al. PCCP 8 1985 (2006).</li>
+<li><tt class="docutils literal"><span class="pre">'S22A'</span></tt> Takatani et al. JCP 132 144104 (2010).</li>
+<li><a href="#id45"><span class="problematic" id="id46">|dl|</span></a> <tt class="docutils literal"><span class="pre">'S22B'</span></tt> <a href="#id47"><span class="problematic" id="id48">|dr|</span></a> Marshall et al. JCP 135 194102 (2011).</li>
+</ul>
+</li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt> water dimer, methane dimer, ethene-ethine</li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt> adenine-thymine</li>
+<li><tt class="docutils literal"><span class="pre">'HB'</span></tt> hydrogen-bonded systems</li>
+<li><tt class="docutils literal"><span class="pre">'MX'</span></tt> mixed-influence systems</li>
+<li><tt class="docutils literal"><span class="pre">'DD'</span></tt> dispersion-dominated systems</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-S22by5"></span><p><strong>S22by5</strong></p>
+<div class="line-block">
+<div class="line">Database (Hobza) of interaction energies for dissociation curves of bimolecular complexes.</div>
+<div class="line">Geometries and reference interaction energies from Grafova et al. JCTC 6 2365 (2010).</div>
+<div class="line">Note that the S22by5-N-1.0 members are essentially the same geometries as S22-N (there&#8217;s trivial round-off error) but the reference interaction energies for S22by5 are of lower quality than those of S22.</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'equilibrium'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'mol1'</span></tt> five-point (0.9, 1.0, 1.2, 1.5, 2.0) <img class="math" src="_images/math/092c23b9324222964214c6e5335c98ec0a964acc.png" alt="\times R_{eq}"/> dissociation curve for molecule 1</li>
+<li>...</li>
+<li><tt class="docutils literal"><span class="pre">'mol22'</span></tt> five-point (0.9, 1.0, 1.2, 1.5, 2.0) <img class="math" src="_images/math/092c23b9324222964214c6e5335c98ec0a964acc.png" alt="\times R_{eq}"/> dissociation curve for molecule 22</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-S66"></span><p><strong>S66</strong></p>
+<div class="line-block">
+<div class="line">Database (Hobza) of interaction energies for bimolecular complexes.</div>
+<div class="line">Geometries and reference energies from Rezac et al. JCTC 7 2427 (2011).</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+<li><strong>subset</strong><ul>
+<li><tt class="docutils literal"><span class="pre">'small'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'large'</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">'HB'</span></tt> hydrogen-bonded systems</li>
+<li><tt class="docutils literal"><span class="pre">'MX'</span></tt> mixed-influence systems</li>
+<li><tt class="docutils literal"><span class="pre">'DD'</span></tt> dispersion-dominated systems</li>
+</ul>
+</li>
+</ul>
+<hr class="docutils" />
+<span class="target" id="module-SSI"></span><p><strong>SSI</strong></p>
+<div class="line-block">
+<div class="line">Database (Merz) of interaction energies for protein sidechain-sidechain interactions.</div>
+<div class="line">Geometries from Kenneth Merz Group, Univ. of Florida.</div>
+<div class="line">Reference interaction energies from &lt;Reference&gt;.</div>
+</div>
+<ul class="simple">
+<li><strong>cp</strong>  <tt class="docutils literal"><span class="pre">'off'</span></tt> || <tt class="docutils literal"><span class="pre">'on'</span></tt></li>
+<li><strong>rlxd</strong> <tt class="docutils literal"><span class="pre">'off'</span></tt></li>
+</ul>
+<hr class="docutils" />
+</div>
 
 
           </div>
@@ -289,6 +650,12 @@ Mean Absolute Dev                         0.0201
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Output</a></li>
+<li><a class="reference internal" href="#available-databases">Available Databases</a></li>
+</ul>
+
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/db.txt"
@@ -330,7 +697,7 @@ Mean Absolute Dev                         0.0201
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 22, 2012.
+      Last updated on Feb 27, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

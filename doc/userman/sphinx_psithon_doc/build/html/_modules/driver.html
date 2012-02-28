@@ -59,15 +59,22 @@
           <div class="body">
             
   <h1>Source code for driver</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Module with a *procedures* dictionary specifying available quantum</span>
+<span class="sd">chemical methods and functions driving the main quantum chemical</span>
+<span class="sd">functionality, namely single-point energies, geometry optimizations,</span>
+<span class="sd">response properties, and vibrational frequency calculations.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">PsiMod</span>
 <span class="kn">import</span> <span class="nn">input</span>
 <span class="kn">from</span> <span class="nn">proc</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">text</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">procutil</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="c">#Procedure lookup tables</span>
+
+<span class="c"># Procedure lookup tables</span>
 <span class="n">procedures</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s">&#39;energy&#39;</span> <span class="p">:</span> <span class="p">{</span>
+        <span class="s">&#39;energy&#39;</span><span class="p">:</span> <span class="p">{</span>
             <span class="s">&#39;scf&#39;</span>           <span class="p">:</span> <span class="n">run_scf</span><span class="p">,</span>
             <span class="s">&#39;mcscf&#39;</span>         <span class="p">:</span> <span class="n">run_mcscf</span><span class="p">,</span>
             <span class="s">&#39;dcft&#39;</span>          <span class="p">:</span> <span class="n">run_dcft</span><span class="p">,</span>
@@ -111,7 +118,9 @@
             <span class="s">&#39;tdhf&#39;</span>          <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
             <span class="s">&#39;cpks&#39;</span>          <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
             <span class="s">&#39;tda&#39;</span>           <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
-            <span class="s">&#39;tddft&#39;</span>         <span class="p">:</span> <span class="n">run_libfock</span>
+            <span class="s">&#39;tddft&#39;</span>         <span class="p">:</span> <span class="n">run_libfock</span><span class="p">,</span>
+            <span class="s">&#39;psimrcc&#39;</span>       <span class="p">:</span> <span class="n">run_psimrcc</span><span class="p">,</span>
+            <span class="s">&#39;psimrcc_scf&#39;</span>  <span class="p">:</span> <span class="n">run_psimrcc_scf</span>
             <span class="c"># Upon adding a method to this list, add it to the docstring in energy() below</span>
         <span class="p">},</span>
         <span class="s">&#39;gradient&#39;</span> <span class="p">:</span> <span class="p">{</span>
@@ -131,26 +140,20 @@
             <span class="c"># Upon adding a method to this list, add it to the docstring in response() below</span>
         <span class="p">}}</span>
 
+
 <div class="viewcode-block" id="energy"><a class="viewcode-back" href="../index.html#driver.energy">[docs]</a><span class="k">def</span> <span class="nf">energy</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to compute the single-point electronic energy.</span>
 
 <span class="sd">    :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.</span>
 
 <span class="sd">    :PSI variables:</span>
+
 <span class="sd">    .. envvar:: CURRENT ENERGY</span>
 <span class="sd">        CURRENT REFERENCE ENERGY</span>
 <span class="sd">        CURRENT CORRELATION ENERGY</span>
 
-<span class="sd">    **Keywords**</span>
-
-<span class="sd">    :type name: string</span>
-<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
-
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
-<span class="sd">        to be applied to the system.</span>
-
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | name                    | calls method                                                                          | </span>
+<span class="sd">    | name                    | calls method                                                                          |</span>
 <span class="sd">    +=========================+=======================================================================================+</span>
 <span class="sd">    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
@@ -182,7 +185,7 @@
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | sapt2-ct                | SAPT2 plus CT                                                                         |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | sapt2+-ct               | SAPT2+ plus CT                                                                        |   </span>
+<span class="sd">    | sapt2+-ct               | SAPT2+ plus CT                                                                        |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | sapt2+(3)-ct            | SAPT2+(3) plus CT                                                                     |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
@@ -232,7 +235,7 @@
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | adc                     | 2nd-order algebraic diagrammatic construction (ADC)                                   |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | eom-cc2                 | EOM-CC2                                                                               | </span>
+<span class="sd">    | eom-cc2                 | EOM-CC2                                                                               |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
@@ -241,7 +244,7 @@
 
 
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | name                    | calls method in Kallay&#39;s MRCC program                                                 | </span>
+<span class="sd">    | name                    | calls method in Kallay&#39;s MRCC program                                                 |</span>
 <span class="sd">    +=========================+=======================================================================================+</span>
 <span class="sd">    | mrccsd                  | CC through doubles                                                                    |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
@@ -261,50 +264,63 @@
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | mrccsdtqp(h)            | CC through quintuples with pertubative sextuples                                      |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsd(t)_l             |                                                                                       | </span>
+<span class="sd">    | mrccsd(t)_l             |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdt(q)_l            |                                                                                       | </span>
+<span class="sd">    | mrccsdt(q)_l            |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtq(p)_l           |                                                                                       | </span>
+<span class="sd">    | mrccsdtq(p)_l           |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtqp(h)_l          |                                                                                       | </span>
+<span class="sd">    | mrccsdtqp(h)_l          |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdt-1a              |                                                                                       | </span>
+<span class="sd">    | mrccsdt-1a              |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtq-1a             |                                                                                       | </span>
+<span class="sd">    | mrccsdtq-1a             |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtqp-1a            |                                                                                       | </span>
+<span class="sd">    | mrccsdtqp-1a            |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtqph-1a           |                                                                                       | </span>
+<span class="sd">    | mrccsdtqph-1a           |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdt-1b              |                                                                                       | </span>
+<span class="sd">    | mrccsdt-1b              |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtq-1b             |                                                                                       | </span>
+<span class="sd">    | mrccsdtq-1b             |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtqp-1b            |                                                                                       | </span>
+<span class="sd">    | mrccsdtqp-1b            |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtqph-1b           |                                                                                       | </span>
+<span class="sd">    | mrccsdtqph-1b           |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrcc2                   |                                                                                       | </span>
+<span class="sd">    | mrcc2                   |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrcc3                   |                                                                                       | </span>
+<span class="sd">    | mrcc3                   |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrcc4                   |                                                                                       | </span>
+<span class="sd">    | mrcc4                   |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrcc5                   |                                                                                       | </span>
+<span class="sd">    | mrcc5                   |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrcc6                   |                                                                                       | </span>
+<span class="sd">    | mrcc6                   |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdt-3               |                                                                                       | </span>
+<span class="sd">    | mrccsdt-3               |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtq-3              |                                                                                       | </span>
+<span class="sd">    | mrccsdtq-3              |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtqp-3             |                                                                                       | </span>
+<span class="sd">    | mrccsdtqp-3             |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mrccsdtqph-3            |                                                                                       | </span>
+<span class="sd">    | mrccsdtqph-3            |                                                                                       |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
+
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
+<span class="sd">        to be applied to the system.</span>
+
+<span class="sd">    :type bypass_scf: bool</span>
+<span class="sd">    :param bypass_scf: ``&#39;on&#39;`` || |dl| ``&#39;off&#39;`` |dr|</span>
+
+<span class="sd">        Indicates whether, for *name* values built atop of scf calculations,</span>
+<span class="sd">        the scf step is skipped. Suitable when special steps are taken to get</span>
+<span class="sd">        the scf to converge in an explicit preceeding scf step.</span>
+
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] Coupled-cluster singles and doubles calculation with psi code</span>
 <span class="sd">    &gt;&gt;&gt; energy(&#39;ccsd&#39;)</span>
@@ -316,12 +332,11 @@
 <span class="sd">    &gt;&gt;&gt; energy(&#39;mp4&#39;)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c"># Make sure the molecule the user provided is the active one</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;molecule&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="s">&#39;molecule&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">activate</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">])</span>
         <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">]</span>
     <span class="n">molecule</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
@@ -333,9 +348,10 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">level</span>
 
     <span class="k">try</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">][</span><span class="n">lowername</span><span class="p">](</span><span class="n">lowername</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">][</span><span class="n">lowername</span><span class="p">](</span><span class="n">lowername</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Energy method </span><span class="si">%s</span><span class="s"> not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lowername</span><span class="p">))</span>
+
 </div>
 <div class="viewcode-block" id="gradient"><a class="viewcode-back" href="../index.html#driver.gradient">[docs]</a><span class="k">def</span> <span class="nf">gradient</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function complementary to optimize(). Carries out one gradient pass,</span>
@@ -357,14 +373,14 @@
         <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;level&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">level</span>
 
     <span class="c"># 1. set the default to that of the provided name</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">lowername</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="n">lowername</span> <span class="ow">in</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">]:</span>
         <span class="n">dertype</span> <span class="o">=</span> <span class="mi">1</span>
-    <span class="k">elif</span> <span class="p">(</span><span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">lowername</span><span class="p">)):</span>
+    <span class="k">elif</span> <span class="n">lowername</span> <span class="ow">in</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">]:</span>
         <span class="n">dertype</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">energy</span>
 
     <span class="c"># 2. Check if the user passes dertype into this function</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;dertype&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="s">&#39;dertype&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">opt_dertype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dertype&#39;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">der0th</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">opt_dertype</span><span class="p">)):</span>
@@ -376,17 +392,17 @@
             <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Requested derivative level </span><span class="se">\&#39;</span><span class="s">dertype</span><span class="se">\&#39;</span><span class="s"> </span><span class="si">%s</span><span class="s"> not valid for helper function optimize.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt_dertype</span><span class="p">))</span>
 
     <span class="c"># 3. if the user provides a custom function THAT takes precendence</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;opt_func&#39;</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;func&#39;</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;func&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;opt_func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s">&#39;func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_func&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
             <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
         <span class="n">dertype</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_func&#39;</span><span class="p">]</span>
 
     <span class="c"># Summary validation</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">lowername</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">lowername</span> <span class="ow">in</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">]):</span>
         <span class="k">pass</span>
-    <span class="k">elif</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">energy</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">lowername</span><span class="p">)):</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">energy</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">lowername</span> <span class="ow">in</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">]):</span>
         <span class="k">pass</span>
     <span class="k">elif</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span><span class="p">(</span><span class="n">func</span> <span class="ow">is</span> <span class="n">energy</span><span class="p">):</span>
         <span class="k">pass</span>
@@ -395,16 +411,16 @@
             <span class="o">%</span> <span class="p">(</span><span class="n">lowername</span><span class="p">,</span> <span class="n">dertype</span><span class="p">))</span>
 
     <span class="c"># Make sure the molecule the user provided is the active one</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;molecule&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;molecule&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">activate</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">])</span>
         <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">]</span>
     <span class="n">molecule</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
     <span class="n">molecule</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
-    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">,</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">))</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">,</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">))</span>
 
     <span class="c"># S/R: Mode of operation- whether finite difference opt run in one job or files farmed out</span>
     <span class="n">opt_mode</span> <span class="o">=</span> <span class="s">&#39;continuous&#39;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;mode&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;mode&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
         <span class="n">opt_mode</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;continuous&#39;</span><span class="p">):</span>
@@ -412,7 +428,7 @@
     <span class="k">elif</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;sow&#39;</span><span class="p">):</span>
         <span class="k">pass</span>
     <span class="k">elif</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">):</span>
-        <span class="k">if</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;linkage&#39;</span><span class="p">)):</span>
+        <span class="k">if</span><span class="p">(</span><span class="s">&#39;linkage&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
             <span class="n">opt_linkage</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;linkage&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Optimize execution mode </span><span class="se">\&#39;</span><span class="s">reap</span><span class="se">\&#39;</span><span class="s"> requires a linkage option.&#39;</span><span class="p">)</span>
@@ -430,7 +446,7 @@
         <span class="c"># If not, perform finite difference of energies</span>
 
         <span class="n">opt_iter</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;opt_iter&#39;</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;opt_iter&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
             <span class="n">opt_iter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_iter&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="n">opt_iter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
@@ -441,38 +457,38 @@
         <span class="n">ndisp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">displacements</span><span class="p">)</span>
 
         <span class="c"># This version is pretty dependent on the reference geometry being last (as it is now)</span>
-        <span class="k">print</span> <span class="s">&quot; </span><span class="si">%d</span><span class="s"> displacements needed ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ndisp</span><span class="p">),</span>
+        <span class="k">print</span> <span class="s">&#39; </span><span class="si">%d</span><span class="s"> displacements needed ...&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ndisp</span><span class="p">),</span>
         <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c"># S/R: Write instructions for sow/reap procedure to output file and reap input file</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;sow&#39;</span><span class="p">):</span>
-            <span class="n">instructionsO</span>  <span class="o">=</span>   <span class="s">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">    The optimization sow/reap procedure has been selected through mode=&#39;sow&#39;. In addition</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsO</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;    to this output file (which contains no quantum chemical calculations), this job</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsO</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;    has produced a number of input files (OPT-</span><span class="si">%s</span><span class="s">-*.in) for individual components</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">opt_iter</span><span class="p">))</span>
-            <span class="n">instructionsO</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;    and a single input file (OPT-master.in) with an optimize(mode=&#39;reap&#39;) command.</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsO</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;    These files may look very peculiar since they contain processed and pickled python</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsO</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;    rather than normal input. Follow the instructions in OPT-master.in to continue.</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsO</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;    Alternatively, a single-job execution of the gradient may be accessed through</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsO</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;    the optimization wrapper option mode=&#39;continuous&#39;.</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsO</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">    The optimization sow/reap procedure has been selected through mode=&#39;sow&#39;. In addition</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsO</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;    to this output file (which contains no quantum chemical calculations), this job</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsO</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;    has produced a number of input files (OPT-</span><span class="si">%s</span><span class="s">-*.in) for individual components</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">opt_iter</span><span class="p">))</span>
+            <span class="n">instructionsO</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;    and a single input file (OPT-master.in) with an optimize(mode=&#39;reap&#39;) command.</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsO</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;    These files may look very peculiar since they contain processed and pickled python</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsO</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;    rather than normal input. Follow the instructions in OPT-master.in to continue.</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsO</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;    Alternatively, a single-job execution of the gradient may be accessed through</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsO</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;    the optimization wrapper option mode=&#39;continuous&#39;.</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="n">instructionsO</span><span class="p">)</span>
 
-            <span class="n">instructionsM</span>  <span class="o">=</span>   <span class="s">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">#    Follow the instructions below to carry out this optimization cycle.</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#    (1)  Run all of the OPT-</span><span class="si">%s</span><span class="s">-*.in input files on any variety of computer architecture.</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">opt_iter</span><span class="p">))</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#       The output file names must be as given below.</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">#    Follow the instructions below to carry out this optimization cycle.</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#    (1)  Run all of the OPT-</span><span class="si">%s</span><span class="s">-*.in input files on any variety of computer architecture.</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">opt_iter</span><span class="p">))</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#       The output file names must be as given below.</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
             <span class="k">for</span> <span class="n">rgt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndisp</span><span class="p">):</span>
-                <span class="n">pre</span> <span class="o">=</span> <span class="s">&#39;OPT-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">opt_iter</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rgt</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                <span class="n">pre</span> <span class="o">=</span> <span class="s">&#39;OPT-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">opt_iter</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rgt</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
                 <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#             psi4 -i </span><span class="si">%-27s</span><span class="s"> -o </span><span class="si">%-27s</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pre</span> <span class="o">+</span> <span class="s">&#39;.in&#39;</span><span class="p">,</span> <span class="n">pre</span> <span class="o">+</span> <span class="s">&#39;.out&#39;</span><span class="p">)</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>  <span class="s">&quot;&quot;&quot;#</span><span class="se">\n</span><span class="s">#    (2)  Gather all the resulting output files in a directory. Place input file</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#         OPT-master.in into that directory and run it. The job will be minimal in</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#         length and give summary results for the gradient step in its output file.</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#</span><span class="se">\n</span><span class="s">#    (2)  Gather all the resulting output files in a directory. Place input file</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#         OPT-master.in into that directory and run it. The job will be minimal in</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#         length and give summary results for the gradient step in its output file.</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
             <span class="k">if</span> <span class="n">opt_iter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
                 <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#             psi4 -i </span><span class="si">%-27s</span><span class="s"> -o </span><span class="si">%-27s</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;OPT-master.in&#39;</span><span class="p">,</span> <span class="s">&#39;OPT-master.out&#39;</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#             psi4 -a -i </span><span class="si">%-27s</span><span class="s"> -o </span><span class="si">%-27s</span><span class="se">\n</span><span class="s">#</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;OPT-master.in&#39;</span><span class="p">,</span> <span class="s">&#39;OPT-master.out&#39;</span><span class="p">)</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#    After each optimization iteration, the OPT-master.in file is overwritten so return here</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#    overwritten and so maintains a history of the job. To use the (binary) optimizer</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">instructionsM</span> <span class="o">+=</span>     <span class="s">&quot;&quot;&quot;#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#    After each optimization iteration, the OPT-master.in file is overwritten so return here</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#    overwritten and so maintains a history of the job. To use the (binary) optimizer</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
+            <span class="n">instructionsM</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
 
             <span class="n">fmaster</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;OPT-master.in&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
             <span class="n">fmaster</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;# This is a psi4 input file auto-generated from the gradient() wrapper.</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
@@ -484,23 +500,23 @@
             <span class="n">fmaster</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
         <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">displacement</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">displacements</span><span class="p">):</span>
-            <span class="n">rfile</span> <span class="o">=</span> <span class="s">&#39;OPT-</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt_iter</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">rfile</span> <span class="o">=</span> <span class="s">&#39;OPT-</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt_iter</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="c"># Build string of title banner</span>
             <span class="n">banners</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
             <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">n&#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
-            <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;banner(&#39; Gradient </span><span class="si">%d</span><span class="s"> Computation: Displacement </span><span class="si">%d</span><span class="s">&#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt_iter</span><span class="p">,</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;banner(&#39; Gradient </span><span class="si">%d</span><span class="s"> Computation: Displacement </span><span class="si">%d</span><span class="s">&#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt_iter</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
             <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">n&#39;)</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;continuous&#39;</span><span class="p">):</span>
                 <span class="c"># Print information to output.dat</span>
-                <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
-                <span class="n">banner</span><span class="p">(</span><span class="s">&quot;Loading displacement </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">))</span>
+                <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                <span class="n">banner</span><span class="p">(</span><span class="s">&#39;Loading displacement </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">))</span>
 
                 <span class="c"># Print information to the screen</span>
-                <span class="k">print</span> <span class="s">&quot; </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="k">print</span> <span class="s">&#39; </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">ndisp</span><span class="p">:</span>
-                    <span class="k">print</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
+                    <span class="k">print</span> <span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">,</span>
 
                 <span class="c"># Load in displacement into the active molecule</span>
                 <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">displacement</span><span class="p">)</span>
@@ -508,7 +524,7 @@
                 <span class="c"># Perform the energy calculation</span>
                 <span class="c">#E = func(lowername, **kwargs)</span>
                 <span class="n">func</span><span class="p">(</span><span class="n">lowername</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-                <span class="n">E</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&quot;CURRENT ENERGY&quot;</span><span class="p">)</span>
+                <span class="n">E</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">)</span>
                 <span class="c">#E = func(**kwargs)</span>
 
                 <span class="c"># Save the energy</span>
@@ -527,7 +543,7 @@
 
                 <span class="c"># S/R: Prepare function call and energy save</span>
                 <span class="n">freagent</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;electronic_energy = </span><span class="si">%s</span><span class="s">(&#39;</span><span class="si">%s</span><span class="s">&#39;, **kwargs)</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="n">lowername</span><span class="p">))</span>
-                <span class="n">freagent</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">nGRADIENT RESULT: computation </span><span class="si">%d</span><span class="s"> for item </span><span class="si">%d</span><span class="s"> &quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+                <span class="n">freagent</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">nGRADIENT RESULT: computation </span><span class="si">%d</span><span class="s"> for item </span><span class="si">%d</span><span class="s"> &quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
                 <span class="n">freagent</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;yields electronic energy </span><span class="si">%20.12f</span><span class="se">\\</span><span class="s">n&#39; % (electronic_energy))</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span><span class="p">)</span>
                 <span class="n">freagent</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
@@ -546,16 +562,16 @@
                         <span class="n">line</span> <span class="o">=</span> <span class="n">freagent</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>
                             <span class="k">if</span> <span class="n">E</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
-                               <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Aborting upon output file </span><span class="se">\&#39;</span><span class="si">%s</span><span class="s">.out</span><span class="se">\&#39;</span><span class="s"> has no </span><span class="si">%s</span><span class="s"> RESULT line.</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rfile</span><span class="p">,</span> <span class="s">&#39;GRADIENT&#39;</span><span class="p">))</span>
+                                <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Aborting upon output file </span><span class="se">\&#39;</span><span class="si">%s</span><span class="s">.out</span><span class="se">\&#39;</span><span class="s"> has no </span><span class="si">%s</span><span class="s"> RESULT line.</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rfile</span><span class="p">,</span> <span class="s">&#39;GRADIENT&#39;</span><span class="p">))</span>
                             <span class="k">break</span>
                         <span class="n">s</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
                         <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s">&#39;GRADIENT&#39;</span><span class="p">,</span> <span class="s">&#39;RESULT:&#39;</span><span class="p">,</span> <span class="s">&#39;computation&#39;</span><span class="p">]):</span>
                             <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">!=</span> <span class="n">opt_linkage</span><span class="p">:</span>
-                               <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Output file </span><span class="se">\&#39;</span><span class="si">%s</span><span class="s">.out</span><span class="se">\&#39;</span><span class="s"> has linkage </span><span class="si">%s</span><span class="s"> incompatible with master.in linkage </span><span class="si">%s</span><span class="s">.&#39;</span>
-                                   <span class="o">%</span> <span class="p">(</span><span class="n">rfile</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="n">opt_linkage</span><span class="p">)))</span>
-                            <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-                               <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Output file </span><span class="se">\&#39;</span><span class="si">%s</span><span class="s">.out</span><span class="se">\&#39;</span><span class="s"> has nominal affiliation </span><span class="si">%s</span><span class="s"> incompatible with item </span><span class="si">%s</span><span class="s">.&#39;</span>
-                                   <span class="o">%</span> <span class="p">(</span><span class="n">rfile</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)))</span>
+                                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Output file </span><span class="se">\&#39;</span><span class="si">%s</span><span class="s">.out</span><span class="se">\&#39;</span><span class="s"> has linkage </span><span class="si">%s</span><span class="s"> incompatible with master.in linkage </span><span class="si">%s</span><span class="s">.&#39;</span>
+                                    <span class="o">%</span> <span class="p">(</span><span class="n">rfile</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">3</span><span class="p">]),</span> <span class="nb">str</span><span class="p">(</span><span class="n">opt_linkage</span><span class="p">)))</span>
+                            <span class="k">if</span> <span class="n">s</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                                <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Output file </span><span class="se">\&#39;</span><span class="si">%s</span><span class="s">.out</span><span class="se">\&#39;</span><span class="s"> has nominal affiliation </span><span class="si">%s</span><span class="s"> incompatible with item </span><span class="si">%s</span><span class="s">.&#39;</span>
+                                    <span class="o">%</span> <span class="p">(</span><span class="n">rfile</span><span class="p">,</span> <span class="n">s</span><span class="p">[</span><span class="mi">6</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
                             <span class="k">if</span> <span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">10</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="s">&#39;electronic&#39;</span><span class="p">,</span> <span class="s">&#39;energy&#39;</span><span class="p">]):</span>
                                 <span class="n">E</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="mi">10</span><span class="p">])</span>
                                 <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> RESULT: electronic energy = </span><span class="si">%20.12f</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s">&#39;GRADIENT&#39;</span><span class="p">,</span> <span class="n">E</span><span class="p">))</span>
@@ -574,6 +590,7 @@
 
         <span class="c"># The last item in the list is the reference energy, return it</span>
         <span class="k">return</span> <span class="n">energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
 </div>
 <div class="viewcode-block" id="response"><a class="viewcode-back" href="../index.html#driver.response">[docs]</a><span class="k">def</span> <span class="nf">response</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to compute linear response properties.</span>
@@ -586,23 +603,21 @@
 
 <span class="sd">       - Check if ther&#39;re some PSI variables that ought to be set.</span>
 
-<span class="sd">    **Keywords**</span>
-
-<span class="sd">    :type name: string</span>
-<span class="sd">    :param name: ``&#39;ccsd&#39;`` || etc.</span>
-
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
-<span class="sd">        to be applied to the system.</span>
-
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | name                    | calls method                                                                          | </span>
+<span class="sd">    | name                    | calls method                                                                          |</span>
 <span class="sd">    +=========================+=======================================================================================+</span>
 <span class="sd">    | cc2                     | 2nd-order approximate CCSD                                                            |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :type name: string</span>
+<span class="sd">    :param name: ``&#39;ccsd&#39;`` || etc.</span>
+
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
+<span class="sd">        to be applied to the system.</span>
+
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] CCSD-LR properties calculation</span>
 <span class="sd">    &gt;&gt;&gt; response(&#39;ccsd&#39;)</span>
@@ -612,19 +627,20 @@
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c"># Make sure the molecule the user provided is the active one</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;molecule&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;molecule&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">activate</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">])</span>
         <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">]</span>
     <span class="n">molecule</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
     <span class="n">molecule</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
-    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">,</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">))</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">,</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">))</span>
 
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;response&#39;</span><span class="p">][</span><span class="n">lowername</span><span class="p">](</span><span class="n">lowername</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Response method </span><span class="si">%s</span><span class="s"> not available.&#39;</span> <span class="o">%</span><span class="p">(</span><span class="n">lowername</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Response method </span><span class="si">%s</span><span class="s"> not available.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">lowername</span><span class="p">))</span>
+
 </div>
-<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../index.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<div class="viewcode-block" id="optimize"><a class="viewcode-back" href="../opt.html#driver.optimize">[docs]</a><span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to perform a geometry optimization.</span>
 
 <span class="sd">    :aliases: opt()</span>
@@ -642,22 +658,34 @@
 
 <span class="sd">       - Need to check that all methods do return electronic energy. I think gradient got changed at one point.</span>
 
-<span class="sd">    **Keywords**</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | name                    | calls method                                                                          |</span>
+<span class="sd">    +=========================+=======================================================================================+</span>
+<span class="sd">    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | ccsd(t)                 | CCSD with perturbative triples                                                        |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
+<span class="sd">    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |</span>
+<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
 
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
-<span class="sd">        to be applied to the database. May be any valid argument to </span>
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
+<span class="sd">        to be applied to the database. May be any valid argument to</span>
 <span class="sd">        :py:func:`driver.energy`.</span>
 
 <span class="sd">    :type func: function</span>
 <span class="sd">    :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``</span>
-<span class="sd">    </span>
+
 <span class="sd">        Indicates the type of calculation to be performed on the molecule.</span>
 <span class="sd">        The default dertype accesses``&#39;gradient&#39;`` or ``&#39;energy&#39;``, while</span>
 <span class="sd">        ``&#39;cbs&#39;`` performs a multistage finite difference calculation.</span>
-<span class="sd">        If a nested series of python functions is intended (see :ref:`sec_intercalls`),</span>
+<span class="sd">        If a nested series of python functions is intended (see `Function Intercalls`_),</span>
 <span class="sd">        use keyword ``opt_func`` instead of ``func``.</span>
 
 <span class="sd">    :type mode: string</span>
@@ -675,21 +703,7 @@
 <span class="sd">        Indicates whether analytic (if available) or finite difference</span>
 <span class="sd">        optimization is to be performed.</span>
 
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | name                    | calls method                                                                          | </span>
-<span class="sd">    +=========================+=======================================================================================+</span>
-<span class="sd">    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | ccsd(t)                 | CCSD with perturbative triples                                                        |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-<span class="sd">    | eom-ccsd                | equation of motion (EOM) CCSD                                                         |</span>
-<span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
-
-<span class="sd">    **Examples**</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] Analytic scf optimization</span>
 <span class="sd">    &gt;&gt;&gt; optimize(&#39;scf&#39;)</span>
@@ -704,11 +718,11 @@
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="n">full_hess_every</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&quot;FULL_HESS_EVERY&quot;</span><span class="p">)</span>
+    <span class="n">full_hess_every</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;FULL_HESS_EVERY&#39;</span><span class="p">)</span>
     <span class="n">steps_since_last_hessian</span> <span class="o">=</span> <span class="mi">0</span>
 
     <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;opt_iter&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;opt_iter&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_iter&#39;</span><span class="p">]</span>
 
     <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s">&#39;GEOM_MAXITER&#39;</span><span class="p">):</span>
@@ -718,43 +732,43 @@
         <span class="n">thisenergy</span> <span class="o">=</span> <span class="n">gradient</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
         <span class="c"># S/R: Quit after getting new displacements or if forming gradient fails</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;mode&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;sow&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;mode&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;sow&#39;</span><span class="p">):</span>
             <span class="k">return</span> <span class="mf">0.0</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;mode&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">thisenergy</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;mode&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">thisenergy</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">):</span>
             <span class="k">return</span> <span class="mf">0.0</span>
 
         <span class="c"># S/R: Move opt data file from last pass into namespace for this pass</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;mode&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">n</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;mode&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">n</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">):</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">IOManager</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span><span class="o">.</span><span class="n">set_specific_retention</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">IOManager</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span><span class="o">.</span><span class="n">set_specific_path</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;./&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;opt_datafile&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="s">&#39;opt_datafile&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
                 <span class="n">restartfile</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s">&#39;opt_datafile&#39;</span><span class="p">)</span>
                 <span class="k">if</span><span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">me</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
                     <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">restartfile</span><span class="p">,</span> <span class="n">get_psifile</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
 
         <span class="c"># compute Hessian as requested; frequency wipes out gradient so stash it</span>
         <span class="k">if</span> <span class="p">((</span><span class="n">full_hess_every</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="n">steps_since_last_hessian</span> <span class="o">==</span> <span class="n">full_hess_every</span><span class="p">):</span>
-          <span class="n">G</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_gradient</span><span class="p">()</span>
-          <span class="n">PsiMod</span><span class="o">.</span><span class="n">IOManager</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span><span class="o">.</span><span class="n">set_specific_retention</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
-          <span class="n">PsiMod</span><span class="o">.</span><span class="n">IOManager</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span><span class="o">.</span><span class="n">set_specific_path</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;./&#39;</span><span class="p">)</span>
-          <span class="n">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-          <span class="n">steps_since_last_hessian</span> <span class="o">=</span> <span class="mi">0</span>
-          <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_gradient</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
-          <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;CART_HESS_READ&quot;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="n">G</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_gradient</span><span class="p">()</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">IOManager</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span><span class="o">.</span><span class="n">set_specific_retention</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">IOManager</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span><span class="o">.</span><span class="n">set_specific_path</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;./&#39;</span><span class="p">)</span>
+            <span class="n">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">steps_since_last_hessian</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_gradient</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;CART_HESS_READ&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-          <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;CART_HESS_READ&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;CART_HESS_READ&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
 
         <span class="n">steps_since_last_hessian</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="c"># Take step</span>
         <span class="k">if</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">optking</span><span class="p">()</span> <span class="o">==</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">PsiReturnType</span><span class="o">.</span><span class="n">EndLoop</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&quot;Optimizer: Optimization complete!&quot;</span>
+            <span class="k">print</span> <span class="s">&#39;Optimizer: Optimization complete!&#39;</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span><span class="o">.</span><span class="n">print_in_input_format</span><span class="p">()</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">opt_clean</span><span class="p">()</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">clean</span><span class="p">()</span>
 
             <span class="c"># S/R: Clean up opt input file</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;mode&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="s">&#39;mode&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">):</span>
                 <span class="n">fmaster</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;OPT-master.in&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
                 <span class="n">fmaster</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;# This is a psi4 input file auto-generated from the gradient() wrapper.</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
                 <span class="n">fmaster</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;# Optimization complete!</span><span class="se">\n\n</span><span class="s">&#39;</span><span class="p">)</span>
@@ -762,17 +776,18 @@
             <span class="k">return</span> <span class="n">thisenergy</span>
 
         <span class="c"># S/R: Preserve opt data file for next pass and switch modes to get new displacements</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;mode&#39;</span><span class="p">))</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;mode&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;reap&#39;</span><span class="p">):</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_datafile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_psifile</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
             <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;sow&#39;</span>
 
         <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
 
-    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">Optimizer: Did not converge!&quot;</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">Optimizer: Did not converge!&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="mf">0.0</span>
 
 <span class="c">##  Aliases  ##</span></div>
 <span class="n">opt</span> <span class="o">=</span> <span class="n">optimize</span>
+
 
 <div class="viewcode-block" id="parse_arbitrary_order"><a class="viewcode-back" href="../index.html#driver.parse_arbitrary_order">[docs]</a><span class="k">def</span> <span class="nf">parse_arbitrary_order</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to parse name string into a method family like CI or MRCC and specific</span>
@@ -788,41 +803,41 @@
 
         <span class="c"># A negative order indicates perturbative method</span>
         <span class="n">methods</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s">&quot;sd&quot;</span>          <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSD&quot;</span>         <span class="p">},</span>
-            <span class="s">&quot;sdt&quot;</span>         <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDT&quot;</span>        <span class="p">},</span>
-            <span class="s">&quot;sdtq&quot;</span>        <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQ&quot;</span>       <span class="p">},</span>
-            <span class="s">&quot;sdtqp&quot;</span>       <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQP&quot;</span>      <span class="p">},</span>
-            <span class="s">&quot;sdtqph&quot;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQPH&quot;</span>     <span class="p">},</span>
-            <span class="s">&quot;sd(t)&quot;</span>       <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSD(T)&quot;</span>      <span class="p">},</span>
-            <span class="s">&quot;sdt(q)&quot;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDT(Q)&quot;</span>     <span class="p">},</span>
-            <span class="s">&quot;sdtq(p)&quot;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQ(P)&quot;</span>    <span class="p">},</span>
-            <span class="s">&quot;sdtqp(h)&quot;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQP(H)&quot;</span>   <span class="p">},</span>
-            <span class="s">&quot;sd(t)_l&quot;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSD(T)_L&quot;</span>    <span class="p">},</span>
-            <span class="s">&quot;sdt(q)_l&quot;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDT(Q)_L&quot;</span>   <span class="p">},</span>
-            <span class="s">&quot;sdtq(p)_l&quot;</span>   <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQ(P)_L&quot;</span>  <span class="p">},</span>
-            <span class="s">&quot;sdtqp(h)_l&quot;</span>  <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQP(H)_L&quot;</span> <span class="p">},</span>
-            <span class="s">&quot;sdt-1a&quot;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDT-1a&quot;</span>     <span class="p">},</span>
-            <span class="s">&quot;sdtq-1a&quot;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQ-1a&quot;</span>    <span class="p">},</span>
-            <span class="s">&quot;sdtqp-1a&quot;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQP-1a&quot;</span>   <span class="p">},</span>
-            <span class="s">&quot;sdtqph-1a&quot;</span>   <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQPH-1a&quot;</span>  <span class="p">},</span>
-            <span class="s">&quot;sdt-1b&quot;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDT-1b&quot;</span>     <span class="p">},</span>
-            <span class="s">&quot;sdtq-1b&quot;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQ-1b&quot;</span>    <span class="p">},</span>
-            <span class="s">&quot;sdtqp-1b&quot;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQP-1b&quot;</span>   <span class="p">},</span>
-            <span class="s">&quot;sdtqph-1b&quot;</span>   <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQPH-1b&quot;</span>  <span class="p">},</span>
-            <span class="s">&quot;2&quot;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">2</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CC2&quot;</span>          <span class="p">},</span>
-            <span class="s">&quot;3&quot;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CC3&quot;</span>          <span class="p">},</span>
-            <span class="s">&quot;4&quot;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CC4&quot;</span>          <span class="p">},</span>
-            <span class="s">&quot;5&quot;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CC5&quot;</span>          <span class="p">},</span>
-            <span class="s">&quot;6&quot;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CC6&quot;</span>          <span class="p">},</span>
-            <span class="s">&quot;sdt-3&quot;</span>       <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDT-3&quot;</span>      <span class="p">},</span>
-            <span class="s">&quot;sdtq-3&quot;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQ-3&quot;</span>     <span class="p">},</span>
-            <span class="s">&quot;sdtqp-3&quot;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQP-3&quot;</span>    <span class="p">},</span>
-            <span class="s">&quot;sdtqph-3&quot;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&quot;method&quot;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&quot;order&quot;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&quot;fullname&quot;</span> <span class="p">:</span> <span class="s">&quot;CCSDTQPH-3&quot;</span>   <span class="p">}</span>
+            <span class="s">&#39;sd&#39;</span>          <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSD&#39;</span>         <span class="p">},</span>
+            <span class="s">&#39;sdt&#39;</span>         <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDT&#39;</span>        <span class="p">},</span>
+            <span class="s">&#39;sdtq&#39;</span>        <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQ&#39;</span>       <span class="p">},</span>
+            <span class="s">&#39;sdtqp&#39;</span>       <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQP&#39;</span>      <span class="p">},</span>
+            <span class="s">&#39;sdtqph&#39;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQPH&#39;</span>     <span class="p">},</span>
+            <span class="s">&#39;sd(t)&#39;</span>       <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSD(T)&#39;</span>      <span class="p">},</span>
+            <span class="s">&#39;sdt(q)&#39;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDT(Q)&#39;</span>     <span class="p">},</span>
+            <span class="s">&#39;sdtq(p)&#39;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQ(P)&#39;</span>    <span class="p">},</span>
+            <span class="s">&#39;sdtqp(h)&#39;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQP(H)&#39;</span>   <span class="p">},</span>
+            <span class="s">&#39;sd(t)_l&#39;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSD(T)_L&#39;</span>    <span class="p">},</span>
+            <span class="s">&#39;sdt(q)_l&#39;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDT(Q)_L&#39;</span>   <span class="p">},</span>
+            <span class="s">&#39;sdtq(p)_l&#39;</span>   <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQ(P)_L&#39;</span>  <span class="p">},</span>
+            <span class="s">&#39;sdtqp(h)_l&#39;</span>  <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span> <span class="o">-</span><span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQP(H)_L&#39;</span> <span class="p">},</span>
+            <span class="s">&#39;sdt-1a&#39;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDT-1a&#39;</span>     <span class="p">},</span>
+            <span class="s">&#39;sdtq-1a&#39;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQ-1a&#39;</span>    <span class="p">},</span>
+            <span class="s">&#39;sdtqp-1a&#39;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQP-1a&#39;</span>   <span class="p">},</span>
+            <span class="s">&#39;sdtqph-1a&#39;</span>   <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQPH-1a&#39;</span>  <span class="p">},</span>
+            <span class="s">&#39;sdt-1b&#39;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDT-1b&#39;</span>     <span class="p">},</span>
+            <span class="s">&#39;sdtq-1b&#39;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQ-1b&#39;</span>    <span class="p">},</span>
+            <span class="s">&#39;sdtqp-1b&#39;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQP-1b&#39;</span>   <span class="p">},</span>
+            <span class="s">&#39;sdtqph-1b&#39;</span>   <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQPH-1b&#39;</span>  <span class="p">},</span>
+            <span class="s">&#39;2&#39;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CC2&#39;</span>          <span class="p">},</span>
+            <span class="s">&#39;3&#39;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CC3&#39;</span>          <span class="p">},</span>
+            <span class="s">&#39;4&#39;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CC4&#39;</span>          <span class="p">},</span>
+            <span class="s">&#39;5&#39;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CC5&#39;</span>          <span class="p">},</span>
+            <span class="s">&#39;6&#39;</span>           <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CC6&#39;</span>          <span class="p">},</span>
+            <span class="s">&#39;sdt-3&#39;</span>       <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDT-3&#39;</span>      <span class="p">},</span>
+            <span class="s">&#39;sdtq-3&#39;</span>      <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQ-3&#39;</span>     <span class="p">},</span>
+            <span class="s">&#39;sdtqp-3&#39;</span>     <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQP-3&#39;</span>    <span class="p">},</span>
+            <span class="s">&#39;sdtqph-3&#39;</span>    <span class="p">:</span> <span class="p">{</span> <span class="s">&#39;method&#39;</span> <span class="p">:</span> <span class="mi">8</span><span class="p">,</span> <span class="s">&#39;order&#39;</span> <span class="p">:</span>  <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;fullname&#39;</span> <span class="p">:</span> <span class="s">&#39;CCSDTQPH-3&#39;</span>   <span class="p">}</span>
         <span class="p">}</span>
 
         <span class="c"># looks for &#39;sdt(q)&#39; in dictionary</span>
-        <span class="k">if</span> <span class="n">methods</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">ccfullname</span><span class="p">):</span>
-            <span class="k">return</span> <span class="s">&quot;mrcc&quot;</span><span class="p">,</span> <span class="n">methods</span><span class="p">[</span><span class="n">ccfullname</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">ccfullname</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">&#39;mrcc&#39;</span><span class="p">,</span> <span class="n">methods</span><span class="p">[</span><span class="n">ccfullname</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;MRCC method </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s"> invalid.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">namelower</span><span class="p">))</span>
 
@@ -842,43 +857,34 @@
             <span class="k">return</span> <span class="n">namelower</span><span class="p">,</span> <span class="bp">None</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">namelower</span><span class="p">,</span> <span class="bp">None</span>
+
 </div>
 <div class="viewcode-block" id="frequency"><a class="viewcode-back" href="../index.html#driver.frequency">[docs]</a><span class="k">def</span> <span class="nf">frequency</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to compute harmonic vibrational frequencies.</span>
 
-<span class="sd">    :aliases: frequency(), freq()</span>
+<span class="sd">    :aliases: frequencies(), freq()</span>
 
 <span class="sd">    :returns: (*float*) Total electronic energy in Hartrees.</span>
 
-<span class="sd">    :PSI variables:</span>
-<span class="sd">    .. envvar:: &lt;PSI VARIABLE SET BY FUNCTION&gt;</span>
-<span class="sd">        &lt;ANOTHER PSI VARIABLE WITH nonstandard PORTION OF NAME&gt;</span>
-
-<span class="sd">    .. note:: &lt;Notes for the user</span>
-<span class="sd">        of an informative nature.&gt;</span>
-
-<span class="sd">    .. warning:: &lt;Notes for the user</span>
-<span class="sd">        of a cautionary nature.&gt;</span>
-
 <span class="sd">    .. caution:: Some features are not yet implemented. Buy a developer a coffee.</span>
 
-<span class="sd">       - RAK, why are you adding OPTKING options as GLOBALS? (And should they be Py-side not C-side options.)</span>
+<span class="sd">       - RAK, why are you adding OPTKING options as GLOBALS? And shouldn&#39;t they be Py-side not C-side options?</span>
 
-<span class="sd">       - Put in a dictionary, so IRREPS can be called by point group or &#39;all&#39;</span>
+<span class="sd">       - Put in a dictionary, so IRREPS can be called by symmetry element or &#39;all&#39;</span>
 
-<span class="sd">    **Keywords**</span>
+<span class="sd">       - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.</span>
 
 <span class="sd">    :type name: string</span>
 <span class="sd">    :param name: ``&#39;scf&#39;`` || ``&#39;df-mp2&#39;`` || ``&#39;ci5&#39;`` || etc.</span>
 
-<span class="sd">        First argument, usually unlabeled. Indicates the computational method </span>
+<span class="sd">        First argument, usually unlabeled. Indicates the computational method</span>
 <span class="sd">        to be applied to the system.</span>
 
 <span class="sd">    :type dertype: dertype</span>
 <span class="sd">    :param dertype: |dl| ``&#39;hessian&#39;`` |dr| || ``&#39;gradient&#39;`` || ``&#39;energy&#39;``</span>
 
 <span class="sd">        Indicates whether analytic (if available- they&#39;re not), finite</span>
-<span class="sd">        difference of gradients (if available) or finite difference of </span>
+<span class="sd">        difference of gradients (if available) or finite difference of</span>
 <span class="sd">        energies is to be performed.</span>
 
 <span class="sd">    :type irrep: int</span>
@@ -888,7 +894,7 @@
 <span class="sd">        computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.</span>
 <span class="sd">        ``-1`` indicates a full frequency calculation.</span>
 
-<span class="sd">    **Examples**</span>
+<span class="sd">    :examples:</span>
 
 <span class="sd">    &gt;&gt;&gt; # [1] &lt;example description&gt;</span>
 <span class="sd">    &gt;&gt;&gt; &lt;example python command&gt;</span>
@@ -897,43 +903,42 @@
 <span class="sd">    &gt;&gt;&gt; frequencies(&#39;scf&#39;, dertype=1, irrep=4)</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
     <span class="c"># Make sure the molecule the user provided is the active one</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;molecule&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;molecule&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">activate</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">])</span>
         <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;molecule&#39;</span><span class="p">]</span>
     <span class="n">molecule</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
     <span class="n">molecule</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
-    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">,</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&quot;BASIS&quot;</span><span class="p">))</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">,</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">))</span>
 
-    <span class="n">types</span> <span class="o">=</span> <span class="p">[</span> <span class="s">&quot;energy&quot;</span><span class="p">,</span> <span class="s">&quot;gradient&quot;</span><span class="p">,</span> <span class="s">&quot;hessian&quot;</span> <span class="p">]</span>
+    <span class="n">types</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;energy&#39;</span><span class="p">,</span> <span class="s">&#39;gradient&#39;</span><span class="p">,</span> <span class="s">&#39;hessian&#39;</span><span class="p">]</span>
 
     <span class="n">dertype</span> <span class="o">=</span> <span class="mi">2</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;dertype&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s">&#39;dertype&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">dertype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dertype&#39;</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">procedures</span><span class="p">[</span><span class="n">types</span><span class="p">[</span><span class="n">dertype</span><span class="p">]]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">lowername</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&quot;Frequencies: dertype = </span><span class="si">%d</span><span class="s"> for frequencies is not available, switching to automatic determination.&quot;</span> <span class="o">%</span> <span class="n">dertype</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">lowername</span> <span class="ow">in</span> <span class="n">procedures</span><span class="p">[</span><span class="n">types</span><span class="p">[</span><span class="n">dertype</span><span class="p">]]):</span>
+            <span class="k">print</span> <span class="s">&#39;Frequencies: dertype = </span><span class="si">%d</span><span class="s"> for frequencies is not available, switching to automatic determination.&#39;</span> <span class="o">%</span> <span class="n">dertype</span>
             <span class="n">dertype</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;irrep&#39;</span><span class="p">)):</span>
-        <span class="n">irrep</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;irrep&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="c"># externally, A1 irrep is 1; internally 0</span>
+    <span class="k">if</span> <span class="s">&#39;irrep&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
+        <span class="n">irrep</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;irrep&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c"># externally, A1 irrep is 1; internally 0</span>
     <span class="k">else</span><span class="p">:</span>
-      <span class="n">irrep</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span> <span class="c"># -1 implies do all irreps</span>
+        <span class="n">irrep</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c"># -1 implies do all irreps</span>
 
     <span class="c"># By default, set func to the energy function</span>
     <span class="n">func</span> <span class="o">=</span> <span class="n">energy</span>
     <span class="n">func_existed</span> <span class="o">=</span> <span class="bp">False</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;func&#39;</span><span class="p">)):</span>
+    <span class="k">if</span> <span class="s">&#39;func&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;func&#39;</span><span class="p">]</span>
         <span class="n">func_existed</span> <span class="o">=</span> <span class="bp">True</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="s">&#39;dertype&#39;</span><span class="p">)</span> <span class="o">==</span> <span class="bp">False</span> <span class="ow">or</span> <span class="n">dertype</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;hessian&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">lowername</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span><span class="p">(</span><span class="s">&#39;dertype&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">or</span> <span class="n">dertype</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">lowername</span> <span class="ow">in</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;hessian&#39;</span><span class="p">]:</span>
             <span class="n">dertype</span> <span class="o">=</span> <span class="mi">2</span>
-        <span class="k">elif</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">lowername</span><span class="p">):</span>
+        <span class="k">elif</span> <span class="n">lowername</span> <span class="ow">in</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">]:</span>
             <span class="n">dertype</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">dertype</span> <span class="o">=</span> <span class="mi">0</span>
@@ -945,7 +950,7 @@
         <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span><span class="o">.</span><span class="n">energy</span><span class="p">()</span>
     <span class="k">elif</span> <span class="p">(</span><span class="n">dertype</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">func_existed</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
         <span class="c"># Ok, we&#39;re doing frequencies by gradients</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="s">&quot;Performing finite difference by gradient calculations&quot;</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="s">&#39;Performing finite difference by gradient calculations&#39;</span>
         <span class="k">print</span> <span class="n">info</span>
 
         <span class="n">func</span> <span class="o">=</span> <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">][</span><span class="n">lowername</span><span class="p">]</span>
@@ -957,7 +962,7 @@
         <span class="n">molecule</span><span class="o">.</span><span class="n">fix_orientation</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
 
         <span class="n">ndisp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">displacements</span><span class="p">)</span>
-        <span class="k">print</span> <span class="s">&quot; </span><span class="si">%d</span><span class="s"> displacements needed.&quot;</span> <span class="o">%</span> <span class="n">ndisp</span>
+        <span class="k">print</span> <span class="s">&#39; </span><span class="si">%d</span><span class="s"> displacements needed.&#39;</span> <span class="o">%</span> <span class="n">ndisp</span>
 
         <span class="c">#print displacements to output.dat</span>
         <span class="c">#for n, displacement in enumerate(displacements):</span>
@@ -966,11 +971,11 @@
         <span class="n">gradients</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">displacement</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">displacements</span><span class="p">):</span>
             <span class="c"># Print information to output.dat</span>
-            <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
-            <span class="n">banner</span><span class="p">(</span><span class="s">&quot;Loading displacement </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">))</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">banner</span><span class="p">(</span><span class="s">&#39;Loading displacement </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">))</span>
 
             <span class="c"># Print information to the screen</span>
-            <span class="k">print</span> <span class="s">&quot;    displacement </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39;    displacement </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="c"># Load in displacement into the active molecule (xyz coordinates only)</span>
             <span class="n">molecule</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">displacement</span><span class="p">)</span>
@@ -987,16 +992,16 @@
 
         <span class="n">PsiMod</span><span class="o">.</span><span class="n">fd_freq_1</span><span class="p">(</span><span class="n">gradients</span><span class="p">,</span> <span class="n">irrep</span><span class="p">)</span>
 
-        <span class="k">print</span> <span class="s">&quot; Computation complete.&quot;</span>
+        <span class="k">print</span> <span class="s">&#39; Computation complete.&#39;</span>
 
         <span class="c"># TODO: These need to be restored to the user specified setting</span>
         <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span><span class="o">.</span><span class="n">fix_orientation</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
         <span class="c"># But not this one, it always goes back to True</span>
         <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span><span class="o">.</span><span class="n">reinterpret_coordentry</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
 
-    <span class="k">else</span><span class="p">:</span> <span class="c"># Assume energy points</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c"># Assume energy points</span>
         <span class="c"># If not, perform finite difference of energies</span>
-        <span class="n">info</span> <span class="o">=</span> <span class="s">&quot;Performing finite difference calculations by energies&quot;</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="s">&#39;Performing finite difference calculations by energies&#39;</span>
         <span class="k">print</span> <span class="n">info</span>
 
         <span class="c"># Obtain list of displacements</span>
@@ -1007,15 +1012,15 @@
         <span class="n">ndisp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">displacements</span><span class="p">)</span>
 
         <span class="c"># This version is pretty dependent on the reference geometry being last (as it is now)</span>
-        <span class="k">print</span> <span class="s">&quot; </span><span class="si">%d</span><span class="s"> displacements needed.&quot;</span> <span class="o">%</span> <span class="n">ndisp</span>
+        <span class="k">print</span> <span class="s">&#39; </span><span class="si">%d</span><span class="s"> displacements needed.&#39;</span> <span class="o">%</span> <span class="n">ndisp</span>
         <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">displacement</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">displacements</span><span class="p">):</span>
             <span class="c"># Print information to output.dat</span>
-            <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
-            <span class="n">banner</span><span class="p">(</span><span class="s">&quot;Loading displacement </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">))</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+            <span class="n">banner</span><span class="p">(</span><span class="s">&#39;Loading displacement </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">))</span>
 
             <span class="c"># Print information to the screen</span>
-            <span class="k">print</span> <span class="s">&quot;    displacement </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">print</span> <span class="s">&#39;    displacement </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
             <span class="c"># Load in displacement into the active molecule</span>
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">displacement</span><span class="p">)</span>
@@ -1032,7 +1037,7 @@
         <span class="c"># Obtain the gradient. This function stores the gradient into the reference wavefunction.</span>
         <span class="n">PsiMod</span><span class="o">.</span><span class="n">fd_freq_0</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">irrep</span><span class="p">)</span>
 
-        <span class="k">print</span> <span class="s">&quot; Computation complete.&quot;</span>
+        <span class="k">print</span> <span class="s">&#39; Computation complete.&#39;</span>
 
         <span class="c"># TODO: These need to be restored to the user specified setting</span>
         <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span><span class="o">.</span><span class="n">fix_orientation</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
@@ -1042,17 +1047,18 @@
         <span class="c"># The last item in the list is the reference energy, return it</span>
         <span class="k">return</span> <span class="n">energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
-<span class="c">## Aliases ##</span></div>
+<span class="c">##  Aliases  ##</span></div>
 <span class="n">frequencies</span> <span class="o">=</span> <span class="n">frequency</span>
 <span class="n">freq</span> <span class="o">=</span> <span class="n">frequency</span>
+
 
 <span class="c"># hessian to be changed later to compute force constants</span>
 <div class="viewcode-block" id="hessian"><a class="viewcode-back" href="../index.html#driver.hessian">[docs]</a><span class="k">def</span> <span class="nf">hessian</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function to compute force constants. Presently identical to frequency().&quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-</pre></div></div>
+    <span class="n">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+</pre></div>
 
           </div>
         </div>
@@ -1096,7 +1102,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 22, 2012.
+      Last updated on Feb 27, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

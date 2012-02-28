@@ -1,14 +1,34 @@
+"""
+**ACENES**
+
+| Database of Ed and Rob's favorite linear acene dimers.
+| Geometries from nowhere special, and reference energies undefined.
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'FIRST3'`` benzene, napthalene, and anthracene dimers
+  - ``'FIRST5'`` benzene - pentacene dimers
+  - ``'FIRST10'`` benzene - decacene dimers
+
+----
+
+"""
 import re
 import input
 
 # <<< ACENES Database Module >>>
-# Ed and Rob's favorite linear acene dimers
 dbse = 'ACENES'
 
 # <<< Database Members >>>
-HRXN = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20'] 
+HRXN = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20']
 HRXN_SM = ['1', '2', '3', '4', '5']
-HRXN_LG = ['11','12','13','14','15','16','17','18','19','20']
+HRXN_LG = ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20']
 FIRST3  = ['1', '2', '3']
 FIRST5  = ['1', '2', '3', '4', '5']
 FIRST10 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
@@ -219,7 +239,7 @@ H        0.46425000     2.14038200     3.50000000
 H        2.93575000     2.14038200     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_10 = input.process_input("""
 molecule dimer {
@@ -360,7 +380,7 @@ H        0.46425000    23.83171400     3.50000000
 H        2.93575000    23.83171400     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_11 = input.process_input("""
 molecule dimer {
@@ -513,7 +533,7 @@ H        0.46425000    26.24186200     3.50000000
 H        2.93575000    26.24186200     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_12 = input.process_input("""
 molecule dimer {
@@ -678,7 +698,7 @@ H        0.46425000    28.65201000     3.50000000
 H        2.93575000    28.65201000     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_13 = input.process_input("""
 molecule dimer {
@@ -855,7 +875,7 @@ H        0.46425000    31.06215800     3.50000000
 H        2.93575000    31.06215800     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_14 = input.process_input("""
 molecule dimer {
@@ -1044,7 +1064,7 @@ H        0.46425000    33.47230600     3.50000000
 H        2.93575000    33.47230600     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_15 = input.process_input("""
 molecule dimer {
@@ -1245,7 +1265,7 @@ H        0.46425000    35.88245400     3.50000000
 H        2.93575000    35.88245400     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_16 = input.process_input("""
 molecule dimer {
@@ -1458,7 +1478,7 @@ H        0.46425000    38.29260200     3.50000000
 H        2.93575000    38.29260200     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_17 = input.process_input("""
 molecule dimer {
@@ -1683,7 +1703,7 @@ H        0.46425000    40.70275000     3.50000000
 H        2.93575000    40.70275000     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_18 = input.process_input("""
 molecule dimer {
@@ -1920,7 +1940,7 @@ H        0.46425000    43.11289800     3.50000000
 H        2.93575000    43.11289800     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_19 = input.process_input("""
 molecule dimer {
@@ -2169,7 +2189,7 @@ H        0.46425000    45.52304600     3.50000000
 H        2.93575000    45.52304600     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_2 = input.process_input("""
 molecule dimer {
@@ -2214,7 +2234,7 @@ H        0.46425000     4.55053000     3.50000000
 H        2.93575000     4.55053000     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_20 = input.process_input("""
 molecule dimer {
@@ -2475,7 +2495,7 @@ H        0.46425000    47.93319400     3.50000000
 H        2.93575000    47.93319400     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_3 = input.process_input("""
 molecule dimer {
@@ -2532,7 +2552,7 @@ H        0.46425000     6.96067800     3.50000000
 H        2.93575000     6.96067800     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_4 = input.process_input("""
 molecule dimer {
@@ -2601,7 +2621,7 @@ H        0.46425000     9.37082600     3.50000000
 H        2.93575000     9.37082600     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_5 = input.process_input("""
 molecule dimer {
@@ -2682,7 +2702,7 @@ H        0.46425000    11.78097400     3.50000000
 H        2.93575000    11.78097400     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_6 = input.process_input("""
 molecule dimer {
@@ -2775,7 +2795,7 @@ H        0.46425000    14.19112200     3.50000000
 H        2.93575000    14.19112200     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_7 = input.process_input("""
 molecule dimer {
@@ -2880,7 +2900,7 @@ H        0.46425000    16.60127000     3.50000000
 H        2.93575000    16.60127000     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_8 = input.process_input("""
 molecule dimer {
@@ -2997,7 +3017,7 @@ H        0.46425000    19.01141800     3.50000000
 H        2.93575000    19.01141800     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 ACENES_9 = input.process_input("""
 molecule dimer {
@@ -3126,16 +3146,15 @@ H        0.46425000    21.42156600     3.50000000
 H        2.93575000    21.42156600     3.50000000
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP
-
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP

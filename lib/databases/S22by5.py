@@ -1,12 +1,30 @@
+"""
+**S22by5**
+
+| Database (Hobza) of interaction energies for dissociation curves of bimolecular complexes.
+| Geometries and reference interaction energies from Grafova et al. JCTC 6 2365 (2010).
+| Note that the S22by5-N-1.0 members are essentially the same geometries as S22-N (there's trivial round-off error) but the reference interaction energies for S22by5 are of lower quality than those of S22.
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'equilibrium'``
+  - ``'mol1'`` five-point (0.9, 1.0, 1.2, 1.5, 2.0) :math:`\\times R_{eq}` dissociation curve for molecule 1
+  - ...
+  - ``'mol22'`` five-point (0.9, 1.0, 1.2, 1.5, 2.0) :math:`\\times R_{eq}` dissociation curve for molecule 22
+
+----
+
+"""
 import re
 import input
 
 # <<< S22by5 Database Module >>>
-# Geometries and interaction energies from
-#   Grafova et al. JCTC 6 2365 (2010).
-# Note that the S22by5-N-1.0 members are essentially the same geometries as
-#   S22-N (there's trivial round-off error) but the reference interaction
-#   energies for S22by5 are of lower quality than those of S22
 dbse = 'S22by5'
 
 # <<< Database Members >>>
@@ -32,29 +50,30 @@ mol19 = []
 mol20 = []
 mol21 = []
 mol22 = []
-dist = [0.9,1.0,1.2,1.5,2.0]
-for d in dist:  mol1.append('1-'  + str(d))
-for d in dist:  mol2.append('2-'  + str(d))
-for d in dist:  mol3.append('3-'  + str(d))
-for d in dist:  mol4.append('4-'  + str(d))
-for d in dist:  mol5.append('5-'  + str(d))
-for d in dist:  mol6.append('6-'  + str(d))
-for d in dist:  mol7.append('7-'  + str(d))
-for d in dist:  mol8.append('8-'  + str(d))
-for d in dist:  mol9.append('9-'  + str(d))
-for d in dist: mol10.append('10-' + str(d))
-for d in dist: mol11.append('11-' + str(d))
-for d in dist: mol12.append('12-' + str(d))
-for d in dist: mol13.append('13-' + str(d))
-for d in dist: mol14.append('14-' + str(d))
-for d in dist: mol15.append('15-' + str(d))
-for d in dist: mol16.append('16-' + str(d))
-for d in dist: mol17.append('17-' + str(d))
-for d in dist: mol18.append('18-' + str(d))
-for d in dist: mol19.append('19-' + str(d))
-for d in dist: mol20.append('20-' + str(d))
-for d in dist: mol21.append('21-' + str(d))
-for d in dist: mol22.append('22-' + str(d))
+dist = [0.9, 1.0, 1.2, 1.5, 2.0]
+for d in dist:
+    mol1.append('1-' + str(d))
+    mol2.append('2-' + str(d))
+    mol3.append('3-' + str(d))
+    mol4.append('4-' + str(d))
+    mol5.append('5-' + str(d))
+    mol6.append('6-' + str(d))
+    mol7.append('7-' + str(d))
+    mol8.append('8-' + str(d))
+    mol9.append('9-' + str(d))
+    mol10.append('10-' + str(d))
+    mol11.append('11-' + str(d))
+    mol12.append('12-' + str(d))
+    mol13.append('13-' + str(d))
+    mol14.append('14-' + str(d))
+    mol15.append('15-' + str(d))
+    mol16.append('16-' + str(d))
+    mol17.append('17-' + str(d))
+    mol18.append('18-' + str(d))
+    mol19.append('19-' + str(d))
+    mol20.append('20-' + str(d))
+    mol21.append('21-' + str(d))
+    mol22.append('22-' + str(d))
 
 temp = [mol1, mol2, mol3, mol4,  mol5, mol6, mol7, mol8, mol9, mol10, mol11,
         mol12, mol13, mol14, mol15,  mol16, mol17, mol18, mol19, mol20, mol21, mol22]
@@ -63,7 +82,8 @@ HRXN = sum(temp, [])
 HRXN_SM = ['1-0.9', '2-1.0', '8-1.5', '16-2.0']
 HRXN_LG = ['15-0.9']
 HRXN_EQ = []
-for m in range(1,23): HRXN_EQ.append(str(m) + '-1.0')
+for m in range(1, 23):
+    HRXN_EQ.append(str(m) + '-1.0')
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -73,21 +93,21 @@ ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 
 for rxn in HRXN:
 
-   RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                     '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                     '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+    RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                      '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
 
-   ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+    ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-   ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                     '%s-%s-monoA-CP'   % (dbse, rxn),
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) ]
+    ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-CP'   % (dbse, rxn),
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-   ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                     '%s-%s-monoA-unCP' % (dbse, rxn),
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) ]
+    ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-unCP' % (dbse, rxn),
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values >>>
 BIND = {}
@@ -206,202 +226,202 @@ BIND['%s-22-2.0' % (dbse)] =  -1.38
 TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)$')
 for item in mol1:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'HB-1 Ammonia Dimer at %s Req, C2H' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Ammonia Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'HB-1 Ammonia Dimer at %s Req, C2H' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Ammonia Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ammonia from Ammonia Dimer at %s Req' % (molname.group(2))
 
 for item in mol2:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'HB-2 Water Dimer at %s Req, CS' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Water Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'HB-2 Water Dimer at %s Req, CS' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Water Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Water from Water Dimer at %s Req' % (molname.group(2))
 
 for item in mol3:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'HB-3 Formic Acid Dimer at %s Req, C2H' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Formic Acid Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'HB-3 Formic Acid Dimer at %s Req, C2H' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Formic Acid Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Formic Acid from Formic Acid Dimer at %s Req' % (molname.group(2))
 
 for item in mol4:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'HB-4 Formamide Dimer at %s Req, C2H' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Formamide Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'HB-4 Formamide Dimer at %s Req, C2H' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Formamide Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Formamide from Formamide Dimer at %s Req' % (molname.group(2))
 
 for item in mol5:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'HB-5 Uracil Dimer HB at %s Req, C2H' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Uracil Dimer HB at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'HB-5 Uracil Dimer HB at %s Req, C2H' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Uracil Dimer HB at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer HB at %s Req' % (molname.group(2))
 
 for item in mol6:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'HB-6 2-Pyridone-2-Aminopyridine Complex at %s Req, C1' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      '2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      '2-Pyridone from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      '2-Aminopyridine from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      '2-Pyridone from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      '2-Aminopyridine from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'HB-6 2-Pyridone-2-Aminopyridine Complex at %s Req, C1' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      '2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      '2-Pyridone from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      '2-Aminopyridine from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      '2-Pyridone from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      '2-Aminopyridine from 2-Pyridone-2-Aminopyridine Complex at %s Req' % (molname.group(2))
 
 for item in mol7:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'HB-7 Adenine-Thymine Complex WC at %s Req, C1' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Adenine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Thymine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Adenine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Thymine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'HB-7 Adenine-Thymine Complex WC at %s Req, C1' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Adenine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Thymine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Adenine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Thymine from Adenine-Thymine Complex WC at %s Req' % (molname.group(2))
 
 for item in mol8:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'DD-1 Methane Dimer at %s Req, D3D' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Methane Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'DD-1 Methane Dimer at %s Req, D3D' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Methane Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Methane from Methane Dimer at %s Req' % (molname.group(2))
 
 for item in mol9:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'DD-2 Ethene Dimer at %s Req, D2D' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Ethene Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'DD-2 Ethene Dimer at %s Req, D2D' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Ethene Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ethene from Ethene Dimer at %s Req' % (molname.group(2))
 
 for item in mol10:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'DD-3 Benzene-Methane Complex at %s Req, C3' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-Methane Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-Methane Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Methane from Benzene-Methane Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-Methane Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Methane from Benzene-Methane Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'DD-3 Benzene-Methane Complex at %s Req, C3' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-Methane Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-Methane Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Methane from Benzene-Methane Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-Methane Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Methane from Benzene-Methane Complex at %s Req' % (molname.group(2))
 
 for item in mol11:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'DD-4 Benzene Dimer Parallel-Disp at %s Req, C2H' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene Dimer PD at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'DD-4 Benzene Dimer Parallel-Disp at %s Req, C2H' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene Dimer PD at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer PD at %s Req' % (molname.group(2))
 
 for item in mol12:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'DD-6 Pyrazine Dimer at %s Req, CS' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Pyrazine Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'DD-6 Pyrazine Dimer at %s Req, CS' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Pyrazine Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Pyrazine from Pyrazine Dimer at %s Req' % (molname.group(2))
 
 for item in mol13:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-5 Uracil Dimer Stack at %s Req, C2' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Uracil Dimer Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-5 Uracil Dimer Stack at %s Req, C2' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Uracil Dimer Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Uracil from Uracil Dimer Stack at %s Req' % (molname.group(2))
 
 for item in mol14:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'DD-7 Indole-Benzene Complex Stack at %s Req, C1' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Indole from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Indole from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'DD-7 Indole-Benzene Complex Stack at %s Req, C1' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Indole from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Indole from Indole-Benzene Complex Stack at %s Req' % (molname.group(2))
 
 for item in mol15:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-8 Adenine-Thymine Complex Stack at %s Req, C1' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Adenine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Thymine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Adenine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Thymine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-8 Adenine-Thymine Complex Stack at %s Req, C1' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Adenine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Thymine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Adenine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Thymine from Adenine-Thymine Complex Stack at %s Req' % (molname.group(2))
 
 for item in mol16:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-1 Ethene-Ethine Complex at %s Req, C2V' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Ethene-Ethine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Ethene from Ethene-Ethine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ethine from Ethene-Ethine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Ethene from Ethene-Ethine Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ethine from Ethene-Ethine Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-1 Ethene-Ethine Complex at %s Req, C2V' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Ethene-Ethine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Ethene from Ethene-Ethine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ethine from Ethene-Ethine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Ethene from Ethene-Ethine Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ethine from Ethene-Ethine Complex at %s Req' % (molname.group(2))
 
 for item in mol17:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-2 Benzene-Water Complex at %s Req, CS' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-Water Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-Water Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Water from Benzene-Water Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-Water Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Water from Benzene-Water Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-2 Benzene-Water Complex at %s Req, CS' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-Water Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-Water Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Water from Benzene-Water Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-Water Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Water from Benzene-Water Complex at %s Req' % (molname.group(2))
 
 for item in mol18:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-3 Benzene-Ammonia Complex at %s Req, CS' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-Ammonia Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ammonia from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ammonia from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-3 Benzene-Ammonia Complex at %s Req, CS' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-Ammonia Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Ammonia from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Ammonia from Benzene-Ammonia Complex at %s Req' % (molname.group(2))
 
 for item in mol19:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-4 Benzene-HCN Complex at %s Req, CS' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-HCN Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-HCN Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'HCN from Benzene-HCN Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-HCN Complex at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'HCN from Benzene-HCN Complex at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-4 Benzene-HCN Complex at %s Req, CS' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene-HCN Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene-HCN Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'HCN from Benzene-HCN Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene-HCN Complex at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'HCN from Benzene-HCN Complex at %s Req' % (molname.group(2))
 
 for item in mol20:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'DD-5 Benzene Dimer T-Shape at %s Req, C2V' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene Dimer T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'DD-5 Benzene Dimer T-Shape at %s Req, C2V' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Benzene Dimer T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Benzene from Benzene Dimer T-Shape at %s Req' % (molname.group(2))
 
 for item in mol21:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-6 Indole-Benzene Complex T-Shape at %s Req, C1' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Indole from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Indole from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-6 Indole-Benzene Complex T-Shape at %s Req, C1' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Benzene from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Indole from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Benzene from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Indole from Indole-Benzene Complex T-Shape at %s Req' % (molname.group(2))
 
 for item in mol22:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'MX-7 Phenol Dimer at %s Req, C1' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] =      'Phenol Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'MX-7 Phenol Dimer at %s Req, C1' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] =      'Phenol Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] =      'Phenol from Phenol Dimer at %s Req' % (molname.group(2))
 
 # <<< Molecule Specifications >>>
 monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
@@ -3472,11 +3492,10 @@ units angstrom
 #<<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
-   molname = rxnpattern.match(rxn)
+    molname = rxnpattern.match(rxn)
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_unCP
-
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_unCP

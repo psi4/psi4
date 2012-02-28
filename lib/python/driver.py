@@ -4,16 +4,16 @@ functionality, namely single-point energies, geometry optimizations,
 response properties, and vibrational frequency calculations.
 
 """
-
 import PsiMod
 import input
 from proc import *
 from text import *
 from procutil import *
 
-#Procedure lookup tables
+
+# Procedure lookup tables
 procedures = {
-        'energy' : {
+        'energy': {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
@@ -57,7 +57,9 @@ procedures = {
             'tdhf'          : run_libfock,
             'cpks'          : run_libfock,
             'tda'           : run_libfock,
-            'tddft'         : run_libfock
+            'tddft'         : run_libfock,
+            'psimrcc'       : run_psimrcc,
+            'psimrcc_scf'  : run_psimrcc_scf
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -77,6 +79,7 @@ procedures = {
             # Upon adding a method to this list, add it to the docstring in response() below
         }}
 
+
 def energy(name, **kwargs):
     """Function to compute the single-point electronic energy.
 
@@ -89,7 +92,7 @@ def energy(name, **kwargs):
         CURRENT CORRELATION ENERGY
 
     +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          | 
+    | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -121,7 +124,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | sapt2-ct                | SAPT2 plus CT                                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | sapt2+-ct               | SAPT2+ plus CT                                                                        |   
+    | sapt2+-ct               | SAPT2+ plus CT                                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
     | sapt2+(3)-ct            | SAPT2+(3) plus CT                                                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -171,7 +174,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | adc                     | 2nd-order algebraic diagrammatic construction (ADC)                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | eom-cc2                 | EOM-CC2                                                                               | 
+    | eom-cc2                 | EOM-CC2                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -180,7 +183,7 @@ def energy(name, **kwargs):
 
 
     +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method in Kallay's MRCC program                                                 | 
+    | name                    | calls method in Kallay's MRCC program                                                 |
     +=========================+=======================================================================================+
     | mrccsd                  | CC through doubles                                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -200,55 +203,53 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | mrccsdtqp(h)            | CC through quintuples with pertubative sextuples                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsd(t)_l             |                                                                                       | 
+    | mrccsd(t)_l             |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt(q)_l            |                                                                                       | 
+    | mrccsdt(q)_l            |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq(p)_l           |                                                                                       | 
+    | mrccsdtq(p)_l           |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp(h)_l          |                                                                                       | 
+    | mrccsdtqp(h)_l          |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1a              |                                                                                       | 
+    | mrccsdt-1a              |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1a             |                                                                                       | 
+    | mrccsdtq-1a             |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1a            |                                                                                       | 
+    | mrccsdtqp-1a            |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1a           |                                                                                       | 
+    | mrccsdtqph-1a           |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1b              |                                                                                       | 
+    | mrccsdt-1b              |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1b             |                                                                                       | 
+    | mrccsdtq-1b             |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1b            |                                                                                       | 
+    | mrccsdtqp-1b            |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1b           |                                                                                       | 
+    | mrccsdtqph-1b           |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc2                   |                                                                                       | 
+    | mrcc2                   |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc3                   |                                                                                       | 
+    | mrcc3                   |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc4                   |                                                                                       | 
+    | mrcc4                   |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc5                   |                                                                                       | 
+    | mrcc5                   |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc6                   |                                                                                       | 
+    | mrcc6                   |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-3               |                                                                                       | 
+    | mrccsdt-3               |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-3              |                                                                                       | 
+    | mrccsdtq-3              |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-3             |                                                                                       | 
+    | mrccsdtqp-3             |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-3            |                                                                                       | 
+    | mrccsdtqph-3            |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-
-    **Keywords**
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
-        First argument, usually unlabeled. Indicates the computational method 
+        First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
     :type bypass_scf: bool
@@ -258,7 +259,7 @@ def energy(name, **kwargs):
         the scf step is skipped. Suitable when special steps are taken to get
         the scf to converge in an explicit preceeding scf step.
 
-    **Examples**
+    :examples:
 
     >>> # [1] Coupled-cluster singles and doubles calculation with psi code
     >>> energy('ccsd')
@@ -270,12 +271,11 @@ def energy(name, **kwargs):
     >>> energy('mp4')
 
     """
-
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
     # Make sure the molecule the user provided is the active one
-    if (kwargs.has_key('molecule')):
+    if 'molecule' in kwargs:
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
@@ -287,9 +287,10 @@ def energy(name, **kwargs):
         kwargs['level'] = level
 
     try:
-        return procedures['energy'][lowername](lowername,**kwargs)
+        return procedures['energy'][lowername](lowername, **kwargs)
     except KeyError:
         raise ValidationError('Energy method %s not available.' % (lowername))
+
 
 def gradient(name, **kwargs):
     """Function complementary to optimize(). Carries out one gradient pass,
@@ -311,14 +312,14 @@ def gradient(name, **kwargs):
         kwargs['level'] = level
 
     # 1. set the default to that of the provided name
-    if (procedures['gradient'].has_key(lowername)):
+    if lowername in procedures['gradient']:
         dertype = 1
-    elif (procedures['energy'].has_key(lowername)):
+    elif lowername in procedures['energy']:
         dertype = 0
         func = energy
 
     # 2. Check if the user passes dertype into this function
-    if (kwargs.has_key('dertype')):
+    if 'dertype' in kwargs:
         opt_dertype = kwargs['dertype']
 
         if input.der0th.match(str(opt_dertype)):
@@ -330,17 +331,17 @@ def gradient(name, **kwargs):
             raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
 
     # 3. if the user provides a custom function THAT takes precendence
-    if (kwargs.has_key('opt_func')) or (kwargs.has_key('func')):
-        if (kwargs.has_key('func')):
+    if ('opt_func' in kwargs) or ('func' in kwargs):
+        if ('func' in kwargs):
             kwargs['opt_func'] = kwargs['func']
             del kwargs['func']
         dertype = 0
         func = kwargs['opt_func']
 
     # Summary validation
-    if (dertype == 1) and (procedures['gradient'].has_key(lowername)):
+    if (dertype == 1) and (lowername in procedures['gradient']):
         pass
-    elif (dertype == 0) and (func is energy) and (procedures['energy'].has_key(lowername)):
+    elif (dertype == 0) and (func is energy) and (lowername in procedures['energy']):
         pass
     elif (dertype == 0) and not(func is energy):
         pass
@@ -349,16 +350,16 @@ def gradient(name, **kwargs):
             % (lowername, dertype))
 
     # Make sure the molecule the user provided is the active one
-    if (kwargs.has_key('molecule')):
+    if ('molecule' in kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
     # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
     opt_mode = 'continuous'
-    if (kwargs.has_key('mode')) and (dertype == 0):
+    if ('mode' in kwargs) and (dertype == 0):
         opt_mode = kwargs['mode']
 
     if (opt_mode.lower() == 'continuous'):
@@ -366,7 +367,7 @@ def gradient(name, **kwargs):
     elif (opt_mode.lower() == 'sow'):
         pass
     elif (opt_mode.lower() == 'reap'):
-        if(kwargs.has_key('linkage')):
+        if('linkage' in kwargs):
             opt_linkage = kwargs['linkage']
         else:
             raise ValidationError('Optimize execution mode \'reap\' requires a linkage option.')
@@ -384,7 +385,7 @@ def gradient(name, **kwargs):
         # If not, perform finite difference of energies
 
         opt_iter = 1
-        if (kwargs.has_key('opt_iter')):
+        if ('opt_iter' in kwargs):
             opt_iter = kwargs['opt_iter'] + 1
 
         if opt_iter == 1:
@@ -395,38 +396,38 @@ def gradient(name, **kwargs):
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print " %d displacements needed ..." % (ndisp),
+        print ' %d displacements needed ...' % (ndisp),
         energies = []
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
         if (opt_mode.lower() == 'sow'):
-            instructionsO  =   """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
-            instructionsO +=     """    to this output file (which contains no quantum chemical calculations), this job\n"""
-            instructionsO +=     """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))
-            instructionsO +=     """    and a single input file (OPT-master.in) with an optimize(mode='reap') command.\n"""
-            instructionsO +=     """    These files may look very peculiar since they contain processed and pickled python\n"""
-            instructionsO +=     """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
-            instructionsO +=     """    Alternatively, a single-job execution of the gradient may be accessed through\n"""
-            instructionsO +=     """    the optimization wrapper option mode='continuous'.\n\n"""
+            instructionsO = """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
+            instructionsO += """    to this output file (which contains no quantum chemical calculations), this job\n"""
+            instructionsO += """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))
+            instructionsO += """    and a single input file (OPT-master.in) with an optimize(mode='reap') command.\n"""
+            instructionsO += """    These files may look very peculiar since they contain processed and pickled python\n"""
+            instructionsO += """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
+            instructionsO += """    Alternatively, a single-job execution of the gradient may be accessed through\n"""
+            instructionsO += """    the optimization wrapper option mode='continuous'.\n\n"""
             PsiMod.print_out(instructionsO)
 
-            instructionsM  =   """\n#    Follow the instructions below to carry out this optimization cycle.\n#\n"""
-            instructionsM +=     """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (str(opt_iter))
-            instructionsM +=     """#       The output file names must be as given below.\n#\n"""
+            instructionsM = """\n#    Follow the instructions below to carry out this optimization cycle.\n#\n"""
+            instructionsM += """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (str(opt_iter))
+            instructionsM += """#       The output file names must be as given below.\n#\n"""
             for rgt in range(ndisp):
-                pre = 'OPT-' + str(opt_iter) + '-' + str(rgt+1)
+                pre = 'OPT-' + str(opt_iter) + '-' + str(rgt + 1)
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
-            instructionsM +=  """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
-            instructionsM +=     """#         OPT-master.in into that directory and run it. The job will be minimal in\n"""
-            instructionsM +=     """#         length and give summary results for the gradient step in its output file.\n#\n"""
+            instructionsM += """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
+            instructionsM += """#         OPT-master.in into that directory and run it. The job will be minimal in\n"""
+            instructionsM += """#         length and give summary results for the gradient step in its output file.\n#\n"""
             if opt_iter == 1:
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
             else:
                 instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
-            instructionsM +=     """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""
-            instructionsM +=     """#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not\n"""
-            instructionsM +=     """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
-            instructionsM +=     """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
+            instructionsM += """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""
+            instructionsM += """#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not\n"""
+            instructionsM += """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
+            instructionsM += """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
 
             fmaster = open('OPT-master.in', 'w')
             fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
@@ -438,23 +439,23 @@ def gradient(name, **kwargs):
             fmaster.close()
 
         for n, displacement in enumerate(displacements):
-            rfile = 'OPT-%s-%s' % (opt_iter, n+1)
+            rfile = 'OPT-%s-%s' % (opt_iter, n + 1)
 
             # Build string of title banner
             banners = ''
             banners += """PsiMod.print_out('\\n')\n"""
-            banners += """banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n+1)
+            banners += """banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n + 1)
             banners += """PsiMod.print_out('\\n')\n\n"""
 
             if (opt_mode.lower() == 'continuous'):
                 # Print information to output.dat
-                PsiMod.print_out("\n")
-                banner("Loading displacement %d of %d" % (n+1, ndisp))
+                PsiMod.print_out('\n')
+                banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
                 # Print information to the screen
-                print " %d" % (n + 1),
+                print ' %d' % (n + 1),
                 if (n + 1) == ndisp:
-                    print "\n",
+                    print '\n',
 
                 # Load in displacement into the active molecule
                 PsiMod.get_active_molecule().set_geometry(displacement)
@@ -462,7 +463,7 @@ def gradient(name, **kwargs):
                 # Perform the energy calculation
                 #E = func(lowername, **kwargs)
                 func(lowername, **kwargs)
-                E = PsiMod.get_variable("CURRENT ENERGY")
+                E = PsiMod.get_variable('CURRENT ENERGY')
                 #E = func(**kwargs)
 
                 # Save the energy
@@ -481,7 +482,7 @@ def gradient(name, **kwargs):
 
                 # S/R: Prepare function call and energy save
                 freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
-                freagent.write("""PsiMod.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n+1))
+                freagent.write("""PsiMod.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n + 1))
                 freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
                 freagent.close()
 
@@ -500,16 +501,16 @@ def gradient(name, **kwargs):
                         line = freagent.readline()
                         if not line:
                             if E == 0.0:
-                               ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (rfile, 'GRADIENT'))
+                                ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (rfile, 'GRADIENT'))
                             break
                         s = line.split()
                         if (len(s) != 0) and (s[0:3] == ['GRADIENT', 'RESULT:', 'computation']):
                             if int(s[3]) != opt_linkage:
-                               raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
-                                   % (rfile, str(s[3]), str(opt_linkage)))
-                            if s[6] != str(n+1):
-                               raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
-                                   % (rfile, s[6], str(n+1)))
+                                raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
+                                    % (rfile, str(s[3]), str(opt_linkage)))
+                            if s[6] != str(n + 1):
+                                raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
+                                    % (rfile, s[6], str(n + 1)))
                             if (s[8:10] == ['electronic', 'energy']):
                                 E = float(s[10])
                                 PsiMod.print_out('%s RESULT: electronic energy = %20.12f\n' % ('GRADIENT', E))
@@ -529,6 +530,7 @@ def gradient(name, **kwargs):
         # The last item in the list is the reference energy, return it
         return energies[-1]
 
+
 def response(name, **kwargs):
     """Function to compute linear response properties.
 
@@ -541,22 +543,20 @@ def response(name, **kwargs):
        - Check if ther're some PSI variables that ought to be set.
 
     +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          | 
+    | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
     | cc2                     | 2nd-order approximate CCSD                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    **Keywords**
-
     :type name: string
     :param name: ``'ccsd'`` || etc.
 
-        First argument, usually unlabeled. Indicates the computational method 
+        First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
-    **Examples**
+    :examples:
 
     >>> # [1] CCSD-LR properties calculation
     >>> response('ccsd')
@@ -566,17 +566,18 @@ def response(name, **kwargs):
     kwargs = kwargs_lower(kwargs)
 
     # Make sure the molecule the user provided is the active one
-    if (kwargs.has_key('molecule')):
+    if ('molecule' in kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
     try:
         return procedures['response'][lowername](lowername, **kwargs)
     except KeyError:
-        raise ValidationError('Response method %s not available.' %(lowername))
+        raise ValidationError('Response method %s not available.' % (lowername))
+
 
 def optimize(name, **kwargs):
     """Function to perform a geometry optimization.
@@ -597,7 +598,7 @@ def optimize(name, **kwargs):
        - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
 
     +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          | 
+    | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -610,18 +611,16 @@ def optimize(name, **kwargs):
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
-        First argument, usually unlabeled. Indicates the computational method 
-        to be applied to the database. May be any valid argument to 
+        First argument, usually unlabeled. Indicates the computational method
+        to be applied to the database. May be any valid argument to
         :py:func:`driver.energy`.
 
     :type func: function
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
-    
+
         Indicates the type of calculation to be performed on the molecule.
         The default dertype accesses``'gradient'`` or ``'energy'``, while
         ``'cbs'`` performs a multistage finite difference calculation.
@@ -643,7 +642,7 @@ def optimize(name, **kwargs):
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
 
-    **Examples**
+    :examples:
 
     >>> # [1] Analytic scf optimization
     >>> optimize('scf')
@@ -658,11 +657,11 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_global_option("FULL_HESS_EVERY")
+    full_hess_every = PsiMod.get_global_option('FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
     n = 0
-    if (kwargs.has_key('opt_iter')):
+    if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
     while n < PsiMod.get_option('GEOM_MAXITER'):
@@ -672,43 +671,43 @@ def optimize(name, **kwargs):
         thisenergy = gradient(name, **kwargs)
 
         # S/R: Quit after getting new displacements or if forming gradient fails
-        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'sow'):
+        if ('mode' in kwargs) and (kwargs['mode'].lower() == 'sow'):
             return 0.0
-        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap') and (thisenergy == 0.0):
+        if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap') and (thisenergy == 0.0):
             return 0.0
 
         # S/R: Move opt data file from last pass into namespace for this pass
-        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap') and (n != 0):
+        if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap') and (n != 0):
             PsiMod.IOManager.shared_object().set_specific_retention(1, True)
             PsiMod.IOManager.shared_object().set_specific_path(1, './')
-            if kwargs.has_key('opt_datafile'):
+            if 'opt_datafile' in kwargs:
                 restartfile = kwargs.pop('opt_datafile')
                 if(PsiMod.me() == 0):
                     shutil.copy(restartfile, get_psifile(1))
 
         # compute Hessian as requested; frequency wipes out gradient so stash it
         if ((full_hess_every > -1) and (n == 0)) or (steps_since_last_hessian == full_hess_every):
-          G = PsiMod.get_gradient()
-          PsiMod.IOManager.shared_object().set_specific_retention(1, True)
-          PsiMod.IOManager.shared_object().set_specific_path(1, './')
-          frequencies(name, **kwargs)
-          steps_since_last_hessian = 0
-          PsiMod.set_gradient(G)
-          PsiMod.set_global_option("CART_HESS_READ", True)
+            G = PsiMod.get_gradient()
+            PsiMod.IOManager.shared_object().set_specific_retention(1, True)
+            PsiMod.IOManager.shared_object().set_specific_path(1, './')
+            frequencies(name, **kwargs)
+            steps_since_last_hessian = 0
+            PsiMod.set_gradient(G)
+            PsiMod.set_global_option('CART_HESS_READ', True)
         else:
-          PsiMod.set_global_option("CART_HESS_READ", False)
+            PsiMod.set_global_option('CART_HESS_READ', False)
 
         steps_since_last_hessian += 1
 
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
-            print "Optimizer: Optimization complete!"
+            print 'Optimizer: Optimization complete!'
             PsiMod.get_active_molecule().print_in_input_format()
             PsiMod.opt_clean()
             PsiMod.clean()
 
             # S/R: Clean up opt input file
-            if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap'):
+            if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
                 fmaster = open('OPT-master.in', 'w')
                 fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
                 fmaster.write('# Optimization complete!\n\n')
@@ -716,17 +715,18 @@ def optimize(name, **kwargs):
             return thisenergy
 
         # S/R: Preserve opt data file for next pass and switch modes to get new displacements
-        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap'):
+        if ('mode' in kwargs) and (kwargs['mode'].lower() == 'reap'):
             kwargs['opt_datafile'] = get_psifile(1)
             kwargs['mode'] = 'sow'
 
         n += 1
 
-    PsiMod.print_out("\tOptimizer: Did not converge!")
+    PsiMod.print_out('\tOptimizer: Did not converge!')
     return 0.0
 
 ##  Aliases  ##
 opt = optimize
+
 
 def parse_arbitrary_order(name):
     """Function to parse name string into a method family like CI or MRCC and specific
@@ -742,41 +742,41 @@ def parse_arbitrary_order(name):
 
         # A negative order indicates perturbative method
         methods = {
-            "sd"          : { "method" : 1, "order" :  2, "fullname" : "CCSD"         },
-            "sdt"         : { "method" : 1, "order" :  3, "fullname" : "CCSDT"        },
-            "sdtq"        : { "method" : 1, "order" :  4, "fullname" : "CCSDTQ"       },
-            "sdtqp"       : { "method" : 1, "order" :  5, "fullname" : "CCSDTQP"      },
-            "sdtqph"      : { "method" : 1, "order" :  6, "fullname" : "CCSDTQPH"     },
-            "sd(t)"       : { "method" : 3, "order" : -3, "fullname" : "CCSD(T)"      },
-            "sdt(q)"      : { "method" : 3, "order" : -4, "fullname" : "CCSDT(Q)"     },
-            "sdtq(p)"     : { "method" : 3, "order" : -5, "fullname" : "CCSDTQ(P)"    },
-            "sdtqp(h)"    : { "method" : 3, "order" : -6, "fullname" : "CCSDTQP(H)"   },
-            "sd(t)_l"     : { "method" : 4, "order" : -3, "fullname" : "CCSD(T)_L"    },
-            "sdt(q)_l"    : { "method" : 4, "order" : -4, "fullname" : "CCSDT(Q)_L"   },
-            "sdtq(p)_l"   : { "method" : 4, "order" : -5, "fullname" : "CCSDTQ(P)_L"  },
-            "sdtqp(h)_l"  : { "method" : 4, "order" : -6, "fullname" : "CCSDTQP(H)_L" },
-            "sdt-1a"      : { "method" : 5, "order" :  3, "fullname" : "CCSDT-1a"     },
-            "sdtq-1a"     : { "method" : 5, "order" :  4, "fullname" : "CCSDTQ-1a"    },
-            "sdtqp-1a"    : { "method" : 5, "order" :  5, "fullname" : "CCSDTQP-1a"   },
-            "sdtqph-1a"   : { "method" : 5, "order" :  6, "fullname" : "CCSDTQPH-1a"  },
-            "sdt-1b"      : { "method" : 6, "order" :  3, "fullname" : "CCSDT-1b"     },
-            "sdtq-1b"     : { "method" : 6, "order" :  4, "fullname" : "CCSDTQ-1b"    },
-            "sdtqp-1b"    : { "method" : 6, "order" :  5, "fullname" : "CCSDTQP-1b"   },
-            "sdtqph-1b"   : { "method" : 6, "order" :  6, "fullname" : "CCSDTQPH-1b"  },
-            "2"           : { "method" : 7, "order" :  2, "fullname" : "CC2"          },
-            "3"           : { "method" : 7, "order" :  3, "fullname" : "CC3"          },
-            "4"           : { "method" : 7, "order" :  4, "fullname" : "CC4"          },
-            "5"           : { "method" : 7, "order" :  5, "fullname" : "CC5"          },
-            "6"           : { "method" : 7, "order" :  6, "fullname" : "CC6"          },
-            "sdt-3"       : { "method" : 8, "order" :  3, "fullname" : "CCSDT-3"      },
-            "sdtq-3"      : { "method" : 8, "order" :  4, "fullname" : "CCSDTQ-3"     },
-            "sdtqp-3"     : { "method" : 8, "order" :  5, "fullname" : "CCSDTQP-3"    },
-            "sdtqph-3"    : { "method" : 8, "order" :  6, "fullname" : "CCSDTQPH-3"   }
+            'sd'          : { 'method' : 1, 'order' :  2, 'fullname' : 'CCSD'         },
+            'sdt'         : { 'method' : 1, 'order' :  3, 'fullname' : 'CCSDT'        },
+            'sdtq'        : { 'method' : 1, 'order' :  4, 'fullname' : 'CCSDTQ'       },
+            'sdtqp'       : { 'method' : 1, 'order' :  5, 'fullname' : 'CCSDTQP'      },
+            'sdtqph'      : { 'method' : 1, 'order' :  6, 'fullname' : 'CCSDTQPH'     },
+            'sd(t)'       : { 'method' : 3, 'order' : -3, 'fullname' : 'CCSD(T)'      },
+            'sdt(q)'      : { 'method' : 3, 'order' : -4, 'fullname' : 'CCSDT(Q)'     },
+            'sdtq(p)'     : { 'method' : 3, 'order' : -5, 'fullname' : 'CCSDTQ(P)'    },
+            'sdtqp(h)'    : { 'method' : 3, 'order' : -6, 'fullname' : 'CCSDTQP(H)'   },
+            'sd(t)_l'     : { 'method' : 4, 'order' : -3, 'fullname' : 'CCSD(T)_L'    },
+            'sdt(q)_l'    : { 'method' : 4, 'order' : -4, 'fullname' : 'CCSDT(Q)_L'   },
+            'sdtq(p)_l'   : { 'method' : 4, 'order' : -5, 'fullname' : 'CCSDTQ(P)_L'  },
+            'sdtqp(h)_l'  : { 'method' : 4, 'order' : -6, 'fullname' : 'CCSDTQP(H)_L' },
+            'sdt-1a'      : { 'method' : 5, 'order' :  3, 'fullname' : 'CCSDT-1a'     },
+            'sdtq-1a'     : { 'method' : 5, 'order' :  4, 'fullname' : 'CCSDTQ-1a'    },
+            'sdtqp-1a'    : { 'method' : 5, 'order' :  5, 'fullname' : 'CCSDTQP-1a'   },
+            'sdtqph-1a'   : { 'method' : 5, 'order' :  6, 'fullname' : 'CCSDTQPH-1a'  },
+            'sdt-1b'      : { 'method' : 6, 'order' :  3, 'fullname' : 'CCSDT-1b'     },
+            'sdtq-1b'     : { 'method' : 6, 'order' :  4, 'fullname' : 'CCSDTQ-1b'    },
+            'sdtqp-1b'    : { 'method' : 6, 'order' :  5, 'fullname' : 'CCSDTQP-1b'   },
+            'sdtqph-1b'   : { 'method' : 6, 'order' :  6, 'fullname' : 'CCSDTQPH-1b'  },
+            '2'           : { 'method' : 7, 'order' :  2, 'fullname' : 'CC2'          },
+            '3'           : { 'method' : 7, 'order' :  3, 'fullname' : 'CC3'          },
+            '4'           : { 'method' : 7, 'order' :  4, 'fullname' : 'CC4'          },
+            '5'           : { 'method' : 7, 'order' :  5, 'fullname' : 'CC5'          },
+            '6'           : { 'method' : 7, 'order' :  6, 'fullname' : 'CC6'          },
+            'sdt-3'       : { 'method' : 8, 'order' :  3, 'fullname' : 'CCSDT-3'      },
+            'sdtq-3'      : { 'method' : 8, 'order' :  4, 'fullname' : 'CCSDTQ-3'     },
+            'sdtqp-3'     : { 'method' : 8, 'order' :  5, 'fullname' : 'CCSDTQP-3'    },
+            'sdtqph-3'    : { 'method' : 8, 'order' :  6, 'fullname' : 'CCSDTQPH-3'   }
         }
 
         # looks for 'sdt(q)' in dictionary
-        if methods.has_key(ccfullname):
-            return "mrcc", methods[ccfullname]
+        if ccfullname in methods:
+            return 'mrcc', methods[ccfullname]
         else:
             raise ValidationError('MRCC method \'%s\' invalid.' % (namelower))
 
@@ -797,6 +797,7 @@ def parse_arbitrary_order(name):
     else:
         return namelower, None
 
+
 def frequency(name, **kwargs):
     """Function to compute harmonic vibrational frequencies.
 
@@ -812,19 +813,17 @@ def frequency(name, **kwargs):
 
        - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
-        First argument, usually unlabeled. Indicates the computational method 
+        First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
     :type dertype: dertype
     :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
 
         Indicates whether analytic (if available- they're not), finite
-        difference of gradients (if available) or finite difference of 
+        difference of gradients (if available) or finite difference of
         energies is to be performed.
 
     :type irrep: int
@@ -834,7 +833,7 @@ def frequency(name, **kwargs):
         computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
 
-    **Examples**
+    :examples:
 
     >>> # [1] <example description>
     >>> <example python command>
@@ -843,43 +842,42 @@ def frequency(name, **kwargs):
     >>> frequencies('scf', dertype=1, irrep=4)
 
     """
-
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
     # Make sure the molecule the user provided is the active one
-    if (kwargs.has_key('molecule')):
+    if ('molecule' in kwargs):
         activate(kwargs['molecule'])
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+    PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
-    types = [ "energy", "gradient", "hessian" ]
+    types = ['energy', 'gradient', 'hessian']
 
     dertype = 2
-    if (kwargs.has_key('dertype')):
+    if ('dertype' in kwargs):
         dertype = kwargs['dertype']
-        if procedures[types[dertype]].has_key(lowername) == False:
-            print "Frequencies: dertype = %d for frequencies is not available, switching to automatic determination." % dertype
+        if not (lowername in procedures[types[dertype]]):
+            print 'Frequencies: dertype = %d for frequencies is not available, switching to automatic determination.' % dertype
             dertype = -1
 
-    if (kwargs.has_key('irrep')):
-        irrep = kwargs['irrep'] - 1 # externally, A1 irrep is 1; internally 0
+    if 'irrep' in kwargs:
+        irrep = kwargs['irrep'] - 1  # externally, A1 irrep is 1; internally 0
     else:
-      irrep = -1; # -1 implies do all irreps
+        irrep = -1  # -1 implies do all irreps
 
     # By default, set func to the energy function
     func = energy
     func_existed = False
-    if (kwargs.has_key('func')):
+    if 'func' in kwargs:
         func = kwargs['func']
         func_existed = True
 
-    if (kwargs.has_key('dertype') == False or dertype == -1):
-        if procedures['hessian'].has_key(lowername):
+    if (not('dertype' in kwargs) or dertype == -1):
+        if lowername in procedures['hessian']:
             dertype = 2
-        elif procedures['gradient'].has_key(lowername):
+        elif lowername in procedures['gradient']:
             dertype = 1
         else:
             dertype = 0
@@ -891,7 +889,7 @@ def frequency(name, **kwargs):
         return PsiMod.reference_wavefunction().energy()
     elif (dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
-        info = "Performing finite difference by gradient calculations"
+        info = 'Performing finite difference by gradient calculations'
         print info
 
         func = procedures['gradient'][lowername]
@@ -903,7 +901,7 @@ def frequency(name, **kwargs):
         molecule.fix_orientation(True)
 
         ndisp = len(displacements)
-        print " %d displacements needed." % ndisp
+        print ' %d displacements needed.' % ndisp
 
         #print displacements to output.dat
         #for n, displacement in enumerate(displacements):
@@ -912,11 +910,11 @@ def frequency(name, **kwargs):
         gradients = []
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
-            PsiMod.print_out("\n")
-            banner("Loading displacement %d of %d" % (n+1, ndisp))
+            PsiMod.print_out('\n')
+            banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print "    displacement %d" % (n+1)
+            print '    displacement %d' % (n + 1)
 
             # Load in displacement into the active molecule (xyz coordinates only)
             molecule.set_geometry(displacement)
@@ -933,16 +931,16 @@ def frequency(name, **kwargs):
 
         PsiMod.fd_freq_1(gradients, irrep)
 
-        print " Computation complete."
+        print ' Computation complete.'
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
         # But not this one, it always goes back to True
         PsiMod.get_active_molecule().reinterpret_coordentry(True)
 
-    else: # Assume energy points
+    else:  # Assume energy points
         # If not, perform finite difference of energies
-        info = "Performing finite difference calculations by energies"
+        info = 'Performing finite difference calculations by energies'
         print info
 
         # Obtain list of displacements
@@ -953,15 +951,15 @@ def frequency(name, **kwargs):
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print " %d displacements needed." % ndisp
+        print ' %d displacements needed.' % ndisp
         energies = []
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
-            PsiMod.print_out("\n")
-            banner("Loading displacement %d of %d" % (n+1, ndisp))
+            PsiMod.print_out('\n')
+            banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print "    displacement %d" % (n+1)
+            print '    displacement %d' % (n + 1)
 
             # Load in displacement into the active molecule
             PsiMod.get_active_molecule().set_geometry(displacement)
@@ -978,7 +976,7 @@ def frequency(name, **kwargs):
         # Obtain the gradient. This function stores the gradient into the reference wavefunction.
         PsiMod.fd_freq_0(energies, irrep)
 
-        print " Computation complete."
+        print ' Computation complete.'
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
@@ -988,9 +986,10 @@ def frequency(name, **kwargs):
         # The last item in the list is the reference energy, return it
         return energies[-1]
 
-## Aliases ##
+##  Aliases  ##
 frequencies = frequency
 freq = frequency
+
 
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
@@ -998,4 +997,3 @@ def hessian(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
-

@@ -507,7 +507,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_mo()
     SharedMatrix C(new Matrix("Na_mo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Alpha Occupation", D->nirrep(), D->rowspi()));
 
-    D->diagonalize(C,O,Matrix::Descending);
+    D->diagonalize(C,O,descending);
 
     return make_pair(C,O);
 }
@@ -520,7 +520,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_mo()
     SharedMatrix C(new Matrix("Nb_mo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Beta Occupation", D->nirrep(), D->rowspi()));
 
-    D->diagonalize(C,O,Matrix::Descending);
+    D->diagonalize(C,O,descending);
 
     return make_pair(C,O);
 }
@@ -680,7 +680,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_mo()
     SharedMatrix C(new Matrix("Nt_mo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Total Occupation", D->nirrep(), D->rowspi()));
 
-    D->diagonalize(C,O,Matrix::Descending);
+    D->diagonalize(C,O,descending);
 
     return make_pair(C,O);
 }

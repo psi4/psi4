@@ -1,12 +1,33 @@
+"""
+**HBC6**
+
+| Database (Sherrill) of interaction energies for dissociation curves of doubly hydrogen-bonded bimolecular complexes.
+| Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).
+| Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'`` || ``'on'``
+
+- **benchmark**
+
+  - ``'HBC60'`` Thanthiriwatte et al. JCTC 7 88 (2011).
+  - |dl| ``'HBC6A'`` |dr| Marshall et al. JCP 135 194102 (2011).
+  - ``'HBC6ARLX'`` Sherrill group, unpublished.
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'equilibrium'``
+
+----
+
+"""
 import re
 import input
 
 # <<< HBC6 Database Module >>>
-# Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).
-# Reference interaction energies from the following articles:
-#   HBC60:    Thanthiriwatte et al. JCTC 7 88 (2011).
-#   HBC6A:    Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
-#   HBC6ARLX: Sherrill group, unpublished.
 dbse = 'HBC1'
 
 # <<< Database Members >>>
@@ -16,19 +37,21 @@ FaNNFaNN = []
 FaOOFaON = []
 FaONFaNN = []
 FaOOFaNN = []
-dist = [3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.6,4.8,5.0,5.4,5.8,6.4,7.0,8.0,10.0]
-for d in dist: FaOOFaOO.append('FaOOFaOO-' + str(d))
-for d in dist: FaONFaON.append('FaONFaON-' + str(d))
-for d in dist: FaNNFaNN.append('FaNNFaNN-' + str(d))
-for d in dist: FaOOFaON.append('FaOOFaON-' + str(d))
-for d in dist: FaONFaNN.append('FaONFaNN-' + str(d))
-dist = [3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.6,4.8,5.0,5.4,5.8,6.4,7.0,8.0,10.0]
-for d in dist: FaOOFaNN.append('FaOOFaNN-' + str(d))
+dist = [3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.6, 4.8, 5.0, 5.4, 5.8, 6.4, 7.0, 8.0, 10.0]
+for d in dist:
+    FaOOFaOO.append('FaOOFaOO-' + str(d))
+    FaONFaON.append('FaONFaON-' + str(d))
+    FaNNFaNN.append('FaNNFaNN-' + str(d))
+    FaOOFaON.append('FaOOFaON-' + str(d))
+    FaONFaNN.append('FaONFaNN-' + str(d))
+dist = [3.6, 3.7, 3.8, 3.9, 4.0, 4.1, 4.2, 4.3, 4.4, 4.6, 4.8, 5.0, 5.4, 5.8, 6.4, 7.0, 8.0, 10.0]
+for d in dist:
+    FaOOFaNN.append('FaOOFaNN-' + str(d))
 
 temp = [FaOOFaOO, FaONFaON, FaNNFaNN, FaOOFaON, FaONFaNN, FaOOFaNN]
 HRXN = sum(temp, [])
 
-HRXN_SM = ['FaOOFaOO-8.0','FaOOFaON-5.0']
+HRXN_SM = ['FaOOFaOO-8.0', 'FaOOFaON-5.0']
 HRXN_LG = ['FaNNFaNN-3.6']
 HRXN_EQ = ['FaOOFaOO-3.6', 'FaONFaON-4.0', 'FaNNFaNN-4.1', 'FaOOFaON-3.8', 'FaONFaNN-4.0', 'FaOOFaNN-3.6']
 
@@ -42,73 +65,73 @@ ACTV_RLX = {}    # order of active reagents for deformation-corrected reaction
 ACTV_CPRLX = {}  # order of active reagents for counterpoise- and deformation-corrected reaction
 monopattern = re.compile(r'^(....)(....)-(.+)$')
 for rxn in HRXN:
-   molname = monopattern.match(rxn)
+    molname = monopattern.match(rxn)
 
-   if (rxn in FaOOFaOO) or (rxn in FaONFaON) or (rxn in FaNNFaNN):
-      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -2,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -2 }
+    if (rxn in FaOOFaOO) or (rxn in FaONFaON) or (rxn in FaNNFaNN):
+        RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -2,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): -2,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -2 }
 
-      RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : +2,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -2 }
+        RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -2,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): +2,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -2 }
 
-      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) ]
+        ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
-      ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
+        ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
 
-      ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
+        ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
 
-      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) ]
+        ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn) ]
 
-   elif (rxn in FaOOFaON) or (rxn in FaONFaNN) or (rxn in FaOOFaNN):
-      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) : -1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) : -1 }
+    elif (rxn in FaOOFaON) or (rxn in FaONFaNN) or (rxn in FaOOFaNN):
+        RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoB-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): -1,
+                                             '%s-%s-monoB-unCP' % (dbse, rxn): -1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)): -1 }
 
-      RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                           '%s-%s-monoA-unCP' % (dbse, rxn) : +1,
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) : +1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -1,
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) : -1 }
+        RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn): +1,
+                                             '%s-%s-monoA-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoB-CP'   % (dbse, rxn): -1,
+                                             '%s-%s-monoA-unCP' % (dbse, rxn): +1,
+                                             '%s-%s-monoB-unCP' % (dbse, rxn): +1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)): -1,
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)): -1 }
 
-      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+        ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn),
-                                           '%s-%s-monoB-CP'   % (dbse, rxn) ]
+        ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn),
+                                             '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-      ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
+        ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
 
-      ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-CP'   % (dbse, rxn),
-                                           '%s-%s-monoB-CP'   % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn),
-                                           '%s-%s-monoB-unCP' % (dbse, rxn),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
-                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
+        ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-CP'   % (dbse, rxn),
+                                             '%s-%s-monoB-CP'   % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn),
+                                             '%s-%s-monoB-unCP' % (dbse, rxn),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
+                                             '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
 
-      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                           '%s-%s-monoA-unCP' % (dbse, rxn),
-                                           '%s-%s-monoB-unCP' % (dbse, rxn) ]
+        ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                             '%s-%s-monoA-unCP' % (dbse, rxn),
+                                             '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values >>>
 BIND = {}
@@ -494,52 +517,52 @@ BIND = BIND_HBC6A
 TAGL = {}
 rxnpattern = re.compile(r'^(.+)-(.+)$')
 for item in FaOOFaOO:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid Dimer at %s A' % (molname.group(2))
 
 for item in FaONFaON:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide Dimer at %s A' % (molname.group(2))
 
 for item in FaNNFaNN:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamidine Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamidine from Formamidine Dimer at %s A' % (molname.group(2))
 
 for item in FaOOFaON:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamide from Formic Acid-Formamide Complex at %s A' % (molname.group(2))
 
 for item in FaONFaNN:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formamide from Formamide-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formamide-Formamidine Complex at %s A' % (molname.group(2))
 
 for item in FaOOFaNN:
-   molname = rxnpattern.match(item)
-   TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
-   TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    molname = rxnpattern.match(item)
+    TAGL['%s-%s'            % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-dimer'      % (dbse, item)] = 'Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-CP'   % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+    TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
 
 TAGL['%s-FaOO-mono-RLX'  % (dbse)]  = 'Formic Acid Relaxed Monomer'
 TAGL['%s-FaON-mono-RLX'  % (dbse)]  = 'Formamide Relaxed Monomer'
@@ -568,7 +591,7 @@ O       -1.36966587      -1.08860681       0.00000000
 H       -0.34380745      -1.18798183       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_3p5 = input.process_input("""
 molecule dimer {
@@ -587,7 +610,7 @@ O       -1.40587723      -1.08303481       0.00000000
 H       -0.38948927      -1.16733829       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_3p6 = input.process_input("""
 molecule dimer {
@@ -606,7 +629,7 @@ O       -1.44185816      -1.08049605       0.00000000
 H       -0.43274661      -1.15045330       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_3p7 = input.process_input("""
 molecule dimer {
@@ -625,7 +648,7 @@ O       -1.47971186      -1.07967254       0.00000000
 H       -0.47644336      -1.13716323       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_3p8 = input.process_input("""
 molecule dimer {
@@ -644,7 +667,7 @@ O       -1.52059687      -1.07982181       0.00000000
 H       -0.52216282      -1.12736965       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_3p9 = input.process_input("""
 molecule dimer {
@@ -663,7 +686,7 @@ O       -1.56485002      -1.08053745       0.00000000
 H       -0.57046128      -1.12083453       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_4p0 = input.process_input("""
 molecule dimer {
@@ -682,7 +705,7 @@ O       -1.61210992      -1.08161540       0.00000000
 H       -0.62108112      -1.11708149       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_4p1 = input.process_input("""
 molecule dimer {
@@ -701,7 +724,7 @@ O       -1.66162256      -1.08294418       0.00000000
 H       -0.67334166      -1.11546236       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_4p2 = input.process_input("""
 molecule dimer {
@@ -720,7 +743,7 @@ O       -1.71259791      -1.08444718       0.00000000
 H       -0.72653811      -1.11533705       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_4p3 = input.process_input("""
 molecule dimer {
@@ -739,7 +762,7 @@ O       -1.76438167      -1.08605925       0.00000000
 H       -0.78011615      -1.11617462       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_4p4 = input.process_input("""
 molecule dimer {
@@ -758,7 +781,7 @@ O       -1.81652565      -1.08773186       0.00000000
 H       -0.83371879      -1.11760094       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_4p6 = input.process_input("""
 molecule dimer {
@@ -777,7 +800,7 @@ O       -1.92095251      -1.09113093       0.00000000
 H       -0.94036724      -1.12135540       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_4p8 = input.process_input("""
 molecule dimer {
@@ -796,7 +819,7 @@ O       -2.02488292      -1.09452849       0.00000000
 H       -1.04594759      -1.12557184       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_5p0 = input.process_input("""
 molecule dimer {
@@ -815,7 +838,7 @@ O       -2.12758466      -1.09795049       0.00000000
 H       -1.14991023      -1.12938889       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_5p4 = input.process_input("""
 molecule dimer {
@@ -834,7 +857,7 @@ O       -2.32770522      -1.10482267       0.00000000
 H       -1.35155974      -1.13337052       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_5p8 = input.process_input("""
 molecule dimer {
@@ -853,7 +876,7 @@ O       -2.52303889      -1.11116394       0.00000000
 H       -1.54758478      -1.13325561       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_6p4 = input.process_input("""
 molecule dimer {
@@ -872,7 +895,7 @@ O       -2.81355286      -1.11890079       0.00000000
 H       -1.83855220      -1.13009890       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_7p0 = input.process_input("""
 molecule dimer {
@@ -891,7 +914,7 @@ O       -3.10454835      -1.12465267       0.00000000
 H       -2.12977769      -1.12626632       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_8p0 = input.process_input("""
 molecule dimer {
@@ -910,7 +933,7 @@ O       -3.59284622      -1.13117851       0.00000000
 H       -2.61830479      -1.12095879       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaOO_10p0 = input.process_input("""
 molecule dimer {
@@ -929,7 +952,7 @@ O       -4.57854479      -1.13834246       0.00000000
 H       -3.60431482      -1.11461219       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_3p4 = input.process_input("""
 molecule dimer {
@@ -950,7 +973,7 @@ H       -0.51175066      -1.43614881       0.00000000
 H       -2.30581639      -1.63815514       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_3p5 = input.process_input("""
 molecule dimer {
@@ -971,7 +994,7 @@ H       -0.43552514      -1.39016691       0.00000000
 H       -2.20654586      -1.74794356       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_3p6 = input.process_input("""
 molecule dimer {
@@ -992,7 +1015,7 @@ H       -0.40800979      -1.35225476       0.00000000
 H       -2.15197143      -1.81156642       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_3p7 = input.process_input("""
 molecule dimer {
@@ -1013,7 +1036,7 @@ H       -0.40573498      -1.32114549       0.00000000
 H       -2.12347975      -1.85285206       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_3p8 = input.process_input("""
 molecule dimer {
@@ -1034,7 +1057,7 @@ H       -0.41948596      -1.29629750       0.00000000
 H       -2.11367741      -1.88100998       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_3p9 = input.process_input("""
 molecule dimer {
@@ -1055,7 +1078,7 @@ H       -0.44465999      -1.27731960       0.00000000
 H       -2.11884877      -1.90053586       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_4p0 = input.process_input("""
 molecule dimer {
@@ -1076,7 +1099,7 @@ H       -0.47842639      -1.26369880       0.00000000
 H       -2.13649227      -1.91403520       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_4p1 = input.process_input("""
 molecule dimer {
@@ -1097,7 +1120,7 @@ H       -0.51870599      -1.25472290       0.00000000
 H       -2.16442795      -1.92321328       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_4p2 = input.process_input("""
 molecule dimer {
@@ -1118,7 +1141,7 @@ H       -0.56383358      -1.24955108       0.00000000
 H       -2.20059240      -1.92925606       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_4p3 = input.process_input("""
 molecule dimer {
@@ -1139,7 +1162,7 @@ H       -0.61244489      -1.24732130       0.00000000
 H       -2.24305687      -1.93302516       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_4p4 = input.process_input("""
 molecule dimer {
@@ -1160,7 +1183,7 @@ H       -0.66343356      -1.24723827       0.00000000
 H       -2.29010119      -1.93517379       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_4p6 = input.process_input("""
 molecule dimer {
@@ -1181,7 +1204,7 @@ H       -0.76947608      -1.25110815       0.00000000
 H       -2.39273653      -1.93641581       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_4p8 = input.process_input("""
 molecule dimer {
@@ -1202,7 +1225,7 @@ H       -0.87833293      -1.25816233       0.00000000
 H       -2.50182267      -1.93524951       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_5p0 = input.process_input("""
 molecule dimer {
@@ -1223,7 +1246,7 @@ H       -0.98820948      -1.26676542       0.00000000
 H       -2.61374032      -1.93291817       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_5p4 = input.process_input("""
 molecule dimer {
@@ -1244,7 +1267,7 @@ H       -1.20419348      -1.28204746       0.00000000
 H       -2.83403804      -1.92915087       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_5p8 = input.process_input("""
 molecule dimer {
@@ -1265,7 +1288,7 @@ H       -1.41208234      -1.29109009       0.00000000
 H       -3.04382363      -1.92881894       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_6p4 = input.process_input("""
 molecule dimer {
@@ -1286,7 +1309,7 @@ H       -1.71465256      -1.29686270       0.00000000
 H       -3.34615668      -1.93211051       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_7p0 = input.process_input("""
 molecule dimer {
@@ -1307,7 +1330,7 @@ H       -2.01252678      -1.29808475       0.00000000
 H       -3.64229745      -1.93673374       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_8p0 = input.process_input("""
 molecule dimer {
@@ -1328,7 +1351,7 @@ H       -2.50709338      -1.29726882       0.00000000
 H       -4.13374763      -1.94351670       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaON_10p0 = input.process_input("""
 molecule dimer {
@@ -1349,7 +1372,7 @@ H       -3.49800610      -1.29436065       0.00000000
 H       -5.11998480      -1.95244688       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_3p4 = input.process_input("""
 molecule dimer {
@@ -1372,7 +1395,7 @@ H       -0.35212595      -1.46532985       0.00000000
 H       -2.16581591      -1.79503126       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_3p5 = input.process_input("""
 molecule dimer {
@@ -1395,7 +1418,7 @@ H       -0.35550066      -1.43042391       0.00000000
 H       -2.14642150      -1.82776097       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_3p6 = input.process_input("""
 molecule dimer {
@@ -1418,7 +1441,7 @@ H       -0.36558676      -1.39719019       0.00000000
 H       -2.13213780      -1.85550007       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_3p7 = input.process_input("""
 molecule dimer {
@@ -1441,7 +1464,7 @@ H       -0.38141976      -1.36618041       0.00000000
 H       -2.12308262      -1.87905403       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_3p8 = input.process_input("""
 molecule dimer {
@@ -1464,7 +1487,7 @@ H       -0.40250444      -1.33793562       0.00000000
 H       -2.11977084      -1.89888692       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_3p9 = input.process_input("""
 molecule dimer {
@@ -1487,7 +1510,7 @@ H       -0.42859974      -1.31294465       0.00000000
 H       -2.12286880      -1.91531762       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_4p0 = input.process_input("""
 molecule dimer {
@@ -1510,7 +1533,7 @@ H       -0.45949690      -1.29156428       0.00000000
 H       -2.13289668      -1.92867591       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_4p1 = input.process_input("""
 molecule dimer {
@@ -1533,7 +1556,7 @@ H       -0.49489283      -1.27394294       0.00000000
 H       -2.15004136      -1.93933564       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_4p2 = input.process_input("""
 molecule dimer {
@@ -1556,7 +1579,7 @@ H       -0.53433608      -1.25999374       0.00000000
 H       -2.17408498      -1.94769642       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_4p3 = input.process_input("""
 molecule dimer {
@@ -1579,7 +1602,7 @@ H       -0.57725829      -1.24942013       0.00000000
 H       -2.20446212      -1.95412762       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_4p4 = input.process_input("""
 molecule dimer {
@@ -1602,7 +1625,7 @@ H       -0.62306965      -1.24181216       0.00000000
 H       -2.24041883      -1.95893145       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_4p6 = input.process_input("""
 molecule dimer {
@@ -1625,7 +1648,7 @@ H       -0.72137666      -1.23384217       0.00000000
 H       -2.32599570      -1.96451573       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_4p8 = input.process_input("""
 molecule dimer {
@@ -1648,7 +1671,7 @@ H       -0.82590336      -1.23313494       0.00000000
 H       -2.42493207      -1.96604670       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_5p0 = input.process_input("""
 molecule dimer {
@@ -1671,7 +1694,7 @@ H       -0.93377159      -1.23689923       0.00000000
 H       -2.53164153      -1.96514450       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_5p4 = input.process_input("""
 molecule dimer {
@@ -1694,7 +1717,7 @@ H       -1.15164366      -1.24943138       0.00000000
 H       -2.75270049      -1.96073403       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_5p8 = input.process_input("""
 molecule dimer {
@@ -1717,7 +1740,7 @@ H       -1.36542121      -1.26070273       0.00000000
 H       -2.97042339      -1.95703238       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_6p4 = input.process_input("""
 molecule dimer {
@@ -1740,7 +1763,7 @@ H       -1.67620388      -1.27071277       0.00000000
 H       -3.28436882      -1.95508270       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_7p0 = input.process_input("""
 molecule dimer {
@@ -1763,7 +1786,7 @@ H       -1.97966414      -1.27507136       0.00000000
 H       -3.58843631      -1.95603470       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_8p0 = input.process_input("""
 molecule dimer {
@@ -1786,7 +1809,7 @@ H       -2.47917010      -1.27706322       0.00000000
 H       -4.08677787      -1.95961623       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNNFaNN_10p0 = input.process_input("""
 molecule dimer {
@@ -1809,7 +1832,7 @@ H       -3.47428778      -1.27673150       0.00000000
 H       -5.07887010      -1.96589319       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_3p4 = input.process_input("""
 molecule dimer {
@@ -1829,7 +1852,7 @@ H        0.47728536       1.44199769       0.00000000
 H        2.26183892       1.69328776       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_3p5 = input.process_input("""
 molecule dimer {
@@ -1849,7 +1872,7 @@ H        0.46246915       1.40389863       0.00000000
 H        2.22816418       1.74757255       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_3p6 = input.process_input("""
 molecule dimer {
@@ -1869,7 +1892,7 @@ H        0.46794114       1.37317096       0.00000000
 H        2.21379368       1.78455973       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_3p7 = input.process_input("""
 molecule dimer {
@@ -1889,7 +1912,7 @@ H        0.48561914       1.34851310       0.00000000
 H        2.21266192       1.81160865       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_3p8 = input.process_input("""
 molecule dimer {
@@ -1909,7 +1932,7 @@ H        0.51184265       1.32923289       0.00000000
 H        2.22211656       1.83196397       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_3p9 = input.process_input("""
 molecule dimer {
@@ -1929,7 +1952,7 @@ H        0.54440542       1.31463815       0.00000000
 H        2.24038620       1.84747610       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_4p0 = input.process_input("""
 molecule dimer {
@@ -1949,7 +1972,7 @@ H        0.58149375       1.30380344       0.00000000
 H        2.26561575       1.85952935       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_4p1 = input.process_input("""
 molecule dimer {
@@ -1969,7 +1992,7 @@ H        0.62159334       1.29571943       0.00000000
 H        2.29594551       1.86920816       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_4p2 = input.process_input("""
 molecule dimer {
@@ -1989,7 +2012,7 @@ H        0.66372245       1.28959945       0.00000000
 H        2.33000288       1.87722287       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_4p3 = input.process_input("""
 molecule dimer {
@@ -2009,7 +2032,7 @@ H        0.70747623       1.28502211       0.00000000
 H        2.36711721       1.88391930       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_4p4 = input.process_input("""
 molecule dimer {
@@ -2029,7 +2052,7 @@ H        0.75279213       1.28183397       0.00000000
 H        2.40708847       1.88942849       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_4p6 = input.process_input("""
 molecule dimer {
@@ -2049,7 +2072,7 @@ H        0.84799242       1.27930626       0.00000000
 H        2.49507804       1.89722164       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_4p8 = input.process_input("""
 molecule dimer {
@@ -2069,7 +2092,7 @@ H        0.94841269       1.28120182       0.00000000
 H        2.59207415       1.90149404       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_5p0 = input.process_input("""
 molecule dimer {
@@ -2089,7 +2112,7 @@ H        1.05236659       1.28627334       0.00000000
 H        2.69518733       1.90341149       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_5p4 = input.process_input("""
 molecule dimer {
@@ -2109,7 +2132,7 @@ H        1.26110058       1.29739823       0.00000000
 H        2.90434733       1.90588628       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_5p8 = input.process_input("""
 molecule dimer {
@@ -2129,7 +2152,7 @@ H        1.46400695       1.30306213       0.00000000
 H        3.10628291       1.91044267       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_6p4 = input.process_input("""
 molecule dimer {
@@ -2149,7 +2172,7 @@ H        1.76253556       1.30519593       0.00000000
 H        3.40173066       1.91872273       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_7p0 = input.process_input("""
 molecule dimer {
@@ -2169,7 +2192,7 @@ H        2.05915506       1.30417766       0.00000000
 H        3.69489864       1.92641219       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_8p0 = input.process_input("""
 molecule dimer {
@@ -2189,7 +2212,7 @@ H        2.55468792       1.30114823       0.00000000
 H        4.18559310       1.93619532       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaON_10p0 = input.process_input("""
 molecule dimer {
@@ -2209,7 +2232,7 @@ H        3.55239498       1.29639409       0.00000000
 H        5.17702398       1.94785550       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_3p4 = input.process_input("""
 molecule dimer {
@@ -2231,7 +2254,7 @@ H        0.43768191       1.44670293       0.00000000
 H        2.21582070       1.74279349       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_3p5 = input.process_input("""
 molecule dimer {
@@ -2253,7 +2276,7 @@ H        0.40196256       1.40065024       0.00000000
 H        2.15615427       1.80923145       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_3p6 = input.process_input("""
 molecule dimer {
@@ -2275,7 +2298,7 @@ H        0.39074481       1.36097240       0.00000000
 H        2.11873085       1.85410086       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_3p7 = input.process_input("""
 molecule dimer {
@@ -2297,7 +2320,7 @@ H        0.39516324       1.32705396       0.00000000
 H        2.09724900       1.88616308       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_3p8 = input.process_input("""
 molecule dimer {
@@ -2319,7 +2342,7 @@ H        0.41107420       1.29878706       0.00000000
 H        2.08912295       1.90958573       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_3p9 = input.process_input("""
 molecule dimer {
@@ -2341,7 +2364,7 @@ H        0.43630966       1.27622061       0.00000000
 H        2.09327641       1.92665702       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_4p0 = input.process_input("""
 molecule dimer {
@@ -2363,7 +2386,7 @@ H        0.46948873       1.25930607       0.00000000
 H        2.10902806       1.93883512       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_4p1 = input.process_input("""
 molecule dimer {
@@ -2385,7 +2408,7 @@ H        0.50945141       1.24775624       0.00000000
 H        2.13551288       1.94717878       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_4p2 = input.process_input("""
 molecule dimer {
@@ -2407,7 +2430,7 @@ H        0.55501008       1.24096826       0.00000000
 H        2.17143215       1.95251421       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_4p3 = input.process_input("""
 molecule dimer {
@@ -2429,7 +2452,7 @@ H        0.60488448       1.23808048       0.00000000
 H        2.21504656       1.95554011       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_4p4 = input.process_input("""
 molecule dimer {
@@ -2451,7 +2474,7 @@ H        0.65776551       1.23805882       0.00000000
 H        2.26434801       1.95686864       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_4p6 = input.process_input("""
 molecule dimer {
@@ -2473,7 +2496,7 @@ H        0.76811221       1.24281216       0.00000000
 H        2.37265274       1.95644249       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_4p8 = input.process_input("""
 molecule dimer {
@@ -2495,7 +2518,7 @@ H        0.88057502       1.25034358       0.00000000
 H        2.48658153       1.95391122       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_5p0 = input.process_input("""
 molecule dimer {
@@ -2517,7 +2540,7 @@ H        0.99293782       1.25860595       0.00000000
 H        2.60169997       1.95068341       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_5p4 = input.process_input("""
 molecule dimer {
@@ -2539,7 +2562,7 @@ H        1.21077019       1.27082675       0.00000000
 H        2.82358807       1.94643158       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_5p8 = input.process_input("""
 molecule dimer {
@@ -2561,7 +2584,7 @@ H        1.42000011       1.27687473       0.00000000
 H        3.03409167       1.94580891       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_6p4 = input.process_input("""
 molecule dimer {
@@ -2583,7 +2606,7 @@ H        1.72670616       1.28092608       0.00000000
 H        3.34065139       1.94785431       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_7p0 = input.process_input("""
 molecule dimer {
@@ -2605,7 +2628,7 @@ H        2.02910179       1.28169924       0.00000000
 H        3.64162361       1.95135046       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_8p0 = input.process_input("""
 molecule dimer {
@@ -2627,7 +2650,7 @@ H        2.53063281       1.28082664       0.00000000
 H        4.14039777       1.95697653       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaONFaNN_10p0 = input.process_input("""
 molecule dimer {
@@ -2649,7 +2672,7 @@ H        3.53425488       1.27830661       0.00000000
 H        5.13978851       1.96474473       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_3p6 = input.process_input("""
 molecule dimer {
@@ -2670,7 +2693,7 @@ H        0.44433636       1.35982341       0.00000000
 H        2.18036640       1.81973064       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_3p7 = input.process_input("""
 molecule dimer {
@@ -2691,7 +2714,7 @@ H        0.48139283       1.34214247       0.00000000
 H        2.19917472       1.83148239       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_3p8 = input.process_input("""
 molecule dimer {
@@ -2712,7 +2735,7 @@ H        0.51255074       1.32398473       0.00000000
 H        2.21287037       1.84762526       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_3p9 = input.process_input("""
 molecule dimer {
@@ -2733,7 +2756,7 @@ H        0.54641308       1.30898417       0.00000000
 H        2.23141500       1.86193091       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_4p0 = input.process_input("""
 molecule dimer {
@@ -2754,7 +2777,7 @@ H        0.58444574       1.29777092       0.00000000
 H        2.25678662       1.87343146       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_4p1 = input.process_input("""
 molecule dimer {
@@ -2775,7 +2798,7 @@ H        0.62635840       1.29004572       0.00000000
 H        2.28868862       1.88235333       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_4p2 = input.process_input("""
 molecule dimer {
@@ -2796,7 +2819,7 @@ H        0.67115531       1.28502625       0.00000000
 H        2.32574278       1.88931006       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_4p3 = input.process_input("""
 molecule dimer {
@@ -2817,7 +2840,7 @@ H        0.71775960       1.28182144       0.00000000
 H        2.36632423       1.89492965       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_4p4 = input.process_input("""
 molecule dimer {
@@ -2838,7 +2861,7 @@ H        0.76542789       1.27975581       0.00000000
 H        2.40921970       1.89964705       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_4p6 = input.process_input("""
 molecule dimer {
@@ -2859,7 +2882,7 @@ H        0.86293152       1.27779567       0.00000000
 H        2.49986583       1.90702451       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_4p8 = input.process_input("""
 molecule dimer {
@@ -2880,7 +2903,7 @@ H        0.96338922       1.27845400       0.00000000
 H        2.59632255       1.91191489       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_5p0 = input.process_input("""
 molecule dimer {
@@ -2901,7 +2924,7 @@ H        1.06632369       1.28126044       0.00000000
 H        2.69733971       1.91489993       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_5p4 = input.process_input("""
 molecule dimer {
@@ -2922,7 +2945,7 @@ H        1.27261881       1.28724241       0.00000000
 H        2.90172978       1.91949574       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_5p8 = input.process_input("""
 molecule dimer {
@@ -2943,7 +2966,7 @@ H        1.47540835       1.28966180       0.00000000
 H        3.10222174       1.92484945       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_6p4 = input.process_input("""
 molecule dimer {
@@ -2964,7 +2987,7 @@ H        1.77677840       1.28984953       0.00000000
 H        3.39990002       1.93285794       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_7p0 = input.process_input("""
 molecule dimer {
@@ -2985,7 +3008,7 @@ H        2.07713948       1.28822281       0.00000000
 H        3.69667809       1.93998571       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_8p0 = input.process_input("""
 molecule dimer {
@@ -3006,7 +3029,7 @@ H        2.57892509       1.28493460       0.00000000
 H        4.19355750       1.94910244       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOOFaNN_10p0 = input.process_input("""
 molecule dimer {
@@ -3027,7 +3050,7 @@ H        3.58879137       1.28039339       0.00000000
 H        5.19724654       1.95996355       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaOO_monomer_RLX = input.process_input("""
 molecule dimer {
@@ -3039,7 +3062,7 @@ O        1.14827203       0.12334561       0.00000000
 H        1.03004150       1.09065136       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaON_monomer_RLX = input.process_input("""
 molecule dimer {
@@ -3052,7 +3075,7 @@ H        1.23188425       1.17751832       0.00000000
 H        1.99476943      -0.39808693       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 HBC1_FaNN_monomer_RLX = input.process_input("""
 molecule dimer {
@@ -3066,20 +3089,19 @@ H        1.22157301       1.17651874       0.00000000
 H        2.00315093      -0.38515422       0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 #<<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
-   molname = rxnpattern.match(rxn)
+    molname = rxnpattern.match(rxn)
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_unCP
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) )))) + monoB_unCP
 
 GEOS['%s-FaOO-mono-RLX' % (dbse)] = eval('%s_FaOO_monomer_RLX' % (dbse))
 GEOS['%s-FaON-mono-RLX' % (dbse)] = eval('%s_FaON_monomer_RLX' % (dbse))
 GEOS['%s-FaNN-mono-RLX' % (dbse)] = eval('%s_FaNN_monomer_RLX' % (dbse))
-
