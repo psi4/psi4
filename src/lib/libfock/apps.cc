@@ -1,6 +1,7 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
+#include <libchkpt/chkpt.hpp>
 #include <psi4-dec.h>
 #include <physconst.h>
 #include "apps.h"
@@ -9,6 +10,7 @@
 #include "hamiltonian.h"
 #include "solver.h"
 #include <libscf_solver/hf.h>
+#include <libscf_solver/rhf.h>
 
 #include <algorithm>
 #include <boost/tuple/tuple.hpp>
@@ -31,13 +33,82 @@ RBase::RBase() :
 {
     common_init();
 }
+RBase::RBase(bool flag) :
+    Wavefunction(Process::environment.options,_default_psio_lib_) 
+{
+    fprintf(outfile, "Dirty hack %s\n\n", (flag ? "true" : "false"));
+}
 RBase::~RBase()
 {
     postiterations();
 }
 void RBase::common_init()
 {
-    set_reference(Process::environment.reference_wavefunction());
+    boost::shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
+    
+    if (!ref) {
+        // Try to build an RHF from Checkpoint
+        fprintf(outfile, "    Attempting to build reference from Chkpt.\n\n");
+        // WTF init_with_chkpt is not defined
+
+        // Sizing
+        double E_scf = chkpt_->rd_escf();
+        int nirrep = chkpt_->rd_nirreps();
+        int* clsdpi = chkpt_->rd_clsdpi();
+        int* orbspi = chkpt_->rd_orbspi();
+        int* frzcpi = chkpt_->rd_frzcpi();
+        int* frzvpi = chkpt_->rd_frzvpi();
+        int nso = chkpt_->rd_nso();
+        int nmo = 0;
+        for (int h = 0;h < nirrep; h++) {
+            nmo += orbspi[h];
+        }
+
+        // C/epsilon
+        SharedMatrix C = SharedMatrix(new Matrix("C Matrix", nso, nmo));
+        SharedVector epsilon = boost::shared_ptr<Vector>(new Vector(nmo));
+
+        double **vectors;
+        double *orbital_energies;
+
+        vectors = chkpt_->rd_scf();
+        orbital_energies = chkpt_->rd_evals();
+
+        C_DCOPY(nso*nmo, vectors[0], 1, C->pointer()[0], 1);
+        C_DCOPY(nmo, orbital_energies, 1, epsilon->pointer(), 1);
+
+        free(orbital_energies);
+        free(vectors[0]);
+        free(vectors);
+
+        // Hack on a hack
+        psio_->close(32,1);
+
+        RBase* refp = new RBase(true);
+    
+        for (int h = 0;h < nirrep; h++) {
+            refp->nmopi_[h] = orbspi[h];
+            refp->frzcpi_[h] = frzcpi[h];
+            refp->frzvpi_[h] = frzvpi[h];
+            refp->doccpi_[h] = clsdpi[h];
+            refp->nalphapi_[h] = clsdpi[h];
+            refp->nbetapi_[h] = clsdpi[h];
+        }
+        
+        refp->energy_ = E_scf;
+        refp->nso_ = nso;   
+        refp->nmo_ = refp->nmopi_.sum();
+        refp->nalpha_ = refp->nalphapi_.sum();
+        refp->nbeta_ = refp->nbetapi_.sum();
+
+        refp->Ca_ = C;
+        refp->epsilon_a_ = epsilon;
+
+        ref = boost::shared_ptr<Wavefunction>(refp);
+        Process::environment.set_reference_wavefunction(ref); 
+    }
+
+    set_reference(ref);
 
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
