@@ -1,3 +1,11 @@
+"""Module with functions that call upon those in modules
+:py:mod:`proc`, :py:mod:`driver`, and :py:mod:`wrappers`.
+
+Place in this file quickly defined procedures such as
+   - aliases for complex methods
+   - simple modifications to existing methods
+
+"""
 import PsiMod
 import re
 import os
@@ -6,16 +14,13 @@ import math
 import warnings
 from driver import *
 from wrappers import *
-from molecule import *
+from molutil import *
 from text import *
 from procutil import *
 
-# Place in this file quickly defined procedures such as
-#   (1) aliases for complex methods
-#   (2) simple modifications to existing methods
-#
 # Python procedures like these can be run directly from the input file or integrated
 #   with the energy(), etc. routines by means of lines like those at the end of this file.
+
 
 def sherrillgroup_gold_standard(name='mp2', **kwargs):
     """Function to call the quantum chemical method known as 'Gold Standard'
@@ -25,29 +30,44 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
 
     .. math:: E_{total}^{\\text{Au\_std}} = E_{total,\; \\text{SCF}}^{\\text{aug-cc-pVQZ}} \; + E_{corl,\; \\text{MP2}}^{\\text{aug-cc-pV[TQ]Z}} \; + \delta_{\\text{MP2}}^{\\text{CCSD(T)}}\\big\\vert_{\\text{aug-cc-pVTZ}}
 
+    >>> energy('sherrillgroup_gold_standard')
+
     """
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    if not (kwargs.has_key('func_cbs')):  kwargs['func_cbs']                 = energy
+    if not ('func_cbs' in kwargs):
+        kwargs['func_cbs'] = energy
 
-    if not (kwargs.has_key('scf_basis')):  kwargs['scf_basis']               = 'aug-cc-pVQZ'
-    if not (kwargs.has_key('scf_scheme')):  kwargs['scf_scheme']             = highest_1
+    if not ('scf_basis' in kwargs):
+        kwargs['scf_basis'] = 'aug-cc-pVQZ'
+    if not ('scf_scheme' in kwargs):
+        kwargs['scf_scheme'] = highest_1
 
-    if not (kwargs.has_key('corl_wfn')):  kwargs['corl_wfn']                 = 'mp2'
-    if not (kwargs.has_key('corl_basis')):  kwargs['corl_basis']             = 'aug-cc-pV[TQ]Z'
-    if not (kwargs.has_key('corl_scheme')):  kwargs['corl_scheme']           = corl_xtpl_helgaker_2
+    if not ('corl_wfn' in kwargs):
+        kwargs['corl_wfn'] = 'mp2'
+    if not ('corl_basis' in kwargs):
+        kwargs['corl_basis'] = 'aug-cc-pV[TQ]Z'
+    if not ('corl_scheme' in kwargs):
+        kwargs['corl_scheme'] = corl_xtpl_helgaker_2
 
-    if not (kwargs.has_key('delta_wfn')):  kwargs['delta_wfn']               = 'ccsd(t)'
-    if not (kwargs.has_key('delta_wfn_lesser')):  kwargs['delta_wfn_lesser'] = 'mp2'
-    if not (kwargs.has_key('delta_basis')):  kwargs['delta_basis']           = 'aug-cc-pVTZ'
-    if not (kwargs.has_key('delta_scheme')):  kwargs['delta_scheme']         = highest_1
+    if not ('delta_wfn' in kwargs):
+        kwargs['delta_wfn'] = 'ccsd(t)'
+    if not ('delta_wfn_lesser' in kwargs):
+        kwargs['delta_wfn_lesser'] = 'mp2'
+    if not ('delta_basis' in kwargs):
+        kwargs['delta_basis'] = 'aug-cc-pVTZ'
+    if not ('delta_scheme' in kwargs):
+        kwargs['delta_scheme'] = highest_1
 
     return cbs(name, **kwargs)
+
 
 def run_mp2_5(name, **kwargs):
     """Function that computes MP2.5 energy from results of a DETCI
     MP3 calculation.
+
+    >>> energy('mp2.5')
 
     """
     lowername = name.lower()
@@ -76,7 +96,7 @@ def run_mp2_5(name, **kwargs):
     banners += """PsiMod.print_out('\\n')\n\n"""
     exec banners
 
-    tables  = ''
+    tables = ''
     tables += """  SCF total energy:                        %16.8f\n""" % (e_scf)
     tables += """  MP2 total energy:                        %16.8f\n""" % (e_mp2)
     tables += """  MP2.5 total energy:                      %16.8f\n""" % (e_mp25)
@@ -88,9 +108,12 @@ def run_mp2_5(name, **kwargs):
 
     return e_mp25
 
+
 def run_plugin_ccsd_serial(name, **kwargs):
     """Function encoding sequence of PSI module and plugin calls so that
     Eugene DePrince's ccsd_serial plugin can be called via :py:func:`driver.energy`.
+
+    >>> energy('plugin_ccsd_serial')
 
     """
     lowername = name.lower()
@@ -99,20 +122,22 @@ def run_plugin_ccsd_serial(name, **kwargs):
     plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
     PsiMod.plugin_load("%s" % (plugfile))
     PsiMod.set_global_option('WFN', 'CCSD')
-    run_scf("scf",**kwargs)
+    run_scf("scf", **kwargs)
     PsiMod.transqt2()
     PsiMod.plugin("plugin_ccsd_serial.so")
 
     return PsiMod.get_variable("CURRENT ENERGY")
-    
+
+
 # A direct translation of a plugin input file into a function call. Function calls are the only
 #     way to call plugins in sow/reap mode for db(), opt(), etc. This isn't best practices
 #     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated
 #     procedure where different options are set for different qc steps.
 def run_plugin_omega(name, **kwargs):
     """Function encoding sequence of PSI module and plugin calls, as well
-    as typical options, so that Rob Parrish's omega plugin can be called
-    via :py:func:`driver.energy`.
+    as typical options, to access Rob Parrish's omega plugin.
+
+    >>> energy('plugin_omega')
 
     """
     lowername = name.lower()
@@ -128,14 +153,14 @@ def run_plugin_omega(name, **kwargs):
     energy('scf', **kwargs)
 
     PsiMod.set_global_option('dft_functional', 'wB97')
-    PsiMod.set_global_option('dft_order_spherical', 25) 
-    PsiMod.set_global_option('dft_num_radial', 35) 
+    PsiMod.set_global_option('dft_order_spherical', 25)
+    PsiMod.set_global_option('dft_num_radial', 35)
     PsiMod.set_global_option('omega_procedure', 'ip')
     PsiMod.set_global_option('maxiter', 50)
     PsiMod.set_global_option('d_convergence', 5)
     PsiMod.set_global_option('e_convergence', 7)
     PsiMod.plugin("plugin_omega.so")
-    
+
     return PsiMod.get_variable('SCF TOTAL ENERGY')
 
 
@@ -144,4 +169,3 @@ procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
 procedures['energy']['plugin_ccsd_serial'] = run_plugin_ccsd_serial
 procedures['energy']['plugin_omega'] = run_plugin_omega
-

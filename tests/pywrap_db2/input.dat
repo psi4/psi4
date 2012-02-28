@@ -12,7 +12,8 @@ banner(' Database BASIC Computation: Reagent BASIC-ch4-reagent \n   methane')
 PsiMod.print_out('\n')
 
 from PsiMod import *
-from molecule import *
+from physconst import *
+from molutil import *
 from driver import *
 from text import *
 from inpsight import *
@@ -20,7 +21,11 @@ from wrappers import *
 from aliases import *
 from psiexceptions import *
 from util import *
+from qmmm import *
+from frac import *
+from pubchem import *
 import pickle
+psi4_io = PsiMod.IOManager.shared_object()
 geometry("""
 0 1
 H
@@ -41,14 +46,14 @@ PsiMod.IO.set_default_namespace("dimer")
 PsiMod.set_memory(256000000)
 
 PsiMod.set_global_option('BASIS', '6-31+G*')
-PsiMod.set_global_option('R_CONVERGENCE', 11)
+PsiMod.set_global_option('DF_BASIS_MP2', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SAPT', 'CC-PVDZ-RI')
+PsiMod.set_global_option('DF_BASIS_SCF', 'CC-PVDZ-JKFIT')
 PsiMod.set_global_option('GUESS', 'CORE')
 PsiMod.set_global_option('JOBTYPE', 'SP')
 PsiMod.set_global_option('PRINT', 1)
 PsiMod.set_global_option('REFERENCE', 'RHF')
-PsiMod.set_global_option('DF_BASIS_MP2', 'CC-PVDZ-RI')
-PsiMod.set_global_option('DF_BASIS_SAPT', 'CC-PVDZ-RI')
-PsiMod.set_global_option('DF_BASIS_SCF', 'CC-PVDZ-JKFIT')
+PsiMod.set_global_option('R_CONVERGENCE', 1e-11)
 PsiMod.set_global_option('SCF_TYPE', 'DF')
 
 PsiMod.set_global_option('BASIS', '6-31+G*')

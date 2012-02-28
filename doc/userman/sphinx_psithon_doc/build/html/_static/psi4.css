@@ -170,6 +170,26 @@ div.sphinxsidebar .searchtip
     color: #C0C0C0;
 }
 
+div.sphinxsidebar {
+    top: 30px;
+    bottom: 0;
+    margin: 0;
+    position: fixed;
+    overflow: auto;
+    height: auto;
+}
+/* this is nice, but it it leads to hidden headings when jumping
+   to an anchor */
+/*
+div.related {
+    position: fixed;
+}
+
+div.documentwrapper {
+    margin-top: 30px;
+}
+*/
+
 /*****************************************************
  * page layout - footer
  *****************************************************/
