@@ -55,33 +55,99 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
 {
   double DE;
   int dim = mol.g_nintco();
+  int blocks = 4;
 
-  fprintf(outfile,"\n\t            ****  IRC Progress Report  ****\n");
-  fprintf(outfile,  "\t            -------------------------------\n");
-  fprintf(outfile,"\t Step    Arc Distance    Energy              Change in Energy");
-  for(int i=0; i<dim; i++)
-  {
-    fprintf(outfile,"    Coord %3d", i);
-  }
+//Printing Energies and Energy Changes for Each Step
+  fprintf(outfile,  "\t----------------------------------------------");
+  fprintf(outfile,"\n\t            ****      IRC Report      ****\n");
+  fprintf(outfile,  "\t----------------------------------------------\n");
+  fprintf(outfile,  "\t Step    Energy              Change in Energy");
   fprintf(outfile,"\n");
-  fprintf(outfile,  "\t            -------------------------------\n");
-
+  fprintf(outfile,  "\t----------------------------------------------\n");
   for (int i=0; i<steps.size(); ++i)
   {
     if (i == 0) DE = g_step(i).g_energy();
     else DE = g_step(i).g_energy() - g_step(i-1).g_energy();
 
-    fprintf(outfile,"\t %3d %18.12lf %18.12lf  %18.12lf", i,g_step(i).g_arc_length(), g_step(i).g_energy(), DE);
-    print_array(outfile, g_step(i).g_q(), dim);
+    fprintf(outfile,"\t %3d %18.12lf  %18.12lf\n", i, g_step(i).g_energy(), DE);
   }
-  fprintf(outfile,"\t--------------------------------------------");
-  for(int i=0; i<dim; i++)
+  fprintf(outfile,  "\t----------------------------------------------\n");
+  fprintf(outfile,"\n");
+
+//Printing Internal Coordinates for Each step
+  fprintf(outfile,"\t--------------------------------------");
+  for(int i=0; i<(dim/blocks)*blocks; i++)
   {
     fprintf(outfile,"-------------");
   }
   fprintf(outfile,"\n");
+  fprintf(outfile,"\t              ****     IRC Steps     ****\n");
+  fprintf(outfile,"\t--------------------------------------");
+  for(int i=0; i<(dim/blocks)*blocks; i++)
+  {
+    fprintf(outfile,"-------------");
+  }
+
+  for(int j=0; j < dim/blocks; j++)
+  {
+    fprintf(outfile,"\n\t        |          Distance         |\n");
+    fprintf(outfile,"  \t Step   | Step    Arc       Line    |");
+    for(int i = (j*dim/blocks); i < (j*dim/blocks + blocks); i++)
+    {
+      fprintf(outfile,"    Coord %3d", i);
+    }
+    fprintf(outfile,"\n");
+    fprintf(outfile,"\t--------------------------------------");
+    for(int i = (j*dim/blocks); i < (j*dim/blocks + blocks); i++)
+    {
+      fprintf(outfile,"-------------");
+    }
+    fprintf(outfile,"\n");
+    for (int i=0; i<steps.size(); ++i)
+    {
+      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, g_step(i).g_step_dist(), g_step(i).g_arc_dist(), g_step(i).g_line_dist());
+      for(int k = (j*dim/blocks); k < (j*dim/blocks + blocks); k++)
+        fprintf(outfile,"%13.8f",g_step(i).g_q()[k]);
+      fprintf(outfile,"\n");
+    }
+    fprintf(outfile,"\t--------------------------------------");
+    for(int i = (j*dim/blocks); i < (j*dim/blocks + blocks); i++)
+    {
+      fprintf(outfile,"-------------");
+    }
+  }
+  if(dim % blocks != 0)
+  {
+    fprintf(outfile,"\n\t        |          Distance         |\n");
+    fprintf(outfile,"  \t Step   | Step    Arc       Line    |");
+    for(int i = (dim - dim/blocks); i < dim; i++)
+    {
+      fprintf(outfile,"    Coord %3d", i);
+    }
+    fprintf(outfile,"\n");
+    fprintf(outfile,"\t--------------------------------------");
+    for(int i = (dim - dim/blocks); i < dim; i++)
+    {
+      fprintf(outfile,"-------------");
+    }
+    fprintf(outfile,"\n");
+    for (int i=0; i<steps.size(); ++i)
+    {
+      fprintf(outfile,"\t %3d %9.2lf %9.5lf  %9.5lf   ", i, g_step(i).g_step_dist(), g_step(i).g_arc_dist(), g_step(i).g_line_dist());
+      for(int k = (dim - dim/blocks); k < dim; k++)
+        fprintf(outfile,"%13.8f",g_step(i).g_q()[k]);
+      fprintf(outfile,"\n");
+    }
+    fprintf(outfile,"\t--------------------------------------");
+    for(int i = (dim - dim/blocks); i < dim; i++)
+    {
+      fprintf(outfile,"-------------");
+    }
+  }
 
   fprintf(outfile,"\n");
+  fprintf(outfile,"\n");
+
   mol.print_intcos(outfile);
 }
 
@@ -102,51 +168,67 @@ for a first step toward new point on path.\n");
     p_irc_data->sphere_step);
 
   double s    = Opt_params.IRC_step_size;      //step size
+  p_irc_data->step_length = s;
   double *dq  = p_Opt_data->g_dq_pointer();    //internal coordinate change
   double *f_q = p_Opt_data->g_forces_pointer();//internal coordinate gradient
   int Nintco = g_nintco();
   int Natom = g_natom();
   int Ncart = 3 * Natom;
+  bool answer = 1;
 
-  if (p_irc_data->sphere_step == 1)
-  {
-    bool answer = 1;
+    if (p_irc_data->sphere_step == 1)
+    {
 
-    double *u_f_q = init_array(Nintco);
-    double *u_f_q_0 = init_array(Nintco);
-    array_copy(f_q, u_f_q, Nintco);
-    array_copy(p_irc_data->g_f_q(), u_f_q_0, Nintco);
-    array_normalize(u_f_q, Nintco);
-    array_normalize(u_f_q_0, Nintco);
-    double u_f_q_dot = array_dot(u_f_q, u_f_q_0, Nintco);
-    fprintf(outfile,"\ninternal force vector dot - current with previous: %20.15f\n", u_f_q_dot);
+      double *u_f_q = init_array(Nintco);
+      double *u_f_q_0 = init_array(Nintco);
+      array_copy(f_q, u_f_q, Nintco);
+      array_copy(p_irc_data->g_f_q(), u_f_q_0, Nintco);
+      array_normalize(u_f_q, Nintco);
+      array_normalize(u_f_q_0, Nintco);
+      double u_f_q_dot = array_dot(u_f_q, u_f_q_0, Nintco);
+      fprintf(outfile,"\ninternal force vector dot - current with previous: %20.15f\n", u_f_q_dot);
 cout << "u_f_q_dot: " << u_f_q_dot << "\n";
-    if(u_f_q_dot < -0.7)
-    {
-      p_irc_data->in_min_range = 1;
+      if(u_f_q_dot < -0.7)
+      {
+        p_irc_data->in_min_range = 1;
 cout << "Within range of minimum.\n";
-    }
+      }
 
-    if(p_irc_data->in_min_range)
+      if(p_irc_data->in_min_range)
+      {
+        cout << "\nHouston, we've found a minimum!\n";
+
+        if(Opt_params.IRC_stop == OPT_PARAMS::ASK)
+        {
+          cout << "Would you like to proceed? (1=yes, 0=no):";
+          cin >> answer;
+        }
+        if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer)
+        {
+          p_irc_data->go = 0;
+        }
+      }
+
+      free_array(u_f_q);
+      free_array(u_f_q_0);
+    }
+    if(!p_irc_data->go)
     {
-      cout << "\nHouston, we've found a minimum!\n";
+      double *q = intco_values();
+      double *q_pivot = init_array(Nintco);
 
-      if(Opt_params.IRC_stop == OPT_PARAMS::ASK)
-      {
-        cout << "Would you like to proceed? (1=yes, 0=no):";
-        cin >> answer;
-        cout << "\n";
-      }
-      if(Opt_params.IRC_stop == OPT_PARAMS::STOP || !answer)
-      {
-        p_irc_data->go = 0;
-        return;
-      }
+      double *x = g_geom_array();
+      double *f_x = g_grad_array();
+      array_scm(f_x, -1, Ncart);
+      double *f_q_copy = init_array(Nintco);
+      array_copy(f_q, f_q_copy, Nintco);
+
+      p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, q, x, f_q_copy, f_x, g_energy(),
+                                p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
+
+      return;
     }
 
-    free_array(u_f_q);
-    free_array(u_f_q_0);
-  }
 
 
   //The G matrix, its square root, and its inverse square root
@@ -262,13 +344,9 @@ free_matrix(G_inv);
     double *f_q_copy = init_array(Nintco);
     array_copy(f_q, f_q_copy, Nintco);
 
-
-    double step_length = s;
-    double arc_length;
-    double line_length = sqrt( array_dot(dq, dq, Nintco) );
-
     // q_pivot, q, x,f_q, f_x should NOT be freed; pointers are assigned in IRC_data
-    p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, q, x, f_q_copy, f_x, g_energy());
+    p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, q, x, f_q_copy, f_x, g_energy(),
+                              p_irc_data->step_length, p_irc_data->arc_length, p_irc_data->line_length);
 
     // Do displacements for each fragment separately.
     for (int f=0; f<fragments.size(); ++f) {
@@ -425,6 +503,7 @@ print_array(outfile, g_m, Nintco);
   static double lambda = 1.5 * h[0]; // Make 50% lower than the lowest (negative) eval
 
   int lag_iter=0;
+  int iter=0;
   double temp_lambda;
   double old_lambda = -999;
   double old_lagrangian;
@@ -438,8 +517,6 @@ print_array(outfile, g_m, Nintco);
     old_lagrangian = lagrangian;
     lagrangian = lag_function(lambda, df, h, p_h, g_h, Nintco, s);
     h_f = -df[0] / df[1];
-
-    bool second_try = 0;
 
     if(lagrangian*old_lagrangian < 0)
     {
@@ -473,14 +550,13 @@ print_array(outfile, g_m, Nintco);
 
     ++lag_iter;
 
-    if (lag_iter > 50 && !second_try)
+    if (++iter > 50)
     {
-      lag_iter = 0;
-      second_try = 1;
+      iter = 0;
       lambda -=100;
     }
    
-    if (lag_iter > 100 && second_try)
+    if (lag_iter > 400)
       throw(INTCO_EXCEPT("Could not converge lagrangian for constrained minimization"));
   }
 
@@ -572,8 +648,8 @@ print_array(outfile, g_m, Nintco);
 //point converged on the hypersphere
   double u_dqm_pm = array_dot(u_dq_m, u_p_m, Nintco);
   double beta = acos( fabs( u_dqm_pm ) );
-  p_irc_data->arc_step_length = fabs( s * beta / tan( beta ) );
-
+  p_irc_data->arc_length = fabs( s * beta / tan( beta ) );
+  p_irc_data->line_length = sqrt( array_dot(new_dq, new_dq, Nintco) );
 
   free_array(u_dq_m);
   free_array(u_p_m);

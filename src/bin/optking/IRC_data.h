@@ -31,9 +31,9 @@ class IRC_POINT {
   double *f_q;         // internal coordinate forces
   double *f_x;         // cartesian coordinate forces
   double energy;       // total energy
-  double step_length;
-  double arc_length;
-  double line_length;
+  double step_dist;
+  double arc_dist;
+  double line_dist;
 
   public:
 
@@ -47,9 +47,9 @@ class IRC_POINT {
       f_q = f_q_in;
       f_x = f_x_in;
       energy = E_in;
-      step_length = step;
-      arc_length = arc;
-      line_length = line;
+      step_dist = step;
+      arc_dist = arc;
+      line_dist = line;
     }
 
     ~IRC_POINT() {free_array(q_pivot); free_array(q); free_array(x); free_array(f_q); free_array(f_x);} // free memory
@@ -57,13 +57,14 @@ class IRC_POINT {
     int g_coord_step(void) const { return coord_step; }
     double *g_q_pivot(void) const { return q_pivot; }
     double *g_q(void) const { return q; }
+    double g_q(int i) const { return q[i]; }
     double *g_x(void) const { return x; }
     double *g_f_q(void) const { return f_q; }
     double *g_f_x(void) const { return f_x; }
     double g_energy(void) const { return energy; }
-    double g_step_length(void) const { return step_length; }
-    double g_arc_length(void) const { return arc_length; }
-    double g_line_length(void) const { return line_length; }
+    double g_step_dist(void) const { return step_dist; }
+    double g_arc_dist(void) const { return arc_dist; }
+    double g_line_dist(void) const { return line_dist; }
 };
 
 // IRC reaction path data
@@ -73,7 +74,9 @@ class IRC_DATA {
   double step_dist;
   double arc_dist;
   double line_dist;
-  double arc_step_length;
+  double step_length;
+  double arc_length;
+  double line_length;
 
   std::vector<IRC_POINT *> steps; 
 
@@ -88,7 +91,8 @@ class IRC_DATA {
       step_dist = 0;
       arc_dist = 0;
       line_dist = 0;
-      arc_step_length = 0;
+      arc_length = 0;
+      line_length = 0;
     };
 
     // free memory
@@ -119,6 +123,10 @@ class IRC_DATA {
     {
       return steps[steps.size()-1]->g_q();
     }
+    double g_q(int i) const
+    {
+      return g_q(i);
+    }
     double *g_x(void) const
     {
       return steps[steps.size()-1]->g_x();
@@ -131,10 +139,6 @@ class IRC_DATA {
     {
       return steps[steps.size()-1]->g_f_x();
     }
-    double g_arc_length(void) const
-    {
-      return steps[steps.size()-1]->g_arc_length();
-    }
 
     const IRC_POINT &g_step(int index) const { return *(steps[index]); }
 
@@ -146,10 +150,14 @@ class IRC_DATA {
     // summarize optimization up til now
 //    void summary(void) const;
 
-    void add_irc_point(int coord_in, double *q_p_in, double *q_in, double *x_in, double *f_q_in, double *f_x_in, double E_in)
+    void add_irc_point(int coord_in, double *q_p_in, double *q_in, double *x_in, double *f_q_in,
+                       double *f_x_in, double E_in, double step, double arc, double line)
     {
-      arc_dist += arc_step_length;
-      IRC_POINT *onepoint = new IRC_POINT(coord_in, q_p_in, q_in, x_in, f_q_in, f_x_in, E_in, step_dist, arc_dist, line_dist);
+      step_dist = coord_in * step_length;
+      arc_dist += arc_length;
+      line_dist += line_length;
+      IRC_POINT *onepoint = new IRC_POINT(coord_in, q_p_in, q_in, x_in, f_q_in, f_x_in, E_in,
+                                          step_dist, arc_dist, line_dist);
       steps.push_back(onepoint);
     }
 
