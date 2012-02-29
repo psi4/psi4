@@ -35,6 +35,7 @@ void Hamiltonian::common_init()
     print_ = 1;
     debug_ = 0;
     bench_ = 0;
+    exact_diagonal_ = false;
 }
 
 RHamiltonian::RHamiltonian(boost::shared_ptr<JK> jk) :
@@ -197,6 +198,7 @@ void CISRHamiltonian::print_header() const
 }
 boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
 {
+
     int nirrep = eps_aocc_->nirrep();
     int* nov = new int[nirrep];
     ::memset((void*)nov,'\0',nirrep*sizeof(int));
@@ -226,6 +228,21 @@ boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
                 }
             }
             offset += nocc * nvir;
+        }
+    }
+
+    if (exact_diagonal_) {
+        try {
+            SharedVector iaia = jk_->iaia(Caocc_,Cavir_);
+            double factor = (singlet_ ? 1.0 : -1.0);
+            for (int symm = 0; symm < nirrep; ++symm) {
+                for (int ia = 0; ia < nov[symm]; ia++) {
+                    diag->add(symm,ia,iaia->get(symm,ia)); 
+                }
+            } 
+            fprintf(outfile, "    CISR Hamiltonian: (ia|ia) integrals used to form exact diagonal.\n\n");
+        } catch (...) {
+            fprintf(outfile, "    CISR Hamiltonian: (ia|ia) integrals not available for JK type.\n\n");
         }
     }
 

@@ -1024,6 +1024,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Solver residue or eigenvector delta
     -*/
     options.add_str("SOLVER_QUANTITY", "RESIDUAL", "EIGENVECTOR RESIDUAL");
+    /*- Solver exact diagonal or eigenvalue difference?
+    -*/
+    options.add_bool("SOLVER_EXACT_DIAGONAL", false);
 
   }
   if (name == "MP2"|| options.read_globals()) {

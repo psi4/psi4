@@ -328,6 +328,14 @@ public:
      */
     void finalize();
 
+    /**
+     * Virtual method to provide (ia|ia) integrals for 
+     * SO-basis C_mi and C_na matrices in O(N^4) or less
+     * Only available in DF-type JK integrals
+     * Throws by default
+     */
+    virtual SharedVector iaia(SharedMatrix Ci, SharedMatrix Ca);
+
     // => Accessors <= //
 
     /**
@@ -670,6 +678,14 @@ public:
 
     /// Destructor
     virtual ~DFJK();
+
+    /**
+     * Method to provide (ia|ia) integrals for 
+     * SO-basis C_mi and C_na matrices in O(N^4) or less
+     * Only available in DF-type JK integrals
+     * Throws by default
+     */
+    virtual SharedVector iaia(SharedMatrix Ci, SharedMatrix Ca);
 
     // => Knobs <= //
 

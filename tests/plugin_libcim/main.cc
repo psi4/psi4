@@ -18,7 +18,7 @@ read_options(std::string name, Options &options)
      /*- cim threshold 1 -*/
      options.add_double("THRESH1", 0.01);
      /*- cim threshold 2 -*/
-     options.add_double("THRESH2", 0.03);
+     options.add_double("THRESH2", 0.05);
      /*- cim threshold 3 -*/
      options.add_double("THRESH3", 1e-3);
   }

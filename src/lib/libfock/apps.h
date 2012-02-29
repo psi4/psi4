@@ -52,10 +52,15 @@ protected:
 public:
 
     RBase();
+    // TODO: Remove AS SOON AS POSSIBLE, such a dirty hack
+    RBase(bool flag);
     virtual ~RBase();
 
     virtual bool same_a_b_orbs() const { return true; }
     virtual bool same_a_b_dens() const { return true; }
+
+    // TODO: Remove AS SOON AS POSSIBLE, such a dirty hack
+    virtual double compute_energy() { return 0.0; }
 
     void set_print(int print) { print_ = print; }
 

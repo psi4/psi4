@@ -4,6 +4,7 @@
 #include"cim.h"
 #include<libmints/wavefunction.h>
 #include<libmints/matrix.h>
+#define empty -999
 
 using namespace psi;
 using namespace boost;
@@ -15,6 +16,11 @@ namespace psi{
  */
 void CIM::OccupiedDomains(){
 
+  // all orbitals:         domain,domainsize
+  // central orbitals:     central, ncentral
+  // central mo domain:    modomain, nmodomain
+  // environmental domain: env, nenv
+
   fprintf(outfile,"\n");
   fprintf(outfile,"  ==> Define Clusters of Interacting Occupied Orbitals <==\n");
   fprintf(outfile,"\n");
@@ -22,35 +28,64 @@ void CIM::OccupiedDomains(){
   // threshold for central domains
   thresh1 = options_.get_double("THRESH1");
 
-  int**pdomains = (int**)malloc(ndoccact*sizeof(int*));
-  int*pdomainsizes = (int*)malloc(ndoccact*sizeof(int));
+  int**domain = (int**)malloc(ndoccact*sizeof(int*));
+  int*domainsize = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++){
-      pdomains[i] = (int*)malloc(ndoccact*sizeof(int));
-      pdomainsizes[i] = 0;
+      domain[i] = (int*)malloc(ndoccact*sizeof(int));
+      domainsize[i] = 0;
       for (int j=0; j<ndoccact; j++){
-          pdomains[i][j] = -999;
+          domain[i][j] = empty;
       }
   }
   for (int i=0; i<ndoccact; i++){
       for (int j=0; j<ndoccact; j++){
           if (fabs(Fock[i+nfzc][j+nfzc]) >= thresh1){
-             pdomains[i][j] = j;
-             pdomainsizes[i]++;
+             domain[i][j] = j;
+             domainsize[i]++;
           }
       }
   }
 
-  // collapse redundant domains:
- 
+  // list of central orbitals 
   central = (int**)malloc(ndoccact*sizeof(int*));
   ncentral = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++){
       central[i] = (int*)malloc(ndoccact*sizeof(int));
+      for (int j=0; j<ndoccact; j++){
+          central[i][j] = empty;
+      }
       ncentral[i] = 1;
-      central[i][0] = i;
+      central[i][i] = i;
+  }
+  ndomains = ndoccact;
+
+  // list of central mo domains
+  modomain = (int**)malloc(ndoccact*sizeof(int*));
+  nmodomain = (int*)malloc(ndoccact*sizeof(int));
+  for (int i=0; i<ndoccact; i++){
+      modomain[i] = (int*)malloc(ndoccact*sizeof(int));
+      nmodomain[i] = 0;
+  }
+  for (int i=0; i<ndoccact; i++){
+      for (int j=0; j<ndoccact; j++){
+          modomain[i][j] = domain[i][j];
+      }
+  }
+  // remove central orbitals from central mo domain:
+  for (int i=0; i<ndoccact; i++){
+      modomain[i][i] = empty;
+      nmodomain[i] = 0;
+      for (int j=0; j<ndoccact; j++){
+          if (modomain[i][j]!=empty) nmodomain[i]++;
+      }
+      domainsize[i]=0;
+      for (int j=0; j<ndoccact; j++){
+          if (domain[i][j]!=empty) domainsize[i]++;
+      }
   }
 
-  int ndomains = ndoccact;
+
+  // collapse redundant domains:
   int *skip = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++) skip[i] = 0;
   for (int i=0; i<ndoccact; i++){
@@ -61,22 +96,18 @@ void CIM::OccupiedDomains(){
           if (skip[j]) continue;
           int count = 0;
           for (int k=0; k<ndoccact; k++){
-              int dum  = pdomains[i][k] - pdomains[j][k];
-              if (dum==0 && pdomains[i][k]!=-999) count++;
+              if (domain[i][k]==empty) continue;
+              if (domain[i][k]==domain[j][k]) count++;
           }
-          if (count==pdomainsizes[i]){
+          // add central orbital from {i} to {j}
+          // also remove that orbital from the central mo domain of {j}
+          if (count==domainsize[i]){
              skip[i] = 1;
-             central[j][ncentral[j]++] = i;
+             central[j][i] = i;
+             ncentral[j]++;
+             modomain[j][i] = empty;
              ndomains--;
           }
-      }
-  }
-
-  // remove central orbitals from central mo domain:
-  for (int i=0; i<ndoccact; i++){
-      if (skip[i]) continue;
-      for (int j=0; j<ncentral[i]; j++){
-          pdomains[i][central[i][j]] = -999;
       }
   }
 
@@ -87,7 +118,7 @@ void CIM::OccupiedDomains(){
       env[i] = (int*)malloc(ndoccact*sizeof(int));
       nenv[i] = 0;
       for (int j=0; j<ndoccact; j++){
-          env[i][j] = -999;
+          env[i][j] = empty;
       }
   }
   thresh2 = options_.get_double("THRESH2");
@@ -98,253 +129,208 @@ void CIM::OccupiedDomains(){
       for (int j=0; j<ndoccact; j++){
           int isenv = 0;
           int redundant = 0;
-          // check interaction of orbital j with central orbitals in cluster i
-          for (int k=0; k<ncentral[i]; k++){
-              if (central[i][k]==j){
-                 redundant=1;
-                 break;
-              }
-              if (fabs(Fock[central[i][k]+nfzc][j+nfzc]) >= thresh2){
-                 isenv=1;
-              }
-          }
-          if (redundant) continue;
-          // check interaction of orbital j with central mo domain in cluster i
+          // check interaction of orbital j with all orbitals in cluster {i}
           for (int k=0; k<ndoccact; k++){
-              if (pdomains[i][k]==-999) continue;
-              if (pdomains[i][k]==j){
+              if (domain[i][k]==empty) continue;
+              if (k==j){
                  redundant=1;
                  break;
               }
-              if (fabs(Fock[pdomains[i][k]+nfzc][j+nfzc]) >= thresh2){
+              if (fabs(Fock[k+nfzc][j+nfzc]) >= thresh2){
                  isenv=1;
               }
           }
           if (redundant) continue;
           // add orbital to environmental domain
-          if (isenv)
+          if (isenv){
              env[i][j] = j;
-      }
-  }
-
-  // print out clusters
-  for (int i=0; i<ndoccact; i++){
-      if (skip[i]) continue;
-      fprintf(outfile,"  Cluster %3i:\n",i);
-      int count=0;
-      int first=1;
-      for (int j=0; j<ncentral[i]; j++){
-          count++;
-          if (count==1){
-             if (first){
-                first=0;
-                fprintf(outfile,"     Central orbitals:      ");
-             }else{
-                fprintf(outfile,"                            ");
-             }
           }
-          fprintf(outfile," %3i",central[i][j]);
-          if (count==8){
-             fprintf(outfile,"\n");
-             count=0;
-          }
-      }
-      fprintf(outfile,"\n");
-      count=0;
-      first=1;
-      for (int j=0; j<ndoccact; j++){
-          if (pdomains[i][j]!=-999){
-             count++;
-             if (count==1){
-                if (first){
-                   first=0;
-                   fprintf(outfile,"     Central domain:        ");
-                }else{
-                   fprintf(outfile,"                            ");
-                }
-             }
-             fprintf(outfile," %3i",pdomains[i][j]);
-          }
-          if (count==8){
-             fprintf(outfile,"\n");
-             count=0;
-          }
-      }
-      fprintf(outfile,"\n");
-      count=0;
-      first=1;
-      for (int j=0; j<ndoccact; j++){
-          if (env[i][j]!=-999){
-             count++;
-             if (count==1){
-                if (first){
-                   first=0;
-                   fprintf(outfile,"     Environmental domain:  ");
-                }else{
-                   fprintf(outfile,"                            ");
-                }
-             }
-             fprintf(outfile," %3i",env[i][j]);
-          }
-          if (count==8){
-             fprintf(outfile,"\n");
-             count=0;
-          }
-      }
-      fprintf(outfile,"\n");
-      fprintf(outfile,"\n");
-  }
-  fflush(outfile);
-
-
-  // TODO
-  /*fprintf(outfile,"\n");
-  fprintf(outfile,"  Collapse Redundant Domains:\n");
-  fprintf(outfile,"\n");
-
-  int**tempdomains=(int**)malloc(ndoccact*sizeof(double*));
-  int*tempdomainsizes=(int*)malloc(ndoccact*sizeof(double));
-  for (int i=0; i<ndoccact; i++){
-      tempdomains[i] = (int*)malloc(ndoccact*sizeof(int));
-      tempdomainsizes[i] = 0;
-      for (int j=0; j<ndoccact; j++){
-          tempdomains[i][j] = -999;
       }
   }
   for (int i=0; i<ndoccact; i++){
       if (skip[i]) continue;
-      for (int j=0; j<ncentral[i]; j++){
-          tempdomains[i][central[i][j]] = central[i][j];
-          tempdomainsizes[i]++;
-      }
+      domainsize[i]=0;
       for (int j=0; j<ndoccact; j++){
-          if (pdomains[i][j]==-999) continue;
-          tempdomains[i][j] = pdomains[i][j];
-          tempdomainsizes[i]++;
-      }
-      for (int j=0; j<ndoccact; j++){
-          if (env[i][j]==-999) continue;
-          tempdomains[i][j] = env[i][j];
-          tempdomainsizes[i]++;
+          if (env[i][j]!=empty) domain[i][j] = j;
+          if (domain[i][j]!=empty) domainsize[i]++;
       }
   }
-  
-  ndomains = 0;
-  for (int i=0; i<ndoccact; i++){
-      if (!skip[i]) ndomains++;
-  }
-  printf("ndomains %5i\n",ndomains);
 
-  for (int i=0; i<ndoccact; i++){
+  // collapse again
+  for (int i=0; i<ndoccact; i++){     // {I}
       if (skip[i]) continue;
-      // check if domain i fits in domain j
-      for (int j=0; j<ndoccact; j++){
-          if (i==j)    continue;
+      int tossi=0;
+      for (int j=0; j<ndoccact; j++){ // {J}
+          if (i==j) continue;
           if (skip[j]) continue;
           int count = 0;
           for (int k=0; k<ndoccact; k++){
-              int dum  = tempdomains[i][k] - tempdomains[j][k];
-              if (dum==0 && tempdomains[i][k]!=-999) count++;
+              if (domain[i][k]==empty) continue;
+              if (domain[i][k]==domain[j][k]) count++;
           }
-          if (count==tempdomainsizes[i]){
-             skip[i] = 1;
-             for (int k=0; k<ncentral[i]; k++){
-                 // is the orbital already a central orbital?
-                 int redundant=0;
-                 for (int l=0; l<ncentral[j]; l++){
-                     if (central[i][k]==central[j][l]){
-                        redundant=1;
-                        break;
-                     }
-                 }
-                 if (redundant) continue;
-                 // add to central orbitals of cluster j
-                 central[j][ncentral[j]]    = central[i][k];
-                 pdomains[j][central[i][k]] = -999;
-                 env[j][central[i][k]]      = -999;
-                 ncentral[j]++;
+          // if {I} fits in {J}, add centrals of {I} to {J} and remove
+          // those orbitals from the central mo and environmental domains
+          if (count==domainsize[i]){
+             for (int k=0; k<ndoccact; k++){
+                 if (central[i][k]==empty) continue;
+                 central[j][k]  = k;
+                 modomain[j][k] = empty;
+                 env[j][k]      = empty;
              }
+             tossi=1;
           }
+          
       }
+      if (tossi) skip[i] = 1;
   }
-  ndomains = 0;
-  for (int i=0; i<ndoccact; i++){
-      if (!skip[i]) ndomains++;
-  }
-  printf("ndomains %5i\n",ndomains);
 
-
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Full Occupied Domains:\n");
-  fprintf(outfile,"\n");
-
+  // count orbitals in each class:
   for (int i=0; i<ndoccact; i++){
       if (skip[i]) continue;
-      fprintf(outfile,"  Cluster %3i:\n",i);
-      int count=0;
-      int first=1;
-      for (int j=0; j<ncentral[i]; j++){
-          count++;
-          if (count==1){
-             if (first){
-                first=0;
-                fprintf(outfile,"     Central orbitals:      ");
-             }else{
-                fprintf(outfile,"                            ");
-             }
-          }
-          fprintf(outfile," %3i",central[i][j]);
-          if (count==8){
-             fprintf(outfile,"\n");
-             count=0;
-          }
-      }
-      fprintf(outfile,"\n");
-      count=0;
-      first=1;
+      ncentral[i] = 0;
+      nmodomain[i] = 0;
+      nenv[i] = 0;
       for (int j=0; j<ndoccact; j++){
-          if (pdomains[i][j]!=-999){
-             count++;
-             if (count==1){
-                if (first){
-                   first=0;
-                   fprintf(outfile,"     Central domain:        ");
-                }else{
-                   fprintf(outfile,"                            ");
-                }
-             }
-             fprintf(outfile," %3i",pdomains[i][j]);
-          }
-          if (count==8){
-             fprintf(outfile,"\n");
-             count=0;
-          }
+          if (central[i][j]!=empty)  ncentral[i]++;
+          if (modomain[i][j]!=empty) nmodomain[i]++;
+          if (env[i][j]!=empty)      nenv[i]++;
       }
-      fprintf(outfile,"\n");
-      count=0;
-      first=1;
-      for (int j=0; j<ndoccact; j++){
-          if (env[i][j]!=-999){
-             count++;
-             if (count==1){
-                if (first){
-                   first=0;
-                   fprintf(outfile,"     Environmental domain:  ");
-                }else{
-                   fprintf(outfile,"                            ");
-                }
-             }
-             fprintf(outfile," %3i",env[i][j]);
-          }
-          if (count==8){
-             fprintf(outfile,"\n");
-             count=0;
-          }
-      }
-      fprintf(outfile,"\n");
-      fprintf(outfile,"\n");
   }
-  fflush(outfile);*/
+
+  fprintf(outfile,"  Cluster |");
+  fprintf(outfile," Central Orbitals     |");
+  fprintf(outfile," Central MO Domain    |");
+  fprintf(outfile," Environmental Domain\n");
+  fprintf(outfile,"  ----------------------------------------------------------------------------\n");
+  // print clusters:
+  int clusternum=-1;
+  for (int i=0; i<ndoccact; i++){
+      if (skip[i]) continue;
+      clusternum++;
+
+      int nrowscentral  = ncentral[i]  / 5;
+      int nrowsmodomain = nmodomain[i] / 5;
+      int nrowsenv      = nenv[i]      / 5;
+      if (ncentral[i]%5>0)  nrowscentral++;
+      if (nmodomain[i]%5>0) nrowsmodomain++;
+      if (nenv[i]%5>0)      nrowsenv++;
+      int nrows = nrowscentral;
+      if (nrowsmodomain>nrows) nrows = nrowscentral;
+      if (nrowsmodomain>nrows) nrows = nrowsmodomain;
+      if (nrowsenv>nrows)      nrows = nrowsenv;
+      int nspacescentral  = nrowscentral  * 5 - ncentral[i];
+      int nspacesmodomain = nrowsmodomain * 5 - nmodomain[i];
+      int nspacesenv      = nrowsenv      * 5 - nenv[i];
+
+      int lastcentral=-1;
+      int lastmodomain=-1;
+      int lastenv=-1;
+
+      
+      for (int row = 0; row<nrows; row++){
+
+
+          // cluster number
+          if (row==0){
+             fprintf(outfile,"      %3i |",clusternum);
+          }
+          else{
+             fprintf(outfile,"          |");
+          }
+
+          // central orbitals
+          if (nrowscentral<row+1){
+             fprintf(outfile,"                      |");
+          }
+          else{
+             if (row<nrowscentral-1){
+                int count=0;
+                for (int j=lastcentral+1; j<ndoccact; j++){
+                    if (central[i][j]!=empty){
+                       fprintf(outfile," %3i",j);
+                       count++;
+                    }
+                    if (count==5){
+                       lastcentral = j;
+                       break;
+                    }
+                }
+             }
+             else{
+                for (int j=lastcentral+1; j<ndoccact; j++){
+                    if (central[i][j]!=empty){
+                       fprintf(outfile," %3i",j);
+                    }
+                }
+                for (int j=0; j<nspacescentral; j++){
+                    fprintf(outfile,"    ");
+                }
+             }
+             fprintf(outfile,"  |");
+          }
+          // central mo domain
+          if (nrowsmodomain<row+1){
+             fprintf(outfile,"                      |");
+          }
+          else{
+             if (row<nrowsmodomain-1){
+                int count=0;
+                for (int j=lastmodomain+1; j<ndoccact; j++){
+                    if (modomain[i][j]!=empty){
+                       fprintf(outfile," %3i",j);
+                       count++;
+                    }
+                    if (count==5){
+                       lastmodomain = j;
+                       break;
+                    }
+                }
+             }
+             else{
+                for (int j=lastmodomain+1; j<ndoccact; j++){
+                    if (modomain[i][j]!=empty){
+                       fprintf(outfile," %3i",j);
+                    }
+                }
+                for (int j=0; j<nspacesmodomain; j++){
+                    fprintf(outfile,"    ");
+                }
+             }
+             fprintf(outfile,"  |");
+          }
+          // environmental doain
+          if (nrowsenv<row+1){
+             fprintf(outfile,"\n");
+          }
+          else{
+             if (row<nrowsenv-1){
+                int count=0;
+                for (int j=lastenv+1; j<ndoccact; j++){
+                    if (env[i][j]!=empty){
+                       fprintf(outfile," %3i",j);
+                       count++;
+                    }
+                    if (count==5){
+                       lastenv = j;
+                       break;
+                    }
+                }
+             }
+             else{
+                for (int j=lastenv+1; j<ndoccact; j++){
+                    if (env[i][j]!=empty){
+                       fprintf(outfile," %3i",j);
+                    }
+                }
+             }
+             fprintf(outfile,"\n");
+          }
+         
+          
+      }
+      fprintf(outfile,"  ----------------------------------------------------------------------------\n");
+  }
+  fflush(outfile);
 
 }
 
