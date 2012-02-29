@@ -384,19 +384,19 @@ DCFTSolver::compute_energy()
     Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
     Process::environment.globals["DCFT TAU SQUARED CORRECTION"] = energy_tau_squared_;
 
-    if(!options_.get_bool("RELAX_ORBITALS")){
+    if(!options_.get_bool("MO_RELAX")){
         fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
     }
 
     print_opdm();
 
-    if(options_.get_bool("COMPUTE_TPDM")) dump_density();
+    if(options_.get_bool("TPDM")) dump_density();
     mulliken_charges();
     check_n_representability();
 
     if(options_.get_bool("COMPUTE_GRADIENT")) compute_gradient();
 
-    if(!options_.get_bool("RELAX_ORBITALS") && options_.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("MO_RELAX") && options_.get_bool("IGNORE_TAU")){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         /*
          * Comout the CEPA-0 correlation energy

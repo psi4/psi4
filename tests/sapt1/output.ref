@@ -1,33 +1,97 @@
     -----------------------------------------------------------------------
           PSI4: An Open-Source Ab Initio Electronic Structure Package
-                              PSI 4.0.0-alpha Driver
-    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
-    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
-    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+                              PSI 4.0.0-beta1 Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
 
                          Additional Contributions by
-    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
 
     Using LocalCommunicator (Number of processes = 1)
 
     Memory level set to 256.000 MB
-No atoms detected, returning
-No atoms detected, returning
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! SAPT0 cc-pVDZ computation of the ethene-ethyne binding energy, using the cc-pVDZ-JKFIT RI basis for SCF
+#! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+
+memory 250 mb
+
+Eref = [ 85.189064196429101,  -0.00359915058,  0.00362911158,  #TEST
+         -0.00083137117,      -0.00150542374, -0.00230683391 ] #TEST
+
+molecule ethene_ethyne {
+     0 1
+     C     0.000000    -0.667578    -2.124659
+     C     0.000000     0.667578    -2.124659
+     H     0.923621    -1.232253    -2.126185
+     H    -0.923621    -1.232253    -2.126185
+     H    -0.923621     1.232253    -2.126185
+     H     0.923621     1.232253    -2.126185
+     --
+     0 1
+     C     0.000000     0.000000     2.900503
+     C     0.000000     0.000000     1.693240
+     H     0.000000     0.000000     0.627352
+     H     0.000000     0.000000     3.963929
+     units angstrom
+     no_reorient
+     symmetry c1
+}
+
+set globals {
+    basis         cc-pvdz
+    guess         sad
+    scf_type      df
+    sad_print     2
+    d_convergence 11
+    puream        true
+    print         1
+}
+
+energy('sapt0')
+
+Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
+Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
+Eind  = PsiMod.get_variable("SAPT IND ENERGY")
+Edisp = PsiMod.get_variable("SAPT DISP ENERGY")
+ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY")
+
+compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
+compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst")                                                 #TEST
+compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch")                                                 #TEST
+compare_values(Eref[3], Eind, 6, "SAPT0 Eind")                                                   #TEST
+compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")                                                 #TEST
+compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                                   #TEST
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //              Dimer HF             //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on compute-1-13.local
-*** at Wed Mar 16 06:58:43 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:51 2012
 
 
- RHF: by Justin Turney and Rob Parrish
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
 
-  Release version.
+  ==> Geometry <==
 
     Molecular point group: c1
 
@@ -62,21 +126,41 @@ No atoms detected, returning
 
   Running in c1 symmetry.
 
-  Input DOCC vector = (15   A )
-  Input SOCC vector = ( 0   A )
+  Nuclear repulsion =   85.189064196429101
 
-  Nuclear repulsion =   85.189070701792517
-  Energy threshold  = 1.00e-10
-  Density threshold = 1.00e-11
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 30
+  Nalpha       = 15
+  Nbeta        = 15
+
+  ==> Algorithm <==
 
   SCF Algorithm Type is DF.
   DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-11
+  Integral threshold = 0.00e+00
 
-  Minimum eigenvalue in the overlap matrix is 7.1821788969E-04.
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 42
+    Number of basis function: 86
+    Number of Cartesian functions: 90
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.1821828298E-04.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  SAD: Determining atomic occupations:
+  Determining Atomic Occupations
   Atom 0, Z = 6, nelec = 6, nhigh = 2, nalpha = 4, nbeta = 2
   Atom 1, Z = 6, nelec = 6, nhigh = 2, nalpha = 4, nbeta = 2
   Atom 2, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
@@ -112,23 +196,24 @@ No atoms detected, returning
 
                                          Total Energy            Delta E              Density RMS
 
-  @Atomic UHF iteration   1 energy:   -36.74995545600609      -10.43421930287274     0.20381491156350
-  @Atomic UHF iteration   2 energy:   -37.68068984183034       -0.93073438582424     0.00852644437166
-  @Atomic UHF iteration   3 energy:   -37.68595888387351       -0.00526904204317     0.00155453215419
-  @Atomic UHF iteration   4 energy:   -37.68642674154005       -0.00046785766654     0.00076228587775
-  @Atomic UHF iteration   5 energy:   -37.68652014420299       -0.00009340266294     0.00036724853909
-  @Atomic UHF iteration   6 energy:   -37.68653937625650       -0.00001923205351     0.00017378246339
-  @Atomic UHF iteration   7 energy:   -37.68654337893658       -0.00000400268009     0.00008129601975
-  @Atomic UHF iteration   8 energy:   -37.68654421564285       -0.00000083670626     0.00003774785218
-  @Atomic UHF iteration   9 energy:   -37.68654439085719       -0.00000017521434     0.00001744235457
-  @Atomic UHF iteration  10 energy:   -37.68654442757538       -0.00000003671820     0.00000803420949
+  @Atomic UHF iteration   1 energy:   -36.74995545600610      -10.43421930287275     0.20381491156350
+  @Atomic UHF iteration   2 energy:   -37.68068984183031       -0.93073438582422     0.00852644437166
+  @Atomic UHF iteration   3 energy:   -37.68595888387351       -0.00526904204320     0.00155453215419
+  @Atomic UHF iteration   4 energy:   -37.68642674154004       -0.00046785766653     0.00076228587775
+  @Atomic UHF iteration   5 energy:   -37.68652014420301       -0.00009340266297     0.00036724853909
+  @Atomic UHF iteration   6 energy:   -37.68653937625650       -0.00001923205350     0.00017378246339
+  @Atomic UHF iteration   7 energy:   -37.68654337893661       -0.00000400268010     0.00008129601975
+  @Atomic UHF iteration   8 energy:   -37.68654421564292       -0.00000083670631     0.00003774785218
+  @Atomic UHF iteration   9 energy:   -37.68654439085719       -0.00000017521428     0.00001744235457
+  @Atomic UHF iteration  10 energy:   -37.68654442757538       -0.00000003671819     0.00000803420949
+  @Atomic UHF Final Energy for atom C:   -37.68654442757538
 
   UHF Computation for Unique Atom 1 which is Atom 2:
   Basis Set
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
-    Spherical Harmonics?: false
+    Spherical Harmonics?: true
     Max angular momentum: 1
 
   Occupation: nalpha = 1, nbeta = 0, norbs = 5
@@ -147,78 +232,101 @@ No atoms detected, returning
 
   @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
   @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+  @Atomic UHF Final Energy for atom H:    -0.49927840341958
 
+  Initial RHF energy:  -101.40161154966016
 
-  Approximating occupied orbitals via Partial Cholesky Decomposition.
-  NOTE: The zero-th SCF iteration will not be variational.
-  Irrep  0:    26 of    86 possible partial occupation vectors selected for C.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         86      86      30      30      30       0
+   -------------------------------------------------------
+    Total      86      86      15      15      15       0
+   -------------------------------------------------------
 
-  Initial RHF energy:  -116.05694396928170
+  ==> Integral Setup <==
 
-                        Total Energy        Delta E      Density RMS
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
 
-   @RHF iter   0:  -130.36754115682629   -1.43106e+01    0.00000e+00  
-   @RHF iter   1:   -95.18797704878428    3.51796e+01    1.14963e+00  
-   @RHF iter   2:  -102.39607484884696   -7.20810e+00    1.14895e+00 DIIS
-   @RHF iter   3:  -143.41934543158413   -4.10233e+01    1.09855e-01 DIIS
-   @RHF iter   4:  -152.61749727613937   -9.19815e+00    8.35198e-02 DIIS
-   @RHF iter   5:  -154.70666352371410   -2.08917e+00    2.48472e-02 DIIS
-   @RHF iter   6:  -154.83634237493447   -1.29679e-01    4.40229e-03 DIIS
-   @RHF iter   7:  -154.86048982693023   -2.41475e-02    2.42208e-03 DIIS
-   @RHF iter   8:  -154.86543834846685   -4.94852e-03    1.00930e-03 DIIS
-   @RHF iter   9:  -154.86619347140260   -7.55123e-04    4.58180e-04 DIIS
-   @RHF iter  10:  -154.86643125185105   -2.37780e-04    1.79553e-04 DIIS
-   @RHF iter  11:  -154.86652321710699   -9.19653e-05    1.34844e-04 DIIS
-   @RHF iter  12:  -154.86653154066551   -8.32356e-06    4.98977e-05 DIIS
-   @RHF iter  13:  -154.86653168556859   -1.44903e-07    7.05628e-06 DIIS
-   @RHF iter  14:  -154.86653168784528   -2.27669e-09    9.25812e-07 DIIS
-   @RHF iter  15:  -154.86653168794442   -9.91349e-11    2.35805e-07 DIIS
-   @RHF iter  16:  -154.86653168794879   -4.37694e-12    5.90058e-08 DIIS
-   @RHF iter  17:  -154.86653168794885   -5.68434e-14    8.71265e-09 DIIS
-   @RHF iter  18:  -154.86653168794891   -5.68434e-14    1.20601e-09 DIIS
-   @RHF iter  19:  -154.86653168794879    1.13687e-13    2.18023e-10 DIIS
-   @RHF iter  20:  -154.86653168794919   -3.97904e-13    7.15490e-11 DIIS
-   @RHF iter  21:  -154.86653168794891    2.84217e-13    1.51217e-11 DIIS
+  No auxiliary basis selected, defaulting to CC-PVDZ-JKFIT
 
+  ==> Auxiliary Basis:  <==
+
+  Basis Set
+    Number of shells: 150
+    Number of basis function: 418
+    Number of Cartesian functions: 474
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Using Core Algorithm.
+
+  Will save (Q|mn) integrals to File 97.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   0:  -156.30496271626077   -5.49034e+01   0.00000e+00 
+   @RHF iter   1:  -154.80218348175066    1.50278e+00   1.68562e-02 
+   @RHF iter   2:  -154.86090519150639   -5.87217e-02   3.07465e-03 DIIS
+   @RHF iter   3:  -154.86591354546078   -5.00835e-03   1.04111e-03 DIIS
+   @RHF iter   4:  -154.86650789564806   -5.94350e-04   3.75043e-04 DIIS
+   @RHF iter   5:  -154.86652842890953   -2.05333e-05   7.55142e-05 DIIS
+   @RHF iter   6:  -154.86653144583363   -3.01692e-06   2.10103e-05 DIIS
+   @RHF iter   7:  -154.86653167193839   -2.26105e-07   9.16895e-06 DIIS
+   @RHF iter   8:  -154.86653167943348   -7.49509e-09   2.32505e-06 DIIS
+   @RHF iter   9:  -154.86653167992273   -4.89251e-10   4.89250e-07 DIIS
+   @RHF iter  10:  -154.86653167999714   -7.44080e-11   1.69726e-07 DIIS
+   @RHF iter  11:  -154.86653168001254   -1.54046e-11   4.42590e-08 DIIS
+   @RHF iter  12:  -154.86653168001862   -6.08225e-12   3.63151e-08 DIIS
+   @RHF iter  13:  -154.86653168001931   -6.82121e-13   1.17130e-08 DIIS
+   @RHF iter  14:  -154.86653168001914    1.70530e-13   9.22287e-10 DIIS
+   @RHF iter  15:  -154.86653168001902    1.13687e-13   1.07244e-10 DIIS
+   @RHF iter  16:  -154.86653168001919   -1.70530e-13   3.58415e-11 DIIS
+   @RHF iter  17:  -154.86653168001897    2.27374e-13   2.62699e-11 DIIS
+   @RHF iter  18:  -154.86653168001897    0.00000e+00   7.43064e-11 DIIS
+
+  ==> Post-Iterations <==
 
 	Orbital Energies (a.u.)
 	-----------------------
 
 	Doubly Occupied:                                                      
 
-	   1A   -11.246222     2A   -11.244579     3A   -11.240716  
-	   4A   -11.237038     5A    -1.042222     6A    -1.018644  
-	   7A    -0.799735     8A    -0.754948     9A    -0.666187  
-	  10A    -0.649263    11A    -0.592447    12A    -0.513154  
-	  13A    -0.397893    14A    -0.397875    15A    -0.384630  
+	   1A    -11.246223     2A    -11.244579     3A    -11.240716  
+	   4A    -11.237038     5A     -1.042222     6A     -1.018644  
+	   7A     -0.799735     8A     -0.754948     9A     -0.666187  
+	  10A     -0.649263    11A     -0.592447    12A     -0.513153  
+	  13A     -0.397893    14A     -0.397875    15A     -0.384630  
 
 	Virtual:                                                              
 
-	  16A     0.152933    17A     0.190262    18A     0.203436  
-	  19A     0.206684    20A     0.208902    21A     0.228953  
-	  22A     0.235175    23A     0.282802    24A     0.297687  
-	  25A     0.454782    26A     0.508354    27A     0.537967  
-	  28A     0.573521    29A     0.600487    30A     0.663739  
-	  31A     0.670358    32A     0.687309    33A     0.763587  
-	  34A     0.783541    35A     0.811797    36A     0.826653  
-	  37A     0.853430    38A     0.861210    39A     0.897838  
-	  40A     0.925730    41A     0.962649    42A     0.982163  
-	  43A     1.107309    44A     1.121284    45A     1.211763  
-	  46A     1.230814    47A     1.235775    48A     1.237868  
-	  49A     1.249669    50A     1.261754    51A     1.261841  
-	  52A     1.283630    53A     1.347751    54A     1.388263  
-	  55A     1.480928    56A     1.599089    57A     1.647254  
-	  58A     1.647452    59A     1.687412    60A     1.687466  
-	  61A     1.724231    62A     1.743641    63A     1.809350  
-	  64A     1.854749    65A     1.854799    66A     1.905996  
-	  67A     1.964123    68A     1.997898    69A     2.083747  
-	  70A     2.087570    71A     2.186473    72A     2.214927  
-	  73A     2.249407    74A     2.360461    75A     2.438561  
-	  76A     2.497713    77A     2.566412    78A     2.627147  
-	  79A     2.697950    80A     2.707596    81A     2.711267  
-	  82A     2.812233    83A     3.124373    84A     3.307100  
-	  85A     3.386323    86A     3.697205  
+	  16A      0.152933    17A      0.190262    18A      0.203436  
+	  19A      0.206684    20A      0.208902    21A      0.228953  
+	  22A      0.235175    23A      0.282802    24A      0.297687  
+	  25A      0.454782    26A      0.508354    27A      0.537967  
+	  28A      0.573521    29A      0.600487    30A      0.663739  
+	  31A      0.670358    32A      0.687309    33A      0.763587  
+	  34A      0.783541    35A      0.811797    36A      0.826653  
+	  37A      0.853430    38A      0.861210    39A      0.897838  
+	  40A      0.925730    41A      0.962649    42A      0.982163  
+	  43A      1.107309    44A      1.121284    45A      1.211763  
+	  46A      1.230814    47A      1.235775    48A      1.237868  
+	  49A      1.249669    50A      1.261754    51A      1.261841  
+	  52A      1.283630    53A      1.347751    54A      1.388263  
+	  55A      1.480928    56A      1.599089    57A      1.647254  
+	  58A      1.647452    59A      1.687412    60A      1.687466  
+	  61A      1.724231    62A      1.743641    63A      1.809350  
+	  64A      1.854749    65A      1.854799    66A      1.905995  
+	  67A      1.964123    68A      1.997898    69A      2.083747  
+	  70A      2.087570    71A      2.186473    72A      2.214927  
+	  73A      2.249406    74A      2.360461    75A      2.438561  
+	  76A      2.497713    77A      2.566412    78A      2.627147  
+	  79A      2.697949    80A      2.707595    81A      2.711267  
+	  82A      2.812233    83A      3.124372    84A      3.307100  
+	  85A      3.386323    86A      3.697204  
 
 	Final Occupation by Irrep:
 	          A 
@@ -226,13 +334,34 @@ No atoms detected, returning
 
   Energy converged.
 
-  @RHF Final Energy:  -154.86653168794891
+  @RHF Final Energy:  -154.86653168001897
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -3.6884
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     3.5271
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.1613     Total:     0.1613
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.4101     Total:     0.4101
+
+
+  Saving occupied orbitals to File 180.
 
   Saving SAPT 2-DIMER file.
 
-*** tstop() called on compute-1-13.local at Wed Mar 16 06:58:48 2011
-	user time   =       9.41 seconds =       0.16 minutes
-	system time =       0.25 seconds =       0.00 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:56 2012
+Module time:
+	user time   =       4.59 seconds =       0.08 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =       4.59 seconds =       0.08 minutes
+	system time =       0.17 seconds =       0.00 minutes
 	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -240,13 +369,18 @@ No atoms detected, returning
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on compute-1-13.local
-*** at Wed Mar 16 06:58:48 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:56 2012
 
 
- RHF: by Justin Turney and Rob Parrish
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
 
-  Release version.
+  ==> Geometry <==
 
     Molecular point group: c1
 
@@ -281,21 +415,41 @@ No atoms detected, returning
 
   Running in c1 symmetry.
 
-  Input DOCC vector = ( 8   A )
-  Input SOCC vector = ( 0   A )
+  Nuclear repulsion =   33.358072082335049
 
-  Nuclear repulsion =   33.358074629685305
-  Energy threshold  = 1.00e-10
-  Density threshold = 1.00e-11
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 16
+  Nalpha       = 8
+  Nbeta        = 8
+
+  ==> Algorithm <==
 
   SCF Algorithm Type is DF.
   DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-11
+  Integral threshold = 0.00e+00
 
-  Minimum eigenvalue in the overlap matrix is 7.1821788969E-04.
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 42
+    Number of basis function: 86
+    Number of Cartesian functions: 90
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.1821828298E-04.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  SAD: Determining atomic occupations:
+  Determining Atomic Occupations
   Atom 0, Z = 6, nelec = 6, nhigh = 2, nalpha = 4, nbeta = 2
   Atom 1, Z = 6, nelec = 6, nhigh = 2, nalpha = 4, nbeta = 2
   Atom 2, Z = 1, nelec = 1, nhigh = 1, nalpha = 1, nbeta = 0
@@ -331,23 +485,24 @@ No atoms detected, returning
 
                                          Total Energy            Delta E              Density RMS
 
-  @Atomic UHF iteration   1 energy:   -36.74995545600609      -10.43421930287274     0.20381491156350
-  @Atomic UHF iteration   2 energy:   -37.68068984183034       -0.93073438582424     0.00852644437166
-  @Atomic UHF iteration   3 energy:   -37.68595888387351       -0.00526904204317     0.00155453215419
-  @Atomic UHF iteration   4 energy:   -37.68642674154005       -0.00046785766654     0.00076228587775
-  @Atomic UHF iteration   5 energy:   -37.68652014420299       -0.00009340266294     0.00036724853909
-  @Atomic UHF iteration   6 energy:   -37.68653937625650       -0.00001923205351     0.00017378246339
-  @Atomic UHF iteration   7 energy:   -37.68654337893658       -0.00000400268009     0.00008129601975
-  @Atomic UHF iteration   8 energy:   -37.68654421564285       -0.00000083670626     0.00003774785218
-  @Atomic UHF iteration   9 energy:   -37.68654439085719       -0.00000017521434     0.00001744235457
-  @Atomic UHF iteration  10 energy:   -37.68654442757538       -0.00000003671820     0.00000803420949
+  @Atomic UHF iteration   1 energy:   -36.74995545600610      -10.43421930287275     0.20381491156350
+  @Atomic UHF iteration   2 energy:   -37.68068984183031       -0.93073438582422     0.00852644437166
+  @Atomic UHF iteration   3 energy:   -37.68595888387351       -0.00526904204320     0.00155453215419
+  @Atomic UHF iteration   4 energy:   -37.68642674154004       -0.00046785766653     0.00076228587775
+  @Atomic UHF iteration   5 energy:   -37.68652014420301       -0.00009340266297     0.00036724853909
+  @Atomic UHF iteration   6 energy:   -37.68653937625650       -0.00001923205350     0.00017378246339
+  @Atomic UHF iteration   7 energy:   -37.68654337893661       -0.00000400268010     0.00008129601975
+  @Atomic UHF iteration   8 energy:   -37.68654421564292       -0.00000083670631     0.00003774785218
+  @Atomic UHF iteration   9 energy:   -37.68654439085719       -0.00000017521428     0.00001744235457
+  @Atomic UHF iteration  10 energy:   -37.68654442757538       -0.00000003671819     0.00000803420949
+  @Atomic UHF Final Energy for atom C:   -37.68654442757538
 
   UHF Computation for Unique Atom 1 which is Atom 2:
   Basis Set
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
-    Spherical Harmonics?: false
+    Spherical Harmonics?: true
     Max angular momentum: 1
 
   Occupation: nalpha = 1, nbeta = 0, norbs = 5
@@ -366,6 +521,7 @@ No atoms detected, returning
 
   @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
   @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+  @Atomic UHF Final Energy for atom H:    -0.49927840341958
 
   UHF Computation for Unique Atom 2 which is Atom 6:
   Basis Set
@@ -391,13 +547,14 @@ No atoms detected, returning
 
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
+  @Atomic UHF Final Energy for atom C:     0.00000000000000
 
   UHF Computation for Unique Atom 3 which is Atom 8:
   Basis Set
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
-    Spherical Harmonics?: false
+    Spherical Harmonics?: true
     Max angular momentum: 1
 
   Occupation: nalpha = 0, nbeta = 0, norbs = 5
@@ -416,73 +573,96 @@ No atoms detected, returning
 
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
+  @Atomic UHF Final Energy for atom H:     0.00000000000000
 
+  Initial RHF energy:   -50.79627449784382
 
-  Approximating occupied orbitals via Partial Cholesky Decomposition.
-  NOTE: The zero-th SCF iteration will not be variational.
-  Irrep  0:    14 of    86 possible partial occupation vectors selected for C.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         86      86      16      16      16       0
+   -------------------------------------------------------
+    Total      86      86       8       8       8       0
+   -------------------------------------------------------
 
-  Initial RHF energy:   -59.12762429363571
+  ==> Integral Setup <==
 
-                        Total Energy        Delta E      Density RMS
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
 
-   @RHF iter   0:   -65.69537864622443   -6.56775e+00    0.00000e+00  
-   @RHF iter   1:   -67.00417980135124   -1.30880e+00    2.51592e-01  
-   @RHF iter   2:   -74.83616006960185   -7.83198e+00    2.46287e-01 DIIS
-   @RHF iter   3:   -77.73617629709835   -2.90002e+00    1.47582e-02 DIIS
-   @RHF iter   4:   -78.02837322071369   -2.92197e-01    4.09802e-03 DIIS
-   @RHF iter   5:   -78.04012435166243   -1.17511e-02    1.39594e-03 DIIS
-   @RHF iter   6:   -78.04025103712395   -1.26685e-04    2.91767e-04 DIIS
-   @RHF iter   7:   -78.04026677700060   -1.57399e-05    8.53444e-05 DIIS
-   @RHF iter   8:   -78.04026719503425   -4.18034e-07    1.39833e-05 DIIS
-   @RHF iter   9:   -78.04026719973913   -4.70489e-09    1.61379e-06 DIIS
-   @RHF iter  10:   -78.04026719987080   -1.31664e-10    1.85328e-07 DIIS
-   @RHF iter  11:   -78.04026719988178   -1.09850e-11    7.31684e-08 DIIS
-   @RHF iter  12:   -78.04026719988194   -1.56319e-13    1.35062e-08 DIIS
-   @RHF iter  13:   -78.04026719988202   -8.52651e-14    1.72722e-09 DIIS
-   @RHF iter  14:   -78.04026719988205   -2.84217e-14    1.61308e-10 DIIS
-   @RHF iter  15:   -78.04026719988205    0.00000e+00    2.67082e-11 DIIS
+  No auxiliary basis selected, defaulting to CC-PVDZ-JKFIT
 
+  ==> Auxiliary Basis:  <==
+
+  Basis Set
+    Number of shells: 150
+    Number of basis function: 418
+    Number of Cartesian functions: 474
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Using Core Algorithm.
+
+  Will attempt to load (Q|mn) integrals from File 97.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   0:   -78.58400228850672   -2.77877e+01   0.00000e+00 
+   @RHF iter   1:   -78.00229740681166    5.81705e-01   1.21023e-02 
+   @RHF iter   2:   -78.03623211954613   -3.39347e-02   2.24398e-03 DIIS
+   @RHF iter   3:   -78.03979245344055   -3.56033e-03   7.08079e-04 DIIS
+   @RHF iter   4:   -78.04025413132891   -4.61678e-04   2.97100e-04 DIIS
+   @RHF iter   5:   -78.04026702933902   -1.28980e-05   7.64927e-05 DIIS
+   @RHF iter   6:   -78.04026719236802   -1.63029e-07   8.93596e-06 DIIS
+   @RHF iter   7:   -78.04026719674732   -4.37930e-09   1.66252e-06 DIIS
+   @RHF iter   8:   -78.04026719689475   -1.47423e-10   3.08177e-07 DIIS
+   @RHF iter   9:   -78.04026719689912   -4.37694e-12   4.89041e-08 DIIS
+   @RHF iter  10:   -78.04026719689935   -2.27374e-13   6.28567e-09 DIIS
+   @RHF iter  11:   -78.04026719689921    1.42109e-13   1.78118e-09 DIIS
+   @RHF iter  12:   -78.04026719689932   -1.13687e-13   5.06024e-10 DIIS
+   @RHF iter  13:   -78.04026719689938   -5.68434e-14   3.27797e-11 DIIS
+
+  ==> Post-Iterations <==
 
 	Orbital Energies (a.u.)
 	-----------------------
 
 	Doubly Occupied:                                                      
 
-	   1A   -11.237404     2A   -11.235761     3A    -1.032223  
-	   4A    -0.791077     5A    -0.640395     6A    -0.583706  
-	   7A    -0.504875     8A    -0.374061  
+	   1A    -11.237404     2A    -11.235761     3A     -1.032223  
+	   4A     -0.791077     5A     -0.640395     6A     -0.583706  
+	   7A     -0.504875     8A     -0.374061  
 
 	Virtual:                                                              
 
-	   9A     0.138486    10A     0.166152    11A     0.182309  
-	  12A     0.219770    13A     0.231961    14A     0.237418  
-	  15A     0.302705    16A     0.348265    17A     0.348954  
-	  18A     0.349480    19A     0.461859    20A     0.490797  
-	  21A     0.491578    22A     0.502735    23A     0.578091  
-	  24A     0.614849    25A     0.680706    26A     0.726179  
-	  27A     0.783181    28A     0.815354    29A     0.861273  
-	  30A     0.893749    31A     0.933429    32A     0.955977  
-	  33A     0.970595    34A     1.085183    35A     1.130720  
-	  36A     1.233522    37A     1.246784    38A     1.268559  
-	  39A     1.292469    40A     1.379270    41A     1.594062  
-	  42A     1.640892    43A     1.732188    44A     1.747123  
-	  45A     1.770488    46A     1.778084    47A     1.778110  
-	  48A     1.785361    49A     1.788344    50A     1.831037  
-	  51A     1.863125    52A     1.870963    53A     1.914032  
-	  54A     1.937705    55A     1.973041    56A     1.990440  
-	  57A     1.990545    58A     2.010677    59A     2.149680  
-	  60A     2.150085    61A     2.177390    62A     2.177395  
-	  63A     2.223929    64A     2.253115    65A     2.283812  
-	  66A     2.369684    67A     2.397011    68A     2.446526  
-	  69A     2.508697    70A     2.578510    71A     2.593467  
-	  72A     2.635488    73A     2.721352    74A     2.819102  
-	  75A     3.034755    76A     3.035185    77A     3.065414  
-	  78A     3.138807    79A     3.394867    80A     3.815236  
-	  81A     3.816545    82A     4.425218    83A     5.088159  
-	  84A     5.919907    85A    18.460217    86A    18.610380  
-	
+	   9A      0.138486    10A      0.166152    11A      0.182309  
+	  12A      0.219770    13A      0.231961    14A      0.237418  
+	  15A      0.302705    16A      0.348265    17A      0.348954  
+	  18A      0.349480    19A      0.461859    20A      0.490797  
+	  21A      0.491578    22A      0.502735    23A      0.578091  
+	  24A      0.614849    25A      0.680706    26A      0.726179  
+	  27A      0.783181    28A      0.815354    29A      0.861273  
+	  30A      0.893749    31A      0.933429    32A      0.955977  
+	  33A      0.970595    34A      1.085183    35A      1.130720  
+	  36A      1.233522    37A      1.246784    38A      1.268559  
+	  39A      1.292469    40A      1.379270    41A      1.594062  
+	  42A      1.640892    43A      1.732188    44A      1.747123  
+	  45A      1.770488    46A      1.778084    47A      1.778110  
+	  48A      1.785361    49A      1.788344    50A      1.831037  
+	  51A      1.863125    52A      1.870963    53A      1.914032  
+	  54A      1.937705    55A      1.973041    56A      1.990440  
+	  57A      1.990545    58A      2.010677    59A      2.149680  
+	  60A      2.150085    61A      2.177390    62A      2.177395  
+	  63A      2.223929    64A      2.253115    65A      2.283812  
+	  66A      2.369684    67A      2.397010    68A      2.446526  
+	  69A      2.508697    70A      2.578510    71A      2.593467  
+	  72A      2.635488    73A      2.721352    74A      2.819102  
+	  75A      3.034755    76A      3.035185    77A      3.065414  
+	  78A      3.138807    79A      3.394867    80A      3.815235  
+	  81A      3.816545    82A      4.425218    83A      5.088159  
+	  84A      5.919907    85A     18.460217    86A     18.610380  
 
 	Final Occupation by Irrep:
 	          A 
@@ -490,27 +670,53 @@ No atoms detected, returning
 
   Energy converged.
 
-  @RHF Final Energy:   -78.04026719988205
+  @RHF Final Energy:   -78.04026719689938
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:   -64.3577
+
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    64.3120
+
+  Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.0456     Total:     0.0456
+
+  Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:    -0.1160     Total:     0.1160
+
+
+  Saving occupied orbitals to File 180.
 
   Saving SAPT 2-MONOMER_A file.
 
-*** tstop() called on compute-1-13.local at Wed Mar 16 06:58:53 2011
-	user time   =      17.28 seconds =       0.29 minutes
-	system time =       0.47 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:43:58 2012
+Module time:
+	user time   =       2.14 seconds =       0.04 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       6.73 seconds =       0.11 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            Monomer B HF           //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on compute-1-13.local
-*** at Wed Mar 16 06:58:53 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:43:58 2012
 
 
- RHF: by Justin Turney and Rob Parrish
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
 
-  Release version.
+  ==> Geometry <==
 
     Molecular point group: c1
 
@@ -545,21 +751,41 @@ No atoms detected, returning
 
   Running in c1 symmetry.
 
-  Input DOCC vector = ( 7   A )
-  Input SOCC vector = ( 0   A )
+  Nuclear repulsion =   24.697946102750766
 
-  Nuclear repulsion =   24.697947988780601
-  Energy threshold  = 1.00e-10
-  Density threshold = 1.00e-11
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 14
+  Nalpha       = 7
+  Nbeta        = 7
+
+  ==> Algorithm <==
 
   SCF Algorithm Type is DF.
   DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is SAD.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-11
+  Integral threshold = 0.00e+00
 
-  Minimum eigenvalue in the overlap matrix is 7.1821788969E-04.
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 42
+    Number of basis function: 86
+    Number of Cartesian functions: 90
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 7.1821828298E-04.
   Using Symmetric Orthogonalization.
   SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.
 
-  SAD: Determining atomic occupations:
+  Determining Atomic Occupations
   Atom 0, Z = 0, nelec = 0, nhigh = 0, nalpha = 0, nbeta = 0
   Atom 1, Z = 0, nelec = 0, nhigh = 0, nalpha = 0, nbeta = 0
   Atom 2, Z = 0, nelec = 0, nhigh = 0, nalpha = 0, nbeta = 0
@@ -597,13 +823,14 @@ No atoms detected, returning
 
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
+  @Atomic UHF Final Energy for atom C:     0.00000000000000
 
   UHF Computation for Unique Atom 1 which is Atom 2:
   Basis Set
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
-    Spherical Harmonics?: false
+    Spherical Harmonics?: true
     Max angular momentum: 1
 
   Occupation: nalpha = 0, nbeta = 0, norbs = 5
@@ -622,6 +849,7 @@ No atoms detected, returning
 
   @Atomic UHF iteration   1 energy:     0.00000000000000        0.00000000000000     0.00000000000000
   @Atomic UHF iteration   2 energy:     0.00000000000000        0.00000000000000     0.00000000000000
+  @Atomic UHF Final Energy for atom H:     0.00000000000000
 
   UHF Computation for Unique Atom 2 which is Atom 6:
   Basis Set
@@ -645,23 +873,24 @@ No atoms detected, returning
 
                                          Total Energy            Delta E              Density RMS
 
-  @Atomic UHF iteration   1 energy:   -36.74995545600609      -10.43421930287274     0.20381491156350
-  @Atomic UHF iteration   2 energy:   -37.68068984183034       -0.93073438582424     0.00852644437166
-  @Atomic UHF iteration   3 energy:   -37.68595888387351       -0.00526904204317     0.00155453215419
-  @Atomic UHF iteration   4 energy:   -37.68642674154005       -0.00046785766654     0.00076228587775
-  @Atomic UHF iteration   5 energy:   -37.68652014420299       -0.00009340266294     0.00036724853909
-  @Atomic UHF iteration   6 energy:   -37.68653937625650       -0.00001923205351     0.00017378246339
-  @Atomic UHF iteration   7 energy:   -37.68654337893658       -0.00000400268009     0.00008129601975
-  @Atomic UHF iteration   8 energy:   -37.68654421564285       -0.00000083670626     0.00003774785218
-  @Atomic UHF iteration   9 energy:   -37.68654439085719       -0.00000017521434     0.00001744235457
-  @Atomic UHF iteration  10 energy:   -37.68654442757538       -0.00000003671820     0.00000803420949
+  @Atomic UHF iteration   1 energy:   -36.74995545600610      -10.43421930287275     0.20381491156350
+  @Atomic UHF iteration   2 energy:   -37.68068984183031       -0.93073438582422     0.00852644437166
+  @Atomic UHF iteration   3 energy:   -37.68595888387351       -0.00526904204320     0.00155453215419
+  @Atomic UHF iteration   4 energy:   -37.68642674154004       -0.00046785766653     0.00076228587775
+  @Atomic UHF iteration   5 energy:   -37.68652014420301       -0.00009340266297     0.00036724853909
+  @Atomic UHF iteration   6 energy:   -37.68653937625650       -0.00001923205350     0.00017378246339
+  @Atomic UHF iteration   7 energy:   -37.68654337893661       -0.00000400268010     0.00008129601975
+  @Atomic UHF iteration   8 energy:   -37.68654421564292       -0.00000083670631     0.00003774785218
+  @Atomic UHF iteration   9 energy:   -37.68654439085719       -0.00000017521428     0.00001744235457
+  @Atomic UHF iteration  10 energy:   -37.68654442757538       -0.00000003671819     0.00000803420949
+  @Atomic UHF Final Energy for atom C:   -37.68654442757538
 
   UHF Computation for Unique Atom 3 which is Atom 8:
   Basis Set
     Number of shells: 3
     Number of basis function: 5
     Number of Cartesian functions: 5
-    Spherical Harmonics?: false
+    Spherical Harmonics?: true
     Max angular momentum: 1
 
   Occupation: nalpha = 1, nbeta = 0, norbs = 5
@@ -680,74 +909,98 @@ No atoms detected, returning
 
   @Atomic UHF iteration   1 energy:    -0.49927840341958       -0.24963920170979     0.00000000000000
   @Atomic UHF iteration   2 energy:    -0.49927840341958        0.00000000000000     0.00000000000000
+  @Atomic UHF Final Energy for atom H:    -0.49927840341958
 
+  Initial RHF energy:   -50.56415158225219
 
-  Approximating occupied orbitals via Partial Cholesky Decomposition.
-  NOTE: The zero-th SCF iteration will not be variational.
-  Irrep  0:    12 of    86 possible partial occupation vectors selected for C.
-  SCF Guess: Core (One-Electron) Hamiltonian.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         86      86      14      14      14       0
+   -------------------------------------------------------
+    Total      86      86       7       7       7       0
+   -------------------------------------------------------
 
-  Initial RHF energy:   -56.11171405527287
+  ==> Integral Setup <==
 
-                        Total Energy        Delta E      Density RMS
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
 
-   @RHF iter   0:   -66.46794655474014   -1.03562e+01    0.00000e+00  
-   @RHF iter   1:   -63.22558714767240    3.24236e+00    1.07266e-01  
-   @RHF iter   2:   -74.41736791796775   -1.11918e+01    6.79639e-02 DIIS
-   @RHF iter   3:   -76.30610945230323   -1.88874e+00    1.27109e-02 DIIS
-   @RHF iter   4:   -76.67298555094909   -3.66876e-01    5.22424e-03 DIIS
-   @RHF iter   5:   -76.81710272634442   -1.44117e-01    3.44839e-03 DIIS
-   @RHF iter   6:   -76.82538243140823   -8.27971e-03    1.02276e-03 DIIS
-   @RHF iter   7:   -76.82545899630999   -7.65649e-05    2.33873e-04 DIIS
-   @RHF iter   8:   -76.82546300091251   -4.00460e-06    5.81549e-05 DIIS
-   @RHF iter   9:   -76.82546307793733   -7.70248e-08    6.21008e-06 DIIS
-   @RHF iter  10:   -76.82546307936941   -1.43208e-09    8.61298e-07 DIIS
-   @RHF iter  11:   -76.82546307945523   -8.58194e-11    1.27604e-07 DIIS
-   @RHF iter  12:   -76.82546307947659   -2.13589e-11    6.00910e-08 DIIS
-   @RHF iter  13:   -76.82546307948282   -6.22435e-12    3.88058e-08 DIIS
-   @RHF iter  14:   -76.82546307948309   -2.70006e-13    9.70754e-09 DIIS
-   @RHF iter  15:   -76.82546307948330   -2.13163e-13    5.59585e-10 DIIS
-   @RHF iter  16:   -76.82546307948319    1.13687e-13    4.00303e-11 DIIS
+  No auxiliary basis selected, defaulting to CC-PVDZ-JKFIT
 
+  ==> Auxiliary Basis:  <==
+
+  Basis Set
+    Number of shells: 150
+    Number of basis function: 418
+    Number of Cartesian functions: 474
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  Using Core Algorithm.
+
+  Will attempt to load (Q|mn) integrals from File 97.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   0:   -77.70890642799098   -2.71448e+01   0.00000e+00 
+   @RHF iter   1:   -76.80068024161969    9.08226e-01   1.16620e-02 
+   @RHF iter   2:   -76.82399105202271   -2.33108e-02   1.71902e-03 DIIS
+   @RHF iter   3:   -76.82537068832926   -1.37964e-03   7.68185e-04 DIIS
+   @RHF iter   4:   -76.82545884899261   -8.81607e-05   1.91740e-04 DIIS
+   @RHF iter   5:   -76.82546288137885   -4.03239e-06   3.30337e-05 DIIS
+   @RHF iter   6:   -76.82546304315174   -1.61773e-07   4.67130e-06 DIIS
+   @RHF iter   7:   -76.82546307152666   -2.83749e-08   1.65485e-06 DIIS
+   @RHF iter   8:   -76.82546307293646   -1.40980e-09   5.92433e-07 DIIS
+   @RHF iter   9:   -76.82546307294901   -1.25482e-11   4.22232e-08 DIIS
+   @RHF iter  10:   -76.82546307295259   -3.58114e-12   2.34013e-08 DIIS
+   @RHF iter  11:   -76.82546307295353   -9.37916e-13   1.65251e-08 DIIS
+   @RHF iter  12:   -76.82546307295317    3.55271e-13   6.89860e-10 DIIS
+   @RHF iter  13:   -76.82546307295323   -5.68434e-14   1.61078e-11 DIIS
+   @RHF iter  14:   -76.82546307295326   -2.84217e-14   1.00777e-11 DIIS
+
+  ==> Post-Iterations <==
 
 	Orbital Energies (a.u.)
 	-----------------------
 
 	Doubly Occupied:                                                      
 
-	   1A   -11.249444     2A   -11.245853     3A    -1.026223  
-	   4A    -0.763164     5A    -0.674391     6A    -0.405268  
-	   7A    -0.405250  
+	   1A    -11.249444     2A    -11.245853     3A     -1.026223  
+	   4A     -0.763164     5A     -0.674391     6A     -0.405268  
+	   7A     -0.405250  
 
 	Virtual:                                                              
 
-	   8A     0.087693     9A     0.174342    10A     0.189433  
-	  11A     0.202554    12A     0.203166    13A     0.210395  
-	  14A     0.241601    15A     0.264596    16A     0.372749  
-	  17A     0.448101    18A     0.469943    19A     0.500228  
-	  20A     0.513103    21A     0.518275    22A     0.536891  
-	  23A     0.537807    24A     0.656230    25A     0.661990  
-	  26A     0.666568    27A     0.730077    28A     0.818331  
-	  29A     0.824705    30A     0.888828    31A     1.051059  
-	  32A     1.117163    33A     1.227131    34A     1.227451  
-	  35A     1.254501    36A     1.254504    37A     1.368458  
-	  38A     1.437599    39A     1.451552    40A     1.495710  
-	  41A     1.527952    42A     1.633256    43A     1.635461  
-	  44A     1.639377    45A     1.654623    46A     1.680013  
-	  47A     1.680058    48A     1.734905    49A     1.749523  
-	  50A     1.793601    51A     1.816850    52A     1.903973  
-	  53A     1.923111    54A     2.024094    55A     2.029042  
-	  56A     2.072943    57A     2.114056    58A     2.124877  
-	  59A     2.153347    60A     2.163858    61A     2.184158  
-	  62A     2.228687    63A     2.266617    64A     2.363133  
-	  65A     2.378865    66A     2.412361    67A     2.517399  
-	  68A     2.560058    69A     2.574413    70A     2.691860  
-	  71A     2.700723    72A     2.826016    73A     2.950722  
-	  74A     3.102750    75A     3.172743    76A     3.175520  
-	  77A     3.305664    78A     3.577876    79A     3.690323  
-	  80A     3.735615    81A     4.140948    82A     5.173220  
-	  83A     5.225513    84A     5.540833    85A    18.118638  
-	  86A    18.612098  
+	   8A      0.087693     9A      0.174342    10A      0.189433  
+	  11A      0.202554    12A      0.203166    13A      0.210395  
+	  14A      0.241601    15A      0.264596    16A      0.372749  
+	  17A      0.448101    18A      0.469943    19A      0.500228  
+	  20A      0.513103    21A      0.518275    22A      0.536891  
+	  23A      0.537807    24A      0.656230    25A      0.661990  
+	  26A      0.666568    27A      0.730077    28A      0.818331  
+	  29A      0.824705    30A      0.888828    31A      1.051059  
+	  32A      1.117163    33A      1.227131    34A      1.227451  
+	  35A      1.254501    36A      1.254504    37A      1.368458  
+	  38A      1.437599    39A      1.451552    40A      1.495710  
+	  41A      1.527952    42A      1.633256    43A      1.635461  
+	  44A      1.639377    45A      1.654623    46A      1.680013  
+	  47A      1.680058    48A      1.734905    49A      1.749523  
+	  50A      1.793601    51A      1.816850    52A      1.903973  
+	  53A      1.923111    54A      2.024094    55A      2.029042  
+	  56A      2.072943    57A      2.114056    58A      2.124877  
+	  59A      2.153347    60A      2.163858    61A      2.184157  
+	  62A      2.228687    63A      2.266617    64A      2.363133  
+	  65A      2.378865    66A      2.412361    67A      2.517398  
+	  68A      2.560058    69A      2.574413    70A      2.691860  
+	  71A      2.700722    72A      2.826016    73A      2.950722  
+	  74A      3.102750    75A      3.172743    76A      3.175520  
+	  77A      3.305664    78A      3.577876    79A      3.690322  
+	  80A      3.735614    81A      4.140947    82A      5.173219  
+	  83A      5.225513    84A      5.540832    85A     18.118638  
+	  86A     18.612098  
 
 	Final Occupation by Irrep:
 	          A 
@@ -755,100 +1008,148 @@ No atoms detected, returning
 
   Energy converged.
 
-  @RHF Final Energy:   -76.82546307948319
+  @RHF Final Energy:   -76.82546307295326
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    60.6692
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:   -60.6683
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.0009     Total:     0.0009
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     0.0023     Total:     0.0023
+
+
+  Saving occupied orbitals to File 180.
 
   Saving SAPT 2-MONOMER_B file.
 
-*** tstop() called on compute-1-13.local at Wed Mar 16 06:58:58 2011
-	user time   =      25.75 seconds =       0.43 minutes
-	system time =       0.67 seconds =       0.01 minutes
-	total time  =          5 seconds =       0.08 minutes
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:00 2012
+Module time:
+	user time   =       2.22 seconds =       0.04 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       8.96 seconds =       0.15 minutes
+	system time =       0.34 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //               SAPT0               //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 
-*** tstart() called on compute-1-13.local
-*** at Wed Mar 16 06:58:58 2011
+*** tstart() called on QuickSilver.local
+*** at Mon Jan 23 14:44:00 2012
 
-No atoms detected, returning
-No atoms detected, returning
+    No auxiliary basis selected, defaulting to CC-PVDZ-RI
+
         SAPT0  
     Ed Hohenstein
      6 June 2009
 
-    Orbital Information
-  -----------------------
-    NSO     =        86
-    NMO     =        86
-    NRI     =       308
-    NOCC A  =         8
-    NOCC B  =         7
-    FOCC A  =         0
-    FOCC B  =         0
-    NVIR A  =        78
-    NVIR B  =        79
+      Orbital Information
+  --------------------------
+    NSO        =        86
+    NMO        =        86
+    NRI        =       308
+    NOCC A     =         8
+    NOCC B     =         7
+    FOCC A     =         0
+    FOCC B     =         0
+    NVIR A     =        78
+    NVIR B     =        79
 
-    Elst10,r            =    -0.003599150860 H
-    Exch10              =     0.003629113572 H
-    Exch10 (S^2)        =     0.003615542806 H
+    Elst10,r            =    -0.003599150577 H
+    Exch10              =     0.003629111576 H
+    Exch10 (S^2)        =     0.003615540823 H
 
-    Iter     Energy (mH)           dE (mH)          RMS (mH)      Time (s)
-       1      -0.96055565       0.161786611       0.257636800             0
-       2      -1.01463124       0.054075590       0.092093159             0
-       3      -1.03213460       0.017503354       0.034168221             0
-       4      -1.04230168       0.010167081       0.002616316             0
-       5      -1.04252769       0.000226012       0.000493366             0
-       6      -1.04256432       0.000036629       0.000123374             0
-       7      -1.04256461       0.000000297       0.000037030             0
-       8      -1.04256505       0.000000439       0.000007622             0
-       9      -1.04256470      -0.000000354       0.000001091             0
-      10      -1.04256464      -0.000000063       0.000000277             0
-      11      -1.04256464       0.000000005       0.000000070             0
-
-    CHF Iterations converged
-
-
-    Iter     Energy (mH)           dE (mH)          RMS (mH)      Time (s)
-       1      -0.12669312       0.005066155       0.108466687             0
-       2      -0.13971650       0.013023378       0.082216793             0
-       3      -0.13334773      -0.006368770       0.063359547             0
-       4      -0.13699177       0.003644049       0.001482417             0
-       5      -0.13704989       0.000058118       0.000375889             0
-       6      -0.13705584       0.000005949       0.000050723             1
-       7      -0.13705523      -0.000000611       0.000028188             1
-       8      -0.13705485      -0.000000386       0.000010597             1
-       9      -0.13705501       0.000000166       0.000001675             1
-      10      -0.13705502       0.000000006       0.000000400             1
-      11      -0.13705501      -0.000000009       0.000000075             1
+    Iter     Energy (mH)           dE (mH)          Residual      Time (s)
+       1      -0.79876872       0.798768720       4.654042664             0
+       2      -1.03798579       0.239217075       1.200554615             0
+       3      -1.04648145       0.008495656       0.246999252             0
+       4      -1.04232524      -0.004156210       0.045819181             0
+       5      -1.04244021       0.000114970       0.013062769             0
+       6      -1.04257703       0.000136817       0.001856613             0
+       7      -1.04256329      -0.000013733       0.000322231             0
+       8      -1.04256426       0.000000965       0.000041974             0
+       9      -1.04256425      -0.000000008       0.000007093             0
+      10      -1.04256424      -0.000000010       0.000000659             0
 
     CHF Iterations converged
 
-    Ind20,r (A<-B)      =    -0.001042564641 H
-    Ind20,r (B<-A)      =    -0.000137055007 H
-    Ind20,r             =    -0.001179619649 H
-    Exch-Ind20,r (A<-B) =     0.000789228780 H
-    Exch-Ind20,r (B<-A) =     0.000052657755 H
-    Exch-Ind20          =     0.000841886534 H
-    Disp20              =    -0.001737715709 H
-    Exch-Disp20         =     0.000232291646 H
+
+    Iter     Energy (mH)           dE (mH)          Residual      Time (s)
+       1      -0.12162693       0.121626926       2.821119164             0
+       2      -0.12502925       0.003402324       0.860046422             0
+       3      -0.13754132       0.012512067       0.147429109             0
+       4      -0.13722059      -0.000320722       0.037899809             1
+       5      -0.13704088      -0.000179719       0.004453970             1
+       6      -0.13705699       0.000016111       0.000919779             1
+       7      -0.13705430      -0.000002685       0.000440803             1
+       8      -0.13705508       0.000000779       0.000108354             1
+       9      -0.13705495      -0.000000133       0.000018446             1
+      10      -0.13705496       0.000000014       0.000002238             1
+      11      -0.13705496      -0.000000001       0.000000333             1
+
+    CHF Iterations converged
+
+    Ind20,r (A<-B)      =    -0.001042564242 H
+    Ind20,r (B<-A)      =    -0.000137054962 H
+    Ind20,r             =    -0.001179619203 H
+    Exch-Ind20,r (A<-B) =     0.000789228357 H
+    Exch-Ind20,r (B<-A) =     0.000052657706 H
+    Exch-Ind20,r        =     0.000841886063 H
+    Disp20              =    -0.001737715248 H
+    Disp20 (SS)         =    -0.000868857624 H
+    Disp20 (OS)         =    -0.000868857624 H
+    Exch-Disp20         =     0.000232291506 H
+    Exch-Disp20 (SS)    =     0.000136734075 H
+    Exch-Disp20 (OS)    =     0.000095557431 H
 
     SAPT Results  
-  ------------------------------------------------------------------
-    E_HF               -0.80140858 mH      -0.50289150 kcal mol^-1
-    Elst10             -3.59915086 mH      -2.25850136 kcal mol^-1
-    Exch10              3.62911357 mH       2.27730324 kcal mol^-1
-    Exch10(S^2)         3.61554281 mH       2.26878746 kcal mol^-1
-    Ind20,r            -1.17961965 mH      -0.74022254 kcal mol^-1
-    Exch-Ind20,r        0.84188653 mH       0.52829180 kcal mol^-1
-    delta HF,r         -0.49363818 mH      -0.30976265 kcal mol^-1
-    Disp20             -1.73771571 mH      -1.09043312 kcal mol^-1
-    Exch-Disp20         0.23229165 mH       0.14576521 kcal mol^-1
+  -----------------------------------------------------------------------
+    Electrostatics          -3.59915058 mH      -2.25850118 kcal mol^-1
+      Elst10,r              -3.59915058 mH      -2.25850118 kcal mol^-1
 
-    Total SAPT0        -2.30683265 mH      -1.44755940 kcal mol^-1
+    Exchange                 3.62911158 mH       2.27730199 kcal mol^-1
+      Exch10                 3.62911158 mH       2.27730199 kcal mol^-1
+      Exch10(S^2)            3.61554082 mH       2.26878621 kcal mol^-1
 
-*** tstop() called on compute-1-13.local at Wed Mar 16 06:59:32 2011
-	user time   =     100.19 seconds =       1.67 minutes
-	system time =       3.39 seconds =       0.06 minutes
-	total time  =         34 seconds =       0.57 minutes
+    Induction               -0.83137117 mH      -0.52169330 kcal mol^-1
+      Ind20,r               -1.17961920 mH      -0.74022226 kcal mol^-1
+      Exch-Ind20,r           0.84188606 mH       0.52829150 kcal mol^-1
+      delta HF,r            -0.49363803 mH      -0.30976255 kcal mol^-1
+
+    Dispersion              -1.50542374 mH      -0.94466770 kcal mol^-1
+      Disp20                -1.73771525 mH      -1.09043283 kcal mol^-1
+      Exch-Disp20            0.23229151 mH       0.14576513 kcal mol^-1
+
+    SCS Dispersion          -1.17200141 mH      -0.73544202 kcal mol^-1
+      Disp20 (SS)           -0.86885762 mH      -0.54521641 kcal mol^-1
+      Disp20 (OS)           -0.86885762 mH      -0.54521641 kcal mol^-1
+      Exch-Disp20 (SS)       0.13673407 mH       0.08580193 kcal mol^-1
+      Exch-Disp20 (OS)       0.09555743 mH       0.05996320 kcal mol^-1
+
+    Same-Spin Scale          3.333E-01
+    Opposite-Spin Scale      1.200E+00
+
+    Total HF                -0.80141017 mH      -0.50289249 kcal mol^-1
+    Total SAPT0             -2.30683391 mH      -1.44756019 kcal mol^-1
+    Total SCS-SAPT0         -1.97341158 mH      -1.23833451 kcal mol^-1
+
+*** tstop() called on QuickSilver.local at Mon Jan 23 14:44:05 2012
+Module time:
+	user time   =       3.84 seconds =       0.06 minutes
+	system time =       0.99 seconds =       0.02 minutes
+	total time  =          5 seconds =       0.08 minutes
+Total time:
+	user time   =      12.80 seconds =       0.21 minutes
+	system time =       1.33 seconds =       0.02 minutes
+	total time  =         14 seconds =       0.23 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

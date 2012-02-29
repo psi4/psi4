@@ -8,6 +8,7 @@
 #include "superfunctional.h"
 #include <boost/algorithm/string.hpp>
 #include <libmints/mints.h>
+#include <libfock/points.h>
 #include <libciomr/libciomr.h>
 #include <stdlib.h>
 #include <string>

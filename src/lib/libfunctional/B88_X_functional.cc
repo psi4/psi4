@@ -5,6 +5,7 @@
 *
 ***********************************************************/
 #include <libmints/mints.h>
+#include <libfock/points.h>
 #include <libciomr/libciomr.h>
 #include "B88_X_functional.h"
 #include <stdlib.h>

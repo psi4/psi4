@@ -1,4 +1,4 @@
-#ifndef HF_H
+#ifndef HF_H 
 #define HF_H
 /*
  *  hf.h
@@ -27,11 +27,10 @@ class Matrix;
 class Vector;
 class SimpleVector;
 class TwoBodySOInt;
+class JK;
 namespace scf {
 
-class PseudospectralHF;
 class PKIntegrals;
-class DFHF;
 
 class HF : public Wavefunction {
 protected:
@@ -102,14 +101,11 @@ protected:
     /// The value below which integrals are neglected
     double integral_threshold_;
 
+    /// The soon to be ubiquitous JK object
+    boost::shared_ptr<JK> jk_;
 
     /// The SO integral generator.  Only ever constructed if needed
     boost::shared_ptr<TwoBodySOInt> eri_;
-
-    /// Pseudospectral stuff
-    boost::shared_ptr<PseudospectralHF> pseudospectral_;
-    /// DF stuff
-    boost::shared_ptr<DFHF> df_;
     /// PK Matrix approach
     boost::shared_ptr<PKIntegrals> pk_integrals_;
 
@@ -121,6 +117,11 @@ protected:
     bool MOM_started_;
     /// MOM performed?
     bool MOM_performed_;
+
+    /// Are we to fractionally occupy?
+    bool frac_enabled_;
+    /// Frac started? (Same thing as frac_performed_)
+    bool frac_performed_;
 
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
@@ -152,6 +153,9 @@ public:
     /// The number of iterations needed to reach convergence
     int iterations_needed() {return iterations_needed_;}
 
+    /// The JK object (or null if it has been deleted)
+    boost::shared_ptr<JK> jk() const { return jk_; }
+
     /// The RMS error in the density
     double rms_density_error() {return Drms_;}
 protected:
@@ -181,6 +185,11 @@ protected:
     void MOM();
     /// Start the MOM algorithm (requires one iteration worth of setup)
     void MOM_start();
+
+    /// Fractional occupation UHF/UKS
+    void frac();
+    /// Renormalize orbitals to 1.0 before saving to chkpt
+    void frac_renormalize();
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();

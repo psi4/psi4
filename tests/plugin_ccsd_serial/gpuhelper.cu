@@ -9,15 +9,13 @@
 #include<libchkpt/chkpt.h>
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
-
-#include"globals.h"
-#include"blas.h"
-#include"gpuhelper.h"
-#include"gpuonly.h"
 #ifdef _OPENMP
   #include<omp.h>
 #endif
 
+#include"blas.h"
+#include"gpuhelper.h"
+#include"gpuonly.h"
 
 using namespace psi;
 using namespace boost;
@@ -35,6 +33,33 @@ inline void GPUHelper::Check_CUDA_Error(FILE*fp,const char *message){
 
 /*===================================================================
 
+  cleanup.  free gpu memory and pinned cpu memory
+
+===================================================================*/
+void GPUHelper::CleanupGPU(Options&options){
+  if (num_gpus>0){
+     fprintf(outfile,"  free gpu memory...");
+     #pragma omp parallel for schedule (static) num_threads(num_gpus)
+     for (long int i=0; i<num_gpus; i++){
+         long int thread = 0;
+         #ifdef _OPENMP
+           thread = omp_get_thread_num();
+         #endif
+         cudaSetDevice(thread);
+         Check_CUDA_Error(stdout,"cudaSetDevice");
+         cudaFreeHost(tmp[thread]);
+         Check_CUDA_Error(outfile,"free cpu tmp");
+         cudaFree(gpuarray[thread]);
+         Check_CUDA_Error(outfile,"free gpu memory");
+     }
+     free(tmp);
+     free(gpuarray);
+     fprintf(outfile,"done.\n");
+  }
+}
+
+/*===================================================================
+
   initialize cublas and get device properties
 
 ===================================================================*/
@@ -45,7 +70,7 @@ void GPUHelper::CudaInitGPU(Options&options){
   int n;
   cudaGetDeviceCount(&n);
   num_gpus = n;
-  num_cpus=1;
+  num_cpus=0;
   if (num_gpus>0){
      cublasInit();
      struct cudaDeviceProp cudaProp;

@@ -1,4 +1,7 @@
 #! DFT Functional Test
+
+memory 250 mb
+
 E11 = -74.9493412744 #TEST
 E12 = -75.3196957567 #TEST
 E13 = -75.3185459160 #TEST
@@ -30,7 +33,7 @@ basis sto-3g
 guess core
 scf_type direct
 dft_order_spherical 29 
-dft_n_radial 100
+dft_num_radial 100
 reference rks
 }
 
@@ -43,10 +46,12 @@ V12 = energy('scf')
 compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
 
 set dft_functional wB97
+set dft_omega 0.4
 V13 = energy('scf')
 compare_values(E13,V13, 3, "RKS  0 1  wB97 Energy") #TEST
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V14 = energy('scf')
 compare_values(E14,V14, 3, "RKS  0 1 wB97X Energy") #TEST
 
@@ -60,10 +65,12 @@ V22 = energy('scf')
 compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
 
 set dft_functional wB97
+set dft_omega 0.4
 V23 = energy('scf')
 compare_values(E23,V23, 3, "UKS  0 1  wB97 Energy") #TEST
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V24 = energy('scf')
 compare_values(E24,V24, 3, "UKS  0 1 wB97X Energy") #TEST
 
@@ -85,10 +92,12 @@ V32 = energy('scf')
 compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
 
 set dft_functional wB97
+set dft_omega 0.4
 V33 = energy('scf')
 compare_values(E33,V33, 3, "UKS  1 2  wB97 Energy") #TEST
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V34 = energy('scf')
 compare_values(E34,V34, 3, "UKS  1 2 wB97X Energy") #TEST
 
@@ -109,12 +118,11 @@ V42 = energy('scf')
 compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
 
 set dft_functional wB97
+set dft_omega 0.4
 V43 = energy('scf')
 compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V44 = energy('scf')
 compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
-
-clean()
-

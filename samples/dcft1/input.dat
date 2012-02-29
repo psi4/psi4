@@ -2,6 +2,8 @@
 #! simultaneous update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the MO Basis.
 
+memory 250 mb
+
 
 molecule he2 {
     He
@@ -17,7 +19,4 @@ set globals {
 }
 
 energy('dcft')
-
-
-clean()
 

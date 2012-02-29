@@ -63,7 +63,7 @@ public:
             * Set the default path for files to be stored
             * \param path full path to scratch
             */
-    void set_default_path(const std::string& path) { default_path_ = path; }
+    void set_default_path(const std::string& path);
     /**
             * Set the path for specific file numbers
             * \param fileno PSI4 file number
@@ -82,6 +82,13 @@ public:
             * \return the appropriate full path
             */
     std::string get_file_path(int fileno);
+
+    /**
+      * Returns the default path.
+      * \return the default path.
+      */
+    std::string get_default_path() { return default_path_; }
+
     /**
      * Write a string to a temporary file.  The scratch file is opened and closed by this function.
      * @param full_path The fill path to the scratch file
@@ -184,6 +191,9 @@ public:
     const std::string& filecfg_kwd(const char* kwdgrp, const char* kwd,
                                    int unit);
 
+    /// moves a file from old_unit to new_unit
+    void rename_file(unsigned int old_unit,unsigned int new_unit);
+
     /// open unit. status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file should be open
     void open(unsigned int unit, int status);
     /// close unit. if keep == 0, will remove the file, else keep it
@@ -284,6 +294,9 @@ public:
        */
     ULI rd_toclen(unsigned int unit);
 
+    /// grab the filename of unit and strdup into name.
+    void get_filename(unsigned int unit, char **name, bool remove_namespace = false);
+
 private:
     /// vector of units
     psio_ud *psio_unit;
@@ -305,8 +318,6 @@ private:
 
     /// Library state variable
     int state_;
-    /// grab the filename of unit and strdup into name.
-    void get_filename(unsigned int unit, char **name, bool remove_namespace = false);
     /// return the number of volumes over which unit will be striped
     unsigned int get_numvols(unsigned int unit);
     /// grab the path to volume of unit and strdup into path.

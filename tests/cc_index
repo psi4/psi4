@@ -4,7 +4,7 @@ cc1: RHF-CCSD/6-31G** H2O geometry optimization via analytic gradients
 cc2: RHF-CCSD/6-31G** H2O geometry optimization via finite differences
   (all electron, MO-basis <ab|cd>)
 
-cc3:
+cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency analysis by finite-differences of gradients
 
 cc4: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>)
 
@@ -14,7 +14,10 @@ cc4a: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>),
 cc5: RHF-CCSD(T)/aug-cc-pVTZ planar (C2v) C4NH4 single-point energy
   (fzc, MO-basis <ab|cd>)  Note: one file exceeds 17 GB in this case.
 
-cc6:
+cc5a: RHF-CCSD(T)/cc-pVDZ planar (C2v) C4NH4 single-point energy
+  (fzc, MO-basis <ab|cd>) NB: Smaller version of cc5
+
+cc6: RHF-CCSD(T)/cc-pVDZ planar (C2v) C4NH4 single-point energy (fzc, AO-basis <ab|cd>)
 
 cc7:
 
@@ -60,7 +63,7 @@ cc21:
 
 cc22: ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in 3B1 CH2.
 
-cc23:
+cc23: ROHF-EOM-CCSD/DZ analytic gradient lowest 2B1 state of H2O+ (A1 excitation)
 
 cc24: UHF-EOM-CCSD/DZ analytic gradient lowest 2B1 state of H2O+ (A1 excitation)
 

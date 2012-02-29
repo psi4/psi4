@@ -7,23 +7,20 @@
 
 // output files
 #define PSIF_IJAK  250
-#define PSIF_IJAK2  266
-#define PSIF_ABCI  251
-#define PSIF_ABCI2 252
-#define PSIF_ABCI3 253
-#define PSIF_ABCI4 254
-#define PSIF_ABCI5 255
-#define PSIF_ABCD1 256
-#define PSIF_ABCD2 257
-#define PSIF_AKJC2 259
-#define PSIF_KLCD  260
-#define PSIF_IJKL  261
-#define PSIF_OVEC 262
-#define PSIF_EVEC 263
-#define PSIF_R2 264
-#define PSIF_TEMP 265
-#define PSIF_T2 267
-
+#define PSIF_IJAK2 251
+#define PSIF_ABCI  252
+#define PSIF_ABCI2 253
+#define PSIF_ABCI3 254
+#define PSIF_ABCD1 255
+#define PSIF_ABCD2 256
+#define PSIF_AKJC2 257
+#define PSIF_KLCD  258
+#define PSIF_IJKL  259
+#define PSIF_OVEC  260
+#define PSIF_EVEC  261
+#define PSIF_R2    262
+#define PSIF_TEMP  263
+#define PSIF_T2    264
 
 // psi headers
 #include"psi4-dec.h"
@@ -62,6 +59,11 @@ class CoupledCluster{
   public:
     CoupledCluster();
     ~CoupledCluster();
+
+    /**
+      * Number of threads
+      */
+    int nthreads;
 
     /**
       * Flag to indicate if t2 is stored in core memory or 
@@ -136,11 +138,14 @@ class CoupledCluster{
       * this diagram required ov^3 storage for an
       * intermediate in the Piecuch CPC.  this formulation
       * only requires o^3v storage...at the expense of
-      * 4 extra O(N^5) terms.
+      * 4 extra O(N^5) terms.  
+      * 
+      * 2/9/12: Now reduced to 3 total terms by dumping
+      * one in with I2piajk and one in with I2iabj.  The
+      * total cost of the original diagram was reduced 
+      * from 3o^2v^3 tp 3o^2v^2.
       */
-    void CPU_I2p_abci_refactored_term1(CCTaskParams params);
     void CPU_I2p_abci_refactored_term2(CCTaskParams params);
-    void CPU_I2p_abci_refactored_term3(CCTaskParams params);
 
     /**
       * Update t1

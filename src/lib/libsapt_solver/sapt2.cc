@@ -2,8 +2,23 @@
 
 namespace psi { namespace sapt {
 
-SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio, 
-  boost::shared_ptr<Chkpt> chkpt) : SAPT(options, psio, chkpt)
+SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
+  boost::shared_ptr<Chkpt> chkpt) : SAPT(options, psio, chkpt),
+  e_elst10_(0.0),
+  e_elst12_(0.0),
+  e_exch10_(0.0),
+  e_exch10_s2_(0.0),
+  e_exch11_(0.0),
+  e_exch12_(0.0),
+  e_ind20_(0.0),
+  e_ind22_(0.0),
+  e_exch_ind20_(0.0),
+  e_exch_ind22_(0.0),
+  e_disp20_(0.0),
+  e_no_disp20_(0.0),
+  e_exch_disp20_(0.0),
+  e_sapt0_(0.0),
+  e_sapt2_(0.0)
 {
   psio_->open(PSIF_SAPT_AA_DF_INTS,PSIO_OPEN_NEW);
   psio_->open(PSIF_SAPT_BB_DF_INTS,PSIO_OPEN_NEW);
@@ -63,7 +78,7 @@ SAPT2::~SAPT2()
     if (no_CB_ != NULL) free_block(no_CB_);
   }
 
-  free(ioff_); 
+  free(ioff_);
   free(index2i_);
   free(index2j_);
 
@@ -83,9 +98,9 @@ double SAPT2::compute_energy()
   timer_on("Omega Integrals    ");
     w_integrals();
   timer_off("Omega Integrals    ");
-  timer_on("Amplitudes         "); 
+  timer_on("Amplitudes         ");
     amplitudes();
-  timer_off("Amplitudes         "); 
+  timer_off("Amplitudes         ");
   timer_on("Elst10             ");
     elst10();
   timer_off("Elst10             ");
@@ -168,7 +183,7 @@ void SAPT2::print_header()
     fflush(outfile);
   }
   if (options_.get_bool("SAPT_MEM_CHECK"))
-    if (mem < vvnri + ovov*3L) 
+    if (mem < vvnri + ovov*3L)
       throw PsiException("Not enough memory", __FILE__,__LINE__);
 
   fflush(outfile);
@@ -177,50 +192,59 @@ void SAPT2::print_header()
 void SAPT2::print_results()
 {
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
-  e_sapt2_ = e_sapt0_ + e_elst12_ + e_exch11_ + e_exch12_  + e_ind22_ 
+  e_sapt2_ = e_sapt0_ + e_elst12_ + e_exch11_ + e_exch12_  + e_ind22_
     + e_exch_ind22_;
   double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
-
-  fprintf(outfile,"\n    SAPT Results  \n");
-  fprintf(outfile,"  ------------------------------------------------------------------\n");
-  fprintf(outfile,"    E_HF          %16.8lf mH %16.8lf kcal mol^-1\n",
-    eHF_*1000.0,eHF_*627.5095);
-  fprintf(outfile,"    Elst10,r      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_elst10_*1000.0,e_elst10_*627.5095);
-  fprintf(outfile,"    Elst12,r      %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_elst12_*1000.0,e_elst12_*627.5095);
-  fprintf(outfile,"    Exch10        %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_*1000.0,e_exch10_*627.5095);
-  fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
-  fprintf(outfile,"    Exch11(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch11_*1000.0,e_exch11_*627.5095);
-  fprintf(outfile,"    Exch12(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch12_*1000.0,e_exch12_*627.5095);
-  fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_ind20_*1000.0,e_ind20_*627.5095);
-  fprintf(outfile,"    Ind22         %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_ind22_*1000.0,e_ind22_*627.5095);
-  fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
-  fprintf(outfile,"    Exch-Ind22    %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_ind22_*1000.0,e_exch_ind22_*627.5095);
-  fprintf(outfile,"    delta HF,r    %16.8lf mH %16.8lf kcal mol^-1\n",
-    dHF*1000.0,dHF*627.5095);
-  fprintf(outfile,"    Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_disp20_*1000.0,e_disp20_*627.5095);
-  fprintf(outfile,"    Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
-    e_exch_disp20_*1000.0,e_exch_disp20_*627.5095);
-  fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt0_*1000.0,e_sapt0_*627.5095);
-  fprintf(outfile,"    Total SAPT2   %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_sapt2_*1000.0,e_sapt2_*627.5095);
 
   double tot_elst = e_elst10_ + e_elst12_;
   double tot_exch = e_exch10_ + e_exch11_ + e_exch12_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF + e_ind22_ + e_exch_ind22_;
   double tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_;
   double tot_disp = e_disp20_ + e_exch_disp20_;
+
+  fprintf(outfile,"\n    SAPT Results  \n");
+  fprintf(outfile,"  -----------------------------------------------------------------------\n");
+  fprintf(outfile,"    Electrostatics     %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_elst*1000.0,tot_elst*627.5095);
+  fprintf(outfile,"      Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_elst10_*1000.0,e_elst10_*627.5095);
+  fprintf(outfile,"      Elst12,r         %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_elst12_*1000.0,e_elst12_*627.5095);
+  fprintf(outfile,"    Exchange           %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_exch*1000.0,tot_exch*627.5095);
+  fprintf(outfile,"      Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch10_*1000.0,e_exch10_*627.5095);
+  fprintf(outfile,"      Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
+  fprintf(outfile,"      Exch11(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch11_*1000.0,e_exch11_*627.5095);
+  fprintf(outfile,"      Exch12(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_exch12_*1000.0,e_exch12_*627.5095);
+  fprintf(outfile,"    Induction          %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_ind*1000.0,tot_ind*627.5095);
+  fprintf(outfile,"      Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_ind20_*1000.0,e_ind20_*627.5095);
+  fprintf(outfile,"      Ind22            %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_ind22_*1000.0,e_ind22_*627.5095);
+  fprintf(outfile,"      Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
+  fprintf(outfile,"      Exch-Ind22       %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch_ind22_*1000.0,e_exch_ind22_*627.5095);
+  fprintf(outfile,"      delta HF,r       %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    dHF*1000.0,dHF*627.5095);
+  fprintf(outfile,"    Dispersion         %16.8lf mH %16.8lf kcal mol^-1\n",
+    tot_disp*1000.0,tot_disp*627.5095);
+  fprintf(outfile,"      Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_disp20_*1000.0,e_disp20_*627.5095);
+  fprintf(outfile,"      Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_exch_disp20_*1000.0,e_exch_disp20_*627.5095);
+
+  fprintf(outfile,"    Total HF           %16.8lf mH %16.8lf kcal mol^-1\n",
+    eHF_*1000.0,eHF_*627.5095);
+  fprintf(outfile,"    Total SAPT0        %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_sapt0_*1000.0,e_sapt0_*627.5095);
+  fprintf(outfile,"    Total SAPT2        %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_sapt2_*1000.0,e_sapt2_*627.5095);
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
@@ -260,9 +284,9 @@ void SAPT2::df_integrals()
   double *DFSchwartz = init_array(ribasis_->nshell());
 
   for(int P=0,PQ=0;P<basisset_->nshell();P++) {
-    int numw = basisset_->shell(P)->nfunction();
+    int numw = basisset_->shell(P).nfunction();
     for(int Q=0;Q<=P;Q++,PQ++) {
-      int numx = basisset_->shell(Q)->nfunction();
+      int numx = basisset_->shell(Q).nfunction();
       double tei, max=0.0;
 
       ao_eri->compute_shell(P, Q, P, Q);
@@ -279,7 +303,7 @@ void SAPT2::df_integrals()
   }
 
   for(int P=0;P<ribasis_->nshell();P++) {
-    int numw = ribasis_->shell(P)->nfunction();
+    int numw = ribasis_->shell(P).nfunction();
     double tei, max=0.0;
 
     Jint->compute_shell(P, 0, P, 0);
@@ -300,7 +324,7 @@ void SAPT2::df_integrals()
   #endif
   int rank = 0;
 
-  boost::shared_ptr<TwoBodyAOInt> *eri = 
+  boost::shared_ptr<TwoBodyAOInt> *eri =
     new boost::shared_ptr<TwoBodyAOInt>[nthreads];
   const double **buffer = new const double*[nthreads];
   for(int i = 0;i < nthreads;++i){
@@ -311,7 +335,7 @@ void SAPT2::df_integrals()
   int mn;
   int maxPshell = 0;
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-    int numPshell = ribasis_->shell(Pshell)->nfunction();
+    int numPshell = ribasis_->shell(Pshell).nfunction();
     if (numPshell > maxPshell) maxPshell = numPshell;
   }
 
@@ -327,7 +351,7 @@ void SAPT2::df_integrals()
   int nshelltri = basisset_->nshell()*(basisset_->nshell()+1)/2;
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-    int numPshell = ribasis_->shell(Pshell)->nfunction();
+    int numPshell = ribasis_->shell(Pshell).nfunction();
 
     #pragma omp for private(mn) schedule(guided)
     for (mn=0; mn < nshelltri; ++mn) {
@@ -336,8 +360,8 @@ void SAPT2::df_integrals()
       #endif
       int MU = index2i_[mn];
       int NU = index2j_[mn];
-      int nummu = basisset_->shell(MU)->nfunction();
-      int numnu = basisset_->shell(NU)->nfunction();
+      int nummu = basisset_->shell(MU).nfunction();
+      int numnu = basisset_->shell(NU).nfunction();
 
       if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>schwarz_) {
         eri[rank]->compute_shell(Pshell, 0, MU, NU);
@@ -345,10 +369,10 @@ void SAPT2::df_integrals()
         for (int P=0, index=0; P < numPshell; ++P) {
 
           for (int mu=0; mu < nummu; ++mu) {
-            int omu = basisset_->shell(MU)->function_index() + mu;
+            int omu = basisset_->shell(MU).function_index() + mu;
 
             for (int nu=0; nu < numnu; ++nu, ++index) {
-              int onu = basisset_->shell(NU)->function_index() + nu;
+              int onu = basisset_->shell(NU).function_index() + nu;
 
               AO_RI[P][omu*nso_+onu] = buffer[rank][index];
               AO_RI[P][onu*nso_+omu] = buffer[rank][index];
@@ -360,9 +384,9 @@ void SAPT2::df_integrals()
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, CA_[0], nmoA_, AO_RI[P], nso_, 
+      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, CA_[0], nmoA_, AO_RI[P], nso_,
         0.0, halftrans, nso_);
-      C_DGEMM('N', 'N', nmoA_, nmoA_, nso_, 1.0, halftrans, nso_, CA_[0], 
+      C_DGEMM('N', 'N', nmoA_, nmoA_, nso_, 1.0, halftrans, nso_, CA_[0],
         nmoA_, 0.0, MO_RI[P], nmoA_);
     }
 
@@ -451,7 +475,7 @@ void SAPT2::df_integrals()
   psio_address next_bare_BS = PSIO_ZERO;
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-    int numPshell = ribasis_->shell(Pshell)->nfunction();
+    int numPshell = ribasis_->shell(Pshell).nfunction();
 
     #pragma omp for private(mn) schedule(guided)
     for (mn=0; mn < nshelltri; ++mn) {
@@ -460,8 +484,8 @@ void SAPT2::df_integrals()
       #endif
       int MU = index2i_[mn];
       int NU = index2j_[mn];
-      int nummu = basisset_->shell(MU)->nfunction();
-      int numnu = basisset_->shell(NU)->nfunction();
+      int nummu = basisset_->shell(MU).nfunction();
+      int numnu = basisset_->shell(NU).nfunction();
 
       if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>schwarz_) {
         eri[rank]->compute_shell(Pshell, 0, MU, NU);
@@ -469,10 +493,10 @@ void SAPT2::df_integrals()
         for (int P=0, index=0; P < numPshell; ++P) {
 
           for (int mu=0; mu < nummu; ++mu) {
-            int omu = basisset_->shell(MU)->function_index() + mu;
+            int omu = basisset_->shell(MU).function_index() + mu;
 
             for (int nu=0; nu < numnu; ++nu, ++index) {
-              int onu = basisset_->shell(NU)->function_index() + nu;
+              int onu = basisset_->shell(NU).function_index() + nu;
 
               AO_RI[P][omu*nso_+onu] = buffer[rank][index];
               AO_RI[P][onu*nso_+omu] = buffer[rank][index];
@@ -484,9 +508,9 @@ void SAPT2::df_integrals()
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmoB_, nso_, nso_, 1.0, CB_[0], nmoB_, AO_RI[P], nso_, 
+      C_DGEMM('T', 'N', nmoB_, nso_, nso_, 1.0, CB_[0], nmoB_, AO_RI[P], nso_,
         0.0, halftrans, nso_);
-      C_DGEMM('N', 'N', nmoB_, nmoB_, nso_, 1.0, halftrans, nso_, CB_[0], 
+      C_DGEMM('N', 'N', nmoB_, nmoB_, nso_, 1.0, halftrans, nso_, CB_[0],
         nmoB_, 0.0, MO_RI[P], nmoB_);
     }
 
@@ -568,7 +592,7 @@ void SAPT2::df_integrals()
   next_DF_MO = PSIO_ZERO;
 
   for (int Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
-    int numPshell = ribasis_->shell(Pshell)->nfunction();
+    int numPshell = ribasis_->shell(Pshell).nfunction();
 
     #pragma omp for private(mn) schedule(guided)
     for (mn=0; mn < nshelltri; ++mn) {
@@ -577,8 +601,8 @@ void SAPT2::df_integrals()
       #endif
       int MU = index2i_[mn];
       int NU = index2j_[mn];
-      int nummu = basisset_->shell(MU)->nfunction();
-      int numnu = basisset_->shell(NU)->nfunction();
+      int nummu = basisset_->shell(MU).nfunction();
+      int numnu = basisset_->shell(NU).nfunction();
 
       if (sqrt(Schwartz[mn]*DFSchwartz[Pshell])>schwarz_) {
         eri[rank]->compute_shell(Pshell, 0, MU, NU);
@@ -586,10 +610,10 @@ void SAPT2::df_integrals()
         for (int P=0, index=0; P < numPshell; ++P) {
 
           for (int mu=0; mu < nummu; ++mu) {
-            int omu = basisset_->shell(MU)->function_index() + mu;
+            int omu = basisset_->shell(MU).function_index() + mu;
 
             for (int nu=0; nu < numnu; ++nu, ++index) {
-              int onu = basisset_->shell(NU)->function_index() + nu;
+              int onu = basisset_->shell(NU).function_index() + nu;
 
               AO_RI[P][omu*nso_+onu] = buffer[rank][index];
               AO_RI[P][onu*nso_+omu] = buffer[rank][index];
@@ -601,9 +625,9 @@ void SAPT2::df_integrals()
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, CA_[0], nmoA_, AO_RI[P], nso_, 
+      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, CA_[0], nmoA_, AO_RI[P], nso_,
         0.0, halftrans, nso_);
-      C_DGEMM('N', 'N', nmoA_, nmoB_, nso_, 1.0, halftrans, nso_, CB_[0], 
+      C_DGEMM('N', 'N', nmoA_, nmoB_, nso_, 1.0, halftrans, nso_, CB_[0],
         nmoB_, 0.0, MO_RI[P], nmoB_);
     }
 
@@ -787,7 +811,7 @@ void SAPT2::w_integrals()
   free_block(B_p_SS);
 }
 
-void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, 
+void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm,
   double *evals, int foccA, int noccA, int nvirA, const char monomer)
 {
   double **P = block_matrix(nvirA,nvirA);

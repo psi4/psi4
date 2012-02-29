@@ -1,4 +1,8 @@
+#! DFT Functional Test
+
 E11 = -74.9493412744 #TEST
+
+memory 250 mb
 
 molecule h2o {
 0 1
@@ -16,7 +20,7 @@ scf_type direct
 dft_order_spherical 29 
 dft_max_points 400
 dft_basis_tol 1.0E-10
-dft_n_radial 100
+dft_num_radial 100
 reference rks
 }
 
@@ -27,5 +31,3 @@ compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
 set dft_boxing_scheme octree
 V11 = energy('scf')
 compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
-
-clean()

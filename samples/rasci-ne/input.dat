@@ -12,6 +12,9 @@
 #! the tertiary virtual subspace (RAS 4), then that excitation is only allowed
 #! if it is a single or double.
 #
+
+memory 250 mb
+
 # First, get the natural orbitals
 
 molecule ne {
@@ -28,7 +31,7 @@ set globals {
 }
 
 set detci {
-  nos_write true
+  nat_orbs_write true
 }
 
 set transqt2 {
@@ -61,7 +64,7 @@ set globals {
 
 set detci {
   maxiter 25
-  nos_write false
+  nat_orbs_write false
 
   # This keyword is at the heart of the "split-virtual" CISD[TQ].
   # If electrons are in RAS 4, do not allow the excitation to go beyond
@@ -78,5 +81,3 @@ set detci {
 
 thisenergy = energy('detci',bypass_scf='True')
 
-
-clean()

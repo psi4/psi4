@@ -1,3 +1,7 @@
+#! Test parsed and exotic calls to energy() like zapt4, mp2.5, and cisd are working
+
+memory 250 mb
+
 molecule He2 {
 0 1
 He
@@ -6,6 +10,7 @@ He 1 1.0
 
 set globals {
     basis 6-31g
+    g_convergence gau
 }
 
 set mp2 scs on
@@ -24,7 +29,7 @@ banner('mp2')
 energy('mp2')
 compare_values(-5.573453229993, get_variable('MP2 TOTAL ENERGY'), 7, "MP2 sp")
 compare_values(-0.026794209037, get_variable('SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, "  MP2 route check") 
-# this second check will fail if a request for an mp2 calc gets routed to detci, rather than the mp2 module
+# this second check will fail if a request for a mp2 calc gets routed to detci, rather than the mp2 module
 clean()
 
 banner('mp11')
@@ -80,6 +85,5 @@ clean()
 
 banner('opt(arbitraryorder())')
 optimize('mp3')
-compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 7, 'opt(mp3())')
-clean()
+compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 5, 'opt(mp3())')
 

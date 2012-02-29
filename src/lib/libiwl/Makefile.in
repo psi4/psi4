@@ -30,7 +30,3 @@ install_inc:: iwl.h iwl.hpp config.h
 	$(MKDIRS) $(DESTDIR)$(incdir)/libiwl
 	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libiwl
 
-install_man:: libiwl.txt
-	$(MKDIRS) $(DESTDIR)$(txtdir)
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(txtdir)
-

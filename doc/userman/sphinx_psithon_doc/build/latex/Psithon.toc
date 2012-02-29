@@ -1,0 +1,38 @@
+\select@language {english}
+\contentsline {chapter}{\numberline {1}Energy}{3}{chapter.1}
+\contentsline {chapter}{\numberline {2}Optimize}{7}{chapter.2}
+\contentsline {chapter}{\numberline {3}Response}{9}{chapter.3}
+\contentsline {chapter}{\numberline {4}Frequency}{11}{chapter.4}
+\contentsline {chapter}{\numberline {5}Counterpoise Correct}{13}{chapter.5}
+\contentsline {chapter}{\numberline {6}Database}{15}{chapter.6}
+\contentsline {section}{\numberline {6.1}Output}{17}{section.6.1}
+\contentsline {section}{\numberline {6.2}Available Databases}{18}{section.6.2}
+\contentsline {chapter}{\numberline {7}Complete Basis Set}{27}{chapter.7}
+\contentsline {section}{\numberline {7.1}Output}{30}{section.7.1}
+\contentsline {section}{\numberline {7.2}Extrapolation Schemes}{31}{section.7.2}
+\contentsline {chapter}{\numberline {8}Fractional Occupation}{33}{chapter.8}
+\contentsline {chapter}{\numberline {9}Beginner Psithon Programming}{35}{chapter.9}
+\contentsline {section}{\numberline {9.1}Defining a Method Alias}{35}{section.9.1}
+\contentsline {section}{\numberline {9.2}Creating a New Database}{36}{section.9.2}
+\contentsline {chapter}{\numberline {10}Function Intercalls}{39}{chapter.10}
+\contentsline {chapter}{\numberline {11}Embarrassing Parallelism}{41}{chapter.11}
+\contentsline {chapter}{\numberline {12}Psithon Programming Best Practices}{43}{chapter.12}
+\contentsline {chapter}{\numberline {13}PsiMod Methods}{47}{chapter.13}
+\contentsline {chapter}{\numberline {14}Molecule Methods}{49}{chapter.14}
+\contentsline {chapter}{\numberline {15}Expert}{51}{chapter.15}
+\contentsline {section}{\numberline {15.1}aliases}{51}{section.15.1}
+\contentsline {section}{\numberline {15.2}driver}{52}{section.15.2}
+\contentsline {section}{\numberline {15.3}input}{52}{section.15.3}
+\contentsline {section}{\numberline {15.4}molutil}{52}{section.15.4}
+\contentsline {section}{\numberline {15.5}physconst}{53}{section.15.5}
+\contentsline {section}{\numberline {15.6}proc}{53}{section.15.6}
+\contentsline {section}{\numberline {15.7}procutil}{54}{section.15.7}
+\contentsline {section}{\numberline {15.8}psiexceptions}{55}{section.15.8}
+\contentsline {section}{\numberline {15.9}pubchem}{55}{section.15.9}
+\contentsline {section}{\numberline {15.10}qmmm}{55}{section.15.10}
+\contentsline {section}{\numberline {15.11}text}{56}{section.15.11}
+\contentsline {section}{\numberline {15.12}util}{57}{section.15.12}
+\contentsline {section}{\numberline {15.13}wrappers}{57}{section.15.13}
+\contentsline {chapter}{\numberline {16}Indices and Tables}{59}{chapter.16}
+\contentsline {chapter}{Python Module Index}{61}{section*.142}
+\contentsline {chapter}{Index}{63}{section*.143}

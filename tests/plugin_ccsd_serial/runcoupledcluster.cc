@@ -1,31 +1,11 @@
-#include <libplugin/plugin.h>
 #include"psi4-dec.h"
-#include<libdpd/dpd.h>
+#include<libciomr/libciomr.h>
 
-#include<boost/shared_ptr.hpp>
-#include<liboptions/liboptions.h>
-#include<libtrans/integraltransform.h>
-#include<libtrans/mospace.h>
-#include<libmints/matrix.h>
-#include<libmints/vector.h>
-#include<libchkpt/chkpt.h>
-#include<libiwl/iwl.h>
-#include <libpsio/psio.hpp>
-#include <libciomr/libciomr.h>
-#include <ccfiles.h>
-#include <cstdio>
-#include <cstdlib>
-
-
-#include"globals.h"
-#include"gpuhelper.h"
-#include"blas.h"
 #include"ccsd.h"
 
 using namespace psi;
 using namespace boost;
 
-// wrapper to crawford's triples code and my triples code
 namespace psi{
   PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
@@ -90,6 +70,9 @@ void RunCoupledCluster(Options &options){
      Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
      Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
   }
+
+  // free gpu memory
+  ccsd->helper_->Cleanup(options);
 
   ccsd.reset();
 }

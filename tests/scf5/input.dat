@@ -1,16 +1,19 @@
 #! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+
+memory 250 mb
+
 print_stdout(' Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2') #TEST
 
-psioh = PsiMod.IOManager.shared_object()
-psioh.set_specific_retention(32,False)
+#Ensure that the checkpoint file is always nuked
+psi4_io.set_specific_retention(32,False)
 
-Eref_nuc      =  28.222786613333337 #TEST
-Eref_sing_can = -149.59059725124180 #TEST
-Eref_sing_df  = -149.59052880149969 #TEST
-Eref_uhf_can  = -149.67638747904215 #TEST
-Eref_uhf_df   = -149.67630611642502 #TEST
-Eref_rohf_can = -149.65398720314511 #TEST
-Eref_rohf_df  = -149.65390605143992 #TEST
+Eref_nuc      =   28.22278445813334 #TEST
+Eref_sing_can = -149.59059723621149 #TEST
+Eref_sing_df  = -149.59052878646830 #TEST
+Eref_uhf_can  = -149.67638746522147 #TEST
+Eref_uhf_df   = -149.67630610260213 #TEST
+Eref_rohf_can = -149.65398718700044 #TEST
+Eref_rohf_df  = -149.65390603529437 #TEST
 
 molecule singlet_o2 {
     0 1
@@ -171,6 +174,3 @@ clean()
 set scf scf_type df
 E = energy('scf')
 compare_values(Eref_rohf_df, E, 9, 'Triplet DF CUHF energy') #TEST
-
-clean()
-

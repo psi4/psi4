@@ -1,5 +1,7 @@
 #! SCF STO-3G geometry optimzation, with Z-matrix input
 
+memory 250 mb
+
 # These values are from a tightly converged QChem run
 nucenergy = 8.9064890670                                                                     #TEST
 refenergy = -74.965901192                                                                    #TEST
@@ -25,5 +27,3 @@ thisenergy = optimize('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, thisenergy, 3, "Reference energy")                                #TEST
-
-clean()

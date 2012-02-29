@@ -1,5 +1,8 @@
 #! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
+memory 250 mb
+ 
+
 molecule h2o {
 0 1
 O
@@ -33,8 +36,7 @@ nuc_z = nuc[2]
 dm_z_3point = (energies[0] - energies[1]) / (2.0*pert)
 dm_z_5point = (8.0*energies[0] - 8.0*energies[1] - energies[2] + energies[3]) / (12.0*pert)
 
-# The a.u. to Debye conversion factor
-debye = 2.54175
+# The a.u. to Debye conversion factor is automatically available in Psithon as psi_dipmom_au2debye
 
 set scf perturb_h false
 # So we can get the analytic result to compare to
@@ -45,17 +47,15 @@ for val in range(len(lambdas)):
     print "Perturbation strength = %7.4f, computed energy = %16.10f\n" % (lambdas[val], energies[val])
     compare_values(ref_energies[val], energies[val], 8, "Energy for displacement %d" % val)
 
-print "nuclear z component    = %10.6f Eh, %10.6f Debye\n" % (nuc_z, nuc_z*debye)
+print "nuclear z component    = %10.6f ea0, %10.6f Debye\n" % (nuc_z, nuc_z*psi_dipmom_au2debye)
 print "Electronic contributions:\n"
-print "3 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*debye)
-print "5 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*debye)
+print "3 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*psi_dipmom_au2debye)
+print "5 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*psi_dipmom_au2debye)
 dm_z_3point = dm_z_3point + nuc_z
 dm_z_5point = dm_z_5point + nuc_z
 print "Total dipoles\n"
-print "3 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*debye)
-print "5 Point formula: mu(z) = %10.6f Eh, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*debye)
+print "3 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_3point, dm_z_3point*psi_dipmom_au2debye)
+print "5 Point formula: mu(z) = %10.6f ea0, %10.6f Debye\n" % (dm_z_5point, dm_z_5point*psi_dipmom_au2debye)
 
 compare_values(ref_3pt, dm_z_3point, 8, "Z dipole, using 3 point formula")
 compare_values(ref_5pt, dm_z_5point, 8, "Z dipole, using 5 point formula")
-
-clean()

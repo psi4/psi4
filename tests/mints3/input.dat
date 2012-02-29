@@ -1,3 +1,5 @@
+memory 250 mb
+
 #! Test individual integral objects for correctness.
 print_stdout(' Case Study Test of Integrals')
 
@@ -35,9 +37,9 @@ RefY.load(input_directory + "Ly-STO-3G.dat")                         #TEST
 RefZ.load(input_directory + "Lz-STO-3G.dat")                         #TEST
 
 print_stdout("   -H2O STO-3G Angular Momentum Integrals:")           #TEST
-compare_matrices(RefX, Li[0], 13, "SO Lx")                           #TEST
-compare_matrices(RefY, Li[1], 13, "SO Ly")                           #TEST
-compare_matrices(RefZ, Li[2], 13, "SO Lz")                           #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
 
 set globals {
   basis 6-311G**
@@ -61,9 +63,9 @@ RefY.load(input_directory + "Ly-6-311Gss.dat")                       #TEST
 RefZ.load(input_directory + "Lz-6-311Gss.dat")                       #TEST
 
 print_stdout("   -H2O 6-311G** Angular Momentum Integrals:")         #TEST
-compare_matrices(RefX, Li[0], 13, "SO Lx")                           #TEST
-compare_matrices(RefY, Li[1], 13, "SO Ly")                           #TEST
-compare_matrices(RefZ, Li[2], 13, "SO Lz")                           #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
 
 set globals {
   basis cc-pVTZ
@@ -87,9 +89,9 @@ RefY.load(input_directory + "Ly-cc-pVTZ.dat")                        #TEST
 RefZ.load(input_directory + "Lz-cc-pVTZ.dat")                        #TEST
 
 print_stdout("   -H2O cc-pVTZ Angular Momentum Integrals:")          #TEST
-compare_matrices(RefX, Li[0], 13, "SO Lx")                           #TEST
-compare_matrices(RefY, Li[1], 13, "SO Ly")                           #TEST
-compare_matrices(RefZ, Li[2], 13, "SO Lz")                           #TEST
+compare_matrices(RefX, Li[0], 12, "SO Lx")                           #TEST
+compare_matrices(RefY, Li[1], 12, "SO Ly")                           #TEST
+compare_matrices(RefZ, Li[2], 12, "SO Lz")                           #TEST
 
 #################################################################### #TEST
 # Test Nabla integrals                                               #TEST
@@ -117,9 +119,9 @@ RefY.load(input_directory + "Py-STO-3G.dat")                         #TEST
 RefZ.load(input_directory + "Pz-STO-3G.dat")                         #TEST
 
 print_stdout("   -H2O STO-3G Nabla Integrals:")                      #TEST
-compare_matrices(RefX, Pi[0], 13, "SO Px")                           #TEST
-compare_matrices(RefY, Pi[1], 13, "SO Py")                           #TEST
-compare_matrices(RefZ, Pi[2], 13, "SO Pz")                           #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
 
 set globals {
   basis 6-311G**
@@ -143,9 +145,9 @@ RefY.load(input_directory + "Py-6-311Gss.dat")                       #TEST
 RefZ.load(input_directory + "Pz-6-311Gss.dat")                       #TEST
 
 print_stdout("   -H2O 6-311G** Nabla Integrals:")                    #TEST
-compare_matrices(RefX, Pi[0], 13, "SO Px")                           #TEST
-compare_matrices(RefY, Pi[1], 13, "SO Py")                           #TEST
-compare_matrices(RefZ, Pi[2], 13, "SO Pz")                           #TEST
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST
 
 set globals {
   basis cc-pVTZ
@@ -169,9 +171,6 @@ RefY.load(input_directory + "Py-cc-pVTZ.dat")                        #TEST
 RefZ.load(input_directory + "Pz-cc-pVTZ.dat")                        #TEST
 
 print_stdout("   -H2O cc-pVTZ Nabla Integrals:")                     #TEST
-compare_matrices(RefX, Pi[0], 13, "SO Px")                           #TEST
-compare_matrices(RefY, Pi[1], 13, "SO Py")                           #TEST
-compare_matrices(RefZ, Pi[2], 13, "SO Pz")                           #TEST
-
-# There shouldn't be anything to clean
-clean()
+compare_matrices(RefX, Pi[0], 12, "SO Px")                           #TEST
+compare_matrices(RefY, Pi[1], 12, "SO Py")                           #TEST
+compare_matrices(RefZ, Pi[2], 12, "SO Pz")                           #TEST

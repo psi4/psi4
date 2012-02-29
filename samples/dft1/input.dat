@@ -1,5 +1,8 @@
 #! DFT Functional Test
 
+memory 250 mb
+
+
 molecule h2o {
 0 1
 O
@@ -14,7 +17,7 @@ basis sto-3g
 guess core
 scf_type direct
 dft_order_spherical 29 
-dft_n_radial 100
+dft_num_radial 100
 reference rks
 }
 
@@ -25,9 +28,11 @@ set dft_functional b3lyp
 V12 = energy('scf')
 
 set dft_functional wB97
+set dft_omega 0.4
 V13 = energy('scf')
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V14 = energy('scf')
 
 set reference uks
@@ -38,9 +43,11 @@ set dft_functional b3lyp
 V22 = energy('scf')
 
 set dft_functional wB97
+set dft_omega 0.4
 V23 = energy('scf')
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V24 = energy('scf')
 
 molecule h2op {
@@ -59,9 +66,11 @@ set dft_functional b3lyp
 V32 = energy('scf')
 
 set dft_functional wB97
+set dft_omega 0.4
 V33 = energy('scf')
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V34 = energy('scf')
 
 molecule h2om {
@@ -79,10 +88,9 @@ set dft_functional b3lyp
 V42 = energy('scf')
 
 set dft_functional wB97
+set dft_omega 0.4
 V43 = energy('scf')
 
 set dft_functional wB97X 
+set dft_omega 0.3
 V44 = energy('scf')
-
-clean()
-

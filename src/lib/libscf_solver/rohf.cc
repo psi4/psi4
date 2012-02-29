@@ -11,9 +11,10 @@
 #include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <libmints/mints.h>
+#include <libfock/jk.h>
 #include "integralfunctors.h"
 
-#include <libmints/mints.h>
 #include <libmints/view.h>
 #include "rohf.h"
 #include <psi4-dec.h>
@@ -455,8 +456,28 @@ void ROHF::form_G()
     /*
      * This just builds the same Ga and Gb matrices used in UHF
      */
-    J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-    process_tei<J_Ka_Kb_Functor>(jk_builder);
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
+
+        std::vector<SharedMatrix> & C = jk_->C_left();
+        C.clear();
+        C.push_back(Ca_subset("SO", "OCC"));
+        C.push_back(Cb_subset("SO", "OCC"));
+        
+        // Run the JK object
+        jk_->compute();
+
+        // Pull the J and K matrices off
+        const std::vector<SharedMatrix> & J = jk_->J();
+        const std::vector<SharedMatrix> & K = jk_->K();
+        Ga_->copy(J[0]);
+        Ga_->add(J[1]);
+        Ka_ = K[0];
+        Kb_ = K[1];
+        
+    } else {
+        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+        process_tei<J_Ka_Kb_Functor>(jk_builder);
+    }
 
     Gb_->copy(Ga_);
     Ga_->subtract(Ka_);

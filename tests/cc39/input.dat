@@ -1,5 +1,7 @@
 #! RHF-CC2-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
 
+memory 250 mb
+
 molecule hof {
   0 1
   O
@@ -13,5 +15,3 @@ set {
 }
 
 response('cc2')
-clean()
-

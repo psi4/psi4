@@ -1,5 +1,7 @@
 #! Single point gradient of 1-1B2 state of H2O with EOM-CCSD
 
+memory 250 mb
+
 molecule h2o {
   0 1
   H -0.107055195862289   0.000000000000000  -1.832806614599657
@@ -27,6 +29,3 @@ gradient('eom-ccsd', dertype=0)
 findif_grad = PsiMod.get_gradient()
 
 compare_matrices(analytic_grad, findif_grad, 7, "RHF-EOM-CCSD finite-diff. (5-pt.) vs. analytic gradient to 10^-7") #TEST
-
-clean()
-

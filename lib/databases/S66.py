@@ -1,8 +1,28 @@
+"""
+**S66**
+
+| Database (Hobza) of interaction energies for bimolecular complexes.
+| Geometries and reference energies from Rezac et al. JCTC 7 2427 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'HB'`` hydrogen-bonded systems
+  - ``'MX'`` mixed-influence systems
+  - ``'DD'`` dispersion-dominated systems
+
+----
+
+"""
 import re
 import input
 
 # <<< S66 Database Module >>>
-# Geometries and Reference energies from Rezac et al. JCTC xx xxxx (2011).
 dbse = 'S66'
 
 # <<< Database Members >>>
@@ -523,7 +543,7 @@ H        2.59749268    -0.41166327     0.76674486
 H        2.59313538    -0.44949618    -0.74478203
 units angstrom
 }
-""")
+""", 0)
 
 S66_2 = input.process_input("""
 molecule dimer {
@@ -541,7 +561,7 @@ H        3.86760205    -0.37533621    -1.26461265
 H        2.45329574    -1.44599856    -1.38938136
 units angstrom
 }
-""")
+""", 0)
 
 S66_3 = input.process_input("""
 molecule dimer {
@@ -560,7 +580,7 @@ H        3.98462074     1.37225159    -0.04334363
 H        2.56659917     1.94746403    -0.92221177
 units angstrom
 }
-""")
+""", 0)
 
 S66_4 = input.process_input("""
 molecule dimer {
@@ -584,7 +604,7 @@ H        5.83690203     0.01562196     0.80319825
 H        5.76577825     0.23649765    -0.95515382
 units angstrom
 }
-""")
+""", 0)
 
 S66_5 = input.process_input("""
 molecule dimer {
@@ -605,7 +625,7 @@ H        3.77824931    -0.21554173     1.36633776
 H        2.56681356     1.04559122     1.68750717
 units angstrom
 }
-""")
+""", 0)
 
 S66_6 = input.process_input("""
 molecule dimer {
@@ -627,7 +647,7 @@ H        3.76573553    -1.52918949     0.03715731
 H        2.28689798    -1.90918449     0.92375496
 units angstrom
 }
-""")
+""", 0)
 
 S66_7 = input.process_input("""
 molecule dimer {
@@ -654,7 +674,7 @@ H        6.13803306     0.42342202    -0.34567319
 H        5.35717393    -0.63462872     0.84491605
 units angstrom
 }
-""")
+""", 0)
 
 S66_8 = input.process_input("""
 molecule dimer {
@@ -672,7 +692,7 @@ H        2.56808728     0.33681560    -0.76461362
 H        2.56676744     0.35126768     0.74834860
 units angstrom
 }
-""")
+""", 0)
 
 S66_9 = input.process_input("""
 molecule dimer {
@@ -694,7 +714,7 @@ H        3.75142862     1.00319123     1.08630135
 H        2.19189882     1.83770561     0.93208484
 units angstrom
 }
-""")
+""", 0)
 
 S66_10 = input.process_input("""
 molecule dimer {
@@ -717,7 +737,7 @@ H        3.56653376     1.10146600     1.14769156
 H        1.86658307     1.46546492     0.81806258
 units angstrom
 }
-""")
+""", 0)
 
 S66_11 = input.process_input("""
 molecule dimer {
@@ -745,7 +765,7 @@ H        5.06507133    -0.49231605     0.02425262
 H        4.83846506    -0.43618886     1.78273654
 units angstrom
 }
-""")
+""", 0)
 
 S66_12 = input.process_input("""
 molecule dimer {
@@ -764,7 +784,7 @@ H        1.27575101     0.42103887     0.03894435
 H        2.67516986     0.65881349    -0.50364884
 units angstrom
 }
-""")
+""", 0)
 
 S66_13 = input.process_input("""
 molecule dimer {
@@ -791,7 +811,7 @@ H        3.42228862    -1.32234103    -0.03928018
 H        3.06424691    -1.15479748     1.69323508
 units angstrom
 }
-""")
+""", 0)
 
 S66_14 = input.process_input("""
 molecule dimer {
@@ -819,7 +839,7 @@ H        3.68598970    -1.34329798     0.46205539
 H        2.17611849    -1.54101555     1.35610799
 units angstrom
 }
-""")
+""", 0)
 
 S66_15 = input.process_input("""
 molecule dimer {
@@ -852,7 +872,7 @@ H        5.75082180    -0.02016799     0.64486768
 H        5.54839755    -0.31961545    -1.09167796
 units angstrom
 }
-""")
+""", 0)
 
 S66_16 = input.process_input("""
 molecule dimer {
@@ -876,7 +896,7 @@ H        2.66775436    -0.77136560    -0.46027609
 H        2.68252869     0.70578659    -0.13117819
 units angstrom
 }
-""")
+""", 0)
 
 S66_17 = input.process_input("""
 molecule dimer {
@@ -909,7 +929,7 @@ C        2.77026935    -1.07076714     0.00145616
 O        2.11994847    -0.02954883     0.00269255
 units angstrom
 }
-""")
+""", 0)
 
 S66_18 = input.process_input("""
 molecule dimer {
@@ -932,7 +952,7 @@ C        3.05977605     0.06259779    -1.14467547
 H        2.47500717     0.08619845    -2.05546803
 units angstrom
 }
-""")
+""", 0)
 
 S66_19 = input.process_input("""
 molecule dimer {
@@ -958,7 +978,7 @@ C        2.96691424    -0.00868772     1.14416710
 H        2.38090845     0.01398671     2.05428579
 units angstrom
 }
-""")
+""", 0)
 
 S66_20 = input.process_input("""
 molecule dimer {
@@ -983,7 +1003,7 @@ H        4.66755944     1.77286944    -0.46024953
 H        4.65757721     1.36521101     1.24527472
 units angstrom
 }
-""")
+""", 0)
 
 S66_21 = input.process_input("""
 molecule dimer {
@@ -1010,7 +1030,7 @@ H        4.69015720     1.00062503    -0.78619798
 H        4.61437977     0.21759516     0.78176266
 units angstrom
 }
-""")
+""", 0)
 
 S66_22 = input.process_input("""
 molecule dimer {
@@ -1039,7 +1059,7 @@ C        2.82027675     1.15461676     0.20974482
 O        2.10824430     0.16511187     0.03627464
 units angstrom
 }
-""")
+""", 0)
 
 S66_23 = input.process_input("""
 molecule dimer {
@@ -1069,7 +1089,7 @@ C        2.82289388     1.03716353    -0.12841885
 O        2.22570515    -0.02675243    -0.27022634
 units angstrom
 }
-""")
+""", 0)
 
 S66_24 = input.process_input("""
 molecule dimer {
@@ -1102,7 +1122,7 @@ C        0.61137962     1.27415454     3.56657725
 H        0.18785474     2.26805957     3.51420832
 units angstrom
 }
-""")
+""", 0)
 
 S66_25 = input.process_input("""
 molecule dimer {
@@ -1133,7 +1153,7 @@ C        0.71230860    -1.12295838     3.54817861
 H        1.45616936    -1.90851301     3.49173001
 units angstrom
 }
-""")
+""", 0)
 
 S66_26 = input.process_input("""
 molecule dimer {
@@ -1166,7 +1186,7 @@ C       -1.62450481     0.48890751     1.01871830
 O       -1.53967580     0.97551791     2.12980905
 units angstrom
 }
-""")
+""", 0)
 
 S66_27 = input.process_input("""
 molecule dimer {
@@ -1198,7 +1218,7 @@ C       -1.61144595    -0.90301580     3.31732347
 H       -2.12029887    -1.83146918     3.08848079
 units angstrom
 }
-""")
+""", 0)
 
 S66_28 = input.process_input("""
 molecule dimer {
@@ -1231,7 +1251,7 @@ C       -1.20323727    -0.34002542     3.32547899
 O       -2.40102568    -0.18920215     3.18336680
 units angstrom
 }
-""")
+""", 0)
 
 S66_29 = input.process_input("""
 molecule dimer {
@@ -1263,7 +1283,7 @@ C        0.35794757    -1.15027617     3.35068108
 O        0.26581032    -2.35569425     3.21710180
 units angstrom
 }
-""")
+""", 0)
 
 S66_30 = input.process_input("""
 molecule dimer {
@@ -1290,7 +1310,7 @@ H       -1.37084787    -0.69327237     3.52626454
 H       -1.04723903     1.12391105     3.52630243
 units angstrom
 }
-""")
+""", 0)
 
 S66_31 = input.process_input("""
 molecule dimer {
@@ -1317,7 +1337,7 @@ H       -1.21477213    -0.66183565     2.93204279
 H       -1.11459423     0.99671353     3.73294327
 units angstrom
 }
-""")
+""", 0)
 
 S66_32 = input.process_input("""
 molecule dimer {
@@ -1342,7 +1362,7 @@ C       -0.43675225     0.21415547     3.38254320
 H       -1.44163480     0.54285582     3.48290737
 units angstrom
 }
-""")
+""", 0)
 
 S66_33 = input.process_input("""
 molecule dimer {
@@ -1368,7 +1388,7 @@ H        0.93067296    -1.22533044     3.32839408
 H       -0.88935083    -1.22907273     3.64449367
 units angstrom
 }
-""")
+""", 0)
 
 S66_34 = input.process_input("""
 molecule dimer {
@@ -1411,7 +1431,7 @@ H       -3.43432593    -0.31616087     4.54259468
 H       -2.56406349     0.97772373     5.36234289
 units angstrom
 }
-""")
+""", 0)
 
 S66_35 = input.process_input("""
 molecule dimer {
@@ -1454,7 +1474,7 @@ H       -0.01529328     1.67021871     3.78303336
 H       -0.90287503     2.03709750     5.26447319
 units angstrom
 }
-""")
+""", 0)
 
 S66_36 = input.process_input("""
 molecule dimer {
@@ -1497,7 +1517,7 @@ H       -2.39738024    -0.58469117     5.53172979
 H       -1.23678678    -0.94543842     4.25176527
 units angstrom
 }
-""")
+""", 0)
 
 S66_37 = input.process_input("""
 molecule dimer {
@@ -1538,7 +1558,7 @@ H        0.93258913    -0.99209454     3.95580439
 H        1.84246405    -1.11668194     5.46268763
 units angstrom
 }
-""")
+""", 0)
 
 S66_38 = input.process_input("""
 molecule dimer {
@@ -1577,7 +1597,7 @@ H       -1.48095789     1.70295043     5.66159855
 H       -0.60124939     0.71879862     6.83302881
 units angstrom
 }
-""")
+""", 0)
 
 S66_39 = input.process_input("""
 molecule dimer {
@@ -1613,7 +1633,7 @@ H       -1.99758134     1.03937903     4.51151819
 H       -1.13201859     0.35432067     5.88796657
 units angstrom
 }
-""")
+""", 0)
 
 S66_40 = input.process_input("""
 molecule dimer {
@@ -1651,7 +1671,7 @@ H       -1.71069396     1.56693409     4.63297103
 H       -0.29525222     2.62139813     4.70059546
 units angstrom
 }
-""")
+""", 0)
 
 S66_41 = input.process_input("""
 molecule dimer {
@@ -1689,7 +1709,7 @@ H       -1.40641145    -3.06933423     3.91169879
 H       -2.15131302    -1.65421986     4.64687465
 units angstrom
 }
-""")
+""", 0)
 
 S66_42 = input.process_input("""
 molecule dimer {
@@ -1725,7 +1745,7 @@ H       -0.69288766    -1.83301970     3.49223397
 H       -0.76532935    -1.71626599     5.23468007
 units angstrom
 }
-""")
+""", 0)
 
 S66_43 = input.process_input("""
 molecule dimer {
@@ -1763,7 +1783,7 @@ H        0.04755691    -1.84815128     3.76188758
 H       -1.55552720    -1.97156632     4.49170918
 units angstrom
 }
-""")
+""", 0)
 
 S66_44 = input.process_input("""
 molecule dimer {
@@ -1795,7 +1815,7 @@ H        3.43380069     0.21725671     4.16337561
 H        2.56854094    -1.06813554     5.00130328
 units angstrom
 }
-""")
+""", 0)
 
 S66_45 = input.process_input("""
 molecule dimer {
@@ -1825,7 +1845,7 @@ H        3.43284666     0.26148455     4.18599753
 H        2.58228512    -0.97366153     5.10935743
 units angstrom
 }
-""")
+""", 0)
 
 S66_46 = input.process_input("""
 molecule dimer {
@@ -1863,7 +1883,7 @@ H       -3.24668156    -0.20808939     4.06966602
 H       -2.51169538     0.98413919     5.13671852
 units angstrom
 }
-""")
+""", 0)
 
 S66_47 = input.process_input("""
 molecule dimer {
@@ -1896,7 +1916,7 @@ C        1.08859620     0.61350684     5.01593166
 H        1.93585412     1.19958163     4.68588434
 units angstrom
 }
-""")
+""", 0)
 
 S66_48 = input.process_input("""
 molecule dimer {
@@ -1927,7 +1947,7 @@ C       -0.85115066    -0.00016084     6.46143162
 H       -1.54333433     0.00442229     7.29462282
 units angstrom
 }
-""")
+""", 0)
 
 S66_49 = input.process_input("""
 molecule dimer {
@@ -1959,7 +1979,7 @@ C       -0.15339291    -0.90663452     6.34982649
 H       -0.27698904    -1.65414849     7.12392749
 units angstrom
 }
-""")
+""", 0)
 
 S66_50 = input.process_input("""
 molecule dimer {
@@ -1984,7 +2004,7 @@ C        0.00951511     0.09473103     4.99182772
 H        0.01262752     0.11190396     6.05302473
 units angstrom
 }
-""")
+""", 0)
 
 S66_51 = input.process_input("""
 molecule dimer {
@@ -2001,7 +2021,7 @@ C       -0.01129640     0.13862741     5.35427728
 H       -0.01456263     0.17200329     6.41518870
 units angstrom
 }
-""")
+""", 0)
 
 S66_52 = input.process_input("""
 molecule dimer {
@@ -2030,7 +2050,7 @@ H       -0.48598160    -0.75922167     6.00843808
 H        1.13859655    -0.09872978     5.95650555
 units angstrom
 }
-""")
+""", 0)
 
 S66_53 = input.process_input("""
 molecule dimer {
@@ -2060,7 +2080,7 @@ H       -0.31712984    -0.52400410     6.69417176
 H       -0.44469059     1.24648520     6.71991660
 units angstrom
 }
-""")
+""", 0)
 
 S66_54 = input.process_input("""
 molecule dimer {
@@ -2084,7 +2104,7 @@ H       -2.57902721    -1.21398410     0.00000000
 H       -1.85653027     0.10232776     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 S66_55 = input.process_input("""
 molecule dimer {
@@ -2111,7 +2131,7 @@ H       -1.84128123    -0.57973096     3.54437811
 H       -0.48267133    -1.71446977     3.60525680
 units angstrom
 }
-""")
+""", 0)
 
 S66_56 = input.process_input("""
 molecule dimer {
@@ -2139,7 +2159,7 @@ H       -1.87233687     0.01128013     3.69622388
 H       -1.25572667    -1.63866846     3.76072118
 units angstrom
 }
-""")
+""", 0)
 
 S66_57 = input.process_input("""
 molecule dimer {
@@ -2172,7 +2192,7 @@ H       -1.13565324    -2.20735207     3.54445210
 H        0.62871378    -2.29287426     3.41385278
 units angstrom
 }
-""")
+""", 0)
 
 S66_58 = input.process_input("""
 molecule dimer {
@@ -2203,7 +2223,7 @@ C        2.51501483     0.39233399     0.01556620
 H        1.53510443     0.85599657     0.01390336
 units angstrom
 }
-""")
+""", 0)
 
 S66_59 = input.process_input("""
 molecule dimer {
@@ -2219,7 +2239,7 @@ H        2.83426102    -0.73533944     0.38155611
 H        2.83590044     0.20541797    -0.80084297
 units angstrom
 }
-""")
+""", 0)
 
 S66_60 = input.process_input("""
 molecule dimer {
@@ -2240,7 +2260,7 @@ H        4.33629527    -1.11102648     1.89612226
 H        4.33236190    -2.15072575     0.48285261
 units angstrom
 }
-""")
+""", 0)
 
 S66_61 = input.process_input("""
 molecule dimer {
@@ -2274,7 +2294,7 @@ H        1.13274299     0.85607656     3.35533234
 H        1.19401682     0.59110388     5.09025931
 units angstrom
 }
-""")
+""", 0)
 
 S66_62 = input.process_input("""
 molecule dimer {
@@ -2309,7 +2329,7 @@ H       -1.75428629    -0.69600434     3.43014867
 H       -1.88600271     0.08954102     4.99623387
 units angstrom
 }
-""")
+""", 0)
 
 S66_63 = input.process_input("""
 molecule dimer {
@@ -2338,7 +2358,7 @@ H       -1.05569745     0.53905649     2.74158774
 H       -1.38774836     0.76671618     4.45679527
 units angstrom
 }
-""")
+""", 0)
 
 S66_64 = input.process_input("""
 molecule dimer {
@@ -2365,7 +2385,7 @@ H        1.36805919    -0.74079051     4.69615412
 H        0.71764224    -1.30416499     3.05371698
 units angstrom
 }
-""")
+""", 0)
 
 S66_65 = input.process_input("""
 molecule dimer {
@@ -2389,7 +2409,7 @@ C        0.33976626    -0.00660792     4.33547166
 H        0.22161814    -0.00634549     3.27096619
 units angstrom
 }
-""")
+""", 0)
 
 S66_66 = input.process_input("""
 molecule dimer {
@@ -2416,16 +2436,15 @@ C        2.98854139    -1.08253234     1.19101154
 H        2.70245706    -1.74627994     1.99762219
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP
-
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP

@@ -2,11 +2,13 @@
 #! simultaneous update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
-refnuc      =  0.66147156125000 #TEST
-refscf      = -5.71032245823757 #TEST
-refmp2      = -5.76128209224412 #TEST
-refdcftscf  = -5.62714230597787 #TEST
-refdcft     = -5.77531659915098 #TEST
+memory 250 mb
+
+refnuc      =  0.66147151073750 #TEST
+refscf      = -5.71032245823742 #TEST
+refmp2      = -5.76128209224125 #TEST
+refdcftscf  = -5.62714230598082 #TEST
+refdcft     = -5.77531659914793 #TEST
 
 molecule he2 {
     He
@@ -33,6 +35,3 @@ set algorithm simultaneous
 energy('dcft')
 compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (simultaneous)");                #TEST
 compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (simultaneous)");     #TEST
-
-clean()
-

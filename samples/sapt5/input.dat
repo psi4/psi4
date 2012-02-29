@@ -1,0 +1,37 @@
+#! SAPT0 aug-cc-pVTZ computation of the charge transfer energy of the water
+#! dimer.
+
+memory 250 mb
+
+molecule water_dimer {
+     0 1
+     O  -1.551007  -0.114520   0.000000
+     H  -1.934259   0.762503   0.000000
+     H  -0.599677   0.040712   0.000000
+     --
+     0 1
+     O   1.350625   0.111469   0.000000
+     H   1.680398  -0.373741  -0.758561
+     H   1.680398  -0.373741   0.758561
+     units angstrom
+     no_reorient
+     symmetry c1
+}
+
+set globals {
+    basis         aug-cc-pvtz
+    df_basis_scf  aug-cc-pvtz-jkfit
+    df_basis_sapt aug-cc-pvtz-ri
+    df_basis_elst aug-cc-pvtz-jkfit
+    guess         sad
+    scf_type      df
+    puream        true
+    print         1
+}
+
+energy('sapt0-ct',cast_up=True)
+
+ECT = PsiMod.get_variable("SAPT CT ENERGY")
+
+
+

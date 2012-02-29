@@ -1,0 +1,296 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+               Git: Rev 043de9c7da8e183e2e7daf415503bd636ee3713d
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating
+#! matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition.
+#! These operations are performed on vectors and matrices provided from the Psi library.
+
+memory 250 mb
+
+# Example of matrix multiplication
+print '\n  ==> Matrix Multiplication <== \n\n'
+
+n = 3
+A = PsiMod.Matrix(n, n)
+B = PsiMod.Matrix(n, n)
+C = PsiMod.Matrix(n, n)
+A.set_name('A')
+B.set_name('B')
+C.set_name('C')
+
+# The matrix set method takes 4 arguments: irrep, row, col, value
+# Values are initialized to 0 by default
+B.set(0, 0, 1, 1.0)
+B.set(0, 1, 0, 2.0)
+B.set(0, 2, 0, 3.0)
+
+A.set(0, 0, 0, 2.0)
+A.set(0, 1, 1, 2.0)
+A.set(0, 2, 2, 2.0)
+
+A.print_out()
+B.print_out()
+
+PsiMod.DGEMM(0, 'N', 'N', n, n, n, 1.0, A, n, B, n, 0.0, C, n)
+C.print_out()
+
+mmultRef = PsiMod.Matrix(n, n)                                                                         #TEST
+mmultRef.set_name("Matrix-Matrix Multiplication Reference")                                            #TEST
+mmultRef.set(0, 0, 0, 0.0000000); mmultRef.set(0, 0, 1, 2.0000000); mmultRef.set(0, 0, 2, 0.0000000)   #TEST
+mmultRef.set(0, 1, 0, 4.0000000); mmultRef.set(0, 1, 1, 0.0000000); mmultRef.set(0, 1, 2, 0.0000000)   #TEST
+mmultRef.set(0, 2, 0, 6.0000000); mmultRef.set(0, 2, 1, 0.0000000); mmultRef.set(0, 2, 2, 0.0000000)   #TEST
+compare_matrices(mmultRef, C, 6, "Matrix multiplication")                                              #TEST
+
+print '\n  ==> Eigendecomposition (Hilbert Matrix) <== \n\n'
+
+n = 4;
+A = PsiMod.Matrix(n,n)
+for i in range(1,n+1):
+    for j in range(1,n+1):
+        A.set(0, i-1, j-1, 1.0/(i + j - 1))
+A.set_name('Hilbert Matrix')
+A.print_out();
+
+# Allocate a work array and some storage for the eigenvalues
+W = PsiMod.Vector(4*n);
+D = PsiMod.Vector(n);
+# On input, A is the matrix and on output it contains the eigenvectors
+info = PsiMod.DSYEV(0, 'V','U', n, A, n, D, W, 4*n)
+A.set_name("Eigenvectors")
+
+# Make first element of eigenvector positive if desired
+for i in range(1,n):
+    if A.get(i,0) < 0 :
+        A.scale_row(0, i, -1)
+evecRef = PsiMod.Matrix(n,n)                                       #TEST
+evecRef.set(0, 0, 0,  0.0291933); evecRef.set(0, 0, 1, -0.3287121) #TEST
+evecRef.set(0, 0, 2,  0.7914111); evecRef.set(0, 0, 3, -0.5145527) #TEST
+evecRef.set(0, 1, 0,  0.1791863); evecRef.set(0, 1, 1, -0.7419178) #TEST
+evecRef.set(0, 1, 2,  0.1002281); evecRef.set(0, 1, 3,  0.6382825) #TEST
+evecRef.set(0, 2, 0,  0.5820757); evecRef.set(0, 2, 1, -0.3705022) #TEST
+evecRef.set(0, 2, 2, -0.5095786); evecRef.set(0, 2, 3, -0.5140483) #TEST
+evecRef.set(0, 3, 0,  0.7926083); evecRef.set(0, 3, 1,  0.4519231) #TEST
+evecRef.set(0, 3, 2,  0.3224164); evecRef.set(0, 3, 3,  0.2521612) #TEST
+evecRef.set_name("Reference Eigenvectors");                        #TEST
+compare_matrices(evecRef, A, 6, "Eigenvectors")                    #TEST
+evalRef = PsiMod.Vector(n)                                         #TEST
+evalRef.set(0, 0, 0.0000967); evalRef.set(0, 1, 0.0067383)         #TEST
+evalRef.set(0, 2, 0.1691412); evalRef.set(0, 3, 1.5002143)         #TEST
+compare_vectors(evalRef, D, 6, "Eigenvalues")                      #TEST
+
+print '  Eigenvalues'
+D.print_out()
+A.print_out()
+
+
+print '\n  ==> Cholesky Decomposition (Hilbert Matrix) <== \n\n'
+
+n = 4;
+A = PsiMod.Matrix(n,n)
+for i in range(1,n+1):
+    for j in range(1,n+1):
+        A.set(0, i-1, j-1, 1.0/(i + j - 1))
+
+A.set_name('Hilbert Matrix')
+A.print_out();
+
+info = PsiMod.DPOTRF(0, 'U', n, A, n)
+for i in range(0,n):
+    for j in range(i+1,n):
+        A.set(0, i, j, 0.0)
+
+cholRef = PsiMod.Matrix(n, n)                                     #TEST
+cholRef.set(0, 0, 0, 1.0000000); cholRef.set(0, 0, 1, 0.0000000); #TEST
+cholRef.set(0, 0, 2, 0.0000000); cholRef.set(0, 0, 3, 0.0000000); #TEST
+cholRef.set(0, 1, 0, 0.5000000); cholRef.set(0, 1, 1, 0.2886751); #TEST
+cholRef.set(0, 1, 2, 0.0000000); cholRef.set(0, 1, 3, 0.0000000); #TEST
+cholRef.set(0, 2, 0, 0.3333333); cholRef.set(0, 2, 1, 0.2886751); #TEST
+cholRef.set(0, 2, 2, 0.0745356); cholRef.set(0, 2, 3, 0.0000000); #TEST
+cholRef.set(0, 3, 0, 0.2500000); cholRef.set(0, 3, 1, 0.2598076); #TEST
+cholRef.set(0, 3, 2, 0.1118034); cholRef.set(0, 3, 3, 0.0188982); #TEST
+cholRef.set_name("Cholesky Decomposition Reference");             #TEST
+compare_matrices(cholRef, A, 6, "Cholesky Decomposition")         #TEST
+
+A.set_name('Hilbert Matrix Cholesky Decomposition (T)')
+A.print_out()
+
+
+print '\n  ==> LU Decomposition (Hilbert Matrix) <== \n\n'
+
+n = 4;
+A = PsiMod.Matrix(n,n)
+piv = PsiMod.IntVector(n)
+for i in range(1,n+1):
+    for j in range(1,n+1):
+        A.set(0, i-1, j-1, 1.0/(i + j - 1))
+
+A.set_name('Hilbert Matrix')
+A.print_out();
+
+info = PsiMod.DGETRF(0, n, n, A, n, piv)
+
+luRef = PsiMod.Matrix(n, n)                                     #TEST
+luRef.set(0, 0, 0,  1.0000000); luRef.set(0, 0, 1,  0.3333333); #TEST
+luRef.set(0, 0, 2,  0.5000000); luRef.set(0, 0, 3,  0.2500000); #TEST
+luRef.set(0, 1, 0,  0.5000000); luRef.set(0, 1, 1,  0.0833333); #TEST 
+luRef.set(0, 1, 2,  1.0000000); luRef.set(0, 1, 3,  0.9000000); #TEST
+luRef.set(0, 2, 0,  0.3333333); luRef.set(0, 2, 1,  0.0888889); #TEST
+luRef.set(0, 2, 2, -0.0055556); luRef.set(0, 2, 3, -0.6000000); #TEST
+luRef.set(0, 3, 0,  0.2500000); luRef.set(0, 3, 1,  0.0833333); #TEST
+luRef.set(0, 3, 2, -0.0083333); luRef.set(0, 3, 3,  0.0003571); #TEST
+luRef.set_name("LU Decomposition Reference");                   #TEST
+compare_matrices(luRef, A, 6, "LU Decomposition")               #TEST
+
+A.set_name('Hilbert Matrix LU Decomposition (T)')
+A.print_out()
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+  ==> Matrix Multiplication <== 
+
+  ## A (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1            2            3
+
+    1    2.0000000    0.0000000    0.0000000
+    2    0.0000000    2.0000000    0.0000000
+    3    0.0000000    0.0000000    2.0000000
+
+
+
+  ## B (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1            2            3
+
+    1    0.0000000    1.0000000    0.0000000
+    2    2.0000000    0.0000000    0.0000000
+    3    3.0000000    0.0000000    0.0000000
+
+
+
+  ## C (Symmetry 0) ##
+  Irrep: 1 Size: 3 x 3
+
+                 1            2            3
+
+    1    0.0000000    2.0000000    0.0000000
+    2    4.0000000    0.0000000    0.0000000
+    3    6.0000000    0.0000000    0.0000000
+
+
+
+
+  ==> Eigendecomposition (Hilbert Matrix) <== 
+
+  ## Hilbert Matrix (Symmetry 0) ##
+  Irrep: 1 Size: 4 x 4
+
+                 1            2            3            4
+
+    1    1.0000000    0.5000000    0.3333333    0.2500000
+    2    0.5000000    0.3333333    0.2500000    0.2000000
+    3    0.3333333    0.2500000    0.2000000    0.1666667
+    4    0.2500000    0.2000000    0.1666667    0.1428571
+
+
+
+  Eigenvalues
+ #  #
+ Irrep: 1
+      1:  0.0000967
+      2:  0.0067383
+      3:  0.1691412
+      4:  1.5002143
+
+  ## Eigenvectors (Symmetry 0) ##
+  Irrep: 1 Size: 4 x 4
+
+                 1            2            3            4
+
+    1    0.0291933   -0.3287121    0.7914111   -0.5145527
+    2    0.1791863   -0.7419178    0.1002281    0.6382825
+    3    0.5820757   -0.3705022   -0.5095786   -0.5140483
+    4    0.7926083    0.4519231    0.3224164    0.2521612
+
+
+
+
+  ==> Cholesky Decomposition (Hilbert Matrix) <== 
+
+  ## Hilbert Matrix (Symmetry 0) ##
+  Irrep: 1 Size: 4 x 4
+
+                 1            2            3            4
+
+    1    1.0000000    0.5000000    0.3333333    0.2500000
+    2    0.5000000    0.3333333    0.2500000    0.2000000
+    3    0.3333333    0.2500000    0.2000000    0.1666667
+    4    0.2500000    0.2000000    0.1666667    0.1428571
+
+
+
+  ## Hilbert Matrix Cholesky Decomposition (T) (Symmetry 0) ##
+  Irrep: 1 Size: 4 x 4
+
+                 1            2            3            4
+
+    1    1.0000000    0.0000000    0.0000000    0.0000000
+    2    0.5000000    0.2886751    0.0000000    0.0000000
+    3    0.3333333    0.2886751    0.0745356    0.0000000
+    4    0.2500000    0.2598076    0.1118034    0.0188982
+
+
+
+
+  ==> LU Decomposition (Hilbert Matrix) <== 
+
+  ## Hilbert Matrix (Symmetry 0) ##
+  Irrep: 1 Size: 4 x 4
+
+                 1            2            3            4
+
+    1    1.0000000    0.5000000    0.3333333    0.2500000
+    2    0.5000000    0.3333333    0.2500000    0.2000000
+    3    0.3333333    0.2500000    0.2000000    0.1666667
+    4    0.2500000    0.2000000    0.1666667    0.1428571
+
+
+
+  ## Hilbert Matrix LU Decomposition (T) (Symmetry 0) ##
+  Irrep: 1 Size: 4 x 4
+
+                 1            2            3            4
+
+    1    1.0000000    0.3333333    0.5000000    0.2500000
+    2    0.5000000    0.0833333    1.0000000    0.9000000
+    3    0.3333333    0.0888889   -0.0055556   -0.6000000
+    4    0.2500000    0.0833333   -0.0083333    0.0003571
+
+
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

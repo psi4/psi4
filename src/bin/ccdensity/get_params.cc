@@ -34,7 +34,7 @@ void get_params( Options& options)
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
-  params.calc_xi = options.get_bool("CALC_XI");
+  params.calc_xi = options.get_bool("XI");
   if(params.calc_xi) {
     params.ground = 0;
     params.restart = 0;
@@ -89,8 +89,8 @@ void get_params( Options& options)
   if(params.transition)
     params.relax_opdm = 0;
 
-  if(options["RELAX_OPDM"].has_changed())
-    params.relax_opdm = options.get_bool("RELAX_OPDM");
+  if(options["OPDM_RELAX"].has_changed())
+    params.relax_opdm = options.get_bool("OPDM_RELAX");
   if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
     fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
     params.relax_opdm = 0;
@@ -100,8 +100,8 @@ void get_params( Options& options)
     params.connect_xi = 0;
   else
     params.connect_xi = 1;
-  if(options["CONNECT_XI"].has_changed()) 
-    params.connect_xi = options.get_bool("CONNECT_XI");
+  if(options["XI_CONNECT"].has_changed()) 
+    params.connect_xi = options.get_bool("XI_CONNECT");
 
   fprintf(outfile, "\n\tInput parameters:\n");
   fprintf(outfile, "\t-----------------\n");

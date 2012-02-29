@@ -113,23 +113,6 @@ AC_ARG_WITH(max-am-deriv2,[  --with-max-am-deriv2    maximum AM in ERI second de
 ])
 AC_SUBST(LIBDERIV_NEW_AM2)
 
-PSI_INTEGRALS_STANDARD=1
-AC_ARG_WITH(integrals-standard,[  --with-integrals-standard     specifies the standard for the basis normalization, etc.
-                                The allowed values are cca and psi (default).],[
-case $withval in
-  psi)
-    PSI_INTEGRALS_STANDARD=0
-    ;;
-  cca)
-    PSI_INTEGRALS_STANDARD=1
-    ;;
-  *)
-    AC_MSG_WARN([did not recognize value $withval. will assume the default])
-    ;;
-esac
-])
-AC_DEFINE_UNQUOTED(PSI_INTEGRALS_STANDARD,$PSI_INTEGRALS_STANDARD)
-
 ########
 ## Check for programs
 ########
@@ -321,11 +304,13 @@ AC_PYTHON([2.4])
 
 
 
+AC_PROG_PDFLATEX
 AC_PROG_LATEX
 AC_PROG_LATEX2HTML
 AC_PROG_DVIPS
 AC_PROG_PS2PDF
 AC_PROG_BIBTEX
+AC_PROG_SPHINX
 
 
 
@@ -655,28 +640,81 @@ AC_CHECK_LIB(m,exit,CXXLIBS="$CXXLIBS -lm")
 AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
-BOOST_ROOT='$(top_objdir)/boost/boost_1_48_0'
-BOOST_INC='$(BOOST_ROOT)'
-BOOST_LIB='$(BOOST_ROOT)/bin.v2/libs'
-AC_SUBST(BOOST_ROOT)
-AC_SUBST(BOOST_INC)
-AC_SUBST(BOOST_LIB)
+# During Psi4 development we've used Boost 1.46, 1.47, and 1.48
+have_boost=0
+SAVE_CPPFLAGS=$CPPFLAGS
+AX_BOOST_BASE([1.46], [
+    have_boost=1
+
+    # Test the modules that we require
+    AX_BOOST_FILESYSTEM()
+    if test "x${ax_cv_boost_filesystem}" != "xyes"; then
+        have_boost=0
+    fi
+    AX_BOOST_PYTHON()
+    if test "x${ac_cv_boost_python}" != "xyes"; then
+        have_boost=0
+    fi
+    AX_BOOST_REGEX()
+    if test "x${ax_cv_boost_regex}" != "xyes"; then
+        have_boost=0
+    fi
+    AX_BOOST_SERIALIZATION()
+    if test "x${ax_cv_boost_serialization}" != "xyes"; then
+        have_boost=0
+    fi
+    AX_BOOST_SYSTEM()
+    if test "x${ax_cv_boost_system}" != "xyes"; then
+        have_boost=0
+    fi
+    AX_BOOST_THREAD()
+    if test "x${ax_cv_boost_thread}" != "xyes"; then
+        have_boost=0
+    fi
+],
+[
+    have_boost=0
+])
+CPPFLAGS=$SAVE_CPPFLAGS
+
+AC_SUBST(have_boost)
+
+if test "x${have_boost}" == "x0"; then
+    HAVE_BOOST=0
+    AC_SUBST(HAVE_BOOST)
+
+    BOOST_CPPFLAGS='-I$(top_objdir)/boost/boost_1_48_0'
+    BOOST_LDFLAGS=''
+    
+    BOOST_FILESYSTEM_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_filesystem.a'
+    BOOST_PYTHON_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_python.a'
+    BOOST_REGEX_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_regex.a'
+    BOOST_SERIALIZATION_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_serialization.a'
+    BOOST_SYSTEM_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_system.a'
+    BOOST_THREAD_LIB='../../../boost/boost_1_48_0/bin.v2/libs/libboost_thread.a'
+
+    AC_SUBST(BOOST_CPPFLAGS)
+    AC_SUBST(BOOST_LDFLAGS)
+    AC_SUBST(BOOST_FILESYSTEM_LIB)
+    AC_SUBST(BOOST_REGEX_LIB)
+    AC_SUBST(BOOST_SERIALIZATION_LIB)
+    AC_SUBST(BOOST_SYSTEM_LIB)
+    AC_SUBST(BOOST_THREAD_LIB)
+fi
 
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. -I$(BOOST_INC) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
+  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
   AC_SUBST(PSICPPFLAGS)
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
 else
-  PSICPPFLAGS='-I. -I$(BOOST_INC) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
+  PSICPPFLAGS='-I. $(BOOST_CPPFLAGS) -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
   AC_SUBST(PSICPPFLAGS)
 fi
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
 
 AC_C_CONST
-
-
 
 AC_CHECK_DECLS([putenv],[AC_DEFINE_UNQUOTED(HAVE_DECL_PUTENV,1)])
 AC_CHECK_FUNC(putenv,[AC_DEFINE_UNQUOTED(HAVE_PUTENV,1)])
@@ -914,6 +952,7 @@ AC_CONFIG_FILES([
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
           src/lib/libdist_matrix/Makefile
+          src/lib/libfock/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
@@ -928,6 +967,7 @@ AC_CONFIG_FILES([
           src/util/tocprint/Makefile
 
           src/bin/psi4/Makefile
+          src/bin/psi4/gitversion.py
           src/bin/response/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
@@ -949,12 +989,13 @@ AC_CONFIG_FILES([
           src/bin/scf/Makefile
           src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
-          src/bin/df-mp2/Makefile
+          src/bin/mrcc/Makefile
+          src/bin/dfmp2/Makefile
           src/bin/sapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
           src/bin/optking/Makefile
-          src/bin/df-cc/Makefile
+          src/bin/dfcc/Makefile
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
           src/bin/adc/Makefile
@@ -991,8 +1032,14 @@ AC_CONFIG_FILES([
           tests/sad1/Makefile
           tests/fd-gradient/Makefile
           tests/fd-freq-energy/Makefile
+          tests/fd-freq-gradient/Makefile
+          tests/fd-freq-gradient-large/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
+          tests/sapt2/Makefile
+          tests/sapt3/Makefile
+          tests/sapt4/Makefile
+          tests/sapt5/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
           tests/pywrap_db1/Makefile
@@ -1020,9 +1067,11 @@ AC_CONFIG_FILES([
           tests/mpn-bh/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
+          tests/cc3/Makefile
           tests/cc4/Makefile
           tests/cc4a/Makefile
           tests/cc5a/Makefile
+          tests/cc6/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
           tests/cc8b/Makefile
@@ -1034,12 +1083,14 @@ AC_CONFIG_FILES([
           tests/cc12/Makefile
           tests/cc13/Makefile
           tests/cc13a/Makefile
+          tests/cc14/Makefile
           tests/cc15/Makefile
           tests/cc16/Makefile
           tests/cc17/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
           tests/cc22/Makefile
+          tests/cc23/Makefile
           tests/cc24/Makefile
           tests/cc25/Makefile
           tests/cc26/Makefile
@@ -1076,10 +1127,12 @@ AC_CONFIG_FILES([
           tests/mints4/Makefile
           tests/mp2_1/Makefile
           tests/matrix1/Makefile
+          tests/pubchem1/Makefile
           tests/props1/Makefile
           tests/props2/Makefile
           tests/dft1/Makefile
           tests/mom/Makefile
+          tests/frac/Makefile
           tests/plugin_aointegrals/Makefile
           tests/plugin_aointegrals/input.dat
           tests/plugin_aointegrals/aointegrals.cc
@@ -1089,6 +1142,16 @@ AC_CONFIG_FILES([
           tests/plugin_backtrans/Makefile
           tests/plugin_backtrans/input.dat
           tests/plugin_backtrans/backtrans.cc
+          tests/plugin_rqchf/main.cc
+          tests/plugin_rqchf/Makefile
+          tests/plugin_rqchf/input.dat
+          tests/plugin_rqchf/rqchf.cc
+          tests/plugin_rqchf/rqchf.h
+          tests/plugin_fqdft/input.dat
+          tests/plugin_fqdft/Makefile
+          tests/plugin_fqdft/main.cc
+          tests/plugin_fqdft/fqdft.cc
+          tests/plugin_fqdft/fqdft.h
           tests/plugin_mp2/Makefile
           tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h
           tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc
@@ -1115,3 +1178,13 @@ if test "$HAVE_MADNESS" = "1"; then
 fi
 
 AC_OUTPUT
+
+if test "$have_boost" == "0"; then
+    echo "====================================================================="
+    echo "Either your Boost is too old, missing components, missing altogether,"
+    echo "or you disabled use of system provided version."
+    echo ""
+    echo "The Boost provided in Psi4 will be compiled."
+    echo "====================================================================="
+fi
+

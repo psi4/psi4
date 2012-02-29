@@ -77,7 +77,7 @@ public:
      * @param atom atom index to look for in basisset->molecule()
      * @param dataset data set to look through
      */
-    virtual std::vector<boost::shared_ptr<GaussianShell> > parse(const std::string& symbol, const std::string& dataset) {
+    virtual std::vector<GaussianShell> parse(const std::string& symbol, const std::string& dataset) {
         return parse(symbol, string_to_vector(dataset));
     }
 
@@ -87,7 +87,7 @@ public:
      * @param atom atom index to look for in basisset->molecule()
      * @param dataset data set to look through
      */
-    virtual std::vector<boost::shared_ptr<GaussianShell> > parse(const std::string& symbol, const std::vector<std::string>& dataset) = 0;
+    virtual std::vector<GaussianShell> parse(const std::string& symbol, const std::vector<std::string>& dataset) = 0;
 };
 
 /*! \class Gaussian94BasisSetParser
@@ -98,7 +98,7 @@ class Gaussian94BasisSetParser : public BasisSetParser
 public:
     Gaussian94BasisSetParser() {}
 
-    virtual std::vector<boost::shared_ptr<GaussianShell> > parse(const std::string& symbol, const std::vector<std::string>& dataset);
+    virtual std::vector<GaussianShell> parse(const std::string& symbol, const std::vector<std::string>& dataset);
 };
 
 } /* end psi namespace */

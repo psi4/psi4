@@ -1,5 +1,7 @@
-#! Mk-MRCCSD single point. $^3 \Sigma ^-$O$_2$ state described using
+#! Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using
 #! the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+memory 250 mb
 
 
 molecule o2 {
@@ -32,6 +34,4 @@ set psimrcc {
   wfn_sym         B1g                    # Select the B1g state
 }
 
-mcscf()
-psimrcc()
-
+energy('psimrcc')

@@ -248,7 +248,7 @@ void MOLECULE::symmetrize_geom(void) {
   // put matrix into environment molecule and it will symmetrize it
   double **geom_2D = g_geom_2D();
   psi::Process::environment.molecule()->set_geometry(geom_2D);
-  psi::Process::environment.molecule()->update_geometry();
+  psi::Process::environment.molecule()->symmetrize();
   free_matrix(geom_2D);
 
   psi::Matrix geom = psi::Process::environment.molecule()->geometry();

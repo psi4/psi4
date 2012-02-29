@@ -7,7 +7,7 @@ MODULE = false
 
 MAKE_MADNESS=@HAVE_MPI@
 
-LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -L$(BOOST_LIB) -lboost_python -lboost_regex -lboost_thread -lboost_filesystem -lboost_system -lboost_serialization -lpthread
+LDLIBS += $(LAPACK) $(BLAS) $(BOOST_LDFLAGS) $(BOOST_FILESYSTEM_LIB) $(BOOST_PYTHON_LIB) $(BOOST_REGEX_LIB) $(BOOST_SERIALIZATION_LIB) $(BOOST_SYSTEM_LIB) $(BOOST_THREAD_LIB) -lpthread $(PYTHON_LDFLAGS)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
 
 # gfortranbegin contains main, so we can't link it in or we'll get a linker freakout
@@ -16,9 +16,9 @@ FILTEREDLDLIBS = $(filter-out -lgfortranbegin,$(LDLIBS))
 # NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
 PSILIBS = \
 -lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf  -lPSI_lmp2 -lPSI_ccenergy -lPSI_ccsort -lPSI_psimrcc\
--lPSI_transqt2 -lPSI_cctriples -lPSI_mp2 -lPSI_scf_solver -lPSI_lmp2_solver -lPSI_dcft -lPSI_mcscf -lPSI_sapt\
+-lPSI_transqt2 -lPSI_cctriples -lPSI_mp2 -lPSI_scf_solver -lPSI_fock -lPSI_lmp2_solver -lPSI_dcft -lPSI_mcscf -lPSI_sapt\
 -lPSI_sapt_solver -lPSI_cchbar -lPSI_cclambda -lPSI_ccdensity -lPSI_transqt -lPSI_dfcc -lPSI_dfcc_solver \
--lPSI_ccresponse -lPSI_detci -lPSI_omp2 \
+-lPSI_ccresponse -lPSI_detci -lPSI_omp2 -lPSI_mrcc \
 -lPSI_cceom -lPSI_dist_matrix -lPSI_adc\
 -lPSI_functional -lPSI_3index -lPSI_mints_deriv -lPSI_optking -lPSI_findif\
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \

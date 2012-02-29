@@ -1,0 +1,33 @@
+import os
+
+top_srcdir = "@top_srcdir@"
+
+def write_version(version):
+    version_str = "#define GIT_VERSION \"%s\"\n" % version
+    if len(version) == 0:
+        version_str = "#undef GIT_VERSION"
+
+    try:
+        current_file = open('gitversion.h', 'r').read()
+    except IOError:
+        current_file = ""
+
+    if current_file != version_str:
+        open('gitversion.h', 'w').write(version_str)
+        try:
+            os.remove("version.o")
+        except OSError, e:
+            pass
+
+try:
+    head = open(top_srcdir + "/.git/HEAD").read().split(":")[1].strip()
+    sha = open(top_srcdir + "/.git/" + head).read().strip()
+    
+    write_version(sha)
+
+except subprocess.CalledProcessError, e:
+    write_version("")
+
+except OSError, e:
+    write_version("")
+

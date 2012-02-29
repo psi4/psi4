@@ -332,6 +332,8 @@ public:
         \f$ F_ao \f$ is the function in the AO basis.
         */
     SharedMatrix sotoao();
+
+    SharedMatrix evecs_to_AO_basis(SharedMatrix soevecs);
 };
 
 }

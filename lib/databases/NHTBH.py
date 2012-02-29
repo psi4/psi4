@@ -1,15 +1,31 @@
+"""
+**NHTBH**
+
+| Database (Truhlar) of non-hydrogen-transfer barrier height reactions.
+| Geometries and Reaction energies from Truhlar and coworkers at site http://t1.chem.umn.edu/misc/database_group/database_therm_bh/non_H.htm.
+
+- **cp**  ``'off'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+
+----
+
+"""
 import re
 import input
 
 # <<< NHTBH Database Module >>>
-# Geometries and Reaction energies from Truhlar and coworkers at site
-#    http://t1.chem.umn.edu/misc/database_group/database_therm_bh/non_H.htm
 dbse = 'NHTBH'
 isOS = 'true'
 
 # <<< Database Members >>>
 HRXN = range(1, 39)
-HRXN_SM = [3,4,31,32]
+HRXN_SM = [3, 4, 31, 32]
 HRXN_LG = [36]
 
 # <<< Chemical Systems Involved >>>
@@ -322,7 +338,7 @@ TAGL['%s-%s-reagent' % (dbse, 'OH'         )] = 'OH'
 # <<< Molecule Specifications >>>
 NHTBH_C2H4 = input.process_input("""
 molecule dimer {
-0 1 
+0 1
 C        0.00000000     0.00000000     0.66559300
 C        0.00000000    -0.00000000    -0.66559300
 H        0.00000000     0.92149500     1.23166800
@@ -331,7 +347,7 @@ H        0.00000000     0.92149500    -1.23166800
 H        0.00000000    -0.92149500    -1.23166800
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_C2H5ts = input.process_input("""
 molecule dimer {
@@ -345,11 +361,11 @@ H        1.29912800    -0.92234400     0.17376300
 H        1.29889900     0.92232500     0.17436300
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_C2H5 = input.process_input("""
 molecule dimer {
-0 2 
+0 2
 C       -0.25871900    -0.81682900     0.00000000
 C       -0.25098700     0.67419100     0.00000000
 H        0.75883000    -1.22593900     0.00000000
@@ -359,11 +375,11 @@ H       -0.17002100     1.22593900    -0.92432000
 H       -0.17002100     1.22593900     0.92432000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_C3H7ts = input.process_input("""
 molecule dimer {
-0 2 
+0 2
 C       -0.47213200     0.64593300    -0.00004300
 C       -1.38261700    -0.36388500    -0.00000200
 H       -0.23204400     1.16457500    -0.91726400
@@ -376,7 +392,7 @@ H        1.58942300    -0.80961900    -0.91863200
 H        1.59024500    -0.80759800     0.91996900
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_C3H7 = input.process_input("""
 molecule dimer {
@@ -393,7 +409,7 @@ H       -1.72914600    -0.61577100     0.92443500
 H       -1.72876300    -0.61641500    -0.92436900
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_CH3Cl = input.process_input("""
 molecule dimer {
@@ -405,7 +421,7 @@ H        0.89026800    -0.51399700    -1.47026400
 H       -0.89026800    -0.51399700    -1.47026400
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_CH3FClts = input.process_input("""
 molecule dimer {
@@ -418,7 +434,7 @@ H       -2.49731300    -0.13867300     1.06313900
 H       -2.50153700     0.98626900    -0.41373400
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_CH3F = input.process_input("""
 molecule dimer {
@@ -430,7 +446,7 @@ H       -0.98322200     1.01155300    -0.19317200
 H       -0.98320300    -0.67308400    -0.77943700
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_CH3OH = input.process_input("""
 molecule dimer {
@@ -443,7 +459,7 @@ H        0.43814500     1.07159400     0.88953900
 H        0.43814500     1.07159400    -0.88953900
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_CH3 = input.process_input("""
 molecule dimer {
@@ -454,7 +470,7 @@ H       -0.53865863     0.93298412     0.00000000
 H       -0.53865863    -0.93298412    -0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_ClCH3Clcomp = input.process_input("""
 molecule dimer {
@@ -467,7 +483,7 @@ H        0.88773400    -0.51253300    -0.22437900
 Cl       0.00000000     0.00000000     2.62421300
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_ClCH3Clts = input.process_input("""
 molecule dimer {
@@ -480,7 +496,7 @@ H        0.00008100     1.03721800    -0.26195900
 Cl      -2.32254200    -0.00012900     0.00013000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_ClF = input.process_input("""
 molecule dimer {
@@ -489,7 +505,7 @@ F        0.00000000     0.00000000     0.00000000
 Cl       1.63033021     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_Cl_anion = input.process_input("""
 molecule dimer {
@@ -497,7 +513,7 @@ molecule dimer {
 Cl       0.00000000     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_Cl = input.process_input("""
 molecule dimer {
@@ -505,7 +521,7 @@ molecule dimer {
 Cl       0.00000000     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_CO = input.process_input("""
 molecule dimer {
@@ -514,7 +530,7 @@ O        0.00000000     0.00000000     0.00000000
 C        1.12960815     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_F2 = input.process_input("""
 molecule dimer {
@@ -523,7 +539,7 @@ F        0.00000000     0.00000000     0.00000000
 F        1.39520410     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_FCH3Clcomp1 = input.process_input("""
 molecule dimer {
@@ -536,7 +552,7 @@ H       -0.88882000    -0.51316000    -0.55514100
 F        0.00000000     0.00000000    -2.72930800
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_FCH3Clcomp2 = input.process_input("""
 molecule dimer {
@@ -549,7 +565,7 @@ H        0.88743200    -0.51235900    -0.88640600
 Cl       0.00000000     0.00000000     1.99629900
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_FCH3Clts = input.process_input("""
 molecule dimer {
@@ -562,7 +578,7 @@ H        0.91979500    -0.53104400    -0.61497200
 Cl       0.00000000     0.00000000     1.62450100
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_FCH3Fcomp = input.process_input("""
 molecule dimer {
@@ -575,7 +591,7 @@ H        0.88644700    -0.51179100    -0.07384300
 F        0.00000000     0.00000000     2.15348900
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_FCH3Fts = input.process_input("""
 molecule dimer {
@@ -588,7 +604,7 @@ H       -0.53260100    -0.92778300     1.81705800
 F       -0.00319100     0.01997400     3.63184500
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_F_anion = input.process_input("""
 molecule dimer {
@@ -596,7 +612,7 @@ molecule dimer {
 F        0.00000000     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_F = input.process_input("""
 molecule dimer {
@@ -604,7 +620,7 @@ molecule dimer {
 F        0.00000000     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HClHts = input.process_input("""
 molecule dimer {
@@ -614,7 +630,7 @@ Cl       0.00000000     0.00000000     0.00000000
 H        0.00000000     0.00000000    -1.48580000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HCl = input.process_input("""
 molecule dimer {
@@ -623,7 +639,7 @@ Cl       0.00000000     0.00000000     0.00000000
 H        1.27444789     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HCNts = input.process_input("""
 molecule dimer {
@@ -633,7 +649,7 @@ N        0.08031900    -0.56809500     0.00000000
 H       -1.04414800     0.25512100     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HCN = input.process_input("""
 molecule dimer {
@@ -643,7 +659,7 @@ N        0.00000000     0.00000000     0.65264000
 H        0.00000000     0.00000000    -1.56629100
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HCOts = input.process_input("""
 molecule dimer {
@@ -653,7 +669,7 @@ C        0.10863300     0.54932900     0.00000000
 O        0.10863300    -0.58560100     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HCO = input.process_input("""
 molecule dimer {
@@ -663,7 +679,7 @@ C       -0.00703500     0.00000000     1.10967800
 O        0.95604000     0.00000000     1.78565600
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HF2ts = input.process_input("""
 molecule dimer {
@@ -673,7 +689,7 @@ F        0.00000000     0.00000000    -0.61621800
 F        0.00000000     0.00000000     0.86413800
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HFCH3ts = input.process_input("""
 molecule dimer {
@@ -686,7 +702,7 @@ H       -0.59007000     0.91235500     3.18348100
 H       -0.59007000    -0.91235500     3.18348100
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HFHts = input.process_input("""
 molecule dimer {
@@ -696,7 +712,7 @@ F        0.00000000     0.00000000     0.00000000
 H        0.00000000     0.00000000    -1.13721700
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HF = input.process_input("""
 molecule dimer {
@@ -705,7 +721,7 @@ F        0.00000000     0.00000000     0.00000000
 H        0.91538107     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HN2ts = input.process_input("""
 molecule dimer {
@@ -715,7 +731,7 @@ N        1.12281100     0.00000000     0.00000000
 H        1.78433286     1.26844651     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HN2 = input.process_input("""
 molecule dimer {
@@ -725,7 +741,7 @@ N        1.17820000     0.00000000     0.00000000
 H        1.64496947     0.93663681     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HNC = input.process_input("""
 molecule dimer {
@@ -735,7 +751,7 @@ N        0.00000000     0.00000000     0.43208900
 H        0.00000000     0.00000000     1.42696000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HOCH3Fcomp1 = input.process_input("""
 molecule dimer {
@@ -749,7 +765,7 @@ H        0.51058000     0.37116000     0.00024300
 F        1.74901600    -0.19051700    -0.00001000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HOCH3Fcomp2 = input.process_input("""
 molecule dimer {
@@ -763,7 +779,7 @@ O       -0.30171300     1.58252400    -0.20654400
 H       -0.60511200     2.49243400    -0.16430500
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_HOCH3Fts = input.process_input("""
 molecule dimer {
@@ -777,7 +793,7 @@ O        0.00126500     0.01920000     3.75059900
 H       -0.92676300     0.03161500     3.99758100
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_H = input.process_input("""
 molecule dimer {
@@ -785,7 +801,7 @@ molecule dimer {
 H        0.00000000     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_N2OHts = input.process_input("""
 molecule dimer {
@@ -796,7 +812,7 @@ N        0.00000000     0.25702700     0.00000000
 N        1.02733300     0.72910400     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_N2O = input.process_input("""
 molecule dimer {
@@ -806,7 +822,7 @@ N        1.12056262     0.00000000     0.00000000
 O        2.30761092     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_N2 = input.process_input("""
 molecule dimer {
@@ -815,7 +831,7 @@ N        0.00000000     0.00000000     0.00000000
 N        1.09710935     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_OH_anion = input.process_input("""
 molecule dimer {
@@ -824,7 +840,7 @@ O        0.00000000     0.00000000     0.00000000
 H        0.96204317     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 NHTBH_OH = input.process_input("""
 molecule dimer {
@@ -833,15 +849,13 @@ O        0.00000000     0.00000000     0.00000000
 H        0.96889819     0.00000000     0.00000000
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
 
-      molname = rxnpattern.match(rgt)
-      GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
-
-
+        molname = rxnpattern.match(rgt)
+        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))

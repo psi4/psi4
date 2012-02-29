@@ -1,16 +1,18 @@
 #! He2+ FCI/cc-pVDZ Transition Dipole Moment
 
-refnuc   =   0.705569665333  #TEST
-refscf   =  -4.816603104817  #TEST
-refci1   =  -4.883262086636  #TEST
+memory 250 mb
+
+refnuc   =   0.705569611453  #TEST
+refscf   =  -4.816603103707  #TEST
+refci1   =  -4.883262085443  #TEST
 refcorr1 =  refci1 - refscf  #TEST
-refci2   =  -4.879491772279  #TEST
+refci2   =   -4.87949177337  #TEST
 refcorr2 =  refci2 - refscf  #TEST
 refDipHF =   0.00000000      #TEST
 
 refDipCI1=   0.000000000000  #TEST
 refDipCI2=   0.000000000000  #TEST
-refTDM   =   7.180360421465  #TEST
+refTDM   =   7.18035032568   #TEST
 
 molecule he2p {
 1 2
@@ -39,6 +41,4 @@ compare_values(refcorr2, get_variable("CI ROOT 2 CORRELATION ENERGY"), 7, "CI ro
 compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
 compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
 compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 5, "CI ROOT 2 Z Component of dipole")        #TEST
-compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
-
-clean()
+compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole") #TEST
