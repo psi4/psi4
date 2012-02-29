@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  27 FEB 2012 01:15
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  28 FEB 2012 23:14
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -994,12 +994,6 @@ Chapter 9.
 
 ]
 Chapter 10.
-
-Underfull \hbox (badness 10000) in paragraph at lines 2672--2673
-[]\T1/ptm/m/n/10 The com-mand db(opt(cbs(energy()))) is ac-tu-ally ex-pressed a
-s \T1/pcr/m/n/10 db(..., db_func=opt,
- []
-
 [39] [40
 
 ]
@@ -1021,17 +1015,17 @@ Chapter 14.
 ]
 Chapter 15.
 [51] [52]
-Underfull \hbox (badness 10000) in paragraph at lines 3012--3013
+Underfull \hbox (badness 10000) in paragraph at lines 3016--3017
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 3098--3099
+Underfull \hbox (badness 10000) in paragraph at lines 3102--3103
 
  []
 
 [53]
-Underfull \hbox (badness 10000) in paragraph at lines 3294--3295
+Underfull \hbox (badness 10000) in paragraph at lines 3298--3299
 
  []
 
@@ -1104,7 +1098,7 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (69 pages, 548382 bytes).
+Output written on Psithon.pdf (69 pages, 548357 bytes).
 PDF statistics:
  973 PDF objects out of 1000 (max. 8388607)
  248 named destinations out of 1000 (max. 500000)
