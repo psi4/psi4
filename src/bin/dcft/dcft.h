@@ -67,6 +67,9 @@ protected:
                        int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
     void compute_tau_squared();
     void compute_energy_tau_squared();
+    void compute_gradient();
+    void orbital_response_guess();
+    void cumulant_response_guess();
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
