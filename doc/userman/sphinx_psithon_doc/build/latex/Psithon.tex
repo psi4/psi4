@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 27, 2012}
+\date{February 28, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -2669,7 +2669,11 @@ energy
 \end{quote}
 \begin{itemize}
 \item {} 
-The command db(opt(cbs(energy()))) is actually expressed as \code{db(..., db\_func=opt, opt\_func=cbs)}. The perhaps expected final argument of \code{cbs\_func=energy} is not necessary since energy() is always the function called by default. Also, the outermost internal function call (\code{db\_func} above can be called as just \code{func}. Several examples of intercalls between Python functions can be found in sample input \emph{pywrap\_all}.
+The command db(opt(cbs(energy()))) is actually expressed as \code{db( . . . , db\_func=opt, opt\_func=cbs)}.
+The perhaps expected final argument of \code{cbs\_func=energy} is not necessary since energy() is
+always the function called by default. Also, the outermost internal function call (\code{db\_func}
+above can be called as just \code{func}. Several examples of intercalls between Python functions
+can be found in sample input \emph{pywrap\_all}.
 
 \item {} 
 All keyword arguments are passed along to each function traversed in the Python driver, so there should be no concern for separating them, grouping them, or designating them for a particular function when undertaking a nested calculation. Where the same keyword is used by multiple functions, prefixes are added, e.g., \textbf{db\_mode} and \textbf{opt\_mode}.
@@ -2703,7 +2707,7 @@ Python functions should read the kwargs dictionary and (possibly) add to it. Fun
 \end{Verbatim}
 
 \item {} 
-Preferrably, the python function signature (for functions intended to be called in input files) is \code{function(name, **kwargs)}. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see {\hyperref[index:wrappers.database]{\code{wrappers.database()}}} argument db\_name for example).
+Preferrably, the python function signature (for functions intended to be called in input files) is \code{function(name, **kwargs)}. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see {\hyperref[index:database]{Database}} argument db\_name for example).
 
 \item {} 
 After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive.
@@ -3298,7 +3302,7 @@ Does not work with array-type options.
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`83189'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`99948'}}{}
 Function to return the full path and filename for psi file
 \emph{fileno} (e.g., psi.32) in current namespace \emph{pidspace}.
 
