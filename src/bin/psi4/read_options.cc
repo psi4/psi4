@@ -699,6 +699,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
       options.add_bool("LOCK_OCCUPATION", true);
+      /*- Whether to compute DCFT gradient or not -*/
+      options.add_bool("COMPUTE_GRADIENT", false);
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- primary basis set -*/
