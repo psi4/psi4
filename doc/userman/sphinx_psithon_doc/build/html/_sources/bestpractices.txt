@@ -9,7 +9,7 @@
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
 
-- Preferrably, the python function signature (for functions intended to be called in input files) is ``function(name, **kwargs)``. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see :py:func:`wrappers.database` argument db_name for example).
+- Preferrably, the python function signature (for functions intended to be called in input files) is ``function(name, **kwargs)``. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see `Database`_ argument db_name for example).
 
 - After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive. ::
 

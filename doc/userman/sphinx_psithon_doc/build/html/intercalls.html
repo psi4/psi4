@@ -119,7 +119,11 @@
 </table>
 </div></blockquote>
 <ul class="simple">
-<li>The command db(opt(cbs(energy()))) is actually expressed as <tt class="docutils literal"><span class="pre">db(...,</span> <span class="pre">db_func=opt,</span> <span class="pre">opt_func=cbs)</span></tt>. The perhaps expected final argument of <tt class="docutils literal"><span class="pre">cbs_func=energy</span></tt> is not necessary since energy() is always the function called by default. Also, the outermost internal function call (<tt class="docutils literal"><span class="pre">db_func</span></tt> above can be called as just <tt class="docutils literal"><span class="pre">func</span></tt>. Several examples of intercalls between Python functions can be found in sample input <em>pywrap_all</em>.</li>
+<li>The command db(opt(cbs(energy()))) is actually expressed as <tt class="docutils literal"><span class="pre">db(</span> <span class="pre">.</span> <span class="pre">.</span> <span class="pre">.</span> <span class="pre">,</span> <span class="pre">db_func=opt,</span> <span class="pre">opt_func=cbs)</span></tt>.
+The perhaps expected final argument of <tt class="docutils literal"><span class="pre">cbs_func=energy</span></tt> is not necessary since energy() is
+always the function called by default. Also, the outermost internal function call (<tt class="docutils literal"><span class="pre">db_func</span></tt>
+above can be called as just <tt class="docutils literal"><span class="pre">func</span></tt>. Several examples of intercalls between Python functions
+can be found in sample input <em>pywrap_all</em>.</li>
 <li>All keyword arguments are passed along to each function traversed in the Python driver, so there should be no concern for separating them, grouping them, or designating them for a particular function when undertaking a nested calculation. Where the same keyword is used by multiple functions, prefixes are added, e.g., <strong>db_mode</strong> and <strong>opt_mode</strong>.</li>
 <li>Function intercalls should not be used in sow/reap mode.</li>
 </ul>
@@ -171,7 +175,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 27, 2012.
+      Last updated on Feb 28, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

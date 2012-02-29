@@ -139,6 +139,27 @@ Psithon Programming Best Practices
 PsiMod Methods
 ==============
 
+.. sdlkfjdkslinclude:: ./man_PsiMod.rst 
+
+..  * NOTES (LAB 2-28-2012)
+    * How to get PsiMod.py documentation into Sphinx
+    * (1) In psi4/src/bin/psi4/python.cc , uncomment the following lines
+          s = strdup("help(PsiMod)");
+          PyRun_SimpleString(s);
+    * (2) cd into objdir and make psi4
+    * (3) cd into a testcase directory (e.g., cd tests/tu1-h2o-energy/)
+          make clean
+          make > $PSIDATADIR/../doc/userman/sphinx_psithon_doc/source/man_PsiMod.rst 
+    * (4) Edit man_PsiMod.rst so that the first line (left justified) has
+          a double colon and indent all the remainder of the file, matching below.
+          Delete some junk at end of file.
+          |Help on module PsiMod ::
+          |
+          |    NAME
+          |        PsiMod
+    * (5) Rebuild Sphinx docs.
+    * (6) LaTeX build can't handle including man_PsiMod.rst so comment out by default.
+
 
 .. rst-class:: html-toggle
 ================
