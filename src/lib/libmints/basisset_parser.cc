@@ -137,7 +137,7 @@ vector<string> BasisSetParser::string_to_vector(const std::string &data)
     return lines;
 }
 
-std::vector<boost::shared_ptr<GaussianShell> >
+std::vector<GaussianShell>
 Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::string> &lines)
 {
     // Regular expressions that we'll be checking for.
@@ -151,7 +151,6 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // NUMBER is in psi4-dec.h
     regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");    // Match s, p, d, f, g, ... functions
     regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match sp functions
-    regex primitives3("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match spd functions
 
     // s, p and s, p, d can be grouped together in Pople-style basis sets
     const string sp("SP"), spd("SPD");
@@ -168,7 +167,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // Need a dummy center for the shell.
     Vector3 center;
 
-    vector<boost::shared_ptr<GaussianShell> > shell_list;
+    vector<GaussianShell> shell_list;
 
     int lineno = 0;
     bool found = false;
@@ -232,8 +231,8 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                         if (shell_type.size() == 1) {
                             int am = (int)shell_to_am[shell_type[0] - 'A'];
 
-                            double *exponents = new double[nprimitive];
-                            double *contractions = new double[nprimitive];
+                            std::vector<double> exponents(nprimitive);
+                            std::vector<double> contractions(nprimitive);
 
                             for (int p=0; p<nprimitive; ++p) {
                                 line = lines[lineno++];
@@ -265,29 +264,16 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
 
                             //                                printf("Adding new shell. nprimitive = %d\n", nprimitive);
                             // We have a full shell, push it to the basis set
-                            boost::shared_ptr<GaussianShell> new_shell(new GaussianShell);
-                            new_shell->init(nprimitive,
-                                            exponents,
-                                            am,
-                                            gaussian_type,
-                                            contractions,
-                                            0,
-                                            center,
-                                            0);
-                            new_shell->normalize_shell();
-                            shell_list.push_back(new_shell);
-
-                            delete[] exponents;
-                            delete[] contractions;
+                            shell_list.push_back(GaussianShell(am, contractions, exponents, gaussian_type, 0, center, 0, Unnormalized));
                         }
                         else if (shell_type.size() == 2) {
                             // This is to handle instances of SP, PD, DF, FG, ...
                             int am1 = (int)shell_to_am[shell_type[0] - 'A'];
                             int am2 = (int)shell_to_am[shell_type[1] - 'A'];
 
-                            double *exponents = new double[nprimitive];
-                            double *contractions1 = new double[nprimitive];
-                            double *contractions2 = new double[nprimitive];
+                            std::vector<double> exponents(nprimitive);
+                            std::vector<double> contractions1(nprimitive);
+                            std::vector<double> contractions2(nprimitive);
 
                             for (int p=0; p<nprimitive; ++p) {
                                 line = lines[lineno++];
@@ -328,33 +314,8 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                             }
 
                             //                                printf("Adding 2 new shells. nprimitive = %d\n", nprimitive);
-                            boost::shared_ptr<GaussianShell> new_shell(new GaussianShell);
-                            new_shell->init(nprimitive,
-                                            exponents,
-                                            am1,
-                                            gaussian_type,
-                                            contractions1,
-                                            0,
-                                            center,
-                                            0);
-                            new_shell->normalize_shell();
-                            shell_list.push_back(new_shell);
-
-                            new_shell = boost::shared_ptr<GaussianShell>(new GaussianShell);
-                            new_shell->init(nprimitive,
-                                            exponents,
-                                            am2,
-                                            gaussian_type,
-                                            contractions2,
-                                            0,
-                                            center,
-                                            0);
-                            new_shell->normalize_shell();
-                            shell_list.push_back(new_shell);
-
-                            delete[] exponents;
-                            delete[] contractions1;
-                            delete[] contractions2;
+                            shell_list.push_back(GaussianShell(am1, contractions1, exponents, gaussian_type, 0, center, 0, Unnormalized));
+                            shell_list.push_back(GaussianShell(am2, contractions2, exponents, gaussian_type, 0, center, 0, Unnormalized));
                         }
                         else {
                             throw PSIEXCEPTION("Gaussian94BasisSetParser::parse: Unable to parse basis sets with spd, or higher grouping\n");

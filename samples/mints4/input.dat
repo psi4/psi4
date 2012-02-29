@@ -3,6 +3,8 @@
 #! to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries
 #! because the former define absolute positions, while the latter are relative.
 
+memory 250 mb
+
 
 molecule dimer {
 1 1
@@ -37,6 +39,3 @@ units angstrom
 
 dimer.update_geometry()
 dimer.print_out()
-
-clean()
-

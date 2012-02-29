@@ -1,3 +1,7 @@
+#! CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H$@@2$O$@@2$
+
+memory 250 mb
+
 molecule h2o2 {
  O     -0.028962160801    -0.694396279686    -0.049338350190
  O      0.028962160801     0.694396279686    -0.049338350190
@@ -16,4 +20,3 @@ set {
 }
 
 response('ccsd')
-clean()

@@ -1,5 +1,7 @@
 #! SCF DZ allene geometry optimzation, with Cartesian input
 
+memory 250 mb
+
 
 molecule allene {
   H -2.0  0.0  1.0
@@ -20,5 +22,3 @@ set global {
 
 thisenergy = optimize('scf')
 
-
-clean()

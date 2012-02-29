@@ -1,5 +1,7 @@
 #! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
+memory 250 mb
+
 
 
 molecule bh_h2p {
@@ -25,5 +27,3 @@ set detci e_convergence 8
 
 thisenergy = energy('fci')
 
-
-clean()

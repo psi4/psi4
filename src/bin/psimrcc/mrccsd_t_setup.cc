@@ -278,7 +278,7 @@ void MRCCSD_T::startup()
         double c_nu   = h_eff->get_right_eigenvector(nu);
         double factor = h_eff->get_matrix(mu,nu) * c_nu / c_mu;
         if(options_.get_bool("TIKHONOW_TRIPLES")){
-          double omega  = static_cast<double>(options_.get_int("TIKHONOW_OMEGA")) / 1000.0;
+          double omega  = options_.get_double("TIKHONOW_OMEGA");
           factor = h_eff->get_matrix(mu,nu) * c_nu * c_mu / (pow(c_mu,2.0) + pow(omega,2.0));
         }
         factor_row.push_back(factor);

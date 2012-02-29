@@ -1,3 +1,7 @@
+#! Frozen-core CCSD(ROHF)/cc-pVDZ on CN radical with disk-based AO algorithm
+
+memory 250 mb
+
 molecule cn {
   0 2
   C
@@ -15,6 +19,3 @@ set {
 }
 
 energy('ccsd')
-
-clean()
-

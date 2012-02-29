@@ -1,5 +1,7 @@
 #! 6-31G H2O Test FCI Energy Point
 
+memory 250 mb
+
 refnuc   =   9.1622538847319 #TEST
 refscf   = -75.983675617214  #TEST
 refci    = -76.1209179506153 #TEST
@@ -31,6 +33,3 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")                 #TEST
 compare_values(refDipCI, get_variable("CI DIPOLE Z"), 5, "CI Z Component of dipole")                   #TEST
 compare_values(refQdpCI, get_variable("CI ROOT 1 QUADRUPOLE ZZ"), 5, "CI ZZ Component of quadrupole")  #TEST
-
-clean()
-

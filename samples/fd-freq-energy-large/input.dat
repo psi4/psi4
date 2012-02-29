@@ -1,5 +1,7 @@
 #! SCF DZ finite difference frequencies by energies for C4NH4
 
+memory 250 mb
+
 molecule c4nh4 {
   units angstrom
   -1 1
@@ -75,12 +77,16 @@ set globals {
   points 3
 }
 
-frequencies('scf')
+set findif {print 3}
+
+frequencies('scf',dertype=0,irrep=2)
 fd_freqs = PsiMod.reference_wavefunction().frequencies()
 clean()
 
-compare_vectors(anal_freqs, fd_freqs, 1, "Finite-difference frequencies with 3-pt. formula to 0.1 cm^-1")
+compare_vectors(a2_freqs, fd_freqs, 1, "Finite-difference frequencies with 3-pt. formula to 0.1 cm^-1")
 del fd_freqs
+
+exit()
 
 
 # *** Test frequencies by 5-pt formula for A1 irrep only.
@@ -196,7 +202,6 @@ set globals {
 
 frequencies('scf', irrep=4)
 fd_freqs = PsiMod.reference_wavefunction().frequencies()
-clean()
 
 compare_vectors(b2_freqs, fd_freqs, 3, "B2 finite-diffence frequencies with 5-pt. formula to 0.001 cm^-1")
 del fd_freqs

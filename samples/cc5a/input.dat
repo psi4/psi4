@@ -1,5 +1,6 @@
 #! RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
+memory 250 mb
 
 molecule C4NH4 {
   -1 1
@@ -17,14 +18,12 @@ molecule C4NH4 {
 
 set globals {
   docc        [10, 1, 4, 3]
-  basis       STO-3G
+  basis       cc-pVDZ
   freeze_core true
   r_convergence 10
   e_convergence  10
-  d_convergence  10
 }
 
 energy('ccsd(t)')
 
 
-clean()

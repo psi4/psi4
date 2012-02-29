@@ -1,0 +1,152 @@
+#! Carbon/UHF Fractionally-Occupied SCF Test Case 
+
+# References
+reference_energies = {\
+    5.500E+00 : -3.7479827870463325E+01,\
+    5.600E+00 : -3.7519777157724391E+01,\
+    5.700E+00 : -3.7560494710854833E+01,\
+    5.800E+00 : -3.7602027729245712E+01,\
+    5.900E+00 : -3.7644429418258895E+01,\
+    6.000E+00 : -3.7687760545777166E+01,\
+    6.100E+00 : -3.7686231278907293E+01,\
+    6.200E+00 : -3.7591946718659159E+01,\
+    6.300E+00 : -3.7589357487772773E+01,\
+    6.400E+00 : -3.7684604177989534E+01,\
+    6.500E+00 :  0.0000000000000000E+00,\
+    6.600E+00 : -3.7686869113983775E+01,\
+    6.700E+00 : -3.7689386736023820E+01,\
+    6.800E+00 : -3.7693070640744025E+01,\
+    6.900E+00 : -3.7698159082829754E+01,\
+    7.000E+00 : -3.7704948149321964E+01,\
+}
+
+# => Cation Computation (Doublet) <= #
+
+# Specify molecule
+molecule {
+1 2         # Starting from the cation 
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+
+# N-1-electron SCF
+Em1 = energy('scf')
+
+# => Anion Computation (Quartet) <= #
+
+# Specify molecule
+molecule {
+-1 4        # Starting from the anion 
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+set d_convergence 7          # 8 digits seems unstable
+
+# N+1-electron SCF
+Ep1 = energy('scf')
+
+# => Neutral and cationic FO-UHF (Starting from the Neutral) <= #
+
+# Specify molecule
+molecule {
+0 3         # Starting from the neutral
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+
+# N-electron SCF
+E0 = energy('scf')
+
+# Lists of occupation numbers 
+low_occs  = [0.5, 0.6, 0.7, 0.8, 0.9]
+high_occs = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+
+# Initialize the result lists
+occs = []
+energies = []
+
+# Do partially occupied HOMO
+for occ in low_occs:
+
+    # New options for FRAC
+    set frac_start 3
+    set mom_start 4
+    set frac_occ [4]
+    set frac_val [$occ]
+    
+    # Frac SCF
+    En = energy('scf')
+    
+    # Append results
+    occs.append(5.0 + occ)
+    energies.append(En)
+
+# Append the neutral species result
+occs.append(6.0)
+energies.append(E0) 
+
+# => Anionic FO-UHF (Starting from the Anion) <= #
+
+# Specify molecule
+molecule {
+-1 4        # Starting from the anion 
+C           # Single C in Z-mat (also takes xyz)
+symmetry c1 # C1 is best, otherwise the occupation gets squirrely
+}
+
+# Standard SCF options (this one is DF-UHF)
+set print 2                  # Higher print level for extra properties
+set basis aug-cc-pvdz        # Primary basis
+set scf_type df              # SCF algorithm is DF
+set reference uhf            # Reference is UHF
+set d_convergence 7          # 8 digits seems unstable
+
+# Do partially occupied LUMO
+for occ in high_occs:
+
+    # New options for FRAC
+    set frac_start 7
+    set mom_start 8
+    set frac_occ [5]
+    set frac_val [$occ]
+    
+    # Frac SCF
+    En = energy('scf')
+    
+    # Append results
+    occs.append(6.0 + occ)
+    energies.append(En)
+
+# Print the results out
+print '\n    ==> Fractional Occupation Traverse Results <==\n\n'
+
+print '\tCation  Energy = %24.16E\n' % Em1
+print '\tNeutral Energy = %24.16E\n' % E0
+print '\tAnion   Energy = %24.16E\n\n' % Ep1
+
+print '\t%-8s %-24s\n' %('Nelec', 'Energy') 
+for k in range(len(occs)):
+    print '\t%8.3E %24.16E\n' % (occs[k], energies[k])
+
+# Test the results 
+for k in range(len(occs)):
+    compare_values(reference_energies[occs[k]], energies[k], 8, "%11.3E electron energy" % occs[k])  
+

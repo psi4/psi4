@@ -129,11 +129,12 @@ OptReturnType optking(void) {
     // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
     // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
     mol1->fragmentize();
-mol1->print_connectivity(outfile);
+    mol1->print_connectivity(outfile);
 
     if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
       mol1->add_intrafragment_simples_by_connectivity();
-      if (Opt_params.add_auxiliary_bonds) mol1->add_intrafragment_auxiliary_bonds();
+      if (Opt_params.add_auxiliary_bonds)
+        mol1->add_intrafragment_auxiliary_bonds();
     }
 
     // newly constructed fragments need connectivity generated
@@ -205,22 +206,23 @@ mol1->print_connectivity(outfile);
   // compute forces in internal coordinates from cartesian gradient
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
 
-  if (p_Opt_data->g_iteration() == 1) { // 1st iteration -> put initial Hessian in p_Opt_data
-    bool read_H_worked = false;
-    if (Opt_params.read_cartesian_H) {
-      read_H_worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
-      if (read_H_worked)
-        fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
-      else 
-        fprintf(outfile,"\tUnable to read and transform Hessian.\n");
+  bool read_H_worked = false;
+  if (Opt_params.read_cartesian_H) {
+    read_H_worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
+    if (read_H_worked) {
+      fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
+      p_Opt_data->reset_steps_since_last_H();
     }
-
-    if ( (!Opt_params.read_cartesian_H) || (!read_H_worked) )
+    else { 
+      fprintf(outfile,"\tUnable to read and transform cartesian Hessian.\n");
+      mol1->H_guess(); // empirical model guess Hessian
+    }
+  }
+  else if (p_Opt_data->g_iteration() == 1 && !Opt_params.read_cartesian_H) {
       mol1->H_guess(); // empirical model guess Hessian
   }
   else { // do Hessian update
     try {
-//      if(Opt_params.opt_type != OPT_PARAMS::IRC)
         p_Opt_data->H_update(*mol1);
     } catch (const char * str) {
       fprintf(stderr, "%s\n", str);
@@ -229,8 +231,14 @@ mol1->print_connectivity(outfile);
       return OptReturnFailure;
     }
   }
+  
+  // Increase number of steps since last Hessian by 1 unless we read in a new one
+  if (read_H_worked)
+    p_Opt_data->reset_steps_since_last_H();
+  else
+    p_Opt_data->increment_steps_since_last_H();
 
-//mol1->project_f_and_H();
+  mol1->project_f_and_H();
 
   // step functions put dq in p_Opt_data->step
   if (Opt_params.opt_type == OPT_PARAMS::IRC)

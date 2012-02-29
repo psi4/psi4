@@ -2,6 +2,8 @@
 #! matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition.
 #! These operations are performed on vectors and matrices provided from the Psi library.
 
+memory 250 mb
+
 # Example of matrix multiplication
 print '\n  ==> Matrix Multiplication <== \n\n'
 
@@ -47,6 +49,10 @@ D = PsiMod.Vector(n);
 info = PsiMod.DSYEV(0, 'V','U', n, A, n, D, W, 4*n)
 A.set_name("Eigenvectors")
 
+# Make first element of eigenvector positive if desired
+for i in range(1,n):
+    if A.get(i,0) < 0 :
+        A.scale_row(0, i, -1)
 
 print '  Eigenvalues'
 D.print_out()
@@ -91,6 +97,3 @@ info = PsiMod.DGETRF(0, n, n, A, n, piv)
 
 A.set_name('Hilbert Matrix LU Decomposition (T)')
 A.print_out()
-
-clean()
-

@@ -1,0 +1,795 @@
+/*****************************************************
+ * psi4.css_t
+ * ~~~~~~~~~~~
+ *
+ * stylesheet for "PSI4" theme for Sphinx.
+ * This sphinx theme was based heavily upon the cloud theme.
+ *
+ * :copyright: Copyright 2011 by Assurance Technologies
+ * :license: BSD
+ *
+ *****************************************************/
+
+@import url("basic.css");
+
+/*****************************************************
+ * page layout
+ *****************************************************/
+
+body
+{
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+    font-size: 100%;
+    background-color: #1A4162;
+    color: #000;
+    margin: 1em 1em 0 1em;
+    padding: 0;
+}
+
+/*****************************************************
+ * page layout - relbars (top & bottom)
+ *****************************************************/
+
+div.related
+{
+    margin: 0 auto;
+    max-width: 12in;
+    background-color: #5682AD;
+    line-height: 30px;
+    color: #ffffff;
+}
+
+div.relbar-top div.related
+{
+    border-radius: .7em .7em 0 0;
+    -moz-border-radius: .7em .7em 0 0;
+    -webkit-border-radius: .7em .7em 0 0;
+}
+
+div.relbar-bottom div.related
+{
+    border-radius: 0 0 .7em .7em;
+    -moz-border-radius: 0 0 .7em .7em;
+    -webkit-border-radius: 0 0 .7em .7em;
+}
+
+div.related a
+{
+    color: #ffffff;
+}
+
+/*****************************************************
+ * page layout - document
+ *****************************************************/
+
+div.document
+{
+    margin: 0 auto;
+    max-width: 12in;
+    background-color: #F2F2F2;
+}
+
+div.documentwrapper
+{
+    float: left;
+    width: 100%;
+}
+
+div.bodywrapper
+{
+    margin: 0 0 0 230px;
+}
+
+div.body
+{
+    min-height: 6in;
+    /* note: this ^ is just a hack to prevent body from being shorter than sidebar */
+
+    background-color: #ffffff;
+    border-left: 1px solid #D0D0D0;
+
+    color: #000000;
+    padding: 0 20px 30px 20px;
+}
+
+/*****************************************************
+ * page layout - sidebar
+ *****************************************************/
+
+div.sphinxsidebar
+{
+    /* it's nasty sometimes, but looks prettier than letting too-long module names break into document body*/
+    overflow: hidden;
+}
+
+div.sphinxsidebar h3,
+div.sphinxsidebar h4
+{
+    padding: 0;
+    margin: 24px 16px 0 0;
+
+    border-bottom: 1px dashed #C0C0C0;
+
+    font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
+    font-weight: normal;
+    color: #777777;
+}
+
+div.sphinxsidebar h3
+{
+    font-size: 1.4em;
+}
+
+div.sphinxsidebar h4
+{
+    font-size: 1.3em;
+}
+
+div.sphinxsidebar h3 a
+{
+    color: #777777;
+}
+
+div.sphinxsidebar p
+{
+    color: #777777;
+}
+
+div.sphinxsidebar p.topless
+{
+    margin: 5px 10px 10px 10px;
+}
+
+div.sphinxsidebar ul
+{
+    margin: 10px;
+    padding: 0;
+    color: #777777;
+}
+
+div.sphinxsidebar a
+{
+    color: #003469;
+}
+
+div.sphinxsidebar input
+{
+    border: 1px solid #C0C0C0;
+    font-family: sans-serif;
+    font-size: 1em;
+}
+
+div.sphinxsidebar p.logo
+{
+    margin: 8px 0 0 0;
+    text-align: center;
+}
+
+div.sphinxsidebar .searchtip
+{
+    color: #C0C0C0;
+}
+
+div.sphinxsidebar {
+    top: 30px;
+    bottom: 0;
+    margin: 0;
+    position: fixed;
+    overflow: auto;
+    height: auto;
+}
+/* this is nice, but it it leads to hidden headings when jumping
+   to an anchor */
+/*
+div.related {
+    position: fixed;
+}
+
+div.documentwrapper {
+    margin-top: 30px;
+}
+*/
+
+/*****************************************************
+ * page layout - footer
+ *****************************************************/
+
+div.footer
+{
+    color: #B0B0B0;
+    width: 100%;
+    padding: 9px 0 9px 0;
+    text-align: center;
+    font-size: 75%;
+}
+
+div.footer a
+{
+    color: #B0B0B0;
+    text-decoration: underline;
+}
+
+/*****************************************************
+ * adaptive page layout - if too small, hide some things
+ *****************************************************/
+
+@media only screen and (max-width: 700px),
+       only screen and (max-device-width: 700px)
+{
+    body {
+        margin: 0;
+    }
+
+    div.relbar-top div.related,
+    div.relbar-bottom div.related
+    {
+        border-radius: 0;
+        -moz-border-radius: 0;
+        -webkit-border-radius: 0;
+    }
+
+    div.sphinxsidebar
+    {
+        display: none;
+    }
+
+    div.bodywrapper
+    {
+        margin-left: 0;
+    }
+
+    /* hide all lefthand links but first one, to save space*/
+    div.related > ul > li:not(.right) + li
+    {
+        display: none;
+    }
+
+}
+
+/*****************************************************
+ * adapt for print media
+ *****************************************************/
+@media print
+{
+   div.body { border: 0; }
+}
+
+/*****************************************************
+ * document - link styles
+ *****************************************************/
+
+a
+{
+    color: #003469;
+    text-decoration: none;
+}
+
+a:visited
+{
+    color: ;
+    text-decoration: none;
+}
+
+a:hover
+{
+    text-decoration: underline;
+}
+
+
+a.external:before
+{
+    content: "\21D7";
+    padding-right: .1em;
+}
+
+
+dt:target,
+.footnote:target,
+.highlighted
+{
+    padding: 4px;
+    margin: -4px;
+
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;    
+}
+
+/*****************************************************
+ * document - header styles
+ *****************************************************/
+
+div.body h1,
+div.body h2,
+div.body h3,
+div.body h4,
+div.body h5,
+div.body h6,
+div.body p2.rubric
+{
+    margin: 1em 0 -.25em;
+    padding: 0;
+
+    color: #000000;
+
+    font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
+    font-weight: normal;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.1);
+}
+
+div.body p1.rubric
+{
+    margin: 1em 0 -.25em;
+    padding: 0;
+
+    color: #000000;
+
+    font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
+    font-weight: normal;
+    text-shadow: 1px 1px 0 rgba(0,0,0,.1);
+}
+
+div.body h1,
+div.body p1.rubric
+{
+     margin: 1em -10px 0 -10px;
+     padding: 10px;
+     
+     background: #AAC3D5;
+     border: 1px solid rgba(0,0,0,.125);
+     border-width: 0 1px 1px 0;
+     
+     border-radius: 10px;
+     -moz-border-radius: 10px;
+     -webkit-border-radius: 10px;
+     
+     font-size: 160%;
+     color: #ffffff;
+     text-shadow: 1px 1px 0 rgba(0,0,0,.1);
+}
+
+div.body p1.rubric
+{
+     background: #CDDDE9; 
+}
+
+div.body h2,
+div.body p2.rubric
+{
+     /*margin: 1em -10px 0 50px;*/
+     margin: 1em -10px 0 -10px;
+     padding: 5px;
+     
+     background: #EAF1FF;
+     border: 1px solid rgba(0,0,0,.125);
+     border-width: 0 1px 1px 0;
+     
+     border-radius: 10px;
+     -moz-border-radius: 10px;
+     -webkit-border-radius: 10px;
+     
+     font-size: 110%;
+     color: #5682ad;
+}
+
+div.body p2.rubric
+{
+     background: #CDDDE9; 
+}
+
+div.body h3 { font-size: 140%; }
+div.body h4 { font-size: 120%; }
+div.body h5 { font-size: 110%; }
+div.body h6 { font-size: 100%; }
+
+a.headerlink
+{
+    color: #003469;
+    font-size: 0.8em;
+    padding: 0 4px 0 4px;
+    text-decoration: none;
+}
+
+a.headerlink:hover
+{
+    background-color: #003469;
+    color: white;
+}
+
+/*****************************************************
+ * document - toggleable h1/h2 sections
+ *****************************************************/
+
+.html-toggle.collapsed > .html-toggle-button
+{
+    margin-bottom: .5em;
+    cursor: pointer;
+}
+
+.html-toggle.collapsed > .html-toggle-button:after
+{
+    content: "[show section]";
+    color: #003469;
+    font-size: 70%;
+}
+
+.html-toggle.expanded > .html-toggle-button:after
+{
+    content: "[hide section]";
+    color: #003469;
+    font-size: 70%;
+}
+
+/*****************************************************
+ * document - admonitions
+ *****************************************************/
+
+div.admonition
+{
+    background: #f2f2f2;
+    border: 1px solid rgba(0,0,0,.05);
+    border-width: 0 1px 1px 0;
+    margin: 1em 0;
+    padding: .5em;
+    border-radius: 10px 0 10px 0;
+    -webkit-border-radius: 10px 0 10px 0;
+    -moz-border-radius: 10px 0 10px 0;
+}
+
+div.note, div.seealso, div.warning, div.admonition.todo, div.admonition.caution, div.admonition.nyi
+{
+    background-position: 8px center;
+    background-repeat: no-repeat;
+    padding-left: 38px;
+}
+
+div.note { background-color: #E7F0FE; background-image: url(icon-note.png); }
+
+div.seealso { background-color: #FFF7E0; background-image: url(icon-seealso.png); }
+div.topic { background-color: #eee; }
+div.warning { background-color: #ffe4e4; background-image: url(icon-warning.png); }
+div.admonition.todo { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
+
+div.admonition.caution { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
+
+div.admonition.nyi { background-color: #CCEACC; background-image: url(icon-newtodo.png); }
+
+div.admonition p,
+div.admonition pre,
+div.admonition ul,
+div.admonition ol
+{
+    margin-bottom: 5px;
+}
+
+/* next 3 rules merge the title into the first paragraph */
+p.admonition-title
+{
+    display: inline;
+    margin-right: 0;
+}
+
+p.admonition-title + p
+{
+    display: inline;
+}
+
+p.admonition-title:after
+{
+    content: ":";
+}
+
+p.admonition-title + ul
+{
+  margin-top: 0;
+}
+
+/* don't indent admonitions inside definitions */
+dl div.admonition
+{
+  margin-left: 0;
+}
+
+/*****************************************************
+ * document - misc body styles
+ *****************************************************/
+
+div.body p,
+div.body dd,
+div.body li
+{
+    text-align: justify;
+    line-height: 140%;
+}
+
+/*dl.function,
+dl.method,
+dl.attribute,
+dl.class,
+dl.exception,
+dl.data */
+
+dl
+{
+    margin-bottom: 1.5em;
+}
+
+
+a.footnote-reference
+{
+    font-size: 70%;
+    position: relative;
+    top: -.75em;
+}
+
+table.docutils.footnote
+{
+    margin: 1em 0 0 1em;
+}
+
+ /* join separate ULs together */
+ul + ul,
+ul + div > ul:only-child,
+div.toctree-wrapper + ul
+{
+ margin-top: -1em;
+}
+
+table.html-plain-table
+{
+    border: 0;
+}
+
+table.docutils.html-plain-table td
+{
+    border: 0;
+}
+
+h2 + table.docutils
+{
+    margin-top: 1em;
+}
+
+/*****************************************************
+ * document - quoted text
+ *****************************************************/
+
+div.highlight .c
+{
+    font-size: 90%;
+}
+
+pre
+{
+    padding: 5px;
+
+    background-color: #f2f2f2;
+    border: 1px solid #ac9;
+    border-width: 1px 1px 1px 4px;
+
+    color: #333333;
+    line-height: 120%;
+}
+
+tt
+{
+    font-size: 0.95em;
+}
+
+tt.literal
+{
+    background-color: rgba(0,0,0,.075);
+    border: 1px solid rgba(0,0,0,.05);
+    padding: 1px 2px;
+    margin: 0 1px;
+
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+
+tt.samp.literal > em
+{
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+    font-size: .8em;
+    padding: 0 1px;
+}
+
+h1 tt.literal
+{
+    background-color: inherit;
+    border: 0;
+    font-weight: bold;
+}
+
+h1 tt.samp.literal > em
+{
+    font-weight: normal;
+}
+
+div.sphinxsidebar tt.literal,
+a.reference tt.literal,
+div.related a tt.literal,
+tt.literal.xref
+{
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+th
+{
+    background-color: #ede;
+}
+
+.viewcode-back
+{
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Geneva', 'Verdana', sans-serif;
+}
+
+div.viewcode-block:target
+{
+    background-color: #f4debf;
+    border-top: 1px solid #ac9;
+    border-bottom: 1px solid #ac9;
+}
+
+/*****************************************************
+ * nested sections -
+ * (requires css classes set by astdoc.ext.nested_sections extension)
+ *****************************************************/
+
+dl.nested-section > dt
+{
+    color: #000000;
+
+    font-family: Georgia, "Bitstream Vera Serif", "New York", Palatino, serif;
+    font-weight: normal;
+    font-size: 100%;
+}
+
+dl.nested-section-1 > dt { font-size: 140%; }
+dl.nested-section-2 > dt { font-size: 120%; }
+dl.nested-section-3 > dt { font-size: 110%; }
+
+dl.nested-section > dd
+{
+    margin-left: 2em;
+    margin-top: 1em;
+}
+
+/*****************************************************
+ * index page - category colorization
+ * (requires css classes set by astdoc.ext.index_styles extension)
+ *****************************************************/
+
+table.indextable span.category
+{
+    font-size: 80%;
+    color: #84ADBE;
+}
+
+table.indextable span.category.function,
+table.indextable span.category.classmethod,
+table.indextable span.category.method
+{ color: #9AB9CE; }
+
+table.indextable span.category.attribute { color: #8BC38B; }
+table.indextable span.category.class { color: #9996c2; }
+
+/*table.indextable span.category.module { color: #8BC38B; }*/
+
+table.indextable span.subject
+{
+    font-weight: bold;
+}
+
+table.indextable td > dl > dt
+{
+    margin-bottom: .5em;
+}
+
+table.indextable td > dl > dd > dl
+{
+    margin-top: -.5em;
+    margin-bottom: .5em;
+}
+
+/*#################################################################
+    unorganized code
+  #################################################################*/
+
+
+/*****************************************************
+ * provide styling for TODO
+ *****************************************************/
+
+div#todos p.admonition-title
+{
+    font-weight: normal;
+    color: #AAA;
+    font-size: 70%;
+}
+
+div#todos div.admonition-todo + p
+{
+    font-size: 70%;
+    text-align: right;
+    margin-top: -.5em;
+    margin-bottom: 1.5em;
+    color: #AAA;
+}
+
+div#todos div.admonition-todo + p a
+{
+    font-size: 130%;
+}
+
+/*****************************************************
+ * add more whitespace to parameter lists
+ *****************************************************/
+td.field-body > ul.first.simple > li,
+td.field-body > p.first
+{
+    margin-bottom: 1em;
+}
+
+td.field-body > ul.first.simple > li > em,
+td.field-body > em
+{
+   padding: 2px 4px;
+/*   border-bottom: 1px solid #DEE6ED;
+   background: #ECF0F3;
+   */
+}
+
+/*****************************************************
+ * misc tweaks to parameter lists
+ *****************************************************/
+
+th {
+    background: inherit;
+}
+
+td.field-body > p.first:empty
+{
+    display: none;
+}
+
+td.field-body > p:last-child:empty
+{
+    margin-bottom: 1em;
+}
+
+/*****************************************************
+ * css colorization of object definitions,
+ * adds colored line underneath definition title.
+ * color scheme used:
+ *      functions, methods - blue
+ *      classes - purple
+ *      exceptions - red
+ *      objects, attributes, data - green
+ *****************************************************/
+/*
+dl.classmethod > dt,
+dl.function > dt,
+dl.method > dt
+{
+    background: #E2ECF3;
+}
+
+dl.exception > dt { background: #F2E3E1; }
+dl.class > dt { background: #E7E6F6; }
+
+dl.attribute > dt,
+dl.object > dt,
+dl.data > dt
+{
+    background: #E2F2E2;
+}*/
+
+
+/*****************************************************
+ * EOF
+ *****************************************************/

@@ -1,10 +1,12 @@
 #! Database calculation, so no molecule section in input file. Portions of the full
 #! databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
-refS22AmadSAPT0 = 2.105857738420                                                            #TEST
+memory 250 mb
+
+refS22AmadSAPT0 = 2.105857433479                                                            #TEST
 refS22BmadSAPT0 = 2.063857730160                                                            #TEST
 refNBCmadDFMP2  = 0.117344794875                                                            #TEST
-refNBCmadSCF    = 0.149827370083                                                            #TEST
+refNBCmadSCF    = 0.149827452337                                                            #TEST
 
 set globals {
     BASIS sto-3g
@@ -19,14 +21,11 @@ set globals {
     GUESS CORE
 }
 
-S22mad = database('sapt0','S22',subset=[2,8],benchmark='S22A')
+S22mad = database('sapt0','S22',subset=[2,8],BENCHMARK='S22A')
 compare_values(refS22AmadSAPT0, S22mad, 5, "S22 with S22A subset mean absolute deviation")  #TEST
 #S22mad = database('sapt0','S22',subset=[2,8])
 #compare_values(refS22BmadSAPT0, S22mad, 5, "S22 with S22B subset mean absolute deviation")  #TEST
 #NBCmad = database('dfmp2','NBC10',cp='on',symm='off',subset='small')  # Revive after dfmp2 regains independence from madness
 #compare_values(refNBCmadDFMP2, NBCmad, 5, "NBC subset mean absolute deviation")             #TEST
-NBCmad = database('scf','NBC10',cp='on',symm='off',subset='small')
+NBCmad = database('scf','NBC10',cp='on',SYMM='OFF',subset='small')
 compare_values(refNBCmadSCF, NBCmad, 5, "NBC subset mean absolute deviation")               #TEST
-
-clean()
-

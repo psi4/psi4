@@ -150,6 +150,9 @@ class IntegralTransform{
         /// The level of printing used during transformations
         int get_print() const {return print_;}
 
+        /// Returns the frozen-core energy
+        double get_frozen_core_energy() const { return frozen_core_energy_; }
+
         /// Set the library to keep or delete the half-transformed integrals in DPD form after processing
         void set_keep_ht_ints(bool val) {keepHtInts_ = val;}
         /// Whether the library will keep or delete the half-transformed integrals in DPD form after processing
@@ -185,6 +188,8 @@ class IntegralTransform{
         // Get the beta correlated to Pitzer ordering array, used in backtransforms
         const int *beta_corr_to_pitzer() const { return bCorrToPitzer_; }
 
+        int nirrep() const { return nirreps_; }
+
     protected:
         void check_initialized();
         void common_moinfo_initialize();
@@ -206,6 +211,8 @@ class IntegralTransform{
         std::vector<size_t> tpdm_buffer_sizes_;
         // The buffer used in sorting the SO basis tpdm
         double *tpdm_buffer_;
+        // Frozen core energy
+        double frozen_core_energy_;
         // The wavefunction object, containing the orbital infomation
         boost::shared_ptr<Wavefunction> wfn_;
         // Pointer to the PSIO object to use for file I/O
@@ -286,6 +293,10 @@ class IntegralTransform{
         int print_;
         // Just an array of zeros! Used in the null MOSpace "transforms"
         int *zeros_;
+        // The alpha Pitzer->QT reordering array
+        int *aQT_;
+        // The alpha Pitzer->QT reordering array
+        int *bQT_;
         // The alpha correlated to Pitzer ordering arrays, used in backtransforms
         int *aCorrToPitzer_;
         // The beta correlated to Pitzer ordering arrays, used in backtransforms
@@ -294,6 +305,8 @@ class IntegralTransform{
         Dimension sopi_;
         // The symmetry (irrep number) of each symmetrized atomic orbital
         int *sosym_;
+        // The symmetry (irrep number) of each molecular orbital
+        int *mosym_;
         // The number of molecular orbitals per irrep
         Dimension mopi_;
         // The number of doubly-occupied orbitals per irrep

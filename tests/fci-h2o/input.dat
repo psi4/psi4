@@ -1,8 +1,10 @@
 #! 6-31G H2O Test FCI Energy Point
 
+memory 250 mb
+
 refnuc   =   9.2342185209120 #TEST
-refscf   = -75.985323665263  #TEST
-refci    = -76.1210978474779 #TEST
+refscf   = -75.9853236724118 #TEST
+refci    = -76.1210978591481 #TEST
 refcorr  = refci - refscf    #TEST
 
 molecule h2o {
@@ -23,6 +25,3 @@ compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion ene
 compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
-
-clean()
-

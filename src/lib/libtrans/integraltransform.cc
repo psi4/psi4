@@ -47,6 +47,9 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
             print_(1),
             zeros_(0),
             sosym_(0),
+            mosym_(0),
+            aQT_(0),
+            bQT_(0),
             cacheFiles_(0),
             cacheList_(0),
             Ca_(wfn->Ca()),
@@ -73,6 +76,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
     openpi_  = wfn->soccpi();
     frzcpi_  = wfn->frzcpi();
     frzvpi_  = wfn->frzvpi();
+    frozen_core_energy_ = 0.0;
 
     common_moinfo_initialize();
 
@@ -120,11 +124,14 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     zeros_(0),
     sopi_(0),
     sosym_(0),
+    mosym_(0),
     mopi_(0),
     clsdpi_(0),
     openpi_(0),
     frzcpi_(0),
     frzvpi_(0),
+    aQT_(0),
+    bQT_(0),
     cacheFiles_(0),
     cacheList_(0),
     aCorrToPitzer_(0),
@@ -148,6 +155,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     openpi_  = Dimension(nirreps_); // This is the restricted constructor, there are no unpaired electrons
     frzcpi_  = c->colspi();
     frzvpi_  = v->colspi();
+    frozen_core_energy_ = 0.0;
 
     // Need to smash together the C's only for them to be ripped apart elsewhere.
     std::vector<SharedMatrix > Cs;
@@ -174,10 +182,64 @@ IntegralTransform::initialize()
     iwlABIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
     iwlBBIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
 
-    process_spaces();
-
     tpdm_buffer_ = 0;
 
+    aQT_ = init_int_array(nmo_);
+    if(transformationType_ == Restricted){
+        reorder_qt(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, mopi_, nirreps_);
+        bQT_ = aQT_;
+    }else{
+        bQT_ = init_int_array(nmo_);
+        reorder_qt_uhf(clsdpi_, openpi_, frzcpi_, frzvpi_, aQT_, bQT_, mopi_, nirreps_);
+    }
+    // Set up the correlated to Pitzer arrays.  These have to include the occupied core terms, because
+    // the reference contributions are already folded into the TPDM.  However, they don't include frozen
+    // virtuals
+    aCorrToPitzer_ = init_int_array(nmo_);
+    if(transformationType_ != Restricted){
+        bCorrToPitzer_ = init_int_array(nmo_);
+    }else{
+        bCorrToPitzer_ = aCorrToPitzer_;
+    }
+
+    int nFzvFound = 0;
+    int pitzerCount = 0;
+    for(int h = 0; h < nirreps_; ++h){
+        for (int p = 0; p < mopi_[h]; p++) {
+            if (p < mopi_[h] - frzvpi_[h]) {
+                // This is active, count it
+                int q = aQT_[pitzerCount];
+                aCorrToPitzer_[q] = pitzerCount - nFzvFound;
+                if(transformationType_ != Restricted){
+                    int q = bQT_[pitzerCount];
+                    bCorrToPitzer_[q] = pitzerCount - nFzvFound;
+                }
+            }else{
+                nFzvFound++;
+            }
+            pitzerCount++;
+        }
+    }
+
+    if(print_ > 4){
+        fprintf(outfile, "\tThe Alpha Pitzer to QT mapping array:\n\t\t");
+        for(int p = 0; p < nmo_; ++p)
+            fprintf(outfile, "%d ", aQT_[p]);
+        fprintf(outfile, "\n");
+        fprintf(outfile, "\tThe Beta Pitzer to QT mapping array:\n\t\t");
+        for(int p = 0; p < nmo_; ++p)
+            fprintf(outfile, "%d ", bQT_[p]);
+        fprintf(outfile, "\n");
+        fprintf(outfile, "\tThe Alpha Correlated to Pitzer mapping array:\n\t\t");
+        for(int p = 0; p < nmo_; ++p)
+            fprintf(outfile, "%d ", aCorrToPitzer_[p]);
+        fprintf(outfile, "\n");
+        fprintf(outfile, "\tThe Beta Correlated to Pitzer mapping array:\n\t\t");
+        for(int p = 0; p < nmo_; ++p)
+            fprintf(outfile, "%d ", bCorrToPitzer_[p]);
+        fprintf(outfile, "\n");
+    }
+    process_spaces();
     // Set up the DPD library
     // TODO implement caching of files
     int numSpaces = spacesUsed_.size();
@@ -197,54 +259,6 @@ IntegralTransform::initialize()
 
     // Return DPD control to the user
     dpd_set_default(currentActiveDPD);
-
-
-    // Set up the correlated to Pitzer arrays.  These have to include the occupied core terms, because
-    // the reference contributions are already folded into the TPDM.
-    aCorrToPitzer_ = new int[nmo_];
-    if(transformationType_ != Restricted){
-        bCorrToPitzer_ = new int[nmo_];
-    }else{
-        bCorrToPitzer_ = aCorrToPitzer_;
-    }
-    size_t aCorrCount = 0;
-    size_t bCorrCount = 0;
-    size_t pitzerOffset = 0;
-
-    // Frozen DOCC
-    for(int h = 0; h < nirreps_; ++h){
-        for(int n = 0; n < frzcpi_[h]; ++n){
-            aCorrToPitzer_[aCorrCount++] = pitzerOffset + n;
-            if(transformationType_ != Restricted)
-                bCorrToPitzer_[bCorrCount++] = pitzerOffset + n;
-        }
-        pitzerOffset += mopi_[h];
-    }
-    // Active OCC
-    pitzerOffset = 0;
-    for(int h = 0; h < nirreps_; ++h){
-        for(int n = frzcpi_[h]; n < clsdpi_[h] + openpi_[h]; ++n){
-            aCorrToPitzer_[aCorrCount++] = pitzerOffset + n;
-        }
-        if(transformationType_ != Restricted)
-            for(int n = frzcpi_[h]; n < clsdpi_[h]; ++n){
-                bCorrToPitzer_[bCorrCount++] = pitzerOffset + n;
-            }
-        pitzerOffset += mopi_[h];
-    }
-    // Active VIR
-    pitzerOffset = 0;
-    for(int h = 0; h < nirreps_; ++h){
-        for(int n = clsdpi_[h] + openpi_[h]; n < mopi_[h] - frzvpi_[h]; ++n){
-            aCorrToPitzer_[aCorrCount++] = pitzerOffset + n;
-        }
-        if(transformationType_ != Restricted)
-            for(int n = clsdpi_[h]; n < mopi_[h] - frzvpi_[h]; ++n){
-                bCorrToPitzer_[bCorrCount++] = pitzerOffset + n;
-            }
-        pitzerOffset += mopi_[h];
-    }
-
 
     initialized_ = true;
 }
@@ -268,6 +282,12 @@ IntegralTransform::~IntegralTransform()
         free_int_matrix(cacheList_);
         free(cacheFiles_);
         free(zeros_);
+        free(aQT_);
+        free(aCorrToPitzer_);
+        if(transformationType_ != Restricted){
+            free(bQT_);
+            free(bCorrToPitzer_);
+        }
     }
     if(tpdm_buffer_)
         delete [] tpdm_buffer_;

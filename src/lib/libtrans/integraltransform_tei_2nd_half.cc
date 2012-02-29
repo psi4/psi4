@@ -22,6 +22,10 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 {
     check_initialized();
 
+    bool bra_sym = s1 == s2;
+    bool ket_sym = s3 == s4;
+    bool bra_ket_sym = (s1 == s3) && bra_sym && ket_sym;
+
     char *label = new char[100];
 
     // Grab the transformation coefficients
@@ -75,8 +79,8 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
 
     int braCore = DPD_ID(s1, s2, Alpha, true);
     int braDisk = DPD_ID(s1, s2, Alpha, true);
-    int ketCore = 0;
-    int ketDisk = 3;
+    int ketCore = DPD_ID("[n,n]");
+    int ketDisk = DPD_ID("[n>=n]+");
     sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
     dpd_buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
@@ -152,16 +156,18 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                     //TODO else if s3->label() == MOSPACE_NIL, copy buffer...
                 } /* Gr */
                 if(useIWL_){
-                    int p = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
-                    int q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                    size_t PQ = INDEX(p,q);
+                    int P = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
+                    int Q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
+                    size_t PQ = INDEX(P,Q);
+                    if( (P < Q) && bra_sym) continue;
                     for(int rs=0; rs < K.params->coltot[h]; rs++) {
-                        int r = aIndex3[K.params->colorb[h][rs][0]];
-                        int s = aIndex4[K.params->colorb[h][rs][1]];
-                        size_t RS = INDEX(r,s);
-                        if(r >= s && RS <= PQ)
-                            iwl->write_value(p, q, r, s, K.matrix[h][pq][rs],
-                                             printTei_, outfile, 0);
+                        int R = aIndex3[K.params->colorb[h][rs][0]];
+                        int S = aIndex4[K.params->colorb[h][rs][1]];
+                        if( (R < S) && ket_sym) continue;
+                        size_t RS = INDEX(R,S);
+                        if( (RS < PQ) && bra_ket_sym) continue;
+                        iwl->write_value(P, Q, R, S, K.matrix[h][pq][rs],
+                                         printTei_, outfile, 0);
                     } /* rs */
                 }
             } /* pq */
@@ -188,8 +194,8 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         if(useIWL_) iwl = new IWL(psio_.get(), iwlABIntFile_, tolerance_, 0, 0);
 
         braCore = braDisk = DPD_ID(s1, s2, Alpha, true);
-        ketCore = 0;
-        ketDisk = 3;
+        ketCore = DPD_ID("[n,n]");
+        ketDisk = DPD_ID("[n>=n]+");
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", toupper(s1->label()), toupper(s2->label()));
         dpd_buf4_init(&J, aHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
@@ -265,16 +271,15 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                         //TODO else if s3->label() == MOSPACE_NIL, copy buffer...
                     } /* Gr */
                     if(useIWL_){
-                        int p = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
-                        int q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                        size_t PQ = INDEX(p,q);
+                        int P = aIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
+                        int Q = aIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
+                        if( (P < Q) && bra_sym) continue;
                         for(int rs=0; rs < K.params->coltot[h]; rs++) {
-                            int r = bIndex3[K.params->colorb[h][rs][0]];
-                            int s = bIndex4[K.params->colorb[h][rs][1]];
-                            size_t RS = INDEX(r,s);
-                            if(r >= s)
-                                iwl->write_value(p, q, r, s, K.matrix[h][pq][rs],
-                                                 printTei_, outfile, 0);
+                            int R = bIndex3[K.params->colorb[h][rs][0]];
+                            int S = bIndex4[K.params->colorb[h][rs][1]];
+                            if( (R < S) && ket_sym) continue;
+                            iwl->write_value(P, Q, R, S, K.matrix[h][pq][rs],
+                                             printTei_, outfile, 0);
                         } /* rs */
                     }
                 } /* pq */
@@ -304,9 +309,9 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         psio_->open(bHtIntFile_, PSIO_OPEN_OLD);
 
         braCore = DPD_ID(s1, s2, Beta, true);
-        ketCore = 0;
+        ketCore = DPD_ID("[n,n]");
         braDisk = DPD_ID(s1, s2, Beta, true);
-        ketDisk = 3;
+        ketDisk = DPD_ID("[n>=n]+");
         sprintf(label, "Half-Transformed Ints (%c%c|nn)", tolower(s1->label()), tolower(s2->label()));
         dpd_buf4_init(&J, bHtIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
@@ -381,16 +386,18 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
                                     TMP[0], nso_, 0.0, &K.matrix[h][pq][rs], ncols);
                     } /* Gr */
                     if(useIWL_){
-                        int p = bIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
-                        int q = bIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
-                        size_t PQ = INDEX(p,q);
+                        int P = bIndex1[K.params->roworb[h][pq+n*rowsPerBucket][0]];
+                        int Q = bIndex2[K.params->roworb[h][pq+n*rowsPerBucket][1]];
+                        if( (P < Q) && bra_sym) continue;
+                        size_t PQ = INDEX(P,Q);
                         for(int rs=0; rs < K.params->coltot[h]; rs++) {
-                            int r = bIndex3[K.params->colorb[h][rs][0]];
-                            int s = bIndex4[K.params->colorb[h][rs][1]];
-                            size_t RS = INDEX(r,s);
-                            if(r >= s && RS <= PQ)
-                                iwl->write_value(p, q, r, s, K.matrix[h][pq][rs],
-                                                 printTei_, outfile, 0);
+                            int R = bIndex3[K.params->colorb[h][rs][0]];
+                            int S = bIndex4[K.params->colorb[h][rs][1]];
+                            if( (R < S) && ket_sym) continue;
+                            size_t RS = INDEX(R,S);
+                            if( (RS < PQ) && bra_ket_sym) continue;
+                            iwl->write_value(P, Q, R, S, K.matrix[h][pq][rs],
+                                             printTei_, outfile, 0);
                         } /* rs */
                     }
                 } /* pq */

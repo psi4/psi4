@@ -1,5 +1,7 @@
-#! Mk-MRCCSD single point. $^3 \Sigma ^-$O$_2$ state described using
+#! Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using
 #! the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+
+memory 250 mb
 
 refnuc    =   28.254539771492  #TEST
 refscf    = -149.654222103828  #TEST
@@ -35,9 +37,7 @@ set psimrcc {
   wfn_sym         B1g                    # Select the B1g state
 }
 
-mcscf()
-psimrcc()
-
+energy('psimrcc')
 compare_values(refnuc, o2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
 compare_values(refmkccsd, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST 

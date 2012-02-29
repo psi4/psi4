@@ -24,7 +24,8 @@ I. Compilation Prerequisites:
    * POSIX threads (Pthreads) library (optional)
    * Python interpreter (2.4 or higher)
    * Python developer libraries corresponding to your interpreter.
-   * A version of MPI is currently required; MPICH2 is recommended.
+   * A version of MPI is required to compile distributed-parallel PSI; 
+     MPICH2 is recommended.
      (Note: MPICH2-1.1.0 had trouble with some header files.  MPICH2-1.2.1
      seems to fix it.)
    * GNU utilities: (see http://www.gnu.org)
@@ -127,9 +128,9 @@ Step 1: Configuration
 
 A. General Information about Configuration
 
-First, we recommend that you choose for the top-level $PSI4 source
-directory something other than /usr/local/psi; your $HOME directory or
-/usr/local/src/psi4 are convenient choices.  Next, in the top-level $PSI4
+First, we recommend that you choose for the top-level psi4 source
+directory something other than /usr/local/psi; $HOME/psi4 or
+/usr/local/src/psi4 are convenient choices.  Next, in the top-level psi4
 source directory you've chosen, first run autoconf to generate the configure
 script from configure.ac.  It is best to keep the source code separate
 from the compilation area, so you must first choose a subdirectory for
@@ -185,6 +186,8 @@ installation directory.
 
    ../configure --prefix=/usr/local/psi4 --with-blas='-mkl' --with-cc=icc --with-cxx=icpc --with-fc=ifort  --with-opt='-O2 -static -no-prec-div' --with-incdirs=-mkl
 
+Note: it's -mkl, not -lmkl.
+
 * Compiling for Mac
 To get the compilers needed, it's easiest to install XCode. However, XCode
 does not provide a Fortran compiler. Although Fortran compilers are not needed
@@ -227,8 +230,8 @@ the configure script:
    * --with-cxx=compiler --- Use this option to specify a C++ compiler.
    One should use compilers that generate reentrant code, if possible.
    The default search order for compilers is: xlC_r (AIX only), g++, c++,
-   icpc, cxx.  At the moment, MPI is required and you need to use
-   mpicxx (where this has been added to your PATH).
+   icpc, cxx.  For distributed-parallel compilation, MPI is required and 
+   you need to use mpicxx (where this has been added to your PATH).
 
    * --with-fc=compiler --- Use this option to specify a Fortran-77 compiler,
    which is used to determine linking coventions for BLAS and LAPACK libraries
@@ -329,6 +332,64 @@ the configure script:
    tell configure about it:
 
       ./configure PYTHON=/usr/bin/python2.6
+
+ Boost Libraries:
+
+   PSI4 can use a user-provided boost C++ library, or, alternatively,
+   comes bundled with boost 1.48.0, which PSI4 can automatically
+   build. By default, PSI4 will look in your include/library paths for
+   a compatible and complete boost installation (boost 1.46 or newer). A
+   boost installation in a nonstandard location can be specified by the
+   --with-boost=PATH and --with-boost-libdir=PATH configure flags. If a
+   default or user-specified boost installation is found to be incomplete,
+   incompatible, or nonexistent, boost 1.48.0 will be unpacked automatically
+   and built as part of the PSI4 build process.
+
+   Required Compiled Boost Modules (all Boost 1.46.0 or later): 
+
+   * Filesystem
+   * Python
+   * Regex
+   * Serialization
+   * System
+   * Thread
+
+   Relevant Configure Options:
+
+   * --with-boost[=ARG] use Boost library from a standard location
+   (ARG=yes), from the specified location (ARG=<path>), or disable
+   it (ARG=no) [ARG=yes]
+
+   * --with-boost-libdir=LIB_DIR  
+   Force given directory for boost libraries. Note that this will override
+   library path detection, so use this parameter only if default library
+   detection fails and you know exactly where your boost libraries are
+   located. 
+ 
+   * --with-boost-filesystem[=special-lib] 
+   use the Filesystem library from boost - it is possible to specify a 
+   certain library for the linker e.g. 
+   --with-boost-filesystem=boost_filesystem-gcc-mt
+
+   * --with-boost-python specify the boost python library or suffix to use 
+
+   * --with-boost-regex[=special-lib] 
+   use the Regex library from boost - it is possible to specify a certain
+   library for the linker e.g. --with-boost-regex=boost_regex-gcc-mt-d-1_33_1 
+
+   * --with-boost-serialization[=special-lib] 
+   use the Serialization library from boost - it is possible to specify a
+   certain library for the linker e.g.
+   --with-boost-serialization=boost_serialization-gcc-mt-d-1_33_1 
+
+   * --with-boost-system[=special-lib] 
+   use the System library from boost - it is possible to specify a certain
+   library for the linker e.g. --with-boost-system=boost_system-gcc-mt 
+
+   * --with-boost-thread[=special-lib] 
+   use the Thread library from boost - it is possible to specify a certain
+   library for the linker e.g. --with-boost-thread=boost_thread-gcc-mt 
+
 
 Step 2: Compilation
 
@@ -595,8 +656,7 @@ meaning that Intel is always playing catch-up to new features in g++. This
 means the two are often incompatible, leading to trouble if one wants to use
 icpc to compile PSI4 (or anything else...). Your best bet in general is to not
 upgrade Linux too fast, and always keep the very latest Intel compilers
-around. However, if you see an incompatibility, some of the points below might
-help. 
+around.
 
 * Missing symbols like "do_fio" or "e_wsfe"
 

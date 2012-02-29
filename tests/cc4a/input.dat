@@ -1,11 +1,13 @@
 #! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
 #! This version tests the FROZEN_DOCC option explicitly
 
-refnuc   =   2.645886245000000 #TEST
-refscf   = -25.103546873615137 #TEST
-refccsd  =  -0.100265803802460 #TEST
-ref_t    =  -0.002090933428780 #TEST
-reftotal = -25.205903610846349 #TEST
+memory 250 mb
+
+refnuc   =   2.64588604295000 #TEST
+refscf   = -25.10354689697916 #TEST
+refccsd  =  -0.10026580394658 #TEST
+ref_t    =  -0.00209093345229 #TEST
+reftotal = -25.20590363437792 #TEST
 
 molecule bh {
     b      0.0000        0.0000        0.0000
@@ -28,6 +30,3 @@ compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy
 compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
 compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
 compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
-
-
-clean()

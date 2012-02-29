@@ -16,10 +16,11 @@
 #include <libqt/qt.h>
 
 #include <libmints/mints.h>
+#include <libfock/jk.h>
+#include <libfock/v.h>
 #include <libfunctional/superfunctional.h>
 #include <lib3index/3index.h>
 #include "ks.h"
-#include "dft.h"
 #include "integralfunctors.h"
 #include "omegafunctors.h"
 
@@ -49,21 +50,26 @@ void KS::common_init()
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 
-    //Build the superfunctional
-    int block_size = options_.get_int("DFT_MAX_POINTS");
+    // Build the superfunctional
+    int block_size = options_.get_int("DFT_BLOCK_MAX_POINTS");
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
 
-    // Temporary print, to make sure we're in the right spot
-    fprintf(outfile,"  Selected Functional is %s.\n\n",functional_->getName().c_str());
-
-    //Grab the properties object for this basis
-    if (functional_->isRangeCorrected()) {
-
-        if (options_["DFT_OMEGA"].has_changed()) {
-            functional_->setOmega(options_.get_double("DFT_OMEGA"));
-        }
-
+    // Let the user to spec a custom range-separation omega
+    if (options_["DFT_OMEGA"].has_changed() && functional_->isRangeCorrected()) {
+        functional_->setOmega(options_.get_double("DFT_OMEGA"));
     }
+
+    potential_ = VBase::build_V(KS::options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
+    potential_->initialize();
+
+    // Print some info on the DFT functional
+    fprintf(outfile,"  ==> KS-DFT <==\n\n"); 
+    fprintf(outfile,"   Selected Functional is %s.\n",functional_->getName().c_str());
+    if (functional_->isRangeCorrected()) 
+        fprintf(outfile,"   Range-separation omega is %11.3E.\n", functional_->getOmega());  
+    fprintf(outfile,"\n");
+    
+    potential_->print_header();
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
@@ -77,7 +83,6 @@ RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio) :
 }
 void RKS::common_init()
 {
-    potential_ = boost::shared_ptr<RKSPotential>(new RKSPotential(functional_,KS::molecule_,KS::basisset_,KS::options_));
     wK_ = factory_->create_shared_matrix("wKa (Long-Range Hartree-Fock Exchange)");
 }
 RKS::~RKS()
@@ -96,38 +101,64 @@ void RKS::integrals()
             aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
-        ULI mem = (ULI) (0.35 * memory_);
-        df_->set_memory(mem);
-        
-        erf_df_ = boost::shared_ptr<DFHF>(new DFHF(HF::basisset_, HF::psio_, HF::options_, functional_->getOmega()));
-        erf_df_->set_memory(mem);
-        erf_df_->set_unit(PSIF_DFSCF_K);
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
     }
 }
 void RKS::form_V()
 {
-    boost::shared_ptr<Dimension> doccpi(new Dimension(nirrep_));
-    for (int h = 0; h < nirrep_; h++) {
-        (*doccpi)[h] = doccpi_[h];
-    }
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = potential_->C();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    
+    // Run the potential object
+    potential_->compute();
 
-    potential_->buildPotential(D_,Ca_,doccpi);
-    V_ = potential_->V_USO(); 
+    // Pull the V matrices off 
+    const std::vector<SharedMatrix> & V = potential_->V();
+    V_ = V[0];
 }
 void RKS::form_G()
 {
     timer_on("Form V");
     form_V();
     timer_off("Form V");
-    if (functional_->isRangeCorrected()) {
-        Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
-        process_omega_tei(k_builder);
+
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
+
+        // Push the C matrix on
+        std::vector<SharedMatrix> & C = jk_->C_left();
+        C.clear();
+        C.push_back(Ca_subset("SO", "OCC"));
+        
+        // Run the JK object
+        jk_->compute();
+
+        // Pull the J and K matrices off
+        const std::vector<SharedMatrix> & J = jk_->J();
+        const std::vector<SharedMatrix> & K = jk_->K();
+        const std::vector<SharedMatrix> & wK = jk_->wK();
+        J_ = J[0];
+        J_->scale(2.0);
+        if (functional_->isHybrid()) {
+            K_ = K[0];
+        }
+        if (functional_->isRangeCorrected()) {
+            wK_ = wK[0];
+        }
+        
+        G_->copy(J_);
+        
+    } else { 
+        if (functional_->isRangeCorrected()) {
+            Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
+            process_omega_tei(k_builder);
+        }
+        J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
+        process_tei<J_K_Functor>(jk_builder);
+        J_->copy(G_);
     }
-    J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
-    process_tei<J_K_Functor>(jk_builder);
-    J_->copy(G_);
 
     G_->add(V_);
 
@@ -163,7 +194,8 @@ double RKS::compute_E()
     double one_electron_E = 2.0*D_->vector_dot(H_);
     double coulomb_E = D_->vector_dot(J_);
     
-    double XC_E = potential_->quadrature_value("FUNCTIONAL");
+    std::map<std::string, double>& quad = potential_->quadrature_values();  
+    double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
     double alpha = functional_->getExactExchange();
     double beta = 1.0 - alpha;
@@ -210,7 +242,6 @@ UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio) :
 }
 void UKS::common_init()
 {
-    potential_ = boost::shared_ptr<UKSPotential>(new UKSPotential(functional_,KS::molecule_,KS::basisset_,KS::options_));
     wKa_ = factory_->create_shared_matrix("wKa (Long-Range Hartree-Fock Exchange)");
     wKb_ = factory_->create_shared_matrix("wKb (Long-Range Hartree-Fock Exchange)");
 }
@@ -230,29 +261,25 @@ void UKS::integrals()
             aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
-        ULI mem = (ULI) (0.35 * memory_);
-        df_->set_memory(mem);
-        
-        erf_df_ = boost::shared_ptr<DFHF>(new DFHF(HF::basisset_, HF::psio_, HF::options_, functional_->getOmega()));
-        erf_df_->set_memory(mem);
-        erf_df_->set_unit(PSIF_DFSCF_K);
     } else {
         throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
-    }
+    }    
 }
 void UKS::form_V()
 {
-    boost::shared_ptr<Dimension> napi(new Dimension(nirrep_));
-    boost::shared_ptr<Dimension> nbpi(new Dimension(nirrep_));
-    for (int h = 0; h < nirrep_; h++) {
-        (*napi)[h] = nalphapi_[h];
-        (*nbpi)[h] = nbetapi_[h];
-    }
+    // Push the C matrix on
+    std::vector<SharedMatrix> & C = potential_->C();
+    C.clear();
+    C.push_back(Ca_subset("SO", "OCC"));
+    C.push_back(Cb_subset("SO", "OCC"));
+    
+    // Run the potential object
+    potential_->compute();
 
-    potential_->buildPotential(Da_,Ca_,napi, 
-                               Db_,Cb_,nbpi);
-    Va_ = potential_->Va_USO(); 
-    Vb_ = potential_->Vb_USO(); 
+    // Pull the V matrices off 
+    const std::vector<SharedMatrix> & V = potential_->V();
+    Va_ = V[0];
+    Vb_ = V[1];
 }
 void UKS::form_G()
 {
@@ -260,16 +287,46 @@ void UKS::form_G()
     form_V();
     timer_off("Form V");
 
-    if (functional_->isRangeCorrected()) {
-        Omega_Ka_Kb_Functor k_builder(functional_->getOmega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
-        process_omega_tei<Omega_Ka_Kb_Functor>(k_builder);
-    }
+    if (scf_type_ == "DF" || scf_type_ == "PS") {
+
+        // Push the C matrix on
+        std::vector<SharedMatrix> & C = jk_->C_left();
+        C.clear();
+        C.push_back(Ca_subset("SO", "OCC"));
+        C.push_back(Cb_subset("SO", "OCC"));
         
-    // This will build J (stored in G) and K
-    J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-    process_tei<J_Ka_Kb_Functor>(jk_builder);
-    J_->copy(Ga_);
-    Gb_->copy(Ga_);
+        // Run the JK object
+        jk_->compute();
+
+        // Pull the J and K matrices off
+        const std::vector<SharedMatrix> & J = jk_->J();
+        const std::vector<SharedMatrix> & K = jk_->K();
+        const std::vector<SharedMatrix> & wK = jk_->wK();
+        J_->copy(J[0]);
+        J_->add(J[1]);
+        if (functional_->isHybrid()) {
+            Ka_ = K[0];
+            Kb_ = K[1];
+        }
+        if (functional_->isRangeCorrected()) {
+            wKa_ = wK[0];
+            wKb_ = wK[1];
+        }
+        Ga_->copy(J_);
+        Gb_->copy(J_);
+        
+    } else { 
+        if (functional_->isRangeCorrected()) {
+            Omega_Ka_Kb_Functor k_builder(functional_->getOmega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
+            process_omega_tei<Omega_Ka_Kb_Functor>(k_builder);
+        }
+            
+        // This will build J (stored in G) and K
+        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+        process_tei<J_Ka_Kb_Functor>(jk_builder);
+        J_->copy(Ga_);
+        Gb_->copy(Ga_);
+    }
 
     Ga_->add(Va_);
     Gb_->add(Vb_);
@@ -318,7 +375,8 @@ double UKS::compute_E()
     double coulomb_E = Da_->vector_dot(J_);
     coulomb_E += Db_->vector_dot(J_);
 
-    double XC_E = potential_->quadrature_value("FUNCTIONAL");
+    std::map<std::string, double>& quad = potential_->quadrature_values();  
+    double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
     double alpha = functional_->getExactExchange();
     double beta = 1.0 - alpha;

@@ -1,0 +1,104 @@
+#! SCF DZ finite difference frequencies by energies for C4NH4
+
+memory 250 mb
+
+molecule c4nh4 {
+  units angstrom
+  -1 1
+    C         0.000000000000     0.000000000000     1.119905811674
+    N         0.000000000000     0.000000000000     2.310087277449
+    C         0.000000000000     0.000000000000    -0.231085072523
+    C        -0.781617287494     0.000000000000    -1.483869398827
+    C         0.781617287494     0.000000000000    -1.483869398827
+    H        -1.274488047821    -0.899961499592    -1.835960153318
+    H        -1.274488047821     0.899961499592    -1.835960153318
+    H         1.274488047821     0.899961499592    -1.835960153318
+    H         1.274488047821    -0.899961499592    -1.835960153318
+}
+
+# Test against analytic second derivatives from PSI3 (for now). #TEST
+anal_freqs = PsiMod.Vector(21) #TEST
+anal_freqs.set(0, 0,  -184.0613) #TEST
+anal_freqs.set(0, 1,   236.5665) #TEST
+anal_freqs.set(0, 2,   601.8179) #TEST
+anal_freqs.set(0, 3,   663.5969) #TEST
+anal_freqs.set(0, 4,   667.0854) #TEST
+anal_freqs.set(0, 5,   895.5586) #TEST
+anal_freqs.set(0, 6,  1008.6894) #TEST
+anal_freqs.set(0, 7,  1008.9522) #TEST
+anal_freqs.set(0, 8,  1046.9718) #TEST
+anal_freqs.set(0, 9,  1160.1266) #TEST
+anal_freqs.set(0,10,  1161.1594) #TEST
+anal_freqs.set(0,11,  1215.7027) #TEST
+anal_freqs.set(0,12,  1225.2493) #TEST
+anal_freqs.set(0,13,  1600.6695) #TEST
+anal_freqs.set(0,14,  1622.1779) #TEST
+anal_freqs.set(0,15,  1673.4861) #TEST
+anal_freqs.set(0,16,  2239.4185) #TEST
+anal_freqs.set(0,17,  3171.5147) #TEST
+anal_freqs.set(0,18,  3182.4027) #TEST
+anal_freqs.set(0,19,  3224.7634) #TEST
+anal_freqs.set(0,20,  3244.2997) #TEST
+
+a1_freqs = PsiMod.Vector(7) #TEST
+a1_freqs.set(0, 0, anal_freqs[ 4]) #TEST
+a1_freqs.set(0, 1, anal_freqs[ 7]) #TEST
+a1_freqs.set(0, 2, anal_freqs[10]) #TEST
+a1_freqs.set(0, 3, anal_freqs[13]) #TEST
+a1_freqs.set(0, 4, anal_freqs[15]) #TEST
+a1_freqs.set(0, 5, anal_freqs[16]) #TEST
+a1_freqs.set(0, 6, anal_freqs[18]) #TEST
+
+a2_freqs = PsiMod.Vector(3) #TEST
+a2_freqs.set(0, 0, anal_freqs[6]) #TEST
+a2_freqs.set(0, 1, anal_freqs[12]) #TEST
+a2_freqs.set(0, 2, anal_freqs[19]) #TEST
+
+b1_freqs = PsiMod.Vector(6) #TEST
+b1_freqs.set(0, 0, anal_freqs[1]) #TEST
+b1_freqs.set(0, 1, anal_freqs[3]) #TEST
+b1_freqs.set(0, 2, anal_freqs[8]) #TEST
+b1_freqs.set(0, 3, anal_freqs[11]) #TEST
+b1_freqs.set(0, 4, anal_freqs[14]) #TEST
+b1_freqs.set(0, 5, anal_freqs[17]) #TEST
+
+b2_freqs = PsiMod.Vector(5) #TEST
+b2_freqs.set(0, 0, anal_freqs[0]) #TEST
+b2_freqs.set(0, 1, anal_freqs[2]) #TEST
+b2_freqs.set(0, 2, anal_freqs[5]) #TEST
+b2_freqs.set(0, 3, anal_freqs[9]) #TEST
+b2_freqs.set(0, 4, anal_freqs[20]) #TEST
+
+# Compute all frequencies by 3-pt formula.
+set globals {
+  basis dz
+  d_convergence 11
+}
+
+frequencies('scf', dertype=1)
+
+fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
+compare_vectors(anal_freqs, fd_freqs, 1, "C4NH4 frequencies by gradients (3-pt.) to 0.1 cm^-1") #TEST
+del fd_freqs #TEST
+
+# Compute A2 frequencies by 5-pt formula.
+set findif {
+ points 5
+ disp_size 0.01
+}
+
+frequencies('scf', dertype=1, irrep=2)
+
+fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
+compare_vectors(a2_freqs, fd_freqs, 3, "C4NH4 frequencies (A2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
+del fd_freqs #TEST
+
+# Compute B2 frequencies by 5-pt formula.
+
+frequencies('scf', dertype=1, irrep=4)
+
+fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
+compare_vectors(b2_freqs, fd_freqs, 3, "C4NH4 frequencies (B2) by gradients (5-pt.) to 0.001 cm^-1") #TEST
+del fd_freqs #TEST
+
+clean()

@@ -347,13 +347,13 @@ SharedMatrix MintsHelper::ao_erf_eri(double omega)
 
                     ints->compute_shell(M,N,P,Q);
 
-                    for (int m = 0, index = 0; m < basisset_->shell(M)->nfunction(); m++) {
-                        for (int n = 0; n < basisset_->shell(N)->nfunction(); n++) {
-                            for (int p = 0; p < basisset_->shell(P)->nfunction(); p++) {
-                                for (int q = 0; q < basisset_->shell(Q)->nfunction(); q++, index++) {
+                    for (int m = 0, index = 0; m < basisset_->shell(M).nfunction(); m++) {
+                        for (int n = 0; n < basisset_->shell(N).nfunction(); n++) {
+                            for (int p = 0; p < basisset_->shell(P).nfunction(); p++) {
+                                for (int q = 0; q < basisset_->shell(Q).nfunction(); q++, index++) {
 
-                                    Ip[(basisset_->shell(M)->function_index() + m)*nbf + basisset_->shell(N)->function_index() + n]
-                                            [(basisset_->shell(P)->function_index() + p)*nbf + basisset_->shell(Q)->function_index() + q]
+                                    Ip[(basisset_->shell(M).function_index() + m)*nbf + basisset_->shell(N).function_index() + n]
+                                            [(basisset_->shell(P).function_index() + p)*nbf + basisset_->shell(Q).function_index() + q]
                                             = buffer[index];
 
                                 } } } }
@@ -380,13 +380,13 @@ SharedMatrix MintsHelper::ao_eri()
 
                     ints->compute_shell(M,N,P,Q);
 
-                    for (int m = 0, index = 0; m < basisset_->shell(M)->nfunction(); m++) {
-                        for (int n = 0; n < basisset_->shell(N)->nfunction(); n++) {
-                            for (int p = 0; p < basisset_->shell(P)->nfunction(); p++) {
-                                for (int q = 0; q < basisset_->shell(Q)->nfunction(); q++, index++) {
+                    for (int m = 0, index = 0; m < basisset_->shell(M).nfunction(); m++) {
+                        for (int n = 0; n < basisset_->shell(N).nfunction(); n++) {
+                            for (int p = 0; p < basisset_->shell(P).nfunction(); p++) {
+                                for (int q = 0; q < basisset_->shell(Q).nfunction(); q++, index++) {
 
-                                    Ip[(basisset_->shell(M)->function_index() + m)*nbf + basisset_->shell(N)->function_index() + n]
-                                            [(basisset_->shell(P)->function_index() + p)*nbf + basisset_->shell(Q)->function_index() + q]
+                                    Ip[(basisset_->shell(M).function_index() + m)*nbf + basisset_->shell(N).function_index() + n]
+                                            [(basisset_->shell(P).function_index() + p)*nbf + basisset_->shell(Q).function_index() + q]
                                             = buffer[index];
 
                                 } } } }
@@ -397,14 +397,14 @@ SharedMatrix MintsHelper::ao_eri()
     return I;
 }
 SharedMatrix MintsHelper::mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2,
-                                                                SharedMatrix C3, SharedMatrix C4)
+                                     SharedMatrix C3, SharedMatrix C4)
 {
     SharedMatrix mo_ints = mo_eri_helper(ao_erf_eri(omega), C1, C2, C3, C4);
     mo_ints->set_name("MO ERF ERI Tensor");
     return mo_ints;
 }
 SharedMatrix MintsHelper::mo_eri(SharedMatrix C1, SharedMatrix C2,
-                                              SharedMatrix C3, SharedMatrix C4)
+                                 SharedMatrix C3, SharedMatrix C4)
 {
     SharedMatrix mo_ints = mo_eri_helper(ao_eri(), C1, C2, C3, C4);
     mo_ints->set_name("MO ERI Tensor");

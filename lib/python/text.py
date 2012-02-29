@@ -1,8 +1,15 @@
+"""Module with utility classes and functions related
+to data tables and text.
+
+"""
 import PsiMod
 import sys
+import physconst
 from psiexceptions import *
 
-class Table:
+
+class Table(object):
+    """Class defining a flexible Table object for storing data."""
 
     def __init__(self, rows=(),
                  row_label_width=10,
@@ -24,11 +31,13 @@ class Table:
         self.data = []
 
     def format_label(self):
+        """Function to pad the width of Table object labels."""
         #str = lambda x: (('%%%d.%df' % (self.row_label_width, self.row_label_precision)) % x)
         str = lambda x: (('%%%ds' % (self.row_label_width)) % x)
         return " ".join(map(str, self.labels))
 
     def format_values(self, values):
+        """Function to pad the width of Table object data cells."""
         str = lambda x: (('%%%d.%df' % (self.width, self.precision)) % x)
         return " ".join(map(str, values))
 
@@ -42,11 +51,12 @@ class Table:
         self.labels = []
 
         if isinstance(value, list):
-            self.data.append( (label, value ) )
+            self.data.append((label, value))
         else:
-            self.data.append( (label, [value] ) )
+            self.data.append((label, [value]))
 
     def save(self, file):
+        """Function to save string of the Table object to *file*."""
         import pickle
         pickle_str = pickle.dumps(self)
         fileobj = open(file, "w")
@@ -77,10 +87,15 @@ class Table:
         return "\n".join(lines) + "\n"
 
     def copy(self):
+        """Function to return a copy of the Table object."""
         import copy
         return copy.deepcopy(self)
 
-    def absolute_to_relative(self, Factor = 627.51):
+    def absolute_to_relative(self, Factor=physconst.psi_hartree2kcalmol):
+        """Function to shift the data of each column of the Table object
+        such that the lowest value is zero. A scaling factor of *Factor* is applied.
+
+        """
         import copy
 
         if len(self.data) == 0:
@@ -97,8 +112,11 @@ class Table:
                 #print datarow[1][col]
                 datarow[1][col] = (datarow[1][col] - current_min[col]) * Factor
 
-    def scale(self, Factor = 627.51):
+    def scale(self, Factor=physconst.psi_hartree2kcalmol):
+        """Function to apply a scaling factor *Factor* to the
+        data of the Table object.
 
+        """
         if len(self.data) == 0:
             return
 
@@ -107,31 +125,41 @@ class Table:
                 #print datarow[1][col]
                 datarow[1][col] = datarow[1][col] * Factor
 
-def banner(text, type = 1, width = 35):
+
+def banner(text, type=1, width=35):
+    """Function to print *text* to output file in a banner of
+    minimum width *width* and minimum three-line height for
+    *type* = 1 or one-line height for *type* = 2.
+
+    """
     lines = text.split('\n')
     max_length = 0
     for line in lines:
         if (len(line) > max_length):
             max_length = len(line)
-    
-    max_length = max([width, max_length]);
-   
-    null = '' 
+
+    max_length = max([width, max_length])
+
+    null = ''
     if type == 1:
-        banner  = '  //' + null.center(max_length,'>') + '//\n'
+        banner = '  //' + null.center(max_length, '>') + '//\n'
         for line in lines:
             banner += '  //' + line.center(max_length) + '//\n'
-        banner += '  //' + null.center(max_length,'<') + '//\n'
-    
+        banner += '  //' + null.center(max_length, '<') + '//\n'
+
     if type == 2:
         banner = ''
         for line in lines:
-            banner += (' ' + line + ' ').center(max_length,'=') 
+            banner += (' ' + line + ' ').center(max_length, '=')
 
     PsiMod.print_out(banner)
 
+
 def print_stdout(stuff):
+    """Function to print *stuff* to standard output stream."""
     print >> sys.stdout, stuff
 
+
 def print_stderr(stuff):
+    """Function to print *stuff* to standard error stream."""
     print >> sys.stderr, stuff

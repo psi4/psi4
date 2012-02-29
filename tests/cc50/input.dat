@@ -1,3 +1,7 @@
+#! EOM-CC3(ROHF) on CH radical with user-specified basis and properties for particular root
+
+memory 250 mb
+
 molecule ch {
   0 2
   C
@@ -101,4 +105,3 @@ D 2 1.00
 }
 
 energy('eom-cc3')
-clean()

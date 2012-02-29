@@ -8,13 +8,14 @@ include ../MakeVars
 TEX = userman.tex
 
 SUBTEX = \
-additional-docs.tex cc.tex detcas.tex detci.tex input.tex \
+additional-docs.tex cc.tex detcas.tex detci.tex  \
 introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
 psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex \
-psithon.tex basissets.tex pywrappers.tex
+psithon.tex basissets.tex pywrappers.tex dfmp2.tex sapt.tex adc.tex \
+mrcc.tex psimrcc.tex general.tex
 
 OTFTEX = \
-tests_descriptions.tex keywords.tex expert_keywords.tex options.tex psi4bases.tex variables_list.tex
+tests_descriptions.tex keywords.tex expert_keywords.tex options.tex psi4bases.tex variables_list.tex physconst.tex
 
 DVI = $(TEX:%.tex=%.dvi)
 PS = $(DVI:%.dvi=%.ps)
@@ -26,4 +27,27 @@ include ../MakeRules
 $(OTFTEX):
 	@srcdir@/document_options_and_tests.pl @srcdir@
 	@srcdir@/document_bases.pl @srcdir@
+
+# special rule here to do bibliography; not needed in other docs
+ifdef PDFLATEX
+$(TARGET_PDF): $(TEX) $(SUBTEX) $(OTFTEX) Psithon.pdf
+	echo $(srcdir)
+	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
+	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
+	$(PDFLATEX) $< && $(BIBTEX) $(MAN) && $(PDFLATEX) $< && $(PDFLATEX) $<
+else
+userman.dvi: $(TEX) $(SUBTEX) $(OTFTEX)
+	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
+	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
+	$(LATEX) $< && $(BIBTEX) $(MAN) && $(LATEX) $< && $(LATEX) $<
+endif
+
+ifdef SPHINX
+Psithon.pdf:
+	cd @srcdir@/sphinx_psithon_doc; make html; make latexpdf; cd -
+	cp -p @srcdir@/sphinx_psithon_doc/build/latex/Psithon.pdf .
+else
+Psithon.pdf:
+	cp -p @srcdir@/sphinx_psithon_doc/build/latex/Psithon.pdf .
+endif
 

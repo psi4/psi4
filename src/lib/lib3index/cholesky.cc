@@ -157,10 +157,10 @@ void CholeskyERI::compute_diagonal(double* target)
 
             integral_->compute_shell(M,N,M,N);
 
-            int nM = basisset_->shell(M)->nfunction();
-            int nN = basisset_->shell(N)->nfunction();
-            int mstart = basisset_->shell(M)->function_index();
-            int nstart = basisset_->shell(N)->function_index();
+            int nM = basisset_->shell(M).nfunction();
+            int nN = basisset_->shell(N).nfunction();
+            int mstart = basisset_->shell(M).function_index();
+            int nstart = basisset_->shell(N).function_index();
 
             for (int om = 0; om < nM; om++) {
                 for (int on = 0; on < nN; on++) {
@@ -180,10 +180,10 @@ void CholeskyERI::compute_row(int row, double* target)
     int R = basisset_->function_to_shell(r);
     int S = basisset_->function_to_shell(s);
 
-    int nR = basisset_->shell(R)->nfunction();
-    int nS = basisset_->shell(S)->nfunction();
-    int rstart = basisset_->shell(R)->function_index();
-    int sstart = basisset_->shell(S)->function_index();
+    int nR = basisset_->shell(R).nfunction();
+    int nS = basisset_->shell(S).nfunction();
+    int rstart = basisset_->shell(R).function_index();
+    int sstart = basisset_->shell(S).function_index();
 
     int oR = r - rstart;
     int os = s - sstart;
@@ -193,10 +193,10 @@ void CholeskyERI::compute_row(int row, double* target)
 
             integral_->compute_shell(M,N,R,S);
 
-            int nM = basisset_->shell(M)->nfunction();
-            int nN = basisset_->shell(N)->nfunction();
-            int mstart = basisset_->shell(M)->function_index();
-            int nstart = basisset_->shell(N)->function_index();
+            int nM = basisset_->shell(M).nfunction();
+            int nN = basisset_->shell(N).nfunction();
+            int mstart = basisset_->shell(M).function_index();
+            int nstart = basisset_->shell(N).function_index();
 
             for (int om = 0; om < nM; om++) {
                 for (int on = 0; on < nN; on++) {

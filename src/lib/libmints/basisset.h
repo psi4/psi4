@@ -8,6 +8,9 @@
 // Need libint for maximum angular momentum
 #include <libint/libint.h>
 
+#include "gshell.h"
+#include "molecule.h"
+
 #include <boost/shared_ptr.hpp>
 
 namespace boost {
@@ -44,8 +47,6 @@ class BasisSet
     friend class BasisSetParser;
     //! Number of primitives.
     int nprimitive_;
-    //! Number of shells.
-    int nshell_;
     //! Number of atomic orbitals.
     int nao_;
     //! Number of basis functions (either cartesian or spherical)
@@ -73,41 +74,23 @@ class BasisSet
     std::string name_;
     //! Number of shells per center
     std::vector<int> center_to_nshell_;
-    //! For a given center, what is its first shell.
+    //! For a given center, its first shell.
     std::vector<int> center_to_shell_;
 
     //! Array of gaussian shells
-    std::vector<boost::shared_ptr<GaussianShell> > shells_;
+    std::vector<GaussianShell> shells_;
 
     //! vector of shells numbers sorted in acending AM order.
-    std::vector< int > sorted_ao_shell_list_;
+    std::vector<int> sorted_ao_shell_list_;
 
     //! Molecule object.
     boost::shared_ptr<Molecule> molecule_;
-
-    //! No default constructor
-    BasisSet();
-    //! No assignment
-    BasisSet& operator=(const BasisSet&);
-
-    //! Initialize shells based on information found in checkpoint
-    /*! Reads in information from the checkpoint file constructing GaussianShells
-        as it goes. If set, basiskey is passed along to libchkpt when reading to
-        read in the non-default basis set information.
-        @param chkpt Checkpoint library object to read from.
-        @param basiskey If reading non-default basis set information then this is set to the suffix of the TOC entries.
-      */
-//    void initialize_shells(boost::shared_ptr<psi::Chkpt> chkpt, std::string& basiskey);
 
     // Has static information been initialized?
     static boost::once_flag initialized_shared_;
 
 public:
-
-    /** Copy constructor, currently errors if used. */
-    BasisSet(const BasisSet&);
-    /// Destructor
-    ~BasisSet();
+    BasisSet();
 
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
@@ -115,7 +98,7 @@ public:
      * @return BasisSet corresponding to this molecule and set of shells
      */
     static boost::shared_ptr<BasisSet> build(boost::shared_ptr<Molecule> molecule,
-                                             std::vector<boost::shared_ptr<GaussianShell> > shells);
+                                             const std::vector<GaussianShell>& shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
     static void initialize_singletons();
@@ -133,13 +116,13 @@ public:
     /** Number of shells.
      *  @return Number of shells.
      */
-    int nshell() const                 { return nshell_;     }
+    int nshell() const                 { return shells_.size();  }
     /** Number of atomic orbitals (Cartesian).
-     * @return The number of atomic orbitals (Cartesian orbitals).
+     * @return The number of atomic orbitals (Cartesian orbitals, always).
      */
     int nao() const                    { return nao_;         }
     /** Number of basis functions (Spherical).
-     *  @return The number of basis functions (Spherical).
+     *  @return The number of basis functions (Spherical, if has_puream() == true).
      */
     int nbf() const                    { return nbf_;         }
     /** Maximum angular momentum used in the basis set.
@@ -184,13 +167,13 @@ public:
      *  @param i Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
-    boost::shared_ptr<GaussianShell> shell(int si) const;
+    const GaussianShell& shell(int si) const;
 
     /** Return the i'th Gaussian shell on center
      *  @param i Shell number
      *  @return A shared pointer to the GaussianShell object for the i'th shell.
      */
-    boost::shared_ptr<GaussianShell> shell(int center, int si) const;
+    const GaussianShell& shell(int center, int si) const;
 
     /** @{
      *  Print the basis set.
@@ -200,6 +183,10 @@ public:
     void print() const { print(outfile); }
     /// @}
 
+    /// Returns the name of this basis set
+    const std::string & name() const { return name_; }
+    void set_name(const std::string str) {name_ = str;}
+
     /** Print basis set information according to the level of detail in print_level
      *  @param out The file stream to use for printing. Defaults to outfile.
      *  @param print_level: < 1: Nothing
@@ -208,11 +195,6 @@ public:
                             > 2: Full details
                             Defaults to 2
      */
-
-    /// Returns the name of this basis set
-    const std::string & name() const { return name_; }
-    void set_name(const std::string str) {name_ = str;}
-
     void print_by_level(FILE* out = outfile, int print_level = 2) const;
     /** Prints a short string summarizing the basis set
      *  @param out The file stream to use for printing. Defaults to outfile.
@@ -259,7 +241,7 @@ public:
      *  at the origin with an exponent of 0.0 and contraction of 1.0.
      *  @return A new empty SOBasis object.
      */
-    static boost::shared_ptr<SOBasisSet> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
+//    static boost::shared_ptr<SOBasisSet> zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory);
 
     /** Returns a shell-labeled test basis set object
      *
@@ -288,8 +270,6 @@ public:
      */
     static std::string make_filename(const std::string& basisname);
 
-    friend class Gaussian94BasisSetParser;
-
     /// Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
 
@@ -297,7 +277,62 @@ public:
     int get_ao_sorted_shell(const int &i) { return sorted_ao_shell_list_[i]; }
     //! Returns the vector of sorted shell list.
     std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
+
+    // BasisSet friends
+    friend class Gaussian94BasisSetParser;
+    friend BasisSet operator +(const BasisSet& a, const BasisSet& b);
+    friend boost::shared_ptr<BasisSet> operator +(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b);
 };
+
+inline
+bool shell_sorter_ncenter(const GaussianShell& d1, const GaussianShell& d2)
+{
+    return d1.ncenter() < d2.ncenter();
+}
+
+inline
+bool shell_sorter_am(const GaussianShell& d1, const GaussianShell& d2)
+{
+    return d1.am() < d2.am();
+}
+
+inline
+BasisSet operator +(const BasisSet& a, const BasisSet& b) {
+    if (a.molecule() != b.molecule()) {
+        fprintf(stderr, "BasisSet::operator+ : Unable to add basis sets from different molecules.");
+        return BasisSet();
+    }
+    BasisSet temp;
+    temp.molecule_ = a.molecule();
+
+    // Copy a's shells to temp
+    temp.shells_ = a.shells_;
+
+    // Append b's shells to temp
+    temp.shells_.insert(temp.shells_.end(), b.shells_.begin(), b.shells_.end());
+
+    // Sort by center number
+    std::sort(temp.shells_.begin(), temp.shells_.end(), shell_sorter_ncenter);
+
+    // Call refresh to regenerate center_to_shell and center_to_nshell
+    temp.refresh();
+
+    // Sort by AM in each center
+    for (int atom=0; atom < temp.molecule_->natom(); ++atom) {
+        std::sort(temp.shells_.begin()+temp.center_to_shell_[atom],
+                  temp.shells_.begin()+temp.center_to_shell_[atom]+temp.center_to_nshell_[atom],
+                  shell_sorter_am);
+    }
+
+    temp.refresh();
+
+    return temp;
+}
+
+inline
+boost::shared_ptr<BasisSet> operator +(const boost::shared_ptr<BasisSet>& a, const boost::shared_ptr<BasisSet>& b) {
+    return boost::shared_ptr<BasisSet>(new BasisSet(*a.get() + *b.get()));
+}
 
 }
 

@@ -1,5 +1,7 @@
 #! Benzene Dimer DF-HF/cc-pVDZ
 
+memory 250 mb
+
 
 molecule bz2 {
     X
@@ -49,7 +51,4 @@ set globals {
 }
 
 thisenergy = energy('scf')
-
-
-clean()
 

@@ -1,6 +1,8 @@
 #! Database calculation, so no molecule section in input file. Portions of the full
 #! databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
+memory 250 mb
+
 
 set globals {
     BASIS sto-3g
@@ -15,10 +17,7 @@ set globals {
     GUESS CORE
 }
 
-S22mad = database('sapt0','S22',subset=[2,8],benchmark='S22A')
+S22mad = database('sapt0','S22',subset=[2,8],BENCHMARK='S22A')
 #S22mad = database('sapt0','S22',subset=[2,8])
 #NBCmad = database('dfmp2','NBC10',cp='on',symm='off',subset='small')  # Revive after dfmp2 regains independence from madness
-NBCmad = database('scf','NBC10',cp='on',symm='off',subset='small')
-
-clean()
-
+NBCmad = database('scf','NBC10',cp='on',SYMM='OFF',subset='small')

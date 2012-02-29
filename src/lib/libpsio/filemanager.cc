@@ -19,9 +19,13 @@ boost::shared_ptr<PSIOManager> PSIOManager::shared_object()
     return _default_psio_manager_;
 }
 
+void PSIOManager::set_default_path(const std::string& path)
+{
+    default_path_ = path + "/";
+}
 void PSIOManager::set_specific_path(int fileno, const std::string& path)
 {
-    specific_paths_[fileno] = path;
+    specific_paths_[fileno] = path + "/";
 }
 std::string PSIOManager::get_file_path(int fileno)
 {

@@ -98,7 +98,7 @@ IntegralTransform::presort_so_tei()
 
     dpdfile4 I;
     psio_->open(PSIF_SO_PRESORT, PSIO_OPEN_NEW);
-    dpd_file4_init(&I, PSIF_SO_PRESORT, 0, 3, 3, "SO Ints (nn|nn)");
+    dpd_file4_init(&I, PSIF_SO_PRESORT, 0, DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), "SO Ints (nn|nn)");
 
     size_t memoryd = memory_ / sizeof(double);
 
@@ -217,6 +217,18 @@ IntegralTransform::presort_so_tei()
     if(print_)
         fprintf(outfile, "\tTransforming the one-electron integrals and constructing Fock matrices\n");
     if(transformationType_ == Restricted){
+
+        // Compute frozen core energy
+        size_t pq = 0;
+        frozen_core_energy_ = 0.0;
+
+        for(int p=0; p < nso_; p++) {
+            for(int q=0; q <= p ; q++, pq++) {
+                double prefact = p == q ? 1.0 : 2.0;
+                frozen_core_energy_ += prefact * aFzcD[pq] * (aoH[pq] + aFzcOp[pq]);
+            }
+        }
+
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
             double **pCa = Ca_->pointer(h);
             trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
@@ -254,6 +266,18 @@ IntegralTransform::presort_so_tei()
 
         IWL::write_one(psio_.get(), PSIF_OEI, PSIF_MO_FOCK, nTriMo_, aFock);
     }else{
+
+        // Compute frozen-core energy
+        size_t pq = 0;
+        frozen_core_energy_ = 0.0;
+        for(int p=0; p < nso_; p++) {
+            for(int q=0; q <= p; q++, pq++) {
+                double prefact = p == q ? 0.5 : 1.0;
+                frozen_core_energy_ += prefact * aFzcD[pq] * (aoH[pq] + aFzcOp[pq]);
+                frozen_core_energy_ += prefact * bFzcD[pq] * (aoH[pq] + bFzcOp[pq]);
+            }
+        }
+
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
             double **pCa = Ca_->pointer(h);
             trans_one(sopi_[h], mopi_[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));

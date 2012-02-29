@@ -1,5 +1,7 @@
 #! UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
+memory 250 mb
+
 molecule ch2 {
   0 3
   C
@@ -16,14 +18,9 @@ set globals {
   max_force_g_convergence 1.0e-6
   max_energy_g_convergence    7
   e_convergence 10
-  d_convergence 10
+  r_convergence 10
 }
 
 optimize('CCSD(T)')
-
-
-
-clean()
-
 
 

@@ -96,11 +96,11 @@ OneBodyAOInt* OneBodyAOInt::clone()
     throw FeatureNotImplemented("libmints", "OneBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void OneBodyAOInt::normalize_am(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2, int nchunk)
+void OneBodyAOInt::normalize_am(const GaussianShell& s1, const GaussianShell& s2, int nchunk)
 {
     // Integrals are done. Normalize for angular momentum
-    int am1 = s1->am();
-    int am2 = s2->am();
+    int am1 = s1.am();
+    int am2 = s2.am();
     int length = INT_NCART(am1) * INT_NCART(am2);
 
     int ao12 = 0;
@@ -117,7 +117,7 @@ void OneBodyAOInt::normalize_am(const boost::shared_ptr<GaussianShell>& s1, cons
                     int n2 = ll;
 
                     for (int chunk=0; chunk<nchunk; ++chunk) {
-                        buffer_[ao12+(chunk*length)] *= s1->normalize(l1, m1, n1) * s2->normalize(l2, m2, n2);
+                        buffer_[ao12+(chunk*length)] *= GaussianShell::normalize(l1, m1, n1) * GaussianShell::normalize(l2, m2, n2);
                     }
                     ao12++;
                 }
@@ -126,19 +126,19 @@ void OneBodyAOInt::normalize_am(const boost::shared_ptr<GaussianShell>& s1, cons
     }
 }
 
-void OneBodyAOInt::pure_transform(const boost::shared_ptr<GaussianShell>& s1,
-                                  const boost::shared_ptr<GaussianShell>& s2, int chunks)
+void OneBodyAOInt::pure_transform(const GaussianShell& s1,
+                                  const GaussianShell& s2, int chunks)
 {
     for (int chunk=0; chunk<chunks; ++chunk) {
-        const int am1 = s1->am();
-        const int is_pure1 = s1->is_pure() && am1 > 0;
-        const int ncart1 = s1->ncartesian();
-        const int nbf1 = s1->nfunction();
+        const int am1 = s1.am();
+        const int is_pure1 = s1.is_pure() && am1 > 0;
+        const int ncart1 = s1.ncartesian();
+        const int nbf1 = s1.nfunction();
 
-        const int am2 = s2->am();
-        const int is_pure2 = s2->is_pure() && am2 > 0;
-        const int ncart2 = s2->ncartesian();
-        const int nbf2 = s2->nfunction();
+        const int am2 = s2.am();
+        const int is_pure2 = s2.is_pure() && am2 > 0;
+        const int ncart2 = s2.ncartesian();
+        const int nbf2 = s2.nfunction();
 
         int ncart12 = ncart1 * ncart2;
         int nbf12 = nbf1 * nbf2;
@@ -187,8 +187,8 @@ void OneBodyAOInt::pure_transform(const boost::shared_ptr<GaussianShell>& s1,
 
 void OneBodyAOInt::compute_shell(int sh1, int sh2)
 {
-    const boost::shared_ptr<GaussianShell> s1 = bs1_->shell(sh1);
-    const boost::shared_ptr<GaussianShell> s2 = bs2_->shell(sh2);
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
 
     // Call the child's compute_pair method, results better be in buffer_.
     compute_pair(s1, s2);
@@ -201,12 +201,12 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2)
     }
 }
 
-void OneBodyAOInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
+void OneBodyAOInt::compute_pair_deriv1(const GaussianShell& s1, const GaussianShell& s2)
 {
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
 
-void OneBodyAOInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
+void OneBodyAOInt::compute_pair_deriv2(const GaussianShell& s1, const GaussianShell& s2)
 {
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
@@ -214,8 +214,8 @@ void OneBodyAOInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s
 
 void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
 {
-    const boost::shared_ptr<GaussianShell> s1 = bs1_->shell(sh1);
-    const boost::shared_ptr<GaussianShell> s2 = bs2_->shell(sh2);
+    const GaussianShell& s1 = bs1_->shell(sh1);
+    const GaussianShell& s2 = bs2_->shell(sh2);
 
     // Call the child's compute_pair method, results better be in buffer_.
     compute_pair_deriv1(s1, s2);
@@ -239,10 +239,10 @@ void OneBodyAOInt::compute(SharedMatrix& result)
 
     // Leave as this full double for loop. We could be computing nonsymmetric integrals
     for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
 
             // Compute the shell (automatically transforms to pure am in needed)
             compute_shell(i, j);
@@ -285,10 +285,10 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
     }
 
     for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j).ncartesian() : bs2_->shell(j).nfunction();
 
             // Compute the shell
             compute_shell(i, j);
@@ -328,12 +328,12 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
-        int center_i3 = 3*bs1_->shell(i)->ncenter();
+        int ni = force_cartesian_ ? bs1_->shell(i).ncartesian() : bs1_->shell(i).nfunction();
+        int center_i3 = 3*bs1_->shell(i).ncenter();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(i)->ncartesian() : bs2_->shell(j)->nfunction();
-            int center_j3 = 3*bs2_->shell(j)->ncenter();
+            int nj = force_cartesian_ ? bs2_->shell(i).ncartesian() : bs2_->shell(j).nfunction();
+            int center_j3 = 3*bs2_->shell(j).ncenter();
 
             if (center_i3 != center_j3) {
 
@@ -373,4 +373,3 @@ void OneBodyAOInt::compute_shell_deriv2(int i, int j)
 {
     compute_pair_deriv2(bs1_->shell(i), bs2_->shell(j));
 }
-

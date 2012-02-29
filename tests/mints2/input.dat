@@ -2,8 +2,10 @@
 #! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
 #! lowered to account for the different basis sets.
 
-refnuc =  204.01997295842617 #TEST
-refscf = -228.95763006847639 #TEST
+memory 250 mb
+
+refnuc =  204.01995737868003 #TEST
+refscf = -228.95763005849557 #TEST
 
 molecule bz {
     X
@@ -11,9 +13,9 @@ molecule bz {
     X   2  RXX  1  90.0
     C   3  RCC  2  90.0  1   0.0
     C   3  RCC  2  90.0  1  60.0
-    C   3  RCC  2  90.0  1 120.0
+    C1  3  RCC  2  90.0  1 120.0
     C   3  RCC  2  90.0  1 180.0
-    C   3  RCC  2  90.0  1 240.0
+    C1  3  RCC  2  90.0  1 240.0
     C   3  RCC  2  90.0  1 300.0
     H1  3  RCH  2  90.0  1   0.0
     H   3  RCH  2  90.0  1  60.0
@@ -63,60 +65,59 @@ molecule bz {
 # in the input file).  Any remaining basis sets required are extracted from the built-in library, 
 # if they exist, or an error message is printed.
 basis  {
-[my3-21G] #This is really the standard 3-21G basis, but with a different name
-cartesian
-****
-H     0
-S   2   1.00
-      5.4471780              0.1562850
-      0.8245470              0.9046910
-S   1   1.00
-      0.1831920              1.0000000
-****
-C     0
-S   3   1.00
-    172.2560000              0.0617669
-     25.9109000              0.3587940
-      5.5333500              0.7007130
-SP   2   1.00
-      3.6649800             -0.3958970              0.2364600
-      0.7705450              1.2158400              0.8606190
-SP   1   1.00
-      0.1958570              1.0000000              1.0000000
-****
-[DZ]
-spherical
-****
-H     0 
-S   3   1.00
-     19.2406000              0.0328280        
-      2.8992000              0.2312080        
-      0.6534000              0.8172380        
-S   1   1.00
-      0.1776000              1.0000000        
-****
-}
-
-basis assign {
+#
+# We start by assigning basis sets to atoms.  These commands can go anywhere in the basis block
+#
    # First, assign DZ to all atoms
-   DZ
+   assign DZ
    # Now, assign 3-21G to all carbon atoms
-   C my3-21G
+   assign C my3-21G
    # The two atoms labelled H1 get a STO-3G basis two
-   H1 sto-3g
-   # Atoms 6 and 8 (Carbons 3 and 5) get a STO-3G basis, too
-   6 sto-3g
-   8 sto-3g
+   assign H1 sto-3g
+   # Carbons 3 and 5 get a STO-3G basis, too
+   assign C1 sto-3g
    # With all these in place, the symmetry is lowered to C2v automatically
    # The commands are applied in order i.e., adding a line like
-   # cc-pvtz
+   # assign cc-pvtz
    # here would override all of the above and assign cc-pvtz to all atoms
+
+#
+# Now we define the basis sets.  N.B. Indentation does not matter; it just looks prettier.
+#
+    [my3-21G] #This is really the standard 3-21G basis, but with a different name
+    cartesian
+    ****
+    H     0
+    S   2   1.00
+          5.4471780              0.1562850
+          0.8245470              0.9046910
+    S   1   1.00
+          0.1831920              1.0000000
+    ****
+    C     0
+    S   3   1.00
+        172.2560000              0.0617669
+         25.9109000              0.3587940
+          5.5333500              0.7007130
+    SP   2   1.00
+          3.6649800             -0.3958970              0.2364600
+          0.7705450              1.2158400              0.8606190
+    SP   1   1.00
+          0.1958570              1.0000000              1.0000000
+    ****
+    [DZ]
+    spherical
+    ****
+    H     0 
+    S   3   1.00
+         19.2406000              0.0328280        
+          2.8992000              0.2312080        
+          0.6534000              0.8172380        
+    S   1   1.00
+          0.1776000              1.0000000        
+    ****
 }
 
-basis assign df_basis_scf{
-   # This is analogous to the block above, but sets the scf ri basis
-   # all of the same commands can be used
-}
  
 set d_convergence 11
  
@@ -125,5 +126,3 @@ scfenergy = energy('scf')
 compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                        #TEST
 compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
 compare_values(refscf, scfenergy, 10, "SCF Energy")                                   #TEST
-
-clean()

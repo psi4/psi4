@@ -1,16 +1,18 @@
 #! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
-refnuc   =   4.919538563221   #TEST
-refscf   = -25.943614320921   #TEST
-refci1   = -26.0272269234496  #TEST
-refcorr1 =  refci1 - refscf   #TEST
-refci2   = -25.8061525481186  #TEST
-refcorr2 =  refci2 - refscf   #TEST
-refDipHF =  -2.038258349512   #TEST
+memory 250 mb
 
-refDipCI1=   -2.110788533423  #TEST
-refDipCI2=    9.416367429315  #TEST
-refTDM   =    1.604595654372  #TEST
+refnuc   =   4.91953818754668 #TEST
+refscf   = -25.94361431841737 #TEST
+refci1   = -26.0272269243438  #TEST
+refcorr1 =  refci1 - refscf   #TEST
+refci2   = -25.8061525641285  #TEST
+refcorr2 =  refci2 - refscf   #TEST
+
+refDipHF  = -2.0382556540 #TEST
+refDipCI1 = -2.1107857680 #TEST
+refDipCI2 =  9.4163546404 #TEST
+refTDM    =  1.6045931018 #TEST
 
 molecule bh_h2p {
 1 2
@@ -45,5 +47,3 @@ compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of di
 compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
 compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 5, "CI ROOT 2 Z Component of dipole")        #TEST
 compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
-
-clean()

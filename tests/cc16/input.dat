@@ -1,4 +1,6 @@
-#! UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+#! UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
+
+memory 250 mb
 
 molecule ch2 {
     0 3
@@ -23,5 +25,3 @@ ebccd_t = -39.032691827829460 #TEST
 compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
 compare_values(ebccd, get_variable("CCSD TOTAL ENERGY"), 7, "B-CCD energy") #TEST
 compare_values(ebccd_t, get_variable("CCSD(T) TOTAL ENERGY"), 7, "B-CCD(T) energy") #TEST
-
-clean()

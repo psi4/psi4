@@ -24,6 +24,7 @@
 \newcommand{\PSIcints}{\module{cints}\xspace}
 \newcommand{\PSIcderiv}{\module{cints --deriv1}\xspace}
 \newcommand{\PSIdetci}{\module{detci}\xspace}
+\newcommand{\PSIadc}{\module{adc}\xspace}
 \newcommand{\PSIdetcas}{\module{detcas}\xspace}
 \newcommand{\PSIdetcasman}{\module{detcasman}\xspace}
 \newcommand{\PSIclag}{\module{clag}\xspace}
@@ -39,6 +40,7 @@
 \newcommand{\PSIgeom}{\module{geom}\xspace}
 \newcommand{\PSIoeprop}{\module{oeprop}\xspace}
 \newcommand{\PSIstable}{\module{stable}\xspace}
+\newcommand{\PSIsapt}{\module{sapt}\xspace}
 
 %
 % Psi Library
@@ -65,10 +67,22 @@
 % Psi Keywords
 %
 \def\keyword#1{{\tt #1}}
-\def\optionname#1{{\MakeUppercase{\underline{\tt #1}}}}
-\def\optionval#1{{\MakeUppercase{\tt #1}}}
-\def\pyoptionname#1{{\MakeUppercase{\underline{\textsf {#1}}}}}
-\def\pyoptionval#1{{\MakeUppercase{\textsf {#1}}}}
+\def\optionname#1{{\MakeUppercase{{\tt #1}}}}
+\def\optionval#1{{\MakeUppercase{\textbf{\underline{\tt #1}}}}}
+\def\pyoptionname#1{\textbf{\MakeLowercase{{\textsf {#1}}}}}
+\def\pyoptionval#1{{\MakeLowercase{{\textsf {#1}}}}}
+\def\qq{\textquotesingle}
+
+%
+% Math / theory
+%
+\newcommand{\pg}[2]{\ensuremath{#1_{\mathrm{#2}}}} % Convenient point group/irrep labels
+\providecommand{\e}[1]{\ensuremath{\times 10^{#1}}}  % 4.4\e{-8}
+\def\ket#1{| #1 \rangle}
+\def\bra#1{\langle #1 |}
+\def\spinor#1{\chi_{#1}}
+\def\creat#1{a_{#1}^{\dagger}}
+\def\annih#1{a_{#1}}
 
 %
 % Psi C and Fortran Language elements
@@ -98,6 +112,7 @@
 \addtolength{\rcwidth}{-1.0\lcwidth}
 \addtolength{\rcwidth}{-6.0\tabcolsep}
 }
+
 
 \newcommand{\funcdesc}[4]{
 \celem{#1} \\
@@ -143,3 +158,4 @@ Returns: & #4
 
 % Convenient macro to give clean formatting of input snippets
 \DefineVerbatimEnvironment{Snippet}{Verbatim}{numbersep=2mm,frame=lines,framerule=0.8mm}
+\DefineVerbatimEnvironment{smallSnippet}{Verbatim}{numbersep=2mm,frame=lines,framerule=0.8mm,fontsize=\scriptsize}

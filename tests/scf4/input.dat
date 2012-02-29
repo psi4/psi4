@@ -1,21 +1,29 @@
 #! RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates
 #! using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables
-#! that are updated during the potential energy surface scan.
+#! that are updated during the potential energy surface scan, and then the same procedure is performed
+#! using polar coordinates, converted to Cartesian coordinates.
 
-refENuc = [ 9.785886586224326, 9.780670853323890, 8.807297927601891,     #TEST
-            8.802603767991497, 8.006634479638080, 8.002367061810450 ]    #TEST
+memory 250 mb
 
-refSCF  = [ -76.02132543096083, -76.02170971655210, -76.02148198312274,  #TEST
-            -76.02145797759667, -75.99010405718796, -75.98979581991821 ] #TEST
+refENuc = [ 9.785885838936569, 9.780670106434425, 8.807297255042920,     #TEST
+            8.802603095790996, 8.006633868220828, 8.002366450719077 ]    #TEST
 
+refSCF  = [ -76.02132544789552, -76.02170973316878, -76.02148196836463,  #TEST
+            -76.02145796257284, -75.99010402297635, -75.98979578551810 ] #TEST
+
+# Define the points on the potential energy surface using standard Python list functions
+Rvals = [ 0.9, 1.0, 1.1 ]
+Avals = range(102, 106, 2)
+
+
+# Start with a potentital energy scan in Z-matrix coordinates
 molecule h2o {
     O
     H 1 R
     H 1 R 2 A
 }
 
-Rvals = [ 0.9, 1.0, 1.1 ]
-Avals = range(102, 106, 2)
+print_stdout(" Testing Z-matrix coordinates") #TEST
 
 count = 0
 
@@ -24,17 +32,38 @@ set scf e_convergence = 11
 
 for R in Rvals:
     h2o.R = R
-
     for A in Avals:
-
         h2o.A = A
-
         thisenergy = energy('scf')
-
         compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
                        10, "Nuclear repulsion energy %d" % count)                      #TEST
         compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
-
         count = count + 1
 
-clean()
+# And now the same thing, using Python's trigonometry functions, and Cartesian input.  This time
+# we want to reset the Cartesian positions every time the angles and bond lengths change, so we
+# define the geometry inside the loops.  N.B. this requires the basis set to be re-specified after
+# every change of geometry
+
+count = 0
+
+print_stdout(" Testing polar coordinates") #TEST
+
+for R in Rvals:
+    for A in Avals:
+        molecule h2o {
+            O   0.0    0.0    0.0
+            H   0.0      R    0.0
+            H   0.0  RCosA  RSinA
+        }
+        # The non-numeric entries above just define placeholders with names.  They still need
+        # to be set, which we do below.
+        h2o.R = R
+        h2o.RCosA = R * math.cos(math.radians(A))
+        h2o.RSinA = R * math.sin(math.radians(A))
+        set basis cc-pvdz
+        thisenergy = energy('scf')
+        compare_values(refENuc[count], h2o.nuclear_repulsion_energy(),                 #TEST
+                       10, "Nuclear repulsion energy %d" % count)                      #TEST
+        compare_values(refSCF[count], thisenergy, 10, "Reference energy %d" % count)   #TEST
+        count = count + 1

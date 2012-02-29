@@ -1,3 +1,5 @@
+#! Frozen-core CCSD(T)/cc-pVDZ on C$@@4$H$@@4$N anion with disk ao algorithm
+
 molecule C4H4N {
     -1 1
     units bohr
@@ -12,16 +14,16 @@ molecule C4H4N {
     H         2.41269553    -1.74021190    -3.52915989
 }
 
+memory 1 gb
+
 set {
-  basis aug-cc-pvtz
+  basis cc-pVDZ
   print 2
   docc [10, 1, 4, 3]
   freeze_core true
   ao_basis disk
 }
 
-
 energy('ccsd(t)')
 
-clean()
 

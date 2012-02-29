@@ -1,26 +1,33 @@
-\section{Introduction} \label{introduction}
+\section{Introduction} \label{sec:introduction}
 
 \subsection{Overview} 
 
 \PSIfour\ provides a wide variety of quantum chemical methods using
 state-of-the-art numerical methods and algorithms.  Several parts of
 the code feature shared-memory parallelization to run efficiently on
-multi-core machines.  An advanced parser written in Python allows the user
+multi-core machines (see Section \ref{sec:threading}.  
+An advanced parser written in Python allows the user
 input to have a very simple style for routine computations, but it can also
 automate very complex tasks with ease. 
 
-In this section, we provide an overview of
-some of the features of \PSIfour\ along with the prerequisite steps for
-running calculations.  Section \ref{tutorial} provides a brief tutorial to
-help new users get started.  Section \ref{input} offers further details
-into the structure of \PSIfour\ input files and a discussion of some of
-the most important options.  Later sections deal with the different types
-of computations which can be done using \PSIfour\ (e.g., Hartree-Fock,
-MP2, coupled-cluster) and general procedures such as geometry optimization
-and vibrational frequency analysis.  The appendix includes a complete
-description of all possible input keywords for each module,
-as well as tables of available basis sets and a listing of the sample input
-files available under {\tt psi4/samples}.
+In this section, we provide an overview of some of the features of
+\PSIfour\ along with the prerequisite steps for running calculations.
+Section \ref{sec:tutorial} provides a brief tutorial to help new users
+get started.  Section \ref{sec:psithon} offers further details into the
+structure of \PSIfour\ input files, and how Python can be mixed with
+quantum chemistry directives in \PSIfour.  Section \ref{sec:pywrappers}
+provides more detail on the Python functions provided by \PSIfour
+and discusses some of the higher-level functions such as counterpoise
+correction, complete-basis-set extrapolation, and running computations
+on an entire database of molecules at a time.  Later sections deal with
+the different types of computations which can be done using \PSIfour\
+(e.g., Hartree--Fock, MP2, coupled-cluster) and general procedures
+such as geometry optimization and vibrational frequency analysis.
+The Appendix includes a complete description of all possible input
+keywords for each module, as well as tables of available basis sets and
+a listing of the sample input files available under {\tt psi4/samples}.
+The user is urged to examine this directory of sample inputs, as
+most common types of computations are represented there.
 For the latest \PSIfour\ documentation, check \htmladdnormallink{{\tt
 www.psicode.org}} {http://www.psicode.org/}.
 
@@ -39,41 +46,6 @@ cite some of the following references for theoretical, algorithmic,
 or implementation contributions specific to \PSIfour\ (in addition to
 appropriate references for the underlying theory):
 
-{\bf SAPT0} 
-\begin{enumerate}
-\item ``Large-scale Symmetry-adapted Perturbation Theory Computations via
-  Density Fitting and Laplace Transformation Techniques: Investigating the
-  Fundamental Forces of {DNA}-Intercalator Interactions,'' E. G. Hohenstein,
-  R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, {\em J.
-  Chem. Phys.} {\bf 135}, 174017 (2011).
-\item ``Density Fitting and Cholesky Decomposition Approximations
-  in Symmetry-Adapted Perturbation Theory: Implementation and Application
-  to Probe the Nature of $\pi$-$\pi$ Interactions in Linear Acenes,''
-  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 132},
-  184111 (2010).
-\end{enumerate}
-
-{\bf SAPT2} 
-\begin{enumerate}
-\item ``Density Fitting of Intramonomer Correlation Effects in
-  Symmetry-Adapted Perturbation Theory,''
-  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133},
-  014101 (2010).
-\end{enumerate}
-
-{\bf SAPT2+, SAPT2+(3), SAPT2+3} 
-\begin{enumerate}
-\item ``Wavefunction Methods for Noncovalent Interactions,'' E. G.
-  Hohenstein and C. D. Sherrill, {\em WIREs: Comput. Mol. Sci.}, in press.
-\end{enumerate}
-
-{\bf Using Natural Orbitals in SAPT2+, SAPT2+(3), SAPT2+3, etc.} 
-\begin{enumerate}
-\item ``Efficient Evaluation of Triple Excitations in Symmetry-Adapted
-  Perturbation Theory via MP2 Natural Orbitals,'' E. G. Hohenstein
-  and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133}, 104107 (2010).
-\end{enumerate}
-
 {\bf DCFT} 
 \begin{enumerate}
 \item ``Density Cumulant Functional Theory: First Implementation and
@@ -84,9 +56,9 @@ appropriate references for the underlying theory):
 
 {\bf ADC(2)} 
 \begin{enumerate}
-\item ``Spin-adaptation of Open-shell Electron Propagator Theory,''
-  M. Saitow, T. Ida, and M. Mizuno, {\em Chem. Phys. Lett.} {\bf 486},
-  171-177 (2010).
+\item ``Intermediate state representation approach to physical properties of electronically excited molecules,''
+  J. Schirmer, and A. B. Trofimov, {\em J. Chem. Phys.} {\bf 120},
+  11449-11464 (2004).
 \end{enumerate}
 
 {\bf PR-CIS(D) and PR-ADC(2)} 
@@ -100,8 +72,15 @@ appropriate references for the underlying theory):
 \begin{enumerate}
 \item ``The Configuration Interaction Method: Advances in Highly 
    Correlated Approaches,'' C. D. Sherrill and H. F. Schaefer, in
-   {\em Advances in Quantum Chemistry}, vol. 34, P.-O. L{\"o}wdin, Ed.
+   {\em Adv. Quantum Chem.}, vol. 34, P.-O. L{\"o}wdin, Ed.
    (Academic Press, New York, 1999), pp. 143-269.
+\end{enumerate}
+
+{\bf CC}
+\begin{enumerate}
+\item ``An Introduction to Coupled Cluster Theory for Computational
+   Chemists,'' T. D. Crawford and H. F. Schaefer, {\em Rev. Comp. Chem.} 
+   {\bf 14}, 33-136 (2000).
 \end{enumerate}
 
 {\bf Mk-MRCCSD} 
@@ -121,15 +100,59 @@ appropriate references for the underlying theory):
   (2008).
 \end{enumerate}
 
+{\bf SAPT (General)}  \\
+All capabilities of the \PSIsapt\ module are based on Symmetry Adapted
+Perturbation Theory.  A good review article for this method is as
+follows:
+\begin{enumerate}
+\item ``Perturbation Theory Approach to Intermolecular Potential Energy
+  Surfaces of van der Waals Complexes,'' B. Jeziorski, R. Moszynski,
+  and K. Szalewicz, {\em Chem. Rev.} {\bf 94}, 1887-1930 (1994).   
+\end{enumerate}
+
+The particular implementation and algorithms for various orders of SAPT
+available in \PSIfour\ are provided below.
+
+{\bf SAPT0} 
+\begin{enumerate}
+\item ``Large-scale Symmetry-adapted Perturbation Theory Computations via
+  Density Fitting and Laplace Transformation Techniques: Investigating the
+  Fundamental Forces of {DNA}-Intercalator Interactions,'' E. G. Hohenstein,
+  R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, {\em J.
+  Chem. Phys.} {\bf 135}, 174017 (2011).
+\item ``Density Fitting and Cholesky Decomposition Approximations
+  in Symmetry-Adapted Perturbation Theory: Implementation and Application
+  to Probe the Nature of $\pi$-$\pi$ Interactions in Linear Acenes,''
+  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 132},
+  184111 (2010).
+\end{enumerate}
+
+{\bf SAPT2, SAPT2+, SAPT2+(3), SAPT2+3}
+\begin{enumerate}
+\item ``Density Fitting of Intramonomer Correlation Effects in
+  Symmetry-Adapted Perturbation Theory,''
+  E. G. Hohenstein and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133},
+  014101 (2010).
+\item ``Wavefunction Methods for Noncovalent Interactions,'' E. G.
+  Hohenstein and C. D. Sherrill, {\em WIREs: Comput. Mol. Sci.}, in press.
+\end{enumerate}
+
+{\bf Using Natural Orbitals in SAPT}
+\begin{enumerate}
+\item ``Efficient Evaluation of Triple Excitations in Symmetry-Adapted
+  Perturbation Theory via MP2 Natural Orbitals,'' E. G. Hohenstein
+  and C. D. Sherrill, {\em J. Chem. Phys.} {\bf 133}, 104107 (2010).
+\end{enumerate}
+
 \subsection{Obtaining and Installing \PSIfour}
-\label{installation}
+\label{sec:installation}
 
 The latest version of the \PSIfour\ program package may be obtained at
 \htmladdnormallink{{\tt www.psicode.org}}{http://www.psicode.org}.  The
 source code is available as a gzipped tar archive (named, for example, {\tt
 psi4.X.tar.gz}), and binaries may be available for certain architectures.
 For detailed installation and testing instructions, please refer to the
-installation instructions at the \PSIfour\ website above, or the file {\tt
+installation instructions at the \PSIfour\ website above or to the file {\tt
 psi4/INSTALL} distributed with the package.
 
 \subsubsection{Scratch File Configuration}
@@ -144,7 +167,7 @@ By default, PSI4 will write temporary files to \file{/tmp}, but this
 directory is often not large enough for typical computations.  Therefore,
 you need to (a) make sure there is a sufficiently large directory on a
 locally-attached disk drive (100GB--1TB or more, depending on the size of
-the molecules to be studied), and (b) tell \PSIfour\ the path to this
+the molecules to be studied) and (b) tell \PSIfour\ the path to this
 directory.  The \PSIfour\ installation instructions explain how to set up a
 resource file, \psirc, for each user providing this information.
 
@@ -152,7 +175,7 @@ resource file, \psirc, for each user providing this information.
 \subsection{Supported Architectures}
 The majority of \PSIfour\ was developed on Mac and Linux machines.  In
 principle, it should work on any Unix system; however, we have not tested
-extensively on sytems other than Mac and Linux.  There is not a Windows
+extensively on systems other than Mac and Linux.  There is not a Windows
 version of \PSIfour.
 
 \PSIfour\ has been successfully compiled using Intel, GCC, and Clang
@@ -189,31 +212,31 @@ UHF/ROHF MP2          & Y & N \\
 RHF DF-MP2            & Y & N \\
 RHF ADC(2)            & Y & N \\
 %RHF MP2-R12           & Y & N \\
-RHF/ROHF CI(n)        & Y & Y \\
-RHF/ROHF RAS-CI       & Y & Y \\
+RHF/ROHF CI(n)        & Y & N \\
+RHF/ROHF RAS-CI       & Y & N \\
 RHF/ROHF MP(n)        & Y & N \\
 RHF/ROHF ZAPT(n)      & Y & N \\
 %RAS-CI DBOC           & Y & N \\
+RHF/UHF/ROHF CC2      & Y & N \\
 RHF/UHF/ROHF CCSD     & Y & Y \\
 RHF/UHF/ROHF CCSD(T)  & Y & Y$^*$ \\
 RHF/UHF/ROHF EOM-CCSD & Y & Y \\
+RHF/UHF/ROHF CC3      & Y & N \\
 \hline\hline
+\multicolumn{3}{l}{\footnotesize{$^*$ UHF-CCSD(T) gradients only, as of 4.0.0-beta1}} \\
 \end{tabular}
 \end{center}
-\footnotesize{$^*$ CCSD(T) gradients implemented only via an experimental
-code.  A more efficient and robust implementation will appear in the next
-release.}
 \end{table}
 Geometry optimization (currently restricted to true minima on the potential
 energy surface) can be performed using either analytic gradients
 or energy points.  Likewise, vibrational frequencies can be 
-computed using analytic second derivatives, by finite
-differences of analytic gradients, or finite differences of energies.
+computed by analytic second derivatives, by finite
+differences of analytic gradients, or by finite differences of energies.
 \PSIfour\ can also compute an extensive list of one-electron properties.
 
 \subsection{Technical Support} The \PSIfour\ package is
 distributed for free and without any guarantee of reliability,
-accuracy, suitability for any particular purpose.  No obligation
+accuracy, or suitability for any particular purpose.  No obligation
 to provide technical support is expressed or implied.  As time
 allows, the developers will attempt to answer inquiries directed to
 \htmladdnormallink{{\tt crawdad@vt.edu}}{mailto:crawdad@vt.edu}.

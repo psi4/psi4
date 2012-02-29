@@ -1,4 +1,6 @@
-#! cc36: UHF-CC2/cc-pVDZ energy of H2O+.
+#! CC2(UHF)/cc-pVDZ energy of H2O+.
+
+memory 250 mb
 
 # H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
 molecule h2o {
@@ -17,5 +19,3 @@ set {
 }
 
 energy('cc2')
-clean()
-

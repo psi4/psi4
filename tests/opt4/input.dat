@@ -1,11 +1,12 @@
 #! SCF cc-pVTZ geometry optimzation, with Z-matrix input
 
+memory 250 mb
+
 # These values are from a tightly converged QChem run
 nucenergy = 9.3537237781                                                                     #TEST
 refenergy = -76.057769702                                                                    #TEST
 
 molecule h2o {
-  symmetry c1
      O
      H 1 1.0
      H 1 1.0 2 104.5
@@ -16,7 +17,6 @@ molecule h2o {
 }
 
 set globals {
-#  diis false
   basis cc-pvtz
   e_convergence 10
   d_convergence 10
@@ -26,5 +26,3 @@ thisenergy = optimize('scf')
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, thisenergy, 3, "Reference energy")                                #TEST
-
-clean()

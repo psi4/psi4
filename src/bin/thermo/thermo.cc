@@ -289,7 +289,7 @@ fprintf(outfile,"\t\t set rot_symm_num = 2 homonuclear diatomics\n");
   }
 
   // convert quantities in units of R into units of cal/mol
-  double R_to_cal = _psi3_R / _cal2J;
+  double R_to_cal = _R / _cal2J;
 
   Eelec *= R_to_cal/1000; // go to kcal/mol
   Etrans *= R_to_cal/1000;
