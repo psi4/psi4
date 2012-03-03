@@ -815,39 +815,40 @@ void DLRSolver::guess()
         }       
     }
 
-    s_.clear();
-    b_.clear();
+    //s_.clear();
+    //b_.clear();
 
-    SharedMatrix A2(A_->clone());
-    SharedMatrix U(new Matrix("U",rank,rank));
-    SharedVector L(new Vector("L",rank));
+    nsubspace_ = b_.size();
+    //SharedMatrix A2(A_->clone());
+    //SharedMatrix U(new Matrix("U",rank,rank));
+    //SharedVector L(new Vector("L",rank));
 
-    A2->diagonalize(U,L);
+    //A2->diagonalize(U,L);
 
-    for (int i = 0; i < nroot_; i++) {
-        std::stringstream ss;
-        ss << "Guess " << i;
-        b_.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
-        for (int h = 0; h < diag_->nirrep(); h++) {
-            double** Up = U->pointer(h);
-            double*  bp = b_[i]->pointer(h);
-            for (int j = 0; j < rank[h]; j++) {
-                bp[A_inds_[h][j]] = Up[j][i];
-            }
-        } 
-    }
+    //for (int i = 0; i < nroot_; i++) {
+    //    std::stringstream ss;
+    //    ss << "Guess " << i;
+    //    b_.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
+    //    for (int h = 0; h < diag_->nirrep(); h++) {
+    //        double** Up = U->pointer(h);
+    //        double*  bp = b_[i]->pointer(h);
+    //        for (int j = 0; j < rank[h]; j++) {
+    //            bp[A_inds_[h][j]] = Up[j][i];
+    //        }
+    //    } 
+    //}
 
-    nsubspace_ = nroot_;
+    //nsubspace_ = nroot_;
 
-    if (debug_) {
-        fprintf(outfile, "   > Guess <\n\n");
-        diag_->print();
-        A_->print();
-        for (int i = 0; i < b_.size(); ++i) {
-            b_[i]->print();
-        }
-        fflush(outfile);
-    }
+    //if (debug_) {
+    //    fprintf(outfile, "   > Guess <\n\n");
+    //    diag_->print();
+    //    A_->print();
+    //    for (int i = 0; i < b_.size(); ++i) {
+    //        b_[i]->print();
+    //    }
+    //    fflush(outfile);
+    //}
 }
 void DLRSolver::sigma()
 {
