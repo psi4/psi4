@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  28 FEB 2012 23:14
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009) (format=pdflatex 2009.11.7)  4 MAR 2012 17:01
 entering extended mode
  %&-line parsing enabled.
 **Psithon.tex
@@ -870,12 +870,12 @@ LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <17.28> not available
 LaTeX Font Info:    Font shape `T1/ptm/bx/n' in size <10> not available
 (Font)              Font shape `T1/ptm/b/n' tried instead on input line 2.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <10> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 30.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 31.
 pdfTeX warning (ext4): destination with the same identifier (name{page.i}) has 
 been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.30 ...ine {15.8}psiexceptions}{55}{section.15.8}
+l.31 ...numberline {14.10}qmmm}{53}{section.14.10}
                                                    [1
 
 ])
@@ -887,7 +887,7 @@ pdfTeX warning (ext4): destination with the same identifier (name{page.ii}) has
 <to be read again> 
                    \relax 
 l.113 \tableofcontents
-                       [2] <PSI4_3.png, id=208, 874.76813pt x 218.31563pt>
+                       [2] <PSI4_3.png, id=203, 874.76813pt x 218.31563pt>
 File: PSI4_3.png Graphic file (type png)
 
 <use PSI4_3.png>
@@ -998,6 +998,11 @@ Chapter 10.
 
 ]
 Chapter 11.
+
+Underfull \hbox (badness 10000) in paragraph at lines 2737--2738
+
+ []
+
 [41] [42
 
 ]
@@ -1010,34 +1015,30 @@ Chapter 13.
 
 ]
 Chapter 14.
-[49] [50
+[49] [50]
+Underfull \hbox (badness 10000) in paragraph at lines 3061--3062
 
-]
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3147--3148
+
+ []
+
+[51]
+Underfull \hbox (badness 10000) in paragraph at lines 3343--3344
+
+ []
+
+[52] [53] [54] [55] [56]
 Chapter 15.
-[51] [52]
-Underfull \hbox (badness 10000) in paragraph at lines 3016--3017
+[57
 
- []
+] [58
 
+] [59
 
-Underfull \hbox (badness 10000) in paragraph at lines 3102--3103
-
- []
-
-[53]
-Underfull \hbox (badness 10000) in paragraph at lines 3298--3299
-
- []
-
-[54] [55] [56] [57] [58]
-Chapter 16.
-[59
-
-] [60
-
-] [61
-
-] (./Psithon.ind [62
+] (./Psithon.ind [60
 
 
 ]
@@ -1065,9 +1066,9 @@ Underfull \hbox (badness 10000) in paragraph at lines 57--58
 []| \T1/ptm/m/n/10 UNCP-CORRECTED2-
  []
 
-[63
+[61
 
-] [64] [65
+] [62] [63
 
 ]) (./Psithon.aux)
 
@@ -1075,10 +1076,10 @@ LaTeX Warning: There were multiply-defined labels.
 
  ) 
 Here is how much of TeX's memory you used:
- 8393 strings out of 493848
- 116129 string characters out of 3149207
- 213765 words of memory out of 3000000
- 11220 multiletter control sequences out of 15000+200000
+ 8388 strings out of 493848
+ 116086 string characters out of 3149207
+ 213738 words of memory out of 3000000
+ 11218 multiletter control sequences out of 15000+200000
  63666 words of font info for 72 fonts, out of 3000000 for 9000
  715 hyphenation exceptions out of 8191
  45i,18n,51p,930b,547s stack positions out of 5000i,500n,10000p,200000b,50000s
@@ -1098,9 +1099,9 @@ vetic/uhvbo8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmb8a.pfb
 ></usr/local/texlive/2009/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/loc
 al/texlive/2009/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Psithon.pdf (69 pages, 548357 bytes).
+Output written on Psithon.pdf (67 pages, 548867 bytes).
 PDF statistics:
- 973 PDF objects out of 1000 (max. 8388607)
- 248 named destinations out of 1000 (max. 500000)
- 302 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 962 PDF objects out of 1000 (max. 8388607)
+ 245 named destinations out of 1000 (max. 500000)
+ 294 words of extra memory for PDF output out of 10000 (max. 10000000)
 
