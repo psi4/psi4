@@ -13,12 +13,15 @@ using namespace boost;
 
 namespace psi{
 
-CIM::CIM(Options&options){
+CIM::CIM(Options&options):
+  Wavefunction(options, _default_psio_lib_)
+{
+
   fflush(outfile);
   fprintf(outfile,"\n\n");
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile, "        *                                                     *\n");
-  fprintf(outfile, "        *                Clusters-in-molecules                *\n");
+  fprintf(outfile, "        *                 Cluster-in-molecule                 *\n");
   fprintf(outfile, "        *                   Eugene DePrince                   *\n");
   fprintf(outfile, "        *                                                     *\n");
   fprintf(outfile, "        *******************************************************\n");
@@ -30,12 +33,17 @@ CIM::CIM(Options&options){
 }
 CIM::~CIM()
 {}
+double CIM::compute_energy(){
+  return 0.0;
+}
 
 void CIM::BuildClusters(){
   /*
    * grab reference and parameters
    */
   boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  copy(ref);
+
   if (ref.get() == NULL){
      throw PsiException("no wavefunction?",__FILE__,__LINE__);
   }
@@ -62,7 +70,7 @@ void CIM::BuildClusters(){
   /*
    * localize orbitals
    */ 
-  boost::shared_ptr<Boys> boys (new Boys(options_));
+  boys  = boost::shared_ptr<Boys>(new Boys(options_));
 
   // print lmos
   //boys->Clmo->print();
@@ -79,26 +87,6 @@ void CIM::BuildClusters(){
    * build occupied domains
    */
   OccupiedDomains();
-
-  /*
-   *  loop over each cluster, {I}
-   */
-
-  /*
-   * build virtual space for cluster, {I}
-   */
-
-  /*
-   * canonicalize occupied and virtual spaces for cluster, {I}
-   */
-
-  /*
-   * transform 1- and 2-eis to local spaces for cluster, {I}
-   */
-
-  /*
-   * run correled calculation in cluster, {I}
-   */
 }
 
 }

@@ -4,7 +4,6 @@
 #include"cim.h"
 #include<libmints/wavefunction.h>
 #include<libmints/matrix.h>
-#define empty -999
 
 using namespace psi;
 using namespace boost;
@@ -28,13 +27,13 @@ void CIM::OccupiedDomains(){
   // threshold for central domains
   thresh1 = options_.get_double("THRESH1");
 
-  int**domain = (int**)malloc(ndoccact*sizeof(int*));
-  int*domainsize = (int*)malloc(ndoccact*sizeof(int));
+  domain = (int**)malloc(ndoccact*sizeof(int*));
+  domainsize = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++){
       domain[i] = (int*)malloc(ndoccact*sizeof(int));
       domainsize[i] = 0;
       for (int j=0; j<ndoccact; j++){
-          domain[i][j] = empty;
+          domain[i][j] = isempty;
       }
   }
   for (int i=0; i<ndoccact; i++){
@@ -52,7 +51,7 @@ void CIM::OccupiedDomains(){
   for (int i=0; i<ndoccact; i++){
       central[i] = (int*)malloc(ndoccact*sizeof(int));
       for (int j=0; j<ndoccact; j++){
-          central[i][j] = empty;
+          central[i][j] = isempty;
       }
       ncentral[i] = 1;
       central[i][i] = i;
@@ -73,20 +72,20 @@ void CIM::OccupiedDomains(){
   }
   // remove central orbitals from central mo domain:
   for (int i=0; i<ndoccact; i++){
-      modomain[i][i] = empty;
+      modomain[i][i] = isempty;
       nmodomain[i] = 0;
       for (int j=0; j<ndoccact; j++){
-          if (modomain[i][j]!=empty) nmodomain[i]++;
+          if (modomain[i][j]!=isempty) nmodomain[i]++;
       }
       domainsize[i]=0;
       for (int j=0; j<ndoccact; j++){
-          if (domain[i][j]!=empty) domainsize[i]++;
+          if (domain[i][j]!=isempty) domainsize[i]++;
       }
   }
 
 
   // collapse redundant domains:
-  int *skip = (int*)malloc(ndoccact*sizeof(int));
+  skip = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++) skip[i] = 0;
   for (int i=0; i<ndoccact; i++){
       if (skip[i]) continue;
@@ -96,7 +95,7 @@ void CIM::OccupiedDomains(){
           if (skip[j]) continue;
           int count = 0;
           for (int k=0; k<ndoccact; k++){
-              if (domain[i][k]==empty) continue;
+              if (domain[i][k]==isempty) continue;
               if (domain[i][k]==domain[j][k]) count++;
           }
           // add central orbital from {i} to {j}
@@ -105,7 +104,7 @@ void CIM::OccupiedDomains(){
              skip[i] = 1;
              central[j][i] = i;
              ncentral[j]++;
-             modomain[j][i] = empty;
+             modomain[j][i] = isempty;
              ndomains--;
           }
       }
@@ -118,7 +117,7 @@ void CIM::OccupiedDomains(){
       env[i] = (int*)malloc(ndoccact*sizeof(int));
       nenv[i] = 0;
       for (int j=0; j<ndoccact; j++){
-          env[i][j] = empty;
+          env[i][j] = isempty;
       }
   }
   thresh2 = options_.get_double("THRESH2");
@@ -131,7 +130,7 @@ void CIM::OccupiedDomains(){
           int redundant = 0;
           // check interaction of orbital j with all orbitals in cluster {i}
           for (int k=0; k<ndoccact; k++){
-              if (domain[i][k]==empty) continue;
+              if (domain[i][k]==isempty) continue;
               if (k==j){
                  redundant=1;
                  break;
@@ -151,8 +150,8 @@ void CIM::OccupiedDomains(){
       if (skip[i]) continue;
       domainsize[i]=0;
       for (int j=0; j<ndoccact; j++){
-          if (env[i][j]!=empty) domain[i][j] = j;
-          if (domain[i][j]!=empty) domainsize[i]++;
+          if (env[i][j]!=isempty) domain[i][j] = j;
+          if (domain[i][j]!=isempty) domainsize[i]++;
       }
   }
 
@@ -165,17 +164,17 @@ void CIM::OccupiedDomains(){
           if (skip[j]) continue;
           int count = 0;
           for (int k=0; k<ndoccact; k++){
-              if (domain[i][k]==empty) continue;
+              if (domain[i][k]==isempty) continue;
               if (domain[i][k]==domain[j][k]) count++;
           }
           // if {I} fits in {J}, add centrals of {I} to {J} and remove
           // those orbitals from the central mo and environmental domains
           if (count==domainsize[i]){
              for (int k=0; k<ndoccact; k++){
-                 if (central[i][k]==empty) continue;
+                 if (central[i][k]==isempty) continue;
                  central[j][k]  = k;
-                 modomain[j][k] = empty;
-                 env[j][k]      = empty;
+                 modomain[j][k] = isempty;
+                 env[j][k]      = isempty;
              }
              tossi=1;
           }
@@ -185,16 +184,23 @@ void CIM::OccupiedDomains(){
   }
 
   // count orbitals in each class:
+  double cccost  = 0.0;
+  double tcost   = 0.0;
+  ndomains = 0;
   for (int i=0; i<ndoccact; i++){
       if (skip[i]) continue;
       ncentral[i] = 0;
       nmodomain[i] = 0;
       nenv[i] = 0;
+      ndomains++;
       for (int j=0; j<ndoccact; j++){
-          if (central[i][j]!=empty)  ncentral[i]++;
-          if (modomain[i][j]!=empty) nmodomain[i]++;
-          if (env[i][j]!=empty)      nenv[i]++;
+          if (central[i][j]!=isempty)  ncentral[i]++;
+          if (modomain[i][j]!=isempty) nmodomain[i]++;
+          if (env[i][j]!=isempty)      nenv[i]++;
       }
+      double dum = (double)domainsize[i]/ndoccact;
+      cccost  += pow(dum,6);
+      tcost   += pow(dum,7);
   }
 
   fprintf(outfile,"  Cluster |");
@@ -246,7 +252,7 @@ void CIM::OccupiedDomains(){
              if (row<nrowscentral-1){
                 int count=0;
                 for (int j=lastcentral+1; j<ndoccact; j++){
-                    if (central[i][j]!=empty){
+                    if (central[i][j]!=isempty){
                        fprintf(outfile," %3i",j);
                        count++;
                     }
@@ -258,7 +264,7 @@ void CIM::OccupiedDomains(){
              }
              else{
                 for (int j=lastcentral+1; j<ndoccact; j++){
-                    if (central[i][j]!=empty){
+                    if (central[i][j]!=isempty){
                        fprintf(outfile," %3i",j);
                     }
                 }
@@ -276,7 +282,7 @@ void CIM::OccupiedDomains(){
              if (row<nrowsmodomain-1){
                 int count=0;
                 for (int j=lastmodomain+1; j<ndoccact; j++){
-                    if (modomain[i][j]!=empty){
+                    if (modomain[i][j]!=isempty){
                        fprintf(outfile," %3i",j);
                        count++;
                     }
@@ -288,7 +294,7 @@ void CIM::OccupiedDomains(){
              }
              else{
                 for (int j=lastmodomain+1; j<ndoccact; j++){
-                    if (modomain[i][j]!=empty){
+                    if (modomain[i][j]!=isempty){
                        fprintf(outfile," %3i",j);
                     }
                 }
@@ -306,7 +312,7 @@ void CIM::OccupiedDomains(){
              if (row<nrowsenv-1){
                 int count=0;
                 for (int j=lastenv+1; j<ndoccact; j++){
-                    if (env[i][j]!=empty){
+                    if (env[i][j]!=isempty){
                        fprintf(outfile," %3i",j);
                        count++;
                     }
@@ -318,7 +324,7 @@ void CIM::OccupiedDomains(){
              }
              else{
                 for (int j=lastenv+1; j<ndoccact; j++){
-                    if (env[i][j]!=empty){
+                    if (env[i][j]!=isempty){
                        fprintf(outfile," %3i",j);
                     }
                 }
@@ -331,7 +337,12 @@ void CIM::OccupiedDomains(){
       fprintf(outfile,"  ----------------------------------------------------------------------------\n");
   }
   fflush(outfile);
-
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  ==> Estimated Cost (Relative to Canonical Calculations) <==\n");
+  fprintf(outfile,"\n");
+  fprintf(outfile,"      CCSD iterations:  %7.4lf\n",cccost);
+  fprintf(outfile,"      (T) contribution: %7.4lf\n",tcost);
+  fprintf(outfile,"\n");
 }
 
 }
