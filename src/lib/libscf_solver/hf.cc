@@ -1369,6 +1369,7 @@ double HF::compute_energy()
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
+    compute_spin_contamination();
     frac_renormalize();
 
     if (converged) {
