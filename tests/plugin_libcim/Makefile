@@ -10,7 +10,7 @@ include $(psi_top_objdir)/src/bin/MakeVars
 
 PSITARGET = $(shell basename `pwd`).so
 PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
-PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
+PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin /home/deprince/psi4/tests/plugin_localcc/plugin_localcc.so
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
@@ -21,7 +21,7 @@ default:: $(PSITARGET)
 
 # Add the flags needed for shared library creation
 ifeq ($(UNAME), Linux)
-    LDFLAGS = -shared
+    LDFLAGS = -shared -g
 endif
 ifeq ($(UNAME), Darwin)
     LDFLAGS = -shared -undefined dynamic_lookup
