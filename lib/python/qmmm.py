@@ -12,7 +12,7 @@ from molutil import *
 from driver import *
 
 
-class Diffuse:
+class Diffuse(object):
 
     def __init__(self, molecule, basisname, ribasisname):
 
@@ -99,7 +99,7 @@ class Diffuse:
             extern.addCharge(self.molecule.Z(A), self.molecule.x(A), self.molecule.y(A), self.molecule.z(A))
 
 
-class QMMM:
+class QMMM(object):
 
     def __init__(self):
         self.charges = []

@@ -17,7 +17,7 @@ import urllib2
 import re
 
 
-class PubChemObj:
+class PubChemObj(object):
 
     def __init__(self, cid, mf, iupac):
         self.url = 'http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi'
