@@ -8,7 +8,7 @@ import physconst
 from psiexceptions import *
 
 
-class Table:
+class Table(object):
     """Class defining a flexible Table object for storing data."""
 
     def __init__(self, rows=(),
