@@ -10,6 +10,8 @@
 #include "dispersion.h"
 #include "dispersion_defines.h"
 #include <boost/algorithm/string.hpp>
+#include <iostream>
+#include <iomanip>
 #include <stdlib.h>
 #include <string>
 #include <sstream>
