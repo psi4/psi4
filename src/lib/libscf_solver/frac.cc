@@ -52,7 +52,7 @@ void HF::frac()
             throw PSIEXCEPTION("Fractional Occupation SCF requested, but empty FRAC_OCC/FRAC_VAL vector");
 
         // Throw if inconsistent size
-        if (options_["FRAC_OCC"].size() != options_["FRAC_VAL"].size())
+        if (options_["FRAC_OCC"].size() != options_["FRAC_VAL"].size()) 
             throw PSIEXCEPTION("Fractional Occupation SCF: FRAC_OCC/FRAC_VAL are of different dimensions");
 
         // Throw if the user is being an idiot with docc/socc
