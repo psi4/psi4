@@ -32,7 +32,6 @@ protected:
 
     bool test_convergency();
     void save_information();
-    void compute_spin_contamination();
 
     void common_init();
 

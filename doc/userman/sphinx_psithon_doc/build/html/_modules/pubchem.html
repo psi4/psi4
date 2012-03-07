@@ -59,27 +59,24 @@
           <div class="body">
             
   <h1>Source code for pubchem</h1><div class="highlight"><pre>
-<span class="c"># PubChem.py</span>
-<span class="c">#</span>
-<span class="c"># Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)</span>
-<span class="c"># to obtain a molecule string that can be passed to Molecule.</span>
-<span class="c">#</span>
-<span class="c"># Example:</span>
-<span class="c">#</span>
-<span class="c"># results = getPubChemObj(&quot;1,3,5-hexatriene&quot;)</span>
-<span class="c">#</span>
-<span class="c"># Results is an array of results from PubChem matches to your query.</span>
-<span class="c">#   for entry in results:</span>
-<span class="c">#      entry[&quot;CID&quot;]         =&gt; PubChem compound identifer</span>
-<span class="c">#      entry[&quot;IUPAC&quot;]       =&gt; IUPAC name for the resulting compound</span>
-<span class="c">#      entry[&quot;PubChemObj&quot;]  =&gt; instance of PubChemObj for this compound</span>
-<span class="c">#</span>
-<span class="c">#      entry[&quot;PubChemObj&quot;].getMoleculeString()   =&gt; returns a string compatible</span>
-<span class="c">#                                                   with PSI4&#39;s Molecule creation</span>
-<span class="c">#</span>
+<span class="sd">&quot;&quot;&quot;Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)</span>
+<span class="sd">   to obtain a molecule string that can be passed to Molecule. ::</span>
 
+<span class="sd">      results = getPubChemObj(&quot;1,3,5-hexatriene&quot;)</span>
+
+<span class="sd">      Results is an array of results from PubChem matches to your query.</span>
+<span class="sd">        for entry in results:</span>
+<span class="sd">           entry[&quot;CID&quot;]         =&gt; PubChem compound identifer</span>
+<span class="sd">           entry[&quot;IUPAC&quot;]       =&gt; IUPAC name for the resulting compound</span>
+<span class="sd">           entry[&quot;PubChemObj&quot;]  =&gt; instance of PubChemObj for this compound</span>
+
+<span class="sd">           entry[&quot;PubChemObj&quot;].getMoleculeString()   =&gt; returns a string compatible</span>
+<span class="sd">                                                        with PSI4&#39;s Molecule creation</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">urllib2</span>
 <span class="kn">import</span> <span class="nn">re</span>
+
 
 <div class="viewcode-block" id="PubChemObj"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj">[docs]</a><span class="k">class</span> <span class="nc">PubChemObj</span><span class="p">:</span>
 
@@ -95,13 +92,14 @@
         <span class="k">return</span> <span class="s">&quot;</span><span class="si">%17d</span><span class="s">   </span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">iupac</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PubChemObj.getSDF"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj.getSDF">[docs]</a>    <span class="k">def</span> <span class="nf">getSDF</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to return the SDF (structure-data file) of the PubChem object.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataSDF</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
             <span class="c"># When completed uncomment the following:</span>
-            <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span><span class="o">+</span><span class="s">&#39;?cid=&#39;</span><span class="o">+</span><span class="n">urllib2</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cid</span><span class="p">))</span><span class="o">+</span><span class="s">&#39;&amp;disopt=3DDisplaySDF&#39;</span>
+            <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">+</span> <span class="s">&#39;?cid=&#39;</span> <span class="o">+</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cid</span><span class="p">))</span> <span class="o">+</span> <span class="s">&#39;&amp;disopt=3DDisplaySDF&#39;</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">location</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
             <span class="k">except</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">URLError</span><span class="p">,</span> <span class="n">e</span><span class="p">:</span>
-                <span class="n">msg</span> <span class="o">=</span>  <span class="s">&quot;</span><span class="se">\t</span><span class="s">PubchemError</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n\t</span><span class="s">received when trying to open</span><span class="se">\n\t</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>  <span class="n">url</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">PubchemError</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n\t</span><span class="s">received when trying to open</span><span class="se">\n\t</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">url</span><span class="p">)</span>
                 <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">Check your internet connection, and the above URL, and try again.</span><span class="se">\n</span><span class="s">&quot;</span>
                 <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
             <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">Retrieved entry for chemical ID </span><span class="si">%d</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cid</span>
@@ -111,9 +109,14 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataSDF</span>
 </div>
 <div class="viewcode-block" id="PubChemObj.name"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to return the IUPAC name of the PubChem object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iupac</span>
 </div>
 <div class="viewcode-block" id="PubChemObj.getCartesian"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj.getCartesian">[docs]</a>    <span class="k">def</span> <span class="nf">getCartesian</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to return a string of the atom symbol and XYZ</span>
+<span class="sd">        coordinates of the PubChem object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">sdfText</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getSDF</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -161,6 +164,10 @@
         <span class="k">return</span> <span class="n">molecule_string</span>
 </div>
 <div class="viewcode-block" id="PubChemObj.getXYZFile"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj.getXYZFile">[docs]</a>    <span class="k">def</span> <span class="nf">getXYZFile</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to obtain preferentially a molecule string</span>
+<span class="sd">        through getCartesian() or a query string otherwise.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCartesian</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
@@ -169,18 +176,26 @@
         <span class="k">return</span> <span class="n">molstr</span>
 </div>
 <div class="viewcode-block" id="PubChemObj.getMoleculeString"><a class="viewcode-back" href="../index.html#pubchem.PubChemObj.getMoleculeString">[docs]</a>    <span class="k">def</span> <span class="nf">getMoleculeString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to obtain a molecule string through</span>
+<span class="sd">        getCartesian() or fail.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">getCartesian</span><span class="p">()</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">e</span><span class="o">.</span><span class="n">message</span>
-   </div></div>
+
+</div></div>
 <div class="viewcode-block" id="getPubChemResults"><a class="viewcode-back" href="../index.html#pubchem.getPubChemResults">[docs]</a><span class="k">def</span> <span class="nf">getPubChemResults</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to query the PubChem database for molecules matching the</span>
+<span class="sd">    input string. Builds a PubChem object if found.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">url</span> <span class="o">=</span> <span class="s">&#39;http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&amp;term=</span><span class="si">%s</span><span class="s">&amp;format=text&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">urllib2</span><span class="o">.</span><span class="n">quote</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
     <span class="k">print</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">Searching PubChem database for </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">loc</span> <span class="o">=</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="k">except</span> <span class="n">urllib2</span><span class="o">.</span><span class="n">URLError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-        <span class="n">msg</span> <span class="o">=</span>  <span class="s">&quot;</span><span class="se">\t</span><span class="s">PubchemError</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n\t</span><span class="s">received when trying to open</span><span class="se">\n\t</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>  <span class="n">url</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">PubchemError</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n\t</span><span class="s">received when trying to open</span><span class="se">\n\t</span><span class="si">%s</span><span class="se">\n</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">url</span><span class="p">)</span>
         <span class="n">msg</span> <span class="o">+=</span> <span class="s">&quot;</span><span class="se">\t</span><span class="s">Check your internet connection, and the above URL, and try again.</span><span class="se">\n</span><span class="s">&quot;</span>
         <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">loc</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -200,7 +215,7 @@
         <span class="c">#if l == 4:</span>
         <span class="c">#    break</span>
         <span class="n">cid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">l</span><span class="p">:</span><span class="n">data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">l</span><span class="p">)])</span>
-        <span class="n">l</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\t</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
 
         <span class="n">pubobj</span> <span class="o">=</span> <span class="n">PubChemObj</span><span class="p">(</span><span class="n">cid</span><span class="p">,</span> <span class="n">mf</span><span class="p">,</span> <span class="n">iupac</span><span class="p">)</span>
         <span class="n">ans</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pubobj</span><span class="p">)</span>
@@ -262,7 +277,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Mar 04, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

@@ -1,14 +1,30 @@
+"""
+**JSCH**
+
+| Database (Hobza) of interaction energies for nucelobase pairs.
+| Geometries and reference interaction energies from Jurecka et al. PCCP 8 1985 (2006).
+| Corrections implemented from footnote 92 of Burns et al., JCP 134 084107 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+
+----
+
+"""
 import input
 
 # <<< JSCH Database Module >>>
-# Geometries and Reference interaction energies from 
-#   Jurecka et al. PCCP 8 1985 (2006).
-#   Corrections implemented from footnote 92 of Burns et al., JCP 134 084107 (2011).
 dbse = 'JSCH'
 
 # <<< Database Members >>>
 HRXN = range(1, 125)
-HRXN_SM = [9,97]
+HRXN_SM = [9, 97]
 HRXN_LG = [63]
 
 # <<< Chemical Systems Involved >>>
@@ -18,148 +34,148 @@ ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
 ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
-   RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                     '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                     '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+    RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                      '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                      '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
 
-   ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+    ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-   ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                     '%s-%s-monoA-CP'   % (dbse, rxn),
-                                     '%s-%s-monoB-CP'   % (dbse, rxn) ]
+    ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-CP'   % (dbse, rxn),
+                                      '%s-%s-monoB-CP'   % (dbse, rxn) ]
 
-   ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                     '%s-%s-monoA-unCP' % (dbse, rxn),
-                                     '%s-%s-monoB-unCP' % (dbse, rxn) ]
+    ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                      '%s-%s-monoA-unCP' % (dbse, rxn),
+                                      '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values >>>
 BIND = {}
-BIND['%s-%s' % (dbse,   1)] = -32.06;
-BIND['%s-%s' % (dbse,   2)] = -31.59;
-BIND['%s-%s' % (dbse,   3)] = -16.86;
-BIND['%s-%s' % (dbse,   4)] = -18.16;
-BIND['%s-%s' % (dbse,   5)] = -33.30;
-BIND['%s-%s' % (dbse,   6)] = -24.90;
-BIND['%s-%s' % (dbse,   7)] = -19.10;
-BIND['%s-%s' % (dbse,   8)] = -51.40;
-BIND['%s-%s' % (dbse,   9)] = -10.30;
-BIND['%s-%s' % (dbse,  10)] = -13.70;
-BIND['%s-%s' % (dbse,  11)] = -29.50;
-BIND['%s-%s' % (dbse,  12)] = -14.20;
-BIND['%s-%s' % (dbse,  13)] = -19.50;
-BIND['%s-%s' % (dbse,  14)] = -19.70;
-BIND['%s-%s' % (dbse,  15)] =  -5.20;
-BIND['%s-%s' % (dbse,  16)] = -17.80;
-BIND['%s-%s' % (dbse,  17)] = -16.60;
-BIND['%s-%s' % (dbse,  18)] = -17.60;
-BIND['%s-%s' % (dbse,  19)] = -21.30;
-BIND['%s-%s' % (dbse,  20)] = -21.80;
-BIND['%s-%s' % (dbse,  21)] = -22.70;
-BIND['%s-%s' % (dbse,  22)] = -19.40;
-BIND['%s-%s' % (dbse,  23)] = -18.90;
-BIND['%s-%s' % (dbse,  24)] = -14.40;
-BIND['%s-%s' % (dbse,  25)] = -12.80;
-BIND['%s-%s' % (dbse,  26)] = -18.80;
-BIND['%s-%s' % (dbse,  27)] = -13.50;
-BIND['%s-%s' % (dbse,  28)] = -14.50;
-BIND['%s-%s' % (dbse,  29)] = -13.70;
-BIND['%s-%s' % (dbse,  30)] = -12.20;
-BIND['%s-%s' % (dbse,  31)] = -22.80;
-BIND['%s-%s' % (dbse,  32)] = -12.60;
-BIND['%s-%s' % (dbse,  33)] = -16.40;
-BIND['%s-%s' % (dbse,  34)] = -35.80;
-BIND['%s-%s' % (dbse,  35)] = -18.40;
-BIND['%s-%s' % (dbse,  36)] = -11.30;
-BIND['%s-%s' % (dbse,  37)] = -30.70;
-BIND['%s-%s' % (dbse,  38)] = -31.40;
-BIND['%s-%s' % (dbse,  39)] =  -3.68;
-BIND['%s-%s' % (dbse,  40)] =  -4.82;
-BIND['%s-%s' % (dbse,  41)] =  -2.34;
-BIND['%s-%s' % (dbse,  42)] =  -2.16;
-BIND['%s-%s' % (dbse,  43)] =   3.09;
-BIND['%s-%s' % (dbse,  44)] =   1.93;
-BIND['%s-%s' % (dbse,  45)] =  -3.91;
-BIND['%s-%s' % (dbse,  46)] =   1.24;
-BIND['%s-%s' % (dbse,  47)] =  -0.31;
-BIND['%s-%s' % (dbse,  48)] =   0.58;
-BIND['%s-%s' % (dbse,  49)] =  -0.47;
-BIND['%s-%s' % (dbse,  50)] =  -0.18;
-BIND['%s-%s' % (dbse,  51)] =  -4.22;
-BIND['%s-%s' % (dbse,  52)] =  -1.15;
-BIND['%s-%s' % (dbse,  53)] =   0.30;
-BIND['%s-%s' % (dbse,  54)] =  -4.06;
-BIND['%s-%s' % (dbse,  55)] =   0.88;
-BIND['%s-%s' % (dbse,  56)] =  -0.92;
-BIND['%s-%s' % (dbse,  57)] =  -1.55;
-BIND['%s-%s' % (dbse,  58)] =   0.70;
-BIND['%s-%s' % (dbse,  59)] =  -1.71;
-BIND['%s-%s' % (dbse,  60)] =  -1.30;
-BIND['%s-%s' % (dbse,  61)] =  -0.70;
-BIND['%s-%s' % (dbse,  62)] =   1.00;
-BIND['%s-%s' % (dbse,  63)] =  -4.50;
-BIND['%s-%s' % (dbse,  64)] =   1.40;
-BIND['%s-%s' % (dbse,  65)] =  -4.80;
-BIND['%s-%s' % (dbse,  66)] =  -0.10;
-BIND['%s-%s' % (dbse,  67)] =  -3.00;
-BIND['%s-%s' % (dbse,  68)] =  -5.20;
-BIND['%s-%s' % (dbse,  69)] =   0.80;
-BIND['%s-%s' % (dbse,  70)] =   3.10;
-BIND['%s-%s' % (dbse,  71)] = -19.02;
-BIND['%s-%s' % (dbse,  72)] = -20.35;
-BIND['%s-%s' % (dbse,  73)] = -12.30;
-BIND['%s-%s' % (dbse,  74)] = -14.57;
-BIND['%s-%s' % (dbse,  75)] =   2.45;
-BIND['%s-%s' % (dbse,  76)] =  -3.85;
-BIND['%s-%s' % (dbse,  77)] =  -8.88;
-BIND['%s-%s' % (dbse,  78)] =  -9.92;
-BIND['%s-%s' % (dbse,  79)] =   0.32;
-BIND['%s-%s' % (dbse,  80)] =   0.64;
-BIND['%s-%s' % (dbse,  81)] =  -0.98;
-BIND['%s-%s' % (dbse,  82)] =  -9.10;
-BIND['%s-%s' % (dbse,  83)] =  -9.11;
-BIND['%s-%s' % (dbse,  84)] =  -8.27;
-BIND['%s-%s' % (dbse,  85)] =  -9.43;
-BIND['%s-%s' % (dbse,  86)] =  -7.43;
-BIND['%s-%s' % (dbse,  87)] =  -8.80;
-BIND['%s-%s' % (dbse,  88)] =  -9.11;
-BIND['%s-%s' % (dbse,  89)] =  -8.58;
-BIND['%s-%s' % (dbse,  90)] = -12.67;
-BIND['%s-%s' % (dbse,  91)] = -10.22;
-BIND['%s-%s' % (dbse,  92)] = -11.38;
-BIND['%s-%s' % (dbse,  93)] = -10.02;
-BIND['%s-%s' % (dbse,  94)] =  -9.79;
-BIND['%s-%s' % (dbse,  95)] = -10.60;
-BIND['%s-%s' % (dbse,  96)] = -10.42;
-BIND['%s-%s' % (dbse,  97)] =  -7.46;
-BIND['%s-%s' % (dbse,  98)] = -12.09;
-BIND['%s-%s' % (dbse,  99)] =  -3.54;
-BIND['%s-%s' % (dbse, 100)] =  -1.62;
-BIND['%s-%s' % (dbse, 101)] =  -6.06;
-BIND['%s-%s' % (dbse, 102)] =  -4.18;
-BIND['%s-%s' % (dbse, 103)] = -10.80;
-BIND['%s-%s' % (dbse, 104)] =  -7.88;
-BIND['%s-%s' % (dbse, 105)] =  -9.14;
-BIND['%s-%s' % (dbse, 106)] =  -4.69;
-BIND['%s-%s' % (dbse, 107)] =  -7.58;
-BIND['%s-%s' % (dbse, 108)] =  -6.07;
-BIND['%s-%s' % (dbse, 109)] =  -5.67;
-BIND['%s-%s' % (dbse, 110)] =  -4.96;
-BIND['%s-%s' % (dbse, 111)] =  -4.96;
-BIND['%s-%s' % (dbse, 112)] =  -5.44;
-BIND['%s-%s' % (dbse, 113)] =  -6.64;
-BIND['%s-%s' % (dbse, 114)] =  -6.07;
-BIND['%s-%s' % (dbse, 115)] =  -6.25;
-BIND['%s-%s' % (dbse, 116)] =  -3.86;
-BIND['%s-%s' % (dbse, 117)] =  -8.10;
-BIND['%s-%s' % (dbse, 118)] =  -7.90;
-BIND['%s-%s' % (dbse, 119)] =  -6.70;
-BIND['%s-%s' % (dbse, 120)] =  -6.20;
-BIND['%s-%s' % (dbse, 121)] =  -7.70;
-BIND['%s-%s' % (dbse, 122)] =  -6.50;
-BIND['%s-%s' % (dbse, 123)] = -12.40;
-BIND['%s-%s' % (dbse, 124)] = -11.60;
+BIND['%s-%s' % (dbse,   1)] = -32.06
+BIND['%s-%s' % (dbse,   2)] = -31.59
+BIND['%s-%s' % (dbse,   3)] = -16.86
+BIND['%s-%s' % (dbse,   4)] = -18.16
+BIND['%s-%s' % (dbse,   5)] = -33.30
+BIND['%s-%s' % (dbse,   6)] = -24.90
+BIND['%s-%s' % (dbse,   7)] = -19.10
+BIND['%s-%s' % (dbse,   8)] = -51.40
+BIND['%s-%s' % (dbse,   9)] = -10.30
+BIND['%s-%s' % (dbse,  10)] = -13.70
+BIND['%s-%s' % (dbse,  11)] = -29.50
+BIND['%s-%s' % (dbse,  12)] = -14.20
+BIND['%s-%s' % (dbse,  13)] = -19.50
+BIND['%s-%s' % (dbse,  14)] = -19.70
+BIND['%s-%s' % (dbse,  15)] =  -5.20
+BIND['%s-%s' % (dbse,  16)] = -17.80
+BIND['%s-%s' % (dbse,  17)] = -16.60
+BIND['%s-%s' % (dbse,  18)] = -17.60
+BIND['%s-%s' % (dbse,  19)] = -21.30
+BIND['%s-%s' % (dbse,  20)] = -21.80
+BIND['%s-%s' % (dbse,  21)] = -22.70
+BIND['%s-%s' % (dbse,  22)] = -19.40
+BIND['%s-%s' % (dbse,  23)] = -18.90
+BIND['%s-%s' % (dbse,  24)] = -14.40
+BIND['%s-%s' % (dbse,  25)] = -12.80
+BIND['%s-%s' % (dbse,  26)] = -18.80
+BIND['%s-%s' % (dbse,  27)] = -13.50
+BIND['%s-%s' % (dbse,  28)] = -14.50
+BIND['%s-%s' % (dbse,  29)] = -13.70
+BIND['%s-%s' % (dbse,  30)] = -12.20
+BIND['%s-%s' % (dbse,  31)] = -22.80
+BIND['%s-%s' % (dbse,  32)] = -12.60
+BIND['%s-%s' % (dbse,  33)] = -16.40
+BIND['%s-%s' % (dbse,  34)] = -35.80
+BIND['%s-%s' % (dbse,  35)] = -18.40
+BIND['%s-%s' % (dbse,  36)] = -11.30
+BIND['%s-%s' % (dbse,  37)] = -30.70
+BIND['%s-%s' % (dbse,  38)] = -31.40
+BIND['%s-%s' % (dbse,  39)] =  -3.68
+BIND['%s-%s' % (dbse,  40)] =  -4.82
+BIND['%s-%s' % (dbse,  41)] =  -2.34
+BIND['%s-%s' % (dbse,  42)] =  -2.16
+BIND['%s-%s' % (dbse,  43)] =   3.09
+BIND['%s-%s' % (dbse,  44)] =   1.93
+BIND['%s-%s' % (dbse,  45)] =  -3.91
+BIND['%s-%s' % (dbse,  46)] =   1.24
+BIND['%s-%s' % (dbse,  47)] =  -0.31
+BIND['%s-%s' % (dbse,  48)] =   0.58
+BIND['%s-%s' % (dbse,  49)] =  -0.47
+BIND['%s-%s' % (dbse,  50)] =  -0.18
+BIND['%s-%s' % (dbse,  51)] =  -4.22
+BIND['%s-%s' % (dbse,  52)] =  -1.15
+BIND['%s-%s' % (dbse,  53)] =   0.30
+BIND['%s-%s' % (dbse,  54)] =  -4.06
+BIND['%s-%s' % (dbse,  55)] =   0.88
+BIND['%s-%s' % (dbse,  56)] =  -0.92
+BIND['%s-%s' % (dbse,  57)] =  -1.55
+BIND['%s-%s' % (dbse,  58)] =   0.70
+BIND['%s-%s' % (dbse,  59)] =  -1.71
+BIND['%s-%s' % (dbse,  60)] =  -1.30
+BIND['%s-%s' % (dbse,  61)] =  -0.70
+BIND['%s-%s' % (dbse,  62)] =   1.00
+BIND['%s-%s' % (dbse,  63)] =  -4.50
+BIND['%s-%s' % (dbse,  64)] =   1.40
+BIND['%s-%s' % (dbse,  65)] =  -4.80
+BIND['%s-%s' % (dbse,  66)] =  -0.10
+BIND['%s-%s' % (dbse,  67)] =  -3.00
+BIND['%s-%s' % (dbse,  68)] =  -5.20
+BIND['%s-%s' % (dbse,  69)] =   0.80
+BIND['%s-%s' % (dbse,  70)] =   3.10
+BIND['%s-%s' % (dbse,  71)] = -19.02
+BIND['%s-%s' % (dbse,  72)] = -20.35
+BIND['%s-%s' % (dbse,  73)] = -12.30
+BIND['%s-%s' % (dbse,  74)] = -14.57
+BIND['%s-%s' % (dbse,  75)] =   2.45
+BIND['%s-%s' % (dbse,  76)] =  -3.85
+BIND['%s-%s' % (dbse,  77)] =  -8.88
+BIND['%s-%s' % (dbse,  78)] =  -9.92
+BIND['%s-%s' % (dbse,  79)] =   0.32
+BIND['%s-%s' % (dbse,  80)] =   0.64
+BIND['%s-%s' % (dbse,  81)] =  -0.98
+BIND['%s-%s' % (dbse,  82)] =  -9.10
+BIND['%s-%s' % (dbse,  83)] =  -9.11
+BIND['%s-%s' % (dbse,  84)] =  -8.27
+BIND['%s-%s' % (dbse,  85)] =  -9.43
+BIND['%s-%s' % (dbse,  86)] =  -7.43
+BIND['%s-%s' % (dbse,  87)] =  -8.80
+BIND['%s-%s' % (dbse,  88)] =  -9.11
+BIND['%s-%s' % (dbse,  89)] =  -8.58
+BIND['%s-%s' % (dbse,  90)] = -12.67
+BIND['%s-%s' % (dbse,  91)] = -10.22
+BIND['%s-%s' % (dbse,  92)] = -11.38
+BIND['%s-%s' % (dbse,  93)] = -10.02
+BIND['%s-%s' % (dbse,  94)] =  -9.79
+BIND['%s-%s' % (dbse,  95)] = -10.60
+BIND['%s-%s' % (dbse,  96)] = -10.42
+BIND['%s-%s' % (dbse,  97)] =  -7.46
+BIND['%s-%s' % (dbse,  98)] = -12.09
+BIND['%s-%s' % (dbse,  99)] =  -3.54
+BIND['%s-%s' % (dbse, 100)] =  -1.62
+BIND['%s-%s' % (dbse, 101)] =  -6.06
+BIND['%s-%s' % (dbse, 102)] =  -4.18
+BIND['%s-%s' % (dbse, 103)] = -10.80
+BIND['%s-%s' % (dbse, 104)] =  -7.88
+BIND['%s-%s' % (dbse, 105)] =  -9.14
+BIND['%s-%s' % (dbse, 106)] =  -4.69
+BIND['%s-%s' % (dbse, 107)] =  -7.58
+BIND['%s-%s' % (dbse, 108)] =  -6.07
+BIND['%s-%s' % (dbse, 109)] =  -5.67
+BIND['%s-%s' % (dbse, 110)] =  -4.96
+BIND['%s-%s' % (dbse, 111)] =  -4.96
+BIND['%s-%s' % (dbse, 112)] =  -5.44
+BIND['%s-%s' % (dbse, 113)] =  -6.64
+BIND['%s-%s' % (dbse, 114)] =  -6.07
+BIND['%s-%s' % (dbse, 115)] =  -6.25
+BIND['%s-%s' % (dbse, 116)] =  -3.86
+BIND['%s-%s' % (dbse, 117)] =  -8.10
+BIND['%s-%s' % (dbse, 118)] =  -7.90
+BIND['%s-%s' % (dbse, 119)] =  -6.70
+BIND['%s-%s' % (dbse, 120)] =  -6.20
+BIND['%s-%s' % (dbse, 121)] =  -7.70
+BIND['%s-%s' % (dbse, 122)] =  -6.50
+BIND['%s-%s' % (dbse, 123)] = -12.40
+BIND['%s-%s' % (dbse, 124)] = -11.60
 
 # <<< Comment Lines >>>
 TAGL = {}
@@ -950,7 +966,7 @@ H    -3.4573855     0.0691895    -0.7801319
 H    -2.4169221     0.0545062     0.6045745
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_2 = input.process_input("""
 molecule dimer {
@@ -994,7 +1010,7 @@ H    -2.0939825     0.8923400    -5.3277349
 H    -1.1628640    -0.0654072    -6.4980769
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_3 = input.process_input("""
 molecule dimer {
@@ -1033,7 +1049,7 @@ H    -4.4267056     0.9186178     2.7530256
 H    -5.7883971     0.0505530     2.0247280
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_4 = input.process_input("""
 molecule dimer {
@@ -1078,7 +1094,7 @@ H    -4.4269734     2.8838422     0.9449871
 H    -5.6215286     2.0832557    -0.1007218
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_5 = input.process_input("""
 molecule dimer {
@@ -1117,7 +1133,7 @@ H     3.3229417     0.0045233     2.5396202
 H     2.2148236     0.0000552     1.1689293
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_6 = input.process_input("""
 molecule dimer {
@@ -1153,7 +1169,7 @@ H     2.5507838     0.0000000    -8.6645924
 H     0.0674277     0.0000000    -8.0602299
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_7 = input.process_input("""
 molecule dimer {
@@ -1190,7 +1206,7 @@ H     1.0090483     0.0031967    -5.9240562
 H     2.3651020     0.0016683    -3.9825177
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_8 = input.process_input("""
 molecule dimer {
@@ -1226,7 +1242,7 @@ H    -1.3585129     0.0000190    -2.2095314
 H     0.9279995     0.0000010    -2.4136765
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_9 = input.process_input("""
 molecule dimer {
@@ -1259,7 +1275,7 @@ H    -1.1951712     3.3944157     0.0000479
 H    -4.0815013    -0.3955360     0.0000308
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_10 = input.process_input("""
 molecule dimer {
@@ -1292,7 +1308,7 @@ H    -0.9648574    -0.0000753     0.9279392
 H    -5.0495438     0.0000916    -1.5966575
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_11 = input.process_input("""
 molecule dimer {
@@ -1330,7 +1346,7 @@ H    -2.2569895     0.0000670    -3.7397613
 H    -1.1666925     0.0000488    -2.3691590
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_12 = input.process_input("""
 molecule dimer {
@@ -1366,7 +1382,7 @@ H     0.4048510    -1.0816361    -0.0000008
 H     2.3325010    -5.4794294    -0.0000001
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_13 = input.process_input("""
 molecule dimer {
@@ -1407,7 +1423,7 @@ H     4.4340213     0.4777637    -2.9842064
 H     5.8186182    -0.2165735    -2.1235955
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_14 = input.process_input("""
 molecule dimer {
@@ -1448,7 +1464,7 @@ H    -2.0041973    -5.5125757     0.0000000
 H    -2.7348414    -4.1561542     0.8748178
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_15 = input.process_input("""
 molecule dimer {
@@ -1487,7 +1503,7 @@ F     2.5236686     2.8066583     0.0017348
 H     5.0549009     2.2603064     0.0258240
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_16 = input.process_input("""
 molecule dimer {
@@ -1524,7 +1540,7 @@ H    -5.6601199     1.6316629    -0.0586834
 H    -3.6021712     2.8189896    -0.0637914
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_17 = input.process_input("""
 molecule dimer {
@@ -1561,7 +1577,7 @@ H    -6.0623003     0.1861824    -0.3346801
 H    -4.4551541     1.8895240    -0.0237988
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_18 = input.process_input("""
 molecule dimer {
@@ -1598,7 +1614,7 @@ H    -0.8924030     0.0005975     0.5753416
 H    -2.1264189     0.0000818    -0.6840313
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_19 = input.process_input("""
 molecule dimer {
@@ -1639,7 +1655,7 @@ H     1.4878769    -6.8540474     0.0000006
 H    -0.2426849    -6.8513669     0.0000027
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_20 = input.process_input("""
 molecule dimer {
@@ -1680,7 +1696,7 @@ H    -1.2351647    -6.8756289    -0.0006400
 H     0.4955304    -6.8577215    -0.0011689
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_21 = input.process_input("""
 molecule dimer {
@@ -1721,7 +1737,7 @@ H    -2.0477574    -6.8436736     0.0002445
 H    -0.3206311    -6.9565723     0.0005285
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_22 = input.process_input("""
 molecule dimer {
@@ -1761,7 +1777,7 @@ H     0.4522459    -0.0785075    -1.8709034
 H     1.9849455    -0.4365244    -2.6464500
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_23 = input.process_input("""
 molecule dimer {
@@ -1801,7 +1817,7 @@ H    -1.5681188     6.5152131     0.0000000
 H     0.9500064     6.0803260     0.0000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_24 = input.process_input("""
 molecule dimer {
@@ -1841,7 +1857,7 @@ H    -1.5203500    -1.0951610     2.1001930
 H    -0.5364890    -0.5388150     0.7550260
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_25 = input.process_input("""
 molecule dimer {
@@ -1881,7 +1897,7 @@ H    -0.8988350    -0.4160731     0.0000000
 H    -2.5417242    -1.0304237     0.0000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_26 = input.process_input("""
 molecule dimer {
@@ -1921,7 +1937,7 @@ H    -1.8639094    -3.1302901     0.5932195
 H    -0.7358064    -1.8946489     0.1475504
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_27 = input.process_input("""
 molecule dimer {
@@ -1961,7 +1977,7 @@ H    -0.2461099     0.7667993     0.3993852
 H    -1.4852074     1.9635263     0.7951137
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_28 = input.process_input("""
 molecule dimer {
@@ -2000,7 +2016,7 @@ H     0.2587211    -0.0029792     1.2389462
 H     1.6714569    -0.0000645     2.2984633
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_29 = input.process_input("""
 molecule dimer {
@@ -2039,7 +2055,7 @@ H     1.3935693    -0.0168974     2.8088363
 H     0.4799202    -0.0417563     1.3125324
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_30 = input.process_input("""
 molecule dimer {
@@ -2078,7 +2094,7 @@ H    -2.9057988    -0.1329805    -1.3671674
 H    -1.4533881    -0.0384046    -0.3902022
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_31 = input.process_input("""
 molecule dimer {
@@ -2120,7 +2136,7 @@ H     0.4151138     0.4528548     0.1972152
 H     5.0828171     2.2880907    -0.1283728
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_32 = input.process_input("""
 molecule dimer {
@@ -2153,7 +2169,7 @@ H    -4.0549036     0.0000246     4.0487228
 H    -8.7287725     0.0000774     2.9713072
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_33 = input.process_input("""
 molecule dimer {
@@ -2198,7 +2214,7 @@ H     2.6423583    16.0249025     0.4245489
 H     3.1730521    17.3682771    -0.6086068
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_34 = input.process_input("""
 molecule dimer {
@@ -2242,7 +2258,7 @@ H    19.6360815     9.3587324     9.0282525
 H    20.4431063    12.0114766     9.7460263
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_35 = input.process_input("""
 molecule dimer {
@@ -2287,7 +2303,7 @@ H    16.1825380     7.7884380     5.2708940
 H    16.0652090     7.9755790     7.0417370
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_36 = input.process_input("""
 molecule dimer {
@@ -2327,7 +2343,7 @@ N    -0.8160000    -0.5790000    -4.0190000
 C    -1.7380000    -0.6050000    -3.0150000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_37 = input.process_input("""
 molecule dimer {
@@ -2365,7 +2381,7 @@ N     0.3920000    -3.0250000    -1.1030000
 C    -0.8790000    -3.5010000    -0.9150000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_38 = input.process_input("""
 molecule dimer {
@@ -2403,7 +2419,7 @@ C     2.7800000    -5.0940000     0.4140000
 O     3.8210000    -4.4400000     0.4780000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_39 = input.process_input("""
 molecule dimer {
@@ -2441,7 +2457,7 @@ H    -3.4794940     0.9500750     3.3600000
 H    -1.7581040     0.8646590     3.3600000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_40 = input.process_input("""
 molecule dimer {
@@ -2479,7 +2495,7 @@ H     2.9609760    -2.8966530     3.3600000
 H     1.2381640    -2.7944260     3.3600000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_41 = input.process_input("""
 molecule dimer {
@@ -2518,7 +2534,7 @@ H     5.2089370    -0.1230850     2.7216660
 H     5.9296670     1.2931580     3.4791940
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_42 = input.process_input("""
 molecule dimer {
@@ -2557,7 +2573,7 @@ H     0.7019450    -1.6625240     2.7400870
 H    -0.2797430    -3.0783000     2.6398690
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_43 = input.process_input("""
 molecule dimer {
@@ -2592,7 +2608,7 @@ H    -3.0156050    -1.6249990     2.8366040
 H    -1.4048620    -1.6249990     2.2234300
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_44 = input.process_input("""
 molecule dimer {
@@ -2633,7 +2649,7 @@ H     1.9209400    -1.6249990    -3.3022070
 H     0.3140390    -1.6249990    -2.6726050
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_45 = input.process_input("""
 molecule dimer {
@@ -2674,7 +2690,7 @@ H     1.8398890    -3.7111710     3.1900000
 H     2.2750440    -2.0410890     3.1900000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_46 = input.process_input("""
 molecule dimer {
@@ -2709,7 +2725,7 @@ H     0.1716470     3.6027840     3.1900000
 H    -0.2790560     1.9392500     3.1900000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_47 = input.process_input("""
 molecule dimer {
@@ -2746,7 +2762,7 @@ H    -3.5136510    -0.9120230    -3.3952410
 H    -1.7946790    -0.8299350    -3.3010330
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_48 = input.process_input("""
 molecule dimer {
@@ -2786,7 +2802,7 @@ H     2.9113910     2.9134700    -3.5059320
 H     1.1910290     2.8146150    -3.4104660
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_49 = input.process_input("""
 molecule dimer {
@@ -2826,7 +2842,7 @@ H    -4.4917710    -2.9879780    -1.0833720
 H    -5.9073000    -2.4705620    -0.1736470
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_50 = input.process_input("""
 molecule dimer {
@@ -2863,7 +2879,7 @@ H    -0.2161270    -3.6266280     3.0937180
 H     0.2361240    -1.9652240     3.1691180
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_51 = input.process_input("""
 molecule dimer {
@@ -2903,7 +2919,7 @@ H    -1.8803400     3.6817820     3.1800000
 H    -2.3154950     2.0117000     3.1800000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_52 = input.process_input("""
 molecule dimer {
@@ -2940,7 +2956,7 @@ H    -0.2120980    -3.6321740     3.1800000
 H     0.2386050    -1.9686390     3.1800000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_53 = input.process_input("""
 molecule dimer {
@@ -2977,7 +2993,7 @@ H    -3.5136510    -0.9120230    -3.3952410
 H    -1.7946790    -0.8299350    -3.3010330
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_54 = input.process_input("""
 molecule dimer {
@@ -3017,7 +3033,7 @@ H     2.9113910     2.9134700    -3.5059320
 H     1.1910290     2.8146150    -3.4104660
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_55 = input.process_input("""
 molecule dimer {
@@ -3056,7 +3072,7 @@ H     5.1850460    -0.0902010     2.6573890
 H     5.9461980     1.2704040     3.4749720
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_56 = input.process_input("""
 molecule dimer {
@@ -3095,7 +3111,7 @@ H     0.7138900    -1.6789650     3.1044520
 H    -0.2639350    -3.1000580     3.0541510
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_57 = input.process_input("""
 molecule dimer {
@@ -3134,7 +3150,7 @@ H     0.6065830    -1.7044960    -2.8060620
 H     2.3312660    -1.7447540    -2.8510340
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_58 = input.process_input("""
 molecule dimer {
@@ -3173,7 +3189,7 @@ H    -3.3501360    -0.4957970    -2.5852230
 H    -4.8546930    -1.4081210    -2.5307720
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_59 = input.process_input("""
 molecule dimer {
@@ -3212,7 +3228,7 @@ H     5.1471940    -0.0381040     2.3676980
 H     5.9516930     1.2628420     3.2391140
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_60 = input.process_input("""
 molecule dimer {
@@ -3251,7 +3267,7 @@ H     4.1417710    -3.0562720    -0.8723020
 H     5.5573000    -2.4766570    -0.0008860
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_61 = input.process_input("""
 molecule dimer {
@@ -3296,7 +3312,7 @@ H     3.0789261    12.1004316     1.6796125
 H     3.2840151    12.3521085     3.4311880
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_62 = input.process_input("""
 molecule dimer {
@@ -3341,7 +3357,7 @@ H    12.8619664    18.7673097     4.3193848
 H     8.5371916    17.3217571     2.6353613
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_63 = input.process_input("""
 molecule dimer {
@@ -3388,7 +3404,7 @@ H    19.6360815     9.3587324     9.0282525
 H    20.4431063    12.0114766     9.7460263
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_64 = input.process_input("""
 molecule dimer {
@@ -3429,7 +3445,7 @@ H    21.0918101    13.7537151    12.0291826
 H    21.0763281    14.1698120    13.7655701
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_65 = input.process_input("""
 molecule dimer {
@@ -3475,7 +3491,7 @@ H    19.6407390     9.3607520     9.0321720
 H    20.4431070    12.0114850     9.7460660
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_66 = input.process_input("""
 molecule dimer {
@@ -3518,7 +3534,7 @@ H    16.1825380     7.7884380     5.2708940
 H    16.0652090     7.9755790     7.0417370
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_67 = input.process_input("""
 molecule dimer {
@@ -3555,7 +3571,7 @@ N    -0.8160000    -0.5790000    -4.0190000
 C    -1.7380000    -0.6050000    -3.0150000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_68 = input.process_input("""
 molecule dimer {
@@ -3596,7 +3612,7 @@ N     0.3920000    -3.0250000    -1.1030000
 C    -0.8790000    -3.5010000    -0.9150000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_69 = input.process_input("""
 molecule dimer {
@@ -3637,7 +3653,7 @@ N     0.3920000    -3.0250000    -1.1030000
 C    -0.8790000    -3.5010000    -0.9150000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_70 = input.process_input("""
 molecule dimer {
@@ -3672,7 +3688,7 @@ C     2.7800000    -5.0940000     0.4140000
 O     3.8210000    -4.4400000     0.4780000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_71 = input.process_input("""
 molecule dimer {
@@ -3710,7 +3726,7 @@ H    -1.2619684    -1.5144746    -2.5505972
 H    -0.4171470    -2.5417743    -1.5096178
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_72 = input.process_input("""
 molecule dimer {
@@ -3754,7 +3770,7 @@ H     2.6081184     1.6978177     1.0127736
 H     2.7199672     2.9140199    -0.2854865
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_73 = input.process_input("""
 molecule dimer {
@@ -3793,7 +3809,7 @@ O    -0.0397875     0.7227006    -3.2531083
 H     2.0853289    -0.2760176    -2.4454577
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_74 = input.process_input("""
 molecule dimer {
@@ -3838,7 +3854,7 @@ H     2.5269559     1.9765736    -2.3901046
 H     1.2518503     3.0690500    -1.8139519
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_75 = input.process_input("""
 molecule dimer {
@@ -3873,7 +3889,7 @@ H    -0.8684590     3.1052900     3.4000000
 H     0.8696630     2.9040660     3.4000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_76 = input.process_input("""
 molecule dimer {
@@ -3908,7 +3924,7 @@ H    -3.1234900     0.8005370     3.3000000
 H    -2.0801630     2.2051830     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_77 = input.process_input("""
 molecule dimer {
@@ -3943,7 +3959,7 @@ H    -2.2550290    -2.3047530     3.3000000
 H    -2.9498260    -0.6988840     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_78 = input.process_input("""
 molecule dimer {
@@ -3978,7 +3994,7 @@ H     0.8684590    -3.1052900     3.3000000
 H    -0.8696630    -2.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_79 = input.process_input("""
 molecule dimer {
@@ -4013,7 +4029,7 @@ H     0.1315410     3.1052900     3.3000000
 H     1.8696630     2.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_80 = input.process_input("""
 molecule dimer {
@@ -4048,7 +4064,7 @@ H    -0.8684590     4.1052890     3.3000000
 H     0.8696630     3.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_81 = input.process_input("""
 molecule dimer {
@@ -4083,7 +4099,7 @@ H     1.1315410     1.1052900     3.3000000
 H     2.8696630     0.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_82 = input.process_input("""
 molecule dimer {
@@ -4118,7 +4134,7 @@ H     1.8684590    -3.1052900     3.3000000
 H     0.1303370    -2.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_83 = input.process_input("""
 molecule dimer {
@@ -4153,7 +4169,7 @@ H    -0.1315410    -3.1052900     3.3000000
 H    -1.8696630    -2.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_84 = input.process_input("""
 molecule dimer {
@@ -4188,7 +4204,7 @@ H     0.8684590    -2.1052900     3.3000000
 H    -0.8696630    -1.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_85 = input.process_input("""
 molecule dimer {
@@ -4223,7 +4239,7 @@ H     0.8684590    -4.1052900     3.3000000
 H    -0.8696630    -3.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_86 = input.process_input("""
 molecule dimer {
@@ -4258,7 +4274,7 @@ H     2.8684590    -5.1052900     3.3000000
 H     1.1303370    -4.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_87 = input.process_input("""
 molecule dimer {
@@ -4293,7 +4309,7 @@ H     0.8684590    -1.1052900     3.3000000
 H    -0.8696630    -0.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_88 = input.process_input("""
 molecule dimer {
@@ -4328,7 +4344,7 @@ H     0.8684590     3.1052900     3.3000000
 H    -0.8696630     2.9040660     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_89 = input.process_input("""
 molecule dimer {
@@ -4367,7 +4383,7 @@ H     3.4734100    -3.4971280     3.3000000
 H     1.7398820    -3.7580580     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_90 = input.process_input("""
 molecule dimer {
@@ -4408,7 +4424,7 @@ H     0.6944640    -2.5926540     3.3000000
 H    -1.0045320    -2.9659380     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_91 = input.process_input("""
 molecule dimer {
@@ -4445,7 +4461,7 @@ H    -3.6302290    -0.0953930     3.3000000
 H    -3.5624890    -1.8438140     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_92 = input.process_input("""
 molecule dimer {
@@ -4485,7 +4501,7 @@ H     0.8552610     3.8515680    -3.3000000
 H     1.6771880     2.3031370    -3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_93 = input.process_input("""
 molecule dimer {
@@ -4520,7 +4536,7 @@ H    -3.5839490     1.5094290     3.3000000
 H    -2.6744400     3.0042040     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_94 = input.process_input("""
 molecule dimer {
@@ -4556,7 +4572,7 @@ H     0.2745460     2.2757330     3.3000000
 H    -1.7216600     0.9981100     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_95 = input.process_input("""
 molecule dimer {
@@ -4594,7 +4610,7 @@ H     0.7283690    -3.5059470    -3.3000000
 H     2.4664440    -3.3043070    -3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_96 = input.process_input("""
 molecule dimer {
@@ -4628,7 +4644,7 @@ H    -0.2655530    -2.9130890     3.3000000
 H    -2.3825080    -1.8474300     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_97 = input.process_input("""
 molecule dimer {
@@ -4661,7 +4677,7 @@ H    -1.5080230    -2.9292090     3.3000000
 H     0.6781200    -2.0138170     3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_98 = input.process_input("""
 molecule dimer {
@@ -4698,7 +4714,7 @@ H    -2.2257760    -0.9095050    -3.3000000
 H    -0.7985270    -2.8016270    -3.3000000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_99 = input.process_input("""
 molecule dimer {
@@ -4739,7 +4755,7 @@ H     2.9609760    -2.8966530     3.3600000
 H     1.2381640    -2.7944260     3.3600000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_100 = input.process_input("""
 molecule dimer {
@@ -4774,7 +4790,7 @@ H    -3.4794940     0.9500750     3.3600000
 H    -1.7581040     0.8646590     3.3600000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_101 = input.process_input("""
 molecule dimer {
@@ -4813,7 +4829,7 @@ H     0.7019450    -1.6625240     2.7400870
 H    -0.2797430    -3.0783000     2.6398690
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_102 = input.process_input("""
 molecule dimer {
@@ -4852,7 +4868,7 @@ H     5.2089370    -0.1230850     2.7216660
 H     5.9296670     1.2931580     3.4791940
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_103 = input.process_input("""
 molecule dimer {
@@ -4890,7 +4906,7 @@ H     1.9209400    -1.6249990    -3.3022070
 H     0.3140390    -1.6249990    -2.6726050
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_104 = input.process_input("""
 molecule dimer {
@@ -4928,7 +4944,7 @@ H     1.8398890    -3.7111710     3.1900000
 H     2.2750440    -2.0410890     3.1900000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_105 = input.process_input("""
 molecule dimer {
@@ -4968,7 +4984,7 @@ H     2.9113910     2.9134700    -3.5059320
 H     1.1910290     2.8146150    -3.4104660
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_106 = input.process_input("""
 molecule dimer {
@@ -5005,7 +5021,7 @@ H    -3.5136510    -0.9120230    -3.3952410
 H    -1.7946790    -0.8299350    -3.3010330
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_107 = input.process_input("""
 molecule dimer {
@@ -5045,7 +5061,7 @@ H    -1.8744930     3.6737330     3.0051240
 H    -2.3112160     2.0058100     3.0815320
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_108 = input.process_input("""
 molecule dimer {
@@ -5082,7 +5098,7 @@ H    -0.2161270    -3.6266280     3.0937180
 H     0.2361240    -1.9652240     3.1691180
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_109 = input.process_input("""
 molecule dimer {
@@ -5122,7 +5138,7 @@ H    -1.8803400     3.6817820     3.1800000
 H    -2.3154950     2.0117000     3.1800000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_110 = input.process_input("""
 molecule dimer {
@@ -5159,7 +5175,7 @@ H    -0.2120980    -3.6321740     3.1800000
 H     0.2386050    -1.9686390     3.1800000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_111 = input.process_input("""
 molecule dimer {
@@ -5199,7 +5215,7 @@ H     2.9113910     2.9134700    -3.5059320
 H     1.1910290     2.8146150    -3.4104660
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_112 = input.process_input("""
 molecule dimer {
@@ -5236,7 +5252,7 @@ H    -3.5136510    -0.9120230    -3.3952410
 H    -1.7946790    -0.8299350    -3.3010330
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_113 = input.process_input("""
 molecule dimer {
@@ -5275,7 +5291,7 @@ H     5.1850460    -0.0902010     2.6573890
 H     5.9461980     1.2704040     3.4749720
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_114 = input.process_input("""
 molecule dimer {
@@ -5314,7 +5330,7 @@ H    -3.3501360    -0.4957970    -2.5852230
 H    -4.8546930    -1.4081210    -2.5307720
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_115 = input.process_input("""
 molecule dimer {
@@ -5353,7 +5369,7 @@ H     0.7178820    -1.6844600     3.2400000
 H    -0.2586520    -3.1073290     3.2400000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_116 = input.process_input("""
 molecule dimer {
@@ -5392,7 +5408,7 @@ H     5.1471940    -0.0381040     2.3676980
 H     5.9516930     1.2628420     3.2391140
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_117 = input.process_input("""
 molecule dimer {
@@ -5437,7 +5453,7 @@ H    12.8619664    18.7673097     4.3193848
 H     8.5371916    17.3217571     2.6353613
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_118 = input.process_input("""
 molecule dimer {
@@ -5481,7 +5497,7 @@ H    15.8197976    10.1594152    12.5501065
 H    16.5616854    11.7259467    12.8207994
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_119 = input.process_input("""
 molecule dimer {
@@ -5524,7 +5540,7 @@ H    14.7113690    15.9651740     9.2135180
 H    13.8876420    17.4962710     9.5342540
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_120 = input.process_input("""
 molecule dimer {
@@ -5570,7 +5586,7 @@ H    19.6407390     9.3607520     9.0321720
 H    20.4431070    12.0114850     9.7460660
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_121 = input.process_input("""
 molecule dimer {
@@ -5608,7 +5624,7 @@ N    -1.7100000     2.3160000     1.3470000
 C    -1.0480000     3.3630000     1.9240000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_122 = input.process_input("""
 molecule dimer {
@@ -5648,7 +5664,7 @@ N     0.3920000    -3.0250000    -1.1030000
 C    -0.8790000    -3.5010000    -0.9150000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_123 = input.process_input("""
 molecule dimer {
@@ -5686,7 +5702,7 @@ C     1.9550000     0.7640000     2.4990000
 O     2.5580000     0.4150000     1.4830000
 units angstrom
 }
-""")
+""", 0)
 
 JSCH_124 = input.process_input("""
 molecule dimer {
@@ -5724,15 +5740,14 @@ C     2.7800000    -5.0940000     0.4140000
 O     3.8210000    -4.4400000     0.4780000
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
-   GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_CP
-   GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_CP
-   GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_unCP
-   GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_unCP
-
+    GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
+    GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
+    GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
+    GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
+    GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP

@@ -59,6 +59,7 @@
           <div class="body">
             
   <h1>Source code for procutil</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Module with utility functions used by several Python functions.&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 <span class="kn">import</span> <span class="nn">PsiMod</span>
@@ -66,33 +67,58 @@
 <span class="kn">from</span> <span class="nn">psiexceptions</span> <span class="kn">import</span> <span class="o">*</span>
 
 
-<span class="c"># Re-builds kwargs with only lowercase keyword names. Should be called by every</span>
-<span class="c">#   function that could be called directly by the user</span>
 <div class="viewcode-block" id="kwargs_lower"><a class="viewcode-back" href="../index.html#procutil.kwargs_lower">[docs]</a><span class="k">def</span> <span class="nf">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to rebuild and return *kwargs* dictionary</span>
+<span class="sd">    with all keys made lowercase. Should be called by every</span>
+<span class="sd">    function that could be called directly by the user.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">caseless_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
         <span class="n">caseless_kwargs</span><span class="p">[</span><span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">value</span>
     <span class="k">return</span> <span class="n">caseless_kwargs</span>
+
 </div>
 <div class="viewcode-block" id="get_psifile"><a class="viewcode-back" href="../index.html#procutil.get_psifile">[docs]</a><span class="k">def</span> <span class="nf">get_psifile</span><span class="p">(</span><span class="n">fileno</span><span class="p">,</span> <span class="n">pidspace</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">())):</span>
+    <span class="sd">&quot;&quot;&quot;Function to return the full path and filename for psi file</span>
+<span class="sd">    *fileno* (e.g., psi.32) in current namespace *pidspace*.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">psioh</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">IOManager</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span>
     <span class="n">psio</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">IO</span><span class="o">.</span><span class="n">shared_object</span><span class="p">()</span>
     <span class="n">filepath</span> <span class="o">=</span> <span class="n">psioh</span><span class="o">.</span><span class="n">get_file_path</span><span class="p">(</span><span class="n">fileno</span><span class="p">)</span>
     <span class="n">namespace</span> <span class="o">=</span> <span class="n">psio</span><span class="o">.</span><span class="n">get_default_namespace</span><span class="p">()</span>
-    <span class="n">targetfile</span> <span class="o">=</span>  <span class="n">filepath</span> <span class="o">+</span> <span class="s">&#39;psi&#39;</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">pidspace</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">namespace</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fileno</span><span class="p">)</span>
+    <span class="n">targetfile</span> <span class="o">=</span> <span class="n">filepath</span> <span class="o">+</span> <span class="s">&#39;psi&#39;</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">pidspace</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="n">namespace</span> <span class="o">+</span> <span class="s">&#39;.&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fileno</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">targetfile</span>
 
-<span class="c"># Common sow/reap functions</span></div>
+</div>
 <div class="viewcode-block" id="format_molecule_for_input"><a class="viewcode-back" href="../index.html#procutil.format_molecule_for_input">[docs]</a><span class="k">def</span> <span class="nf">format_molecule_for_input</span><span class="p">(</span><span class="n">mol</span><span class="p">):</span>
-    <span class="n">commands</span>  <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;Function to return a string of the output of</span>
+<span class="sd">    :py:func:`input.process_input` applied to the XYZ</span>
+<span class="sd">    format of molecule *mol*. Used to capture molecule</span>
+<span class="sd">    information for distributed (sow/reap) input files.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="n">commands</span> <span class="o">+=</span> <span class="s">&#39;input.process_input(&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">molecule </span><span class="si">%s</span><span class="s"> {</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
     <span class="n">commands</span> <span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">save_string_xyz</span><span class="p">()</span>
     <span class="n">commands</span> <span class="o">+=</span> <span class="s">&#39;units angstrom</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;)</span><span class="se">\n</span><span class="s">&#39;</span>
     <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="format_options_for_input"><a class="viewcode-back" href="../index.html#procutil.format_options_for_input">[docs]</a><span class="k">def</span> <span class="nf">format_options_for_input</span><span class="p">():</span>
-    <span class="c"># build string of commands for options from the input file  TODO: handle local options too</span>
-    <span class="n">commands</span>  <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="sd">&quot;&quot;&quot;Function to return a string of commands to replicate the</span>
+<span class="sd">    current state of user-modified options. Used to capture C++</span>
+<span class="sd">    options information for distributed (sow/reap) input files.</span>
+
+<span class="sd">    .. caution:: Some features are not yet implemented. Buy a developer a coffee.</span>
+
+<span class="sd">       - Does not cover local (as opposed to global) options.</span>
+
+<span class="sd">       - Does not work with array-type options.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">commands</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="n">commands</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">PsiMod.set_memory(</span><span class="si">%s</span><span class="s">)</span><span class="se">\n\n</span><span class="s">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">get_memory</span><span class="p">())</span>
     <span class="k">for</span> <span class="n">chgdopt</span> <span class="ow">in</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option_list</span><span class="p">():</span>
         <span class="k">if</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">has_option_changed</span><span class="p">(</span><span class="n">chgdopt</span><span class="p">):</span>
@@ -104,8 +130,15 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Option </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s"> is not of a type (string, int, float, bool) that can be processed.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">chgdopt</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">commands</span>
+
 </div>
 <div class="viewcode-block" id="format_kwargs_for_input"><a class="viewcode-back" href="../index.html#procutil.format_kwargs_for_input">[docs]</a><span class="k">def</span> <span class="nf">format_kwargs_for_input</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">lmode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to pickle to file *filename* the options dictionary</span>
+<span class="sd">    *kwargs*. Mode *lmode* =2 pickles appropriate settings for</span>
+<span class="sd">    reap mode. Used to capture Python options information for</span>
+<span class="sd">    distributed (sow/reap) input files.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">lmode</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;reap&#39;</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;linkage&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
@@ -115,8 +148,8 @@
     <span class="n">filename</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">kwargs = pickle.loads(pickle_kw)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">lmode</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;sow&#39;</span>
-        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;linkage&#39;</span><span class="p">]</span>
-</pre></div></div>
+        <span class="k">del</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;linkage&#39;</span><span class="p">]</span></div>
+</pre></div>
 
           </div>
         </div>
@@ -160,7 +193,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Mar 04, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

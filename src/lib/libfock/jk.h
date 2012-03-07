@@ -328,6 +328,14 @@ public:
      */
     void finalize();
 
+    /**
+     * Virtual method to provide (ia|ia) integrals for 
+     * SO-basis C_mi and C_na matrices in O(N^4) or less
+     * Only available in DF-type JK integrals
+     * Throws by default
+     */
+    virtual SharedVector iaia(SharedMatrix Ci, SharedMatrix Ca);
+
     // => Accessors <= //
 
     /**
@@ -671,6 +679,14 @@ public:
     /// Destructor
     virtual ~DFJK();
 
+    /**
+     * Method to provide (ia|ia) integrals for 
+     * SO-basis C_mi and C_na matrices in O(N^4) or less
+     * Only available in DF-type JK integrals
+     * Throws by default
+     */
+    virtual SharedVector iaia(SharedMatrix Ci, SharedMatrix Ca);
+
     // => Knobs <= //
 
     /**
@@ -769,6 +785,9 @@ protected:
     void block_J(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& J);
     void block_K(double** Qmnp, int Pstart, int nP, const std::vector<SharedMatrix>& K);
     void build_JK_SR(); 
+    void build_JK_LR(); 
+
+    void build_JK_debug(const std::string& op = "", double theta = 0.0);
     
     int max_rows();
 

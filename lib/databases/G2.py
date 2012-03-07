@@ -1,3 +1,16 @@
+"""
+**G2**
+
+| Database of thermodynamic reactions.
+| WIP
+
+- **cp**  ``'off'``
+
+- **rlxd** ``'off'``
+
+----
+
+"""
 import re
 import input
 
@@ -1486,7 +1499,7 @@ BIND['%s-%s'            % (dbse, '36'                    )] =   11.50
 BIND['%s-%s'            % (dbse, '37'                    )] =   12.66
 BIND['%s-%s'            % (dbse, '38'                    )] =   11.33
 for ii in range(1, 39):
-   BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
+    BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
 # [ 39 -  63] G2-1 Electron Affinities (25)
 # Electron Affinity for species M is the negative of the reaction M + e- --> M-  [E(neutral) - E(anion)]
 # Reference electron affinities [eV] from Table III of Curtiss et al. JCP 109 42 (1998).
@@ -1516,7 +1529,7 @@ BIND['%s-%s'            % (dbse, '61'                    )] =    1.09
 BIND['%s-%s'            % (dbse, '62'                    )] =    1.66
 BIND['%s-%s'            % (dbse, '63'                    )] =    2.39
 for ii in range(39, 64):
-   BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
+    BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
 # [ 64 -  71] G2-1 Proton Affinities (8) in kcal/mol from
 # J. Chem. Phys. 109, 7764 (1998) doi: 10.1063/1.477422
 # Proton affinity for species M is the negative enthalpy of the reaction M + H+ --> MH+
@@ -1538,9 +1551,9 @@ BIND['%s-%s'            % (dbse, '77'                    )] =    35.7
 BIND['%s-%s'            % (dbse, '78'                    )] =   -16.7
 BIND['%s-%s'            % (dbse, '79'                    )] =    86.2
 BIND['%s-%s'            % (dbse, '80'                    )] =    45.7
-BIND['%s-%s'            % (dbse, '81'                    )] =   -9.1 
+BIND['%s-%s'            % (dbse, '81'                    )] =   -9.1
 BIND['%s-%s'            % (dbse, '82'                    )] =    9.0
-BIND['%s-%s'            % (dbse, '83'                    )] =   -57.4 
+BIND['%s-%s'            % (dbse, '83'                    )] =   -57.4
 BIND['%s-%s'            % (dbse, '84'                    )] =   -66.2
 BIND['%s-%s'            % (dbse, '85'                    )] =    62.7
 BIND['%s-%s'            % (dbse, '86'                    )] =    86.1
@@ -1548,16 +1561,16 @@ BIND['%s-%s'            % (dbse, '87'                    )] =    48.0
 BIND['%s-%s'            % (dbse, '88'                    )] =    8.3
 BIND['%s-%s'            % (dbse, '89'                    )] =    33.8
 BIND['%s-%s'            % (dbse, '90'                    )] =    3.9
-BIND['%s-%s'            % (dbse, '91'                    )] =   -4.1 
-BIND['%s-%s'            % (dbse, '92'                    )] =   -22.4 
+BIND['%s-%s'            % (dbse, '91'                    )] =   -4.1
+BIND['%s-%s'            % (dbse, '92'                    )] =   -22.4
 BIND['%s-%s'            % (dbse, '93'                    )] =    49.5
 BIND['%s-%s'            % (dbse, '94'                    )] =   -81.4
 BIND['%s-%s'            % (dbse, '95'                    )] =    56.0
 BIND['%s-%s'            % (dbse, '96'                    )] =    14.8
-BIND['%s-%s'            % (dbse, '97'                    )] =   -16.8 
+BIND['%s-%s'            % (dbse, '97'                    )] =   -16.8
 BIND['%s-%s'            % (dbse, '98'                    )] =    106.5
 BIND['%s-%s'            % (dbse, '99'                    )] =    31.3
-BIND['%s-%s'            % (dbse, '100'                   )] =   -29.0 
+BIND['%s-%s'            % (dbse, '100'                   )] =   -29.0
 BIND['%s-%s'            % (dbse, '101'                   )] =    9.2
 BIND['%s-%s'            % (dbse, '102'                   )] =   -27.0
 BIND['%s-%s'            % (dbse, '103'                   )] =   -46.8
@@ -1587,10 +1600,10 @@ BIND['%s-%s'            % (dbse, '126'                   )] =   -65.3
 # [127 - 176] G2-2 Ionization Energies (50)
 # Ionization Energy for species M is the energy of the reaction M --> M+ + e-  [E(cation) - E(neutral)]
 # Reference ionization energies [eV] from Table II of Curtiss et al. JCP 109 42 (1998).
-BIND['%s-%s'            % (dbse, '127'                   )] =   13.60  
-BIND['%s-%s'            % (dbse, '128'                   )] =   24.59 
-BIND['%s-%s'            % (dbse, '129'                   )] =   21.56 
-BIND['%s-%s'            % (dbse, '130'                   )] =   15.76 
+BIND['%s-%s'            % (dbse, '127'                   )] =   13.60
+BIND['%s-%s'            % (dbse, '128'                   )] =   24.59
+BIND['%s-%s'            % (dbse, '129'                   )] =   21.56
+BIND['%s-%s'            % (dbse, '130'                   )] =   15.76
 BIND['%s-%s'            % (dbse, '131'                   )] =   15.56
 BIND['%s-%s'            % (dbse, '132'                   )] =   11.60
 BIND['%s-%s'            % (dbse, '133'                   )] =   12.07
@@ -1638,7 +1651,7 @@ BIND['%s-%s'            % (dbse, '174'                   )] =    8.09
 BIND['%s-%s'            % (dbse, '175'                   )] =    7.60
 BIND['%s-%s'            % (dbse, '176'                   )] =    9.74
 for ii in range(127, 177):
-   BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
+    BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
 # [177 - 209] G2-2 Electron Affinities (33)
 # Electron Affinity for species M is the negative of the reaction M + e- --> M-  [E(neutral) - E(anion)]
 # Reference electron affinities [eV] from Table III of Curtiss et al. JCP 109 42 (1998).
@@ -1676,7 +1689,7 @@ BIND['%s-%s'            % (dbse, '207'                   )] =    0.34
 BIND['%s-%s'            % (dbse, '208'                   )] =    0.34
 BIND['%s-%s'            % (dbse, '209'                   )] =    1.08
 for ii in range(177, 210):
-   BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
+    BIND['%s-%s'            % (dbse, str(ii)                 )] *=  23.06  # convert from [eV] to [kcal/mol]
 # [210 - 302] G2-2 Enthalpies of Formation (93)
 BIND['%s-%s'            % (dbse, '210'                   )] =   -270.8
 BIND['%s-%s'            % (dbse, '211'                   )] =   -98.2
@@ -1704,7 +1717,7 @@ BIND['%s-%s'            % (dbse, '232'                   )] =    48.2
 BIND['%s-%s'            % (dbse, '233'                   )] =    71.2
 BIND['%s-%s'            % (dbse, '234'                   )] =    8.9
 BIND['%s-%s'            % (dbse, '235'                   )] =    17.7
-BIND['%s-%s'            % (dbse, '236'                   )] =   -20.0 
+BIND['%s-%s'            % (dbse, '236'                   )] =   -20.0
 BIND['%s-%s'            % (dbse, '237'                   )] =    31.5
 BIND['%s-%s'            % (dbse, '238'                   )] =    39.7
 BIND['%s-%s'            % (dbse, '239'                   )] =    51.3
@@ -1712,7 +1725,7 @@ BIND['%s-%s'            % (dbse, '240'                   )] =    59.0
 BIND['%s-%s'            % (dbse, '241'                   )] =    44.3
 BIND['%s-%s'            % (dbse, '242'                   )] =    12.8
 BIND['%s-%s'            % (dbse, '243'                   )] =    1.7
-BIND['%s-%s'            % (dbse, '244'                   )] =   -23.6 
+BIND['%s-%s'            % (dbse, '244'                   )] =   -23.6
 BIND['%s-%s'            % (dbse, '245'                   )] =   -25.5
 BIND['%s-%s'            % (dbse, '246'                   )] =    51.3
 BIND['%s-%s'            % (dbse, '247'                   )] =    27.8
@@ -1720,7 +1733,7 @@ BIND['%s-%s'            % (dbse, '248'                   )] =   -109.0
 BIND['%s-%s'            % (dbse, '249'                   )] =   -169.2
 BIND['%s-%s'            % (dbse, '250'                   )] =   -21.8
 BIND['%s-%s'            % (dbse, '251'                   )] =   -24.5
-BIND['%s-%s'            % (dbse, '252'                   )] =   -1.9 
+BIND['%s-%s'            % (dbse, '252'                   )] =   -1.9
 BIND['%s-%s'            % (dbse, '253'                   )] =    19.8
 BIND['%s-%s'            % (dbse, '254'                   )] =   -17.4
 BIND['%s-%s'            % (dbse, '255'                   )] =   -15.5
@@ -6533,8 +6546,7 @@ units angstrom
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
 
-            molname = rxnpattern.match(rgt)
-            GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
-
+        molname = rxnpattern.match(rgt)
+        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))

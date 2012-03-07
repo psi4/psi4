@@ -738,6 +738,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
       options.add_bool("LOCK_OCC", true);
+      /*- Whether to compute DCFT gradient or not -*/
+      options.add_bool("COMPUTE_GRADIENT", false);
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations, whenever disk-based molecular
@@ -1024,6 +1026,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Solver residue or eigenvector delta
     -*/
     options.add_str("SOLVER_QUANTITY", "RESIDUAL", "EIGENVECTOR RESIDUAL");
+    /*- Solver exact diagonal or eigenvalue difference?
+    -*/
+    options.add_bool("SOLVER_EXACT_DIAGONAL", false);
 
   }
   if (name == "MP2"|| options.read_globals()) {
@@ -2240,6 +2245,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Convergence criterion for geometry optmization: rms displacement (internal coordinates, atomic units). 
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
+      /*- Even if a user-defined threshold is set, allow for normal, flexible convergence criteria -*/
+      options.add_bool("FLEXIBLE_G_CONVERGENCE", false);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/

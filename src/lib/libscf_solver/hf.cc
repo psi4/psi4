@@ -495,7 +495,7 @@ void HF::print_header()
         fprintf(outfile, "  Integral threshold = %3.2e\n\n", integral_threshold_);
         fflush(outfile);
 
-        fprintf(outfile, "  ==> Primary Basis: %s <==\n\n", options_.get_str("BASIS").c_str());
+        fprintf(outfile, "  ==> Primary Basis <==\n\n");
     }
     basisset_->print_by_level(outfile, print_);
     fflush(outfile);
@@ -1369,6 +1369,7 @@ double HF::compute_energy()
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     check_phases();
+    compute_spin_contamination();
     frac_renormalize();
 
     if (converged) {

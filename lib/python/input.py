@@ -1,7 +1,14 @@
+"""Module with functions to parse the input file and convert
+Psithon into standard Python. Particularly, forms PsiMod
+module calls that access the C++ side of Psi4.
+
+"""
 import PsiMod
-from pubchem import getPubChemResults,PubChemObj 
-import re;
-import os;
+from pubchem import getPubChemResults, PubChemObj
+import re
+import os
+import sys
+from psiexceptions import *
 
 yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
 no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
@@ -9,13 +16,16 @@ der0th = re.compile(r'^(0|none|energy)', re.IGNORECASE)
 der1st = re.compile(r'^(1|first|gradient)', re.IGNORECASE)
 der2nd = re.compile(r'^(2|second|hessian)', re.IGNORECASE)
 
+
 def bad_option_syntax(line):
-    print 'Unsupported syntax:\n\n%s\n\n' % (line)
-    sys.exit(1)
+    """Function to report bad syntax to screen and output file."""
+    raise ValidationError('Unsupported syntax:\n\n%s\n\n' % (line))
+
 
 def process_word_quotes(matchobj):
+    """Function to determine if argument needs wrapping in quotes as string."""
     dollar = matchobj.group(2)
-    val    = matchobj.group(3)
+    val = matchobj.group(3)
     if(dollar):
         # This is a python variable, make sure that it starts with a letter
         if(re.match(r'^[A-Za-z][\w]*', val)):
@@ -33,16 +43,26 @@ def process_word_quotes(matchobj):
         # This must be a string
         return "\"%s\"" % val
 
+
 def quotify(string):
+    """Function to wrap anything that looks like a string in quotes
+    and to remove leading dollar signs from python variables.
+
+    """
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
     wordre = re.compile(r'(([$]?)([-+()*.\w\"\']+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
+
 def process_option(spaces, module, key, value, line):
-    value  = quotify(value.strip())
-    temp   = ""
+    """Function to process a line with set or in a set block
+    into global/local domain and keyword/value.
+
+    """
+    value = quotify(value.strip())
+    temp = ""
 
     global_options = False
     module = module.upper()
@@ -56,7 +76,12 @@ def process_option(spaces, module, key, value, line):
         # It's a local option, so we need the module name in there too
         return spaces + "PsiMod.set_local_option(\"%s\", \"%s\", %s)\n" % (module, key, value)
 
+
 def process_set_command(matchobj):
+    """Function to process match of all individual ``set (module_list)
+    key {[value_list] or $value or value}``.
+
+    """
     result = ""
     module_string = ""
     if(matchobj.group(2)):
@@ -65,7 +90,9 @@ def process_set_command(matchobj):
         result = result + process_option(matchobj.group(1), module, matchobj.group(3), matchobj.group(4), matchobj.group(0))
     return result
 
+
 def process_set_commands(matchobj):
+    """Function to process match of ``set name? { ... }``."""
     spaces = matchobj.group(1)
     commands = matchobj.group(3)
     command_lines = re.split('\n', commands)
@@ -99,6 +126,7 @@ def process_set_commands(matchobj):
 
 
 def process_pubchem_command(matchobj):
+    """Function to process match of ``pubchem`` in molecule block."""
     string = matchobj.group(2)
     if re.match(r'^\s*[0-9]+\s*$', string):
         # This is just a number - must be a CID
@@ -111,7 +139,7 @@ def process_pubchem_command(matchobj):
         # Search pubchem for the provided string
         try:
             results = getPubChemResults(string)
-        except Exception as e: 
+        except Exception as e:
             return e.message
 
         # N.B. Anything starting with PubchemError will be handled correctly by the molecule parser
@@ -124,7 +152,7 @@ def process_pubchem_command(matchobj):
             return results[0].getMoleculeString()
         else:
             # There are multiple results. Print and exit
-            msg =  "\tPubchemError\n"
+            msg = "\tPubchemError\n"
             msg += "\tMultiple pubchem results were found. Replace\n\n\t\tpubchem:%s\n\n" % string
             msg += "\twith the Chemical ID number or exact name from one of the following and re-run.\n\n"
             msg += "\t Chemical ID     IUPAC Name\n\n"
@@ -135,7 +163,9 @@ def process_pubchem_command(matchobj):
                     return result.getMoleculeString()
             return msg
 
+
 def process_molecule_command(matchobj):
+    """Function to process match of ``molecule name? { ... }``."""
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     geometry = matchobj.group(3)
@@ -150,21 +180,28 @@ def process_molecule_command(matchobj):
         molecule += ',"%s"' % (name)
 
     molecule += ")\n"
-    molecule += '%sPsiMod.IO.set_default_namespace("%s")' % (spaces,name)
+    molecule += '%sPsiMod.IO.set_default_namespace("%s")' % (spaces, name)
 
     return molecule
 
+
 def process_extract_command(matchobj):
+    """Function to process match of ``extract_subsets``."""
     spaces = matchobj.group(1)
     name = matchobj.group(2)
     extract = matchobj.group(0)
-    extract += spaces + '%s.set_name("%s")' %(name,name)
-    extract += "\n%sPsiMod.set_active_molecule(%s)" % (spaces,name)
-    extract += '\n%sPsiMod.IO.set_default_namespace("%s")' % (spaces,name)
+    extract += spaces + '%s.set_name("%s")' % (name, name)
+    extract += "\n%sPsiMod.set_active_molecule(%s)" % (spaces, name)
+    extract += '\n%sPsiMod.IO.set_default_namespace("%s")' % (spaces, name)
 
     return extract
 
+
 def process_print_command(matchobj):
+    """Function to process match of ``print`` and transform
+    it to ``PsiMod.print_out()``.
+
+    """
     spaces = matchobj.group(1)
     string = matchobj.group(2)
 
@@ -173,8 +210,9 @@ def process_print_command(matchobj):
 
     return printer
 
-def process_memory_command(matchobj):
 
+def process_memory_command(matchobj):
+    """Function to process match of ``memory ...``."""
     spacing = str(matchobj.group(1))
     sig = str(matchobj.group(2))
     units = str(matchobj.group(3))
@@ -183,47 +221,54 @@ def process_memory_command(matchobj):
     memory_amount = val
 
     if (units.upper() == 'KB'):
-        memory_amount = val*1000
+        memory_amount = val * 1000
     elif (units.upper() == 'MB'):
-        memory_amount = val*1000000
+        memory_amount = val * 1000000
     elif (units.upper() == 'GB'):
-        memory_amount = val*1000000000
+        memory_amount = val * 1000000000
 
-    command = "%sPsiMod.set_memory(%d)\n" % (spacing,int(memory_amount))
+    command = "%sPsiMod.set_memory(%d)\n" % (spacing, int(memory_amount))
     return command
+
 
 def process_basis_file(matchobj):
-    spacing   = str(matchobj.group(1))
+    """Function to process match of ``basis file ...``."""
+    spacing = str(matchobj.group(1))
     basisfile = str(matchobj.group(2)).strip()
-    command   = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
+    command = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
 
     return command
 
+
 def process_basis_block(matchobj):
+    """Function to process match of ``basis name { ... }``."""
     command_lines = re.split('\n', matchobj.group(2))
-    spacing   = str(matchobj.group(1))
-    result   = "%stemppsioman = PsiMod.IOManager.shared_object()" % spacing
-    result  += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
+    spacing = str(matchobj.group(1))
+    result = "%stemppsioman = PsiMod.IOManager.shared_object()" % spacing
+    result += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
     basislabel = re.compile(r'\s*\[([-*\(\)\w]+)\]\s*')
 
     # Start by looking for assign lines, and remove them
-    label_re  = re.compile(r'^\s*assign\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
+    label_re = re.compile(r'^\s*assign\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
     symbol_re = re.compile(r'^\s*assign\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*(\w+)?\s*$')
-    all_re    = re.compile(r'^\s*assign\s*([-*\(\)\w]+)\s*(\w+)?\s*$')
+    all_re = re.compile(r'^\s*assign\s*([-*\(\)\w]+)\s*(\w+)?\s*$')
     leftover_lines = []
     for line in command_lines:
         basistype = "BASIS"
         if(label_re.match(line)):
             m = label_re.match(line)
-            if m.group(3): basistype = m.group(3).upper()
+            if m.group(3):
+                basistype = m.group(3).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
         elif(symbol_re.match(line)):
             m = symbol_re.match(line)
-            if m.group(3): basistype = m.group(3).upper()
+            if m.group(3):
+                basistype = m.group(3).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
         elif(all_re.match(line)):
             m = all_re.match(line)
-            if m.group(2): basistype = m.group(2).upper()
+            if m.group(2):
+                basistype = m.group(2).upper()
             result += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
         else:
             leftover_lines.append(line)
@@ -251,7 +296,7 @@ def process_basis_block(matchobj):
 
 
 def process_external_command(matchobj):
-
+    """Function to process match of ``external name? { ... }``."""
     spacing = str(matchobj.group(1))
     name = str(matchobj.group(2))
     if (not name or name.isspace()):
@@ -259,7 +304,7 @@ def process_external_command(matchobj):
     block = str(matchobj.group(3))
     lines = re.split('\n', block)
 
-    extern =  "%sqmmm = QMMM()\n" % (spacing)
+    extern = "%sqmmm = QMMM()\n" % (spacing)
 
     NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
@@ -273,13 +318,13 @@ def process_external_command(matchobj):
             pass
         else:
             lines2.append(line)
-    lines = lines2 
-    
+    lines = lines2
+
     # 1. Look for units [ang|bohr|au|a.u.] defaults to ang
     re_units = re.compile(r'^\s*units?[\s=]+((ang)|(angstrom)|(bohr)|(au)|(a\.u\.))$\s*', re.IGNORECASE)
     units = 'ang'
     lines2 = []
-    for line in lines: 
+    for line in lines:
         mobj = re_units.match(line)
         if (mobj):
             unit = mobj.group(1)
@@ -291,17 +336,17 @@ def process_external_command(matchobj):
             lines2.append(line)
     lines = lines2
 
-    # 2. Look for basis basisname, defaults to cc-pvdz 
-    # 3. Look for df_basis_scf basisname, defaults to cc-pvdz-jkfit 
+    # 2. Look for basis basisname, defaults to cc-pvdz
+    # 3. Look for df_basis_scf basisname, defaults to cc-pvdz-jkfit
     re_basis = re.compile(r'\s*basis[\s=]+(\S+)\s*$', re.IGNORECASE)
     re_df_basis = re.compile(r'\s*df_basis_scf[\s=]+(\S+)\s*$', re.IGNORECASE)
     basis = 'cc-pvdz'
     df_basis_scf = 'cc-pvdz-jkfit'
     lines2 = []
-    for line in lines: 
+    for line in lines:
         mobj = re_basis.match(line)
         if (mobj):
-            basis = mobj.group(1) 
+            basis = mobj.group(1)
         else:
             mobj = re_df_basis.match(line)
             if (mobj):
@@ -313,13 +358,13 @@ def process_external_command(matchobj):
     # 4. Look for charge lines Z x y z, convert according to unit convention
     charge_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
     lines2 = []
-    for line in lines: 
+    for line in lines:
         mobj = charge_re.match(line)
         if (mobj):
             if (units == 'ang'):
-                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' %(spacing,mobj.group(1),mobj.group(2),mobj.group(3),mobj.group(4))
+                extern += '%sqmmm.addChargeAngstrom(%s,%s,%s,%s)\n' % (spacing, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
             if (units == 'bohr'):
-                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' %(spacing,mobj.group(1),mobj.group(2),mobj.group(3),mobj.group(4))
+                extern += '%sqmmm.addChargeBohr(%s,%s,%s,%s)\n' % (spacing, mobj.group(1), mobj.group(2), mobj.group(3), mobj.group(4))
         else:
             lines2.append(line)
     lines = lines2
@@ -331,12 +376,12 @@ def process_external_command(matchobj):
     for line in lines:
         mobj = spacer_re.match(line)
         if (mobj):
-            if (len(frags[len(frags)-1])):
+            if (len(frags[len(frags) - 1])):
                 frags.append([])
         else:
-            frags[len(frags)-1].append(line)
+            frags[len(frags) - 1].append(line)
 
-    extern += '%sextern_mol_temp = PsiMod.get_active_molecule()\n' %(spacing)
+    extern += '%sextern_mol_temp = PsiMod.get_active_molecule()\n' % (spacing)
 
     mol_re = re.compile(r'\s*\S+\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
     lines = []
@@ -346,25 +391,25 @@ def process_external_command(matchobj):
             continue
 
         extern += '%sexternal_diffuse = geometry("""\n' % (spacing)
-        extern += '%s0 1\n' % (spacing) 
+        extern += '%s0 1\n' % (spacing)
 
         for line in frag:
             if not mol_re.match(line):
                 lines.append(line)
             else:
-                extern += '%s%s\n' %(spacing,line)    
+                extern += '%s%s\n' % (spacing, line)
 
-        extern += '%sunits %s\n' % (spacing, units) 
-        extern += '%ssymmetry c1\n' % (spacing) 
-        extern += '%sno_reorient\n' % (spacing) 
-        extern += '%sno_com\n' % (spacing) 
+        extern += '%sunits %s\n' % (spacing, units)
+        extern += '%ssymmetry c1\n' % (spacing)
+        extern += '%sno_reorient\n' % (spacing)
+        extern += '%sno_com\n' % (spacing)
         extern += '%s""")\n' % (spacing)
         extern += "%sdiffuse = Diffuse(external_diffuse,'%s','%s')\n" % (spacing, basis, df_basis_scf)
         extern += '%sdiffuse.fitScf()\n' % (spacing)
         extern += '%sqmmm.addDiffuse(diffuse)\n' % (spacing)
         extern += '\n'
 
-    extern += '%sPsiMod.set_active_molecule(extern_mol_temp)\n' %(spacing)
+    extern += '%sPsiMod.set_active_molecule(extern_mol_temp)\n' % (spacing)
 
     # 6. If there is anything left, the user messed up
     if (len(lines)):
@@ -375,11 +420,17 @@ def process_external_command(matchobj):
 
     # Return is actually an ExternalPotential, not a QMMM
     extern += '%sqmmm.populateExtern()\n' % (spacing)
-    extern += '%s%s = qmmm.extern\n' % (spacing, name) 
+    extern += '%s%s = qmmm.extern\n' % (spacing, name)
 
     return extern
 
+
 def check_parentheses_and_brackets(input_string, exit_on_error):
+    """Function to check that all parenthesis and brackets
+    in *input_string* are paired. On that condition, *exit_on_error* =1,
+    otherwise 0.
+
+    """
     # This returns 1 if the string's all matched up, 0 otherwise
     import collections
 
@@ -421,6 +472,10 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
 
 
 def parse_multiline_array(input_list):
+    """Function to squash multiline arrays into a single line
+    until all parentheses and brackets are fully paired.
+
+    """
     line = input_list.pop(0)
     # Keep adding lines to the current one, until all parens match up
     while not check_parentheses_and_brackets(line, 0):
@@ -430,6 +485,10 @@ def parse_multiline_array(input_list):
 
 
 def process_multiline_arrays(inputfile):
+    """Function to find array inputs that are spread across multiple
+    lines and squash them into a single line.
+
+    """
     # This function takes multiline array inputs, and puts them on a single line
     # Start by converting the input to a list, splitting at newlines
     input_list = inputfile.split("\n")
@@ -447,42 +506,50 @@ def process_multiline_arrays(inputfile):
 
 
 def process_input(raw_input, print_level=1):
+    """Function to preprocess *raw input*, the text of the input file, then
+    parse it, validate it for format, and convert it into legitimate Python.
+    *raw_input* is printed to the output file unless *print_level* =0. Does
+    a series of regular expression filters, where the matching portion of the
+    input is replaced by the output of the corresponding function (in this
+    module) call. Returns a string concatenating module import lines, a copy
+    of the user's .psi4rc files, a setting of the scratch directory, a dummy
+    molecule, and the processed *raw_input*.
 
+    """
     # Check if the infile is actually an outfile (yeah we did)
     psi4_id = re.compile(r'PSI4: An Open-Source Ab Initio Electronic Structure Package')
     if (re.search(psi4_id, raw_input)):
         input_lines = raw_input.split("\n")
         input_re = re.compile(r'^\s*?\=\=> Input File <\=\=')
-        input_start = -1;
+        input_start = -1
         for line_count in range(len(input_lines)):
-            line = input_lines[line_count] 
+            line = input_lines[line_count]
             if re.match(input_re, line):
-                input_start = line_count + 3;            
-                break;
+                input_start = line_count + 3
+                break
 
         stop_re = re.compile(r'^-{74}')
-        input_stop = -1;
-        for line_count in range(input_start,len(input_lines)):        
-            line = input_lines[line_count] 
+        input_stop = -1
+        for line_count in range(input_start, len(input_lines)):
+            line = input_lines[line_count]
             if re.match(stop_re, line):
-                input_stop = line_count;            
-                break;
-                       
+                input_stop = line_count
+                break
+
         if (input_start == -1 or input_stop == -1):
             print 'Cannot extract infile from outfile.'
             sys.exit(1)
- 
+
         raw_input = '\n'.join(input_lines[input_start:input_stop])
         raw_input += '\n'
 
     # Echo the infile on the outfile
     if print_level > 0:
-        PsiMod.print_out("\n  ==> Input File <==\n\n");
-        PsiMod.print_out("--------------------------------------------------------------------------\n");
-        PsiMod.print_out(raw_input);
-        PsiMod.print_out("--------------------------------------------------------------------------\n");
-        PsiMod.flush_outfile();
-
+        PsiMod.print_out("\n  ==> Input File <==\n\n")
+        PsiMod.print_out("--------------------------------------------------------------------------\n")
+        PsiMod.print_out(raw_input)
+        PsiMod.print_out("--------------------------------------------------------------------------\n")
+        PsiMod.flush_outfile()
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
     #   function [objname] { ... }
@@ -523,7 +590,7 @@ def process_input(raw_input, print_level=1):
     # N.B. We have to be careful here, because \s matches \n, leading to potential problems
     # with undesired multiline matches.  Better the double-negative [^\S\n] instead, which
     # will match any space, tab, etc., except a newline
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$', 
+    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)[^\S\n]+)?(\w+)(?:[^\S\n]|=)+((\[.*\])|(\$?[-+,*()\.\w]+))\s*$',
                              re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
@@ -536,7 +603,7 @@ def process_input(raw_input, print_level=1):
     external = re.compile(r'^(\s*?)external[=\s]*(\w*?)\s*\{(.*?)\}',
                           re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(external, process_external_command, temp)
-    
+
     # Then remove repeated newlines
     multiplenewlines = re.compile(r'\n+')
     temp = re.sub(multiplenewlines, '\n', temp)
@@ -547,28 +614,28 @@ def process_input(raw_input, print_level=1):
     temp = re.sub(extract, process_extract_command, temp)
 
     # Process "print" and transform it to "PsiMod.print_out()"
-    print_string = re.compile(r'(\s*?)print\s+(.*)',re.IGNORECASE)
-    temp = re.sub(print_string,process_print_command,temp)
+    print_string = re.compile(r'(\s*?)print\s+(.*)', re.IGNORECASE)
+    temp = re.sub(print_string, process_print_command, temp)
 
     # Process "memory ... "
     memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)',
                                re.IGNORECASE)
-    temp = re.sub(memory_string,process_memory_command,temp)
+    temp = re.sub(memory_string, process_memory_command, temp)
 
     # Process "basis file ... "
     basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$',
                             re.MULTILINE | re.IGNORECASE)
-    temp = re.sub(basis_file,process_basis_file,temp)
+    temp = re.sub(basis_file, process_basis_file, temp)
 
     # Process "basis name { ... }"
     basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}',
                              re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(basis_block,process_basis_block,temp)
+    temp = re.sub(basis_block, process_basis_block, temp)
 
     # imports
-    imports  = 'from PsiMod import *\n'
+    imports = 'from PsiMod import *\n'
     imports += 'from physconst import *\n'
-    imports += 'from molecule import *\n'
+    imports += 'from molutil import *\n'
     imports += 'from driver import *\n'
     imports += 'from text import *\n'
     imports += 'from inpsight import *\n'
@@ -593,7 +660,7 @@ def process_input(raw_input, print_level=1):
 
     # Override scratch directory if user specified via env_var
     scratch = ''
-    scratch_env = PsiMod.Process.environment['PSI_SCRATCH'] 
+    scratch_env = PsiMod.Process.environment['PSI_SCRATCH']
     if len(scratch_env):
         scratch += 'psi4_io.set_default_path("%s")\n' % (scratch_env)
 

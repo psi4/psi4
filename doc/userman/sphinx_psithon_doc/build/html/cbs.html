@@ -60,7 +60,7 @@
 <dt id="wrappers.complete_basis_set">
 <tt class="descclassname">wrappers.</tt><tt class="descname">complete_basis_set</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>scf_basis</em>, <em>scf_scheme</em>, <em>corl_wfn</em>, <em>corl_basis</em>, <em>corl_scheme</em>, <em>delta_wfn</em>, <em>delta_wfn_lesser</em>, <em>delta_basis</em>, <em>delta_scheme</em>, <em>delta2_wfn</em>, <em>delta2_wfn_lesser</em>, <em>delta2_basis</em>, <em>delta2_scheme</em><span class="optional">]</span><big>)</big><a class="reference internal" href="_modules/wrappers.html#complete_basis_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.complete_basis_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to define a multistage energy method from combinations of
-basis set extrapolations and delta corrections, and condenses the
+basis set extrapolations and delta corrections and condense the
 components into a minimum number of calculations.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -96,12 +96,14 @@ components into a minimum number of calculations.</p>
 <li>Methods beyond basic scf, mp2, ccsd, ccsd(t) not yet hooked in through PSI variables, df-mp2 in particular.</li>
 <li>No scheme defaults for given basis zeta number, so scheme must be specified explicitly.</li>
 <li>No way to tell function to boost fitting basis size for all calculations.</li>
+<li>No way to extrapolate def2 family basis sets</li>
+<li>Need to add more extrapolation schemes</li>
 </ul>
 </div>
-<p>As represented in the equation below, a CBS energy method is defined in four 
-sequential stages (scf, corl, delta, delta2) covering treatment of the 
+<p>As represented in the equation below, a CBS energy method is defined in four
+sequential stages (scf, corl, delta, delta2) covering treatment of the
 reference total energy, the correlation energy, a delta correction to the
-correlation energy, and a second delta correction. Each is activated by its 
+correlation energy, and a second delta correction. Each is activated by its
 stage_wfn keyword and is only allowed if all preceding stages are active.</p>
 <div class="math">
 <p><img src="_images/math/6d9de98a82a318032a969fb41b082259f375bbf9.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\textbf{scf\_scheme}} \left(E_{total,\; \text{SCF}}^{\textbf{scf\_basis}}\right) \; + \mathcal{F}_{\textbf{corl\_scheme}} \left(E_{corl,\; \textbf{corl\_wfn}}^{\textbf{corl\_basis}}\right) \; + \delta_{\textbf{delta\_wfn\_lesser}}^{\textbf{delta\_wfn}} \; + \delta_{\textbf{delta2\_wfn\_lesser}}^{\textbf{delta2\_wfn}}"/></p>
@@ -120,7 +122,16 @@ reference energy.</p>
 <p><img src="_images/math/234e164ef6b8d98f1bd0cac104963a877b89a88f.png" alt="E_{total}^{\text{CBS}} = \mathcal{F}_{\text{highest\_1}} \left(E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}}\right) \; + \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}}\right) \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}"/></p>
 </div><div class="math">
 <p><img src="_images/math/018cd7aadafa5dd49354fc8f39513fb7e73b54a4.png" alt="\delta_{\text{MP2}}^{\text{CCSD(T)}} \; = \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{CCSD(T)}}^{\text{aug-cc-pV[DT]Z}}\right) - \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[DT]Z}}\right)"/></p>
-</div><p>Keywords</p>
+</div><ul>
+<li><dl class="first docutils">
+<dt>Energy Methods</dt>
+<dd><p class="first last">The presence of a stage_wfn keyword is the indicator to incorporate
+(and check for stage_basis and stage_scheme keywords) and compute
+that stage in defining the CBS energy.</p>
+</dd>
+</dl>
+</li>
+</ul>
 <dl class="docutils">
 <dt>The cbs() function requires, at a minimum, <tt class="docutils literal"><span class="pre">name='scf'</span></tt> and <tt class="docutils literal"><span class="pre">scf_basis</span></tt></dt>
 <dd>keywords to be specified for reference-step only jobs and <tt class="docutils literal"><span class="pre">name</span></tt> and
@@ -130,44 +141,31 @@ reference energy.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
-<p>First argument, usually unlabeled. Indicates the computational method 
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>name</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'scf'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
+<p>First argument, usually unlabeled. Indicates the computational method
 for the correlation energy, unless only reference step to be performed,
 in which case should be <tt class="docutils literal"><span class="pre">'scf'</span></tt>. Overruled if stage_wfn keywords supplied.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<dl class="docutils">
-<dt>Energy Methods</dt>
-<dd>The presence of a stage_wfn keyword is the indicator to incorporate
-(and check for stage_basis and stage_scheme keywords) and compute
-that stage in defining the CBS energy.</dd>
-</dl>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+</li>
 <li><strong>corl_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'mp2'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
 <p>Indicates the energy method for which the correlation energy is to be
 obtained. Can also be specified with <tt class="docutils literal"><span class="pre">name</span></tt> or as the unlabeled
 first argument to the function.</p>
 </li>
 <li><strong>delta_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the (superior) energy method for which a delta correction 
+<p>Indicates the (superior) energy method for which a delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta_wfn_lesser</strong> (<em>string</em>) &#8211; <p><a href="#id1"><span class="problematic" id="id2">|dl|</span></a> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <a href="#id3"><span class="problematic" id="id4">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || etc.</p>
-<p>Indicates the inferior energy method for which a delta correction 
+<p>Indicates the inferior energy method for which a delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta2_wfn</strong> (<em>string</em>) &#8211; <p><tt class="docutils literal"><span class="pre">'ccsd'</span></tt> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the (superior) energy method for which a second delta correction 
+<p>Indicates the (superior) energy method for which a second delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 <li><strong>delta2_wfn_lesser</strong> (<em>string</em>) &#8211; <p><a href="#id5"><span class="problematic" id="id6">|dl|</span></a> <tt class="docutils literal"><span class="pre">'mp2'</span></tt> <a href="#id7"><span class="problematic" id="id8">|dr|</span></a> || <tt class="docutils literal"><span class="pre">'ccsd(t)'</span></tt> || etc.</p>
-<p>Indicates the inferior energy method for which a second delta correction 
+<p>Indicates the inferior energy method for which a second delta correction
 to the correlation energy is to be obtained.</p>
 </li>
 </ul>
@@ -217,7 +215,7 @@ to the correlation energy.</p>
 stage of the CBS definition. A complaint is generated if number of basis
 sets in stage_basis does not exactly satisfy requirements of stage_scheme.
 An exception is the default, <tt class="docutils literal"><span class="pre">'highest_1'</span></tt>, which uses the best basis
-set available. See <a class="reference internal" href="index.html#sec-cbs-xtpl"><em>Extrapolation Schemes</em></a> for all available schemes.</p>
+set available. See <a class="reference internal" href="#extrapolation-schemes">Extrapolation Schemes</a> for all available schemes.</p>
 </dd>
 </dl>
 </li>
@@ -226,7 +224,7 @@ set available. See <a class="reference internal" href="index.html#sec-cbs-xtpl">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>scf_scheme</strong> (<em>function</em>) &#8211; <p><a href="#id13"><span class="problematic" id="id14">|dl|</span></a> <tt class="docutils literal"><span class="pre">highest_1</span></tt> <a href="#id15"><span class="problematic" id="id16">|dr|</span></a> || <tt class="docutils literal"><span class="pre">scf_xtpl_helgaker_3</span></tt> || etc.</p>
 <p>Indicates the basis set extrapolation scheme to be applied to the reference energy.</p>
 </li>
@@ -244,9 +242,10 @@ to the correlation energy.</p>
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Examples :</th><td class="field-body"></td>
+</tr>
 </tbody>
 </table>
-<p><strong>Examples</strong></p>
 <div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="c"># [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy(&#39;scf&#39;)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">cbs</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span> <span class="n">scf_basis</span><span class="o">=</span><span class="s">&#39;cc-pVDZ&#39;</span><span class="p">)</span>
 </pre></div>
@@ -284,7 +283,7 @@ energy calculations which will be performed. The output snippet below is
 from the example job [2] above. It shows first each model chemistry needed
 to compute the aggregate model chemistry requested through cbs(). Then,
 since, for example, an <tt class="docutils literal"><span class="pre">energy('ccsd(t)')</span></tt> yields CCSD(T), CCSD, MP2,
-and SCF energy values, the wrapper condenses this task into the second
+and SCF energy values, the wrapper condenses this task list into the second
 list of minimum number of calculations which will actually be run.</p>
 <div class="highlight-python"><pre>Naive listing of computations required.
         scf / aug-cc-pvqz              for  SCF TOTAL ENERGY
@@ -347,12 +346,12 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
 </div>
 </div>
 <div class="section" id="extrapolation-schemes">
-<span id="sec-cbs-xtpl"></span><h1>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Permalink to this headline">¶</a></h1>
+<h1>Extrapolation Schemes<a class="headerlink" href="#extrapolation-schemes" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="wrappers.highest_1">
 <tt class="descclassname">wrappers.</tt><tt class="descname">highest_1</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#highest_1"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.highest_1" title="Permalink to this definition">¶</a></dt>
-<dd><p>Scheme for total or correlation energies with a single basis or the highest zeta-level among an array of bases.
-Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_basis_set()</span></tt>.</p>
+<dd><p>Scheme for total or correlation energies with a single basis or the highest
+zeta-level among an array of bases. Used by <a class="reference internal" href="index.html#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
 <div class="math">
 <p><img src="_images/math/3cd8ab940ea61210a7d480e8e485e76e7737a23e.png" alt="E_{total}^X = E_{total}^X"/></p>
 </div></dd></dl>
@@ -361,7 +360,7 @@ Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_
 <dt id="wrappers.scf_xtpl_helgaker_2">
 <tt class="descclassname">wrappers.</tt><tt class="descname">scf_xtpl_helgaker_2</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#scf_xtpl_helgaker_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.scf_xtpl_helgaker_2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_basis_set()</span></tt>.</p>
+Used by <a class="reference internal" href="index.html#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
 <div class="math">
 <p><img src="_images/math/72b51b4c9119c44a617acb0ec608701151a69b2e.png" alt="E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}, \alpha = 1.63"/></p>
 </div></dd></dl>
@@ -370,7 +369,7 @@ Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_
 <dt id="wrappers.scf_xtpl_helgaker_3">
 <tt class="descclassname">wrappers.</tt><tt class="descname">scf_xtpl_helgaker_3</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#scf_xtpl_helgaker_3"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.scf_xtpl_helgaker_3" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_basis_set()</span></tt>.</p>
+Used by <a class="reference internal" href="index.html#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
 <div class="math">
 <p><img src="_images/math/8bd7e5ea597531b5c037701313a5ed3be2e5c17b.png" alt="E_{total}^X = E_{total}^{\infty} + \beta e^{-\alpha X}"/></p>
 </div></dd></dl>
@@ -379,7 +378,7 @@ Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_
 <dt id="wrappers.corl_xtpl_helgaker_2">
 <tt class="descclassname">wrappers.</tt><tt class="descname">corl_xtpl_helgaker_2</tt><big>(</big><em>**largs</em><big>)</big><a class="reference internal" href="_modules/wrappers.html#corl_xtpl_helgaker_2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#wrappers.corl_xtpl_helgaker_2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_basis_set()</span></tt>.</p>
+Used by <a class="reference internal" href="index.html#wrappers.complete_basis_set" title="wrappers.complete_basis_set"><tt class="xref py py-func docutils literal"><span class="pre">wrappers.complete_basis_set()</span></tt></a>.</p>
 <div class="math">
 <p><img src="_images/math/8b701a37ac57206ea33acffe0f37054754083720.png" alt="E_{corl}^X = E_{corl}^{\infty} + \beta X^{-3}"/></p>
 </div></dd></dl>
@@ -439,7 +438,7 @@ Used by <tt class="xref py py-func docutils literal"><span class="pre">complete_
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Mar 04, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
