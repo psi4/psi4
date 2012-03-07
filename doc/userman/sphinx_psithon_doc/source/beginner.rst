@@ -2,8 +2,6 @@
 .. note:: No recompile of the PSI program is necessary for changes made to
     files in ``$PSIDATADIR``, including those described below.
 
-.. _sec_beginner_newalias:
-
 Defining a Method Alias
 =======================
 
@@ -24,8 +22,6 @@ and return the MP2.5 energy. ::
         e_scf = PsiMod.get_variable('SCF TOTAL ENERGY')
         ce_mp2 = PsiMod.get_variable('MP2 CORRELATION ENERGY')
         ce_mp3 = PsiMod.get_variable('MP3 CORRELATION ENERGY')
-        e_mp2 = e_scf + ce_mp2
-        e_mp3 = e_scf + ce_mp3
     
         ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
         e_mp25 = e_scf + ce_mp25
@@ -39,7 +35,7 @@ Compare the above to the method that resides in ``aliases.py``.
 The rationale for the changes is indicated in the comments below. ::
 
     def run_mp2_5(name, **kwargs):
-        lowername = name.lower()
+        lowername = name.lower()  # handy variable with name keyword in lowercase
         kwargs = kwargs_lower(kwargs)  # removes case sensitivity in keyword names
     
         # Run detci calculation and collect conventional quantities
@@ -47,17 +43,17 @@ The rationale for the changes is indicated in the comments below. ::
         e_scf = PsiMod.get_variable('SCF TOTAL ENERGY')
         ce_mp2 = PsiMod.get_variable('MP2 CORRELATION ENERGY')
         ce_mp3 = PsiMod.get_variable('MP3 CORRELATION ENERGY')
-        e_mp2 = e_scf + ce_mp2
+        e_mp2 = e_scf + ce_mp2  # reform mp2 and mp3 total energies for printing
         e_mp3 = e_scf + ce_mp3
     
         # Compute quantities particular to MP2.5
         ce_mp25 = 0.5 * (ce_mp2 + ce_mp3)
         e_mp25 = e_scf + ce_mp25
-        PsiMod.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)  # add new method's vitals to PSI variable repository
-        PsiMod.set_variable('MP2.5 TOTAL ENERGY', e_mp25)
+        PsiMod.set_variable('MP2.5 CORRELATION ENERGY', ce_mp25)  # add new method's important results
+        PsiMod.set_variable('MP2.5 TOTAL ENERGY', e_mp25)         #     to PSI variable repository
         PsiMod.set_variable('CURRENT CORRELATION ENERGY', ce_mp25)
-        PsiMod.set_variable('CURRENT ENERGY', e_mp25)  # geometry optimizer tracks this variable, permits MP2.5 findif optimizations
-    
+        PsiMod.set_variable('CURRENT ENERGY', e_mp25)  # geometry optimizer tracks this variable, permits
+                                                       #     MP2.5 finite difference optimizations 
         # build string of title banner and print results
         banners = ''
         banners += """PsiMod.print_out('\\n')\n"""
@@ -88,10 +84,8 @@ with the following command. ::
     energy('mp2.5')
 
 
-.. _sec_beginner_newdatabase:
-
-Creating a New Database
-=======================
+Creating a Database
+===================
 
 A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system
@@ -142,27 +136,7 @@ below.
 
 * Edit file database.py
 
-    - All routes. Optionally, rearrange the order of reactions in HRXN as this will define the order for the database.
-
-    - All routes. Optionally, add sources for geometries and any reference data to commented lines above the dbse variable.
-
-    - All routes. Optionally, the comment lines of TAGL may be edited in plain text.
-
-    - All routes. Optionally, fill in reference values (in kcal/mol) into BIND.
-
-    - All routes. Optionally, define alternate sets of reference values in the array BIND_ALTREF in the database.py file to be called in a psi4 input file as benchmark='ALTREF' . See S22.py as an example.
-
-    - All routes. Optionally, fill in the least computationally expensive 2-3 reactions into HRXN_SM and the most expensive into HRXN_LG 
-    - All routes. Optionally, define subsets of reactions in the array SUBSETARRAY = ['reaction', 'reaction'] in the database.py file to be called in a psi4 input file as subset='SUBSETARRAY'. See NBC10.py as an example.
-
-    - All routes. Necessarily (if charge and multiplicity not read in through line2 = cgmp and nor all neutral singlets), assign correct charge and multiplicity to all reagents.
-
-    - Route 3. Necessarily (if any charge and multiplicity specified for the whole reagent is not intended for fragmentA with neutral singlet fragmentB), apportion charge and multiplicity properly between fragmentA and fragmentB. This is not likely necessary if all subsystems are neutral singlets.
-
-    - Route 2. Necessarily, define the reagents that contribute to each reaction by filling in the empty single-quotes in ACTV. Add or delete lines as necessary if for each reaction more or fewer than three reagents contribute. See NHTBH.py as an example.  
-
-    - Route 2. Necessarily, define the mathematical contribution of reagents to reactions by adding a number (most often +1 or -1) for each reagent to the RXNM of each reaction. See NHTBH.py as an example.
-
-    - All routes. Necessarily, copy your new database into ``$PSIDATADIR/databases``.
-
+    According to your responses in to questions in the ixyz2database.pl script,
+    several bullets will be printed of edits you necessarily or optionally
+    should make. Copy your new database into ``$PSIDATADIR/databases``.
 

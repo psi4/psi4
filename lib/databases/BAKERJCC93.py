@@ -1,17 +1,35 @@
+"""
+**BAKERJCC93**
+
+| Database of molecules that are challenging to optimize.
+| Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
+  in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
+  further corrections.
+| No reference energies defined.
+
+- **cp**  ``'off'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+
+----
+
+"""
 import re
 import input
 
 # <<< BAKERJCC93 Database Module >>>
-# Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
-# in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
-# further corrections.
 dbse = 'BAKERJCC93'
 isOS = 'true'
 
 # <<< Database Members >>>
 HRXN = ['1_3_5_trifluorobenzene', '1_3_5_trisilacyclohexane', '1_3_difluorobenzene', '1_5_difluoronaphthalene', '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10', 'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'histidine', 'hydroxysulphane', 'menthone', 'mesityl_oxide', 'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
-HRXN_SM = ['1_3_5_trisilacyclohexane','2_hydroxybicyclopentane','acetone','acetylene','allene','ammonia','benzene','disilyl_ether','ethane','ethanol','furan','hydroxysulphane','methylamine','neopentane','water',]
-HRXN_LG = ['1_3_difluorobenzene','1_3_5_trifluorobenzene','1_5_difluoronaphthalene','ACANIL01','ACHTAR10','benzaldehyde','benzidine','caffeine','difuropyrazine','dimethylpentane','histidine','menthone','mesityl_oxide','naphthalene','pterin']
+HRXN_SM = ['1_3_5_trisilacyclohexane', '2_hydroxybicyclopentane', 'acetone', 'acetylene', 'allene', 'ammonia', 'benzene', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'hydroxysulphane', 'methylamine', 'neopentane', 'water']
+HRXN_LG = ['1_3_difluorobenzene', '1_3_5_trifluorobenzene', '1_5_difluoronaphthalene', 'ACANIL01', 'ACHTAR10', 'benzaldehyde', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'histidine', 'menthone', 'mesityl_oxide', 'naphthalene', 'pterin']
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -220,7 +238,7 @@ H       -4.04176646    -2.33351496     0.00000000
 H        0.00000000     4.66702991     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_1_3_5_trisilacyclohexane = input.process_input("""
 molecule {
@@ -245,7 +263,7 @@ H        0.00000000    -3.36147627     3.29599415
 H        0.00000000    -5.94616795    -0.46837999
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_1_3_difluorobenzene = input.process_input("""
 molecule {
@@ -264,7 +282,7 @@ H        0.00000000     4.62804882     0.00000000
 H        0.00000000    -4.70730774     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_1_5_difluoronaphthalene = input.process_input("""
 molecule {
@@ -289,7 +307,7 @@ H        3.24999844     4.13948522     0.00000000
 H       -3.24999844    -4.13948522     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_2_hydroxybicyclopentane = input.process_input("""
 molecule {
@@ -310,7 +328,7 @@ H       -0.93405780     0.26002983    -3.74579160
 H        1.51218168    -0.82620025     3.41020482
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_ACANIL01 = input.process_input("""
 molecule {
@@ -336,7 +354,7 @@ H        3.08214744     4.23491124     1.70076220
 H        3.08214744     4.23491124    -1.70076220
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_acetone = input.process_input("""
 molecule {
@@ -353,7 +371,7 @@ H        1.69360304    -1.50630994    -2.66984804
 H       -1.69360304    -1.50630994    -2.66984804
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_acetylene = input.process_input("""
 molecule {
@@ -364,7 +382,7 @@ H        0.00000000     0.00000000     3.02356266
 H        0.00000000     0.00000000    -3.02356266
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_ACHTAR10 = input.process_input("""
 molecule {
@@ -387,7 +405,7 @@ H        4.08562680    -3.90736002     2.21955987
 H        3.86856770    -2.56921447     5.31306580
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_allene = input.process_input("""
 molecule {
@@ -401,7 +419,7 @@ H        0.00000000     3.51503166     1.76772016
 H        0.00000000     3.51503166    -1.76772016
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_ammonia = input.process_input("""
 molecule {
@@ -412,7 +430,7 @@ H       -1.55848945     0.89979432    -0.15896750
 H        0.00000000    -1.79958864    -0.15896750
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_benzaldehyde = input.process_input("""
 molecule {
@@ -433,7 +451,7 @@ H       -1.92653663     4.89495992     0.00000000
 H        2.49151439     3.47033786     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_benzene = input.process_input("""
 molecule {
@@ -452,7 +470,7 @@ H        4.04944088    -2.33794578     0.00000000
 H       -4.04944088    -2.33794578     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_benzidine = input.process_input("""
 molecule {
@@ -485,7 +503,7 @@ H        1.67837252     0.43031314   -10.04483176
 H       -1.67837252    -0.43031314   -10.04483176
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_caffeine = input.process_input("""
 molecule {
@@ -517,7 +535,7 @@ H       -6.44634525    -2.62051420    -1.68782779
 units bohr
 }
 set { guess gwh }
-""")
+""", 0)
 
 BAKERJCC93_difuropyrazine = input.process_input("""
 molecule {
@@ -540,7 +558,7 @@ H        3.34537092     6.12657010     0.00000000
 H       -3.34537092    -6.12657010     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_dimethylpentane = input.process_input("""
 molecule {
@@ -570,7 +588,7 @@ H       -2.79329149    -2.82201336    -0.17320237
 H        0.07519864    -4.15853702    -1.30499111
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_disilyl_ether = input.process_input("""
 molecule {
@@ -586,7 +604,7 @@ H        2.12290049     1.35272566    -3.58475023
 H       -2.12290049     1.35272566    -3.58475023
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_ethane = input.process_input("""
 molecule {
@@ -601,7 +619,7 @@ H        0.00000000    -1.94087219     2.14455455
 H        0.00000000     1.94087219    -2.14455455
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_ethanol = input.process_input("""
 molecule {
@@ -617,7 +635,7 @@ H       -1.36184741    -2.46035674    -1.67199009
 H       -3.38002050    -0.38513679     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_furan = input.process_input("""
 molecule {
@@ -633,7 +651,7 @@ H        3.99399875    -1.84934869     0.00000000
 H       -3.99399875    -1.84934869     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_histidine = input.process_input("""
 molecule {
@@ -660,7 +678,7 @@ H       -1.09919371    -3.74001070     0.16810497
 H        0.98612615     0.24935257     8.25422581
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_hydroxysulphane = input.process_input("""
 molecule {
@@ -671,7 +689,7 @@ H        0.70878977    -0.98889634    -2.04698233
 H       -2.26522765     0.98889634     1.18771703
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_menthone = input.process_input("""
 molecule {
@@ -707,7 +725,7 @@ H        1.98900684     4.13531008     2.97264568
 H        1.40402606     4.85096335    -0.25821233
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_mesityl_oxide = input.process_input("""
 molecule {
@@ -732,7 +750,7 @@ H        5.38985873     4.60732325     0.00000000
 units bohr
 }
 set { guess gwh }
-""")
+""", 0)
 
 BAKERJCC93_methylamine = input.process_input("""
 molecule {
@@ -746,7 +764,7 @@ H       -1.92979635    -0.95990875     1.69695191
 H       -1.92979635    -0.95990875    -1.69695191
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_naphthalene = input.process_input("""
 molecule {
@@ -771,7 +789,7 @@ H        4.69449351    -2.36375141     0.00000000
 H       -4.69449351    -2.36375141     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_neopentane = input.process_input("""
 molecule {
@@ -795,7 +813,7 @@ H       -2.93275937    -2.93275937    -0.55961452
 H        2.93275937     2.93275937    -0.55961452
 units bohr
 }
-""")
+""", 0)
 
 BAKERJCC93_pterin = input.process_input("""
 molecule {
@@ -820,7 +838,7 @@ H        0.40817199     7.60076128     0.00000000
 units bohr
 }
 set { guess gwh }
-""")
+""", 0)
 
 BAKERJCC93_water = input.process_input("""
 molecule {
@@ -830,14 +848,13 @@ H        1.48150016     0.34900695     0.00000000
 H       -1.48150016     0.34900695     0.00000000
 units bohr
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
 
-            molname = rxnpattern.match(rgt)
-            GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
-
+        molname = rxnpattern.match(rgt)
+        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))

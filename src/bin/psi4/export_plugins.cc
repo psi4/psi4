@@ -130,8 +130,8 @@ void py_psi_plugin_close_all()
 void export_plugins()
 {
     // plugins
-    def("plugin_load",      py_psi_plugin_load);
-    def("plugin",           py_psi_plugin);
-    def("plugin_close",     py_psi_plugin_close);
-    def("plugin_close_all", py_psi_plugin_close_all);
+    def("plugin_load",      py_psi_plugin_load, "docstring");
+    def("plugin",           py_psi_plugin, "docstring");
+    def("plugin_close",     py_psi_plugin_close, "docstring");
+    def("plugin_close_all", py_psi_plugin_close_all, "docstring");
 }

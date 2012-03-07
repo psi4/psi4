@@ -900,15 +900,17 @@ BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_option_ar
 
 BOOST_PYTHON_MODULE(PsiMod)
 {
-    enum_<PsiReturnType>("PsiReturnType")
+    docstring_options sphx_doc_options(true, true, false);
+
+    enum_<PsiReturnType>("PsiReturnType", "docstring")
             .value("Success", Success)
             .value("Failure", Failure)
             .value("Balk", Balk)
             .value("EndLoop", EndLoop)
             .export_values();
 
-    def("version", py_psi_version);
-    def("clean", py_psi_clean);
+    def("version", py_psi_version, "docstring");
+    def("clean", py_psi_clean, "Function to remove scratch files. Call between independent jobs.");
 
     // Benchmarks
     export_benchmarks();
@@ -923,121 +925,121 @@ BOOST_PYTHON_MODULE(PsiMod)
     export_oeprop();
 
     // Options
-    def("prepare_options_for_module", py_psi_prepare_options_for_module);
-    def("set_active_molecule", py_psi_set_active_molecule);
-    def("get_active_molecule", &py_psi_get_active_molecule);
-    def("reference_wavefunction", py_psi_reference_wavefunction);
-    def("get_gradient", py_psi_get_gradient);
-    def("set_gradient", py_psi_set_gradient);
-    def("set_memory", py_psi_set_memory);
-    def("get_memory", py_psi_get_memory);
-    def("set_nthread", &py_psi_set_n_threads);
-    def("nthread", &py_psi_get_n_threads);
-    def("nproc", &py_psi_get_nproc);
-    def("me", &py_psi_get_me);
+    def("prepare_options_for_module", py_psi_prepare_options_for_module, "docstring");
+    def("set_active_molecule", py_psi_set_active_molecule, "docstring");
+    def("get_active_molecule", &py_psi_get_active_molecule, "docstring");
+    def("reference_wavefunction", py_psi_reference_wavefunction, "docstring");
+    def("get_gradient", py_psi_get_gradient, "docstring");
+    def("set_gradient", py_psi_set_gradient, "docstring");
+    def("set_memory", py_psi_set_memory, "docstring");
+    def("get_memory", py_psi_get_memory, "docstring");
+    def("set_nthread", &py_psi_set_n_threads, "docstring");
+    def("nthread", &py_psi_get_n_threads, "docstring");
+    def("nproc", &py_psi_get_nproc, "docstring");
+    def("me", &py_psi_get_me, "docstring");
 
-    def("print_options", py_psi_print_options);
-    def("print_global_options", py_psi_print_global_options);
-    def("print_out", py_psi_print_out);
+    def("print_options", py_psi_print_options, "docstring");
+    def("print_global_options", py_psi_print_global_options, "docstring");
+    def("print_out", py_psi_print_out, "docstring");
 
     // Set the different local option types
-    def("set_local_option", py_psi_set_option_string);
-    def("set_local_option", py_psi_set_option_double);
-    def("set_local_option", py_psi_set_option_int);
+    def("set_local_option", py_psi_set_option_string, "docstring");
+    def("set_local_option", py_psi_set_option_double, "docstring");
+    def("set_local_option", py_psi_set_option_int, "docstring");
     def("set_local_option", py_psi_set_option_array, set_local_option_overloads());
 
     // Set the different global option types
-    def("set_global_option", py_psi_set_global_option_string);
-    def("set_global_option", py_psi_set_global_option_double);
-    def("set_global_option", py_psi_set_global_option_int);
+    def("set_global_option", py_psi_set_global_option_string, "docstring");
+    def("set_global_option", py_psi_set_global_option_double, "docstring");
+    def("set_global_option", py_psi_set_global_option_int, "docstring");
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
-    def("set_global_option_python", py_psi_set_global_option_python);
-    def("set_local_option_python", py_psi_set_local_option_python);
+    def("set_global_option_python", py_psi_set_global_option_python, "docstring");
+    def("set_local_option_python", py_psi_set_local_option_python, "docstring");
 
-    def("get_global_option_list", py_psi_get_global_option_list);
+    def("get_global_option_list", py_psi_get_global_option_list, "docstring");
 
     // Get the option; letting liboptions decide whether to use global or local
-    def("get_option", py_psi_get_option);
+    def("get_option", py_psi_get_option, "docstring");
 
     // Get the option; specify whether to use global or local
-    def("get_global_option", py_psi_get_global_option);
-    def("get_local_option", py_psi_get_local_option);
+    def("get_global_option", py_psi_get_global_option, "docstring");
+    def("get_local_option", py_psi_get_local_option, "docstring");
 
     // Returns whether the option has changed/revoke has changed for silent resets
-    def("has_option_changed", py_psi_has_option_changed);
-    def("has_global_option_changed", py_psi_has_global_option_changed);
-    def("has_local_option_changed", py_psi_has_local_option_changed);
-    def("revoke_option_changed", py_psi_revoke_option_changed);
-    def("revoke_global_option_changed", py_psi_revoke_global_option_changed);
-    def("revoke_local_option_changed", py_psi_revoke_local_option_changed);
+    def("has_option_changed", py_psi_has_option_changed, "docstring");
+    def("has_global_option_changed", py_psi_has_global_option_changed, "docstring");
+    def("has_local_option_changed", py_psi_has_local_option_changed, "docstring");
+    def("revoke_option_changed", py_psi_revoke_option_changed, "docstring");
+    def("revoke_global_option_changed", py_psi_revoke_global_option_changed, "docstring");
+    def("revoke_local_option_changed", py_psi_revoke_local_option_changed, "docstring");
 
     // These return/set variable value found in Process::environment.globals
-    def("get_variable", py_psi_get_variable);
-    def("set_variable", py_psi_set_variable);
+    def("get_variable", py_psi_get_variable, "docstring");
+    def("set_variable", py_psi_set_variable, "docstring");
 
     // Print the variables found in Process::environment.globals
-    def("print_variables", py_psi_print_variable_map);
+    def("print_variables", py_psi_print_variable_map, "docstring");
 
     // Adds a custom user basis set file.
-    def("add_user_basis_file", py_psi_add_user_specified_basis_file);
+    def("add_user_basis_file", py_psi_add_user_specified_basis_file, "docstring");
 
     // Get the name of the directory where the input file is at
-    def("get_input_directory", py_psi_get_input_directory);
+    def("get_input_directory", py_psi_get_input_directory, "docstring");
 
     // Returns the location where the Psi4 source is located.
-    def("psi_top_srcdir", py_psi_top_srcdir);
+    def("psi_top_srcdir", py_psi_top_srcdir, "docstring");
 
-    def("flush_outfile", py_flush_outfile);
-    def("close_outfile", py_close_outfile);
-    def("reopen_outfile", py_reopen_outfile);
-    def("outfile_name", py_get_outfile_name);
+    def("flush_outfile", py_flush_outfile, "docstring");
+    def("close_outfile", py_close_outfile, "docstring");
+    def("reopen_outfile", py_reopen_outfile, "docstring");
+    def("outfile_name", py_get_outfile_name, "docstring");
 
     // modules
-    def("mints", py_psi_mints);
-    def("deriv", py_psi_deriv);
+    def("mints", py_psi_mints, "docstring");
+    def("deriv", py_psi_deriv, "docstring");
 
     typedef double (*scf_module_none)();
     typedef double (*scf_module_two)(PyObject*, PyObject*);
 
-    def("scf", py_psi_scf_callbacks);
-    def("scf", py_psi_scf);
-    def("dcft", py_psi_dcft);
-    def("libfock", py_psi_libfock);
-    def("dfmp2", py_psi_dfmp2);
-    def("dfcc", py_psi_dfcc);
-    def("lmp2", py_psi_lmp2);
-    def("mp2", py_psi_mp2);
-    def("mcscf", py_psi_mcscf);
-    def("mrcc_generate_input", py_psi_mrcc_generate_input);
-    def("mrcc_load_densities", py_psi_mrcc_load_densities);
-    def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
+    def("scf", py_psi_scf_callbacks, "docstring");
+    def("scf", py_psi_scf, "docstring");
+    def("dcft", py_psi_dcft, "docstring");
+    def("libfock", py_psi_libfock, "docstring");
+    def("dfmp2", py_psi_dfmp2, "docstring");
+    def("dfcc", py_psi_dfcc, "docstring");
+    def("lmp2", py_psi_lmp2, "docstring");
+    def("mp2", py_psi_mp2, "docstring");
+    def("mcscf", py_psi_mcscf, "docstring");
+    def("mrcc_generate_input", py_psi_mrcc_generate_input, "docstring");
+    def("mrcc_load_densities", py_psi_mrcc_load_densities, "docstring");
+    def("fd_geoms_1_0", py_psi_fd_geoms_1_0, "docstring");
     //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
-    def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
-    def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1);
-    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0);
-    def("fd_1_0", py_psi_fd_1_0);
+    def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0, "docstring");
+    def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1, "docstring");
+    def("fd_geoms_hessian_0", py_psi_fd_geoms_hessian_0, "docstring");
+    def("fd_1_0", py_psi_fd_1_0, "docstring");
     //def("fd_2_0", py_psi_fd_2_0);
-    def("fd_freq_0", py_psi_fd_freq_0);
-    def("fd_freq_1", py_psi_fd_freq_1);
-    def("fd_hessian_0", py_psi_fd_hessian_0);
-    def("sapt", py_psi_sapt);
-    def("psimrcc", py_psi_psimrcc);
-    def("optking", py_psi_optking);
-    def("transqt", py_psi_transqt);
-    def("transqt2", py_psi_transqt2);
-    def("ccsort", py_psi_ccsort);
-    def("ccenergy", py_psi_ccenergy);
-    def("cctriples", py_psi_cctriples);
-    def("detci", py_psi_detci);
-    def("cchbar", py_psi_cchbar);
-    def("cclambda", py_psi_cclambda);
-    def("ccdensity", py_psi_ccdensity);
-    def("ccresponse", py_psi_ccresponse);
-    def("cceom", py_psi_cceom);
-    def("omp2", py_psi_omp2);
-    def("adc", py_psi_adc);
-    def("opt_clean", py_psi_opt_clean);
+    def("fd_freq_0", py_psi_fd_freq_0, "docstring");
+    def("fd_freq_1", py_psi_fd_freq_1, "docstring");
+    def("fd_hessian_0", py_psi_fd_hessian_0, "docstring");
+    def("sapt", py_psi_sapt, "docstring");
+    def("psimrcc", py_psi_psimrcc, "docstring");
+    def("optking", py_psi_optking, "docstring");
+    def("transqt", py_psi_transqt, "docstring");
+    def("transqt2", py_psi_transqt2, "docstring");
+    def("ccsort", py_psi_ccsort, "docstring");
+    def("ccenergy", py_psi_ccenergy, "docstring");
+    def("cctriples", py_psi_cctriples, "docstring");
+    def("detci", py_psi_detci, "docstring");
+    def("cchbar", py_psi_cchbar, "docstring");
+    def("cclambda", py_psi_cclambda, "docstring");
+    def("ccdensity", py_psi_ccdensity, "docstring");
+    def("ccresponse", py_psi_ccresponse, "docstring");
+    def("cceom", py_psi_cceom, "docstring");
+    def("omp2", py_psi_omp2, "docstring");
+    def("adc", py_psi_adc, "docstring");
+    def("opt_clean", py_psi_opt_clean, "docstring");
 
     // Define library classes
     export_psio();
@@ -1048,15 +1050,15 @@ BOOST_PYTHON_MODULE(PsiMod)
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 
     class_<Process::Environment>("Environment").
-        def("__getitem__", environmentStringFunction(&Process::Environment::operator ()));
+        def("__getitem__", environmentStringFunction(&Process::Environment::operator ()), "docstring");
 
     typedef string (Process::Arguments::*argumentsStringFunction)(int);
 
     class_<Process::Arguments>("Arguments").
-        def("__getitem__", argumentsStringFunction(&Process::Arguments::operator ()));
+        def("__getitem__", argumentsStringFunction(&Process::Arguments::operator ()), "docstring");
 
     class_<Process>("Process").
-        add_static_property("environment", Process::get_environment);
+        add_static_property("environment", Process::get_environment, "docstring");
 }
 
 Python::Python() : Script()
@@ -1142,6 +1144,8 @@ void Python::run(FILE *input)
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");
             PyRun_SimpleString(s);
+            //s = strdup("help(PsiMod)");
+            //PyRun_SimpleString(s);
 
             // Process the input file
             PyObject *input;

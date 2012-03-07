@@ -1,17 +1,43 @@
+"""
+**S22**
+
+| Database (Hobza) of interaction energies for bimolecular complexes.
+| Geometries from Jurecka et al. PCCP 8 1985 (2006).
+| Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **benchmark**
+
+  - ``'S220'`` Jurecka et al. PCCP 8 1985 (2006).
+  - ``'S22A'`` Takatani et al. JCP 132 144104 (2010).
+  - |dl| ``'S22B'`` |dr| Marshall et al. JCP 135 194102 (2011).
+
+- **subset**
+
+  - ``'small'`` water dimer, methane dimer, ethene-ethine
+  - ``'large'`` adenine-thymine
+  - ``'HB'`` hydrogen-bonded systems
+  - ``'MX'`` mixed-influence systems
+  - ``'DD'`` dispersion-dominated systems
+
+----
+
+"""
 import input
 
 # <<< S22 Database Module >>>
-# Geometries from Jurecka et al. PCCP 8 1985 (2006).
-# Reference interaction energies from the following articles:
-#   S220: Jurecka et al. PCCP 8 1985 (2006).
-#   S22A: Takatani et al. JCP 132 144104 (2010).
-#   S22B: Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
 dbse = 'S22'
 
 # <<< Database Members >>>
 HRXN = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
 HRXN_SM = [2, 8, 16]
 HRXN_LG = [15]
+HB = [1, 2, 3, 4, 5, 6, 7]
+MX = [13, 15, 16, 17, 18, 19, 21, 22]
+DD = [8, 9, 10, 11, 12, 14, 20]
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -871,7 +897,7 @@ GEOS = {}
 for rxn in HRXN:
 
     GEOS["%s-%s-dimer"      % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn))
-    GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_CP
-    GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_CP
-    GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoA_unCP
-    GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = eval("%s_%s" % (dbse, rxn)) + monoB_unCP
+    GEOS["%s-%s-monoA-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_CP
+    GEOS["%s-%s-monoB-CP"   % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_CP
+    GEOS["%s-%s-monoA-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoA_unCP
+    GEOS["%s-%s-monoB-unCP" % (dbse, rxn)] = str(eval("%s_%s" % (dbse, rxn))) + monoB_unCP

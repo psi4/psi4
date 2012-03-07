@@ -59,12 +59,18 @@
           <div class="body">
             
   <h1>Source code for text</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;Module with utility classes and functions related</span>
+<span class="sd">to data tables and text.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">PsiMod</span>
 <span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">import</span> <span class="nn">physconst</span>
 <span class="kn">from</span> <span class="nn">psiexceptions</span> <span class="kn">import</span> <span class="o">*</span>
 
+
 <div class="viewcode-block" id="Table"><a class="viewcode-back" href="../index.html#text.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Class defining a flexible Table object for storing data.&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="p">(),</span>
                  <span class="n">row_label_width</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
@@ -86,11 +92,13 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
 
 <div class="viewcode-block" id="Table.format_label"><a class="viewcode-back" href="../index.html#text.Table.format_label">[docs]</a>    <span class="k">def</span> <span class="nf">format_label</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to pad the width of Table object labels.&quot;&quot;&quot;</span>
         <span class="c">#str = lambda x: ((&#39;%%%d.%df&#39; % (self.row_label_width, self.row_label_precision)) % x)</span>
         <span class="nb">str</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">((</span><span class="s">&#39;</span><span class="si">%%%d</span><span class="s">s&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_label_width</span><span class="p">))</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">labels</span><span class="p">))</span>
 </div>
 <div class="viewcode-block" id="Table.format_values"><a class="viewcode-back" href="../index.html#text.Table.format_values">[docs]</a>    <span class="k">def</span> <span class="nf">format_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to pad the width of Table object data cells.&quot;&quot;&quot;</span>
         <span class="nb">str</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">((</span><span class="s">&#39;</span><span class="si">%%%d</span><span class="s">.</span><span class="si">%d</span><span class="s">f&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">))</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
         <span class="k">return</span> <span class="s">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">))</span>
 </div>
@@ -104,11 +112,12 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">label</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">label</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">]</span> <span class="p">)</span> <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">label</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">]))</span>
 
 <div class="viewcode-block" id="Table.save"><a class="viewcode-back" href="../index.html#text.Table.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to save string of the Table object to *file*.&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">pickle</span>
         <span class="n">pickle_str</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
         <span class="n">fileobj</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
@@ -139,10 +148,15 @@
         <span class="k">return</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span>
 
 <div class="viewcode-block" id="Table.copy"><a class="viewcode-back" href="../index.html#text.Table.copy">[docs]</a>    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to return a copy of the Table object.&quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">copy</span>
         <span class="k">return</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 </div>
-<div class="viewcode-block" id="Table.absolute_to_relative"><a class="viewcode-back" href="../index.html#text.Table.absolute_to_relative">[docs]</a>    <span class="k">def</span> <span class="nf">absolute_to_relative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Factor</span> <span class="o">=</span> <span class="n">physconst</span><span class="o">.</span><span class="n">psi_hartree2kcalmol</span><span class="p">):</span>
+<div class="viewcode-block" id="Table.absolute_to_relative"><a class="viewcode-back" href="../index.html#text.Table.absolute_to_relative">[docs]</a>    <span class="k">def</span> <span class="nf">absolute_to_relative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Factor</span><span class="o">=</span><span class="n">physconst</span><span class="o">.</span><span class="n">psi_hartree2kcalmol</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to shift the data of each column of the Table object</span>
+<span class="sd">        such that the lowest value is zero. A scaling factor of *Factor* is applied.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">import</span> <span class="nn">copy</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -159,8 +173,11 @@
                 <span class="c">#print datarow[1][col]</span>
                 <span class="n">datarow</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">datarow</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">-</span> <span class="n">current_min</span><span class="p">[</span><span class="n">col</span><span class="p">])</span> <span class="o">*</span> <span class="n">Factor</span>
 </div>
-<div class="viewcode-block" id="Table.scale"><a class="viewcode-back" href="../index.html#text.Table.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Factor</span> <span class="o">=</span> <span class="n">physconst</span><span class="o">.</span><span class="n">psi_hartree2kcalmol</span><span class="p">):</span>
+<div class="viewcode-block" id="Table.scale"><a class="viewcode-back" href="../index.html#text.Table.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Factor</span><span class="o">=</span><span class="n">physconst</span><span class="o">.</span><span class="n">psi_hartree2kcalmol</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Function to apply a scaling factor *Factor* to the</span>
+<span class="sd">        data of the Table object.</span>
 
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">return</span>
 
@@ -168,34 +185,44 @@
             <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">datarow</span><span class="p">[</span><span class="mi">1</span><span class="p">])):</span>
                 <span class="c">#print datarow[1][col]</span>
                 <span class="n">datarow</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">datarow</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">*</span> <span class="n">Factor</span>
+
 </div></div>
-<div class="viewcode-block" id="banner"><a class="viewcode-back" href="../index.html#text.banner">[docs]</a><span class="k">def</span> <span class="nf">banner</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">type</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mi">35</span><span class="p">):</span>
+<div class="viewcode-block" id="banner"><a class="viewcode-back" href="../index.html#text.banner">[docs]</a><span class="k">def</span> <span class="nf">banner</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">35</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to print *text* to output file in a banner of</span>
+<span class="sd">    minimum width *width* and minimum three-line height for</span>
+<span class="sd">    *type* = 1 or one-line height for *type* = 2.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lines</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
     <span class="n">max_length</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
         <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_length</span><span class="p">):</span>
             <span class="n">max_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-    
-    <span class="n">max_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">width</span><span class="p">,</span> <span class="n">max_length</span><span class="p">]);</span>
-   
-    <span class="n">null</span> <span class="o">=</span> <span class="s">&#39;&#39;</span> 
+
+    <span class="n">max_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">width</span><span class="p">,</span> <span class="n">max_length</span><span class="p">])</span>
+
+    <span class="n">null</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="n">banner</span>  <span class="o">=</span> <span class="s">&#39;  //&#39;</span> <span class="o">+</span> <span class="n">null</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">max_length</span><span class="p">,</span><span class="s">&#39;&gt;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;//</span><span class="se">\n</span><span class="s">&#39;</span>
+        <span class="n">banner</span> <span class="o">=</span> <span class="s">&#39;  //&#39;</span> <span class="o">+</span> <span class="n">null</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">max_length</span><span class="p">,</span> <span class="s">&#39;&gt;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;//</span><span class="se">\n</span><span class="s">&#39;</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
             <span class="n">banner</span> <span class="o">+=</span> <span class="s">&#39;  //&#39;</span> <span class="o">+</span> <span class="n">line</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">max_length</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;//</span><span class="se">\n</span><span class="s">&#39;</span>
-        <span class="n">banner</span> <span class="o">+=</span> <span class="s">&#39;  //&#39;</span> <span class="o">+</span> <span class="n">null</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">max_length</span><span class="p">,</span><span class="s">&#39;&lt;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;//</span><span class="se">\n</span><span class="s">&#39;</span>
-    
+        <span class="n">banner</span> <span class="o">+=</span> <span class="s">&#39;  //&#39;</span> <span class="o">+</span> <span class="n">null</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">max_length</span><span class="p">,</span> <span class="s">&#39;&lt;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&#39;//</span><span class="se">\n</span><span class="s">&#39;</span>
+
     <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
         <span class="n">banner</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
-            <span class="n">banner</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">max_length</span><span class="p">,</span><span class="s">&#39;=&#39;</span><span class="p">)</span> 
+            <span class="n">banner</span> <span class="o">+=</span> <span class="p">(</span><span class="s">&#39; &#39;</span> <span class="o">+</span> <span class="n">line</span> <span class="o">+</span> <span class="s">&#39; &#39;</span><span class="p">)</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="n">max_length</span><span class="p">,</span> <span class="s">&#39;=&#39;</span><span class="p">)</span>
 
     <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="n">banner</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="print_stdout"><a class="viewcode-back" href="../index.html#text.print_stdout">[docs]</a><span class="k">def</span> <span class="nf">print_stdout</span><span class="p">(</span><span class="n">stuff</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to print *stuff* to standard output stream.&quot;&quot;&quot;</span>
     <span class="k">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stuff</span>
+
 </div>
 <div class="viewcode-block" id="print_stderr"><a class="viewcode-back" href="../index.html#text.print_stderr">[docs]</a><span class="k">def</span> <span class="nf">print_stderr</span><span class="p">(</span><span class="n">stuff</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to print *stuff* to standard error stream.&quot;&quot;&quot;</span>
     <span class="k">print</span> <span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">stuff</span></div>
 </pre></div>
 
@@ -241,7 +268,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Mar 04, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

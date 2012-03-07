@@ -62,7 +62,7 @@
 files in <tt class="docutils literal"><span class="pre">$PSIDATADIR</span></tt>, including those described below.</p>
 </div>
 <div class="section" id="defining-a-method-alias">
-<span id="sec-beginner-newalias"></span><h1>Defining a Method Alias<a class="headerlink" href="#defining-a-method-alias" title="Permalink to this headline">¶</a></h1>
+<h1>Defining a Method Alias<a class="headerlink" href="#defining-a-method-alias" title="Permalink to this headline">¶</a></h1>
 <p>Since quantum chemical methods in PSI4 are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward
 to create aliases to commonly run calculations or to define hybrid methods. The
@@ -78,8 +78,6 @@ and return the MP2.5 energy.</p>
     <span class="n">e_scf</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
     <span class="n">ce_mp2</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP2 CORRELATION ENERGY&#39;</span><span class="p">)</span>
     <span class="n">ce_mp3</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP3 CORRELATION ENERGY&#39;</span><span class="p">)</span>
-    <span class="n">e_mp2</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp2</span>
-    <span class="n">e_mp3</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp3</span>
 
     <span class="n">ce_mp25</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ce_mp2</span> <span class="o">+</span> <span class="n">ce_mp3</span><span class="p">)</span>
     <span class="n">e_mp25</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp25</span>
@@ -93,7 +91,7 @@ and return the MP2.5 energy.</p>
 <p>Compare the above to the method that resides in <tt class="docutils literal"><span class="pre">aliases.py</span></tt>.
 The rationale for the changes is indicated in the comments below.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run_mp2_5</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>  <span class="c"># handy variable with name keyword in lowercase</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c"># removes case sensitivity in keyword names</span>
 
     <span class="c"># Run detci calculation and collect conventional quantities</span>
@@ -101,17 +99,17 @@ The rationale for the changes is indicated in the comments below.</p>
     <span class="n">e_scf</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
     <span class="n">ce_mp2</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP2 CORRELATION ENERGY&#39;</span><span class="p">)</span>
     <span class="n">ce_mp3</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;MP3 CORRELATION ENERGY&#39;</span><span class="p">)</span>
-    <span class="n">e_mp2</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp2</span>
+    <span class="n">e_mp2</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp2</span>  <span class="c"># reform mp2 and mp3 total energies for printing</span>
     <span class="n">e_mp3</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp3</span>
 
     <span class="c"># Compute quantities particular to MP2.5</span>
     <span class="n">ce_mp25</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">ce_mp2</span> <span class="o">+</span> <span class="n">ce_mp3</span><span class="p">)</span>
     <span class="n">e_mp25</span> <span class="o">=</span> <span class="n">e_scf</span> <span class="o">+</span> <span class="n">ce_mp25</span>
-    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>  <span class="c"># add new method&#39;s vitals to PSI variable repository</span>
-    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 TOTAL ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>  <span class="c"># add new method&#39;s important results</span>
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;MP2.5 TOTAL ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>         <span class="c">#     to PSI variable repository</span>
     <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">ce_mp25</span><span class="p">)</span>
-    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>  <span class="c"># geometry optimizer tracks this variable, permits MP2.5 findif optimizations</span>
-
+    <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">e_mp25</span><span class="p">)</span>  <span class="c"># geometry optimizer tracks this variable, permits</span>
+                                                   <span class="c">#     MP2.5 finite difference optimizations</span>
     <span class="c"># build string of title banner and print results</span>
     <span class="n">banners</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="n">banners</span> <span class="o">+=</span> <span class="s">&quot;&quot;&quot;PsiMod.print_out(&#39;</span><span class="se">\\</span><span class="s">n&#39;)</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;</span>
@@ -143,8 +141,8 @@ with the following command.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="creating-a-new-database">
-<span id="sec-beginner-newdatabase"></span><h1>Creating a New Database<a class="headerlink" href="#creating-a-new-database" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="creating-a-database">
+<h1>Creating a Database<a class="headerlink" href="#creating-a-database" title="Permalink to this headline">¶</a></h1>
 <p>A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system
 (may be a dimer) whose geometry you are possession of and whose electronic
@@ -225,7 +223,7 @@ variable for the next step.</p>
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Defining a Method Alias</a></li>
-<li><a class="reference internal" href="#creating-a-new-database">Creating a New Database</a></li>
+<li><a class="reference internal" href="#creating-a-database">Creating a Database</a></li>
 </ul>
 
   <h3>This Page</h3>
@@ -269,7 +267,7 @@ variable for the next step.</p>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 20, 2012.
+      Last updated on Mar 04, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

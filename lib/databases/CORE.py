@@ -1,3 +1,15 @@
+"""
+**CORE**
+
+Database of Pulay corannulene structures. Subsumed into CFLOW.
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+----
+
+"""
 import re
 import input
 
@@ -34,11 +46,11 @@ for rxn in HRXN:
                                       '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values [kcal/mol] >>>
-# Taken from 
+# Taken from
 BIND = {}
 BIND['%s-%s'            % (dbse, 'dimer3_54'             )] =    -14.8000
 BIND['%s-%s'            % (dbse, 'dimer3_64'             )] =    -15.4000
-BIND['%s-%s'            % (dbse, 'dimer3_73'             )] =    -15.6000 # Bootstrapped, Pulay does not report 
+BIND['%s-%s'            % (dbse, 'dimer3_73'             )] =    -15.6000  # Bootstrapped, Pulay does not report
 BIND['%s-%s'            % (dbse, 'dimer3_74'             )] =    -15.4000
 BIND['%s-%s'            % (dbse, 'dimer3_84'             )] =    -15.0000
 
@@ -148,7 +160,7 @@ H        4.24094400     0.10729578     2.92626003
 H        3.49401500     2.40602178     2.92632803
 units angstrom
 }
-""")
+""", 0)
 
 CORE_dimer3_64 = input.process_input("""
 molecule dimer {
@@ -217,7 +229,7 @@ H        4.24094400     0.10729578     3.02626003
 H        3.49401500     2.40602178     3.02632803
 units angstrom
 }
-""")
+""", 0)
 
 CORE_dimer3_73 = input.process_input("""
 molecule dimer {
@@ -286,7 +298,7 @@ H        4.24094400     0.10729578     3.11626003
 H        3.49401500     2.40602178     3.11632803
 units angstrom
 }
-""")
+""", 0)
 
 CORE_dimer3_74 = input.process_input("""
 molecule dimer {
@@ -355,7 +367,7 @@ H        4.24094400     0.10729578     3.12626003
 H        3.49401500     2.40602178     3.12632803
 units angstrom
 }
-""")
+""", 0)
 
 CORE_dimer3_84 = input.process_input("""
 molecule dimer {
@@ -424,16 +436,15 @@ H        4.24094400     0.10729578     3.22626003
 H        3.49401500     2.40602178     3.22632803
 units angstrom
 }
-""")
+""", 0)
 
 # <<< Geometry Specification Strings >>>
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
 
-   GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
-   GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP
-   GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP
-   GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP
-   GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP
-
+    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))
+    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP
+    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP
+    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP
+    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP

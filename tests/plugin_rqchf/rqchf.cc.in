@@ -140,7 +140,7 @@ double RQCHF::compute_energy()
     std::map<std::string, SharedMatrix>& tasks  = cphf->b();
     std::map<std::string, SharedMatrix>& results = cphf->x();
 
-    iteration_ = 0;
+    iteration_ = 1;
     bool converged = false;
     if (Communicator::world->me() == 0) {
         fprintf(outfile, "  ==> Iterations <==\n\n");
@@ -148,15 +148,15 @@ double RQCHF::compute_energy()
     }
     fflush(outfile);
 
-    double absDE = 1.0;
+    Drms_ = 0.1;
+    /*
+     * Build the Fock matrix and assign the diagonal elements to epsilon
+     */
+    form_D();
+    form_G();
+    form_F();
+    E_ = compute_E();
     do{
-        /*
-         * Build the Fock matrix and assign the diagonal elements to epsilon
-         */
-        form_D();
-        form_G();
-        form_F();
-
         /*
          * Compute the gradient (Fia)
          */
@@ -195,12 +195,16 @@ double RQCHF::compute_energy()
         grad->scale(-1.0);
         // Task and solve linear Equations
         tasks["Orbital Gradient"] = grad;
-        cphf->set_convergence(sqrt(absDE) / 1000);
+        cphf->set_convergence(Drms_ / 10.0);
         cphf->set_reference(Process::environment.reference_wavefunction());
         cphf->compute_energy();
         SharedMatrix X = results["Orbital Gradient"];
-
         rotate_orbitals(X);
+
+        form_D();
+        form_G();
+        form_F();
+
         Drms_ = grad->rms();
         Eold_ = E_;
         E_ = compute_E();
@@ -214,6 +218,13 @@ double RQCHF::compute_energy()
         converged = Drms_ < density_threshold_ && fabs(E_ - Eold_) < energy_threshold_;
         ++iteration_;
     }while (!converged && iteration_ < maxiter_ );
+
+    if (converged) {
+        fprintf(outfile, "\n  Energy converged.\n");
+        fprintf(outfile, "\n  @%s Final Energy: %20.14f",reference.c_str(), E_);
+    }else{
+        fprintf(outfile, "\n Energy did not converge!\n");
+    }
 
     // We're not guaranteed canonical orbitals, because o-o and v-v rotations are not considered.
     // This can be done by calling semicanonicalize() to diagonalize only subblocks, but for now

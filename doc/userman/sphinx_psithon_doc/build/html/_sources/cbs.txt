@@ -9,7 +9,7 @@ energy calculations which will be performed. The output snippet below is
 from the example job [2] above. It shows first each model chemistry needed
 to compute the aggregate model chemistry requested through cbs(). Then,
 since, for example, an ``energy('ccsd(t)')`` yields CCSD(T), CCSD, MP2,
-and SCF energy values, the wrapper condenses this task into the second
+and SCF energy values, the wrapper condenses this task list into the second
 list of minimum number of calculations which will actually be run. ::
 
     Naive listing of computations required.
@@ -73,7 +73,6 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
     ----------------------------------------------------------------------------------
 
 
-.. _sec_cbs_xtpl:
 
 Extrapolation Schemes
 =====================

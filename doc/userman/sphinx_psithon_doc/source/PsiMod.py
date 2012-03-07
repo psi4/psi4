@@ -3,6 +3,9 @@
 
 """
 
+class Molecule:
+    pass
+
 def sldkfjksl():
     return 4.4
 
