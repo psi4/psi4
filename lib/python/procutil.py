@@ -41,7 +41,7 @@ def format_molecule_for_input(mol):
     commands = ''
     commands += 'input.process_input("""\nmolecule %s {\n' % (mol.name())
     commands += mol.save_string_xyz()
-    commands += 'units angstrom\n}\n""")\n'
+    commands += 'units angstrom\n}\n""", 0)\n'
     return eval(commands)
 
 
