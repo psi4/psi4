@@ -263,6 +263,34 @@ OptReturnType optking(void) {
   if ( converged ) {
     if (Opt_params.opt_type == OPT_PARAMS::IRC)
     {
+      if(!p_irc_data->go)
+      {
+        fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
+        p_irc_data->progress_report(*mol1);
+        p_Opt_data->write(); // save data to optimization binary file
+
+        fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+
+        if (Opt_params.write_final_step_geometry) {
+          fprintf(outfile,"\tFinal (next step) structure:\n");
+          mol1->print_geom();  // write geometry -> output file
+          fprintf(outfile,"\tSaving final (next step) structure.\n");
+        }
+        else { // default - get last geometry and write that one
+          double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
+          mol1->set_geom_array(x);
+          fprintf(outfile,"\tFinal (previous) structure:\n");
+          mol1->print_geom();  // write geometry -> output file
+          fprintf(outfile,"\tSaving final (previous) structure.\n");
+        }
+
+        delete p_Opt_data;
+        mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
+        print_end();
+
+        close_output_dat();
+        return OptReturnEndloop;
+      }
 cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
 //   TODO : could delete old opt_data entries
       //delete all entries but those on reaction path
