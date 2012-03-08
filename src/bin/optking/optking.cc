@@ -276,7 +276,7 @@ cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n
     }
     else
     {
-      fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
+      fprintf(outfile,"\n  **** Optimization is complete! ****\n");
       p_Opt_data->summary();
       p_Opt_data->write(); // save data to optimization binary file
 
