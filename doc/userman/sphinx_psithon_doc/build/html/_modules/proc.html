@@ -72,7 +72,7 @@
 <span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">input</span>
 <span class="kn">import</span> <span class="nn">physconst</span>
-<span class="kn">from</span> <span class="nn">molecule</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">molutil</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">text</span> <span class="kn">import</span> <span class="o">*</span>
 
 
@@ -605,7 +605,23 @@
     <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
     <span class="n">e_dfcc</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">dfcc</span><span class="p">()</span>
     <span class="k">return</span> <span class="n">e_dfcc</span>
+</div>
+<div class="viewcode-block" id="run_psimrcc"><a class="viewcode-back" href="../index.html#proc.run_psimrcc">[docs]</a><span class="k">def</span> <span class="nf">run_psimrcc</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function encoding sequence of PSI module calls for a PSIMRCC computation</span>
+<span class="sd">     using a reference from the MCSCF module</span>
 
+<span class="sd">    &quot;&quot;&quot;</span>  
+    <span class="n">run_mcscf</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">psimrcc</span><span class="p">()</span>
+</div>
+<div class="viewcode-block" id="run_psimrcc_scf"><a class="viewcode-back" href="../index.html#proc.run_psimrcc_scf">[docs]</a><span class="k">def</span> <span class="nf">run_psimrcc_scf</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function encoding sequence of PSI module calls for a PSIMRCC computation</span>
+<span class="sd">     using a reference from the SCF module</span>
+
+<span class="sd">    &quot;&quot;&quot;</span> 
+
+    <span class="n">run_scf</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">psimrcc</span><span class="p">()</span>
 </div>
 <div class="viewcode-block" id="run_mp2c"><a class="viewcode-back" href="../index.html#proc.run_mp2c">[docs]</a><span class="k">def</span> <span class="nf">run_mp2c</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Function encoding sequence of PSI module calls for</span>
@@ -1066,7 +1082,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Feb 23, 2012.
+      Last updated on Mar 04, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

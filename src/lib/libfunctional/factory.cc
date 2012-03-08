@@ -36,8 +36,15 @@
 #include "M05_2X_functional.h"
 #include "TauHCTH_functional.h"
 #include "TauHCTH0_functional.h"
+#include "wS_X_functional.h"
+#include "wBf_X_functional.h"
+#include "wPBEf_X_functional.h"
+#include "wBg_X_functional.h"
+#include "wPBEg_X_functional.h"
 #include "wB97_functional.h"
 #include "wB97X_functional.h"
+#include "wB97f_functional.h"
+#include "wB97Xf_functional.h"
 #include <boost/algorithm/string.hpp>
 #include <string>
 #include <sstream>
@@ -110,10 +117,24 @@ boost::shared_ptr<Functional> Functional::createFunctional(const std::string & n
         return boost::shared_ptr<Functional> (new TauHCTH_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("TauHCTH0")))
         return boost::shared_ptr<Functional> (new TauHCTH0_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wS_X")))
+        return boost::shared_ptr<Functional> (new wS_X_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wBf_X")))
+        return boost::shared_ptr<Functional> (new wBf_X_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBEf_X")))
+        return boost::shared_ptr<Functional> (new wPBEf_X_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wBg_X")))
+        return boost::shared_ptr<Functional> (new wBg_X_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBEg_X")))
+        return boost::shared_ptr<Functional> (new wPBEg_X_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97")))
         return boost::shared_ptr<Functional> (new wB97_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97X")))
         return boost::shared_ptr<Functional> (new wB97X_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97f")))
+        return boost::shared_ptr<Functional> (new wB97f_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97Xf")))
+        return boost::shared_ptr<Functional> (new wB97Xf_Functional(npoints,deriv));
 }
 std::string Functional::availableFunctionals()
 {
@@ -128,6 +149,11 @@ std::string Functional::availableFunctionals()
     f << "   PW91_X          X         X           " << endl;
     f << "   FT97B_X         X         X           " << endl;
     f << "   EDF1_X          X         X           " << endl;
+    f << "   wS_X            X                     " << endl;
+    f << "   wBf_X           X         X           " << endl;
+    f << "   wPBEf_X         X         X           " << endl;
+    f << "   wBg_X           X         X           " << endl;
+    f << "   wPBEg_X         X         X           " << endl;
  
     f << endl; 
     f << "   Available Correlation Functionals:   " << endl;
@@ -163,6 +189,8 @@ std::string Functional::availableFunctionals()
     f << "   TauHCTH0        X         X         X " << endl;
     f << "   wB97            X         X           " << endl;
     f << "   wB97X           X         X           " << endl;
+    f << "   wB97f           X         X           " << endl;
+    f << "   wB97Xf          X         X           " << endl;
     
     return f.str();
     
@@ -200,8 +228,15 @@ std::vector<std::string> Functional::availableNames()
     names.push_back("M05_2X");
     names.push_back("TauHCTH");
     names.push_back("TauHCTH0");
+    names.push_back("wS_X");
+    names.push_back("wBf_X");
+    names.push_back("wPBEf_X");
+    names.push_back("wBg_X");
+    names.push_back("wPBEg_X");
     names.push_back("wB97");
     names.push_back("wB97X");
+    names.push_back("wB97f");
+    names.push_back("wB97Xf");
     return names;
 }
 boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const std::string & name, int npoints, int deriv)
@@ -670,6 +705,179 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  3.0000000000000004E-01);
     }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97f"))) {
+        superfun->addFunctional(Functional::createFunctional("wB97f",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wB97f");
+        superfun->setDescription("Range-Corrected B97 Pure GGA");
+        superfun->setCitation("J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  4.0000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97Xf"))) {
+        superfun->addFunctional(Functional::createFunctional("wB97Xf",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wB97Xf");
+        superfun->setDescription("Range-Corrected B97 Hybrid GGA");
+        superfun->setCitation("J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008");
+        superfun->setExactExchange(  1.5770599999999999E-01);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.0000000000000004E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wS_X"))) {
+        superfun->addFunctional(Functional::createFunctional("wS_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wS_X");
+        superfun->setDescription("Range-Corrected Slater LSDA");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("SVWN"))) {
+        superfun->addFunctional(Functional::createFunctional("S_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("VWN5RPA_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("SVWN");
+        superfun->setDescription("S+VWN");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  0.0000000000000000E+00);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("SVWN5"))) {
+        superfun->addFunctional(Functional::createFunctional("S_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("VWN5_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("SVWN5");
+        superfun->setDescription("S+VWN5");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  0.0000000000000000E+00);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wSVWN"))) {
+        superfun->addFunctional(Functional::createFunctional("wS_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("VWN5RPA_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wSVWN");
+        superfun->setDescription("S+VWN");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wSVWN5"))) {
+        superfun->addFunctional(Functional::createFunctional("wS_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("VWN5_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wSVWN5");
+        superfun->setDescription("S+VWN5");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wBf_X"))) {
+        superfun->addFunctional(Functional::createFunctional("wBf_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wBf_X");
+        superfun->setDescription("Becke Exchange (S+B88), SR (Fake)");
+        superfun->setCitation("A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wBLYPf"))) {
+        superfun->addFunctional(Functional::createFunctional("wBf_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("LYP_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wBLYPf");
+        superfun->setDescription("BLYP SR (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBEf_X"))) {
+        superfun->addFunctional(Functional::createFunctional("PBEf_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wPBEf_X");
+        superfun->setDescription("wPBE_X (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBEf"))) {
+        superfun->addFunctional(Functional::createFunctional("PBEf_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("PBE_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wPBEf");
+        superfun->setDescription("wPBE (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBE0f"))) {
+        superfun->addFunctional(Functional::createFunctional("wPBEf_X",npoints,deriv),  7.5000000000000000E-01);
+        superfun->addFunctional(Functional::createFunctional("PBE_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wPBE0f");
+        superfun->setDescription("wPBE0 (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  2.5000000000000000E-01);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wBg_X"))) {
+        superfun->addFunctional(Functional::createFunctional("wBg_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wBg_X");
+        superfun->setDescription("Becke Exchange (S+B88), SR (Fake)");
+        superfun->setCitation("A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wBLYPg"))) {
+        superfun->addFunctional(Functional::createFunctional("wBg_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("LYP_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wBLYPg");
+        superfun->setDescription("BLYP SR (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBEg_X"))) {
+        superfun->addFunctional(Functional::createFunctional("PBEg_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wPBEg_X");
+        superfun->setDescription("wPBE_X (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBEg_X"))) {
+        superfun->addFunctional(Functional::createFunctional("wPBEg_X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->addFunctional(Functional::createFunctional("PBE_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wPBEg_X");
+        superfun->setDescription("wPBE (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wPBE0g"))) {
+        superfun->addFunctional(Functional::createFunctional("wPBEg_X",npoints,deriv),  7.5000000000000000E-01);
+        superfun->addFunctional(Functional::createFunctional("PBE_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wPBE0g");
+        superfun->setDescription("wPBE0 (Fake)");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  2.5000000000000000E-01);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.3000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("PBE0"))) {
+        superfun->addFunctional(Functional::createFunctional("PBE_X",npoints,deriv),  7.5000000000000000E-01);
+        superfun->addFunctional(Functional::createFunctional("PBE_C",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("PBE0");
+        superfun->setDescription("PBE0");
+        superfun->setCitation("Null");
+        superfun->setExactExchange(  2.5000000000000000E-01);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  0.0000000000000000E+00);
+    }
 
     return superfun;
 }
@@ -687,6 +895,9 @@ std::string SuperFunctional::availableSuperFunctionals()
     f << "   PW91_X          X         X                                                   " << endl;
     f << "   FT97B_X         X         X                                                   " << endl;
     f << "   B3_X            X         X                   X                               " << endl;
+    f << "   wS_X            X                                                 X           " << endl;
+    f << "   wBf_X           X         X                                       X           " << endl;
+    f << "   wBg_X           X         X                                       X           " << endl;
  
     f << endl; 
     f << "   Available Correlation SuperFunctionals:   " << endl;
@@ -737,6 +948,21 @@ std::string SuperFunctional::availableSuperFunctionals()
     f << "   TauHCTH0        X         X         X         X                               " << endl;
     f << "   wB97            X         X                                       X           " << endl;
     f << "   wB97X           X         X                   X                   X           " << endl;
+    f << "   wB97f           X         X                                       X           " << endl;
+    f << "   wB97Xf          X         X                   X                   X           " << endl;
+    f << "   SVWN            X                                                             " << endl;
+    f << "   SVWN5           X                                                             " << endl;
+    f << "   wSVWN           X                                                 X           " << endl;
+    f << "   wSVWN5          X                                                 X           " << endl;
+    f << "   wBLYPf          X         X                                       X           " << endl;
+    f << "   wPBEf_X         X         X                                       X           " << endl;
+    f << "   wPBEf           X         X                                       X           " << endl;
+    f << "   wPBE0f          X         X                   X                   X           " << endl;
+    f << "   wBLYPg          X         X                                       X           " << endl;
+    f << "   wPBEg_X         X         X                                       X           " << endl;
+    f << "   wPBEg_X         X         X                                       X           " << endl;
+    f << "   wPBE0g          X         X                   X                   X           " << endl;
+    f << "   PBE0            X         X                   X                               " << endl;
 
     return f.str();
 }
@@ -790,6 +1016,24 @@ std::vector<std::string> SuperFunctional::availableNames()
     names.push_back("TauHCTH0");
     names.push_back("wB97");
     names.push_back("wB97X");
+    names.push_back("wB97f");
+    names.push_back("wB97Xf");
+    names.push_back("wS_X");
+    names.push_back("SVWN");
+    names.push_back("SVWN5");
+    names.push_back("wSVWN");
+    names.push_back("wSVWN5");
+    names.push_back("wBf_X");
+    names.push_back("wBLYPf");
+    names.push_back("wPBEf_X");
+    names.push_back("wPBEf");
+    names.push_back("wPBE0f");
+    names.push_back("wBg_X");
+    names.push_back("wBLYPg");
+    names.push_back("wPBEg_X");
+    names.push_back("wPBEg_X");
+    names.push_back("wPBE0g");
+    names.push_back("PBE0");
     return names;
 }
 

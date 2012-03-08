@@ -13,7 +13,7 @@
 
 
 \title{Psithon Documentation}
-\date{February 23, 2012}
+\date{March 04, 2012}
 \release{4.01}
 \author{Psi4 Project}
 \newcommand{\sphinxlogo}{}
@@ -116,13 +116,14 @@
 
 
 
-To allow arbitrarily complex computations to be performed, PSI4 was built
+To allow arbitrarily complex computations to be performed, PSI4 is built
 upon the Python interpreter, with modifications termed Psithon. Chapter 3
-of the User's Manual described the non-standard Python associated with
-molecule, basis, and option specification. This documentation addresses
-the Python side- what functions allow the proper, compiled code to be run,
-what functions post-process and interact with that output, and how the
-ordinary (or ambitious) user can extent PSI4's functionality.
+of the User's Manual describes the non-standard Python associated with
+clean molecule, basis, and option specification in the PSI4 input file.
+This documentation addresses the pure Python side- what functions allow
+the efficient compiled code to be run, what functions post-process and
+interact with that output, and how the ordinary (or ambitious) user can
+extent PSI4's functionality.
 
 \begin{notice}{warning}{Warning:}
 Python naming practices of file\_that\_includes\_function.function\_name()
@@ -544,8 +545,6 @@ mrccsdtqph-3
  & \\\hline
 \end{longtable}
 
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -567,9 +566,8 @@ the scf to converge in an explicit preceeding scf step.
 
 \end{itemize}
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] Coupled-cluster singles and doubles calculation with psi code}
@@ -593,7 +591,7 @@ the scf to converge in an explicit preceeding scf step.
 \chapter{Optimize}
 \label{index:optimize}
 \begin{notice}{note}{Note:}
-The derivative level type for \code{driver.optimize()} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
+The derivative level type for {\hyperref[index:driver.optimize]{\code{driver.optimize()}}} and {\hyperref[index:driver.frequency]{\code{driver.frequency()}}}
 functions can be specified by \code{energy}, \code{none}, or \code{0} for 0th derivative,
 \code{gradient}, \code{first}, or \code{1} for 1st derivative, and \code{hessian},
 \code{second}, or \code{2} for 2nd derivative.
@@ -668,8 +666,6 @@ equation of motion (EOM) CCSD
 \\\hline
 \end{tabulary}
 
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -713,9 +709,8 @@ optimization is to be performed.
 
 \end{itemize}
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] Analytic scf optimization}
@@ -779,8 +774,6 @@ coupled cluster singles and doubles (CCSD)
 \\\hline
 \end{tabulary}
 
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode
 \textbf{name} (\emph{string}) -- 
@@ -790,9 +783,8 @@ First argument, usually unlabeled. Indicates the computational method
 to be applied to the system.
 
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] CCSD-LR properties calculation}
@@ -832,8 +824,6 @@ Make frequency look analogous to gradient, especially in matching derivative lev
 
 \end{itemize}
 \end{notice}
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -864,9 +854,8 @@ computed. 1 represents $a_1$, requesting only the totally symmetric modes.
 
 \end{itemize}
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] \textless{}example description\textgreater{}}
@@ -916,8 +905,6 @@ Table print-out needs improving. Add some PSI variables.
 
 \end{itemize}
 \end{notice}
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -951,9 +938,8 @@ monomers and thus obtain an estimate for the basis set superposition error.
 
 \end{itemize}
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] counterpoise-corrected mp2 interaction energy}
@@ -990,7 +976,7 @@ db()
 \begin{notice}{note}{Note:}
 It is very easy to make a database from a collection of xyz files
 using the script \code{\$PSIDATADIR/databases/ixyz2database.pl}.
-See {\hyperref[index:creating-a-new-database]{Creating a New Database}} for details.
+See {\color{red}\bfseries{}{}`Creating a New Database{}`\_} for details.
 \end{notice}
 
 \begin{notice}{caution}{Caution:}
@@ -1001,8 +987,6 @@ In sow/reap mode, use only global options (e.g., the local option set by \code{s
 
 \end{itemize}
 \end{notice}
-
-\textbf{Keywords}
 \begin{quote}\begin{description}
 \item[{Parameters}] \leavevmode\begin{itemize}
 \item {} 
@@ -1039,7 +1023,7 @@ keyword \code{db\_func} instead of \code{func}.
 \textbf{mode} (\emph{string}) -- 
 $\Rightarrow$ \code{'continuous'} $\Leftarrow$ \textbar{}\textbar{} \code{'sow'} \textbar{}\textbar{} \code{'reap'}
 
-Indicates whether the calculation required to complete the
+Indicates whether the calculations required to complete the
 database are to be run in one file (\code{'continuous'}) or are to be
 farmed out in an embarrassingly parallel fashion
 (\code{'sow'}/\code{'reap'}).  For the latter, run an initial job with
@@ -1052,28 +1036,28 @@ farmed out in an embarrassingly parallel fashion
 
 Indicates whether counterpoise correction is employed in computing
 interaction energies. Use this option and NOT the {\hyperref[index:wrappers.cp]{\code{wrappers.cp()}}}
-wrapper for BSSE correction in the \code{database()}.  Option
-valid only for databases consisting of bimolecular complexes.
+function for BSSE correction in database().  Option available
+(See {\hyperref[index:available-databases]{Available Databases}}) only for databases of bimolecular complexes.
 
 
 \item {} 
 \textbf{rlxd} (\emph{bool}) -- 
 \code{'on'} \textbar{}\textbar{} $\Rightarrow$ \code{'off'} $\Leftarrow$
 
-Indicates whether correction for the deformation energy is
-employed in computing interaction energies.  Option valid only for
-databases consisting of bimolecular complexes with non-frozen
-monomers, e.g., HBC6.
+Indicates whether correction for deformation energy is
+employed in computing interaction energies.  Option available
+(See {\hyperref[index:available-databases]{Available Databases}}) only for databases of bimolecular complexes 
+with non-frozen monomers, e.g., HBC6.
 
 
 \item {} 
 \textbf{symm} (\emph{bool}) -- 
 $\Rightarrow$ \code{'on'} $\Leftarrow$ \textbar{}\textbar{} \code{'off'}
 
-Indicates whether the native symmetry of the database molecules is
+Indicates whether the native symmetry of the database reagents is
 employed (\code{'on'}) or whether it is forced to $C_1$ symmetry
 (\code{'off'}). Some computational methods (e.g., SAPT) require no
-symmetry, and this will be set by the database() wrapper.
+symmetry, and this will be set by database().
 
 
 \item {} 
@@ -1090,7 +1074,8 @@ thermochemical databases. Disabled until Hessians ready.
 $\Rightarrow$ \code{'default'} $\Leftarrow$ \textbar{}\textbar{} \code{'S22A'} \textbar{}\textbar{} etc.
 
 Indicates whether a non-default set of reference energies, if
-available, are employed for the calculation of error statistics.
+available (See {\hyperref[index:available-databases]{Available Databases}}), are employed for the
+calculation of error statistics.
 
 
 \item {} 
@@ -1106,6 +1091,7 @@ primary requested energy.  Available for any PSI variable.
 Indicates a subset of the full database to run. This is a very
 flexible option and can be used in three distinct ways, outlined
 below. Note that two take a string and the last takes an array.
+See {\hyperref[index:available-databases]{Available Databases}} for available values.
 \begin{itemize}
 \item {} \begin{description}
 \item[{\code{'small'} \textbar{}\textbar{} \code{'large'} \textbar{}\textbar{} \code{'equilibrium'}}] \leavevmode
@@ -1140,9 +1126,8 @@ database python file
 
 \end{itemize}
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] Two-stage SCF calculation on short, equilibrium, and long helium dimer}
@@ -1199,7 +1184,7 @@ energies stored in the database. One of these, the mean absolute deviation, is
 returned by the wrapper as an ordinary Python variable. (For databases
 without a stored reference energy, e.g., BASIC, large and meaningless numbers are
 printed for error.) The other two tables tabulate the PSI variables requested
-through :param tabulate:, in this case the total SCF energy and the number
+through keyword \code{tabulate}, in this case the total SCF energy and the number
 of atoms in each reagent.
 
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1244,13 +1229,752 @@ Mean Absolute Dev                         0.0201
 \end{Verbatim}
 
 
+\section{Available Databases}
+\label{index:available-databases}
+Below are documented for particular databases the availibility of the generic
+database function options \textbf{cp}, \textbf{rlxd}, \textbf{benchmark}, and the string
+options for \textbf{subset}. The full reagent member list, which can also be used
+in conjunction with \textbf{subset}, is not included here for consideration of space
+and may be found in the database file. The database Python files are very
+readable and should be consulted for more particular questions.
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-ACENES}\index{ACENES (module)}
+\textbf{ACENES}
+
+\begin{DUlineblock}{0em}
+\item[] Database of Ed and Rob's favorite linear acene dimers.
+\item[] Geometries from nowhere special, and reference energies undefined.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\item {} 
+\code{'FIRST3'} benzene, napthalene, and anthracene dimers
+
+\item {} 
+\code{'FIRST5'} benzene - pentacene dimers
+
+\item {} 
+\code{'FIRST10'} benzene - decacene dimers
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-BAKERJCC93}\index{BAKERJCC93 (module)}
+\textbf{BAKERJCC93}
+
+\begin{DUlineblock}{0em}
+\item[] Database of molecules that are challenging to optimize.
+\item[] Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
+in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
+further corrections.
+\item[] No reference energies defined.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-BASIC}\index{BASIC (module)}
+\textbf{BASIC}
+
+\begin{DUlineblock}{0em}
+\item[] Database of simple molecules, mostly for testing.
+\item[] Geometries from nowhere special, and no reference energies defined.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset} {[}\code{'h2o'}, \code{'nh3'}, \code{'ch4'}{]}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-BBI}\index{BBI (module)}
+\textbf{BBI}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Merz) of protein backbone-backbone interactions.
+\item[] Geometries from Kenneth Merz Group, Univ. of Florida.
+\item[] Reference interaction energies from Sherrill group, Georgia Tech.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-CFLOW}\index{CFLOW (module)}
+\textbf{CFLOW}
+
+\begin{DUlineblock}{0em}
+\item[] Database of extended conjugated bimolecular systems.
+\item[] Geometries and Reference interaction energies from the following articles:
+\item[]
+\begin{DUlineblock}{\DUlineblockindent}
+\item[] Polyene geometries from Marshall et al. JCTC 6 3681 (2010).
+\item[] Polyene reference interaction energies from Sherrill group by ccsd(t**)-f12b/heavy-aug-cc-pvdz.
+\item[] Acene geometries (except benzene) from Sherrill group by df-mp2/cc-pvtz c.2011.
+\item[] Benzene geometry from NBC10 database and citations therein.
+\item[] Acene reference interaction energies (incl. benzene dimer) from Sherrill group by ccsd(t**)-f12b/aug-cc-pvdz.
+\item[] Buckybowl (Pulay-labeled) geometries from Sherrill group by PBE1PBE/6-31G*, following Pulay's instructions in Janowski et al. CPL 512 155 (2011).
+\item[] Buckybowl (Pulay-labeled) reference interaction energies from Janowski et al. CPL 512 155 (2011).
+\item[] Buckyware (Grimme-labeled) geometries from Grimme PCCP 12 7091 (2010).
+\item[] Buckyware (Grimme-labeled) reference interaction energies from Grimme PCCP 12 7091 (2010) by B97-D2/TZVP.
+\item[] Collection into CFLOW by Parrish et al. XXX XXX XXXXXX (2012).
+\end{DUlineblock}
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\item {} 
+\code{'equilibrium'}
+
+\item {} 
+\code{'Polyenes'} equilibrium for linear polyene dimers for 2 through 16 monomer carbons
+
+\item {} 
+\code{'cBzBz'} 5-point dissociation curve for benzene dimer
+
+\item {} 
+\code{'c2BzBz'} 5-point dissociation curve for napthalene-benzene complex
+
+\item {} 
+\code{'c2Bz2Bz'} 5-point dissociation curve for napthalene dimer
+
+\item {} 
+\code{'c3Bz2Bz'} 5-point dissociation curve for anthracene-napthalene complex
+
+\item {} 
+\code{'c3Bz3Bz'} 5-point dissociation curve for anthracene dimer
+
+\item {} 
+\code{'c4Bz3Bz'} 5-point dissociation curve for tetracene-anthracene complex
+
+\item {} 
+\code{'Arenes'} equilibrium for benzene dimer through tetracene-anthracene complex linear arenes
+
+\item {} 
+\code{'cArenes'} 5-point curves around benzene dimer through tetracene-anthracene complex linear arenes
+
+\item {} 
+\code{'cPulay'} 4-point dissociation curve for bowl-in-bowl corannulene dimer
+
+\item {} 
+\code{'Pulay'} Pulay bowl-in-bowl corannulene dimer dissociation curve and extra point
+
+\item {} 
+\code{'Grimme60'} Grimme corannulene dimer, C60 @ buckybowl, and C60 @ buckycatcher
+
+\item {} 
+\code{'Grimme70'} Grimme C70 @ buckycatcher at three orientations
+
+\item {} 
+\code{'Paper'} linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+
+\item {} 
+\code{'cPaper'} linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-CORE}\index{CORE (module)}
+\textbf{CORE}
+
+Database of Pulay corannulene structures. Subsumed into CFLOW.
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-G2}\index{G2 (module)}
+\textbf{G2}
+
+\begin{DUlineblock}{0em}
+\item[] Database of thermodynamic reactions.
+\item[] WIP
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-HBC6}\index{HBC6 (module)}
+\textbf{HBC6}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Sherrill) of interaction energies for dissociation curves of doubly hydrogen-bonded bimolecular complexes.
+\item[] Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).
+\item[] Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{benchmark}
+\begin{itemize}
+\item {} 
+\code{'HBC60'} Thanthiriwatte et al. JCTC 7 88 (2011).
+
+\item {} 
+$\Rightarrow$ \code{'HBC6A'} $\Leftarrow$ Marshall et al. JCP 135 194102 (2011).
+
+\item {} 
+\code{'HBC6ARLX'} Sherrill group, unpublished.
+
+\end{itemize}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\item {} 
+\code{'equilibrium'}
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-HSG}\index{HSG (module)}
+\textbf{HSG}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Merz) of interaction energies for bimolecular complexes from protein-indinavir reaction site.
+\item[] Geometries from Faver et al. JCTC 7 790 (2011).
+\item[] Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{benchmark}
+\begin{itemize}
+\item {} 
+\code{'HSG0'} Faver et al. JCTC 7 790 (2011).
+
+\item {} 
+$\Rightarrow$ \code{'HSGA'} $\Leftarrow$ Marshall et al. JCP 135 194102 (2011).
+
+\end{itemize}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-HTBH}\index{HTBH (module)}
+\textbf{HTBH}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Truhlar) of hydrogen-transfer barrier height reactions.
+\item[] Geometries from Truhlar and coworkers at site \href{http://t1.chem.umn.edu/misc/database\_group/database\_therm\_bh/raw\_geom.cgi}{http://t1.chem.umn.edu/misc/database\_group/database\_therm\_bh/raw\_geom.cgi} .
+\item[] Reference energies from Zhao et al. JPCA, 109 2012-2018 (2005) doi: 10.1021/jp045141s {[}in supporting information{]}.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-JSCH}\index{JSCH (module)}
+\textbf{JSCH}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Hobza) of interaction energies for nucelobase pairs.
+\item[] Geometries and reference interaction energies from Jurecka et al. PCCP 8 1985 (2006).
+\item[] Corrections implemented from footnote 92 of Burns et al., JCP 134 084107 (2011).
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-NBC10}\index{NBC10 (module)}
+\textbf{NBC10}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Sherrill) of interaction energies for dissociation curves of dispersion-bound bimolecular complexes.
+\item[] Geometries and Reference interaction energies from the following articles:
+\item[]
+\begin{DUlineblock}{\DUlineblockindent}
+\item[] Benzene Dimers from Sherrill et al. JPCA 113 10146 (2009).
+\item[] Benzene-Hydrogen Sulfide from Sherrill et al. JPCA 113 10146 (2009).
+\item[] Benzene-Methane from Sherrill et al. JPCA 113 10146 (2009).
+\item[] Methane Dimer from Takatani et al. PCCP 9 6106 (2007).
+\item[] Pyridine Dimers from Hohenstein et al. JPCA 113 878 (2009).
+\item[] Collection into NBC10 from Burns et al. JCP 134 084107 (2011).
+\item[] Reference from Marshall et al. JCP 135 194102 (2011).
+\end{DUlineblock}
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{benchmark}
+\begin{itemize}
+\item {} 
+\code{'NBC100'} Burns et al. JCP 134 084107 (2011).
+
+\item {} 
+$\Rightarrow$ \code{'NBC10A'} $\Leftarrow$ Marshall et al. JCP 135 194102 (2011).
+
+\end{itemize}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\item {} 
+\code{'equilibrium'}
+
+\item {} 
+\code{'BzBz\_S'} dissociation curve for benzene dimer, sandwich
+
+\item {} 
+\code{'BzBz\_T'} dissociation curve for benzene dimer, t-shaped
+
+\item {} 
+\code{'BzBz\_PD34'} dissociation curve for benzene dimer, parallel displaced by 3.4A
+
+\item {} 
+\code{'BzH2S'} dissociation curve for benzene-H2S
+
+\item {} 
+\code{'BzMe'} dissociation curve for benzene-methane
+
+\item {} 
+\code{'MeMe'} dissociation curve for methane dimer
+
+\item {} 
+\code{'PyPy\_S2'} dissociation curve for pyridine dimer, sandwich
+
+\item {} 
+\code{'PyPy\_T3'} dissociation curve for pyridine dimer, t-shaped
+
+\item {} 
+\code{'BzBz\_PD32'} dissociation curve for benzene dimer, parallel displaced by 3.2A
+
+\item {} 
+\code{'BzBz\_PD36'} dissociation curve for benzene dimer, parallel displaced by 3.6A
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-NHTBH}\index{NHTBH (module)}
+\textbf{NHTBH}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Truhlar) of non-hydrogen-transfer barrier height reactions.
+\item[] Geometries and Reaction energies from Truhlar and coworkers at site \href{http://t1.chem.umn.edu/misc/database\_group/database\_therm\_bh/non\_H.htm}{http://t1.chem.umn.edu/misc/database\_group/database\_therm\_bh/non\_H.htm}.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-RGC10}\index{RGC10 (module)}
+\textbf{RGC10}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Sherrill) of interaction energies for dissociation curves of rare-gas biatomic complexes.
+\item[] Geometries and reference interaction energies from Tang et al. JCP 118 4976 (2003).
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\item {} 
+\code{'equilibrium'}
+
+\item {} 
+\code{'HeHe'} 18-point dissociation curve for helium dimer
+
+\item {} 
+\code{'HeNe'} 18-point dissociation curve for helium-neon complex
+
+\item {} 
+\code{'HeAr'} 18-point dissociation curve for helium-argon complex
+
+\item {} 
+\code{'HeKr'} 18-point dissociation curve for helium-krypton complex
+
+\item {} 
+\code{'NeNe'} 18-point dissociation curve for neon dimer
+
+\item {} 
+\code{'NeAr'} 18-point dissociation curve for neon-argon complex
+
+\item {} 
+\code{'NeKr'} 18-point dissociation curve for neon-krypton complex
+
+\item {} 
+\code{'ArAr'} 18-point dissociation curve for argon dimer
+
+\item {} 
+\code{'ArKr'} 18-point dissociation curve for argon-krypton complex
+
+\item {} 
+\code{'KrKr'} 18-point dissociation curve for krypton dimer
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-S22}\index{S22 (module)}
+\textbf{S22}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Hobza) of interaction energies for bimolecular complexes.
+\item[] Geometries from Jurecka et al. PCCP 8 1985 (2006).
+\item[] Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{benchmark}
+\begin{itemize}
+\item {} 
+\code{'S220'} Jurecka et al. PCCP 8 1985 (2006).
+
+\item {} 
+\code{'S22A'} Takatani et al. JCP 132 144104 (2010).
+
+\item {} 
+$\Rightarrow$ \code{'S22B'} $\Leftarrow$ Marshall et al. JCP 135 194102 (2011).
+
+\end{itemize}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'} water dimer, methane dimer, ethene-ethine
+
+\item {} 
+\code{'large'} adenine-thymine
+
+\item {} 
+\code{'HB'} hydrogen-bonded systems
+
+\item {} 
+\code{'MX'} mixed-influence systems
+
+\item {} 
+\code{'DD'} dispersion-dominated systems
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-S22by5}\index{S22by5 (module)}
+\textbf{S22by5}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Hobza) of interaction energies for dissociation curves of bimolecular complexes.
+\item[] Geometries and reference interaction energies from Grafova et al. JCTC 6 2365 (2010).
+\item[] Note that the S22by5-N-1.0 members are essentially the same geometries as S22-N (there's trivial round-off error) but the reference interaction energies for S22by5 are of lower quality than those of S22.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\item {} 
+\code{'equilibrium'}
+
+\item {} 
+\code{'mol1'} five-point (0.9, 1.0, 1.2, 1.5, 2.0) $\times R_{eq}$ dissociation curve for molecule 1
+
+\item {} 
+...
+
+\item {} 
+\code{'mol22'} five-point (0.9, 1.0, 1.2, 1.5, 2.0) $\times R_{eq}$ dissociation curve for molecule 22
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-S66}\index{S66 (module)}
+\textbf{S66}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Hobza) of interaction energies for bimolecular complexes.
+\item[] Geometries and reference energies from Rezac et al. JCTC 7 2427 (2011).
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\item {} 
+\textbf{subset}
+\begin{itemize}
+\item {} 
+\code{'small'}
+
+\item {} 
+\code{'large'}
+
+\item {} 
+\code{'HB'} hydrogen-bonded systems
+
+\item {} 
+\code{'MX'} mixed-influence systems
+
+\item {} 
+\code{'DD'} dispersion-dominated systems
+
+\end{itemize}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+\phantomsection\label{index:module-SSI}\index{SSI (module)}
+\textbf{SSI}
+
+\begin{DUlineblock}{0em}
+\item[] Database (Merz) of interaction energies for protein sidechain-sidechain interactions.
+\item[] Geometries from Kenneth Merz Group, Univ. of Florida.
+\item[] Reference interaction energies from \textless{}Reference\textgreater{}.
+\end{DUlineblock}
+\begin{itemize}
+\item {} 
+\textbf{cp}  \code{'off'} \textbar{}\textbar{} \code{'on'}
+
+\item {} 
+\textbf{rlxd} \code{'off'}
+
+\end{itemize}
+
+
+\bigskip\hrule{}\bigskip
+
+
+
 \chapter{Complete Basis Set}
 \label{index:complete-basis-set}\index{complete\_basis\_set() (in module wrappers)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:wrappers.complete_basis_set}\pysiglinewithargsret{\code{wrappers.}\bfcode{complete\_basis\_set}}{\emph{name}\optional{, \emph{scf\_basis}, \emph{scf\_scheme}, \emph{corl\_wfn}, \emph{corl\_basis}, \emph{corl\_scheme}, \emph{delta\_wfn}, \emph{delta\_wfn\_lesser}, \emph{delta\_basis}, \emph{delta\_scheme}, \emph{delta2\_wfn}, \emph{delta2\_wfn\_lesser}, \emph{delta2\_basis}, \emph{delta2\_scheme}}}{}
 Function to define a multistage energy method from combinations of
-basis set extrapolations and delta corrections, and condenses the
+basis set extrapolations and delta corrections and condense the
 components into a minimum number of calculations.
 \begin{quote}\begin{description}
 \item[{Aliases }] \leavevmode
@@ -1280,6 +2004,12 @@ No scheme defaults for given basis zeta number, so scheme must be specified expl
 \item {} 
 No way to tell function to boost fitting basis size for all calculations.
 
+\item {} 
+No way to extrapolate def2 family basis sets
+
+\item {} 
+Need to add more extrapolation schemes
+
 \end{itemize}
 \end{notice}
 
@@ -1307,9 +2037,7 @@ reference energy.
 \begin{split}E_{total}^{\text{CBS}} = \mathcal{F}_{\text{highest\_1}} \left(E_{total,\; \text{SCF}}^{\text{aug-cc-pVQZ}}\right) \; + \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[TQ]Z}}\right) \; + \delta_{\text{MP2}}^{\text{CCSD(T)}}\end{split}\notag\\\begin{split}\end{split}\notag
 \end{gather}\begin{gather}
 \begin{split}\delta_{\text{MP2}}^{\text{CCSD(T)}} \; = \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{CCSD(T)}}^{\text{aug-cc-pV[DT]Z}}\right) - \mathcal{F}_{\text{corl\_xtpl\_helgaker\_2}} \left(E_{corl,\; \text{MP2}}^{\text{aug-cc-pV[DT]Z}}\right)\end{split}\notag\\\begin{split}\end{split}\notag
-\end{gather}
-\textbf{Keywords}
-\begin{itemize}
+\end{gather}\begin{itemize}
 \item {} \begin{description}
 \item[{Energy Methods}] \leavevmode
 The presence of a stage\_wfn keyword is the indicator to incorporate
@@ -1472,9 +2200,8 @@ to the correlation energy.
 
 \end{itemize}
 
+\item[{Examples }] \leavevmode
 \end{description}\end{quote}
-
-\textbf{Examples}
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{c}{\PYGZsh{} [1] replicates with cbs() the simple model chemistry scf/cc-pVDZ: set basis cc-pVDZ energy('scf')}
@@ -1522,7 +2249,7 @@ energy calculations which will be performed. The output snippet below is
 from the example job {[}2{]} above. It shows first each model chemistry needed
 to compute the aggregate model chemistry requested through cbs(). Then,
 since, for example, an \code{energy('ccsd(t)')} yields CCSD(T), CCSD, MP2,
-and SCF energy values, the wrapper condenses this task into the second
+and SCF energy values, the wrapper condenses this task list into the second
 list of minimum number of calculations which will actually be run.
 
 \begin{Verbatim}[commandchars=\\\{\}]
@@ -1755,8 +2482,8 @@ with the following command.
 \end{Verbatim}
 
 
-\section{Creating a New Database}
-\label{index:creating-a-new-database}
+\section{Creating a Database}
+\label{index:creating-a-database}
 A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system
 (may be a dimer) whose geometry you are possession of and whose electronic
@@ -1861,12 +2588,153 @@ All routes. Necessarily, copy your new database into \code{\$PSIDATADIR/database
 
 \chapter{Function Intercalls}
 \label{index:function-intercalls}
-table; handling func; no sow/reap
+For many of the PSI4 Python functions described above, it makes scientific sense that they could be called in combination. For instance, one could optimize all the reagents in a database or compute a counterpoise-corrected interaction energy with an extrapolated method. The table below outlines permitted intercalls between functions, showing that db(opt(cbs(energy()))) is allowed, while db(cp(energy())) is not. This table is not yet validated for calls with cp().
+\begin{quote}
+
+\begin{tabulary}{\linewidth}{|L|L|L|L|L|L|}
+\hline
+\textbf{
+Caller
+} &  \multicolumn{5}{l|}{\textbf{
+Callee
+}}\\\hline
+\textbf{} & \textbf{
+cp
+} & \textbf{
+db
+} & \textbf{
+opt
+} & \textbf{
+cbs
+} & \textbf{
+energy
+}\\\hline
+
+cp
+ &  & 
+---
+ & 
+Y
+ & 
+Y
+ & 
+Y
+\\\hline
+
+db
+ & 
+---
+ &  & 
+Y
+ & 
+Y
+ & 
+Y
+\\\hline
+
+opt
+ & 
+---
+ & 
+---
+ &  & 
+Y
+ & 
+Y
+\\\hline
+
+cbs
+ & 
+---
+ & 
+---
+ & 
+---
+ &  & 
+Y
+\\\hline
+
+energy
+ & 
+---
+ & 
+---
+ & 
+---
+ & 
+---
+ & \\\hline
+\end{tabulary}
+
+\end{quote}
+\begin{itemize}
+\item {} 
+The command db(opt(cbs(energy()))) is actually expressed as \code{db( . . . , db\_func=opt, opt\_func=cbs)}.
+The perhaps expected final argument of \code{cbs\_func=energy} is not necessary since energy() is
+always the function called by default. Also, the outermost internal function call (\code{db\_func}
+above can be called as just \code{func}. Several examples of intercalls between Python functions
+can be found in sample input \emph{pywrap\_all}.
+
+\item {} 
+All keyword arguments are passed along to each function traversed in the Python driver, so there should be no concern for separating them, grouping them, or designating them for a particular function when undertaking a nested calculation. Where the same keyword is used by multiple functions, prefixes are added, e.g., \textbf{db\_mode} and \textbf{opt\_mode}.
+
+\item {} 
+Function intercalls should not be used in sow/reap mode.
+
+\end{itemize}
 
 
 \chapter{Embarrassing Parallelism}
 \label{index:embarrassing-parallelism}
-what functions; no intercalls; no local set; special section in parameter list
+Many of the tasks automated by Python wrappers consist of a number of
+independent psi4 calculations and are thus suited to an embarrassingly
+parallel mode of operation. In Psithon, these have been dubbed sow/reap
+procedures and have the following general structure.
+\begin{itemize}
+\item {} 
+Prepare an input file, simply adding \code{mode='sow'} to the
+argument list of an available Python function. Run this quick job to
+produce input files for lengthier calculations.
+
+\item {} 
+According to the instructions in the output file of the above step,
+run the generated input files in any order on any variety of computers
+and architectures. This is the time-intensive portion of the
+calculation.
+
+\item {} 
+The `sow' stage also produces a \emph{master} input file (with a
+\code{mode='reap'} directive). When all the jobs in the above step are
+completed, place their output files in the same location as the
+\emph{master} input, and run this last, quick job to collect the results.
+
+\end{itemize}
+\begin{itemize}
+\item {} 
+Sow/reap procedures are governed by the \textbf{mode} keyword, choices being
+\code{'continuous'}, \code{'sow'}, and \code{'reap'}. Only \code{'sow'} is likely to
+be used by the user, as \code{'continuous'} is always the default, and
+input files with \code{'reap'} are autogenerated.
+
+\item {} 
+Available at present for {\hyperref[index:database]{Database}} and finite difference operation of {\hyperref[index:optimize]{Optimize}}.
+
+\end{itemize}
+
+\begin{notice}{caution}{Caution:}
+Some features are not yet implemented. Buy a developer a coffee.
+\begin{itemize}
+\item {} 
+Local options (e.g., \code{set scf e\_convergence 9}) will not get transmitted to the child jobs.
+
+\item {} 
+Array options (e.g., \code{set states\_per\_irrep {[}2, 1{]}}) will not get transmitted to the child jobs.
+
+\item {} 
+Function intercalls (e.g., db(opt())) are not tested with sow/reap procedures.
+
+\end{itemize}
+\end{notice}
 
 
 \chapter{Psithon Programming Best Practices}
@@ -1887,7 +2755,7 @@ Python functions should read the kwargs dictionary and (possibly) add to it. Fun
 \end{Verbatim}
 
 \item {} 
-Preferrably, the python function signature (for functions intended to be called in input files) is \code{function(name, **kwargs)}. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see {\hyperref[index:wrappers.database]{\code{wrappers.database()}}} argument db\_name for example).
+Preferrably, the python function signature (for functions intended to be called in input files) is \code{function(name, **kwargs)}. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see {\hyperref[index:database]{Database}} argument db\_name for example).
 
 \item {} 
 After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive.
@@ -1923,10 +2791,11 @@ Upon checking in a new python file, edit the file \code{psi4/doc/userman/source/
 Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in \code{psi4/lib/python/example\_docstring} and replace anything that looks like \code{\textless{}this\textgreater{}}. For a behind-the-scenes function or if you don't want the bother of dealing with \href{http://docutils.sourceforge.net/docs/user/rst/quickref.html}{reStructuredText}, just write an ordinary docstring. It will get slurped into the documentation in plain text.
 
 \item {} 
-Your python function should follow \href{http://www.python.org/dev/peps/pep-0008/}{PEP8} conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason.
+Your python function should follow \href{http://www.python.org/dev/peps/pep-0008/}{PEP8} conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason. The second line is for database Python files.
 
 \begin{Verbatim}[commandchars=\\\{\}]
 \PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{pep8}\PYG{o}{.}\PYG{n}{py} \PYG{o}{-}\PYG{n}{r} \PYG{o}{-}\PYG{o}{-}\PYG{n}{ignore}\PYG{o}{=}\PYG{n}{E501} \PYG{n}{pythonfile}\PYG{o}{.}\PYG{n}{py}
+\PYG{g+gp}{\textgreater{}\textgreater{}\textgreater{} }\PYG{n}{pep8}\PYG{o}{.}\PYG{n}{py} \PYG{o}{-}\PYG{n}{r} \PYG{o}{-}\PYG{o}{-}\PYG{n}{ignore}\PYG{o}{=}\PYG{n}{E501}\PYG{p}{,}\PYG{n}{E221}\PYG{p}{,}\PYG{n}{E222}\PYG{p}{,}\PYG{n}{E241}\PYG{p}{,}\PYG{n}{E201}\PYG{p}{,}\PYG{n}{E202} \PYG{n}{databasefile}\PYG{o}{.}\PYG{n}{py}
 \end{Verbatim}
 
 \item {} 
@@ -1981,14 +2850,11 @@ When all is validated, add your findings to the great interoperability table in 
 \end{itemize}
 
 
-\chapter{PsiMod Methods}
-\label{index:psimod-methods}
+\chapter{Expert: PsiMod Module}
+\label{index:expert-psimod-module}
 
-\chapter{Molecule Methods}
-\label{index:molecule-methods}
-
-\chapter{Expert}
-\label{index:expert}
+\chapter{Expert: Python Modules}
+\label{index:expert-python-modules}
 
 \section{aliases}
 \label{index:module-aliases}\label{index:aliases}\index{aliases (module)}
@@ -2098,112 +2964,79 @@ level information like 4 for CISDTQ or MRCCSDTQ.
 
 
 \section{input}
-\label{index:input}\label{index:module-input}\index{input (module)}\index{bad\_option\_syntax() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.bad_option_syntax}\pysiglinewithargsret{\code{input.}\bfcode{bad\_option\_syntax}}{\emph{line}}{}
-\end{fulllineitems}
-
-\index{check\_parentheses\_and\_brackets() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.check_parentheses_and_brackets}\pysiglinewithargsret{\code{input.}\bfcode{check\_parentheses\_and\_brackets}}{\emph{input\_string}, \emph{exit\_on\_error}}{}
-\end{fulllineitems}
-
-\index{parse\_multiline\_array() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.parse_multiline_array}\pysiglinewithargsret{\code{input.}\bfcode{parse\_multiline\_array}}{\emph{input\_list}}{}
-\end{fulllineitems}
-
-\index{process\_basis\_block() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_basis_block}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_block}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_basis\_file() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_basis_file}\pysiglinewithargsret{\code{input.}\bfcode{process\_basis\_file}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_external\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_external_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_external\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_extract\_command() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_extract_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_extract\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
+\label{index:input}\label{index:module-input}\index{input (module)}
+Module import
 \index{process\_input() (in module input)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:input.process_input}\pysiglinewithargsret{\code{input.}\bfcode{process\_input}}{\emph{raw\_input}, \emph{print\_level=1}}{}
 \end{fulllineitems}
 
-\index{process\_memory\_command() (in module input)}
+
+
+\section{molutil}
+\label{index:module-molutil}\label{index:molutil}\index{molutil (module)}
+Module with utility functions that act on molecule objects.
+\index{activate() (in module molutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_memory_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_memory\_command}}{\emph{matchobj}}{}
+\phantomsection\label{index:molutil.activate}\pysiglinewithargsret{\code{molutil.}\bfcode{activate}}{\emph{mol}}{}
+Function to set molecule object \emph{mol} as the current active molecule.
+
 \end{fulllineitems}
 
-\index{process\_molecule\_command() (in module input)}
+\index{dynamic\_variable\_bind() (in module molutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_molecule_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_molecule\_command}}{\emph{matchobj}}{}
+\phantomsection\label{index:molutil.dynamic_variable_bind}\pysiglinewithargsret{\code{molutil.}\bfcode{dynamic\_variable\_bind}}{\emph{cls}}{}
+Function to bind PsiMod.Molecule class.
+
 \end{fulllineitems}
 
-\index{process\_multiline\_arrays() (in module input)}
+\index{extract\_cluster\_indexing() (in module molutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_multiline_arrays}\pysiglinewithargsret{\code{input.}\bfcode{process\_multiline\_arrays}}{\emph{inputfile}}{}
+\phantomsection\label{index:molutil.extract_cluster_indexing}\pysiglinewithargsret{\code{molutil.}\bfcode{extract\_cluster\_indexing}}{\emph{mol}, \emph{cluster\_size=0}}{}
+Function to returns a LIST of all subclusters of the molecule \emph{mol} of
+real size \emph{cluster\_size}. If \emph{cluster\_size} = 0, returns all possible
+combinations of cluster size.
+
 \end{fulllineitems}
 
-\index{process\_option() (in module input)}
+\index{extract\_clusters() (in module molutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_option}\pysiglinewithargsret{\code{input.}\bfcode{process\_option}}{\emph{spaces}, \emph{module}, \emph{key}, \emph{value}, \emph{line}}{}
+\phantomsection\label{index:molutil.extract_clusters}\pysiglinewithargsret{\code{molutil.}\bfcode{extract\_clusters}}{\emph{mol}, \emph{ghost=True}, \emph{cluster\_size=0}}{}
+Function to return all subclusters of the molecule \emph{mol} of
+real size \emph{cluster\_size} and all other atoms ghosted if \emph{ghost}
+equals true, all other atoms discarded if \emph{ghost} is false. If
+\emph{cluster\_size} = 0, returns all possible combinations of cluster size.
+
 \end{fulllineitems}
 
-\index{process\_print\_command() (in module input)}
+\index{geometry() (in module molutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_print_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_print\_command}}{\emph{matchobj}}{}
+\phantomsection\label{index:molutil.geometry}\pysiglinewithargsret{\code{molutil.}\bfcode{geometry}}{\emph{geom}, \emph{name='default'}}{}
+Function to create a molecule object of name \emph{name}
+from the geometry in string \emph{geom}.
+
 \end{fulllineitems}
 
-\index{process\_pubchem\_command() (in module input)}
+\index{new\_get\_attr() (in module molutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_pubchem_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_pubchem\_command}}{\emph{matchobj}}{}
+\phantomsection\label{index:molutil.new_get_attr}\pysiglinewithargsret{\code{molutil.}\bfcode{new\_get\_attr}}{\emph{self}, \emph{name}}{}
+Function to redefine get\_attr method of molecule class.
+
 \end{fulllineitems}
 
-\index{process\_set\_command() (in module input)}
+\index{new\_set\_attr() (in module molutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:input.process_set_command}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_command}}{\emph{matchobj}}{}
-\end{fulllineitems}
+\phantomsection\label{index:molutil.new_set_attr}\pysiglinewithargsret{\code{molutil.}\bfcode{new\_set\_attr}}{\emph{self}, \emph{name}, \emph{value}}{}
+Function to redefine set\_attr method of molecule class.
 
-\index{process\_set\_commands() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_set_commands}\pysiglinewithargsret{\code{input.}\bfcode{process\_set\_commands}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{process\_word\_quotes() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.process_word_quotes}\pysiglinewithargsret{\code{input.}\bfcode{process\_word\_quotes}}{\emph{matchobj}}{}
-\end{fulllineitems}
-
-\index{quotify() (in module input)}
-
-\begin{fulllineitems}
-\phantomsection\label{index:input.quotify}\pysiglinewithargsret{\code{input.}\bfcode{quotify}}{\emph{string}}{}
 \end{fulllineitems}
 
 
@@ -2397,6 +3230,24 @@ for a calculation calling Kallay's MRCC code.
 
 \end{fulllineitems}
 
+\index{run\_psimrcc() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_psimrcc}\pysiglinewithargsret{\code{proc.}\bfcode{run\_psimrcc}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for a PSIMRCC computation
+using a reference from the MCSCF module
+
+\end{fulllineitems}
+
+\index{run\_psimrcc\_scf() (in module proc)}
+
+\begin{fulllineitems}
+\phantomsection\label{index:proc.run_psimrcc_scf}\pysiglinewithargsret{\code{proc.}\bfcode{run\_psimrcc\_scf}}{\emph{name}, \emph{**kwargs}}{}
+Function encoding sequence of PSI module calls for a PSIMRCC computation
+using a reference from the SCF module
+
+\end{fulllineitems}
+
 \index{run\_sapt() (in module proc)}
 
 \begin{fulllineitems}
@@ -2496,7 +3347,7 @@ Does not work with array-type options.
 \index{get\_psifile() (in module procutil)}
 
 \begin{fulllineitems}
-\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`36685'}}{}
+\phantomsection\label{index:procutil.get_psifile}\pysiglinewithargsret{\code{procutil.}\bfcode{get\_psifile}}{\emph{fileno}, \emph{pidspace=`21864'}}{}
 Function to return the full path and filename for psi file
 \emph{fileno} (e.g., psi.32) in current namespace \emph{pidspace}.
 
@@ -2614,19 +3465,28 @@ input string. Builds a PubChem object if found.
 
 
 \section{qmmm}
-\label{index:qmmm}\label{index:module-qmmm}\index{qmmm (module)}\index{Diffuse (class in qmmm)}
+\label{index:qmmm}\label{index:module-qmmm}\index{qmmm (module)}
+Module with classes to integrate MM charges into
+a QM calculation.
+\index{Diffuse (class in qmmm)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.Diffuse}\pysiglinewithargsret{\strong{class }\code{qmmm.}\bfcode{Diffuse}}{\emph{molecule}, \emph{basisname}, \emph{ribasisname}}{}~\index{fitGeneral() (qmmm.Diffuse method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.Diffuse.fitGeneral}\pysiglinewithargsret{\bfcode{fitGeneral}}{}{}
+Function to perform a general fit of diffuse charges
+to wavefunction density.
+
 \end{fulllineitems}
 
 \index{fitScf() (qmmm.Diffuse method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.Diffuse.fitScf}\pysiglinewithargsret{\bfcode{fitScf}}{}{}
+Function to run scf and fit a system of diffuse charges to
+resulting density.
+
 \end{fulllineitems}
 
 \index{populateExtern() (qmmm.Diffuse method)}
@@ -2645,24 +3505,35 @@ input string. Builds a PubChem object if found.
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.addChargeAngstrom}\pysiglinewithargsret{\bfcode{addChargeAngstrom}}{\emph{Q}, \emph{x}, \emph{y}, \emph{z}}{}
+Function to add a point charge of magnitude \emph{Q} at
+position (\emph{x}, \emph{y}, \emph{z}) Angstroms.
+
 \end{fulllineitems}
 
 \index{addChargeBohr() (qmmm.QMMM method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.addChargeBohr}\pysiglinewithargsret{\bfcode{addChargeBohr}}{\emph{Q}, \emph{x}, \emph{y}, \emph{z}}{}
+Function to add a point charge of magnitude \emph{Q} at
+position (\emph{x}, \emph{y}, \emph{z}) Bohr.
+
 \end{fulllineitems}
 
 \index{addDiffuse() (qmmm.QMMM method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.addDiffuse}\pysiglinewithargsret{\bfcode{addDiffuse}}{\emph{diffuse}}{}
+Function to add a diffuse charge field \emph{diffuse}.
+
 \end{fulllineitems}
 
 \index{populateExtern() (qmmm.QMMM method)}
 
 \begin{fulllineitems}
 \phantomsection\label{index:qmmm.QMMM.populateExtern}\pysiglinewithargsret{\bfcode{populateExtern}}{}{}
+Function to define a charge field external to the
+molecule through point and diffuse charges.
+
 \end{fulllineitems}
 
 
@@ -2861,7 +3732,7 @@ Used by {\hyperref[index:util.compare_values]{\code{util.compare\_values()}}} fa
 \section{wrappers}
 \label{index:wrappers}\label{index:module-wrappers}\index{wrappers (module)}
 Module with functions that call the four main {\hyperref[index:module-driver]{\code{driver}}}
-functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, \code{driver.optimize},
+functions: {\hyperref[index:driver.energy]{\code{driver.energy}}}, {\hyperref[index:driver.optimize]{\code{driver.optimize}}},
 {\hyperref[index:driver.response]{\code{driver.response}}}, and {\hyperref[index:driver.frequency]{\code{driver.frequency}}}.
 \index{call\_function\_in\_1st\_argument() (in module wrappers)}
 
@@ -2965,7 +3836,17 @@ the scheme function can focus on defining the extrapolation.
 \begin{theindex}
 \def\bigletter#1{{\Large\sffamily#1}\nopagebreak\vspace{1mm}}
 \bigletter{a}
+\item {\texttt{ACENES}}, \pageref{index:module-ACENES}
 \item {\texttt{aliases}}, \pageref{index:module-aliases}
+\indexspace
+\bigletter{b}
+\item {\texttt{BAKERJCC93}}, \pageref{index:module-BAKERJCC93}
+\item {\texttt{BASIC}}, \pageref{index:module-BASIC}
+\item {\texttt{BBI}}, \pageref{index:module-BBI}
+\indexspace
+\bigletter{c}
+\item {\texttt{CFLOW}}, \pageref{index:module-CFLOW}
+\item {\texttt{CORE}}, \pageref{index:module-CORE}
 \indexspace
 \bigletter{d}
 \item {\texttt{driver}}, \pageref{index:module-driver}
@@ -2973,8 +3854,26 @@ the scheme function can focus on defining the extrapolation.
 \bigletter{f}
 \item {\texttt{frac}}, \pageref{index:module-frac}
 \indexspace
+\bigletter{g}
+\item {\texttt{G2}}, \pageref{index:module-G2}
+\indexspace
+\bigletter{h}
+\item {\texttt{HBC6}}, \pageref{index:module-HBC6}
+\item {\texttt{HSG}}, \pageref{index:module-HSG}
+\item {\texttt{HTBH}}, \pageref{index:module-HTBH}
+\indexspace
 \bigletter{i}
 \item {\texttt{input}}, \pageref{index:module-input}
+\indexspace
+\bigletter{j}
+\item {\texttt{JSCH}}, \pageref{index:module-JSCH}
+\indexspace
+\bigletter{m}
+\item {\texttt{molutil}}, \pageref{index:module-molutil}
+\indexspace
+\bigletter{n}
+\item {\texttt{NBC10}}, \pageref{index:module-NBC10}
+\item {\texttt{NHTBH}}, \pageref{index:module-NHTBH}
 \indexspace
 \bigletter{p}
 \item {\texttt{physconst}}, \pageref{index:module-physconst}
@@ -2985,6 +3884,15 @@ the scheme function can focus on defining the extrapolation.
 \indexspace
 \bigletter{q}
 \item {\texttt{qmmm}}, \pageref{index:module-qmmm}
+\indexspace
+\bigletter{r}
+\item {\texttt{RGC10}}, \pageref{index:module-RGC10}
+\indexspace
+\bigletter{s}
+\item {\texttt{S22}}, \pageref{index:module-S22}
+\item {\texttt{S22by5}}, \pageref{index:module-S22by5}
+\item {\texttt{S66}}, \pageref{index:module-S66}
+\item {\texttt{SSI}}, \pageref{index:module-SSI}
 \indexspace
 \bigletter{t}
 \item {\texttt{text}}, \pageref{index:module-text}

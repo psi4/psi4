@@ -9,7 +9,7 @@
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
 
-- Preferrably, the python function signature (for functions intended to be called in input files) is ``function(name, **kwargs)``. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see :py:func:`wrappers.database` argument db_name for example).
+- Preferrably, the python function signature (for functions intended to be called in input files) is ``function(name, **kwargs)``. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see `Database`_ argument db_name for example).
 
 - After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive. ::
 
@@ -32,9 +32,10 @@
 
 - Write docstrings! For a major function intended for use in input files, start with the skeleton docstring in ``psi4/lib/python/example_docstring`` and replace anything that looks like ``<this>``. For a behind-the-scenes function or if you don't want the bother of dealing with `reStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_, just write an ordinary docstring. It will get slurped into the documentation in plain text.
 
-- Your python function should follow `PEP8 <http://www.python.org/dev/peps/pep-0008/>`_ conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason.
+- Your python function should follow `PEP8 <http://www.python.org/dev/peps/pep-0008/>`_ conventions (without the line-length restriction). I'm aiming for files to pass the line below, unless for good reason. The second line is for database Python files.
 
     >>> pep8.py -r --ignore=E501 pythonfile.py
+    >>> pep8.py -r --ignore=E501,E221,E222,E241,E201,E202 databasefile.py
 
 - Your python function should not prevent any test case (``make tests``, NOT ``make longtests``) from passing. A test case(s) should be written and checked in for any major python function, so that others do not break your code. If most of your work was on the python (as opposed to c++) side, the test case prefix pywrap\_ is suggested.
 

@@ -1,9 +1,36 @@
+"""
+**RGC10**
+
+| Database (Sherrill) of interaction energies for dissociation curves of rare-gas biatomic complexes.
+| Geometries and reference interaction energies from Tang et al. JCP 118 4976 (2003).
+
+- **cp**  ``'off'`` || ``'on'``
+
+- **rlxd** ``'off'``
+
+- **subset**
+
+  - ``'small'``
+  - ``'large'``
+  - ``'equilibrium'``
+  - ``'HeHe'`` 18-point dissociation curve for helium dimer
+  - ``'HeNe'`` 18-point dissociation curve for helium-neon complex
+  - ``'HeAr'`` 18-point dissociation curve for helium-argon complex
+  - ``'HeKr'`` 18-point dissociation curve for helium-krypton complex
+  - ``'NeNe'`` 18-point dissociation curve for neon dimer
+  - ``'NeAr'`` 18-point dissociation curve for neon-argon complex
+  - ``'NeKr'`` 18-point dissociation curve for neon-krypton complex
+  - ``'ArAr'`` 18-point dissociation curve for argon dimer
+  - ``'ArKr'`` 18-point dissociation curve for argon-krypton complex
+  - ``'KrKr'`` 18-point dissociation curve for krypton dimer
+
+----
+
+"""
 import re
 import input
 
 # <<< RGC10 Database Module >>>
-# Geometries and Reference interaction energies from
-#   Tang et al. JCP 118 4976 (2003).
 dbse = 'RGC1'
 
 # <<< Database Members >>>
@@ -2668,8 +2695,8 @@ for rxn in HRXN:
     distance = rxnpattern.match(rxn)
 
     GEOS['%s-%s-dimer'    % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))
-    GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoA_CP
-    GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))) + monoB_CP
+    GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoA_CP
+    GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = str(eval('%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )))) + monoB_CP
 
 GEOS['%s-He-mono-unCP' % (dbse)] = eval('%s_He_monomer' % (dbse))
 GEOS['%s-Ne-mono-unCP' % (dbse)] = eval('%s_Ne_monomer' % (dbse))

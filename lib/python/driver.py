@@ -246,8 +246,6 @@ def energy(name, **kwargs):
     | mrccsdtqph-3            |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
@@ -261,7 +259,7 @@ def energy(name, **kwargs):
         the scf step is skipped. Suitable when special steps are taken to get
         the scf to converge in an explicit preceeding scf step.
 
-    **Examples**
+    :examples:
 
     >>> # [1] Coupled-cluster singles and doubles calculation with psi code
     >>> energy('ccsd')
@@ -273,7 +271,6 @@ def energy(name, **kwargs):
     >>> energy('mp4')
 
     """
-
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
@@ -553,15 +550,13 @@ def response(name, **kwargs):
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    **Keywords**
-
     :type name: string
     :param name: ``'ccsd'`` || etc.
 
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
-    **Examples**
+    :examples:
 
     >>> # [1] CCSD-LR properties calculation
     >>> response('ccsd')
@@ -616,8 +611,6 @@ def optimize(name, **kwargs):
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
@@ -649,7 +642,7 @@ def optimize(name, **kwargs):
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
 
-    **Examples**
+    :examples:
 
     >>> # [1] Analytic scf optimization
     >>> optimize('scf')
@@ -820,8 +813,6 @@ def frequency(name, **kwargs):
 
        - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
 
-    **Keywords**
-
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
 
@@ -842,7 +833,7 @@ def frequency(name, **kwargs):
         computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
 
-    **Examples**
+    :examples:
 
     >>> # [1] <example description>
     >>> <example python command>
@@ -851,7 +842,6 @@ def frequency(name, **kwargs):
     >>> frequencies('scf', dertype=1, irrep=4)
 
     """
-
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 

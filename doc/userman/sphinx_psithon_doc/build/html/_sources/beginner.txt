@@ -84,8 +84,8 @@ with the following command. ::
     energy('mp2.5')
 
 
-Creating a New Database
-=======================
+Creating a Database
+===================
 
 A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system

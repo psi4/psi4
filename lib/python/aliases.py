@@ -14,7 +14,7 @@ import math
 import warnings
 from driver import *
 from wrappers import *
-from molecule import *
+from molutil import *
 from text import *
 from procutil import *
 

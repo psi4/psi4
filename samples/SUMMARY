@@ -328,6 +328,9 @@ plugin_df_ccsd:  Test DF-CCSD(T) energy for H2O/aug-cc-pVDZ
 plugin_gpu_ccsd:  cc-pvdz H2O Test CCSD energies
 
 
+plugin_libcim:  sto-3g (H2O)8 Test Boys localization
+
+
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
 

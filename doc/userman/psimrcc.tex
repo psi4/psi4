@@ -3,9 +3,9 @@
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
 \subsubsection{Introduction to Mk-MRCC}
-State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in \PSIfour implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC).  
+State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in \PSIfour implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC). This method is implemented and shown to be a powerful tool in F. A. Evangelista, W. D. Allen, and H. F. Schaefer, III, J. Chem. Phys. 125 (2006) and F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss, J. Chem. Phys. 128, 124104 (2008).    
 \\
-Mk-MRCC is based on the Jeziorski-Monkhorst ansatz for the wavefunction, $\Psi$
+Mk-MRCC is based on the Jeziorski-Monkhorst ansatz [B. Jeziorski and H. J. Monkhorst, Phys. Rev. A 24, 1668 (1981)] for the wavefunction, $\Psi$
 \begin{equation*}
 \left| \Psi \right \rangle = \sum_\mu^d e^{\hat{T}^\mu} \left| \Phi_\mu \right\rangle c_\mu \, \text{,}
 \end{equation*}
@@ -29,19 +29,19 @@ where
 \begin{equation*}
 \textrm{H}^{eff}_{\mu \nu} = \left \langle \Phi_\mu \right | \hat{H}e^{\hat{T}^\nu} \left | \Phi_\nu \right \rangle \, \textrm{.}
 \end{equation*}
- \PSIfour currently has Mk-MRCC with singles and doubles [Mk-MRCCSD], single and doubles with perturbative triples[Mk-MRCCSD(T)]. In addition, a companion perturbation method(Mk-MRPT2) has been developed based on the Mukherjee formalisim. 
+ \PSIfour currently has Mk-MRCC with singles and doubles [Mk-MRCCSD], single and doubles with perturbative triples[Mk-MRCCSD(T)]. A companion perturbation method(Mk-MRPT2) has been developed based on the Mukherjee formalisim as shown in F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, III, D. Mukherjee, and W. D. Allen, Phys. Chem. Chem. Phys. 11, 4728 (2009). 
 \\
 \subsubsection{Orbital ordering and selection of the model space}
 The reference determinants $\Phi_\mu$ are specified in PSIMRCC via occupational numbers. PSIMRCC requires that four arrays be specified for this purpose.
 
 \begin{itemize}
-\item Frozen doubly occupied orbitals(FROZEN\_DOCC) are doubly occupied in each reference determinant and are not correlated in the MRCC procedure.
-\item Doubly occupied orbitals(RESTRICTED\_DOCC)  are doubly occupied in each reference determinant and are correlated in the MRCC procedure.
-\item Active orbitals(ACTIVE) are partially occupied in each reference determinant.
-\item Frozen virtual orbitals (FROZEN\_UOCC) are unoccupied in all reference determinants and are excluded from the correlated wave function.
+\item Frozen doubly occupied orbitals (\optionname{FROZEN-DOCC}{PSIMRCC}) are doubly occupied in each reference determinant and are not correlated in the MRCC procedure.
+\item Doubly occupied orbitals(\optionname{RESTRICTED-DOCC}{PSIMRCC}) are doubly occupied in each reference determinant and are correlated in the MRCC procedure.
+\item Active orbitals(\optionname{ACTIVE}{PSIMRCC}) are partially occupied in each reference determinant.
+\item Frozen virtual orbitals (\optionname{FROZEN-UOCC}{PSIMRCC}) are unoccupied in all reference determinants and are excluded from the correlated wave function.
 \end{itemize} 
 
-The model space is selected by considering all possible occupations of the electrons among the orbitals in the active space that result in determinants with the correct symmetry(WFN\_SYM) and the correct $\textrm{M}_s$ value specified by the keyword MULTP. Note that this does not consider the multiplicity of the wavefunction. Thus, in order to obtain the wavefunction with a set of $\textrm{M}_s = 0$ reference determinants for an open-shell system you should request a MULTP of 1 within the PSIMRCC module, and select the root of the effective Hamiltonian that corresponds to the state of interest. In addition, the WFN\_SYM keyword needs to be specified otherwise the wavefunction belonging to the all-symmetric irrep will be selected. In addition, it should be noted that for an open-shell singlet based on two $\textrm{M}_s = 0$ determinants the eigenvector is [$\frac{1}{\sqrt{2}}\text{,}\frac{1}{\sqrt{2}}$], which corresponds to a wavefunction of the following form:
+The model space is selected by considering all possible occupations of the electrons among the orbitals in the active space that result in determinants with the correct symmetry (\optionname{WFN-SYM}{PSIMRCC}) and the correct $\textrm{M}_s$ value specified by the keyword MULTP. Note that this does not consider the multiplicity of the wavefunction. Thus, in order to obtain the wavefunction with a set of $\textrm{M}_s = 0$ reference determinants for an open-shell system you should request a MULTP of 1 within the PSIMRCC module, and select the root of the effective Hamiltonian that corresponds to the state of interest. In addition, the \optionname{WFN-SYM}{PSIMRCC} keyword needs to be specified otherwise the wavefunction belonging to the all-symmetric irrep will be selected. In addition, it should be noted that for an open-shell singlet based on two $\textrm{M}_s = 0$ determinants the eigenvector is [$\frac{1}{\sqrt{2}}\text{,}\frac{1}{\sqrt{2}}$], which corresponds to a wavefunction of the following form:
 \begin{equation*}
 \frac{1}{\sqrt{2}} \left( \chi_1 \alpha (1) \chi_2 \beta (2) + \chi_2 \alpha(1) \chi_1 \beta (2) \right)
 \end{equation*}  

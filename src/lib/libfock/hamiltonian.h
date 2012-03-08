@@ -24,6 +24,8 @@ protected:
     int debug_;	
     /// Bench flag, defaults to 0
     int bench_;
+    /// Use exact diagonal, if available?
+    bool exact_diagonal_;
     /// jk object
     boost::shared_ptr<JK> jk_;  
     /// v object
@@ -76,6 +78,8 @@ public:
     void set_debug(int debug) { debug_ = debug; }
     /// Bench flag (defaults to 0)
     void set_bench(int bench) { bench_ = bench; }
+    /// User the exact diagonal, if available? (defaults to false)
+    void set_exact_diagonal(bool diag) { exact_diagonal_ = diag; }
 };
 
 class RHamiltonian : public Hamiltonian {
