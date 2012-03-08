@@ -70,19 +70,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("DEBUG", 0);
   /*- Some codes (DFT) can dump benchmarking data to separate output files -*/
   options.add_int("BENCH", 0);
-  /*- Maximum number of geometry optimization steps -*/
-  options.add_int("GEOM_MAXITER", 20);
   /*- Wavefunction type !expert -*/
   options.add_str("WFN", "SCF");
   /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
-  /*- Frequency with which to compute the full Hessian in the course
-  of a geometry optimization. 0 means to compute the initial Hessian only, 1
-  means recompute every step, and N means recompute every N steps. The
-  default (-1) is to never compute the full Hessian. -*/
-  options.add_int("FULL_HESS_EVERY", -1);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -2172,61 +2165,33 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "OPTKING"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs geometry optimizations and vibrational frequency analyses. -*/
 
+      /*- SUBSECTION Optimization Algorithm -*/
+
+      /*- Maximum number of geometry optimization steps -*/
+      options.add_int("GEOM_MAXITER", 20);
       /*- Specifies minimum search, transition-state search, or IRC following -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Geometry optimization step type, either Newton-Raphson or Rational Function Optimization -*/
       options.add_str("STEP_TYPE", "RFO", "RFO NR SD");
+      /*- Do follow the initial RFO vector after the first step? -*/
+      options.add_bool("RFO_FOLLOW_ROOT", false);
+      /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
+      options.add_int("RFO_ROOT", 0);
+      /*- IRC step size in bohr(amu)$^{1/2}$ -*/
+      options.add_double("IRC_STEP_SIZE", 0.2);
+      /*- IRC mapping direction -*/
+      options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
       /*- Initial maximum step size in bohr or radian along an internal coordinate -*/
       options.add_double("INTRAFRAG_STEP_LIMIT", 0.4);
       /*- Lower bound for dynamic trust radius [au] -*/
       options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
       /*- Upper bound for dynamic trust radius [au] -*/
       options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
-      /*- Do follow the initial RFO vector after the first step? -*/
-      options.add_bool("RFO_FOLLOW_ROOT", false);
-      /*- Root for RFO to follow, 0 being lowest (for a minimum) -*/
-      options.add_int("RFO_ROOT", 0);
-      /*- When determining connectivity, a bond is assigned if interatomic distance
-          is less than (this number) * sum of covalent radii {double} -*/
-      options.add_double("COVALENT_CONNECT", 1.3);
-      /*- For multi-fragment molecules, treat as single bonded molecule
-          or via interfragment coordinates. A primary difference is that in MULTI mode,
-          the interfragment coordinates are not redundant. -*/
-      options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
-      /*- When interfragment coordinates are present, use as reference points either
-      principal axes or fixed linear combinations of atoms. -*/
-      options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
-      /*- Do only generate the internal coordinates and then stop? -*/
-      options.add_bool("INTCOS_GENERATE_EXIT", false);
-      /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, SIMPLE} -*/
-      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE");
-      /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
-      options.add_str("INTERFRAG_HESS", "DEFAULT", "DEFAULT FISCHER_LIKE");
-      /*- Do freeze all fragments rigid? -*/
-      options.add_bool("FREEZE_INTRAFRAG", false);
-      /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
-      options.add_bool("ADD_AUXILIARY_BONDS", false);
-      /*- Do save and print the geometry from the last projected step at the end
-      of a geometry optimization? Otherwise (and by default), save and print
-      the previous geometry at which was computed the gradient that satisfied
-      the convergence criteria. -*/
-      options.add_bool("FINAL_GEOM_WRITE", false);
-      /*- Hessian update scheme -*/
-      options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
-      /*- Number of previous steps to use in Hessian update, 0 uses all -*/
-      options.add_int("HESS_UPDATE_USE_LAST", 1);
-      /*- Do limit the magnitude of changes caused by the Hessian update? -*/
-      options.add_bool("HESS_UPDATE_LIMIT", true);
-      /*- If HESS_UPDATE_LIMIT is true, changes to the Hessian from the update are limited to the larger of
-          (HESS_UPDATE_LIMIT_SCALE)*(the previous value) and HESS_UPDATE_LIMIT_MAX (in au). -*/
-      options.add_double("HESS_UPDATE_LIMIT_MAX", 1.00);
-      /*- If the above is true, changes to the Hessian from the update are limited to the larger of
-          (HESS_UPDATE_LIMIT_SCALE)*(the previous value) and HESS_UPDATE_LIMIT_MAX (in au). -*/
-      options.add_double("HESS_UPDATE_LIMIT_SCALE", 0.50);
-      /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments? Otherwise, use $R@@{AB}$. -*/
-      options.add_bool("INTERFRAG_DIST_INV", false);
-      /*- For now, this is a general maximum distance for the definition of H-bonds -*/
-      options.add_double("H_BOND_CONNECT", 4.3);
+      /*- Set number of consecutive backward steps allowed in optimization -*/
+      options.add_int("CONSECUTIVE_BACKSTEPS", 0);
+
+      /*- SUBSECTION Convergence Control -*/
+
       /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
       will append or overwrite the criteria set here. -*/
       options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
@@ -2247,18 +2212,68 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("RMS_DISP_G_CONVERGENCE", 1.2e-3);
       /*- Even if a user-defined threshold is set, allow for normal, flexible convergence criteria -*/
       options.add_bool("FLEXIBLE_G_CONVERGENCE", false);
+
+      /*- SUBSECTION Hessian Update -*/
+
+      /*- Hessian update scheme -*/
+      options.add_str("HESS_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
+      /*- Number of previous steps to use in Hessian update, 0 uses all -*/
+      options.add_int("HESS_UPDATE_USE_LAST", 1);
+      /*- Do limit the magnitude of changes caused by the Hessian update? -*/
+      options.add_bool("HESS_UPDATE_LIMIT", true);
+      /*- If HESS_UPDATE_LIMIT is true, changes to the Hessian from the update are limited to the larger of
+      (HESS_UPDATE_LIMIT_SCALE)*(the previous value) and HESS_UPDATE_LIMIT_MAX [au]. -*/
+      options.add_double("HESS_UPDATE_LIMIT_MAX", 1.00);
+      /*- If the above is true, changes to the Hessian from the update are limited to the larger of
+      (HESS_UPDATE_LIMIT_SCALE)*(the previous value) and HESS_UPDATE_LIMIT_MAX [au]. -*/
+      options.add_double("HESS_UPDATE_LIMIT_SCALE", 0.50);
+      /*- Do read Cartesian Hessian?  Only for experts - use FULL_HESS_EVERY instead. -*/
+      options.add_bool("CART_HESS_READ", false);
+      /*- Frequency with which to compute the full Hessian in the course
+      of a geometry optimization. 0 means to compute the initial Hessian only, 1
+      means recompute every step, and N means recompute every N steps. The
+      default (-1) is to never compute the full Hessian. -*/
+      options.add_int("FULL_HESS_EVERY", -1);
+      /*- Model Hessian to guess intrafragment force constants -*/
+      options.add_str("INTRAFRAG_HESS", "SCHLEGEL", "FISCHER SCHLEGEL SIMPLE");
+
+      /*- SUBSECTION Fragment/Internal Coordinate Control -*/
+
+      /*- For multi-fragment molecules, treat as single bonded molecule
+      or via interfragment coordinates. A primary difference is that in MULTI mode,
+      the interfragment coordinates are not redundant. -*/
+      options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
+      /*- Do freeze all fragments rigid? -*/
+      options.add_bool("FREEZE_INTRAFRAG", false);
+      /*- When interfragment coordinates are present, use as reference points either
+      principal axes or fixed linear combinations of atoms. -*/
+      options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
+      /*- Do add bond coordinates at nearby atoms for non-bonded systems? -*/
+      options.add_bool("ADD_AUXILIARY_BONDS", false);
+      /*- Do use $\frac{1}{R@@{AB}}$ for the stretching coordinate between fragments? Otherwise, use $R@@{AB}$. -*/
+      options.add_bool("INTERFRAG_DIST_INV", false);
+      /*- Model Hessian to guess interfragment force constants -*/
+      options.add_str("INTERFRAG_HESS", "DEFAULT", "DEFAULT FISCHER_LIKE");
+      /*- When determining connectivity, a bond is assigned if interatomic distance
+      is less than (this number) * sum of covalent radii {double} -*/
+      options.add_double("COVALENT_CONNECT", 1.3);
+      /*- For now, this is a general maximum distance for the definition of H-bonds -*/
+      options.add_double("H_BOND_CONNECT", 4.3);
+      /*- Do only generate the internal coordinates and then stop? -*/
+      options.add_bool("INTCOS_GENERATE_EXIT", false);
+
+      /*- SUBSECTION Misc. -*/
+
+      /*- Do save and print the geometry from the last projected step at the end
+      of a geometry optimization? Otherwise (and by default), save and print
+      the previous geometry at which was computed the gradient that satisfied
+      the convergence criteria. -*/
+      options.add_bool("FINAL_GEOM_WRITE", false);
       /*- Do test B matrix? -*/
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
       options.add_bool("TEST_DERIVATIVE_B", false);
-      /*- Do read Cartesian Hessian?  Only for experts - use FULL_HESS_EVERY instead. -*/
-      options.add_bool("CART_HESS_READ", false);
-      /*- IRC step size in bohr(amu)$^{1/2}$ -*/
-      options.add_double("IRC_STEP_SIZE", 0.2);
-      /*- IRC mapping direction -*/
-      options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
-      /*- Set number of consecutive backward steps allowed in optimization -*/
-      options.add_int("CONSECUTIVE_BACKSTEPS", 0);
+
   }
   if(name == "FINDIF"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements
