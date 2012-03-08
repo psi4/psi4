@@ -162,6 +162,7 @@ void JK::common_init()
     do_K_ = true;
     do_wK_ = false;
     lr_symmetric_ = false;
+    omega_ = 0.0;
 
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
@@ -540,6 +541,8 @@ void DiskJK::print_header() const
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        if (do_wK_) 
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
@@ -804,6 +807,8 @@ void PKJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) 
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
         //fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
@@ -1160,6 +1165,8 @@ void DirectJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) 
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
         fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
@@ -1518,6 +1525,8 @@ void DFJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) 
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
         fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
@@ -3227,6 +3236,8 @@ void PSJK::print_header() const
         fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
         fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
         fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        if (do_wK_) 
+            fprintf(outfile, "    Omega:             %11.3E\n", omega_);
         fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
         fprintf(outfile, "    Integrals threads: %11d\n", df_ints_num_threads_);
         fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));

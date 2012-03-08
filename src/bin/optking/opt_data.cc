@@ -76,6 +76,10 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   // for IRC only consider forces tangent to the hypersphere search surface
   double *f_backup;
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
+    if(!p_irc_data->go)
+    {
+      return 1;
+    }
     // save forces and put back in below
     f_backup = init_array(Nintco);
     array_copy(f, f_backup, Nintco);

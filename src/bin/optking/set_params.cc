@@ -148,6 +148,14 @@ void set_params(void)
     if (s == "FORWARD")        Opt_params.IRC_direction = OPT_PARAMS::FORWARD;
     else if (s == "BACKWARD")  Opt_params.IRC_direction = OPT_PARAMS::BACKWARD;
 
+// Decide how to quit IRC mapping
+// if 'ASK' ==> user will be prompted to decide whether to continue when
+// the gradient dotted with the previous gradient goes negative
+   s = options.get_str("IRC_STOP");
+   if (s == "STOP")        Opt_params.IRC_stop = OPT_PARAMS::STOP;
+   else if (s == "ASK")  Opt_params.IRC_stop = OPT_PARAMS::ASK;
+   else if (s == "GO")    Opt_params.IRC_stop = OPT_PARAMS::GO;
+
 // General optimization criteria
     Opt_params.i_max_force = false;
     Opt_params.i_rms_force = false;

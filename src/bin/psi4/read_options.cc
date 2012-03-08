@@ -2181,6 +2181,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("IRC_STEP_SIZE", 0.2);
       /*- IRC mapping direction -*/
       options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
+      /*- Decide when to stop IRC calculations {ASK, STOP, GO} -*/
+      options.add_str("IRC_STOP", "STOP", "ASK STOP GO");
       /*- Initial maximum step size in bohr or radian along an internal coordinate -*/
       options.add_double("INTRAFRAG_STEP_LIMIT", 0.4);
       /*- Lower bound for dynamic trust radius [au] -*/

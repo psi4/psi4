@@ -1,5 +1,5 @@
-#ifndef libmints_points_H
-#define libmints_points_H
+#ifndef libfock_points_H
+#define libfock_points_H
 
 #include <cstdio>
 #include <map>

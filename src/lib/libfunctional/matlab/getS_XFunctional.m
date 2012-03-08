@@ -10,13 +10,12 @@ gamma_ab = sym('gamma_ab');
 tau_a = sym('tau_a');
 tau_b = sym('tau_b');
 
-data.param_names{1} = 'c';
-data.param_vals(1) = 3/8*3^(1/3)*4^(2/3)*pi^(-1/3);
+Ka = 3*(3/(4*pi))^(1/3);
+Kb = 3*(3/(4*pi))^(1/3);
 
-c = sym('c');
-data.functional = - c*(rho_a^(4.0/3.0)+rho_b^(4.0/3.0)); 
-data.functional_a0 = - c*(rho_b^(4.0/3.0)); 
-data.functional_b0 = - c*(rho_a^(4.0/3.0)); 
+data.functional = - 1/2 * (Ka * rho_a^(4.0/3.0) + Kb * rho_b^(4.0/3.0)); 
+data.functional_a0 = - 1/2 * (Ka * rho_b^(4.0/3.0)); 
+data.functional_b0 = - 1/2 * (Kb * rho_a^(4.0/3.0)); 
 data.functional_a0b0 = 0; 
 
 data.is_lsda = 1;
