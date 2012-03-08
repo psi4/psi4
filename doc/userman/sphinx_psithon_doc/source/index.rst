@@ -37,6 +37,7 @@
       meaning (e.g., \t for tab, \b for bell, \n for newline) must be
       escaped (e.g., \\text or \\beta).
 
+.. These are abbreviations for arrows indicating default values
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
 
@@ -44,13 +45,14 @@
 General
 =======
 
-To allow arbitrarily complex computations to be performed, PSI4 was built
+To allow arbitrarily complex computations to be performed, PSI4 is built
 upon the Python interpreter, with modifications termed Psithon. Chapter 3
-of the User's Manual described the non-standard Python associated with
-molecule, basis, and option specification. This documentation addresses
-the Python side- what functions allow the proper, compiled code to be run,
-what functions post-process and interact with that output, and how the
-ordinary (or ambitious) user can extent PSI4's functionality.
+of the User's Manual describes the non-standard Python associated with
+clean molecule, basis, and option specification in the PSI4 input file.
+This documentation addresses the pure Python side- what functions allow
+the efficient compiled code to be run, what functions post-process and
+interact with that output, and how the ordinary (or ambitious) user can
+extent PSI4's functionality.
 
 .. include:: notes.rst
 
@@ -115,14 +117,13 @@ Beginner Psithon Programming
 Function Intercalls
 ===================
 
-table; handling func; no sow/reap
-
+.. include:: ./intercalls.rst
 
 ========================
 Embarrassing Parallelism
 ========================
 
-what functions; no intercalls; no local set; special section in parameter list
+.. include:: ./sowreap.rst
 
 
 .. rst-class:: html-toggle
@@ -134,21 +135,32 @@ Psithon Programming Best Practices
 
 
 .. rst-class:: html-toggle
-==============
-PsiMod Methods
-==============
+=====================
+Expert: PsiMod Module
+=====================
+
+.. hideliteralinclude:: ./man_PsiMod.rst 
+
+..  * NOTES (LAB 2-28-2012)
+    * How to get PsiMod.py documentation into Sphinx
+    * (1) In psi4/src/bin/psi4/python.cc , uncomment the following lines
+          s = strdup("help(PsiMod)");
+          PyRun_SimpleString(s);
+    * (2) cd into objdir and make psi4
+    * (3) cd into a testcase directory
+          cd tests/tu1-h2o-energy/
+          make clean
+          make > $PSIDATADIR/../doc/userman/sphinx_psithon_doc/source/man_PsiMod.rst 
+    * (4) Edit man_PsiMod.rst to remove junk at end of file.
+    * (5) Rebuild Sphinx docs.
+    * (6) LaTeX build can't handle including man_PsiMod.rst so comment out by default.
+    * (7) Rebuild psi4 with lines in (1) commented.
 
 
 .. rst-class:: html-toggle
-================
-Molecule Methods 
-================
-
-
-.. rst-class:: html-toggle
-======
-Expert
-======
+======================
+Expert: Python Modules
+======================
 
 aliases
 =======
@@ -169,6 +181,13 @@ input
 =====
 
 .. automodule:: input
+    :members:
+    :undoc-members:
+
+molutil
+========
+
+.. automodule:: molutil
     :members:
     :undoc-members:
 

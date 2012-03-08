@@ -425,11 +425,28 @@ print GPL_OUT "}\n\nreturn 1;\n";
 
 
 # python database file
+print SPY_OUT "\"\"\"\n";
+print SPY_OUT "**$set**\n\n";
+print SPY_OUT "| Database of <description of members and reference energy type>.\n";
+print SPY_OUT "| Geometries from <Reference>.\n";
+print SPY_OUT "| Reference interaction energies from <Reference>.\n\n";
+if ($route == 3) {
+    print SPY_OUT "- **cp**  ``'off'`` <erase this comment and after unless on is a valid option> || ``'on'``\n\n";
+    print SPY_OUT "- **rlxd** ``'off'`` <erase this comment and after unless on is valid option> || ``'on'``\n\n";
+}
+print SPY_OUT "- **benchmark**\n\n";
+print SPY_OUT "  - ``'<benchmark_name>'`` <Reference>.\n";
+print SPY_OUT "  - |dl| ``'<default_benchmark_name>'`` |dr| <Reference>.\n\n";
+print SPY_OUT "- **subset**\n\n";
+print SPY_OUT "  - ``'small'``\n";
+print SPY_OUT "  - ``'large'``\n";
+print SPY_OUT "  - ``'<subset>'`` <members_description>\n\n";
+print SPY_OUT "----\n\n";
+print SPY_OUT "\"\"\"\n";
 print SPY_OUT "import re\n";
 print SPY_OUT "import input\n";
 
 print SPY_OUT "\n# <<< $set Database Module >>>\n";
-print SPY_OUT "# Geometries and Reference energies from.\n";
 print SPY_OUT "dbse = '$set'\n";
 if ($isOS eq "true") { print SPY_OUT "isOS = '$isOS'\n"; }
 
@@ -528,10 +545,10 @@ if ( ($route == 1) || ($route == 2) ) {
 elsif ($route == 3) {
 
    print GPY_OUT "\n    GEOS['%s-%s-dimer'      % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn))\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_CP\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_CP\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoA_unCP\n";
-   print GPY_OUT   "    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s' % (dbse, rxn)) + monoB_unCP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_CP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoA_unCP\n";
+   print GPY_OUT   "    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = str(eval('%s_%s' % (dbse, rxn))) + monoB_unCP\n";
 }
 
 
@@ -559,4 +576,51 @@ system("rm -f temp1.txt temp2.txt temp3.txt temp4.txt temp5.txt BFStemp.txt stat
 $dropresource = 1;
 foreach $grp (@groups) { if (getgrgid($grp) eq "sherrill") { $dropresource = 0; } }
 if ($dropresource) { system("rm -f resource_$set.pl"); }
+
+
+print "\n   **  Congratulations, your database file $set.py has been constructed!\n";
+
+print "\n   **  To have a minimally functioning database, do the following:\n\n";
+
+if (($line2 eq "comment") && ($isOS eq "true")) {
+    print "       *  If not all neutral singlets, fill in correct charge and multiplicity for all reagents.\n"; }
+if (($line2 eq "comment") && ($isOS eq "false")) {
+    print "       *  If not all neutral, fill in correct charge for all reagents.\n"; }
+if (($route == 3) && ($line2 eq "cgmp")) {
+    print "       *  The charge and multiplicity read in from line2 of the xyz files has been assigned to\n";
+    print "          fragmentA, leaving fragmentB as a neutral singlet. If this is incorrect for any\n";
+    print "          reagents, reapportion the charge and multiplicity correctly between fragments A & B.\n";
+}
+if (($route == 3) && ($line2 eq "comment")) {
+    print "       *  If dimer and both subsystems are not neutral singlets, fill in correct charge and\n";
+    print "          multiplicity for each subsystem.\n";
+}
+if ($route == 2) {
+    print "       *  Define the reagents that contribute to reach reaction by filling in the empty single\n";
+    print "          quotes in ACTV. Add or delete lines as necessary for each reaction if more or fewer than\n";
+    print "          three reagents contribute. See NHTBH.py as an example.\n";
+    print "       *  Define the mathematical contribution of reagents to reactions by filling in a number (most\n";
+    print "          often +1 or -1) for each reagent to the RXNM of each reaction. See NHTBH.py as an example.\n";
+}
+print "       *  Move $set.py into \$PSIDATADIR/databases/ so that the PSI4 driver can find it.\n";
+
+print "\n   **  To enhance the functionality/documentation of your database, do the following:\n\n";
+
+print "       *  Rearrange the order of reactions in HRXN, as this will define the order for the database.\n";
+print "       *  Fill in the skeleton docstring at top of file, adding sources for geometries and\n";
+print "          any reference data.\n";
+print "       *  Add a line for your database at the bottom of psi4/doc/userman/sphinx_psithon_doc/source/db.rst\n";
+print "          so that it gets slurped into the documentation.\n";
+print "       *  Fill in the comment lines of TAGL in plain text. These show up as banners in job output files.\n";
+print "       *  Fill in reference values (in kcal/mol) into BIND.\n";
+print "       *  If multiple sets of reference values are available, define each in an array BIND_ALTREF so that\n";
+print "          they can be called in a psi4 input file as benchmark='ALTREF'. Add the new reference to\n";
+print "          the docstring. See S22.py as an example.\n";
+print "       *  Fill in the least computationally expensive 2-3 reactions into HRXN_SM and the most expensive\n";
+print "          into HRXN_LG so that they can be called in a psi4 input file as subset='small' or subset='large'\n";
+print "       *  Define subsets of reactions such as in an array SUBSETARRAY=['reaction', 'reaction'] so that\n";
+print "          they can be called in a psi4 input file as subset='SUBSETARRAY'. Add the new subset option to\n";
+print "          to the docstring. See NBC10.py for a simple example or CFLOW.py for a complex example.\n";
+
+print "\n";
 

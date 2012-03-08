@@ -5,31 +5,32 @@
 \BOOKMARK [0][-]{chapter.5}{Counterpoise Correct}{}
 \BOOKMARK [0][-]{chapter.6}{Database}{}
 \BOOKMARK [1][-]{section.6.1}{Output}{chapter.6}
+\BOOKMARK [1][-]{section.6.2}{Available Databases}{chapter.6}
 \BOOKMARK [0][-]{chapter.7}{Complete Basis Set}{}
 \BOOKMARK [1][-]{section.7.1}{Output}{chapter.7}
 \BOOKMARK [1][-]{section.7.2}{Extrapolation Schemes}{chapter.7}
 \BOOKMARK [0][-]{chapter.8}{Fractional Occupation}{}
 \BOOKMARK [0][-]{chapter.9}{Beginner Psithon Programming}{}
 \BOOKMARK [1][-]{section.9.1}{Defining a Method Alias}{chapter.9}
-\BOOKMARK [1][-]{section.9.2}{Creating a New Database}{chapter.9}
+\BOOKMARK [1][-]{section.9.2}{Creating a Database}{chapter.9}
 \BOOKMARK [0][-]{chapter.10}{Function Intercalls}{}
 \BOOKMARK [0][-]{chapter.11}{Embarrassing Parallelism}{}
 \BOOKMARK [0][-]{chapter.12}{Psithon Programming Best Practices}{}
-\BOOKMARK [0][-]{chapter.13}{PsiMod Methods}{}
-\BOOKMARK [0][-]{chapter.14}{Molecule Methods}{}
-\BOOKMARK [0][-]{chapter.15}{Expert}{}
-\BOOKMARK [1][-]{section.15.1}{aliases}{chapter.15}
-\BOOKMARK [1][-]{section.15.2}{driver}{chapter.15}
-\BOOKMARK [1][-]{section.15.3}{input}{chapter.15}
-\BOOKMARK [1][-]{section.15.4}{physconst}{chapter.15}
-\BOOKMARK [1][-]{section.15.5}{proc}{chapter.15}
-\BOOKMARK [1][-]{section.15.6}{procutil}{chapter.15}
-\BOOKMARK [1][-]{section.15.7}{psiexceptions}{chapter.15}
-\BOOKMARK [1][-]{section.15.8}{pubchem}{chapter.15}
-\BOOKMARK [1][-]{section.15.9}{qmmm}{chapter.15}
-\BOOKMARK [1][-]{section.15.10}{text}{chapter.15}
-\BOOKMARK [1][-]{section.15.11}{util}{chapter.15}
-\BOOKMARK [1][-]{section.15.12}{wrappers}{chapter.15}
-\BOOKMARK [0][-]{chapter.16}{Indices and Tables}{}
-\BOOKMARK [0][-]{section*.132}{Python Module Index}{}
-\BOOKMARK [0][-]{section*.133}{Index}{}
+\BOOKMARK [0][-]{chapter.13}{Expert: PsiMod Module}{}
+\BOOKMARK [0][-]{chapter.14}{Expert: Python Modules}{}
+\BOOKMARK [1][-]{section.14.1}{aliases}{chapter.14}
+\BOOKMARK [1][-]{section.14.2}{driver}{chapter.14}
+\BOOKMARK [1][-]{section.14.3}{input}{chapter.14}
+\BOOKMARK [1][-]{section.14.4}{molutil}{chapter.14}
+\BOOKMARK [1][-]{section.14.5}{physconst}{chapter.14}
+\BOOKMARK [1][-]{section.14.6}{proc}{chapter.14}
+\BOOKMARK [1][-]{section.14.7}{procutil}{chapter.14}
+\BOOKMARK [1][-]{section.14.8}{psiexceptions}{chapter.14}
+\BOOKMARK [1][-]{section.14.9}{pubchem}{chapter.14}
+\BOOKMARK [1][-]{section.14.10}{qmmm}{chapter.14}
+\BOOKMARK [1][-]{section.14.11}{text}{chapter.14}
+\BOOKMARK [1][-]{section.14.12}{util}{chapter.14}
+\BOOKMARK [1][-]{section.14.13}{wrappers}{chapter.14}
+\BOOKMARK [0][-]{chapter.15}{Indices and Tables}{}
+\BOOKMARK [0][-]{section*.142}{Python Module Index}{}
+\BOOKMARK [0][-]{section*.143}{Index}{}
