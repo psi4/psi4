@@ -255,18 +255,17 @@ void HF::compute_spin_contamination()
     double nm = (nalpha - nbeta) / 2.0;
     double S2 = fabs(nm) * (fabs(nm) + 1.0);
 
-    fprintf(outfile, "\n");
-    fprintf(outfile, "  @Spin Contamination Metric: %17.9E\n", dS);
-    fprintf(outfile, "  @S^2 Expected:              %17.9E\n", S2);
-    fprintf(outfile, "  @S^2 Observed:              %17.9E\n", S2 + dS);
-    fprintf(outfile, "  @S   Expected:              %17.9E\n", nm);
-    fprintf(outfile, "  @S   Observed:              %17.9E\n", nm);
+    fprintf(outfile, "   @Spin Contamination Metric: %17.9E\n", dS);
+    fprintf(outfile, "   @S^2 Expected:              %17.9E\n", S2);
+    fprintf(outfile, "   @S^2 Observed:              %17.9E\n", S2 + dS);
+    fprintf(outfile, "   @S   Expected:              %17.9E\n", nm);
+    fprintf(outfile, "   @S   Observed:              %17.9E\n", nm);
 
     if (frac_performed_) {
-        fprintf(outfile, "  @Nalpha:                    %17.9E\n", nalpha);
-        fprintf(outfile, "  @Nbeta:                     %17.9E\n", nbeta);
+        fprintf(outfile, "   @Nalpha:                    %17.9E\n", nalpha);
+        fprintf(outfile, "   @Nbeta:                     %17.9E\n", nbeta);
     }
-
+    fprintf(outfile, "\n");
 }
 
 }}

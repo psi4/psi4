@@ -50,17 +50,9 @@ void KS::common_init()
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 
-    // Build the superfunctional
-    int block_size = options_.get_int("DFT_BLOCK_MAX_POINTS");
-    functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
-
-    // Let the user to spec a custom range-separation omega
-    if (options_["DFT_OMEGA"].has_changed() && functional_->isRangeCorrected()) {
-        functional_->setOmega(options_.get_double("DFT_OMEGA"));
-    }
-
     potential_ = VBase::build_V(KS::options_,(options_.get_str("REFERENCE") == "RKS" ? "RV" : "UV"));
     potential_->initialize();
+    functional_ = potential_->functional();
 
     // Print some info on the DFT functional
     fprintf(outfile,"  ==> KS-DFT <==\n\n"); 
