@@ -30,20 +30,22 @@ wB97f_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
 wB97Xf_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBg_functional.o:
+wBg_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBg_functional.o:
+wBg_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBf_functional.o:
+wBf_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBf_functional.o:
+wBf_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEg_functional.o:
+wPBEg_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEg_functional.o:
+wPBEg_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEf_functional.o:
+wPBEf_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEf_functional.o:
+wPBEf_X_functional.o:
+	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
+wS_X_functional.o:
 	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
 
