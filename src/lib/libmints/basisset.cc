@@ -44,6 +44,17 @@ once_flag BasisSet::initialized_shared_ = BOOST_ONCE_INIT;
 
 std::vector<Vector3> BasisSet::exp_ao[LIBINT_MAX_AM];
 
+namespace {
+bool has_ending (std::string const &fullString, std::string const &ending)
+{
+    if (fullString.length() >= ending.length()) {
+        return (0 == fullString.compare (fullString.length() - ending.length(), ending.length(), ending));
+    } else {
+        return false;
+    }
+}
+}
+
 BasisSet::BasisSet()
 {
     call_once(initialize_singletons, initialized_shared_);
@@ -85,17 +96,13 @@ boost::shared_ptr<Molecule> BasisSet::molecule() const
 void BasisSet::print(FILE *out) const
 {
     if (Communicator::world->me() == 0) {
-        fprintf(out, "  Basis Set\n");
+        fprintf(out, "  Basis Set: %s\n", name_.c_str());
         fprintf(out, "    Number of shells: %d\n", nshell());
         fprintf(out, "    Number of basis function: %d\n", nbf());
         fprintf(out, "    Number of Cartesian functions: %d\n", nao());
         fprintf(out, "    Spherical Harmonics?: %s\n", has_puream() ? "true" : "false");
         fprintf(out, "    Max angular momentum: %d\n\n", max_am());
     }
-
-//    fprintf(out, "    Shells:\n\n");
-//    for (int s=0; s<nshell(); ++s)
-//        shells_[s]->print(out);
 }
 
 void BasisSet::print_by_level(FILE* out, int level) const
@@ -291,6 +298,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     typedef map<string, vector<GaussianShell> > map_sv;
     map_ssv basis_atom_shell;
 
+    map<string, int> names;
+
     for (int atom=0; atom<mol->natom(); ++atom) {
 
         const string& symbol = mol->atom_entry(atom)->symbol();
@@ -299,6 +308,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         if (basisname.empty())
             throw PSIEXCEPTION("BasisSet::construct: No basis set specified for "
                                +symbol+ " and " +type+" type.");
+
+        names[basisname] = 1;
 
         // Add basisname, symbol to the list by clearing the vector.
         basis_atom_shell[basisname][symbol].clear();
@@ -380,6 +391,16 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
     // This step is very important. Without it the basis set is useless.
     basisset->refresh();
+
+    basisset->name_.clear();
+    for (map<string, int>::iterator iter = names.begin(), end = names.end();
+         iter != end;
+         ++iter) {
+        basisset->name_ += (*iter).first + " + ";
+    }
+
+    if (has_ending(basisset->name_, " + "))
+        basisset->name_ = basisset->name_.substr(0, basisset->name_.length()-3);
 
     return basisset;
 }

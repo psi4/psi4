@@ -33,13 +33,28 @@ units bohr
 symmetry c1
 }
 
+plugin_load('../plugin_localcc/plugin_localcc.so')
 plugin_load('./plugin_libcim.so')
 memory 1000 mb
 set {
+  maxiter 100
+  r_convergence 1e-7
   basis sto-3g
+  df_basis_scf cc-pvdz
   freeze_core true
   guess sad
+  compute_triples false
   scf_type pk
+  #dipmom true
+  #print 4
+  thresh1 0.01
+  thresh3 1e-5
+  #thresh2 0.0
+  #thresh3 0.0
+  #thresh1 0.005
+  #thresh2 0.05
+  #thresh3 1e-3
+  #print 6
 }
 scf_energy = scf()
 plugin('./plugin_libcim.so')

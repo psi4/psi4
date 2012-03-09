@@ -90,7 +90,7 @@ void MOLECULE::sd_step(void) {
   double sd_h = 0;
 
   double DE_projected = DE_quadratic_energy(sd_dqnorm, sd_g, sd_h);
-  fprintf(outfile,"\tProjected energy change by linear approximation: %20.10lf\n", DE_projected);
+  fprintf(outfile,"\tProjected energy change: %20.10lf\n", DE_projected);
 
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {

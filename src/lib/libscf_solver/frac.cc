@@ -52,7 +52,7 @@ void HF::frac()
             throw PSIEXCEPTION("Fractional Occupation SCF requested, but empty FRAC_OCC/FRAC_VAL vector");
 
         // Throw if inconsistent size
-        if (options_["FRAC_OCC"].size() != options_["FRAC_VAL"].size())
+        if (options_["FRAC_OCC"].size() != options_["FRAC_VAL"].size()) 
             throw PSIEXCEPTION("Fractional Occupation SCF: FRAC_OCC/FRAC_VAL are of different dimensions");
 
         // Throw if the user is being an idiot with docc/socc
@@ -196,6 +196,76 @@ void HF::frac_renormalize()
         if (val != 0.0) 
             C_DSCAL(nso, 1.0 / sqrt(val), &Cp[0][i], nmo); 
     } 
+}
+
+void HF::compute_spin_contamination()
+{
+    if (!(options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "CUHF"))
+        return;
+
+    double nalpha = (double) nalpha_;
+    double nbeta  = (double) nbeta_;
+
+    // Adjust for fractional occupation
+    if (frac_performed_) {
+        for (int ind = 0; ind < options_["FRAC_OCC"].size(); ind++) {
+            int i = options_["FRAC_OCC"][ind].to_integer();
+            double val = options_["FRAC_VAL"][ind].to_double(); 
+            bool is_alpha = (i > 0);
+            if (is_alpha) {
+                nalpha -= (1.0 - val);
+            } else {
+                nbeta  -= (1.0 - val);
+            }
+        }    
+    }
+
+    SharedMatrix S = SharedMatrix(factory_->create_matrix("S (Overlap)"));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_, basisset_,basisset_));
+    boost::shared_ptr<OneBodySOInt> so_overlap(fact->so_overlap());
+    so_overlap->compute(S);
+
+    double dN = 0.0;
+
+    for (int h =0; h < S->nirrep(); h++) {
+        int nbf = S->colspi()[h];
+        int nmo = Ca_->colspi()[h];
+        int na = nalphapi_[h];
+        int nb = nbetapi_[h];
+        if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)
+            continue;
+
+        SharedMatrix Ht (new Matrix("H Temp", nbf, nb));
+        SharedMatrix Ft (new Matrix("F Temp", na, nb));
+
+        double** Sp = S->pointer(h);
+        double** Cap = Ca_->pointer(h);
+        double** Cbp = Cb_->pointer(h);
+        double** Htp = Ht->pointer(0);
+        double** Ftp = Ft->pointer(0);
+
+        C_DGEMM('N','N',nbf,nb,nbf,1.0,Sp[0],nbf,Cbp[0],nmo,0.0,Htp[0],nb);
+        C_DGEMM('T','N',na,nb,nbf,1.0,Cap[0],nmo,Htp[0],nb,0.0,Ftp[0],nb);
+
+        dN += C_DDOT(na*(long int)nb, Ftp[0], 1, Ftp[0], 1);
+    }
+
+    double nmin = (nbeta < nalpha ? nbeta : nalpha);
+    double dS = nmin - dN;
+    double nm = (nalpha - nbeta) / 2.0;
+    double S2 = fabs(nm) * (fabs(nm) + 1.0);
+
+    fprintf(outfile, "   @Spin Contamination Metric: %17.9E\n", dS);
+    fprintf(outfile, "   @S^2 Expected:              %17.9E\n", S2);
+    fprintf(outfile, "   @S^2 Observed:              %17.9E\n", S2 + dS);
+    fprintf(outfile, "   @S   Expected:              %17.9E\n", nm);
+    fprintf(outfile, "   @S   Observed:              %17.9E\n", nm);
+
+    if (frac_performed_) {
+        fprintf(outfile, "   @Nalpha:                    %17.9E\n", nalpha);
+        fprintf(outfile, "   @Nbeta:                     %17.9E\n", nbeta);
+    }
+    fprintf(outfile, "\n");
 }
 
 }}

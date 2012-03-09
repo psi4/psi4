@@ -268,6 +268,9 @@ protected:
     /** Test convergence of the wavefunction */
     virtual bool test_convergency() { return false; }
 
+    /** Compute/print spin contamination information (if unrestricted) **/
+    virtual void compute_spin_contamination();
+
     /** Saves information to the checkpoint file */
     virtual void save_information() {}
 
