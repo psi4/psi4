@@ -123,7 +123,7 @@ Function Intercalls
 Embarrassing Parallelism
 ========================
 
-what functions; no intercalls; no local set; special section in parameter list
+.. include:: ./sowreap.rst
 
 
 .. rst-class:: html-toggle
@@ -135,11 +135,11 @@ Psithon Programming Best Practices
 
 
 .. rst-class:: html-toggle
-==============
-PsiMod Methods
-==============
+=====================
+Expert: PsiMod Module
+=====================
 
-.. include:: ./man_PsiMod.rst 
+.. literalinclude:: ./man_PsiMod.rst 
 
 ..  * NOTES (LAB 2-28-2012)
     * How to get PsiMod.py documentation into Sphinx
@@ -147,30 +147,20 @@ PsiMod Methods
           s = strdup("help(PsiMod)");
           PyRun_SimpleString(s);
     * (2) cd into objdir and make psi4
-    * (3) cd into a testcase directory (e.g., cd tests/tu1-h2o-energy/)
+    * (3) cd into a testcase directory
+          cd tests/tu1-h2o-energy/
           make clean
           make > $PSIDATADIR/../doc/userman/sphinx_psithon_doc/source/man_PsiMod.rst 
-    * (4) Edit man_PsiMod.rst so that the first line (left justified) has
-          a double colon and indent all the remainder of the file, matching below.
-          Delete some junk at end of file.
-          |Help on module PsiMod ::
-          |
-          |    NAME
-          |        PsiMod
+    * (4) Edit man_PsiMod.rst to remove junk at end of file.
     * (5) Rebuild Sphinx docs.
     * (6) LaTeX build can't handle including man_PsiMod.rst so comment out by default.
+    * (7) Rebuild psi4 with lines in (1) commented.
 
 
 .. rst-class:: html-toggle
-================
-Molecule Methods 
-================
-
-
-.. rst-class:: html-toggle
-======
-Expert
-======
+======================
+Expert: Python Modules
+======================
 
 aliases
 =======

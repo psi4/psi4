@@ -1,13 +1,13 @@
 function [lib] = getDefaultLibraryData()
 
 % Absolute path to library template files
-lib.templates = '/theoryfs2/ds/parrish/matlab/templates/';
+lib.templates = '/theoryfs2/ds/parrish/functionals/templates/';
 % Absolute path to object directory of individual .h / .cc files
-lib.objdir = '/theoryfs2/ds/parrish/matlab/objdir2/';
+lib.objdir = '/theoryfs2/ds/parrish/functionals/objdir/';
 % Absolute path of installation of final library
-lib.installdir = '/theoryfs2/ds/parrish/matlab/install/';
+lib.installdir = '/theoryfs2/ds/parrish/functionals/install/';
 % Absolute path for test file outputs
-lib.testdir = '/theoryfs2/ds/parrish/matlab/tests/';
+lib.testdir = '/theoryfs2/ds/parrish/functionals/tests/';
 % Test unmade/remake functionals in matlab?
 lib.test = false;
 
@@ -46,6 +46,9 @@ lib.functionals = {...
     'M05_2X',
     'TauHCTH',
     'TauHCTH0',
+    'wS_X',
+    'wBf_X',
+    'wPBEf_X',
     'wB97',
     'wB97X'
 };
@@ -55,7 +58,7 @@ lib.remakes = {
 };
 
 % Superfunctional file
-lib.superfunctionals = '/theoryfs2/ds/parrish/matlab/superfunctionals.xls'; 
+lib.superfunctionals = '/theoryfs2/ds/parrish/functionals/superfunctionals.xls'; 
 lib.superfunctionals_sheet = 'SuperFunctionals'; 
 
 

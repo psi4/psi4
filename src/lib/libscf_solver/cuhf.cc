@@ -133,7 +133,6 @@ void CUHF::form_G()
 
 void CUHF::save_information()
 {
-    compute_spin_contamination();
 }
 
 void CUHF::compute_spin_contamination()
