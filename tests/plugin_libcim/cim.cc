@@ -84,9 +84,13 @@ void CIM::BuildClusters(){
   Fock = boys->Fock->pointer();
 
   /*
-   * build occupied domains
+   * build occupied domains by dual-environment cim
    */
-  OccupiedDomains();
+  //OccupiedDomains();
+  /*
+   * build occupied domains by single-environment cim
+   */
+  SECIM();
 }
 
 }
