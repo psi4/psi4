@@ -236,6 +236,11 @@ protected:
     void compute_electric_field_and_gradients();
 
 public:
+    /// Compute Mulliken Charges using a specialized Da
+    boost::shared_ptr<Vector> compute_mulliken_charges_custom_Da(boost::shared_ptr<Matrix>Da_so);
+//aed
+    double*Qa,*Qb;
+    SharedMatrix Da_ao_custom_Da_so(boost::shared_ptr<Matrix>Da_so);
     /// Constructor, uses globals
     OEProp(boost::shared_ptr<Wavefunction> wfn);
     /// Constructor, uses globals and Process::environment::reference wavefunction
