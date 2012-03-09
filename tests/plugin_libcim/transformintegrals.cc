@@ -19,15 +19,19 @@ namespace psi{
 /* 
  * transform integrals
  */
-void CIM::TransformIntegrals(int cluster,SharedMatrix Clmo){
-  SharedMatrix Cc (new Matrix("fzc",nso,nfzc_));
-  SharedMatrix Ci (new Matrix("occ",nso,ndoccact_));
-  SharedMatrix Ca (new Matrix("vir",nso,nvirt_));
-  SharedMatrix Cv (new Matrix("fzv",nso,nfzv_));
+void CIM::TransformIntegrals(int cluster,SharedMatrix Clmo,int clusternum){
+
+  fprintf(outfile,"  ==> Transform Integrals for Cluster {%i} <==\n",clusternum);
+  fprintf(outfile,"\n");
+
+  SharedMatrix Cc (new Matrix("FROZEN_OCC",nso,nfzc_));
+  SharedMatrix Ci (new Matrix("ACTIVE_OCC",nso,ndoccact_));
+  SharedMatrix Ca (new Matrix("ACTIVE_VIR",nso,nvirt_));
+  SharedMatrix Cv (new Matrix("FROZEN_VIR",nso,nfzv_));
 
   double**Clmo_pointer = Clmo->pointer();
   double**pointer;
-  if (nfzc>0){
+  if (nfzc_>0){
      pointer = Cc->pointer();
      for (int i=0; i<nso; i++){
          for (int j=0; j<nfzc_; j++){
@@ -39,7 +43,7 @@ void CIM::TransformIntegrals(int cluster,SharedMatrix Clmo){
   pointer = Ci->pointer();
   for (int i=0; i<nso; i++){
       for (int j=0; j<ndoccact_; j++){
-          pointer[i][j] = Clmo_pointer[i][j+nfzc];
+          pointer[i][j] = Clmo_pointer[i][j+nfzc_];
       }
       //F_DCOPY(ndoccact,&Clmo_pointer[i][nfzc],1,&pointer[i][0],1);
   }
@@ -65,21 +69,21 @@ void CIM::TransformIntegrals(int cluster,SharedMatrix Clmo){
   spaces.push_back(MOSpace::occ);
   spaces.push_back(MOSpace::vir);
 
-  /*boost::shared_ptr<Wavefunction> ref =
-       Process::environment.reference_wavefunction();
-
-  boost::shared_ptr<Matrix> Cc = ref->Ca_subset("SO","FROZEN_OCC");
-  boost::shared_ptr<Matrix> Ci = ref->Ca_subset("SO","ACTIVE_OCC");
-  boost::shared_ptr<Matrix> Ca = ref->Ca_subset("SO","ACTIVE_VIR");
-  boost::shared_ptr<Matrix> Cv = ref->Ca_subset("SO","FROZEN_VIR");*/
+  //boost::shared_ptr<Wavefunction> ref =
+  //     Process::environment.reference_wavefunction();
+  //boost::shared_ptr<Matrix> Cc = ref->Ca_subset("SO","FROZEN_OCC");
+  //boost::shared_ptr<Matrix> Ci = ref->Ca_subset("SO","ACTIVE_OCC");
+  //boost::shared_ptr<Matrix> Ca = ref->Ca_subset("SO","ACTIVE_VIR");
+  //boost::shared_ptr<Matrix> Cv = ref->Ca_subset("SO","FROZEN_VIR");
 
   // so->no integral transformation
   IntegralTransform ints(Cc, Ci, Ca, Cv, spaces, IntegralTransform::Restricted,
-           IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, true);
+           IntegralTransform::IWLOnly, IntegralTransform::PitzerOrder, IntegralTransform::OccAndVir, true);
   ints.set_keep_dpd_so_ints(1);
   ints.set_keep_iwl_so_ints(1);
   ints.initialize();
   ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+  fprintf(outfile,"\n");
 }
 
 }

@@ -151,7 +151,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     nso_     = i->nrow();
     sopi_    = i->rowspi();   // use i for this since there will always be occupied orbitals
     mopi_    = c->colspi() + i->colspi() + a->colspi() + v->colspi();
-    clsdpi_  = i->colspi();
+    clsdpi_  = i->colspi()+c->colspi();
     openpi_  = Dimension(nirreps_); // This is the restricted constructor, there are no unpaired electrons
     frzcpi_  = c->colspi();
     frzvpi_  = v->colspi();
@@ -161,6 +161,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     std::vector<SharedMatrix > Cs;
     Cs.push_back(c); Cs.push_back(i); Cs.push_back(a); Cs.push_back(v);
     Ca_ = Matrix::horzcat(Cs);
+    Cb_ = Ca_;
 
     common_moinfo_initialize();
 
