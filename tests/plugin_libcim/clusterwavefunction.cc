@@ -15,20 +15,20 @@ namespace psi{
  * all that changes is the number of frozen occupied and virtual orbitals.
  */
 void CIM::ClusterWavefunction(int cluster){
-  int nfzc_  = nfzc;
-  int nfzv_  = nfzv;
+  nfzc_  = nfzc;
+  nfzv_  = nfzv;
 
   int nactiveo   = ncentral[cluster]+nmodomain[cluster]+nenv[cluster];
-  int ninactiveo = ndocc - nfzc - nactiveo;
+  int ninactiveo = ndocc - nactiveo;
   int nactivev   = nvirt_;
   int ninactivev = nvirt-nvirt_;
 
-  nfzc_  += ninactiveo;
-  nfzv_  += ninactivev;
+  ndoccact_ = nactiveo;
+  nfzc_     = ninactiveo;
+  nfzv_     = ninactivev;
 
   frzcpi_[0] = nfzc_;
   frzvpi_[0] = nfzv_;
-printf("hey %5i %5i %5i %5i\n",nactiveo,ninactiveo,frzcpi()[0],frzcpi()[0]);
 }
 
 }
