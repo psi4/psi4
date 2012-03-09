@@ -71,9 +71,6 @@ void RunCoupledCluster(Options &options){
      Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
   }
 
-  // free gpu memory
-  ccsd->helper_->Cleanup(options);
-
   ccsd.reset();
 }
 

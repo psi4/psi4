@@ -235,6 +235,8 @@ PsiReturnType GPUCoupledCluster::CCSDIterations(Options&options){
   time_start = time(NULL);
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+
+  //TCEPA();
   while(iter<maxiter && nrm>conv){
       iter_start = time(NULL);
 
@@ -331,7 +333,7 @@ PsiReturnType GPUCoupledCluster::CCSDIterations(Options&options){
 
          count=0;
          while( cudaEventQuery(estop) == cudaErrorNotReady )count++;
-         if (count==0)fprintf(outfile,"          Warning: CPU time exceeds GPU vabcd stream time\n");
+         //if (count==0)fprintf(outfile,"          Warning: CPU time exceeds GPU vabcd stream time\n");
             
          F_DAXPY(o*o*v*v,1.0,tempu,1,wb,1);
 
@@ -378,13 +380,13 @@ PsiReturnType GPUCoupledCluster::CCSDIterations(Options&options){
          // read integrals and do one small diagram on the cpu
          CPU_I1ab();
 
+         count=0;
+         while( cudaEventQuery(estop) == cudaErrorNotReady )count++;
+         //if (count==0) fprintf(outfile,"          Warning: CPU time exceeds GPU I(ia,bj) stream time\n");
+
          psio->open(PSIF_ABCI4,PSIO_OPEN_OLD);
          psio->read_entry(PSIF_ABCI4,"E2abci4",(char*)&E2abci[0],v*v*v*o*sizeof(double));
          psio->close(PSIF_ABCI4,1);
-
-         count=0;
-         while( cudaEventQuery(estop) == cudaErrorNotReady )count++;
-         if (count==0) fprintf(outfile,"          Warning: CPU time exceeds GPU I(ia,bj) stream time\n");
 
          cublasSetKernelStream(NULL);
          F_DAXPY(o*o*v*v,1.0,tempu,1,wb,1);
@@ -431,7 +433,7 @@ PsiReturnType GPUCoupledCluster::CCSDIterations(Options&options){
 
          count=0;
          while( cudaEventQuery(estop) == cudaErrorNotReady )count++;
-         if (count==0) fprintf(outfile,"          Warning: CPU I1pij+I1ia time exceeds GPU I(ia,jb) stream time\n");
+         //if (count==0) fprintf(outfile,"          Warning: CPU I1pij+I1ia time exceeds GPU I(ia,jb) stream time\n");
 
          cublasSetKernelStream(NULL);
 
@@ -525,6 +527,20 @@ PsiReturnType GPUCoupledCluster::CCSDIterations(Options&options){
 
   fflush(stdout);
   fflush(outfile);
+
+  // free some of the cpu memory before exiting in case we end up doing triples next
+  cudaFreeHost(E2ijkl);
+  cudaFreeHost(E2ijak2);
+  cudaFreeHost(E2ijak3);
+  cudaFreeHost(E2ijakCopy);
+  cudaFreeHost(E2akjc_2);
+  cudaFreeHost(Symabcd1);
+  cudaFreeHost(Symabcd2);
+  cudaFreeHost(tempu);
+  cudaFreeHost(w1);
+  cudaFreeHost(I1);
+  cudaFreeHost(I1p);
+
   return Success;
 }
 void GPUCoupledCluster::SCS_CCSD(){
@@ -623,21 +639,10 @@ void GPUCoupledCluster::CudaFinalize(){
   cudaFree(gputempw);
   cudaFree(gput2);
   cudaFree(gput1);
-  cudaFreeHost(E2ijkl);
   cudaFreeHost(E2ijak);
-  cudaFreeHost(E2ijak2);
-  cudaFreeHost(E2ijak3);
-  cudaFreeHost(E2ijakCopy);
-  cudaFreeHost(E2akjc_2);
   cudaFreeHost(E2klcd_1);
   cudaFreeHost(E2abci);
-  cudaFreeHost(Symabcd1);
-  cudaFreeHost(Symabcd2);
-  cudaFreeHost(tempu);
   cudaFreeHost(tb);
-  cudaFreeHost(w1);
-  cudaFreeHost(I1);
-  cudaFreeHost(I1p);
   cudaFreeHost(t1);
   cudaThreadExit();
 }
@@ -827,7 +832,9 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
   psio_address addr;
 
   double*tmpei;
-  tmpei = (double*)malloc(ndoccact*ndoccact*nvirt*nvirt*sizeof(double));
+  long int dim = nvirt*(nvirt+1)/2;
+  dim = dim*dim;
+  tmpei = (double*)malloc(dim*sizeof(double));
   int count=0;
 
   // E<ij|ak>
@@ -839,7 +846,7 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
               for (a=ndocc; a<nmotemp; a++){
                   dum = tei[Position(Position(i-nfzc,a-nfzc),Position(j-nfzc,k-nfzc))];
                   tmpei[count++] = dum;
-                  if (count==ndoccact*ndoccact*nvirt*nvirt){
+                  if (count==dim){
                      psio->write(PSIF_IJAK,"E2ijak",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
                      count=0;
                   }
@@ -861,7 +868,7 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
               for (c=ndocc; c<nmotemp; c++){
                   dum = tei[Position(Position(a-nfzc,c-nfzc),Position(b-nfzc,i-nfzc))];
                   tmpei[count++] = dum;
-                  if (count==ndoccact*ndoccact*nvirt*nvirt){
+                  if (count==dim){
                      psio->write(PSIF_ABCI,"E2abci",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
                      count=0;
                   }
@@ -885,7 +892,7 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
       else      dum = tei[Position(Position(a-nfzc,c-nfzc),Position(b-nfzc,d-nfzc))]
                     + tei[Position(Position(a-nfzc,d-nfzc),Position(b-nfzc,c-nfzc))];
       tmpei[count++] = dum;
-      if (count==ndoccact*ndoccact*nvirt*nvirt){
+      if (count==dim){
          psio->write(PSIF_ABCD1,"E2abcd1",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
          count=0;
       }
@@ -906,7 +913,7 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
       dum = tei[Position(Position(a-nfzc,c-nfzc),Position(b-nfzc,d-nfzc))]
           - tei[Position(Position(a-nfzc,d-nfzc),Position(b-nfzc,c-nfzc))];
       tmpei[count++] = dum;
-      if (count==ndoccact*ndoccact*nvirt*nvirt){
+      if (count==dim){
          psio->write(PSIF_ABCD2,"E2abcd2",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
          count=0;
       }
@@ -926,7 +933,7 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
               for (j=nfzc; j<ndocc; j++){
                   dum = tei[Position(Position(i-nfzc,k-nfzc),Position(j-nfzc,l-nfzc))];
                   tmpei[count++] = dum;
-                  if (count==ndoccact*ndoccact*nvirt*nvirt){
+                  if (count==dim){
                      psio->write(PSIF_IJKL,"E2ijkl",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
                      count=0;
                   }
@@ -948,7 +955,7 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
               for (a=ndocc; a<nmotemp; a++){
                   dum = tei[Position(Position(a-nfzc,c-nfzc),Position(k-nfzc,j-nfzc))];
                   tmpei[count++] = dum;
-                  if (count==ndoccact*ndoccact*nvirt*nvirt){
+                  if (count==dim){
                      psio->write(PSIF_AKJC2,"E2akjc2",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
                      count=0;
                   }
@@ -970,7 +977,7 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
               for (d=ndocc; d<nmotemp; d++){
                   dum = tei[Position(Position(k-nfzc,c-nfzc),Position(l-nfzc,d-nfzc))];
                   tmpei[count++] = dum;
-                  if (count==ndoccact*ndoccact*nvirt*nvirt){
+                  if (count==dim){
                      psio->write(PSIF_KLCD,"E2klcd",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
                      count=0;
                   }
@@ -1012,11 +1019,10 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
       dum = 2.*tei[Position(Position(a-nfzc,b-nfzc),Position(e-nfzc,m-nfzc))]
           -    tei[Position(Position(a-nfzc,e-nfzc),Position(b-nfzc,m-nfzc))];
       tmpei[count++] = dum;
-      if (count==ndoccact*ndoccact*nvirt*nvirt){
+      if (count==dim){
          psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
          count=0;
       }
-      //psio->write(PSIF_ABCI2,"E2abci2",(char*)&dum,sizeof(double),addr,&addr);
   }}}}
   if (count>0)
      psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
@@ -1031,11 +1037,10 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
   for (e=ndocc; e<nmotemp; e++){
       dum = tei[Position(Position(a-nfzc,f-nfzc),Position(e-nfzc,m-nfzc))];
       tmpei[count++] = dum;
-      if (count==ndoccact*ndoccact*nvirt*nvirt){
+      if (count==dim){
          psio->write(PSIF_ABCI3,"E2abci3",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
          count=0;
       }
-      //psio->write(PSIF_ABCI3,"E2abci3",(char*)&dum,sizeof(double),addr,&addr);
   }}}}
   if (count>0)
      psio->write(PSIF_ABCI3,"E2abci3",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
@@ -1050,11 +1055,10 @@ void GPUCoupledCluster::WriteIntegrals(double*tei){
   for (c=ndocc; c<nmotemp; c++){
       dum = tei[Position(Position(a-nfzc,b-nfzc),Position(c-nfzc,i-nfzc))];
       tmpei[count++] = dum;
-      if (count==ndoccact*ndoccact*nvirt*nvirt){
+      if (count==dim){
          psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
          count=0;
       }
-      //psio->write(PSIF_ABCI4,"E2abci4",(char*)&dum,sizeof(double),addr,&addr);
   }}}}
   if (count>0)
      psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmpei[0],count*sizeof(double),addr,&addr);
@@ -1727,5 +1731,63 @@ __global__ void GPUPermute_tikbc(double*in,double*out,int ns,int h){
   unsigned short l = (id-d-k*h-c*ns*h)/(ns*h*h);
   out[id] = in[l*h*h*ns+d*h*ns+k*h+c];
 }
+
+/*
+ * truncated cepa
+ */
+void GPUCoupledCluster::TCEPA(){
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int iajb,jaib,ijab=0;
+  double energy = 0.0;
+  memset((void*)tb,'\0',o*o*v*v*sizeof(double));
+  double*pair_energy = (double*)malloc(o*o*sizeof(double));
+
+  double tconv = 1.0;
+  double di,dij,dija,dijab;
+  while (tconv>1e-6){
+      tconv = 0.0;
+      for (i=0; i<o; i++){
+          di = -eps[i];
+          for (j=0; j<o; j++){
+              dij = di - eps[j];
+              energy=0.0;
+              for (a=o; a<rs; a++){
+                  for (b=o; b<rs; b++){
+                      ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                      iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                      jaib = j*v*v*o+(a-o)*v*o+i*v+(b-o);
+                      energy += E2klcd_1[iajb]*(2.0*tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+                      //energy += (2.*E2klcd_1[iajb]-E2klcd_1[jaib])*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+                  }
+              }
+              pair_energy[i*o+j] = energy;
+              for (a=o; a<rs; a++){
+                  dija = dij + eps[a];
+                  for (b=o; b<rs; b++){
+                      dijab = dija + eps[b];
+                      ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                      iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                      double t2  = -E2klcd_1[iajb]/(dijab - pair_energy[i*o+j]);
+                      double dum = (tb[ijab]-t2);
+                      tconv += dum*dum;
+                      tb[ijab] = t2;
+                  }
+              }
+          }
+      }
+      for (a=0; a<v; a++){
+          t1[a*o+i] = sqrt(fabs(tb[a*o*o*v+a*o*o+i*o+i]));
+      }
+      energy=0.0;
+      for (i=0; i<o*o; i++) energy += pair_energy[i];
+      printf("%20.12lf\n",energy);fflush(stdout);
+      tconv = sqrt(tconv);
+  }
+  free(pair_energy);
+}
+
 
 }//end of namespace psi
