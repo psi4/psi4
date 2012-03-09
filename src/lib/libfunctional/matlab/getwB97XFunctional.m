@@ -40,8 +40,14 @@ kb = (6*pi^2*rho_b)^(1/3);
 aa = omega / (2*ka);
 ab = omega / (2*kb);
 
-Fa = 1 - 8/3*aa*(sqrt(pi)*erf(1/(2*aa)) - 3*aa + 4*aa^3 + (2*aa - 4*aa^3)*exp(-1/(4*aa^2)));  
-Fb = 1 - 8/3*ab*(sqrt(pi)*erf(1/(2*ab)) - 3*ab + 4*ab^3 + (2*ab - 4*ab^3)*exp(-1/(4*ab^2)));  
+ba = exp(-1/(4 * aa^2)) - 1;
+bb = exp(-1/(4 * ab^2)) - 1;
+
+ca = 2*aa^2 * ba - 1;
+cb = 2*ab^2 * bb - 1;
+
+Fa = 1 - 8/3*aa*(sqrt(pi) * erf(1/(2*aa)) + 2*aa*(ba - ca));
+Fb = 1 - 8/3*ab*(sqrt(pi) * erf(1/(2*ab)) + 2*ab*(bb - cb));
 
 % Ex portion
 ExaLSDA = c0*rho_a^(4/3)*Fa;

@@ -49,6 +49,7 @@ struct OPT_PARAMS {
   int H_update_use_last;
 
   enum IRC_DIRECTION {FORWARD, BACKWARD} IRC_direction;
+  enum IRC_STOP {ASK, STOP, GO} IRC_stop;
 
   bool freeze_intrafragment; // freeze all fragments
   bool add_auxiliary_bonds;

@@ -39,7 +39,12 @@ boost::shared_ptr<VBase> VBase::build_V(Options& options, const std::string& typ
 
     int block_size = options.get_int("DFT_BLOCK_MAX_POINTS");
     boost::shared_ptr<functional::SuperFunctional> functional = functional::SuperFunctional::createSuperFunctional(options.get_str("DFT_FUNCTIONAL"),block_size,depth);
- 
+
+    // Let the user to spec a custom range-separation omega
+    if (options["DFT_OMEGA"].has_changed() && functional->isRangeCorrected()) {
+        functional->setOmega(options.get_double("DFT_OMEGA"));
+    }
+
     boost::shared_ptr<VBase> v;
     if (type == "RV") {
         v = boost::shared_ptr<VBase>(new RV(functional,primary,options));
