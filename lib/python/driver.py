@@ -442,6 +442,7 @@ def gradient(name, **kwargs):
 
         for n, displacement in enumerate(displacements):
             rfile = 'OPT-%s-%s' % (opt_iter, n + 1)
+            #rfile = 'OPT-fd-%s' % (n + 1)
 
             # Build string of title banner
             banners = ''

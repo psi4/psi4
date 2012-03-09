@@ -15,6 +15,8 @@ void print_matrix(const FILE *fp, double **A, const int x, const int y);
 
 void print_array(const FILE *fp, double *A, const int x);
 
+void print_geom_array(const FILE *fp, double *A, const int natom);
+
 }
 
 #endif
