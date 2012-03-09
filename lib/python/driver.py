@@ -94,7 +94,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :download:`manual <userman.pdf>`|
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -315,6 +315,10 @@ def gradient(name, **kwargs):
     if lowername in procedures['gradient']:
         dertype = 1
     elif lowername in procedures['energy']:
+        dertype = 0
+        func = energy
+
+    if (PsiMod.get_global_option('REFERENCE').lower() == 'rks') or (PsiMod.get_global_option('REFERENCE').lower() == 'uks'):
         dertype = 0
         func = energy
 

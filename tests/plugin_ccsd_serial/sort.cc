@@ -11,6 +11,23 @@ using namespace psi;
 
 namespace psi{
 
+/*void libtransOutOfCoreSort(int nfzc,int nfzv,int norbs,ndoccact,int nvirt){
+    std::vector<shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::occ);
+    spaces.push_back(MOSpace::vir);
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+    IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted,
+               IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
+    ints.set_dpd_id(0);
+    ints.set_keep_iwl_so_ints(true);
+    ints.set_keep_dpd_so_ints(true);
+    ints.initialize();
+
+    ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
+    libtransSortBlock
+    SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_IJKL,"E2ijkl",maxelem);
+}*/
+
 void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
   struct iwlbuf Buf; 
   // initialize buffer

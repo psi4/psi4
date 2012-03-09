@@ -133,14 +133,17 @@ void CIM::SECIM(){
       }
       // compute Mulliken charges:
       boost::shared_ptr<OEProp> oe(new OEProp());
-      oe->compute_mulliken_charges_per_orbital(Da_so);
+      boost::shared_ptr<Vector> Qa = 
+          oe->compute_mulliken_charges_custom_Da(Da_so);
+      double * Qa_pointer = Qa->pointer();
+
       // look at mulliken charges due to LMO i
       for (int j=0; j<natom; j++){
           if (!heavyatom[j]) continue;
           // check if orbital i is central in cluster j
           for (int k=0; k<natom; k++){
               if (atoms[j][k]==isempty) continue;
-              if (2.0*oe->Qa[k]>0.3){
+              if (2.0*Qa_pointer[k]>0.3){
                  central[j][i] = i;
                  domain[j][i] = i;
                  ncentral[j]++;

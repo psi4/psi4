@@ -57,6 +57,7 @@ class GPUCoupledCluster{
       */
     void UpdateT1(int iter);
     void UpdateT2(int iter);
+    void TCEPA();
 
     double CheckEnergy();
 
@@ -83,7 +84,7 @@ class GPUCoupledCluster{
     int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nirreps,*docc,nfzc,nfzv,*fzc,*fzv,*orbs,*sorbs;
     double *oei,*tei,*Fock,*eps;
     boost::shared_ptr<Vector> eps_test;
-    double escf,enuc,efzc,emp2,eccsd;
+    double escf,enuc,efzc,emp2,eccsd,et;
     int maxiter;
     double conv;
 

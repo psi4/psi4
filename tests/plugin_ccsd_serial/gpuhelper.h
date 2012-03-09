@@ -48,12 +48,6 @@ class GPUHelper{
     void CudaInitGPU(Options&options);
 
     /**
-      * Clean up the memory allocated for the GPU and the pinned CPU memory
-      */
-    void Cleanup(Options&options);
-    void CleanupGPU(Options&options);
-
-    /**
       * wrapper for cuda error messages
       */
     inline void Check_CUDA_Error(FILE*fp,const char *message);
