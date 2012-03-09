@@ -49,6 +49,11 @@ double ET_RHF(void)
   thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
   p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
+#ifdef HAVE_MKL
+  int old_threads = mkl_get_num_threads();
+  mkl_set_num_threads(1);
+#endif
+
   dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
   dpd_file2_init(&fIA, CC_OEI, 0, 0, 1, "fIA");
@@ -218,6 +223,10 @@ double ET_RHF(void)
   free(p_thread);
 
   timer_off("ET_RHF");
+
+#ifdef HAVE_MKL
+  mkl_set_num_threads(old_threads);
+#endif
 
   return ET;
 }
