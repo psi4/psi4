@@ -148,7 +148,17 @@ void IRC_DATA::progress_report(opt::MOLECULE &mol)
   fprintf(outfile,"\n");
   fprintf(outfile,"\n");
 
+  fprintf(outfile,"\tInformation on final geometry:\n");
   mol.print_intcos(outfile);
+
+  fprintf(outfile, "\tCartesian IRC geometries of each point on the path:\n");
+  for (int i=0; i<steps.size(); ++i) {
+    fprintf(outfile, "\t Step %d  Energy %20.10lf  Arclength %10.5lf\n", i, g_step(i).g_energy(),
+      g_step(i).g_arc_dist());
+
+    print_geom_array(outfile, g_step(i).g_x(), mol.g_natom() );
+  }
+
 }
 
 

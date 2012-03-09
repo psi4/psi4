@@ -123,10 +123,10 @@ class IRC_DATA {
     {
       return steps[steps.size()-1]->g_q();
     }
-    double g_q(int i) const
-    {
-      return g_q(i);
-    }
+    //double g_q(int i) const
+    //{
+      //return g_q(i);
+    //}
     double *g_x(void) const
     {
       return steps[steps.size()-1]->g_x();
