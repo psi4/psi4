@@ -156,6 +156,12 @@ class CoupledCluster{
       * Update t2
       */
     void UpdateT2(long int iter);
+
+    /**
+      * get a better guess at t2 than mp2
+      */
+    void TCEPA();
+
     /**
       * Get the energy for that iteration. If there is a diis extrapolation,
       * the energy is evaluated after that step.

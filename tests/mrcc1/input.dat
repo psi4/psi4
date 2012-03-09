@@ -13,5 +13,5 @@ set {
     freeze_core true
 }
 
-energy('mrccsdt')
+energy('plugin_ccsd_serial')
 
