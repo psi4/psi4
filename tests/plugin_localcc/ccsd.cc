@@ -1,3 +1,4 @@
+#include<libdpd/dpd.h>
 #include"psi4-dec.h"
 #include<psifiles.h>
 #include<libplugin/plugin.h>
@@ -39,8 +40,10 @@ long int Position(long int i,long int j){
 
 namespace psi{
 
-CoupledCluster::CoupledCluster()
-{}
+CoupledCluster::CoupledCluster(boost::shared_ptr<psi::CIM> wfn)
+{
+  wfn_ = wfn;
+}
 CoupledCluster::~CoupledCluster()
 {}
 
@@ -68,17 +71,15 @@ void CoupledCluster::WriteBanner(){
 ================================================================*/
 void CoupledCluster::Initialize(Options &options){
  
-  // grab the reference wave function and its parameters
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
 
-  if (ref.get() !=NULL){
+  if (wfn_.get() !=NULL){
      escf    = Process::environment.globals["SCF TOTAL ENERGY"];
-     nirreps = ref->nirrep();
-     sorbs   = ref->nsopi();
-     orbs    = ref->nmopi();
-     docc    = ref->doccpi();
-     fzc     = ref->frzcpi();
-     fzv     = ref->frzvpi();
+     nirreps = wfn_->nirrep();
+     sorbs   = wfn_->nsopi();
+     orbs    = wfn_->nmopi();
+     docc    = wfn_->doccpi();
+     fzc     = wfn_->frzcpi();
+     fzv     = wfn_->frzvpi();
   }
   if (nirreps>1){
      //throw PsiException("plugin_ccsd requires symmetry c1",__FILE__,__LINE__);
@@ -157,7 +158,7 @@ void CoupledCluster::Initialize(Options &options){
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
+  OutOfCoreSort(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt);
 
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -167,18 +168,19 @@ void CoupledCluster::Initialize(Options &options){
   fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
   fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
   fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
+fflush(outfile);
 
   // orbital energies:
   eps = (double*)malloc(nmo*sizeof(double));
   int count=0;
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = fzc[h]; norb<docc[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
   }
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
@@ -248,8 +250,6 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
   time_start = time(NULL);
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
-
-  //TCEPA();
   while(iter<maxiter && nrm>conv){
       iter_start = time(NULL);
 
@@ -301,10 +301,13 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
   psio.reset();
 
   if (iter==maxiter){
-     throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
+     //throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
 
   SCS_CCSD();
+
+  // CIM energy
+  eccsd = CIMEnergy();
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
@@ -900,11 +903,11 @@ void CoupledCluster::UpdateT1(long int iter){
   long int i,j,a,b;
   long int id=0;
   double tnew,dia;
-  /*if (iter<1){
+  if (iter<1){
      memset((void*)t1,'\0',o*v*sizeof(double));
      memset((void*)w1,'\0',o*v*sizeof(double));
   }
-  else{*/
+  else{
      for (a=o; a<rs; a++){
          for (i=0; i<o; i++){
              dia = -eps[i]+eps[a];
@@ -912,7 +915,7 @@ void CoupledCluster::UpdateT1(long int iter){
              w1[(a-o)*o+i] = tnew;
          }
      }
-  //}
+  }
   // error vector for diis is in tempv:
   F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
@@ -995,6 +998,81 @@ void CoupledCluster::SCS_MP2(){
 
   psio.reset();
 }
+double CoupledCluster::CIMEnergy(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  double ta,tnew,dijab,da,dab,dabi;
+  long int iajb,jaib;
+  double energy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  double**Rii = wfn_->Rii->pointer();
+  // transform E2klcd back from quasi-canonical basis
+  for (i=0; i<o; i++){
+      for (a=0; a<v; a++){
+          for (j=0; j<o; j++){
+              for (b=0; b<v; b++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii[ip][i];
+                  }
+                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
+              }
+          }
+      }
+  }
+
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempv;
+  }
+  // transform t2 back from quasi-canonical basis
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii[ip][i];
+                  }
+                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
+              }
+          }
+      }
+  }
+
+  for (a=o; a<rs; a++){
+      for (b=o; b<rs; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  energy += (2.*integrals[i*o*v*v+(a-o)*o*v+j*v+(b-o)]-integrals[i*o*v*v+(b-o)*o*v+j*v+(a-o)])
+                          * (tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])
+                          * wfn_->centralfac[i];
+              }
+          }
+      }
+  }
+
+  psio.reset();
+
+  return energy;
+}
 double CoupledCluster::CheckEnergy(){
 
   long int v = nvirt;
@@ -1002,7 +1080,7 @@ double CoupledCluster::CheckEnergy(){
   long int rs = nmo;
   long int i,j,a,b;
   double ta,tnew,dijab,da,dab,dabi;
-  long int iajb,jaib,ijab=0;
+  long int iajb,jaib;
   double energy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
@@ -1014,6 +1092,7 @@ double CoupledCluster::CheckEnergy(){
      psio->close(PSIF_T2,1);
      tb = tempv;
   }
+  double**Rii = wfn_->Rii->pointer();
   for (a=o; a<rs; a++){
       for (b=o; b<rs; b++){
           for (i=0; i<o; i++){
@@ -1021,8 +1100,8 @@ double CoupledCluster::CheckEnergy(){
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   jaib = iajb + (i-j)*v*(1-v*o);
-                  energy += (2.*integrals[iajb]-integrals[jaib])*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
-                  ijab++;
+                  energy += (2.*integrals[iajb]-integrals[jaib])
+                          * (tb[(a-o)*o*o*v+(b-o)*o*o+i*o+j]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
               }
           }
       }
@@ -1692,70 +1771,6 @@ void CoupledCluster::DefineTasks(){
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd2;
-}
-
-/*
- * truncated cepa
- */
-void CoupledCluster::TCEPA(){
-  long int v = nvirt;
-  long int o = ndoccact;
-  long int rs = nmo;
-  long int i,j,a,b;
-  long int iajb,jaib,ijab=0;
-  double energy = 0.0;
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-  if (t2_on_disk){
-     tb = tempt;
-  }
-  memset((void*)tb,'\0',o*o*v*v*sizeof(double));
-  double*pair_energy = (double*)malloc(o*o*sizeof(double));
-
-  double tconv = 1.0;
-  double di,dij,dija,dijab;
-  while (tconv>1e-6){
-      tconv = 0.0;
-      for (i=0; i<o; i++){
-          di = -eps[i];
-          for (j=0; j<o; j++){
-              dij = di - eps[j];
-              energy=0.0;
-              for (a=o; a<rs; a++){
-                  for (b=o; b<rs; b++){
-                      ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
-                      iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                      energy += integrals[iajb]*(2.0*tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
-                  }
-              }
-              pair_energy[i*o+j] = energy;
-              for (a=o; a<rs; a++){
-                  dija = dij + eps[a];
-                  for (b=o; b<rs; b++){
-                      dijab = dija + eps[b];
-                      ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
-                      iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                      double t2  = -integrals[iajb]/(dijab - pair_energy[i*o+j]);
-                      double dum = (tb[ijab]-t2);
-                      tconv += dum*dum;
-                      tb[ijab] = t2;
-                  }
-              }
-          }
-      }
-      tconv = sqrt(tconv);
-  }
-  /*for (a=0; a<v; a++){
-      for (i=0; i<o; i++){
-          t1[a*o+i] = sqrt(abs(tb[a*o*o*v+a*o*o+i*o+i]));
-      }
-  }*/
-
-
-  free(pair_energy);
-  psio.reset();
 }
 
 

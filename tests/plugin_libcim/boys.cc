@@ -154,7 +154,7 @@ void Boys::Localize(){
   F_DGEMM('t','n',nmo,nso,nmo,1.0,&Clmo_pointer[0][0],nmo,&Ca_pointer[0][0],nmo,0.0,&mu[0][0][0],nmo);
   F_DCOPY(nso*nmo,&mu[0][0][0],1,&Clmo_pointer[0][0],1);
 
-  free(mu);
+  //free(mu);
   free(reorder);
 }
 

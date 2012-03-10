@@ -47,5 +47,18 @@ void print_array(const FILE *fp, double *A, const int ncol) {
   fflush(const_cast<FILE *>(fp));
 }
 
+void print_geom_array(const FILE *fp, double *A, const int natom) {
+  int i;
+
+  int cnt = -1;
+  for (int i=0; i<natom; ++i) {
+    fprintf(const_cast<FILE *>(fp), "\t%13.8f", A[++cnt]);
+    fprintf(const_cast<FILE *>(fp), "%13.8f", A[++cnt]);
+    fprintf(const_cast<FILE *>(fp), "%13.8f", A[++cnt]);
+    fprintf(const_cast<FILE *>(fp), "\n");
+  }
+  fprintf(const_cast<FILE *>(fp),"\n");
+}
+
 }
 

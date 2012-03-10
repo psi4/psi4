@@ -254,7 +254,7 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
              #ifdef _OPENMP
                  end = omp_get_wtime();
              #endif
-             //printf("task %5i took %10.2lf s\n",i,end-start);fflush(stdout);
+             printf("task %5i took %10.2lf s\n",i,end-start);fflush(stdout);
          }
       }
 
@@ -1388,7 +1388,7 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
   double time1,t2,start1,start2,end1,end2,t3,start3,end3;
   time1=t2=start1=start2=end1=end2=0.0;
 
-  psio->open(PSIF_QVVT,PSIO_OPEN_OLD);
+  /*psio->open(PSIF_QVVT,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_QVVT,"qvv_transpose",(char*)&Qvv[0],nQ*v*v*sizeof(double));
   psio->close(PSIF_QVVT,1);
 
@@ -1468,9 +1468,9 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
 
   psio->open(PSIF_QVV,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_QVV,"qvv",(char*)&Qvv[0],nQ*v*v*sizeof(double));
-  psio->close(PSIF_QVV,1);
+  psio->close(PSIF_QVV,1);*/
 
-  /*for (a=0; a<v; a++){
+  for (a=0; a<v; a++){
              #ifdef _OPENMP
                  start3 = omp_get_wtime();
              #endif
@@ -1495,7 +1495,7 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
           time1 += end1-start1;
           t2 += end2-start2;
           t3 += end3-start3;
-  }*/
+  }
 //printf("%7.2lf %7.2lf %7.2lf\n",time1,t2,t3);
   //for (a=0; a<v; a++){
   //    F_DCOPY(nQ*v,Qvv+a,v,tempt,1);
@@ -1517,12 +1517,12 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
   }
 
   // using SJS packing is very very slow.
-  /*F_DCOPY(o*o*v*v,tb,1,tempt,1);
-  for (a=0,id=0; a<v; a++){
+  //F_DCOPY(o*o*v*v,tb,1,tempt,1);
+  /*for (a=0,id=0; a<v; a++){
       for (b=0; b<v; b++){
           for (i=0; i<o; i++){
               for (j=0; j<o; j++){
-                  tempt[id++] += t1[a*o+i]*t1[b*o+j];
+                  tb[id++] += t1[a*o+i]*t1[b*o+j];
               }
           }
       }
@@ -1530,59 +1530,100 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
   for (i=0; i<o; i++){
       for (j=i; j<o; j++){
           for (a=0; a<v; a++){
-              for (b=0; b<v; b++){
-                  //tempv[Position(a,b)*o*(o+1)/2+Position(i,j)] =
-                  tempv[a*v*o*(o+1)/2+b*o*(o+1)/2+Position(i,j)] =
-                     0.5*(tempt[a*o*o*v+b*o*o+i*o+j]+tempt[b*o*o*v+a*o*o+i*o+j]);
+              for (b=a; b<v; b++){
+                  //tempv[a*v*o*(o+1)/2+b*o*(o+1)/2+Position(i,j)] =
+                  //   0.5*(tempt[a*o*o*v+b*o*o+i*o+j]+tempt[b*o*o*v+a*o*o+i*o+j]);
+                  tempv[Position(a,b)*o*(o+1)/2+Position(i,j)] =
+                     (tb[a*o*o*v+b*o*o+i*o+j]+tb[b*o*o*v+a*o*o+i*o+j]);
+                  integrals[Position(a,b)*o*(o+1)/2+Position(i,j)] =
+                     (tb[a*o*o*v+b*o*o+i*o+j]-tb[b*o*o*v+a*o*o+i*o+j]);
               }
-              //tempv[Position(a,a)*o*(o+1)/2+Position(i,j)] =
-              //   tempt[a*o*o*v+a*o*o+i*o+j];
+              tempv[Position(a,a)*o*(o+1)/2+Position(i,j)] =
+                 tb[a*o*o*v+a*o*o+i*o+j];
           }
       }
   }
-  double*tempq = (double*)malloc(v*v*nQ*sizeof(double));
-  for (a=0; a<v*v; a++){
-      for (long int q=0; q<nQ; q++){
-          tempq[a*nQ+q] = Qvv[q*v*v+a];
-      }
-  }
-  double t1,t2,start1,start2,end1,end2;
-  t1=t2=start1=start2=end1=end2=0.0;
-  long int count = 0;
-  long int otri = o*(o+1)/2;
+
+  psio->open(PSIF_QVVT,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_QVVT,"qvv_transpose",(char*)&Qvv[0],nQ*v*v*sizeof(double));
+  psio->close(PSIF_QVVT,1);
+  double*tempints  = (double*)malloc(v*v*sizeof(double));
+  double*tempints2 = (double*)malloc(v*v*sizeof(double));
+  double*tempr     = (double*)malloc(o*o*sizeof(double));
   for (b=0; b<v; b++){
       for (a=0; a<=b; a++){
-          //for (long int d=0; d<v; d++){
-          //    for (long int c=0; c<v; c++){
-          //        double acbd = F_DDOT(nQ,tempq+a*v*nQ+c*nQ,1,tempq+b*v*nQ+d*nQ,1);
-          //        double adbc = F_DDOT(nQ,tempq+a*v*nQ+d*nQ,1,tempq+b*v*nQ+c*nQ,1);
-          //        integrals[count++]   = acbd+adbc;
-          //    }
-          //}
-             #ifdef _OPENMP
-                 start1 = omp_get_wtime();
-             #endif
-          //helper_->GPUTiledDGEMM('t','n',v,v,nQ,2.0,tempq+a*v*nQ,nQ,tempq+b*v*nQ,nQ,0.0,integrals,v);
-          F_DGEMM('t','n',v,v,nQ,2.0,tempq+a*v*nQ,nQ,tempq+b*v*nQ,nQ,0.0,integrals,v);
-             #ifdef _OPENMP
-                 end1 = omp_get_wtime();
-             #endif
-          //F_DGEMM('t','n',v,v,nQ,1.0,tempq+b*v*nQ,nQ,tempq+a*v*nQ,nQ,1.0,integrals,v);
-             #ifdef _OPENMP
-                 start2 = omp_get_wtime();
-             #endif
-          F_DGEMV('n',otri,v*v,1.0,tempv,otri,integrals,1,0.0,tempt+otri*Position(a,b),1);
-          //F_DGEMM('n','t',1,o*(o+1)/2,v*v,1.0,integrals,1,tempv,o*(o+1)/2,0.0,tempt+Position(a,b)*o*(o+1)/2,1);
-          //helper_->GPUTiledDGEMM('n','t',1,o*(o+1)/2,v*v,1.0,integrals,1,tempv,o*(o+1)/2,0.0,tempt+Position(a,b)*o*(o+1)/2,1);
-             #ifdef _OPENMP
-                 end2 = omp_get_wtime();
-             #endif
-          t1 += end1-start1;
-          t2 += end2-start2;
+          F_DGEMM('t','n',v,v,nQ,1.0,Qvv+a*v*nQ,nQ,Qvv+b*v*nQ,nQ,0.0,tempints,v);
+          long int count=0;
+          for (long int d=0; d<v; d++){
+              for (long int c=0; c<=d; c++){
+                  //double acbd = F_DDOT(nQ,Qvv+a*v*nQ+c*nQ,1,Qvv+b*v*nQ+d*nQ,1);
+                  //double adbc = F_DDOT(nQ,Qvv+a*v*nQ+d*nQ,1,Qvv+b*v*nQ+c*nQ,1);
+                  //integrals[count++]   = acbd+adbc;
+                  tempints2[count++]   = tempints[c*v+d]+tempints[d*v+c];
+              }
+          }
+          //F_DGEMV('n',o*(o+1)/2,v*(v+1)/2,0.5,tempv,o*(o+1)/2,tempints2,1,0.0,tempt+Position(a,b)*o*(o+1)/2,1);
+          F_DGEMV('n',o*(o+1)/2,v*(v+1)/2,0.5,tempv,o*(o+1)/2,tempints2,1,0.0,tempr,1);
+          count=0;
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tempt[a*o*o*v+b*o*o+i*o+j] = tempr[Position(i,j)];
+                  tempt[b*o*o*v+a*o*o+i*o+j] = tempr[Position(i,j)];
+              }
+          }
+
+          for (long int d=0; d<v; d++){
+              for (long int c=0; c<=d; c++){
+                  tempints2[count++]   = tempints[d*v+c]-tempints[c*v+d];
+              }
+          }
+          F_DGEMV('n',o*(o+1)/2,v*(v+1)/2,0.5,integrals,o*(o+1)/2,tempints2,1,0.0,tempr,1);
+          if (a!=b){
+             for (i=0; i<o; i++){
+                 for (j=i+1; j<o; j++){
+                     tempt[a*o*o*v+b*o*o+i*o+j] +=  tempr[Position(i,j)];
+                     tempt[a*o*o*v+b*o*o+j*o+i] += -tempr[Position(i,j)];
+                     tempt[b*o*o*v+a*o*o+i*o+j] += -tempr[Position(i,j)];
+                     tempt[b*o*o*v+a*o*o+j*o+i] +=  tempr[Position(i,j)];
+                 }
+                 tempt[a*o*o*v+b*o*o+i*o+i] +=  tempr[Position(i,i)];
+             }
+          }else{
+             for (i=0; i<o; i++){
+                 for (j=i+1; j<o; j++){
+                     tempt[a*o*o*v+b*o*o+i*o+j] +=  tempr[Position(i,j)];
+                     tempt[a*o*o*v+b*o*o+j*o+i] += -tempr[Position(i,j)];
+                 }
+                 tempt[a*o*o*v+b*o*o+i*o+i] +=  tempr[Position(i,i)];
+             }
+          }
       }
   }
-printf("%7.2lf %7.2lf\n",t1,t2);
-  free(tempq);*/
+  psio->open(PSIF_QVV,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_QVV,"qvv",(char*)&Qvv[0],nQ*v*v*sizeof(double));
+  psio->close(PSIF_QVV,1);
+  free(tempints);
+  free(tempints2);
+  free(tempr);
+
+  // contribute to residual
+  psio->open(PSIF_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
+                  //tempv[a*o*o*v+b*o*o+i*o+j] += tempt[Position(a,b)*o*(o+1)/2+Position(i,j)];
+              }
+          }
+      }
+  }
+  F_DAXPY(o*o*v*v,1.0,tempt,1,tempv,1);
+  psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_R2,1);
+  psio.reset();*/
+
   /*psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
   addr = PSIO_ZERO;
   for (j=0; j<ntiles-1; j++){
@@ -1593,23 +1634,6 @@ printf("%7.2lf %7.2lf\n",t1,t2);
   psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],lasttile*v*(v+1)/2*sizeof(double),addr,&addr);
   helper_->GPUTiledDGEMM('n','n',o*(o+1)/2,lasttile,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,v*(v+1)/2,0.0,tempt+j*tilesize*o*(o+1)/2,o*(o+1)/2);
   psio->close(PSIF_ABCD1,1);*/
-
-  // contribute to residual
-  /*psio->open(PSIF_R2,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tempv[a*o*o*v+b*o*o+i*o+j] += .5*tempt[Position(a,b)*o*(o+1)/2+Position(i,j)];
-              }
-          }
-      }
-  }
-  psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_R2,1);
-  psio.reset();*/
-
 }
 
 /**
@@ -1644,27 +1668,31 @@ return;
           }
       }
   }
+  psio->open(PSIF_QVVT,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_QVVT,"qvv_transpose",(char*)&Qvv[0],nQ*v*v*sizeof(double));
+  psio->close(PSIF_QVVT,1);
+
   // using SJS packing is very very slow.
-  double*tempq = (double*)malloc(v*v*nQ*sizeof(double));
-  for (a=0; a<v*v; a++){
-      for (long int q=0; q<nQ; q++){
-          tempq[a*nQ+q] = Qvv[q*v*v+a];
-      }
-  }
+  double*tempints = (double*)malloc(v*v*sizeof(double));
   for (b=0; b<v; b++){
       for (a=0; a<=b; a++){
           long int count=0;
+          F_DGEMM('t','n',v,v,nQ,1.0,Qvv+a*v*nQ,nQ,Qvv+b*v*nQ,nQ,0.0,tempints,v);
           for (long int d=0; d<v; d++){
               for (long int c=0; c<=d; c++){
-                  double acbd = F_DDOT(nQ,tempq+a*v*nQ+c*nQ,1,tempq+b*v*nQ+d*nQ,1);
-                  double adbc = F_DDOT(nQ,tempq+a*v*nQ+d*nQ,1,tempq+b*v*nQ+c*nQ,1);
-                  integrals[count++]   = acbd-adbc;
+                  //double acbd = F_DDOT(nQ,tempq+a*v*nQ+c*nQ,1,tempq+b*v*nQ+d*nQ,1);
+                  //double adbc = F_DDOT(nQ,tempq+a*v*nQ+d*nQ,1,tempq+b*v*nQ+c*nQ,1);
+                  //integrals[count++]   = acbd-adbc;
+                  integrals[count++]   = tempints[d*v+c]-tempints[c*v+d];
               }
           }
           F_DGEMV('n',o*(o+1)/2,v*(v+1)/2,1.0,tempv,o*(o+1)/2,integrals,1,0.0,tempt+Position(a,b)*o*(o+1)/2,1);
       }
   }
-  free(tempq);
+  free(tempints);
+  psio->open(PSIF_QVV,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_QVV,"qvv",(char*)&Qvv[0],nQ*v*v*sizeof(double));
+  psio->close(PSIF_QVV,1);
 
   /*psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
   addr = PSIO_ZERO;

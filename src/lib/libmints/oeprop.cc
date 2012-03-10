@@ -260,6 +260,26 @@ SharedVector Prop::epsilon_b()
 {
     return SharedVector(epsilon_b_->clone());
 }
+SharedMatrix OEProp::Da_ao_custom_Da_so(boost::shared_ptr<Matrix>Da_so)
+{
+    double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
+    SharedMatrix D = SharedMatrix(new Matrix("Da (AO basis)", basisset_->nbf(), basisset_->nbf()));
+    int symm = Da_so->symmetry();
+    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
+        int nao = AO2USO_->rowspi()[0];
+        int nsol = AO2USO_->colspi()[h];
+        int nsor = AO2USO_->colspi()[h^symm];
+        if (!nsol || !nsor) continue;
+        double** Ulp = AO2USO_->pointer(h);
+        double** Urp = AO2USO_->pointer(h^symm);
+        double** DSOp = Da_so->pointer(h^symm);
+        double** DAOp = D->pointer();
+        C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
+        C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
+    }
+    delete[] temp;
+    return D;
+}
 SharedMatrix Prop::Da_ao()
 {
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
@@ -1070,6 +1090,67 @@ void OEProp::compute_mo_extents()
         // TODO: Both alpha and beta orbitals are reported separately
         // This helps identify symmetry breaking
     }
+}
+boost::shared_ptr<Vector> OEProp::compute_mulliken_charges_custom_Da(boost::shared_ptr<Matrix>Da_so)
+{
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+
+    boost::shared_ptr<Vector> Qa(new Vector(mol->natom()));
+
+    double* PSa = new double[basisset_->nbf()];
+    double suma = 0.0;
+
+    double* PSb = new double[basisset_->nbf()];
+    double sumb = 0.0;
+
+    double * Qa_pointer = Qa->pointer();
+    ::memset(Qa_pointer, '\0', mol->natom()*sizeof(double));
+
+    SharedMatrix Da;
+    SharedMatrix Db;
+
+//    Get the Density Matrices for alpha and beta spins
+
+    if (same_dens_) {
+        Da = Da_ao_custom_Da_so(Da_so);
+        Db = Da;
+    } else {
+        Da = Da_ao_custom_Da_so(Da_so);
+        Db = Db_ao();
+    }
+
+//    Compute the overlap matrix
+
+    boost::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
+    SharedMatrix S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
+    overlap->compute(S);
+
+//    Form the idempotent D*S matrix
+
+    SharedMatrix PSam(new Matrix("PSa",basisset_->nbf(),basisset_->nbf()));
+    PSam->gemm(false,false,1.0,Da,S,0.0);
+    SharedMatrix PSbm(new Matrix("PSb",basisset_->nbf(),basisset_->nbf()));
+    PSbm->gemm(false,false,1.0,Db,S,0.0);
+
+//     Accumulate registers
+
+    for (int mu = 0; mu < basisset_->nbf(); mu++) {
+        PSa[mu] = PSam->get(0,mu,mu);
+        PSb[mu] = PSbm->get(0,mu,mu);
+
+        int shell = basisset_->function_to_shell(mu);
+        int A = basisset_->shell_to_center(shell);
+
+        Qa_pointer[A] += PSa[mu];
+
+        suma += PSa[mu];
+        sumb += PSb[mu];
+    }
+
+//    Free memory
+    delete[] PSa;
+    delete[] PSb;
+    return Qa;
 }
 void OEProp::compute_mulliken_charges()
 {

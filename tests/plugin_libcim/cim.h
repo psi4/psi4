@@ -17,9 +17,10 @@ namespace psi{
 namespace psi{
 class CIM : public Wavefunction{
   public:
-    CIM(Options&options);
+    CIM();
     ~CIM();
     void BuildClusters();
+    double *epsSave;
     double **Fock;
     int nirreps,nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact;
     // local variables:
