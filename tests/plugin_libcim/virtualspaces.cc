@@ -44,7 +44,7 @@ void CIM::VirtualSpaces(int cluster,int clusternum){
 
   fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        Number of virtual orbitals in original space:  %5li\n",v);
+  fprintf(outfile,"        Number of virtual orbitals in original space:  %5i\n",v);
   fprintf(outfile,"        Number of virtual orbitals in truncated space: %5i\n",nvirt_);
   fprintf(outfile,"\n");
 
