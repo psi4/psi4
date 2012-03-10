@@ -1,9 +1,12 @@
 #include"psi4-dec.h"
 #include<psifiles.h>
+#include<physconst.h>
 #include"blas.h"
 #include"cim.h"
 #include<libmints/wavefunction.h>
+#include<libmints/mints.h>
 #include<libmints/matrix.h>
+#include<libmints/molecule.h>
 
 using namespace psi;
 using namespace boost;
@@ -12,22 +15,96 @@ namespace psi{
 
 /*
  * build central domains based on Fock matrix elements
- * this algorithm is called dual-environment cim in
+ * this algorithm is called single-environment cim in
  * J. Chem. Phys. 135, 104111 (2011)
  */
-void CIM::OccupiedDomains(){
+void CIM::SECIM(){
 
   // all orbitals:         domain,domainsize
   // central orbitals:     central, ncentral
-  // central mo domain:    modomain, nmodomain
   // environmental domain: env, nenv
+  // here (as opposed to in decim), the
+  // central mo domain doesn't exist
 
   fprintf(outfile,"  ==> Define Clusters of Interacting Occupied Orbitals <==\n");
   fprintf(outfile,"\n");
 
-  // threshold for central domains
-  thresh1 = options_.get_double("THRESH1");
+  // VDW radii int angstroms 
+  // from supplemental material from J. Phys. Chem A 111, 2193 (2007)
+  double * VDWRadius = (double*)malloc(100*sizeof(double));
+  VDWRadius[1]  = 0.30; // H
+  VDWRadius[2]  = 1.16; // He
+  VDWRadius[3]  = 1.23; // Li
+  VDWRadius[4]  = 0.89; // Be
+  VDWRadius[5]  = 0.88; // B
+  VDWRadius[6]  = 0.77; // C
+  VDWRadius[7]  = 0.70; // N
+  VDWRadius[8]  = 0.66; // O
+  VDWRadius[9]  = 0.58; // F
+  VDWRadius[10] = 0.55; // Ne
+  VDWRadius[11] = 1.40; // Na
+  VDWRadius[12] = 1.36; // Mg
+  VDWRadius[13] = 1.25; // Al
+  VDWRadius[14] = 1.17; // Si
+  VDWRadius[15] = 1.10; // P
+  VDWRadius[16] = 1.11; // S
+  VDWRadius[17] = 0.99; // Cl
+  VDWRadius[18] = 1.58; // Ar
+ 
+  // get list of heavy atoms
+  boost::shared_ptr<Molecule>molecule_ = Process::environment.molecule();
+  int natom = molecule_->natom();
+  int *heavyatom = (int*)malloc(natom*sizeof(int));
+  for (int i=0; i<natom; i++){
+      if (molecule_->fZ(i)>1.0) heavyatom[i] = 1;
+      else                      heavyatom[i] = 0;
+  }
+  int ** atoms = (int**)malloc(natom*sizeof(int*));
+  for (int i=0; i<natom; i++){
+      atoms[i] = (int*)malloc(natom*sizeof(int));
+      for (int j=0; j<natom; j++){
+          atoms[i][j] = isempty;
+      }
+  }
+  // list of heavy atoms and nearby hydrogens
+  skip = (int*)malloc(ndoccact*sizeof(int));
+  for (int i=0; i<ndoccact; i++) skip[i] = 0;
+  for (int i=natom; i<ndoccact; i++) skip[i] = 1;
+  for (int i=0; i<natom; i++){
+      if (!heavyatom[i]){
+         skip[i]=1;
+         continue;
+      }
+      atoms[i][i] = i;
+      double Xx = molecule_->x(i);
+      double Xy = molecule_->y(i);
+      double Xz = molecule_->z(i);
+      // which hydrogens are nearby (within R(H)+R(X)+0.168 A ) ?
+      for (int j=0; j<natom; j++){
+          if (heavyatom[j]) continue;
+          double Hx = molecule_->x(j);
+          double Hy = molecule_->y(j);
+          double Hz = molecule_->z(j);
+          double rHX = (Xx-Hx)*(Xx-Hx) + (Xy-Hy)*(Xy-Hy) + (Xz-Hz)*(Xz-Hz);
+          rHX  = sqrt(rHX);
+          rHX *= _bohr2angstroms;
+          if (rHX <= VDWRadius[(int)(molecule_->fZ(i))]+VDWRadius[(int)(molecule_->fZ(j))]+0.168){
+             atoms[i][j] = j;
+          }
+      }
+  }
+  free(VDWRadius);
 
+  // list of central orbitals 
+  central = (int**)malloc(ndoccact*sizeof(int*));
+  ncentral = (int*)malloc(ndoccact*sizeof(int));
+  for (int i=0; i<natom; i++){
+      central[i] = (int*)malloc(ndoccact*sizeof(int));
+      for (int j=0; j<ndoccact; j++){
+          central[i][j] = isempty;
+      }
+      ncentral[i] = 0;
+  }
   domain = (int**)malloc(ndoccact*sizeof(int*));
   domainsize = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++){
@@ -37,81 +114,46 @@ void CIM::OccupiedDomains(){
           domain[i][j] = isempty;
       }
   }
+
+  // mulliken charges for each atom - use OEProp
+  // need to overwrite Da in wfn ...
+  boost::shared_ptr<psi::Wavefunction> 
+      ref = Process::environment.reference_wavefunction();
+  SharedMatrix SaveDa(ref->Da());
+
+  double**C = boys->Clmo->pointer();
   for (int i=0; i<ndoccact; i++){
-      for (int j=0; j<ndoccact; j++){
-          if (fabs(Fock[i+nfzc][j+nfzc]) >= thresh1){
-             domain[i][j] = j;
-             domainsize[i]++;
+      SharedMatrix Da_so(SaveDa->clone());
+      double**Da_so_pointer = Da_so->pointer();
+      // Da is the density associated with LMO i
+      for (int mu=0; mu<nso; mu++){
+          for (int nu=0; nu<nso; nu++){
+              Da_so_pointer[mu][nu] = C[mu][i+nfzc]*C[nu][i+nfzc];
+          }
+      }
+      // compute Mulliken charges:
+      boost::shared_ptr<OEProp> oe(new OEProp());
+      boost::shared_ptr<Vector> Qa = 
+          oe->compute_mulliken_charges_custom_Da(Da_so);
+      double * Qa_pointer = Qa->pointer();
+
+      // look at mulliken charges due to LMO i
+      for (int j=0; j<natom; j++){
+          if (!heavyatom[j]) continue;
+          // check if orbital i is central in cluster j
+          for (int k=0; k<natom; k++){
+              if (atoms[j][k]==isempty) continue;
+              if (2.0*Qa_pointer[k]>0.3){
+                 central[j][i] = i;
+                 domain[j][i] = i;
+                 ncentral[j]++;
+                 domainsize[j]++;
+              }
           }
       }
   }
 
-  // list of central orbitals 
-  central = (int**)malloc(ndoccact*sizeof(int*));
-  ncentral = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<ndoccact; i++){
-      central[i] = (int*)malloc(ndoccact*sizeof(int));
-      for (int j=0; j<ndoccact; j++){
-          central[i][j] = isempty;
-      }
-      ncentral[i] = 1;
-      central[i][i] = i;
-  }
-  ndomains = ndoccact;
-
-  // list of central mo domains
-  modomain = (int**)malloc(ndoccact*sizeof(int*));
-  nmodomain = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<ndoccact; i++){
-      modomain[i] = (int*)malloc(ndoccact*sizeof(int));
-      nmodomain[i] = 0;
-  }
-  for (int i=0; i<ndoccact; i++){
-      for (int j=0; j<ndoccact; j++){
-          modomain[i][j] = domain[i][j];
-      }
-  }
-  // remove central orbitals from central mo domain:
-  for (int i=0; i<ndoccact; i++){
-      modomain[i][i] = isempty;
-      nmodomain[i] = 0;
-      for (int j=0; j<ndoccact; j++){
-          if (modomain[i][j]!=isempty) nmodomain[i]++;
-      }
-      domainsize[i]=0;
-      for (int j=0; j<ndoccact; j++){
-          if (domain[i][j]!=isempty) domainsize[i]++;
-      }
-  }
-
-
-  // collapse redundant domains:
-  skip = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<ndoccact; i++) skip[i] = 0;
-  for (int i=0; i<ndoccact; i++){
-      if (skip[i]) continue;
-      // check if domain i fits in domain j
-      for (int j=0; j<ndoccact; j++){
-          if (i==j)    continue;
-          if (skip[j]) continue;
-          int count = 0;
-          for (int k=0; k<ndoccact; k++){
-              if (domain[i][k]==isempty) continue;
-              if (domain[i][k]==domain[j][k]) count++;
-          }
-          // add central orbital from {i} to {j}
-          // also remove that orbital from the central mo domain of {j}
-          if (count==domainsize[i]){
-             skip[i] = 1;
-             central[j][i] = i;
-             ncentral[j]++;
-             modomain[j][i] = isempty;
-             ndomains--;
-          }
-      }
-  }
-
-  // threshold for environmental domains
+  // environmental orbitals
   env = (int**)malloc(ndoccact*sizeof(int*));
   nenv = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++){
@@ -121,46 +163,62 @@ void CIM::OccupiedDomains(){
           env[i][j] = isempty;
       }
   }
-  thresh2 = options_.get_double("THRESH2");
-  // loop over unique clusters
-  for (int i=0; i<ndoccact; i++){
+  // threshold for environmental orbitals
+  thresh1 = options_.get_double("THRESH1");
+  //thresh1 = sqrt(thresh1);
+  for (int i=0; i<natom; i++){
       if (skip[i]) continue;
-      // loop over all occupied orbitals
       for (int j=0; j<ndoccact; j++){
-          int isenv = 0;
-          int redundant = 0;
-          // check interaction of orbital j with all orbitals in cluster {i}
+          if (domain[i][j]==isempty) continue;
           for (int k=0; k<ndoccact; k++){
-              if (domain[i][k]==isempty) continue;
-              if (k==j){
-                 redundant=1;
-                 break;
+              if (j==k) continue;
+              if (fabs(Fock[j+nfzc][k+nfzc]) >= thresh1){
+                 if (domain[i][k]!=isempty) continue;
+                 env[i][k] = k;
+                 nenv[i]++;
               }
-              if (fabs(Fock[k+nfzc][j+nfzc]) >= thresh2){
-                 isenv=1;
-              }
-          }
-          if (redundant) continue;
-          // add orbital to environmental domain
-          if (isenv){
-             env[i][j] = j;
           }
       }
   }
-  for (int i=0; i<ndoccact; i++){
+  for (int i=0; i<natom; i++){
       if (skip[i]) continue;
-      domainsize[i]=0;
       for (int j=0; j<ndoccact; j++){
-          if (env[i][j]!=isempty) domain[i][j] = j;
-          if (domain[i][j]!=isempty) domainsize[i]++;
+          if (env[i][j]==isempty) continue;
+          domain[i][j] = env[i][j];
       }
   }
 
-  // collapse again
-  for (int i=0; i<ndoccact; i++){     // {I}
+
+  ndomains = natom;
+
+  // list of central mo domains (not used in secim)
+  modomain = (int**)malloc(ndoccact*sizeof(int*));
+  nmodomain = (int*)malloc(ndoccact*sizeof(int));
+  for (int i=0; i<ndoccact; i++){
+      modomain[i] = (int*)malloc(ndoccact*sizeof(int));
+      nmodomain[i] = 0;
+  }
+  for (int i=0; i<ndoccact; i++){
+      for (int j=0; j<ndoccact; j++){
+          modomain[i][j] = isempty;
+      }
+  }
+
+
+  // check domainsizes
+  for (int i=0; i<natom; i++){
+      domainsize[i]=0;
+      for (int j=0; j<ndoccact; j++){
+          if (domain[i][j]==isempty) continue;
+          domainsize[i]++;
+      }
+  }
+
+  // collapse redundant domains
+  for (int i=0; i<natom; i++){     // {I}
       if (skip[i]) continue;
       int tossi=0;
-      for (int j=0; j<ndoccact; j++){ // {J}
+      for (int j=0; j<natom; j++){ // {J}
           if (i==j) continue;
           if (skip[j]) continue;
           int count = 0;
@@ -174,7 +232,6 @@ void CIM::OccupiedDomains(){
              for (int k=0; k<ndoccact; k++){
                  if (central[i][k]==isempty) continue;
                  central[j][k]  = k;
-                 modomain[j][k] = isempty;
                  env[j][k]      = isempty;
              }
              tossi=1;

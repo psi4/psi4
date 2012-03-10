@@ -6,6 +6,10 @@
 
 INIT_PLUGIN
 
+namespace psi{
+  PsiReturnType triples(boost::shared_ptr<psi::GPUCoupledCluster>ccsd,Options&options);
+}
+
 namespace psi{ namespace plugin_gpu_ccsd{
 extern "C" int 
 read_options(std::string name, Options &options)
@@ -71,9 +75,27 @@ plugin_gpu_ccsd(Options &options)
   Process::environment.globals["CCSD TOTAL ENERGY"] = ccsd->eccsd + ccsd->escf;
   Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->escf;
 
-  ccsd->CudaFinalize();
-
   tstop();
+
+  if (options.get_bool("COMPUTE_TRIPLES")){
+     tstart();
+
+     // triples
+     status = psi::triples(ccsd,options);
+     if (status == Failure){
+        throw PsiException(
+           "Whoops, the (T) correction died.",__FILE__,__LINE__);
+     }
+
+     // ccsd(t) energy
+     Process::environment.globals["(T) CORRELATION ENERGY"] = ccsd->et;
+     Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ccsd->eccsd + ccsd->et;
+     Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
+     Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
+     tstop();
+  }
+
+  ccsd->CudaFinalize();
 
   return  Success;
 } // end plugin_gpu_ccsd

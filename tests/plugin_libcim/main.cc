@@ -1,6 +1,8 @@
 #include<libplugin/plugin.h>
 #include<libmints/matrix.h>
 #include<libpsio/psio.hpp>
+#include<lib3index/dftensor.h>
+#include<libciomr/libciomr.h>
 #include"cim.h"
 
 INIT_PLUGIN
@@ -26,7 +28,7 @@ read_options(std::string name, Options &options)
      /*- cim threshold 2 -*/
      options.add_double("THRESH2", 0.05);
      /*- cim threshold 3 -*/
-     options.add_double("THRESH3", 1e-6);
+     options.add_double("THRESH3", 1e-5);
   }
   return true;
 }
@@ -38,6 +40,21 @@ plugin_libcim(Options &options)
   boost::shared_ptr<CIM>  cim(new CIM(options));
 
   /*
+   *  3-index integrals to approximate mp2 density:
+   */
+  int nocc = cim->doccpi()[0];
+  int nvir = cim->nmopi()[0]-cim->doccpi()[0];
+  int aocc = nocc-cim->frzcpi()[0];
+  int avir = nvir-cim->frzvpi()[0];
+  // build 3-index tensors (in lmo basis)
+  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+  boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, cim->molecule(), "DF_BASIS_SCF");
+  boost::shared_ptr<DFTensor> DF (new DFTensor(cim->basisset(),auxiliary,cim->boys->Clmo,nocc,nvir,aocc,avir,options));
+  SharedMatrix tmpQov = DF->Qov();
+  cim->Qov = tmpQov->pointer();
+  cim->nQ = auxiliary->nbf();
+
+  /*
    *  loop over each cluster, {I}
    */
   cim->localClmo = SharedMatrix (new Matrix("Local Clmo",cim->nso,cim->nmo));
@@ -45,28 +62,39 @@ plugin_libcim(Options &options)
   cim->Rii       = SharedMatrix (new Matrix("Rii",cim->ndoccact,cim->ndoccact));
   cim->centralfac = (double*)malloc(cim->ndoccact*sizeof(double));
   double ecim = 0.0;
+  int clusternum = -1;
   for (int i=0; i<cim->ndoccact; i++){
       if (cim->skip[i]) continue;
+
+      clusternum++;
+
       cim->nfzc_     = cim->nfzc;
       cim->ndoccact_ = cim->ndoccact;
       cim->nvirt_    = cim->nvirt;
       cim->nfzv_     = cim->nfzv;
 
-      /*
-       * TODO
-       * build virtual space for cluster, {I}
-       */
-      cim->VirtualSpaces(i);
+      fprintf(outfile,"\n");
+      fprintf(outfile,"  ==> Cluster {%i} <==\n",clusternum);
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        Number of occupied orbitals in original space:  %5i\n",cim->ndoccact_);
+      fprintf(outfile,"        Number of occupied orbitals in truncated space: %5i\n",cim->ncentral[i]+cim->nmodomain[i]+cim->nenv[i]);
+      fprintf(outfile,"\n");
 
       /*
-       * TODO
+       * build virtual space for cluster, {I}
+       */
+      tstart();
+      cim->VirtualSpaces(i,clusternum);
+      tstop();
+
+      /*
        * make a wavefunction that has the right dimensions for this cluster
-       * after this, local variables should be set: nfzc_, ndoccact_, nvirt_, nfzv_
+       * after this, local variables should be set: 
+       * nfzc_, ndoccact_, nvirt_, nfzv_
        */
       cim->ClusterWavefunction(i);
 
       /*
-       * TODO
        * canonicalize occupied and virtual spaces for cluster, {I}
        * this is where orbitals get reordered, too. also, count
        * how many times each central orbital occurs.
@@ -74,19 +102,30 @@ plugin_libcim(Options &options)
       cim->QuasiCanonicalOrbitals(i);
 
       /*
-       * TODO
        * transform integrals to local spaces for cluster, {I}
        */
-      cim->TransformIntegrals(i,cim->localClmo);//boys->Clmo);
+      tstart();
+      cim->TransformIntegrals(i,cim->localClmo,clusternum);
+      tstop();
 
       /*
        * run correled calculation in cluster, {I}
        */
       RunCoupledCluster(options,cim);
-      ecim += Process::environment.globals["CCSD CORRELATION ENERGY"];
+      double dum = Process::environment.globals["CCSD CORRELATION ENERGY"];
+      ecim += dum;
+      fprintf(outfile,"\n");
+      fprintf(outfile,"        Cluster {%i} energy contribution: %20.12lf\n",
+          clusternum,dum);
+      fprintf(outfile,"\n");
+      fflush(outfile);
   }
-  printf("ecim %20.12lf\n",ecim);
-  fprintf(outfile,"ecim %20.12lf\n",ecim);
+  double escf    = Process::environment.globals["SCF TOTAL ENERGY"];
+  fprintf(outfile,"\n");
+  fprintf(outfile,"        CIM correlation energy: %20.12lf\n",ecim);
+  fprintf(outfile,"      * CIM total energy:       %20.12lf\n",ecim+escf);
+  fprintf(outfile,"\n");
+  fflush(outfile);
 
   return  Success;
 } // end plugin_libcim

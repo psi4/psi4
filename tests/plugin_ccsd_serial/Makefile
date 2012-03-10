@@ -12,7 +12,7 @@ psi_top_objdir = /home/deprince/psi4/objdir
 ifdef CUDA
 HAVECUDA=-DCUDA
 NVCC=nvcc
-LCUBLAS=-lcublas
+LCUBLAS=-L/usr/local/cuda/lib64 -L/usr/local/cuda/lib -lcublas
 %.o: %.cu
 	$(NVCC) $(NVCCFLAGS) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(PSIINCLUDE) $(HAVECUDA) -c $< $(OUTPUT_OPTION) 
 %.d: %.cu
