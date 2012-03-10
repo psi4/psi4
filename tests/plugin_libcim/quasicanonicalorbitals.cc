@@ -52,8 +52,6 @@ void CIM::QuasiCanonicalOrbitals(int cluster){
   for (int i=0; i<ndoccact; i++) ntimes[i] = tempntimes[i];
   free(tempntimes);
 
-
-
   // map mo->lmo transformation and lmo Fock matrix s.t. inactive orbitals come first
   int ninact = 0;
   nact = 0;
@@ -178,8 +176,14 @@ void CIM::QuasiCanonicalOrbitals(int cluster){
 
   // replace eps from wavefunction:
   double*eps = epsilon_a()->pointer();
+  // save a copy of eps to re-replace after CC runs. this is a stupid hack.
+  // apparently copy(ref) doesn't clone the reference, it just points me 
+  // toward it.  so when i modify epsilon_a() in cim, i modify it in 
+  // the reference
+  epsSave = (double*)malloc(nmo*sizeof(double));
+  F_DCOPY(nmo,eps,1,epsSave,1);
+
   for (int i=ninact; i<ndocc; i++) eps[i] = eigval[i-ninact];
-  
 
   // transform so->lmo to so->quasicanconical lmo
   for (int i=0; i<nso; i++){
