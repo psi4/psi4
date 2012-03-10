@@ -83,7 +83,7 @@ void Process::Environment::set_n_threads(int nthread)
 #endif
 
     // HACK: TODO: CC-pthread codes should ask us how many threads
-    Process::environment.options.set_global_int("NUM_THREADS",nthread);
+    //Process::environment.options.set_global_int("NUM_THREADS",nthread);
 }
 
 const string& Process::Environment::operator()(const string& key) const
