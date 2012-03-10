@@ -1,23 +1,26 @@
 #include<libplugin/plugin.h>
-#include<libciomr/libciomr.h>
-#include "gpu_ccsd.h" 
 
-#define HAVE_GPU
+#include "ccsd.h" 
+#include "../plugin_libcim/cim.h"
 
 INIT_PLUGIN
 
 namespace psi{
-  PsiReturnType triples(boost::shared_ptr<psi::GPUCoupledCluster>ccsd,Options&options);
-}
+  void RunCoupledCluster(Options &options,boost::shared_ptr<psi::CIM> wfn);
+};
 
-namespace psi{ namespace plugin_gpu_ccsd{
+namespace psi{ namespace plugin_localcc{
 extern "C" int 
 read_options(std::string name, Options &options)
 {
-  if (name == "PLUGIN_GPU_CCSD"|| options.read_globals()) {
+  if (name == "PLUGIN_LOCALCC"|| options.read_globals()) {
+     /*- Convergence for the localization procedure-*/
+     options.add_double("BOYS_CONVERGENCE", 1.0e-6);
+     /*- Maximum number of localization iterations iterations -*/
+     options.add_int("BOYS_MAXITER", 100);
      /*- Memory in mb.  Use this to override global option, 
          which is limited to <16gb because of dpd in transqt2 -*/
-     options.add_int("MEMORY", 256);
+     options.add_int("CCMEMORY", 256);
      /*- Wavefunction type !expert -*/
      options.add_str("WFN", "CCSD");
      /*- Convergence for the CC amplitudes-*/
@@ -53,52 +56,13 @@ read_options(std::string name, Options &options)
 }
 
 extern "C" PsiReturnType
-plugin_gpu_ccsd(Options &options)
-{  
-  tstart();
-
-  // pointer to gpu ccsd class
-  boost::shared_ptr<GPUCoupledCluster> ccsd(new GPUCoupledCluster);
-
-  ccsd->WriteBanner(options);
-  ccsd->Initialize(options);
-  ccsd->AllocateMemory();
-  ccsd->ReadIntegrals();
-  PsiReturnType status = ccsd->CCSDIterations(options);
-
-  // mp2 energy
-  Process::environment.globals["MP2 CORRELATION ENERGY"] = ccsd->emp2;
-  Process::environment.globals["MP2 TOTAL ENERGY"] = ccsd->emp2 + ccsd->escf;
-
-  // ccsd energy
-  Process::environment.globals["CCSD CORRELATION ENERGY"] = ccsd->eccsd;
-  Process::environment.globals["CCSD TOTAL ENERGY"] = ccsd->eccsd + ccsd->escf;
-  Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->escf;
-
-  tstop();
-
-  if (options.get_bool("COMPUTE_TRIPLES")){
-     tstart();
-
-     // triples
-     status = psi::triples(ccsd,options);
-     if (status == Failure){
-        throw PsiException(
-           "Whoops, the (T) correction died.",__FILE__,__LINE__);
-     }
-
-     // ccsd(t) energy
-     Process::environment.globals["(T) CORRELATION ENERGY"] = ccsd->et;
-     Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ccsd->eccsd + ccsd->et;
-     Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
-     Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
-     tstop();
-  }
-
-  ccsd->CudaFinalize();
-
+plugin_localcc(Options &options)
+{ 
+  //boost::shared_ptr<psi::CIM>  wfn =  Process::environment.reference_wavefunction();
+  boost::shared_ptr<psi::CIM> wfn(new CIM());
+  RunCoupledCluster(options,wfn);
   return  Success;
-} // end plugin_gpu_ccsd
+} // end plugin_localcc
 
 
 }} // end namespace psi

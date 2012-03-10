@@ -4,6 +4,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
+#include"../plugin_libcim/cim.h"
 
 // output files
 #define PSIF_IJAK  250
@@ -57,7 +58,12 @@ namespace psi{
 
 class CoupledCluster{
   public:
-    CoupledCluster();
+    /*
+     * wavefunction.  pass explicitly so we can pass weird ones like cim.
+     */
+    boost::shared_ptr<psi::CIM> wfn_;
+
+    CoupledCluster(boost::shared_ptr<psi::CIM> wfn);
     ~CoupledCluster();
 
     /**
@@ -156,17 +162,12 @@ class CoupledCluster{
       * Update t2
       */
     void UpdateT2(long int iter);
-
-    /**
-      * get a better guess at t2 than mp2
-      */
-    void TCEPA();
-
     /**
       * Get the energy for that iteration. If there is a diis extrapolation,
       * the energy is evaluated after that step.
       */
     double CheckEnergy();
+    double CIMEnergy();
 
     /**
       * the N^6 CC diagrams.

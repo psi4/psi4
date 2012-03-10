@@ -266,9 +266,7 @@ OptReturnType optking(void) {
       if(!p_irc_data->go)
       {
         fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
-        p_irc_data->progress_report(*mol1);
         p_Opt_data->write(); // save data to optimization binary file
-
         fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
 
         if (Opt_params.write_final_step_geometry) {
@@ -283,6 +281,7 @@ OptReturnType optking(void) {
           mol1->print_geom();  // write geometry -> output file
           fprintf(outfile,"\tSaving final (previous) structure.\n");
         }
+        p_irc_data->progress_report(*mol1);
 
         delete p_Opt_data;
         mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)

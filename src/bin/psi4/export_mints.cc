@@ -332,7 +332,8 @@ void export_mints()
             def("set_basis_all_atoms", &Molecule::set_basis_all_atoms, "docstring").
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol, "docstring").
             def("set_basis_by_label", &Molecule::set_basis_by_label, "docstring").
-            def("set_basis_by_number", &Molecule::set_basis_by_number, "docstring");
+            def("set_basis_by_number", &Molecule::set_basis_by_number, "docstring").
+            def("clone", &Molecule::clone, "docstring");
 
     class_<PetiteList, boost::shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", "docstring", no_init).
             def("aotoso", &PetiteList::aotoso, "docstring").

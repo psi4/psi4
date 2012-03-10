@@ -3,6 +3,9 @@
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
 
+// NOTE!!:  libtrans lacks bra-ket symmetry when using iwl, 
+//          so there are twice as many integrals to sort 
+
 #include"ccsd.h"
 #include"sort.h"
 #include"blas.h"
@@ -49,7 +52,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   ULI o = ndoccact;
   ULI v = nvirt;
   ULI fstact = nfzc;
-  ULI lstact = norbs-nfzc;
+  ULI lstact = norbs-nfzv;
 
   ULI lastbuf;
   Label *lblptr;
@@ -163,6 +166,13 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       q = (ULI) lblptr[idx++];
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
+
+      if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+      if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+      p -= fstact;
+      q -= fstact;
+      r -= fstact;
+      s -= fstact;
 
       pq   = Position(p,q);
       rs   = Position(r,s);
@@ -292,6 +302,12 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
           q = (ULI) lblptr[idx++];
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
+          if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+          if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+          p -= fstact;
+          q -= fstact;
+          r -= fstact;
+          s -= fstact;
 
           pq   = Position(p,q);
           rs   = Position(r,s);
@@ -1051,7 +1067,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1087,7 +1103,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1123,7 +1139,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1159,7 +1175,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if (a<=b && c<=d){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1189,7 +1205,6 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
         }
      }
   }
-
 }
 
 void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIFILE,char*string,ULI maxdim){

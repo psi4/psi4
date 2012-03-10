@@ -13,8 +13,8 @@ using namespace boost;
 
 namespace psi{
 
-CIM::CIM(Options&options):
-  Wavefunction(options, _default_psio_lib_)
+CIM::CIM():
+  Wavefunction(Process::environment.options, _default_psio_lib_)
 {
 
   fflush(outfile);
@@ -28,7 +28,7 @@ CIM::CIM(Options&options):
   fprintf(outfile,"\n\n");
   fflush(outfile);
 
-  options_ = options;
+  options_ = Process::environment.options;
   BuildClusters();
 }
 CIM::~CIM()
@@ -42,6 +42,7 @@ void CIM::BuildClusters(){
    * grab reference and parameters
    */
   boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  //set_reference_wavefunction(ref);
   copy(ref);
 
   if (ref.get() == NULL){
