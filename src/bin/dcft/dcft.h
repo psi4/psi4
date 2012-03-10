@@ -69,8 +69,10 @@ protected:
     void compute_energy_tau_squared();
     void compute_gradient();
     void orbital_response_guess();
+    void gradient_init();
     void cumulant_response_guess();
     void compute_density();
+    void compute_lagrangian_OV();
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);

@@ -23,14 +23,6 @@ void GPUHelper::CudaInit(Options&options){
     CudaInitGPU(options);
   #endif
 }
-/**
-  *  clean up 
-  */
-void GPUHelper::Cleanup(Options&options){
-  #ifdef CUDA
-    CleanupGPU(options);
-  #endif 
-}
 
 /**
   *  wrappers to gpu dgemm
@@ -42,22 +34,18 @@ void GPUHelper::GPUTiledDGEMM(char transa,char transb,long int m, long int n,lon
   }
   if (transa=='n'){
      if (transb=='n'){
-        //GPU_DGEMM_2DTile_nn_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
-        GPU_DGEMM_2DTile_nn_threaded(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+        GPU_DGEMM_2DTile_nn_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
      }
      else{
-        //GPU_DGEMM_2DTile_nt_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
-        GPU_DGEMM_2DTile_nt_threaded(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+        GPU_DGEMM_2DTile_nt_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
      }
   }
   else{
      if (transb=='n'){
-        //GPU_DGEMM_2DTile_tn_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
-        GPU_DGEMM_2DTile_tn_threaded(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+        GPU_DGEMM_2DTile_tn_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
      }
      else{
-        //GPU_DGEMM_2DTile_tt_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
-        GPU_DGEMM_2DTile_tt_threaded(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+        GPU_DGEMM_2DTile_tt_threaded_WithCpuStealing(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
      }
   }
 }

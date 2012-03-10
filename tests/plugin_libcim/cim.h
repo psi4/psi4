@@ -47,6 +47,7 @@ class CIM : public Wavefunction{
     int**env,*nenv;
     int**modomain,*nmodomain;
     void OccupiedDomains();
+    void SECIM();
 
     /*
      * cluster lmo->mo transformation matrix
@@ -60,12 +61,14 @@ class CIM : public Wavefunction{
     /*
      * build virtual spaces
      */
-    void VirtualSpaces(int cluster);
+    void VirtualSpaces(int cluster,int clusternum);
+    void MP2Density(double*Dab,int cluster);
+    void OppositeSpinMP2Density(double*Dab,int cluster);
 
     /*
      * transform integrals
      */
-    void TransformIntegrals(int cluster,SharedMatrix Clmo);
+    void TransformIntegrals(int cluster,SharedMatrix Clmo,int clusternum);
 
     /*
      * customize wavefunction for cluster, {i}
@@ -82,6 +85,12 @@ class CIM : public Wavefunction{
      */
     double*centralfac;
     SharedMatrix Rii;
+
+    /*
+     * df integrals to approximate mp2 opdm
+     */
+    double**Qov;
+    int nQ;
 };
 };
 #endif

@@ -14,79 +14,28 @@ namespace psi{
 /*
  * build virtual spaces based on MP2 OPDM
  */
-void CIM::VirtualSpaces(int cluster){
+void CIM::VirtualSpaces(int cluster,int clusternum){
 
+  fprintf(outfile,"  ==> Build Virtual Space for Cluster {%i} <==\n",clusternum);
   fprintf(outfile,"\n");
-  fprintf(outfile,"  ==> Build Virtual Space for Cluster {%i} <==\n",cluster);
-  fprintf(outfile,"\n");
 
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
-  int nocc = ref->doccpi()[0];
-  int nvir = ref->nmopi()[0]-ref->doccpi()[0];
-  int aocc = nocc-ref->frzcpi()[0];
-  int avir = nvir-ref->frzvpi()[0];
+  int o = ndoccact;
+  int v = nvirt;
 
-  // build 3-index tensors (in lmo basis)
-  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, ref->molecule(), "DF_BASIS_SCF");
-  boost::shared_ptr<DFTensor> DF (new DFTensor(ref->basisset(),auxiliary,boys->Clmo,nocc,nvir,aocc,avir,options_));
-
-  SharedMatrix tmpQov = DF->Qov();
-  double**Qov = tmpQov->pointer();
-
-  int nQ = auxiliary->nbf();
-  int o = aocc;
-  int v = avir;
-
-  // build mp2 amplitudes (using the canonical orbital formula)
-  double*t2 = (double*)malloc(o*o*v*v*sizeof(double));
-  memset((void*)t2,'\n',o*o*v*v*sizeof(double));
-  double**Fock = boys->Fock->pointer();
-  F_DGEMM('n','t',o*v,o*v,nQ,1.0,&Qov[0][0],o*v,&Qov[0][0],o*v,0.0,t2,o*v);
-  for (int a=0; a<v; a++){
-      double da = -Fock[a+ndocc][a+ndocc];
-      for (int b=0; b<v; b++){
-          double dab = da-Fock[b+ndocc][b+ndocc];
-          for (int i=0; i<o; i++){
-              double dabi = dab+Fock[i+nfzc][i+nfzc];
-              for (int j=0; j<o; j++){
-                  double dabij = dabi+Fock[j+nfzc][j+nfzc];
-                  t2[i*o*v*v+a*o*v+j*v+b] /= dabij;
-              }
-          }
-      }
-  }
-
-  // build Dab({I})
+  // build mp2 density using canonical formulas
   double*Dab=(double*)malloc(v*v*sizeof(double));
-  for (int a=0; a<v; a++){
-      for (int b=a; b<v; b++){
-          double dum = 0.0;
-          for (int i=0; i<o; i++){
-              if (domain[cluster][i]==isempty) continue;
-              for (int j=0; j<o; j++){
-                  for (int c=0; c<v; c++){
-                      dum += t2[i*o*v*v+a*o*v+j*v+c] * (2.0*t2[i*o*v*v+b*o*v+j*v+c] - t2[i*o*v*v+c*o*v+j*v+b]);
-                  }
-              }
-          }
-          Dab[a*v+b] = dum;
-          Dab[b*v+a] = dum;
-      }
-  }
-  free(t2);
+  MP2Density(Dab,cluster);
+  //OppositeSpinMP2Density(Dab,cluster);
 
-  // diagonalize Dab
   // diagonalize Dab
   double*eigvalDab=(double*)malloc(v*sizeof(double));
   Diagonalize(v,Dab,eigvalDab);
 
-  // reorder transformation matrix:
+  // reorder transformation matrix (so eigenvals are large->small)
   double*temp    = (double*)malloc(v*v*sizeof(double));
   for (int i=0; i<v; i++){
       F_DCOPY(v,Dab+(v-1-i)*v,1,temp+i*v,1);
   }
-  //F_DCOPY(v*v,Dab,1,temp,1);
 
   // establish cutoff for frozen virtuals
   double cutoff = options_.get_double("THRESH3");
@@ -97,8 +46,10 @@ void CIM::VirtualSpaces(int cluster){
   fprintf(outfile,"\n");
   fprintf(outfile,"        Number of virtual orbitals in original space:  %5li\n",v);
   fprintf(outfile,"        Number of virtual orbitals in truncated space: %5i\n",nvirt_);
+  fprintf(outfile,"\n");
 
   // transform Fock matrix to NO basis ( for canonicalization in QuasiCanonicalOrbitals() )
+  double**Fock = boys->Fock->pointer();
   double*newFock = (double*)malloc(nso*nmo*sizeof(double));
   memset((void*)newFock,'\0',v*v*sizeof(double));
   for (int a=0; a<v; a++){
@@ -106,8 +57,6 @@ void CIM::VirtualSpaces(int cluster){
           newFock[a*v+b] = Fock[a+ndocc][b+ndocc];
       }
   }
-  //F_DGEMM('n','n',v,nvirt_,v,1.0,newFock,v,temp,v,0.0,Dab,v);
-  //F_DGEMM('t','n',nvirt_,nvirt_,v,1.0,temp,v,Dab,v,0.0,newFock,nvirt_);
   F_DGEMM('n','n',v,v,v,1.0,newFock,v,temp,v,0.0,Dab,v);
   F_DGEMM('t','n',v,v,v,1.0,temp,v,Dab,v,0.0,newFock,v);
 
@@ -141,6 +90,88 @@ void CIM::VirtualSpaces(int cluster){
   free(temp);
   free(Dab);
   free(newFock);
+}
+
+void CIM::MP2Density(double*Dab,int cluster){
+  int o = ndoccact;
+  int v = nvirt;
+  double*t2 = (double*)malloc(o*o*v*v*sizeof(double));
+  memset((void*)t2,'\n',o*o*v*v*sizeof(double));
+  double**Fock = boys->Fock->pointer();
+
+  F_DGEMM('n','t',o*v,o*v,nQ,1.0,&Qov[0][0],o*v,&Qov[0][0],o*v,0.0,t2,o*v);
+  for (int a=0; a<v; a++){
+      double da = -Fock[a+ndocc][a+ndocc];
+      for (int b=0; b<v; b++){
+          double dab = da-Fock[b+ndocc][b+ndocc];
+          for (int i=0; i<o; i++){
+              double dabi = dab+Fock[i+nfzc][i+nfzc];
+              for (int j=0; j<o; j++){
+                  double dabij = dabi+Fock[j+nfzc][j+nfzc];
+                  t2[i*o*v*v+a*o*v+j*v+b] /= dabij;
+              }
+          }
+      }
+  }
+
+  // build Dab({I})
+  for (int a=0; a<v; a++){
+      for (int b=a; b<v; b++){
+          double dum = 0.0;
+          for (int i=0; i<o; i++){
+              if (domain[cluster][i]==isempty) continue;
+              for (int j=0; j<o; j++){
+                  for (int c=0; c<v; c++){
+                      dum += t2[i*o*v*v+a*o*v+j*v+c] * (2.0*t2[i*o*v*v+b*o*v+j*v+c] - t2[i*o*v*v+c*o*v+j*v+b]);
+                  }
+              }
+          }
+          Dab[a*v+b] = 2.0 * dum;
+          Dab[b*v+a] = 2.0 * dum;
+      }
+  }
+  free(t2);
+}
+
+void CIM::OppositeSpinMP2Density(double*Dab,int cluster){
+  int o = ndoccact;
+  int v = nvirt;
+  double*t2 = (double*)malloc(o*o*v*v*sizeof(double));
+  memset((void*)t2,'\n',o*o*v*v*sizeof(double));
+  double**Fock = boys->Fock->pointer();
+
+  F_DGEMM('n','t',o*v,o*v,nQ,1.0,&Qov[0][0],o*v,&Qov[0][0],o*v,0.0,t2,o*v);
+  for (int a=0; a<v; a++){
+      double da = -Fock[a+ndocc][a+ndocc];
+      for (int b=0; b<v; b++){
+          double dab = da-Fock[b+ndocc][b+ndocc];
+          for (int i=0; i<o; i++){
+              double dabi = dab+Fock[i+nfzc][i+nfzc];
+              for (int j=0; j<o; j++){
+                  double dabij = dabi+Fock[j+nfzc][j+nfzc];
+                  t2[i*o*v*v+a*o*v+j*v+b] /= dabij;
+              }
+          }
+      }
+  }
+
+  // build Dab({I})
+  for (int a=0; a<v; a++){
+      for (int b=a; b<v; b++){
+          double dum = 0.0;
+          for (int i=0; i<o; i++){
+              if (domain[cluster][i]==isempty) continue;
+              for (int j=0; j<o; j++){
+                  for (int c=0; c<v; c++){
+                      dum += t2[i*o*v*v+a*o*v+j*v+c] * t2[i*o*v*v+b*o*v+j*v+c];
+                  }
+              }
+          }
+          Dab[a*v+b] = 2.0 * dum;
+          Dab[b*v+a] = 2.0 * dum;
+      }
+  }
+  free(t2);
 }
 
 }

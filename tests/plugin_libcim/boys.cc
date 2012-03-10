@@ -20,7 +20,6 @@ namespace psi{
  * criterion for localization: maximize ( sum <i|r|i>^2 ).
  */
 Boys::Boys(Options&options){
-  fprintf(outfile,"\n");
   fprintf(outfile,"  ==> Boys Localization <==\n");
   fprintf(outfile,"\n");
   options_ = options;

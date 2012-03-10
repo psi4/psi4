@@ -94,7 +94,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :download:`manual <userman.pdf>`|
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -318,6 +318,10 @@ def gradient(name, **kwargs):
         dertype = 0
         func = energy
 
+    if (PsiMod.get_global_option('REFERENCE').lower() == 'rks') or (PsiMod.get_global_option('REFERENCE').lower() == 'uks'):
+        dertype = 0
+        func = energy
+
     # 2. Check if the user passes dertype into this function
     if 'dertype' in kwargs:
         opt_dertype = kwargs['dertype']
@@ -380,13 +384,15 @@ def gradient(name, **kwargs):
         # into the current reference wavefunction
         procedures['gradient'][lowername](lowername, **kwargs)
 
+        if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
+            raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
         return PsiMod.reference_wavefunction().energy()
     else:
         # If not, perform finite difference of energies
 
         opt_iter = 1
         if ('opt_iter' in kwargs):
-            opt_iter = kwargs['opt_iter'] + 1
+            opt_iter = kwargs['opt_iter']
 
         if opt_iter == 1:
             print 'Performing finite difference calculations'
@@ -440,6 +446,7 @@ def gradient(name, **kwargs):
 
         for n, displacement in enumerate(displacements):
             rfile = 'OPT-%s-%s' % (opt_iter, n + 1)
+            #rfile = 'OPT-fd-%s' % (n + 1)
 
             # Build string of title banner
             banners = ''
@@ -630,7 +637,8 @@ def optimize(name, **kwargs):
     :type mode: string
     :param mode: |dl| ``'continuous'`` |dr| || ``'sow'`` || ``'reap'``
 
-        Indicates whether the calculation required to complete the
+        For a finite difference of energies optimization, indicates whether
+        the calculations required to complete the
         optimization are to be run in one file (``'continuous'``) or are to be
         farmed out in an embarrassingly parallel fashion
         (``'sow'``/``'reap'``).  For the latter, run an initial job with
@@ -657,14 +665,14 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_global_option('FULL_HESS_EVERY')
+    full_hess_every = PsiMod.get_option('FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
-    n = 0
+    n = 1
     if ('opt_iter' in kwargs):
         n = kwargs['opt_iter']
 
-    while n < PsiMod.get_option('GEOM_MAXITER'):
+    while n <= PsiMod.get_option('GEOM_MAXITER'):
         kwargs['opt_iter'] = n
 
         # Compute the gradient
@@ -809,8 +817,6 @@ def frequency(name, **kwargs):
 
        - RAK, why are you adding OPTKING options as GLOBALS? And shouldn't they be Py-side not C-side options?
 
-       - Put in a dictionary, so IRREPS can be called by symmetry element or 'all'
-
        - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
 
     :type name: string
@@ -826,11 +832,12 @@ def frequency(name, **kwargs):
         difference of gradients (if available) or finite difference of
         energies is to be performed.
 
-    :type irrep: int
-    :param irrep: |dl| ``-1`` |dr| || ``1`` || etc.
+    :type irrep: int or string
+    :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
 
-        Indicates which symmetry block of vibrational freqiencies to be
-        computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.
+        Indicates which symmetry block (Cotton ordering) of vibrational
+        frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
+        :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
 
     :examples:
@@ -863,7 +870,7 @@ def frequency(name, **kwargs):
             dertype = -1
 
     if 'irrep' in kwargs:
-        irrep = kwargs['irrep'] - 1  # externally, A1 irrep is 1; internally 0
+        irrep = parse_cotton_irreps(kwargs['irrep']) - 1  # externally, A1 irrep is 1, internally 0
     else:
         irrep = -1  # -1 implies do all irreps
 
@@ -997,3 +1004,90 @@ def hessian(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
+
+
+def parse_cotton_irreps(irrep):
+    """Function to return validated Cotton ordering index from string or integer
+    irreducible representation *irrep*.
+
+    """
+    cotton = {
+        'c1': {
+            'a': 1,
+            '1': 1
+        },
+        'ci': {
+            'ag': 1,
+            'au': 2,
+            '1':  1,
+            '2':  2
+        },
+        'c2': {
+            'a': 1,
+            'b': 2,
+            '1': 1,
+            '2': 2
+        },
+        'cs': {
+            'ap':  1,
+            'app': 2,
+            '1':   1,
+            '2':   2
+        },
+        'd2': {
+            'a':  1,
+            'b1': 2,
+            'b2': 3,
+            'b3': 4,
+            '1':  1,
+            '2':  2,
+            '3':  3,
+            '4':  4
+        },
+        'c2v': {
+            'a1': 1,
+            'a2': 2,
+            'b1': 3,
+            'b2': 4,
+            '1':  1,
+            '2':  2,
+            '3':  3,
+            '4':  4
+        },
+        'c2h': {
+            'ag': 1,
+            'bg': 2,
+            'au': 3,
+            'bu': 4,
+            '1':  1,
+            '2':  2,
+            '3':  3,
+            '4':  4,
+        },
+        'd2h': {
+            'ag':  1,
+            'b1g': 2,
+            'b2g': 3,
+            'b3g': 4,
+            'au':  5,
+            'b1u': 6,
+            'b2u': 7,
+            'b3u': 8,
+            '1':   1,
+            '2':   2,
+            '3':   3,
+            '4':   4,
+            '5':   5,
+            '6':   6,
+            '7':   7,
+            '8':   8
+        }
+    }
+
+    point_group = PsiMod.get_active_molecule().schoenflies_symbol().lower()
+    irreducible_representation = str(irrep).lower()
+
+    try:
+        return cotton[point_group][irreducible_representation]
+    except KeyError:
+        raise ValidationError("Irrep \'%s\' not valid for point group \'%s\'." % (str(irrep), point_group))

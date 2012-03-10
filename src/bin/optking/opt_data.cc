@@ -237,8 +237,34 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
 }
 
 void OPT_DATA::summary(void) const {
-  double DE, *f, *dq, max_force, max_disp;
+  double DE, *f, *dq, max_force, max_disp, rms_force, rms_disp;
 
+#if defined(OPTKING_PACKAGE_PSI)
+  fprintf(outfile, "\n  ==> Optimization Summary <==\n\n");
+  fprintf(outfile, "  Measures of convergence in internal coordinates in au.\n");
+
+  fprintf(outfile, "  --------------------------------------------------------------------------------------------------------------- ~\n");
+  fprintf(outfile, "   Step         Total Energy             Delta E       MAX Force       RMS Force        MAX Disp        RMS Disp  ~\n");
+  fprintf(outfile, "  --------------------------------------------------------------------------------------------------------------- ~\n");
+  for (int i=0; i<iteration; ++i) {
+
+    if (i == 0) DE = g_energy(i);
+    else DE = g_energy(i) - g_energy(i-1); 
+
+    f = g_forces_pointer(i);
+    max_force = array_abs_max(f, Nintco);
+    rms_force = array_rms(f, Nintco);
+
+    dq = g_dq_pointer(i);
+    max_disp = array_abs_max(dq, Nintco);
+    rms_disp = array_rms(dq, Nintco);
+
+    fprintf(outfile, "   %4d %20.12lf  %18.12lf    %12.8lf    %12.8lf    %12.8lf    %12.8lf  ~\n", i + 1, g_energy(i),
+      DE, max_force, rms_force, max_disp, rms_disp); 
+  }
+  fprintf(outfile, "  --------------------------------------------------------------------------------------------------------------- ~\n\n");
+
+#elif defined(OPTKING_PACKAGE_QCHEM)
   fprintf(outfile,"\n\t            ****  Optimization Summary  ****\n");
   fprintf(outfile,"\t----------------------------------------------------------------------------\n");
   fprintf(outfile,"\t Step         Energy             Delta(E)      MAX force    MAX Delta(q)  \n");
@@ -261,6 +287,7 @@ void OPT_DATA::summary(void) const {
   }
   fprintf(outfile,"\t----------------------------------------------------------------------\n");
   fprintf(outfile,"\n");
+#endif
 }
 
 inline int sign_of_double(double d) {
