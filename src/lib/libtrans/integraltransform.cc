@@ -78,7 +78,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
     frzvpi_  = wfn->frzvpi();
     frozen_core_energy_ = 0.0;
 
-    common_moinfo_initialize();
+    common_initialize();
 
     if(init) initialize();
 }
@@ -163,7 +163,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     Ca_ = Matrix::horzcat(Cs);
     Cb_ = Ca_;
 
-    common_moinfo_initialize();
+    common_initialize();
 
     if(init) initialize();
 }
