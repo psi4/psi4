@@ -86,12 +86,14 @@ PsiReturnType plugin_ccsort(Options &options)
     ints.set_aa_int_name("A <IJ|KL> (IK,JL)");
     ints.set_ab_int_name("A <Ij|Kl> (IK,jl)");
     ints.set_bb_int_name("A <ij|kl> (ik,jl)");
+    // The final flag here tells libtrans to keep the first half transform file, for reuse later
     ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ, IntegralTransform::MakeAndKeep);
     
     ints.set_dpd_int_file(CC_CINTS);
     ints.set_aa_int_name("C <IA|JB> (IJ,AB)");
     ints.set_ab_int_name("C <Ia|Jb> (IJ,ab)");
     ints.set_bb_int_name("C <ia|jb> (ij,ab)");
+    // The final flag here tells libtrans to skip the first half transform, using the previous intermdiates
     ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir, IntegralTransform::ReadAndNuke);
 
     if(do_abcd){
@@ -132,7 +134,6 @@ PsiReturnType plugin_ccsort(Options &options)
         ints.set_ab_int_name("E <Ai|Bc> (AB,ic)");
     }
 
-    // The final flag here tells libtrans to skip the first half transform, using the previous intermdiates
 
     /*
      * Now that we're done with the transformations, sort the results to the desired order
