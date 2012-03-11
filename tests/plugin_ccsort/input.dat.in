@@ -1,0 +1,25 @@
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R = .9
+A = 104.5
+}
+
+plugin_load("./plugin_ccsort.so")
+
+set {
+  basis sto-3g
+}
+
+set plugin_ccsort {
+  print 1
+}
+
+energy('scf')
+plugin("./plugin_ccsort.so")
+
+set reference uhf
+energy('scf')
+plugin("./plugin_ccsort.so")
