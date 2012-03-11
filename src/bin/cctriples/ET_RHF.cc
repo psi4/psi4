@@ -14,6 +14,12 @@
 #define EXTERN
 #include "globals.h"
 
+//MKL Header
+#ifdef HAVE_MKL
+#include <mkl.h>
+#endif
+
+
 namespace psi { namespace cctriples {
 
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
