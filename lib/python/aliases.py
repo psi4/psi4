@@ -176,7 +176,7 @@ def run_cim(name, **kwargs):
    PsiMod.plugin_load("%s" % (plugfile))
 
    # some options aren't set right...
-   PsiMod.set_global_option('compute_triples', False)
+   #PsiMod.set_global_option('compute_triples', False)
    PsiMod.set_global_option('r_convergence', 1e-7)
    PsiMod.set_global_option('maxiter', 100)
 
