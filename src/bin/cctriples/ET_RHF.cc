@@ -9,6 +9,7 @@
 #include <exception.h>
 #include <libqt/qt.h>
 #include <pthread.h>
+#include <psiconfig.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -56,7 +57,7 @@ double ET_RHF(void)
   p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
 
 #ifdef HAVE_MKL
-  int old_threads = mkl_get_num_threads();
+  int old_threads = mkl_get_max_threads();
   mkl_set_num_threads(1);
 #endif
 
