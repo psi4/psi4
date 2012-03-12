@@ -560,21 +560,27 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   lastbin = o*v*v*v - (nbins-1)*binsize;
   psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
   psio->open(PSIF_ABCI2,PSIO_OPEN_OLD);
+  psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
   abci2_addr = PSIO_ZERO;
   abci3_addr = PSIO_ZERO;
   abci5_addr = PSIO_ZERO;
+  psio_address abci4_addr = PSIO_ZERO;
   for (ULI i=0; i<nbins-1; i++){
       psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
       psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
+      // this is for the local triples
+      psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],binsize*sizeof(double),abci4_addr,&abci4_addr);
       F_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
       psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci2_addr,&abci2_addr);
   }
   psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr,&abci3_addr);
   psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr,&abci5_addr);
+  psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],lastbin*sizeof(double),abci4_addr,&abci4_addr);
   F_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
   psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci2_addr,&abci2_addr);
   psio->close(PSIF_ABCI2,1);
   psio->close(PSIF_ABCI3,1);
+  psio->close(PSIF_ABCI4,1);
 
   /**
     *  Combine ABCD1 and ABCD2 integrals

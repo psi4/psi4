@@ -127,6 +127,8 @@ plugin_libcim(Options &options)
        */
       RunCoupledCluster(options,cim);
       double dum = Process::environment.globals["CCSD CORRELATION ENERGY"];
+      if (options.get_bool("COMPUTE_TRIPLES"))
+         dum += Process::environment.globals["(T) CORRELATION ENERGY"];
       //ecim += dum;
       fprintf(outfile,"\n");
       fprintf(outfile,"        Cluster {%i} energy contribution: %20.12lf\n",
