@@ -11,11 +11,10 @@ molecule h2o2 {
 }
 
 set {
-  wfn eom_cc2
-  basis "cc-pVDZ"
+  basis cc-pVDZ
   freeze_core true
   states_per_irrep [2, 2]
-  properties true
+  prop_all true
 }
 
-energy('eom-cc2')
+property('eom-cc2')
