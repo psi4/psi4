@@ -163,6 +163,45 @@ def run_plugin_omega(name, **kwargs):
 
     return PsiMod.get_variable('SCF TOTAL ENERGY')
 
+def run_cim(name, **kwargs):
+   """Eugene's CIM driven by Python"""
+
+   lowername = name.lower()
+   kwargs = kwargs_lower(kwargs)
+
+   plugfile1 = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_localcc/plugin_localcc.so"
+   PsiMod.plugin_load("%s" % (plugfile1))
+
+   plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_libcim/plugin_libcim.so"
+   PsiMod.plugin_load("%s" % (plugfile))
+
+   # some options aren't set right...
+   #PsiMod.set_global_option('compute_triples', False)
+   PsiMod.set_global_option('r_convergence', 1e-7)
+   PsiMod.set_global_option('maxiter', 100)
+
+   energy('scf', **kwargs)
+   PsiMod.set_global_option('cim_initialize', True)
+   PsiMod.plugin("plugin_libcim.so")
+
+   cluster_energies = []
+   built_energy = 0.0
+   escf = PsiMod.get_variable('SCF TOTAL ENERGY')
+   PsiMod.set_global_option('cim_initialize', False)
+   cim_n = 0
+   while cim_n < PsiMod.get_variable('CIM CLUSTERS'):
+       PsiMod.set_global_option('CIM_CLUSTER_NUM', cim_n)
+       PsiMod.plugin("plugin_libcim.so")
+       cluster_energies.append(PsiMod.get_variable('CURRENT CLUSTER CORRELATION ENERGY'))
+       built_energy += PsiMod.get_variable('CURRENT CLUSTER CORRELATION ENERGY')
+       #print built_energy, cluster_energies
+       #print built_energy, cluster_energies[cim_n], built_energy + escf
+       cim_n += 1
+
+   PsiMod.set_variable('CURRENT ENERGY', built_energy+escf)
+   PsiMod.set_variable('TOTAL CIM CORRELATION ENERGY', built_energy)
+   return built_energy
+
 
 # Integration with driver routines
 procedures['energy']['mp2.5'] = run_mp2_5

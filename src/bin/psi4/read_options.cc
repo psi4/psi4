@@ -1765,6 +1765,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
+  if (name == "PLUGIN_LIBCIM"|| options.read_globals()) {
+     /*- Convergence for the localization procedure-*/
+     options.add_double("BOYS_CONVERGENCE", 1.0e-6);
+     /*- Maximum number of localization iterations iterations -*/
+     options.add_int("BOYS_MAXITER", 100);
+     /*- Desired number of threads -*/
+     options.add_int("NUM_THREADS", 1);
+     /*- cim threshold 1 -*/
+     options.add_double("THRESH1", 0.001);
+     /*- cim threshold 2 -*/
+     options.add_double("THRESH2", 0.05);
+     /*- cim threshold 3 -*/
+     options.add_double("THRESH3", 5e-5);
+     /*- initialize only? -*/
+     options.add_bool("CIM_INITIALIZE", false);
+     /*- cim cluster number to operate on -*/
+     options.add_int("CIM_CLUSTER_NUM", 0);
+  }
   if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
      /*- Wavefunction type !expert -*/
      options.add_str("WFN", "CCSD");

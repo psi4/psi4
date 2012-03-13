@@ -107,8 +107,8 @@ void CoupledCluster::Initialize(Options &options){
 
   // memory is from process::environment, but can override that
   memory = Process::environment.get_memory();
-  if (options["MEMORY"].has_changed()){
-     memory  = options.get_int("MEMORY");
+  if (options["CCMEMORY"].has_changed()){
+     memory  = options.get_int("CCMEMORY");
      memory *= (long int)1024*1024;
   }
 
@@ -248,6 +248,8 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
   time_start = time(NULL);
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+
+  //TCEPA();
   while(iter<maxiter && nrm>conv){
       iter_start = time(NULL);
 
@@ -451,7 +453,7 @@ void CoupledCluster::AllocateMemory(Options&options){
      nthreads = options.get_int("NUM_THREADS");
 
   fprintf(outfile,"\n");
-  fprintf(outfile,"  available memory =                        %9.2lf mb\n",Process::environment.get_memory()/1024./1024.);
+  fprintf(outfile,"  available memory =                        %9.2lf mb\n",memory/1024./1024.);
   fprintf(outfile,"  minimum memory requirements for CCSD =    %9.2lf mb\n",
          8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
   if (options.get_bool("COMPUTE_TRIPLES")){
@@ -898,11 +900,11 @@ void CoupledCluster::UpdateT1(long int iter){
   long int i,j,a,b;
   long int id=0;
   double tnew,dia;
-  if (iter<1){
+  /*if (iter<1){
      memset((void*)t1,'\0',o*v*sizeof(double));
      memset((void*)w1,'\0',o*v*sizeof(double));
   }
-  else{
+  else{*/
      for (a=o; a<rs; a++){
          for (i=0; i<o; i++){
              dia = -eps[i]+eps[a];
@@ -910,7 +912,7 @@ void CoupledCluster::UpdateT1(long int iter){
              w1[(a-o)*o+i] = tnew;
          }
      }
-  }
+  //}
   // error vector for diis is in tempv:
   F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
@@ -1690,6 +1692,70 @@ void CoupledCluster::DefineTasks(){
   // this is the last diagram that contributes to doubles residual,
   // so we can keep it in memory rather than writing and rereading
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd2;
+}
+
+/*
+ * truncated cepa
+ */
+void CoupledCluster::TCEPA(){
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int iajb,jaib,ijab=0;
+  double energy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  if (t2_on_disk){
+     tb = tempt;
+  }
+  memset((void*)tb,'\0',o*o*v*v*sizeof(double));
+  double*pair_energy = (double*)malloc(o*o*sizeof(double));
+
+  double tconv = 1.0;
+  double di,dij,dija,dijab;
+  while (tconv>1e-6){
+      tconv = 0.0;
+      for (i=0; i<o; i++){
+          di = -eps[i];
+          for (j=0; j<o; j++){
+              dij = di - eps[j];
+              energy=0.0;
+              for (a=o; a<rs; a++){
+                  for (b=o; b<rs; b++){
+                      ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                      iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                      energy += integrals[iajb]*(2.0*tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
+                  }
+              }
+              pair_energy[i*o+j] = energy;
+              for (a=o; a<rs; a++){
+                  dija = dij + eps[a];
+                  for (b=o; b<rs; b++){
+                      dijab = dija + eps[b];
+                      ijab = (a-o)*o*o*v+(b-o)*o*o+i*o+j;
+                      iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                      double t2  = -integrals[iajb]/(dijab - pair_energy[i*o+j]);
+                      double dum = (tb[ijab]-t2);
+                      tconv += dum*dum;
+                      tb[ijab] = t2;
+                  }
+              }
+          }
+      }
+      tconv = sqrt(tconv);
+  }
+  /*for (a=0; a<v; a++){
+      for (i=0; i<o; i++){
+          t1[a*o+i] = sqrt(abs(tb[a*o*o*v+a*o*o+i*o+i]));
+      }
+  }*/
+
+
+  free(pair_energy);
+  psio.reset();
 }
 
 

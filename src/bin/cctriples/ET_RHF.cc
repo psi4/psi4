@@ -9,10 +9,17 @@
 #include <exception.h>
 #include <libqt/qt.h>
 #include <pthread.h>
+#include <psiconfig.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
+
+//MKL Header
+#ifdef HAVE_MKL
+#include <mkl.h>
+#endif
+
 
 namespace psi { namespace cctriples {
 
@@ -48,6 +55,11 @@ double ET_RHF(void)
   nthreads = params.nthreads;
   thread_data_array = (struct thread_data *) malloc(nthreads*sizeof(struct thread_data));
   p_thread = (pthread_t *) malloc(nthreads*sizeof(pthread_t));
+
+#ifdef HAVE_MKL
+  int old_threads = mkl_get_max_threads();
+  mkl_set_num_threads(1);
+#endif
 
   dpd_file2_init(&fIJ, CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_init(&fAB, CC_OEI, 0, 1, 1, "fAB");
@@ -218,6 +230,10 @@ double ET_RHF(void)
   free(p_thread);
 
   timer_off("ET_RHF");
+
+#ifdef HAVE_MKL
+  mkl_set_num_threads(old_threads);
+#endif
 
   return ET;
 }

@@ -13,6 +13,9 @@ extern "C" int
 read_options(std::string name, Options &options)
 {
   if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
+     /*- Memory in mb.  Use this to override global option, 
+         which is limited to <16gb because of dpd in transqt2 -*/
+     options.add_int("CCMEMORY", 256);
      /*- Wavefunction type !expert -*/
      options.add_str("WFN", "CCSD");
      /*- Convergence for the CC amplitudes-*/

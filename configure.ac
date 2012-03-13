@@ -1156,6 +1156,9 @@ AC_CONFIG_FILES([
           tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h
           tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc
           tests/plugin_mp2/plugin_mp2_unrestricted.cc
+          tests/plugin_ccsort/Makefile
+          tests/plugin_ccsort/plugin_ccsort.cc
+          tests/plugin_ccsort/input.dat
           tests/plugin_mointegrals/Makefile
           tests/plugin_mointegrals/input.dat
           tests/plugin_mointegrals/mointegrals.cc

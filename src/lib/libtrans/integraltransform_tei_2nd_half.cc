@@ -91,8 +91,12 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     ketCore = DPD_ID(s3, s4, Alpha, false);
     braDisk = DPD_ID(s1, s2, Alpha, true);
     ketDisk = DPD_ID(s3, s4, Alpha, true);
-    sprintf(label, "MO Ints (%c%c|%c%c)", toupper(s1->label()), toupper(s2->label()),
-                                          toupper(s3->label()), toupper(s4->label()));
+    if(strlen(aaIntName_)){
+        strcpy(label, aaIntName_);
+    }else{
+        sprintf(label, "MO Ints (%c%c|%c%c)", toupper(s1->label()), toupper(s2->label()),
+                                              toupper(s3->label()), toupper(s4->label()));
+    }
     dpd_buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
     if(print_ > 5)
         fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
@@ -206,8 +210,12 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         ketCore = DPD_ID(s3, s4, Beta,  false);
         braDisk = DPD_ID(s1, s2, Alpha, true);
         ketDisk = DPD_ID(s3, s4, Beta,  true);
-        sprintf(label, "MO Ints (%c%c|%c%c)", toupper(s1->label()), toupper(s2->label()),
-                                              tolower(s3->label()), tolower(s4->label()));
+        if(strlen(abIntName_)){
+            strcpy(label, abIntName_);
+        }else{
+            sprintf(label, "MO Ints (%c%c|%c%c)", toupper(s1->label()), toupper(s2->label()),
+                                                  tolower(s3->label()), tolower(s4->label()));
+        }
         dpd_buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
@@ -322,8 +330,12 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         ketCore = DPD_ID(s3, s4, Beta, false);
         braDisk = DPD_ID(s1, s2, Beta, true);
         ketDisk = DPD_ID(s3, s4, Beta, true);
-        sprintf(label, "MO Ints (%c%c|%c%c)", tolower(s1->label()), tolower(s2->label()),
-                                              tolower(s3->label()), tolower(s4->label()));
+        if(strlen(bbIntName_)){
+            strcpy(label, bbIntName_);
+        }else{
+            sprintf(label, "MO Ints (%c%c|%c%c)", tolower(s1->label()), tolower(s2->label()),
+                                                  tolower(s3->label()), tolower(s4->label()));
+        }
         dpd_buf4_init(&K, dpdIntFile_, 0, braCore, ketCore, braDisk, ketDisk, 0, label);
         if(print_ > 5)
             fprintf(outfile, "Initializing %s, in core:(%d|%d) on disk(%d|%d)\n",
@@ -431,6 +443,11 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
         fprintf(outfile, "\tTwo-electron integral transformation complete.\n");
         fflush(outfile);
     }
+
+    // Reset the integral file names, before the next transformation is called
+    aaIntName_ = "";
+    abIntName_ = "";
+    bbIntName_ = "";
 
     // Hand DPD control back to the user
     dpd_set_default(currentActiveDPD);
