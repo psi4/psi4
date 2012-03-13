@@ -11,6 +11,7 @@
 #include <boost/xpressive/regex_actions.hpp>
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include <exception.h>
 #include <libciomr/libciomr.h>
@@ -297,15 +298,15 @@ void Matrix::init(const Dimension& l_rowspi, const Dimension& l_colspi, const st
 }
 
 SharedMatrix Matrix::create(const std::string& name,
-                                         const Dimension& rows,
-                                         const Dimension& cols)
+                            const Dimension& rows,
+                            const Dimension& cols)
 {
     return SharedMatrix(new Matrix(name, rows, cols));
 }
 
-Matrix* Matrix::clone() const
+SharedMatrix Matrix::clone() const
 {
-    Matrix *temp = new Matrix(this);
+    SharedMatrix temp(new Matrix(this));
     return temp;
 }
 
@@ -459,11 +460,19 @@ void Matrix::alloc()
         release();
 
     matrix_ = (double***)malloc(sizeof(double***) * nirrep_);
-    for (int i=0; i<nirrep_; ++i) {
-        if (rowspi_[i] != 0 && colspi_[i^symmetry_] != 0)
-            matrix_[i] = Matrix::matrix(rowspi_[i], colspi_[i^symmetry_]);
-        else
-            matrix_[i] = NULL;
+    for (int h=0; h<nirrep_; ++h) {
+        if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
+            matrix_[h] = Matrix::matrix(rowspi_[h], colspi_[h^symmetry_]);
+        else {
+            // Force rowspi_[h] and colspi_[h^symmetry] to hard 0
+            // This solves an issue where a row can have 0 dim but a col does not (or the other way).
+
+            // This was commented out to resolve issues that people were
+            // dependent on one or both containing valid dimensions and
+            // not a hard zero.
+            //rowspi_[h] = colspi_[h^symmetry_] = 0;
+            matrix_[h] = NULL;
+        }
     }
 }
 
@@ -867,9 +876,9 @@ double Matrix::trace()
     return val;
 }
 
-Matrix* Matrix::transpose()
+SharedMatrix Matrix::transpose()
 {
-    Matrix *temp = new Matrix(name_, nirrep_, colspi_, rowspi_, symmetry_);
+    SharedMatrix temp(new Matrix(name_, nirrep_, colspi_, rowspi_, symmetry_));
 
     if (symmetry_) {
 
@@ -901,8 +910,6 @@ Matrix* Matrix::transpose()
 
 void Matrix::transpose_this()
 {
-    double temp;
-
     if (symmetry_) {
         for (int rowsym=0; rowsym<nirrep_; ++rowsym) {
             int colsym = rowsym ^ symmetry_;
@@ -911,22 +918,23 @@ void Matrix::transpose_this()
             int cols = colspi_[colsym];
             for (int row = 0; row < rows; row++) {
                 for (int col = 0; col < cols; col++) {
-                    temp = matrix_[colsym][col][row];
-                    matrix_[colsym][col][row] = matrix_[rowsym][row][col];
-                    matrix_[rowsym][row][col] = temp;
+                    std::swap(matrix_[colsym][col][row], matrix_[rowsym][row][col]);
                 }
             }
         }
     } else {
         int h, i, j;
-        for (h=0; h<nirrep_; ++h) {
-            for (i=0; i<rowspi_[h]; ++i) {
-                for (j=0; j<i; ++j) {
-                    temp = matrix_[h][i][j];
-                    matrix_[h][i][j] = matrix_[h][j][i];
-                    matrix_[h][j][i] = temp;
+        if (rowspi_ == colspi_) {
+            for (h=0; h<nirrep_; ++h) {
+                for (i=0; i<rowspi_[h]; ++i) {
+                    for (j=0; j<i; ++j) {
+                        std::swap(matrix_[h][i][j], matrix_[h][j][i]);
+                    }
                 }
             }
+        }
+        else {
+
         }
     }
 }
@@ -1248,9 +1256,10 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
         m = rowspi_[h];
         n = colspi_[h^symmetry_];
         k = transa ? a->rowspi_[h] : a->colspi_[h^a->symmetry_];
-        lda = transa ? m : k;
-        ldb = transb ? k : n;
-        ldc = n;
+
+        lda = a->colspi_[h ^ a->symmetry_];
+        ldb = b->colspi_[h ^ b->symmetry_];
+        ldc = colspi_[h ^ symmetry_];
 
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, alpha, &(a->matrix_[h][0][0]),
@@ -1590,7 +1599,7 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
 {
     // Actually, this routine takes mn + mk + nk
     for (int h = 0; h < nirrep_; h++) {
-        if (!rowspi_[h] && !colspi_[h])
+        if (!rowspi_[h] || !colspi_[h^symmetry_])
             continue;
 
         int m = rowspi_[h];
@@ -1632,6 +1641,54 @@ void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
         Matrix::free(Ap);
     }
 }
+
+void Matrix::svd_a(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
+{
+    // Actually, this routine takes mn + mk + nk
+    for (int h = 0; h < nirrep_; h++) {
+        if (!rowspi_[h] || !colspi_[h^symmetry_])
+            continue;
+
+        int m = rowspi_[h];
+        int n = colspi_[h^symmetry_];
+        int k = (m < n ? m : n);
+
+        double** Ap = Matrix::matrix(m,n);
+        ::memcpy((void*) Ap[0], (void*) matrix_[h][0], sizeof(double) * m * n);
+        double*  Sp = S->pointer(h);
+        double** Up = U->pointer(h);
+        double** Vp = V->pointer(h^symmetry_);
+
+        int* iwork = new int[8L * k];
+
+        // Workspace Query
+        double lwork;
+        int info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,&lwork,-1,iwork);
+
+        double* work = new double[(int)lwork];
+
+        // SVD
+        info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],k,work,(int)lwork,iwork);
+
+        delete[] work;
+        delete[] iwork;
+
+        if (info != 0) {
+            if (info < 0) {
+                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                fflush(outfile);
+                abort();
+            }
+            if (info > 0) {
+                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                fflush(outfile);
+                abort();
+            }
+        }
+        Matrix::free(Ap);
+    }
+}
+
 SharedMatrix Matrix::pseudoinverse(double condition, bool* conditioned)
 {
     boost::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temp = svd_temps();
@@ -1679,7 +1736,7 @@ SharedMatrix Matrix::pseudoinverse(double condition, bool* conditioned)
     return Q;
 }
 
-SharedMatrix Matrix::canonical_orthogonalization(double delta)
+SharedMatrix Matrix::canonical_orthogonalization(double delta, SharedMatrix eigvec)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix: canonical orthogonalization only works for totally symmetric matrices");
@@ -1689,6 +1746,9 @@ SharedMatrix Matrix::canonical_orthogonalization(double delta)
     SharedVector a(new Vector("a",rowspi_));
 
     diagonalize(U,a, descending);
+
+    if (eigvec)
+        eigvec->copy(U);
 
     Dimension rank(nirrep_);
 
@@ -1934,11 +1994,13 @@ void Matrix::general_invert()
     delete[] work;
 }
 
-void Matrix::power(double alpha, double cutoff)
+Dimension Matrix::power(double alpha, double cutoff)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::power: Matrix is non-totally symmetric.");
     }
+
+    Dimension remaining(nirrep_, "Number of remaining orbitals");
 
     for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] == 0) continue;
@@ -1965,23 +2027,28 @@ void Matrix::power(double alpha, double cutoff)
         memcpy(static_cast<void*>(A2[0]), static_cast<void*>(A1[0]), sizeof(double)*n*n);
 
         double max_a = (fabs(a[n-1]) > fabs(a[0]) ? fabs(a[n-1]) : fabs(a[0]));
+        int remain = 0;
         for (int i=0; i<n; i++) {
 
             if (alpha < 0.0 && fabs(a[i]) < cutoff * max_a)
                 a[i] = 0.0;
-            else
+            else {
                 a[i] = pow(a[i],alpha);
+                remain++;
+            }
 
             C_DSCAL(n, a[i], A2[i], 1);
         }
+        remaining[h] = remain;
 
         C_DGEMM('T','N',n,n,n,1.0,A2[0],n,A1[0],n,0.0,A[0],n);
 
         delete[] a;
         Matrix::free(A1);
         Matrix::free(A2);
-
     }
+
+    return remaining;
 }
 
 void Matrix::exp()
@@ -2611,6 +2678,140 @@ void Matrix::load(boost::shared_ptr<psi::PSIO>& psio,
                   SaveType savetype)
 {
     load(psio.get(), fileno, savetype);
+}
+
+//void Matrix::alloc()
+//{
+//    if (matrix_)
+//        release();
+
+//    matrix_ = (double***)malloc(sizeof(double***) * nirrep_);
+//    for (int h=0; h<nirrep_; ++h) {
+//        if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
+//            matrix_[h] = Matrix::matrix(rowspi_[h], colspi_[h^symmetry_]);
+//        else {
+//            // Force rowspi_[h] and colspi_[h^symmetry] to hard 0
+//            // This solves an issue where a row can have 0 dim but a col does not (or the other way).
+
+//            // This was commented out to resolve issues that people were
+//            // dependent on one or both containing valid dimensions and
+//            // not a hard zero.
+//            //rowspi_[h] = colspi_[h^symmetry_] = 0;
+//            matrix_[h] = NULL;
+//        }
+//    }
+//}
+
+void Matrix::load_mpqc(const std::string &filename)
+{
+    // Entire file.
+    vector<string> lines;
+    string text;
+
+    ifstream infile(filename.c_str());
+    if (!infile)
+        throw PSIEXCEPTION("Matrix::load_mpqc: Unable to open file " + filename);
+
+    // Stupid way of reading an entire file
+    while (infile.good()) {
+        getline(infile, text);
+        trim(text);
+        if (!text.empty())
+            lines.push_back(text);
+    }
+
+    release();
+
+    // First line is label
+    set_name(lines[0]);
+
+    // Second line is symmetry information
+    smatch match;
+    int infile_symm=-1;
+    regex symmetry_line("^\\s*symmetry\\s*(\\d+)\\s*", regbase::icase);
+    if (regex_match(lines[1], match, symmetry_line))
+        infile_symm = str_to_int(match[1]);
+    else
+        throw PSIEXCEPTION("Matrix::load_mpqc: Second line must be 'symmetry #'");
+
+    symmetry_ = infile_symm;
+
+    // Third line is number of blocks (nirrep)
+    int infile_nirrep=-1;
+    regex blocks_line("^\\s*blocks\\s*(\\d+)\\s*", regbase::icase);
+    if (regex_match(lines[2], match, blocks_line))
+        infile_nirrep = str_to_int(match[1]);
+    else
+        throw PSIEXCEPTION("Matrix::load_mpqc: Third line must be 'blocks #'");
+
+    nirrep_ = infile_nirrep;
+
+    rowspi_ = Dimension(nirrep_);
+    colspi_ = Dimension(nirrep_);
+
+    // We'll handle memory allocation here
+    matrix_ = (double***)malloc(sizeof(double***) * nirrep_);
+
+    // This will hold the index in lines we should be working on
+    size_t nline = 3;
+
+    // Handle each block separately
+    regex dim_line("^\\s*(\\d+)\\s*(\\d+)\\s*", regbase::icase);
+    regex data_line("^\\s*\\d+\\s*" NUMBER "\\s*" NUMBER "?\\s*" NUMBER "?\\s*");
+
+    for (int h=0; h < nirrep_; ++h) {
+
+        // Read dimension line
+        if (regex_match(lines[nline], match, dim_line)) {
+            rowspi_[h] = str_to_int(match[1]);
+            colspi_[h ^ symmetry_] = str_to_int(match[2]);
+        }
+        else
+            throw PSIEXCEPTION("Matrix::load_mpqc: Expected to find dimensions.");
+
+        // Done with dimension line
+        nline++;
+
+        // Allocate memory
+        if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
+            matrix_[h] = Matrix::matrix(rowspi_[h], colspi_[h^symmetry_]);
+        else
+            matrix_[h] = NULL;
+
+        // We read no more than 3 columns at a time
+        for (int col=0; col < colspi_[h ^ symmetry_]; col += 3) {
+            // skip the next line (contains column numbers, which we ignore)
+            nline++;
+
+            for (int row=0; row < rowspi_[h]; ++row) {
+                if (regex_match(lines[nline], match, data_line)) {
+                    string s1 = match[1];
+                    string s2 = match[2];
+                    string s3 = match[3];
+
+//                    fprintf(outfile, "'%s' %s (%d) %s (%d) %s (%d)\n",
+//                            string(match[0]).c_str(),
+//                            s1.c_str(), s1.length(),
+//                            s2.c_str(), s2.length(),
+//                            s3.c_str(), s3.length());
+
+                    if (s1.length())
+                        matrix_[h][row][col] = str_to_double(s1);
+                    if (s2.length())
+                        matrix_[h][row][col+1] = str_to_double(s2);
+                    if (s3.length())
+                        matrix_[h][row][col+2] = str_to_double(s3);
+                }
+                else
+                    throw PSIEXCEPTION("Matrix::load_mpqc: Unable to match data line:\n" + lines[nline]);
+
+                // Move on
+                nline++;
+            }
+        }
+        // Last thing to do.
+        nline++;
+    }
 }
 
 void Matrix::load(const std::string &filename)

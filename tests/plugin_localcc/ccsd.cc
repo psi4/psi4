@@ -304,10 +304,9 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
      //throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
 
-  SCS_CCSD();
-
   // CIM energy
-  eccsd = CIMEnergy();
+  SCS_CCSD();
+  eccsd = eccsd_os + eccsd_ss;
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
@@ -932,14 +931,66 @@ void CoupledCluster::SCS_CCSD(){
   double osenergy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&integrals[0],o*o*v*v*sizeof(double));
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_KLCD,1);
+
+  double**Rii = wfn_->Rii->pointer();
+  // transform E2klcd back from quasi-canonical basis
+  for (i=0; i<o; i++){
+      for (a=0; a<v; a++){
+          for (j=0; j<o; j++){
+              for (b=0; b<v; b++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii[ip][i];
+                  }
+                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
+              }
+          }
+      }
+  }
+
   if (t2_on_disk){
      psio->open(PSIF_T2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
      psio->close(PSIF_T2,1);
      tb = tempv;
   }
+  // transform t2 back from quasi-canonical basis
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii[ip][i];
+                  }
+                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+
+
+
   for (a=o; a<rs; a++){
       for (b=o; b<rs; b++){
           for (i=0; i<o; i++){
@@ -947,9 +998,9 @@ void CoupledCluster::SCS_CCSD(){
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   jaib = iajb + (i-j)*v*(1-v*o);
-                  osenergy += integrals[iajb]*(tb[ijab]+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
-                  ssenergy += integrals[iajb]*(tb[ijab]-tb[(b-o)*o*o*v+(a-o)*o*o+i*o+j]);
-                  ssenergy += integrals[iajb]*(t1[(a-o)*o+i]*t1[(b-o)*o+j]-t1[(b-o)*o+i]*t1[(a-o)*o+j]);
+                  osenergy += integrals[iajb]*(tempt[ijab])*wfn_->centralfac[i];;
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*wfn_->centralfac[i];;
+                          
                   ijab++;
               }
           }

@@ -121,6 +121,7 @@ void BasisSet::print_summary(FILE* out) const
 {
     if (Communicator::world->me() == 0) {
         fprintf(out, "  -AO BASIS SET INFORMATION:\n");
+        fprintf(out, "    Name                   = %s\n", name_.c_str());
         fprintf(out, "    Total number of shells = %d\n", nshell());
         fprintf(out, "    Number of primitives   = %d\n", nprimitive_);
         fprintf(out, "    Number of AO           = %d\n", nao_);

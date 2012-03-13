@@ -36,12 +36,6 @@ public:
         PsiException("Option " + key + " has been declared as a " + type1 + " and a " + type2, file, line) { }
 };
 
-class NotImplementedException : public PsiException
-{
-public:
-    NotImplementedException(const std::string& message) : PSIEXCEPTION(message + " function not implemented") { }
-};
-
 class OptionsException : public PsiException
 {
 public:

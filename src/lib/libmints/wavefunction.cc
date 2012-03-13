@@ -14,6 +14,7 @@
 #include <libmints/view.h>
 
 #include "mints.h"
+#include "orbitalspace.h"
 
 #include <psi4-dec.h>
 
@@ -50,7 +51,7 @@ Wavefunction::~Wavefunction()
 {
 }
 
-void Wavefunction::copy(boost::shared_ptr<Wavefunction> other) 
+void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
 {
     name_ = other->name_;
     basisset_ = other->basisset_;
@@ -60,18 +61,18 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     molecule_ = other->molecule_;
     psio_ = other->psio_;
     chkpt_ = other->chkpt_;
-    integral_ = other->integral_;  
+    integral_ = other->integral_;
     factory_ = other->factory_;
-    reference_wavefunction_ = other; 
+    reference_wavefunction_ = other;
     memory_ = other->memory_;
     print_ = other->print_;
     debug_ = other->debug_;
     density_fitted_ = other->density_fitted_;
-    energy_threshold_ = other->energy_threshold_;   
-    density_threshold_ = other->density_threshold_;   
+    energy_threshold_ = other->energy_threshold_;
+    density_threshold_ = other->density_threshold_;
     nalpha_ = other->nalpha_;
     nbeta_ = other->nbeta_;
-    
+
     doccpi_ = other->doccpi_;
     soccpi_ = other->soccpi_;
     frzcpi_ = other->frzcpi_;
@@ -82,19 +83,19 @@ void Wavefunction::copy(boost::shared_ptr<Wavefunction> other)
     nmopi_ = other->nmopi_;
 
     energy_ = other->energy_;
-    
+
     nso_ = other->nso_;
     nmo_ = other->nmo_;
-    nirrep_ = other->nirrep_; 
+    nirrep_ = other->nirrep_;
 
-    Ca_ = other->Ca_;    
-    Cb_ = other->Cb_;    
-    Da_ = other->Da_;    
-    Db_ = other->Db_;    
-    Fa_ = other->Fa_;    
-    Fb_ = other->Fb_;    
-    epsilon_a_ = other->epsilon_a_;    
-    epsilon_b_ = other->epsilon_b_;    
+    Ca_ = other->Ca_;
+    Cb_ = other->Cb_;
+    Da_ = other->Da_;
+    Db_ = other->Db_;
+    Fa_ = other->Fa_;
+    Fb_ = other->Fb_;
+    epsilon_a_ = other->epsilon_a_;
+    epsilon_b_ = other->epsilon_b_;
 
     gradient_ = other->gradient_;
     tpdm_gradient_contribution_ = other->tpdm_gradient_contribution_;
@@ -307,16 +308,16 @@ SharedMatrix Wavefunction::Cb() const {
 
 std::vector<std::vector<int> > Wavefunction::subset_occupation(const Dimension& noccpi, const std::string& subset)
 {
-    if (!(subset == "FROZEN_OCC" || 
-          subset == "FROZEN_VIR" || 
-          subset == "ACTIVE_OCC" || 
-          subset == "ACTIVE_VIR" || 
-          subset == "FROZEN" || 
-          subset == "ACTIVE" || 
-          subset == "OCC" || 
-          subset == "VIR" || 
+    if (!(subset == "FROZEN_OCC" ||
+          subset == "FROZEN_VIR" ||
+          subset == "ACTIVE_OCC" ||
+          subset == "ACTIVE_VIR" ||
+          subset == "FROZEN" ||
+          subset == "ACTIVE" ||
+          subset == "OCC" ||
+          subset == "VIR" ||
           subset == "ALL"))
-        throw PSIEXCEPTION("Orbital subset is not defined, should be ALL, OCC, VIR, FROZEN, ACTIVE, or look at doxygen"); 
+        throw PSIEXCEPTION("Orbital subset is not defined, should be ALL, OCC, VIR, FROZEN, ACTIVE, or look at doxygen");
 
     // Vector of relevent positions by irrep
     std::vector<std::vector<int> > positions;
@@ -353,9 +354,9 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
     SharedMatrix C2(new Matrix("C " + basis + " " + subset, nsopi_, nmopi));
     for (int h = 0; h < positions.size(); h++) {
         for (int i = 0; i < positions[h].size(); i++) {
-            C_DCOPY(nsopi_[h], &C->pointer(h)[0][positions[h][i]], nmopi_[h], &C2->pointer(h)[0][i], nmopi[h]); 
+            C_DCOPY(nsopi_[h], &C->pointer(h)[0][positions[h][i]], nmopi_[h], &C2->pointer(h)[0][i], nmopi[h]);
         }
-    } 
+    }
 
     if (basis == "AO") {
 
@@ -367,7 +368,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
             for (int i = 0; i < positions[h].size(); i++) {
                 order.push_back(boost::tuple<double,int,int>(epsilon->get(h,positions[h][i]),i,h));
             }
-        } 
+        }
 
         std::sort(order.begin(), order.end(), std::less<boost::tuple<double,int,int> >());
 
@@ -399,7 +400,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
     for (int h = 0; h < positions.size(); h++) {
         nmopi[h] = positions[h].size();
     }
-    
+
     SharedVector C2;
 
     if (basis == "AO") {
@@ -411,10 +412,10 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
             for (int i = 0; i < positions[h].size(); i++) {
                 order.push_back(boost::tuple<double,int,int>(epsilon->get(h,positions[h][i]),i,h));
             }
-        } 
+        }
 
         std::sort(order.begin(), order.end(), std::less<boost::tuple<double,int,int> >());
-        
+
         for (int index = 0; index < order.size(); index++) {
             C2->set(0,index,boost::get<0>(order[index]));
         }
@@ -426,7 +427,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
             for (int i = 0; i < positions[h].size(); i++) {
                 C2->set(h,i,epsilon->get(h,positions[h][i]));
             }
-        } 
+        }
 
     } else {
         throw PSIEXCEPTION("Invalid basis requested, use AO, SO, or MO");
@@ -488,6 +489,16 @@ SharedMatrix Wavefunction::D_subset_helper(SharedMatrix D, SharedMatrix C, const
     } else {
         throw PSIEXCEPTION("Invalid basis requested, use AO, SO, or MO");
     }
+}
+
+OrbitalSpace Wavefunction::alpha_orbital_space(const std::string& id, const std::string &basis, const std::string &subset)
+{
+    return OrbitalSpace(id, subset, Ca_subset(basis, subset), epsilon_a_subset(basis, subset), basisset_, integral_);
+}
+
+OrbitalSpace Wavefunction::beta_orbital_space(const std::string& id, const std::string &basis, const std::string &subset)
+{
+    return OrbitalSpace(id, subset, Cb_subset(basis, subset), epsilon_b_subset(basis, subset), basisset_, integral_);
 }
 
 SharedMatrix Wavefunction::Ca_subset(const std::string& basis, const std::string& subset)
