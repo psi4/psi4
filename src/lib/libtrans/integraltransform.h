@@ -38,6 +38,16 @@ class IntegralTransform{
 // TODO check usage of restricted, to make sure that it's correct everywhere
     public:
         /**
+         * How to handle reuse of intermediates in two-electron integral transformations
+         *
+         * MakeAndKeep - Compute the half-transformed integrals for this transformation, and keep after use
+         * ReadAndKeep - Read the half-transformed integrals for this transformation from disk, and keep after use
+         * MakeAndNuke - Compute the half-transformed integrals for this transformation, and delete after use
+         * ReadAndNuke - Read the half-transformed integrals for this transformation from disk, and delete after use
+         */
+        enum HalfTrans {MakeAndKeep, ReadAndKeep, MakeAndNuke, ReadAndNuke};
+
+        /**
          * Possible Transformations:-
          *
          * Restricted    - Same alpha and beta orbitals
@@ -128,7 +138,8 @@ class IntegralTransform{
         void update_orbitals();
         void transform_oei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2, const char *label);
         void transform_tei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
-                           const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4);
+                           const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4,
+                           HalfTrans = MakeAndNuke);
         void transform_tei_first_half(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2);
         void transform_tei_second_half(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
                                        const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4);
@@ -183,6 +194,18 @@ class IntegralTransform{
         /// Set the psio object to be used.  You must delay initialization in the ctor for this to work.
         void set_psio(boost::shared_ptr<PSIO> psio);
 
+        /// The file to output DPD integrals to
+        void set_dpd_int_file(int file) { dpdIntFile_ = file; }
+        /// Set the name used for the Alpha-Alpha integrals in the DPD file.  Needs to be
+        /// called before each transformation in order to override the default name.
+        void set_aa_int_name(const char *name) { aaIntName_ = const_cast<char*>(name); }
+        /// Set the name used for the Alpha-Beta integrals in the DPD file.  Needs to be
+        /// called before each transformation in order to override the default name.
+        void set_ab_int_name(const char *name) { abIntName_ = const_cast<char*>(name); }
+        /// Set the name used for the Beta-Beta integrals in the DPD file.  Needs to be
+        /// called before each transformation in order to override the default name.
+        void set_bb_int_name(const char *name) { bbIntName_ = const_cast<char*>(name); }
+
         // Get the alpha correlated to Pitzer ordering array, used in backtransforms
         const int *alpha_corr_to_pitzer() const { return aCorrToPitzer_; }
         // Get the beta correlated to Pitzer ordering array, used in backtransforms
@@ -192,7 +215,7 @@ class IntegralTransform{
 
     protected:
         void check_initialized();
-        void common_moinfo_initialize();
+        void common_initialize();
 
         void process_eigenvectors();
         void process_spaces();
@@ -273,6 +296,12 @@ class IntegralTransform{
         int nfzc_;
         // The number of frozen virtual orbitals
         int nfzv_;
+        // The name of the alpha-alpha DPD integral buffer
+        char *aaIntName_;
+        // The name of the alpha-beta DPD integral buffer
+        char *abIntName_;
+        // The name of the beta-beta DPD integral buffer
+        char *bbIntName_;
         // A string describing the spaces in which the integrals are to be transformed
         char *spaces_;
         // An array containing labels for each irrep

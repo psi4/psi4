@@ -81,6 +81,11 @@ void Process::Environment::set_n_threads(int nthread)
 #ifdef HAVE_MKL
     mkl_set_num_threads(nthread_);
 #endif
+
+    // HACK: TODO: CC-pthread codes should ask us how many threads
+    // No, this didn't work, back this out for now (and we won't need
+    // this once the final solution is in anyway)  --CDS
+    // Process::environment.options.set_global_int("NUM_THREADS",nthread);
 }
 
 const string& Process::Environment::operator()(const string& key) const

@@ -133,6 +133,11 @@ public:
     Molecule(const Molecule& other);
     virtual ~Molecule();
 
+    Molecule clone(void) {
+      Molecule new_obj(*this);
+      return new_obj;
+    }
+
     /// @{
     /// Operators
     /// Assignment operator.
