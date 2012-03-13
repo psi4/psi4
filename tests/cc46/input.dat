@@ -17,4 +17,12 @@ set {
   prop_all true
 }
 
-property('eom-cc2')
+energy('eom-cc2')
+
+PsiMod.set_global_option('WFN', 'EOM_CC2')
+PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+PsiMod.set_global_option('JOBTYPE', 'OEPROP')
+PsiMod.set_global_option('ONEPDM', 'TRUE')
+PsiMod.cclambda()
+PsiMod.ccdensity()
+

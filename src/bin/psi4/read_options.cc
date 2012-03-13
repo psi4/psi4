@@ -1303,6 +1303,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("XI", false);
     /*- Do ? -*/
     options.add_bool("ZETA",false);
+    /*- Do ? -*/
+    options.add_bool("ONEPDM",false);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Solves for the Lagrange multipliers, which are needed whenever coupled cluster properties

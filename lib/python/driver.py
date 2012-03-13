@@ -78,6 +78,7 @@ procedures = {
             # Upon adding a method to this list, add it to the docstring in frequency() below
         },
         'property' : {
+            'scf'  : run_scf_property,
             'cc2'  : run_cc_property,
             'ccsd' : run_cc_property,
             'eom-cc2'  : run_cc_property,
@@ -560,6 +561,8 @@ def property(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
+    | scf                     | Self-consistent field method(s)                                                       |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cc2                     | 2nd-order approximate CCSD                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
