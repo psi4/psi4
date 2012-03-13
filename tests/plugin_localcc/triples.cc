@@ -298,20 +298,28 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
              }
          }
 
-//heyheyhey
+         
+         // the singles part of (t) ...
+         F_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
          for (int i=0; i<o; i++){
+             double tai = t1[a*o+i];
              for (int j=0; j<o; j++){
+                 double tbj = t1[b*o+j];
+                 double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
                  for (int k=0; k<o; k++){
-                     Z2[thread][i*o*o+j*o+k] = 4.0/3.0*Z[thread][i*o*o+j*o+k]
-                                             -     2.0*Z[thread][i*o*o+k*o+j]
-                                             + 2.0/3.0*Z[thread][j*o*o+k*o+i];
+                     Z2[thread][i*o*o+j*o+k] += (tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
+                                                 tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
+                                                 t1[c*o+k]*E2iajb);
                  }
              }
          }
+         double dabc = -F[a+o]-F[b+o]-F[c+o];
          for (int i=0; i<o; i++){
+             double dabci = dabc + F[i];
              for (int j=0; j<o; j++){
+                 double dabcij = dabci + F[j];
                  for (int k=0; k<o; k++){
-                     double denom = F[i]+F[j]+F[k]-F[a+o]-F[b+o]-F[c+o];
+                     double denom = dabcij + F[k];
                      Z[thread][i*o*o+j*o+k] /= denom;
                  }
              }
@@ -319,29 +327,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
          // transform Z and Z2 back to lmo basis
          F_DGEMM('n','t',o*o,o,o,1.0,Z[thread],o*o,&Rii[0][0],o,0.0,E2abci[thread],o*o);
          F_DCOPY(o*o*o,E2abci[thread],1,Z[thread],1);
-         F_DGEMM('n','t',o*o,o,o,1.0,Z2[thread],o*o,&Rii[0][0],o,0.0,E2abci[thread],o*o);
-         F_DCOPY(o*o*o,E2abci[thread],1,Z2[thread],1);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     etrip[thread] += Z[thread][i*o*o+j*o+k]*Z2[thread][i*o*o+j*o+k]*ccsd->wfn_->centralfac[i];
-                 }
-             }
-         }
-         
-         // the (t) part ...
-         for (int i=0; i<o; i++){
-             double tai = t1[a*o+i];
-             for (int j=0; j<o; j++){
-                 double tbj = t1[b*o+j];
-                 double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
-                 for (int k=0; k<o; k++){
-                     Z2[thread][i*o*o+j*o+k] = (tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
-                                                tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
-                                                t1[c*o+k]*E2iajb);
-                 }
-             }
-         }
+
+
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
@@ -351,12 +338,15 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                  }
              }
          }
-         // transform Z2 back to lmo basis
          F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,&Rii[0][0],o,0.0,Z2[thread],o*o);
+
+         // evaluate (t)
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
-                     etrip[thread] += Z[thread][i*o*o+j*o+k]*Z2[thread][i*o*o+j*o+k]*ccsd->wfn_->centralfac[i];
+                     etrip[thread] +=  Z[thread][i*o*o+j*o+k]
+                                    * Z2[thread][i*o*o+j*o+k]
+                                    * ccsd->wfn_->centralfac[i];
                  }
              }
          }
