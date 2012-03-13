@@ -9,6 +9,7 @@
 #include <liboptions/liboptions.h>
 #include <boost/shared_ptr.hpp>
 #include <libchkpt/chkpt.hpp>
+#include <psi4-dec.h>
 
 #include "mrcc.h"
 #include "mrccsd_t.h"
@@ -37,7 +38,8 @@ void CCMRCC::compute_perturbative_triples()
     fprintf(outfile,"\n\n  Computing the expectation value of Heff");
     current_energy = h_eff.expectation_value();
   }
-  _default_chkpt_lib_->wt_etot(current_energy);
+  Process::environment.globals["CURRENT ENERGY"]    = current_energy;
+  Process::environment.globals["MRCC TOTAL ENERGY"] = current_energy;
 
   fprintf(outfile,"\n\n%6c* Mk-MRCCSD(T) total energy   =    %20.12f",' ',current_energy);
   fprintf(outfile,"\n\n  Timing for triples:             %20.6f s",timer.get());
