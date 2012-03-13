@@ -1,6 +1,8 @@
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/mints.h>
+#include <libmints/orbitalspace.h>
+#include <libmints/view.h>
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
@@ -43,6 +45,8 @@ boost::shared_ptr<MatrixFactory> get_matrix_factory()
     return matfac;
 }
 
+BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS(CanonicalOrthog, Matrix::canonical_orthogonalization, 1, 2)
+
 void export_mints()
 {
     def("nuclear_dipole", py_nuclear_dipole, "docstring");
@@ -67,6 +71,16 @@ void export_mints()
     typedef double (Vector::*vector_getitem_2)(int, int);
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
+
+    class_<Dimension>("Dimension", "docstring").
+            def(init<int>()).
+            def(init<int, const std::string&>()).
+            def("init", &Dimension::init, "docstring").
+            def("n", &Dimension::n, return_value_policy<copy_const_reference>(), "docstring").
+            def("name", &Dimension::name, return_value_policy<copy_const_reference>(), "docstring").
+            def("set_name", &Dimension::set_name, "docstring").
+            def("__getitem__", &Dimension::get, return_value_policy<copy_const_reference>(), "docstring").
+            def("__setitem__", &Dimension::set, "docstring");
 
     class_<Vector, boost::shared_ptr<Vector> >( "Vector", "docstring").
             def(init<int>()).
@@ -108,14 +122,20 @@ void export_mints()
     typedef double (Matrix::*matrix_get3)(const int&, const int&, const int&) const;
     typedef double (Matrix::*matrix_get2)(const int&, const int&) const;
     typedef void   (Matrix::*matrix_load)(const std::string&);
+    typedef const Dimension& (Matrix::*matrix_ret_dimension)() const;
 
-    class_<Matrix, SharedMatrix >("Matrix", "docstring").
+    class_<Matrix, SharedMatrix>("Matrix", "docstring").
             def(init<int, int>()).
+            def(init<const std::string&, const Dimension&, const Dimension&>()).
+            def(init<const std::string&>()).
+            def("clone", &Matrix::clone, "docstring").
             def("set_name", &Matrix::set_name, "docstring").
             def("name", &Matrix::name, return_value_policy<copy_const_reference>(), "docstring").
             def("print_out", &Matrix::print_out, "docstring").
             def("rows", &Matrix::rowdim, "docstring").
             def("cols", &Matrix::coldim, "docstring").
+            def("rowdim", matrix_ret_dimension(&Matrix::rowspi), return_value_policy<copy_const_reference>(), "docstring").
+            def("coldim", matrix_ret_dimension(&Matrix::colspi), return_value_policy<copy_const_reference>(), "docstring").
             def("nirrep", &Matrix::nirrep, return_value_policy<copy_const_reference>(), "docstring").
             def("symmetry", &Matrix::symmetry, return_value_policy<copy_const_reference>(), "docstring").
             def("identity", &Matrix::identity, "docstring").
@@ -144,6 +164,7 @@ void export_mints()
             def("diagonalize", matrix_diagonalize(&Matrix::diagonalize), "docstring").
             def("cholesky_factorize", &Matrix::cholesky_factorize, "docstring").
             def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "docstring").
+            def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, CanonicalOrthog()).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
             def("exp", &Matrix::exp, "docstring").
@@ -157,7 +178,13 @@ void export_mints()
             def("__setitem__", &Matrix::pyset, "docstring").
             def("save", matrix_save(&Matrix::save), "docstring").
             def("load", matrix_load(&Matrix::load), "docstring").
+            def("load_mpqc", matrix_load(&Matrix::load_mpqc), "docstring").
             def("remove_symmetry", &Matrix::remove_symmetry, "docstring");
+
+    class_<View, boost::noncopyable>("View", no_init).
+            def(init<SharedMatrix, const Dimension&, const Dimension&>()).
+            def(init<SharedMatrix, const Dimension&, const Dimension&, const Dimension&, const Dimension&>()).
+            def("__call__", &View::operator(), "docstring");
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
@@ -173,6 +200,7 @@ void export_mints()
             def("matrix", &CdSalcList::matrix, "docstring");
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
+            def(init<boost::shared_ptr<Molecule>, boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("basisset", &MintsHelper::basisset, "docstring").
@@ -258,6 +286,24 @@ void export_mints()
             def("c2_x", &SymmetryOperation::c2_x, "docstring").
             def("c2_y", &SymmetryOperation::c2_y, "docstring").
             def("transpose", &SymmetryOperation::transpose, "docstring");
+
+    class_<OrbitalSpace>("OrbitalSpace", "docstring", no_init).
+            def(init<const std::string&, const std::string&, const SharedMatrix&, const SharedVector&, const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>& >()).
+            def(init<const std::string&, const std::string&, const SharedMatrix&, const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>& >()).
+            def(init<const std::string&, const std::string&, const boost::shared_ptr<Wavefunction>& >()).
+            def("nirrep", &OrbitalSpace::nirrep, "docstring").
+            def("id", &OrbitalSpace::id, return_value_policy<copy_const_reference>(), "docstring").
+            def("name", &OrbitalSpace::name, return_value_policy<copy_const_reference>(), "docstring").
+            def("C", &OrbitalSpace::C, return_value_policy<copy_const_reference>(), "docstring").
+            def("evals", &OrbitalSpace::evals, return_value_policy<copy_const_reference>(), "docstring").
+            def("basisset", &OrbitalSpace::basisset, return_value_policy<copy_const_reference>(), "docstring").
+            def("integral", &OrbitalSpace::integral, return_value_policy<copy_const_reference>(), "docstring").
+            def("dim", &OrbitalSpace::dim, return_value_policy<copy_const_reference>(), "docstring").
+            def("print_out", &OrbitalSpace::print, "docstring").
+            def("build_cabs_space", &OrbitalSpace::build_cabs_space, "docstring").
+            staticmethod("build_cabs_space").
+            def("build_ri_space", &OrbitalSpace::build_ri_space, "docstring").
+            staticmethod("build_ri_space");
 
     class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup", "docstring").
             def(init<const std::string&>()).
@@ -355,7 +401,8 @@ void export_mints()
             def("nao", &BasisSet::nao, "docstring").
             def("nprimitive", &BasisSet::nprimitive, "docstring").
             def("nshell", &BasisSet::nshell, "docstring").
-            def("max_am", &BasisSet::max_am, "docstring");
+            def("max_am", &BasisSet::max_am, "docstring").
+            def(self + self);
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", "docstring", no_init).
             def("petite_list", &SOBasisSet::petite_list, "docstring");
@@ -393,7 +440,10 @@ void export_mints()
             def("sobasisset", &Wavefunction::sobasisset, "docstring").
             def("energy", &Wavefunction::reference_energy, "docstring").
             def("gradient", &Wavefunction::gradient, "docstring").
-            def("frequencies", &Wavefunction::frequencies, "docstring");
+            def("frequencies", &Wavefunction::frequencies, "docstring").
+            def("alpha_orbital_space", &Wavefunction::alpha_orbital_space, "docstring").
+            def("beta_orbital_space", &Wavefunction::beta_orbital_space, "docstring").
+            def("molecule", &Wavefunction::molecule, "docstring");
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", "docstring", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", "docstring", no_init);

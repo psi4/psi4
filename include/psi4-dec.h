@@ -2,20 +2,14 @@
 #define psi_include_psi4_dec_h
 
 #include <boost/shared_ptr.hpp>
+#include <boost/current_function.hpp>
 
 #include <string>
 #include <list>
 #include <map>
 #include <liboptions/liboptions.h>
 #include <exception.h>
-//#include <libmints/molecule.h>
-//#include <libmints/wavefunction.h>
 #include <libmints/typedefs.h>
-
-namespace boost {
-template <class T>
-class shared_ptr;
-}
 
 namespace psi {
 
@@ -25,16 +19,6 @@ extern FILE *outfile;
 //  extern PSIO *psio;
 extern char *psi_file_prefix;
 extern bool verbose;
-
-#ifndef NDEBUG
-#ifdef __GNUC__
-#define WHEREAMI() if (verbose) { fprintf(stderr, "@:%s:%-6d\t-> %s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ ); }
-#else
-#define WHEREAMI() if (verbose) { fprintf(stderr, "@:%s:%-6d\n", __FILE__, __LINE__); }
-#endif
-#else
-#define WHEREAMI()
-#endif
 
 // Very useful regex for matching floating point numbers
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
@@ -53,7 +37,7 @@ public:
         int nthread_;
 
         boost::shared_ptr<Molecule> molecule_;
-        SharedMatrix gradient_; 
+        SharedMatrix gradient_;
         boost::shared_ptr<Wavefunction> reference_wavefunction_;
     public:
         void init(char **envp);

@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 top_srcdir = "@top_srcdir@"
 
@@ -26,6 +27,9 @@ try:
     write_version(sha)
 
 except subprocess.CalledProcessError, e:
+    write_version("")
+
+except IOError, e:
     write_version("")
 
 except OSError, e:
