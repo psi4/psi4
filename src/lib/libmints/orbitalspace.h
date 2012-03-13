@@ -6,13 +6,21 @@
 
 namespace psi {
 
+/**
+ * @brief The OrbitalSpace class
+ *
+ * Describes an orbital space. Contains a unique identifier that can be used to
+ * describe the space. Also contains shared_ptr references to AO->MO transformation
+ * matrix and possible orbital energies. Relavent basis set and integral factory
+ * are also contained.
+ */
 class OrbitalSpace
 {
     /// Unique identifier
     std::string id_;
     /// Name of the orbital space.
     std::string name_;
-    /// AO->MO transformation matrix (ao x mo)
+    /// AO->MO transformation matrix (ao x mo) or SO->MO transformation matrix
     SharedMatrix C_;
 
     /// MO "eigenvalues"
@@ -58,7 +66,7 @@ public:
     const boost::shared_ptr<Vector>& evals() const;
 
     /// The AO basis set used to create C
-    const boost::shared_ptr<BasisSet>& basis() const;
+    const boost::shared_ptr<BasisSet>& basisset() const;
 
     /// Integral factory used to create C
     const boost::shared_ptr<IntegralFactory>& integral() const;
@@ -84,16 +92,13 @@ public:
       */
     static SharedMatrix overlap(const boost::shared_ptr<BasisSet>& basis1,
                                 const boost::shared_ptr<BasisSet>& basis2);
-};
 
-namespace SpaceBuilder
-{
     /** Given two spaces, it projects out one space from the other and returns the new spaces.
      * \param orb_space The space to project out. The returned space will be orthogonal to this.
      * \param ri_space The space being projected on. The returned space will be this space minus orb_space.
      * \param lindep_tol The tolerance for linear dependencies.
      */
-    OrbitalSpace build_cabs_space(
+    static OrbitalSpace build_cabs_space(
             const OrbitalSpace& orb_space,
             const OrbitalSpace& ri_space,
             double linear_tol);
@@ -102,17 +107,21 @@ namespace SpaceBuilder
      * space with the same span. Linearly dependent orbitals are thrown out.
      * \param aux_bs The first basis to include in space
      * \param obs The second basis to include in the new space
-     * \param ints Integral factory. NOTE: This is only needed for the spherical transforms so it can be any integral factory.
      * \param lindep_tol The tolerance for linear dependencies
      */
-    OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, boost::shared_ptr<IntegralFactory> ints, double lindep_tol);
+    static OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, double lindep_tol);
 
     /** Given a basis set, it orthogonalizes the orbitals and returns a space with the same
      * span but orthogonal orbitals. Also, linear dependent orbitals are projected out.
      * \param aux_bas The basis to orthogonalize
      * \param lindep_tol The tolerance for linear dependencies
      */
-    OrbitalSpace build_abs_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<IntegralFactory> ints, double lindep_tol);
+    static OrbitalSpace build_abs_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<IntegralFactory> ints, double lindep_tol);
+
+};
+
+namespace SpaceBuilder
+{
 }
 
 }

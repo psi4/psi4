@@ -52,7 +52,7 @@ void DataType::to_upper(std::string& str)
 
 void DataType::add_choices(std::string str)
 {
-    throw NotImplementedException("add(bool)");
+    throw NotImplementedException();
 }
 
 std::string DataType::type() const
@@ -67,62 +67,62 @@ bool DataType::is_array() const
 
 unsigned int DataType::size() const
 {
-    throw NotImplementedException("size()");
+    throw NotImplementedException();
 }
 
 void DataType::add(DataType *)
 {
-    throw NotImplementedException("add(DataType*)");
+    throw NotImplementedException();
 }
 
 void DataType::add(std::string, DataType*)
 {
-    throw NotImplementedException("add(std::string, DataType*)");
+    throw NotImplementedException();
 }
 
 void DataType::add(bool)
 {
-    throw NotImplementedException("add(bool)");
+    throw NotImplementedException();
 }
 
 void DataType::add(int)
 {
-    throw NotImplementedException("add(int)");
+    throw NotImplementedException();
 }
 
 void DataType::add(double)
 {
-    throw NotImplementedException("add(double)");
+    throw NotImplementedException();
 }
 
 void DataType::add(std::string, bool)
 {
-    throw NotImplementedException("add(std::string, bool)");
+    throw NotImplementedException();
 }
 
 void DataType::add(std::string, std::string)
 {
-    throw NotImplementedException("add(std::string, std::string)");
+    throw NotImplementedException();
 }
 
 void DataType::add(std::string, int)
 {
-    throw NotImplementedException("add(std::string, int)");
+    throw NotImplementedException();
 }
 
 void DataType::add(std::string, double)
 {
-    throw NotImplementedException("add(std::string, double)");
+    throw NotImplementedException();
 }
 
 void DataType::add(std::string, std::string, std::string)
 {
-    throw NotImplementedException("add(std::string, std::string, std::string)");
+    throw NotImplementedException();
 }
 
 bool DataType::exists(std::string)
 {
-    throw NotImplementedException("exists(std::string)");
+    throw NotImplementedException();
 }
 
 std::string DataType::to_string() const
@@ -172,12 +172,12 @@ void DataType::reset()
 
 Data& DataType::operator[](std::string)
 {
-    throw NotImplementedException("Data& [string]");
+    throw NotImplementedException();
 }
 
 Data& DataType::operator[](unsigned int)
 {
-    throw NotImplementedException("Data& [unsigned int]");
+    throw NotImplementedException();
 }
 
 // BooleanDataType

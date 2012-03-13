@@ -5,11 +5,13 @@
 #include <stdexcept>
 #include <sstream>
 #include <string.h>
+#include <boost/current_function.hpp>
 
 namespace psi {
 
 #define CHARARR_SIZE 100
 #define PSIEXCEPTION(message) PsiException(message, __FILE__, __LINE__)
+#define NotImplementedException() NotImplementedException_(BOOST_CURRENT_FUNCTION, __FILE__, __LINE__)
 
 /**
     Generic exception class for Psi4
@@ -78,6 +80,14 @@ class PsiException : public std::runtime_error {
 
 };
 
+class NotImplementedException_ : public PsiException
+{
+public:
+    NotImplementedException_(const std::string& message,
+                             const char* file,
+                             int line)
+        : PsiException(message + " function not implemented", file, line) { }
+};
 
 /**
 * Exception for sanity checks being performed, e.g. checking alignment of matrix multiplication.
