@@ -33,7 +33,7 @@ void transL(double sign)
   scf_qt = moinfo.scf_qt;
 
   /*** Transform the SO nabla integrals to the MO basis ***/
-  MintsHelper mints;
+  MintsHelper mints(Process::environment.options, 0);
   vector<SharedMatrix> dipole = mints.so_angular_momentum();
   for(int i=0; i < 3; i++) dipole[i]->scale(-0.5 * sign);
   LX_SO = dipole[0]->to_block_matrix();
