@@ -1056,6 +1056,15 @@ double CoupledCluster::CIMEnergy(){
           }
       }
   }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
 
   for (a=o; a<rs; a++){
       for (b=o; b<rs; b++){
