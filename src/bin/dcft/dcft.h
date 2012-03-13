@@ -74,6 +74,9 @@ protected:
     void compute_density();
     void compute_lagrangian_OV();
     void compute_lagrangian_VO();
+    void iterate_orbital_response();
+    void compute_orbital_response_intermediates();
+    void update_orbital_response();
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
@@ -150,6 +153,26 @@ protected:
     SharedMatrix a_tau_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
     SharedMatrix b_tau_;
+    /// The Tau matrix in the MO basis (alpha occupied)
+    SharedMatrix aocc_tau_;
+    /// The Tau matrix in the MO basis (beta occupied)
+    SharedMatrix bocc_tau_;
+    /// The Tau matrix in the MO basis (alpha virtual)
+    SharedMatrix avir_tau_;
+    /// The Tau matrix in the MO basis (beta virtual)
+    SharedMatrix bvir_tau_;
+    /// The perturbed Tau matrix in the MO basis (alpha occupied)
+    SharedMatrix aocc_ptau_;
+    /// The perturbed Tau matrix in the MO basis (beta occupied)
+    SharedMatrix bocc_ptau_;
+    /// The perturbed Tau matrix in the MO basis (alpha virtual)
+    SharedMatrix avir_ptau_;
+    /// The perturbed Tau matrix in the MO basis (beta virtual)
+    SharedMatrix bvir_ptau_;
+    /// The Kappa in the MO basis (alpha occupied)
+    SharedMatrix akappa_;
+    /// The Kappa in the MO basis (beta occupied)
+    SharedMatrix bkappa_;
     /// The Tau^2 correction to the alpha Tau matrix in the AO basis
     SharedMatrix a_tautau_;
     /// The Tau^2 correction to the beta Tau matrix in the AO basis
@@ -196,6 +219,10 @@ protected:
     SharedMatrix scf_error_a_;
     /// The beta SCF error vector
     SharedMatrix scf_error_b_;
+//    /// The alpha orbital response matrix elements (MO basis)
+//    SharedMatrix az_;
+//    /// The beta orbital response matrix elements (MO basis)
+//    SharedMatrix bz_;
     /// Used to align things in the output
     std::string indent;
 };
