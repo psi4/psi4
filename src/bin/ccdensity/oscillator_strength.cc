@@ -109,7 +109,7 @@ void oscillator_strength(struct TD_Params *S)
 
   /*** Transform the SO dipole integrals to the MO basis ***/
 
-  MintsHelper mints;
+  MintsHelper mints();
   vector<SharedMatrix> dipole = mints.so_dipole();
   MUX_SO = dipole[0]->to_block_matrix();
   MUY_SO = dipole[1]->to_block_matrix();

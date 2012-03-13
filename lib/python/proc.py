@@ -213,6 +213,8 @@ def run_ccenergy(name, **kwargs):
         PsiMod.set_global_option('WFN', 'CC2')
     elif (name.lower() == 'cc3'):
         PsiMod.set_global_option('WFN', 'CC3')
+    elif (name.lower() == 'eom-cc2'):
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
     elif (name.lower() == 'eom-ccsd'):
         PsiMod.set_global_option('WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options,
@@ -297,11 +299,13 @@ def run_bccd_t(name, **kwargs):
     return PsiMod.cctriples()
 
 
-def run_cc_response(name, **kwargs):
+def run_cc_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a CC2 and CCSD calculation.
+    all CC property calculation.
 
     """
+
+
     PsiMod.set_global_option('DERTYPE', 'RESPONSE')
 
     if (name.lower() == 'ccsd'):
