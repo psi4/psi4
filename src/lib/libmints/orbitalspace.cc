@@ -200,7 +200,7 @@ namespace { // anonymous
         o_engine->compute(overlap);
         delete o_engine;
 
-        fprintf(outfile, "    Orthogonalizing basis for space %s:\n", name.c_str());
+        fprintf(outfile, "    Orthogonalizing basis for space %s.\n", name.c_str());
         Dimension remaining = overlap->power(-0.5, lindep_tol);
 
         View Cview(overlap, overlap->rowspi(), remaining);
@@ -226,24 +226,10 @@ namespace { // anonymous
         SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
         SharedMatrix C12 = Matrix::create("C12", space1.C()->colspi(), space2.C()->colspi());
 
-        O12->print();
-        space1.C()->print();
-        space2.C()->print();
-
         // C12 = C1t * S12 * C2
         C12->transform(space1.C(), O12, space2.C());
-//        Matrix temp("temp", O12->rowspi(), space2.C()->colspi());
-//        temp.gemm(false, false, 1.0, O12, space2.C(), 0.0);
-//        temp.print();
-//        C12->gemm(true, false, 1.0, space1.C(), temp, 0.0);
-        C12->print();
 
         // SVD C12 =
-//        boost::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temps = C12->svd_temps();
-//        SharedMatrix U = svd_temps.get<0>();
-//        SharedVector Sigma = svd_temps.get<1>();
-//        SharedMatrix V = svd_temps.get<2>();
-
         Dimension smallest(C12->nirrep());
         const Dimension& rowd = C12->rowspi();
         const Dimension& cold = C12->colspi();
@@ -301,17 +287,10 @@ namespace { // anonymous
             }
             free_block(Ap);
         }
-        // Computes A
-//        C12->svd_a(U, Sigma, V);
-        U->print();
-        Sigma->print();
-        V->print();
 
         // No need to transpose since we transposed C12
-//        V = V->transpose();
         SharedMatrix Vao = Matrix::create("Vao", V->rowspi(), space2.C()->rowspi());
         Vao->gemm(false, true, 1.0, V, space2.C(), 0.0);
-        Vao->print();
 
         int nlindep=0;
         double min_sigma = 1.0;
@@ -339,13 +318,14 @@ namespace { // anonymous
             remove[h] = nsigma - nzeros;
         }
 
+        fprintf(outfile, "    "); // indents the remove.print output
         remove.print();
+
         Dimension zero(Vao->nirrep());
         View removes(Vao, Vao->rowspi()-remove, Vao->colspi(), remove, zero);
 
         SharedMatrix C = removes()->transpose();
-        C->set_name("Final");
-        C->print();
+        C->set_name("Transformation Matrix");
         return OrbitalSpace(id, name, C, space2.basisset(), space2.integral());
     }
 } // namespace anonymous
