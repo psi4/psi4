@@ -15,6 +15,7 @@ set {
   freeze_core true
   states_per_irrep [2, 2]
   prop_all true
+  properties = ['oscillator' 'rotation' 'polarizability']
 }
 
 energy('eom-cc2')
