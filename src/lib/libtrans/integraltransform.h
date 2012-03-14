@@ -304,8 +304,6 @@ class IntegralTransform{
         char *bbIntName_;
         // A string describing the spaces in which the integrals are to be transformed
         char *spaces_;
-        // An array containing labels for each irrep
-        char **labels_;
         // The definition of zero
         double tolerance_;
         // The amount of memory, in MB

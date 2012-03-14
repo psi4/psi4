@@ -38,7 +38,6 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
             nfzc_(0),
             nfzv_(0),
             spaces_(0),
-            labels_(0),
             tolerance_(1.0E-16),
             moIntFileAA_(0),
             moIntFileAB_(0),
@@ -66,7 +65,6 @@ IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
     // is possible in case any of these variables need to be changed before setup.
     memory_ = Process::environment.get_memory();
 
-    labels_  = Process::environment.molecule()->irrep_labels();
     nirreps_ = wfn->nirrep();
     nmo_     = wfn->nmo();
     nso_     = wfn->nso();
@@ -113,7 +111,6 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     nfzc_(0),
     nfzv_(0),
     spaces_(0),
-    labels_(0),
     tolerance_(1.0E-16),
     memory_(250 * 1024 * 1024),
     moIntFileAA_(0),
