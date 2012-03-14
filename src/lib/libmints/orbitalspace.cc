@@ -1,12 +1,17 @@
-#include <boost/shared_ptr.hpp>
+#include <psi4-dec.h>
+#include <libciomr/libciomr.h>
+#include <libqt/qt.h>
 #include "mints.h"
+#include "view.h"
 #include "orbitalspace.h"
 #include "orthog.h"
+
+#include <boost/tuple/tuple.hpp>
 
 namespace psi {
 
 OrbitalSpace::OrbitalSpace(const std::string& id,
-                           const std::string &name,   // Should this be 4 C's instead?
+                           const std::string &name,
                            const SharedMatrix &full_C,
                            const boost::shared_ptr<Vector> &evals,
                            const boost::shared_ptr<BasisSet> &basis,
@@ -73,7 +78,7 @@ const boost::shared_ptr<Vector>& OrbitalSpace::evals() const
     return evals_;
 }
 
-const boost::shared_ptr<BasisSet>& OrbitalSpace::basis() const
+const boost::shared_ptr<BasisSet>& OrbitalSpace::basisset() const
 {
     return basis_;
 }
@@ -90,7 +95,7 @@ const Dimension& OrbitalSpace::dim() const
 
 OrbitalSpace OrbitalSpace::transform(const OrbitalSpace& A, const boost::shared_ptr<BasisSet>& B)
 {
-    SharedMatrix SBA = overlap(B, A.basis());
+    SharedMatrix SBA = overlap(B, A.basisset());
     SBA->set_name("Sba");
     SharedMatrix SBB = overlap(B, B);
     SBB->set_name("SBB");
@@ -138,10 +143,13 @@ OrbitalSpace OrbitalSpace::transform(const OrbitalSpace& A, const boost::shared_
 
 SharedMatrix OrbitalSpace::overlap(const OrbitalSpace &space1, const OrbitalSpace &space2)
 {
-    IntegralFactory mix_ints(space1.basis(), space2.basis(), space1.basis(), space2.basis());
+    IntegralFactory mix_ints(space1.basisset(), space2.basisset());
+
+    PetiteList p1(space1.basisset(), space1.integral());
+    PetiteList p2(space2.basisset(), space2.integral());
 
     SharedMatrix Smat(new Matrix("Overlap between space1 and space2",
-                                 space1.C()->rowspi(), space2.C()->colspi()));
+                                 p1.SO_basisdim(), p2.SO_basisdim()));
 
     OneBodySOInt *S = mix_ints.so_overlap();
     S->compute(Smat);
@@ -176,17 +184,15 @@ void OrbitalSpace::print() const
     C_->print();
 }
 
-namespace SpaceBuilder
-{
 namespace { // anonymous
     OrbitalSpace orthogonalize(const std::string& id, const std::string& name,
                                const boost::shared_ptr<BasisSet>& bs,
-                               const boost::shared_ptr<IntegralFactory>& ints,
                                double lindep_tol)
     {
-        OneBodySOInt *o_engine = ints->so_overlap();
+        boost::shared_ptr<IntegralFactory> localfactory(new IntegralFactory(bs));
+        OneBodySOInt *o_engine = localfactory->so_overlap();
 
-        SOBasisSet* so_bs = new SOBasisSet(bs, ints);
+        SOBasisSet *so_bs = new SOBasisSet(bs, localfactory);
         const Dimension& SODIM = so_bs->petite_list()->SO_basisdim();
         delete so_bs;
 
@@ -195,48 +201,164 @@ namespace { // anonymous
         delete o_engine;
 
         fprintf(outfile, "    Orthogonalizing basis for space %s:\n", name.c_str());
-        OverlapOrthog orthog(OverlapOrthog::Symmetric,
-                             overlap,
-                             lindep_tol,
-                             0);
+        Dimension remaining = overlap->power(-0.5, lindep_tol);
 
-        SharedMatrix orthog_so = orthog.basis_to_orthog_basis();
-        fprintf(outfile, "    Minimum eigenvalue in the overlap matrix is %14.10E.\n\n", orthog.min_orthog_res());
+        View Cview(overlap, overlap->rowspi(), remaining);
+        SharedMatrix C = Cview();
+        C->set_name("Transformation matrix");
 
-        orthog_so->transpose_this();
+        PetiteList petite(bs, localfactory);
+        SharedMatrix orthog_ao = petite.evecs_to_AO_basis(C);
 
-        PetiteList petite(bs, ints);
-        SharedMatrix orthog_ao = petite.evecs_to_AO_basis(orthog_so);
-
-        return OrbitalSpace(id, name, orthog_ao, bs, ints);
+        return OrbitalSpace(id, name, orthog_ao, bs, localfactory);
     }
 
-    OrbitalSpace orthogonal_compliment(const OrbitalSpace& space1, const OrbitalSpace& space2, const std::string& id, const std::string& name, double lindep_tol)
+    OrbitalSpace orthogonal_compliment(const OrbitalSpace& space1, const OrbitalSpace& space2, const std::string& id, const std::string& name, const double& lindep_tol)
     {
         fprintf(outfile, "    Projecting out '%s' from '%s' to obtain space '%s'\n",
                 space1.name().c_str(), space2.name().c_str(), name.c_str());
 
         // If space1 is empty, return a copy of the original space.
         if (space1.dim().sum() == 0)
-            return OrbitalSpace(id, name, space2.C(), space2.evals(), space2.basis(), space2.integral());
+            return OrbitalSpace(id, name, space2.C(), space2.evals(), space2.basisset(), space2.integral());
 
-        // C12 = C1 * S12 * C2
-        SharedMatrix C12 = OrbitalSpace::overlap(space1, space2);
+        // O12 = O12
+        SharedMatrix O12 = OrbitalSpace::overlap(space1, space2);
+        SharedMatrix C12 = Matrix::create("C12", space1.C()->colspi(), space2.C()->colspi());
 
+        O12->print();
+        space1.C()->print();
+        space2.C()->print();
+
+        // C12 = C1t * S12 * C2
+        C12->transform(space1.C(), O12, space2.C());
+//        Matrix temp("temp", O12->rowspi(), space2.C()->colspi());
+//        temp.gemm(false, false, 1.0, O12, space2.C(), 0.0);
+//        temp.print();
+//        C12->gemm(true, false, 1.0, space1.C(), temp, 0.0);
         C12->print();
+
+        // SVD C12 =
+//        boost::tuple<SharedMatrix, SharedVector, SharedMatrix> svd_temps = C12->svd_temps();
+//        SharedMatrix U = svd_temps.get<0>();
+//        SharedVector Sigma = svd_temps.get<1>();
+//        SharedMatrix V = svd_temps.get<2>();
+
+        Dimension smallest(C12->nirrep());
+        const Dimension& rowd = C12->rowspi();
+        const Dimension& cold = C12->colspi();
+
+        for (int h=0, nirrep=C12->nirrep(); h<nirrep; ++h)
+            smallest[h] = rowd[h] < cold[h] ? rowd[h] : cold[h];
+
+        SharedMatrix U = Matrix::create("U", rowd, rowd);
+        SharedMatrix V = Matrix::create("V", cold, cold);
+        SharedVector Sigma = Vector::create("Sigma", smallest);
+
+        // Something is not right with our SVD call
+        // transpose our C12 to become fortran like
+        SharedMatrix C12fortran = C12->transpose();
+
+        for (int h=0; h<C12fortran->nirrep(); ++h) {
+            if (!C12fortran->rowspi(h) || !C12fortran->colspi(h))
+                continue;
+
+            int m = C12->rowspi(h);
+            int n = C12->colspi(h);
+            int k = (m < n ? m : n);
+
+            double** Ap = block_matrix(m,n);
+            ::memcpy((void*) Ap[0], (void*) C12fortran->pointer(h)[0], sizeof(double) * m * n);
+            double*  Sp = Sigma->pointer(h);
+            double** Up = U->pointer(h);
+            double** Vp = V->pointer(h);
+
+            int* iwork = new int[8L * k];
+
+            // Workspace Query
+            double lwork;
+            int info = C_DGESDD('A',m,n,Ap[0],m,Sp,Up[0],k,Vp[0],n,&lwork,-1,iwork);
+
+            double* work = new double[(int)lwork];
+
+            // SVD
+            info = C_DGESDD('A',m,n,Ap[0],m,Sp,Up[0],k,Vp[0],n,work,(int)lwork,iwork);
+
+            delete[] work;
+            delete[] iwork;
+
+            if (info != 0) {
+                if (info < 0) {
+                    fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                    fflush(outfile);
+                    abort();
+                }
+                if (info > 0) {
+                    fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+            free_block(Ap);
+        }
+        // Computes A
+//        C12->svd_a(U, Sigma, V);
+        U->print();
+        Sigma->print();
+        V->print();
+
+        // No need to transpose since we transposed C12
+//        V = V->transpose();
+        SharedMatrix Vao = Matrix::create("Vao", V->rowspi(), space2.C()->rowspi());
+        Vao->gemm(false, true, 1.0, V, space2.C(), 0.0);
+        Vao->print();
+
+        int nlindep=0;
+        double min_sigma = 1.0;
+        double max_sigma = 0.0;
+
+        Dimension remove(Sigma->nirrep(), "Number of orbitals to remove");
+
+        // Walk through S and determine how many to keep
+        for (int h=0, nirrep=Sigma->nirrep(); h<nirrep; ++h) {
+            int nzeros=0;
+            int nsigma=Sigma->dim(h);
+
+            for (int s=0; s<nsigma; ++s) {
+                double sigma = Sigma->get(h, s);
+
+                if (sigma < lindep_tol)
+                    nzeros++;
+                if (sigma < min_sigma)
+                  min_sigma = sigma;
+                if (sigma > max_sigma)
+                  max_sigma = sigma;
+            }
+
+            nlindep += nzeros;
+            remove[h] = nsigma - nzeros;
+        }
+
+        remove.print();
+        Dimension zero(Vao->nirrep());
+        View removes(Vao, Vao->rowspi()-remove, Vao->colspi(), remove, zero);
+
+        SharedMatrix C = removes()->transpose();
+        C->set_name("Final");
+        C->print();
+        return OrbitalSpace(id, name, C, space2.basisset(), space2.integral());
     }
 } // namespace anonymous
 
-    OrbitalSpace build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space, double lindep_tol)
+    OrbitalSpace OrbitalSpace::build_cabs_space(const OrbitalSpace &orb_space, const OrbitalSpace &ri_space, double lindep_tol)
     {
         return orthogonal_compliment(orb_space, ri_space, "p''", "CABS", lindep_tol);
     }
 
-    OrbitalSpace build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, boost::shared_ptr<IntegralFactory> ints, double lindep_tol)
+    OrbitalSpace OrbitalSpace::build_ri_space(boost::shared_ptr<BasisSet> aux_bs, boost::shared_ptr<BasisSet> obs, double lindep_tol)
     {
         boost::shared_ptr<BasisSet> ri_basis = obs + aux_bs;
-        return orthogonalize("p'", "RIBS", ri_basis, ints, lindep_tol);
+        return orthogonalize("p'", "RIBS", ri_basis, lindep_tol);
     }
-} // namespace SpaceBuilder
 
 } // namespace psi
