@@ -14,9 +14,9 @@ using namespace psi;
 
 void IntegralTransform::common_initialize()
 {
-    aaIntName_ = "";
-    abIntName_ = "";
-    bbIntName_ = "";
+    aaIntName_ = 0;
+    abIntName_ = 0;
+    bbIntName_ = 0;
 
     keepHtInts_ = 0;
 

@@ -445,9 +445,9 @@ IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const
     }
 
     // Reset the integral file names, before the next transformation is called
-    aaIntName_ = "";
-    abIntName_ = "";
-    bbIntName_ = "";
+    aaIntName_ = 0;
+    abIntName_ = 0;
+    bbIntName_ = 0;
 
     // Hand DPD control back to the user
     dpd_set_default(currentActiveDPD);
