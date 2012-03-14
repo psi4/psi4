@@ -2,6 +2,8 @@
 #include <cmath>
 #include <iterator>
 
+#include <psi4-dec.h>
+
 #include "matrix.h"
 #include "vector.h"
 #include "orthog.h"
@@ -59,14 +61,14 @@ void OverlapOrthog::compute_overlap_eig(Matrix& overlap_eigvec,
                     minabs = *iter;
                 m_sqrt[nfunctotal] = sqrt(*iter);
                 m_isqrt[nfunctotal] = 1.0/m_sqrt[nfunctotal];
-                m_index[nfunctotal] = std::distance(m->begin(), iter);
+                m_index[nfunctotal] = std::distance(m->begin_irrep(h), iter);
                 nfunc[h]++;
                 nfunctotal++;
             }
             else if (orthog_method_ == Symmetric) {
                 m_sqrt[nfunctotal] = 0.0;
                 m_isqrt[nfunctotal] = 0.0;
-                m_index[nfunctotal] = std::distance(m->begin(), iter);;
+                m_index[nfunctotal] = std::distance(m->begin_irrep(h), iter);;
                 nfunc[h]++;
                 nfunctotal++;
                 nlindep_++;
@@ -142,6 +144,12 @@ void OverlapOrthog::compute_symmetric_orthog()
     orthog_trans_->transform(*overlap_isqrt_eigval_mat.get(), overlap_eigvec);
     orthog_trans_inverse_ = SharedMatrix(new Matrix("Orthogonal Inverse Transformation", dim_, dim_));
     orthog_trans_inverse_->transform(*overlap_sqrt_eigval_mat.get(), overlap_eigvec);
+
+//    overlap_eigvec.print();
+//    overlap_isqrt_eigval.print();
+//    overlap_sqrt_eigval.print();
+//    orthog_trans_->print();
+//    orthog_trans_inverse_->print();
 }
 
 void OverlapOrthog::compute_canonical_orthog()
@@ -167,7 +175,7 @@ void OverlapOrthog::compute_canonical_orthog()
 
 void OverlapOrthog::compute_gs_orthog()
 {
-    throw NotImplementedException("OverlapOrthog::compute_gs_orthog");
+    throw NotImplementedException();
 }
 
 void OverlapOrthog::compute_orthog_trans()
