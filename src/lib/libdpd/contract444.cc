@@ -161,7 +161,7 @@ int dpd_contract444(dpdbuf4 *X, dpdbuf4 *Y, dpdbuf4 *Z,
     else {
 
       /* out-of-core algorithm coded only for NT and TN arrangements, not NN or TT */
-      if(!Ytrans && !Xtrans || Ytrans && Xtrans) { 
+      if((!Ytrans && !Xtrans) || (Ytrans && Xtrans)) { 
 	fprintf(stderr, "Out-of-core algorithm not yet coded for NN or TT DGEMM.\n");
 	dpd_error("contract444", stderr);
       }

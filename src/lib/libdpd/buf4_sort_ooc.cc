@@ -1106,6 +1106,8 @@ int dpd_buf4_sort_ooc(dpdbuf4 *InBuf, int outfilenum, enum indices index,
 #ifdef DPD_TIMER
   timer_off("buf4_sort");
 #endif
+
+  return 0;
 }
 
 }

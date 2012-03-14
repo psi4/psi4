@@ -198,14 +198,15 @@ int dpd_buf4_mat_irrep_rd(dpdbuf4 *Buf, int irrep)
       timer_on("buf_rd_12");
 #endif
 
-      if(Buf->file.incore && size) {
-          
-          /* We shouldn't actually have to do anything here since the
-             pointer to the data should already have been copied in
-             buf4_mat_irrep_init(). */
-          1;
-        }
-      else {
+//      if(Buf->file.incore && size) {
+//          
+//          /* We shouldn't actually have to do anything here since the
+//             pointer to the data should already have been copied in
+//             buf4_mat_irrep_init(). */
+//          continue;
+//        }
+//      else {
+        if (!Buf->file.incore && !size) {
 	  Buf->file.matrix[irrep] = Buf->matrix[irrep];
 	  dpd_file4_mat_irrep_rd(&(Buf->file), irrep);
 	}
