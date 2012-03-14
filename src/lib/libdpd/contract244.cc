@@ -361,7 +361,7 @@ int dpd_contract244(dpdfile2 *X, dpdbuf4 *Y, dpdbuf4 *Z, int sum_X, int sum_Y,
     }
   }
 	
-  if(((sum_Y == 1) || (sum_Y == 2)) && incore) dpd_trans4_close(&Yt);
+  if((sum_Y == 1) || (sum_Y == 2) && incore) dpd_trans4_close(&Yt);
 	
   if(Ztrans && incore) dpd_trans4_close(&Zt);
 	
