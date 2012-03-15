@@ -175,8 +175,20 @@ def run_cim(name, **kwargs):
    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_libcim/plugin_libcim.so"
    PsiMod.plugin_load("%s" % (plugfile))
 
+   # override symmetry:
+   molecule = PsiMod.get_active_molecule()
+   molecule.update_geometry()
+   molecule.reset_point_group('c1')
+   molecule.fix_orientation(1)
+   molecule.update_geometry()
+
+   # what type of cim?
+   if (name.lower() == 'ccsd'):
+      PsiMod.set_global_option('compute_triples', False)
+   if (name.lower() == 'ccsd(t)'):
+      PsiMod.set_global_option('compute_triples', True)
+
    # some options aren't set right...
-   #PsiMod.set_global_option('compute_triples', False)
    PsiMod.set_global_option('r_convergence', 1e-7)
    PsiMod.set_global_option('maxiter', 100)
 
@@ -184,23 +196,43 @@ def run_cim(name, **kwargs):
    PsiMod.set_global_option('cim_initialize', True)
    PsiMod.plugin("plugin_libcim.so")
 
-   cluster_energies = []
+   cluster_ccsd  = []
+   cluster_ccsdt = []
+   cluster_t     = []
+   built_ccsd   = 0.0
+   built_t      = 0.0
+   built_ccsdt  = 0.0
    built_energy = 0.0
    escf = PsiMod.get_variable('SCF TOTAL ENERGY')
    PsiMod.set_global_option('cim_initialize', False)
    cim_n = 0
    while cim_n < PsiMod.get_variable('CIM CLUSTERS'):
+       # run plugin_libcim:
        PsiMod.set_global_option('CIM_CLUSTER_NUM', cim_n)
        PsiMod.plugin("plugin_libcim.so")
-       cluster_energies.append(PsiMod.get_variable('CURRENT CLUSTER CORRELATION ENERGY'))
-       built_energy += PsiMod.get_variable('CURRENT CLUSTER CORRELATION ENERGY')
-       #print built_energy, cluster_energies
-       #print built_energy, cluster_energies[cim_n], built_energy + escf
+
+       # accumulate correlation energies
+       cluster_ccsd.append(PsiMod.get_variable('CURRENT CLUSTER CCSD CORRELATION ENERGY'))
+       built_ccsd  += PsiMod.get_variable('CURRENT CLUSTER CCSD CORRELATION ENERGY')
+       built_energy = built_ccsd
+       if (name.lower()=='ccsd(t)'):
+          cluster_ccsdt.append(PsiMod.get_variable('CURRENT CLUSTER CCSD(T) CORRELATION ENERGY'))
+          cluster_t.append(PsiMod.get_variable('CURRENT CLUSTER (T) CORRELATION ENERGY'))
+          built_ccsdt += PsiMod.get_variable('CURRENT CLUSTER CCSD(T) CORRELATION ENERGY')
+          built_t     += PsiMod.get_variable('CURRENT CLUSTER (T) CORRELATION ENERGY')
+          built_energy = built_ccsdt
+
        cim_n += 1
 
    PsiMod.set_variable('CURRENT ENERGY', built_energy+escf)
-   PsiMod.set_variable('TOTAL CIM CORRELATION ENERGY', built_energy)
-   return built_energy
+   PsiMod.set_variable('CIM-CCSD CORRELATION ENERGY', built_ccsd)
+   PsiMod.set_variable('CIM-CCSD TOTAL ENERGY', built_ccsd+escf)
+   if (name.lower()=='ccsd(t)'):
+      PsiMod.set_variable('CIM-CCSD(T) CORRELATION ENERGY', built_ccsdt)
+      PsiMod.set_variable('CIM-CCSD(T) TOTAL ENERGY', built_ccsdt+escf)
+      PsiMod.set_variable('CIM-(T) CORRELATION ENERGY', built_t)
+
+   return built_energy+escf
 
 
 # Integration with driver routines

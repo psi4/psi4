@@ -69,6 +69,12 @@ public:
     /// Destructor, frees memory
     ~Vector();
 
+    /**
+     * Convenient creation function return SharedMatrix
+     */
+    static SharedVector create(const std::string& name,
+                               const Dimension& dim);
+
     void init(int nirrep, int *dimpi);
     void init(int nirrep, const int *dimpi, const std::string& name = "");
     void init(const Dimension& v);

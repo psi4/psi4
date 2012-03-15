@@ -34,6 +34,8 @@ read_options(std::string name, Options &options)
      options.add_bool("CIM_INITIALIZE", false);
      /*- cim cluster number to operate on -*/
      options.add_int("CIM_CLUSTER_NUM", 0);
+     /*- cim central domain type: single or dual environment -*/
+     options.add_str("CIM_DOMAIN_TYPE", "SECIM");
   }
   return true;
 }
@@ -75,7 +77,7 @@ plugin_libcim(Options &options)
   double ecim = 0.0;
 
   int clusternum = -1;
-  for (int i=0; i<cim->ndoccact; i++){
+  for (int i=0; i<cim->maxndomains; i++){
       if (cim->skip[i]) continue;
 
       clusternum++;
@@ -127,15 +129,19 @@ plugin_libcim(Options &options)
        */
       RunCoupledCluster(options,cim);
       double dum = Process::environment.globals["CCSD CORRELATION ENERGY"];
-      if (options.get_bool("COMPUTE_TRIPLES"))
-         dum += Process::environment.globals["(T) CORRELATION ENERGY"];
-      //ecim += dum;
+      Process::environment.globals["CURRENT CLUSTER CCSD CORRELATION ENERGY"] = dum;
+      
       fprintf(outfile,"\n");
-      fprintf(outfile,"        Cluster {%i} energy contribution: %20.12lf\n",
-          clusternum,dum);
+      fprintf(outfile,"        Cluster {%i} CCSD energy contribution:     %20.12lf\n",clusternum,dum);
+      if (options.get_bool("COMPUTE_TRIPLES")){
+         double dumt = Process::environment.globals["(T) CORRELATION ENERGY"];
+         Process::environment.globals["CURRENT CLUSTER (T) CORRELATION ENERGY"] = dumt;
+         Process::environment.globals["CURRENT CLUSTER CCSD(T) CORRELATION ENERGY"] = dum + dumt;
+         fprintf(outfile,"        Cluster {%i} (T) energy contribution:      %20.12lf\n",clusternum,dumt);
+         fprintf(outfile,"        Cluster {%i} CCSD(T) energy contribution:  %20.12lf\n",clusternum,dum+dumt);
+      }
       fprintf(outfile,"\n");
       fflush(outfile);
-      Process::environment.globals["CURRENT CLUSTER CORRELATION ENERGY"] = dum;
 
       /*
        *  need to replace eps in wavefunction. this is stupid.

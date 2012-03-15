@@ -85,13 +85,12 @@ void CIM::BuildClusters(){
   Fock = boys->Fock->pointer();
 
   /*
-   * build occupied domains by dual-environment cim
+   * build occupied domains by single- or dual-environment cim
    */
-  //OccupiedDomains();
-  /*
-   * build occupied domains by single-environment cim
-   */
-  SECIM();
+  if (options_.get_str("CIM_DOMAIN_TYPE")=="DECIM")
+     OccupiedDomains();
+  else
+     SECIM();
 }
 
 }

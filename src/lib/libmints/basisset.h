@@ -303,6 +303,8 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
         return BasisSet();
     }
     BasisSet temp;
+
+    temp.name_ = a.name_ + " + " + b.name_;
     temp.molecule_ = a.molecule();
 
     // Copy a's shells to temp

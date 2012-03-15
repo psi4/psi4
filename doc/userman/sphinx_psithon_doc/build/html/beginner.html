@@ -9,7 +9,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Defining a Method Alias &mdash; Psithon for PSI4 documentation</title>
+    <title>1. Defining a Method Alias &mdash; Psithon for PSI4 documentation</title>
     
     <link rel="stylesheet" href="_static/psi4.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -28,7 +28,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/toggle_sections.js"></script>
-    <link rel="top" title="Psithon for PSI4 documentation" href="index.html" /> 
+    <link rel="top" title="Psithon for PSI4 documentation" href="index.html" />
+    <link rel="next" title="&lt;no title&gt;" href="bestpractices.html" />
+    <link rel="prev" title="General" href="index.html" /> 
     <script type="text/javascript" src="_static/copybutton.js"></script> 
 
   </head>
@@ -44,6 +46,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="bestpractices.html" title="&lt;no title&gt;"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="General"
+             accesskey="P">previous</a> |</li>
     <li><a href="index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
  
       </ul>
@@ -62,7 +70,7 @@
 files in <tt class="docutils literal"><span class="pre">$PSIDATADIR</span></tt>, including those described below.</p>
 </div>
 <div class="section" id="defining-a-method-alias">
-<h1>Defining a Method Alias<a class="headerlink" href="#defining-a-method-alias" title="Permalink to this headline">¶</a></h1>
+<h1>1. Defining a Method Alias<a class="headerlink" href="#defining-a-method-alias" title="Permalink to this headline">¶</a></h1>
 <p>Since quantum chemical methods in PSI4 are accessed through Python functions, and
 most important quantities are available as PSI variables, it is straightforward
 to create aliases to commonly run calculations or to define hybrid methods. The
@@ -142,7 +150,7 @@ with the following command.</p>
 </div>
 </div>
 <div class="section" id="creating-a-database">
-<h1>Creating a Database<a class="headerlink" href="#creating-a-database" title="Permalink to this headline">¶</a></h1>
+<h1>2. Creating a Database<a class="headerlink" href="#creating-a-database" title="Permalink to this headline">¶</a></h1>
 <p>A necessary consideration in constructing a database is the distinction
 between reagents and reactions. A reagent is a single molecular system
 (may be a dimer) whose geometry you are possession of and whose electronic
@@ -195,20 +203,9 @@ variable for the next step.</p>
 </li>
 <li><p class="first">Edit file database.py</p>
 <blockquote>
-<div><ul class="simple">
-<li>All routes. Optionally, rearrange the order of reactions in HRXN as this will define the order for the database.</li>
-<li>All routes. Optionally, add sources for geometries and any reference data to commented lines above the dbse variable.</li>
-<li>All routes. Optionally, the comment lines of TAGL may be edited in plain text.</li>
-<li>All routes. Optionally, fill in reference values (in kcal/mol) into BIND.</li>
-<li>All routes. Optionally, define alternate sets of reference values in the array BIND_ALTREF in the database.py file to be called in a psi4 input file as benchmark=&#8217;ALTREF&#8217; . See S22.py as an example.</li>
-<li>All routes. Optionally, fill in the least computationally expensive 2-3 reactions into HRXN_SM and the most expensive into HRXN_LG</li>
-<li>All routes. Optionally, define subsets of reactions in the array SUBSETARRAY = [&#8216;reaction&#8217;, &#8216;reaction&#8217;] in the database.py file to be called in a psi4 input file as subset=&#8217;SUBSETARRAY&#8217;. See NBC10.py as an example.</li>
-<li>All routes. Necessarily (if charge and multiplicity not read in through line2 = cgmp and nor all neutral singlets), assign correct charge and multiplicity to all reagents.</li>
-<li>Route 3. Necessarily (if any charge and multiplicity specified for the whole reagent is not intended for fragmentA with neutral singlet fragmentB), apportion charge and multiplicity properly between fragmentA and fragmentB. This is not likely necessary if all subsystems are neutral singlets.</li>
-<li>Route 2. Necessarily, define the reagents that contribute to each reaction by filling in the empty single-quotes in ACTV. Add or delete lines as necessary if for each reaction more or fewer than three reagents contribute. See NHTBH.py as an example.</li>
-<li>Route 2. Necessarily, define the mathematical contribution of reagents to reactions by adding a number (most often +1 or -1) for each reagent to the RXNM of each reaction. See NHTBH.py as an example.</li>
-<li>All routes. Necessarily, copy your new database into <tt class="docutils literal"><span class="pre">$PSIDATADIR/databases</span></tt>.</li>
-</ul>
+<div><p>According to your responses in to questions in the ixyz2database.pl script,
+several bullets will be printed of edits you necessarily or optionally
+should make. Copy your new database into <tt class="docutils literal"><span class="pre">$PSIDATADIR/databases</span></tt>.</p>
 </div></blockquote>
 </li>
 </ul>
@@ -222,10 +219,16 @@ variable for the next step.</p>
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Defining a Method Alias</a></li>
-<li><a class="reference internal" href="#creating-a-database">Creating a Database</a></li>
+<li><a class="reference internal" href="#">1. Defining a Method Alias</a></li>
+<li><a class="reference internal" href="#creating-a-database">2. Creating a Database</a></li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">General</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="bestpractices.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/beginner.txt"
@@ -259,6 +262,12 @@ variable for the next step.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="bestpractices.html" title="&lt;no title&gt;"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="General"
+             >previous</a> |</li>
     <li><a href="index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
  
       </ul>
@@ -267,7 +276,7 @@ variable for the next step.</p>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Mar 04, 2012.
+      Last updated on Mar 15, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

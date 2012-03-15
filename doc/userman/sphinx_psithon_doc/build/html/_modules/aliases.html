@@ -223,6 +223,71 @@
     <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin</span><span class="p">(</span><span class="s">&quot;plugin_omega.so&quot;</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="run_cim"><a class="viewcode-back" href="../index.html#aliases.run_cim">[docs]</a><span class="k">def</span> <span class="nf">run_cim</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+   <span class="sd">&quot;&quot;&quot;Eugene&#39;s CIM driven by Python&quot;&quot;&quot;</span>
+
+   <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+   <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+   <span class="n">plugfile1</span> <span class="o">=</span> <span class="s">&quot;/Users/loriab/linux/chem/db3/mpicim/plugin_localcc/plugin_localcc.so&quot;</span>
+   <span class="c">#plugfile1 = PsiMod.Process.environment[&quot;PSIDATADIR&quot;] + &quot;/../tests/plugin_localcc/plugin_localcc.so&quot;</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin_load</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">plugfile1</span><span class="p">))</span>
+
+   <span class="n">plugfile</span>  <span class="o">=</span> <span class="s">&quot;/Users/loriab/linux/chem/db3/mpicim/plugin_libcim/plugin_libcim.so&quot;</span>
+   <span class="c">#plugfile = PsiMod.Process.environment[&quot;PSIDATADIR&quot;] + &quot;/../tests/plugin_libcim/plugin_libcim.so&quot;</span>
+   <span class="k">print</span> <span class="n">plugfile1</span><span class="p">,</span> <span class="n">plugfile</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin_load</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">plugfile</span><span class="p">))</span>
+
+   <span class="c"># what type of cim?</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;ccsd&#39;</span><span class="p">):</span>
+      <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;compute_triples&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;ccsd(t)&#39;</span><span class="p">):</span>
+      <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;compute_triples&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+   <span class="c"># some options aren&#39;t set right...</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;r_convergence&#39;</span><span class="p">,</span> <span class="mf">1e-7</span><span class="p">)</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;maxiter&#39;</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+   <span class="n">energy</span><span class="p">(</span><span class="s">&#39;scf&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;cim_initialize&#39;</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin</span><span class="p">(</span><span class="s">&quot;plugin_libcim.so&quot;</span><span class="p">)</span>
+
+   <span class="n">cluster_ccsd</span>  <span class="o">=</span> <span class="p">[]</span>
+   <span class="n">cluster_ccsdt</span> <span class="o">=</span> <span class="p">[]</span>
+   <span class="n">cluster_t</span>     <span class="o">=</span> <span class="p">[]</span>
+   <span class="n">built_ccsd</span>   <span class="o">=</span> <span class="mf">0.0</span>
+   <span class="n">built_t</span>      <span class="o">=</span> <span class="mf">0.0</span>
+   <span class="n">built_ccsdt</span>  <span class="o">=</span> <span class="mf">0.0</span>
+   <span class="n">built_energy</span> <span class="o">=</span> <span class="mf">0.0</span>
+   <span class="n">escf</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;SCF TOTAL ENERGY&#39;</span><span class="p">)</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;cim_initialize&#39;</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+   <span class="n">cim_n</span> <span class="o">=</span> <span class="mi">0</span>
+   <span class="k">while</span> <span class="n">cim_n</span> <span class="o">&lt;</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CIM CLUSTERS&#39;</span><span class="p">):</span>
+       <span class="c"># run plugin_libcim:</span>
+       <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;CIM_CLUSTER_NUM&#39;</span><span class="p">,</span> <span class="n">cim_n</span><span class="p">)</span>
+       <span class="n">PsiMod</span><span class="o">.</span><span class="n">plugin</span><span class="p">(</span><span class="s">&quot;plugin_libcim.so&quot;</span><span class="p">)</span>
+
+       <span class="c"># accumulate correlation energies</span>
+       <span class="n">cluster_ccsd</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CLUSTER CCSD CORRELATION ENERGY&#39;</span><span class="p">))</span>
+       <span class="n">built_ccsd</span>  <span class="o">+=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CLUSTER CCSD CORRELATION ENERGY&#39;</span><span class="p">)</span>
+       <span class="n">built_energy</span> <span class="o">=</span> <span class="n">built_ccsd</span>
+       <span class="k">if</span> <span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s">&#39;ccsd(t)&#39;</span><span class="p">):</span>
+          <span class="n">cluster_ccsdt</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CLUSTER CCSD(T) CORRELATION ENERGY&#39;</span><span class="p">))</span>
+          <span class="n">cluster_t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CLUSTER (T) CORRELATION ENERGY&#39;</span><span class="p">))</span>
+          <span class="n">built_ccsdt</span> <span class="o">+=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CLUSTER CCSD(T) CORRELATION ENERGY&#39;</span><span class="p">)</span>
+          <span class="n">built_t</span>     <span class="o">+=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT CLUSTER (T) CORRELATION ENERGY&#39;</span><span class="p">)</span>
+          <span class="n">built_energy</span> <span class="o">=</span> <span class="n">built_ccsdt</span>
+
+       <span class="n">cim_n</span> <span class="o">+=</span> <span class="mi">1</span>
+
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">built_energy</span><span class="o">+</span><span class="n">escf</span><span class="p">)</span>
+   <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;TOTAL CIM-CCSD CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">built_ccsd</span><span class="p">)</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">==</span><span class="s">&#39;ccsd(t)&#39;</span><span class="p">):</span>
+      <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;TOTAL CIM-CCSD(T) CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">built_ccsdt</span><span class="p">)</span>
+      <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;TOTAL CIM-(T) CORRELATION ENERGY&#39;</span><span class="p">,</span> <span class="n">built_t</span><span class="p">)</span>
+
+   <span class="k">return</span> <span class="n">built_energy</span>
 
 
 <span class="c"># Integration with driver routines</span></div>
@@ -274,7 +339,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Mar 04, 2012.
+      Last updated on Mar 15, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

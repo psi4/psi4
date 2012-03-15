@@ -54,6 +54,11 @@ void CIM::SECIM(){
   // get list of heavy atoms
   boost::shared_ptr<Molecule>molecule_ = Process::environment.molecule();
   int natom = molecule_->natom();
+
+
+  // maximum possible number of domains:
+  maxndomains = natom;
+
   int *heavyatom = (int*)malloc(natom*sizeof(int));
   for (int i=0; i<natom; i++){
       if (molecule_->fZ(i)>1.0) heavyatom[i] = 1;
@@ -67,9 +72,9 @@ void CIM::SECIM(){
       }
   }
   // list of heavy atoms and nearby hydrogens
-  skip = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<ndoccact; i++) skip[i] = 0;
-  for (int i=natom; i<ndoccact; i++) skip[i] = 1;
+  skip = (int*)malloc(maxndomains*sizeof(int));
+  for (int i=0; i<maxndomains; i++) skip[i] = 0;
+  for (int i=natom; i<maxndomains; i++) skip[i] = 1;
   for (int i=0; i<natom; i++){
       if (!heavyatom[i]){
          skip[i]=1;
@@ -96,18 +101,18 @@ void CIM::SECIM(){
   free(VDWRadius);
 
   // list of central orbitals 
-  central = (int**)malloc(ndoccact*sizeof(int*));
-  ncentral = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<natom; i++){
+  central = (int**)malloc(maxndomains*sizeof(int*));
+  ncentral = (int*)malloc(maxndomains*sizeof(int));
+  for (int i=0; i<maxndomains; i++){
       central[i] = (int*)malloc(ndoccact*sizeof(int));
       for (int j=0; j<ndoccact; j++){
           central[i][j] = isempty;
       }
       ncentral[i] = 0;
   }
-  domain = (int**)malloc(ndoccact*sizeof(int*));
-  domainsize = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<ndoccact; i++){
+  domain = (int**)malloc(maxndomains*sizeof(int*));
+  domainsize = (int*)malloc(maxndomains*sizeof(int));
+  for (int i=0; i<maxndomains; i++){
       domain[i] = (int*)malloc(ndoccact*sizeof(int));
       domainsize[i] = 0;
       for (int j=0; j<ndoccact; j++){
@@ -154,9 +159,9 @@ void CIM::SECIM(){
   }
 
   // environmental orbitals
-  env = (int**)malloc(ndoccact*sizeof(int*));
-  nenv = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<ndoccact; i++){
+  env = (int**)malloc(maxndomains*sizeof(int*));
+  nenv = (int*)malloc(maxndomains*sizeof(int));
+  for (int i=0; i<maxndomains; i++){
       env[i] = (int*)malloc(ndoccact*sizeof(int));
       nenv[i] = 0;
       for (int j=0; j<ndoccact; j++){
@@ -192,13 +197,13 @@ void CIM::SECIM(){
   ndomains = natom;
 
   // list of central mo domains (not used in secim)
-  modomain = (int**)malloc(ndoccact*sizeof(int*));
-  nmodomain = (int*)malloc(ndoccact*sizeof(int));
-  for (int i=0; i<ndoccact; i++){
+  modomain = (int**)malloc(maxndomains*sizeof(int*));
+  nmodomain = (int*)malloc(maxndomains*sizeof(int));
+  for (int i=0; i<maxndomains; i++){
       modomain[i] = (int*)malloc(ndoccact*sizeof(int));
       nmodomain[i] = 0;
   }
-  for (int i=0; i<ndoccact; i++){
+  for (int i=0; i<maxndomains; i++){
       for (int j=0; j<ndoccact; j++){
           modomain[i][j] = isempty;
       }
@@ -245,7 +250,7 @@ void CIM::SECIM(){
   double cccost  = 0.0;
   double tcost   = 0.0;
   ndomains = 0;
-  for (int i=0; i<ndoccact; i++){
+  for (int i=0; i<maxndomains; i++){
       if (skip[i]) continue;
       ncentral[i] = 0;
       nmodomain[i] = 0;
@@ -268,7 +273,7 @@ void CIM::SECIM(){
   fprintf(outfile,"  ----------------------------------------------------------------------------\n");
   // print clusters:
   int clusternum=-1;
-  for (int i=0; i<ndoccact; i++){
+  for (int i=0; i<maxndomains; i++){
       if (skip[i]) continue;
       clusternum++;
 
