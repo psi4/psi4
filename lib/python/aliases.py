@@ -223,7 +223,7 @@ def run_cim(name, **kwargs):
       PsiMod.set_variable('TOTAL CIM-CCSD(T) CORRELATION ENERGY', built_ccsdt)
       PsiMod.set_variable('TOTAL CIM-(T) CORRELATION ENERGY', built_t)
 
-   return built_energy
+   return built_energy+escf
 
 
 # Integration with driver routines
