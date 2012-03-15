@@ -28,7 +28,9 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/toggle_sections.js"></script>
-    <link rel="top" title="Psithon for PSI4 documentation" href="index.html" /> 
+    <link rel="top" title="Psithon for PSI4 documentation" href="index.html" />
+    <link rel="next" title="&lt;no title&gt;" href="opt.html" />
+    <link rel="prev" title="&lt;no title&gt;" href="man_PsiMod.html" /> 
     <script type="text/javascript" src="_static/copybutton.js"></script> 
 
   </head>
@@ -44,6 +46,12 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="opt.html" title="&lt;no title&gt;"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="man_PsiMod.html" title="&lt;no title&gt;"
+             accesskey="P">previous</a> |</li>
     <li><a href="index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
  
       </ul>
@@ -74,11 +82,22 @@ other <tt class="docutils literal"><span class="pre">set</span></tt> command.</p
 exceptions are documented for the <tt class="docutils literal"><span class="pre">database()</span></tt> function, where case
 structure must match the database file.</p>
 </div>
-<div class="admonition note">
-<p class="first admonition-title">Note</p>
+<div class="admonition note" id="boolean">
+<span id="bool"></span><p class="first admonition-title">Note</p>
 <p class="last">Boolean arguments can be specified by <tt class="docutils literal"><span class="pre">yes</span></tt>, <tt class="docutils literal"><span class="pre">on</span></tt>, <tt class="docutils literal"><span class="pre">true</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt>
 for affirmative and <tt class="docutils literal"><span class="pre">no</span></tt>, <tt class="docutils literal"><span class="pre">off</span></tt>, <tt class="docutils literal"><span class="pre">false</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for negative,
 all insensitive to case.</p>
+</div>
+<div class="admonition note" id="conv-double">
+<p class="first admonition-title">Note</p>
+<p class="last">Certain convergence and tolerance keywords, of type <em>double</em> (real numbers), may be specified using either a real numberor an integer; an integer <em>X</em> is then treated as the number of converged decimal digits required. For example, to request an energy converged to <img class="math" src="_images/math/088b11f70f68b4113c42bb94aa403916bcafdd46.png" alt="10^{-6} E_h"/>, the user may set the <tt class="docutils literal"><span class="pre">e_convergence</span></tt> keyword to 0.000001, 1.0e-6, or 6.</p>
+</div>
+<div class="admonition note" id="dertype-string">
+<p class="first admonition-title">Note</p>
+<p class="last">The derivative level type for <a class="reference internal" href="opt.html#driver.optimize" title="driver.optimize"><tt class="xref py py-func docutils literal"><span class="pre">driver.optimize()</span></tt></a> and <a class="reference internal" href="index.html#driver.frequency" title="driver.frequency"><tt class="xref py py-func docutils literal"><span class="pre">driver.frequency()</span></tt></a>
+functions can be specified by <tt class="docutils literal"><span class="pre">energy</span></tt>, <tt class="docutils literal"><span class="pre">none</span></tt>, or <tt class="docutils literal"><span class="pre">0</span></tt> for 0th derivative,
+<tt class="docutils literal"><span class="pre">gradient</span></tt>, <tt class="docutils literal"><span class="pre">first</span></tt>, or <tt class="docutils literal"><span class="pre">1</span></tt> for 1st derivative, and <tt class="docutils literal"><span class="pre">hessian</span></tt>,
+<tt class="docutils literal"><span class="pre">second</span></tt>, or <tt class="docutils literal"><span class="pre">2</span></tt> for 2nd derivative.</p>
 </div>
 
 
@@ -87,6 +106,12 @@ all insensitive to case.</p>
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="man_PsiMod.html"
+                        title="previous chapter">&lt;no title&gt;</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="opt.html"
+                        title="next chapter">&lt;no title&gt;</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/notes.txt"
@@ -120,6 +145,12 @@ all insensitive to case.</p>
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
+        <li class="right" >
+          <a href="opt.html" title="&lt;no title&gt;"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="man_PsiMod.html" title="&lt;no title&gt;"
+             >previous</a> |</li>
     <li><a href="index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
  
       </ul>
@@ -128,7 +159,7 @@ all insensitive to case.</p>
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Mar 04, 2012.
+      Last updated on Mar 15, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
