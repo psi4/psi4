@@ -1,0 +1,216 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial 1: First steps &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../../index.html" /> 
+    <script type="text/javascript" src="../../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial-1-first-steps">
+<span id="tutorial1"></span><h1>Tutorial 1: First steps<a class="headerlink" href="#tutorial-1-first-steps" title="Permalink to this headline">¶</a></h1>
+<p>This first tutorial shows step-by-step how a new plot
+can be added to a restructured text document.</p>
+<div class="section" id="creating-the-skeleton-project">
+<h2>Creating the skeleton project<a class="headerlink" href="#creating-the-skeleton-project" title="Permalink to this headline">¶</a></h2>
+<p>First, we create a skeleton report in the directory tutorial:</p>
+<div class="highlight-python"><pre>sphinxreport-quickstart -d tutorial</pre>
+</div>
+<p>This will create a skeleton report layout in the directory <tt class="file docutils literal"><span class="pre">tutorial</span></tt>.
+Enter this directory and build the report as html:</p>
+<div class="highlight-python"><pre>make html</pre>
+</div>
+<p>This will create the skeleton report. View it by opening the file
+<tt class="file docutils literal"><span class="pre">tutorial/_build/html/index.html</span></tt> in a web browser.</p>
+</div>
+<div class="section" id="adding-a-graph">
+<h2>Adding a graph<a class="headerlink" href="#adding-a-graph" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, will insert a simple bar plot into a restructured text document.
+There are three steps involved:</p>
+<ol class="arabic simple">
+<li>Define a data source</li>
+<li>Test the data source</li>
+<li>Insert <tt class="docutils literal"><span class="pre">report</span></tt> directive in document</li>
+</ol>
+<div class="section" id="adding-a-data-source">
+<h3>Adding a data source<a class="headerlink" href="#adding-a-data-source" title="Permalink to this headline">¶</a></h3>
+<p>Create the file <tt class="file docutils literal"><span class="pre">Tutorial1.py</span></tt> in the <tt class="file docutils literal"><span class="pre">python</span></tt> subdirectory and add
+the following code:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">SphinxReport.DataTypes</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="nd">@returnLabeledData</span>
+<span class="k">def</span> <span class="nf">MyDataFunction</span><span class="p">():</span>
+   <span class="k">return</span> <span class="p">[</span> <span class="p">(</span><span class="s">&quot;header1&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="s">&quot;header2&quot;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span> <span class="p">]</span>
+</pre></div>
+</div>
+<p>In the first line the module <tt class="xref py py-mod docutils literal"><span class="pre">DataTypes</span></tt> is imported which
+defines decorators used for ensuring type consistency between
+data sources and <tt class="docutils literal"><span class="pre">Renderers</span></tt>. This is all that is required in this
+simple example.</p>
+<p>In the above example, the function <tt class="xref py py-meth docutils literal"><span class="pre">MyDataFunction()</span></tt>
+returns <tt class="docutils literal"><span class="pre">DataTypes.LabeledData</span></tt>, which is simply a list of tuples
+of <tt class="docutils literal"><span class="pre">(key,value)</span></tt> pairs. The type of data returned requires on the renderer.
+For example, a histogram requires a list or tuple of values.</p>
+</div>
+<div class="section" id="testing-the-data-source">
+<h3>Testing the data source<a class="headerlink" href="#testing-the-data-source" title="Permalink to this headline">¶</a></h3>
+<p>The utility <tt class="file docutils literal"><span class="pre">sphinxreport-test</span></tt> can be used to check if a
+data source works. To test your data source, type:</p>
+<div class="highlight-python"><pre>sphinxreport-test -t MyDataFunction -r bars</pre>
+</div>
+<p>on the command prompt in the root directory. This should create a
+bar plot (<tt class="docutils literal"><span class="pre">-r</span> <span class="pre">bars</span></tt> or <tt class="docutils literal"><span class="pre">--renderer=bars</span></tt> ) of your data source
+(<tt class="docutils literal"><span class="pre">-t</span> <span class="pre">MyDataFunction</span></tt> or <tt class="docutils literal"><span class="pre">--tracker=MyDataFunction</span></tt>).</p>
+<p><tt class="file docutils literal"><span class="pre">sphinxreport-test</span></tt> will also produce the restructured text
+required to render this graph within a restructured text document.
+This utility is very useful for fine-tuning the appearance
+of a plot before inserting it into the main document.</p>
+</div>
+<div class="section" id="creating-a-restructured-text-document">
+<h3>Creating a restructured text document<a class="headerlink" href="#creating-a-restructured-text-document" title="Permalink to this headline">¶</a></h3>
+<p>Create the following rst file:<cite>Tutorial1.rst</cite>:</p>
+<div class="highlight-python"><pre>==========
+Tutorial 1
+==========
+
+My first bar blot:
+
+.. report:: Tutorial1.MyDataFunction
+   :render: bars
+
+   My first bar plot.</pre>
+</div>
+<p>The the <tt class="docutils literal"><span class="pre">report</span></tt> directive is used to insert the graph into
+the restructured text document. Behind the scenes, <tt class="xref py py-mod docutils literal"><span class="pre">sphinx</span></tt> will call
+the <tt class="xref py py-mod docutils literal"><span class="pre">SphinxReport</span></tt> extension and request a barplot. The <tt class="xref py py-mod docutils literal"><span class="pre">SphinxReport</span></tt> in
+turn will look for a data source :meth:<tt class="docutils literal"><span class="pre">MyDataFunction</span></tt> in the :file:<tt class="docutils literal"><span class="pre">Tutorial1.py</span></tt>
+that should be somewhere in your :env:<tt class="docutils literal"><span class="pre">PYTHONPATH`.</span> <span class="pre">The</span> <span class="pre">default</span> <span class="pre">location</span> <span class="pre">for</span>
+<span class="pre">these</span> <span class="pre">is</span> <span class="pre">in</span> <span class="pre">the</span> <span class="pre">:file:``python</span></tt> subdirectory under the main installation
+directory. The content of the <tt class="docutils literal"><span class="pre">report</span></tt> directive is the figure or table caption.</p>
+<p>Add a link to the contents section in the <tt class="file docutils literal"><span class="pre">index.rst</span></tt> and rebuild the sources:</p>
+<div class="highlight-python"><pre>make html</pre>
+</div>
+<p>There should now be a tutorial1 section in your document
+with a barplot. See <a class="reference internal" href="Tutorial1Demo.html#tutorial1demo"><em>Tutorial 1</em></a> how it should look
+like.</p>
+<p>The next Tutorial (<a class="reference internal" href="Tutorial2.html#tutorial2"><em>Tutorial 2: Using tracks</em></a>) will cover more complex
+data sources and plots.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial 1: First steps</a><ul>
+<li><a class="reference internal" href="#creating-the-skeleton-project">Creating the skeleton project</a></li>
+<li><a class="reference internal" href="#adding-a-graph">Adding a graph</a><ul>
+<li><a class="reference internal" href="#adding-a-data-source">Adding a data source</a></li>
+<li><a class="reference internal" href="#testing-the-data-source">Testing the data source</a></li>
+<li><a class="reference internal" href="#creating-a-restructured-text-document">Creating a restructured text document</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/SphinxReport-1.0.a3/doc/Tutorial1.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Mar 15, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

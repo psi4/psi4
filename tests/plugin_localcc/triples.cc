@@ -23,7 +23,13 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   int o = ccsd->ndoccact;
   int v = ccsd->nvirt_no;
 
-  double **Rii = ccsd->wfn_->Rii->pointer();
+  double **tempRii = ccsd->wfn_->Rii->pointer();
+  double *Rii = (double*)malloc(o*o*sizeof(double));
+  for (int i=0; i<o; i++){
+      for (int j=0; j<o; j++){
+          Rii[i*o+j] = tempRii[i][j];
+      }
+  }
   double *t1 = ccsd->t1;
   double *F  = ccsd->eps;
   double *E2ijak,**E2abci;
@@ -73,9 +79,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   }
 
   E2abci = (double**)malloc(nthreads*sizeof(double*));
-  // some v^3 intermediates
+  // some o^3 intermediates
   double **Z  = (double**)malloc(nthreads*sizeof(double*));
   double **Z2 = (double**)malloc(nthreads*sizeof(double*));
+  double **Z3 = (double**)malloc(nthreads*sizeof(double*));
+  double **Z4 = (double**)malloc(nthreads*sizeof(double*));
 
   boost::shared_ptr<PSIO> psio(new PSIO());
   double*tempE2=(double*)malloc(o*o*o*v*sizeof(double));
@@ -91,8 +99,10 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
 
   for (int i=0; i<nthreads; i++){
       E2abci[i] = (double*)malloc(v*v*v*sizeof(double));
-      Z[i]      = (double*)malloc(v*v*v*sizeof(double));
-      Z2[i]     = (double*)malloc(v*v*v*sizeof(double));
+      Z[i]      = (double*)malloc(o*o*o*sizeof(double));
+      Z2[i]     = (double*)malloc(o*o*o*sizeof(double));
+      Z3[i]     = (double*)malloc(o*o*o*sizeof(double));
+      Z4[i]     = (double*)malloc(o*o*o*sizeof(double));
   }
 
 
@@ -127,10 +137,11 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   int pct10,pct20,pct30,pct40,pct50,pct60,pct70,pct80,pct90;
   pct10=pct20=pct30=pct40=pct50=pct60=pct70=pct80=pct90=0;
 
+//heyheyhey
   int nabc = 0;
   for (int a=0; a<v; a++){
-      for (int b=0; b<v; b++){
-          for (int c=0; c<v; c++){
+      for (int b=0; b<=a; b++){
+          for (int c=0; c<=b; c++){
               nabc++;
           }
       }
@@ -138,8 +149,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   int**abc = (int**)malloc(nabc*sizeof(int*));
   nabc = 0;
   for (int a=0; a<v; a++){
-      for (int b=0; b<v; b++){
-          for (int c=0; c<v; c++){
+      for (int b=0; b<=a; b++){
+          for (int c=0; c<=b; c++){
               abc[nabc] = (int*)malloc(3*sizeof(int));
               abc[nabc][0] = a;
               abc[nabc][1] = b;
@@ -246,7 +257,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
-                     double dum = 0.0;
+                     //double dum = 0.0;
                      //for (int e=0; e<v; e++){
                      //    dum += E2abci[thread][i*v+e] * tempt[c*o*o*v+e*o*o+k*o+j];
                      //}
@@ -267,10 +278,10 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
          F_DGEMM('t','t',o,o*o,v,1.0,E2abci[thread],v,tempt+b*o*o*v,o*o,0.0,Z2[thread],o);
          F_DGEMM('t','n',o*o,o,o,-1.0,E2ijak+a*o*o*o,o,tempt+b*o*o*v+c*o*o,o,1.0,Z2[thread],o*o);
          //(ijk)(abc)
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     double dum = 0.0;
+         //for (int i=0; i<o; i++){
+         //    for (int j=0; j<o; j++){
+         //        for (int k=0; k<o; k++){
+                     //double dum = 0.0;
                      //for (int e=0; e<v; e++){
                      //    dum += E2abci[thread][i*v+e] * tempt[b*o*o*v+e*o*o+j*o+k];
                      //}
@@ -278,9 +289,9 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                      //    dum -= E2ijak[a*o*o*o+k*o*o+i*o+m] * tempt[b*o*o*v+c*o*o+j*o+m];
                      //}
                      //Z[thread][i*o*o+j*o+k] += Z2[thread][j*o*o+k*o+i];
-                 }
-             }
-         }
+         //        }
+         //    }
+         //}
          //(ikj)(acb)
          addr = psio_get_address(PSIO_ZERO,(long int)(a*v*v*o+b*v*o)*sizeof(double));
          mypsio->read(PSIF_ABCI4,"E2abci4",(char*)&E2abci[thread][0],o*v*sizeof(double),addr,&addr);
@@ -298,80 +309,135 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
              }
          }
 
-//heyheyhey
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     Z2[thread][i*o*o+j*o+k] = 4.0/3.0*Z[thread][i*o*o+j*o+k]
-                                             -     2.0*Z[thread][i*o*o+k*o+j]
-                                             + 2.0/3.0*Z[thread][j*o*o+k*o+i];
-                 }
-             }
-         }
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     double denom = F[i]+F[j]+F[k]-F[a+o]-F[b+o]-F[c+o];
-                     Z[thread][i*o*o+j*o+k] /= denom;
-                 }
-             }
-         }
-         // transform Z and Z2 back to lmo basis
-         F_DGEMM('n','t',o*o,o,o,1.0,Z[thread],o*o,&Rii[0][0],o,0.0,E2abci[thread],o*o);
-         F_DCOPY(o*o*o,E2abci[thread],1,Z[thread],1);
-         F_DGEMM('n','t',o*o,o,o,1.0,Z2[thread],o*o,&Rii[0][0],o,0.0,E2abci[thread],o*o);
-         F_DCOPY(o*o*o,E2abci[thread],1,Z2[thread],1);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     etrip[thread] += Z[thread][i*o*o+j*o+k]*Z2[thread][i*o*o+j*o+k]*ccsd->wfn_->centralfac[i];
-                 }
-             }
-         }
          
-         // the (t) part ...
-         for (int i=0; i<o; i++){
-             double tai = t1[a*o+i];
-             for (int j=0; j<o; j++){
-                 double tbj = t1[b*o+j];
-                 double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
-                 for (int k=0; k<o; k++){
-                     Z2[thread][i*o*o+j*o+k] = (tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
-                                                tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
-                                                t1[c*o+k]*E2iajb);
-                 }
-             }
-         }
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     E2abci[thread][i*o*o+j*o+k] = 4.0/3.0*Z2[thread][i*o*o+j*o+k]
-                                                 -     2.0*Z2[thread][i*o*o+k*o+j]
-                                                 + 2.0/3.0*Z2[thread][j*o*o+k*o+i];
-                 }
-             }
-         }
-         // transform Z2 back to lmo basis
-         F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,&Rii[0][0],o,0.0,Z2[thread],o*o);
-         for (int i=0; i<o; i++){
-             for (int j=0; j<o; j++){
-                 for (int k=0; k<o; k++){
-                     etrip[thread] += Z[thread][i*o*o+j*o+k]*Z2[thread][i*o*o+j*o+k]*ccsd->wfn_->centralfac[i];
-                 }
-             }
-         }
+//heyheyhey
+         // the singles part of (t) ...
          /*F_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
          for (int i=0; i<o; i++){
              double tai = t1[a*o+i];
              for (int j=0; j<o; j++){
-                 int ij = 1+(i==j);
                  double tbj = t1[b*o+j];
                  double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
                  for (int k=0; k<o; k++){
                      Z2[thread][i*o*o+j*o+k] += (tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
                                                  tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
                                                  t1[c*o+k]*E2iajb);
-                     Z2[thread][i*o*o+j*o+k] /= (ij + (j==k) + (i==k));
+                 }
+             }
+         }
+         double dabc = -F[a+o]-F[b+o]-F[c+o];
+         for (int i=0; i<o; i++){
+             double dabci = dabc + F[i];
+             for (int j=0; j<o; j++){
+                 double dabcij = dabci + F[j];
+                 for (int k=0; k<o; k++){
+                     double denom = dabcij + F[k];
+                     Z[thread][i*o*o+j*o+k] /= denom;
+                 }
+             }
+         }
+         // transform Z and Z2 back to lmo basis
+         F_DGEMM('n','t',o*o,o,o,1.0,Z[thread],o*o,Rii,o,0.0,E2abci[thread],o*o);
+         for (int i=0; i<o; i++){
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
+                     Z[thread][i*o*o+j*o+k] = 2.0*Z2[thread][i*o*o+j*o+k]
+                                            - 3.0*Z2[thread][i*o*o+k*o+j]
+                                            +     Z2[thread][j*o*o+k*o+i];
+                     //E2abci[thread][i*o*o+j*o+k] = 2.0*Z2[thread][i*o*o+j*o+k]
+                     //                       - 3.0*Z2[thread][i*o*o+k*o+j]
+                     //                       +     Z2[thread][j*o*o+k*o+i];
+                 }
+             }
+         }
+         F_DGEMM('n','t',o*o,o,o,1.0,Z[thread],o*o,Rii,o,0.0,Z2[thread],o*o);
+
+         // evaluate (t)
+         for (int i=0; i<o; i++){
+             double dum = 0.0;
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
+                     dum +=  E2abci[thread][i*o*o+j*o+k] * Z2[thread][i*o*o+j*o+k];
+                     //for (int ip=0; ip<o; ip++){
+                     //for (int ipp=0; ipp<o; ipp++){
+                     //    dum +=  E2abci[thread][i*o*o+j*o+ip] * Z[thread][i*o*o+j*o+ipp]*Rii[ip*o+k]*Rii[ipp*o+k]*ccsd->wfn_->centralfac[k];
+                     //}
+                     //}
+                 }
+             }
+             etrip[thread] += dum * 2.0/3.0 * ccsd->wfn_->centralfac[i];
+         }*/
+
+//heyheyhey
+         F_DCOPY(o*o*o,Z[thread],1,Z2[thread],1);
+         double dabc = -F[a+o]-F[b+o]-F[c+o];
+         for (int i=0; i<o; i++){
+             double dabci = dabc+F[i];
+             for (int j=0; j<o; j++){
+                 double dabcij = dabci+F[j];
+                 for (int k=0; k<o; k++){
+                     double denom = dabcij+F[k];
+                     Z[thread][i*o*o+j*o+k] /= denom;
+                 }
+             }
+         }
+         for (int i=0; i<o; i++){
+             double tai = t1[a*o+i];
+             for (int j=0; j<o; j++){
+                 double tbj = t1[b*o+j];
+                 double E2iajb = E2klcd[i*v*v*o+a*v*o+j*v+b];
+                 for (int k=0; k<o; k++){
+                     Z2[thread][i*o*o+j*o+k] += (tai      *E2klcd[j*v*v*o+b*v*o+k*v+c] +
+                                                 tbj      *E2klcd[i*v*v*o+a*v*o+k*v+c] +
+                                                 t1[c*o+k]*E2iajb);
+                 }
+             }
+         }
+
+         F_DCOPY(o*o*o,Z[thread],1,Z3[thread],1);
+         for (int i=0; i<o; i++){
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
+                     Z3[thread][i*o*o+j*o+k] *= (1.0+0.5*(i==j)*(j==k));
+                 }
+             }
+         }
+         
+         
+         int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
+
+         // transform one index of Z2 and Z3 to lmo basis:
+         F_DGEMM('n','t',o*o,o,o,1.0,Z2[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+         F_DCOPY(o*o*o,Z4[thread],1,E2abci[thread],1);
+         F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+
+         // contribute to energy:
+         double tripval = 0.0;
+         for (int i=0; i<o; i++){
+             double dum = 0.0;
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
+                     long int ijk = i*o*o+j*o+k;
+                     dum         += Z4[thread][ijk] * E2abci[thread][ijk];
+                     //dum         += Z2[thread][ijk] * Z3[thread][ijk];
+                 }
+             }
+             tripval += dum * ccsd->wfn_->centralfac[i];
+         }
+         etrip[thread] += 3.0*tripval*abcfac;
+
+         // Z3(ijk) = -2(Z(ijk) + jki + kij) + ikj + jik + kji
+         for (int i=0; i<o; i++){
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
+                     long int ijk = i*o*o+j*o+k;
+                     long int jki = j*o*o+k*o+i;
+                     long int kij = k*o*o+i*o+j;
+                     long int ikj = i*o*o+k*o+j;
+                     long int jik = j*o*o+i*o+k;
+                     long int kji = k*o*o+j*o+i;
+                     Z3[thread][ijk] = -2.0*(Z[thread][ijk] + Z[thread][jki] + Z[thread][kij])
+                                    +        Z[thread][ikj] + Z[thread][jik] + Z[thread][kji];
                  }
              }
          }
@@ -380,79 +446,79 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     long int jik = j*o*o+i*o+k;
                      long int ikj = i*o*o+k*o+j;
-                     long int kji = k*o*o+j*o+i;
-
-                     E2abci[thread][ijk] = Z2[thread][ikj] + Z2[thread][jik] + Z2[thread][kji];
+                     E2abci[thread][ijk] = Z2[thread][ikj]*0.5*(1.0+0.5*(i==j)*(j==k));
                  }
              }
          }
-         double dabc = -F[a+o]-F[b+o]-F[c+o];
-         // separate out these bits to save v^3 storage
-         double tripval = 0.0;
-         int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
+
+         // transform one index of of E2abci and Z3 to lmo basis:
+         F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+         F_DCOPY(o*o*o,Z4[thread],1,Z3[thread],1);
+         F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
+
+         // contribute to energy:
+         tripval = 0.0;
          for (int i=0; i<o; i++){
-             double dabci = dabc+F[i];
-             for (int j=0; j<=i; j++){
-                 double dabcij = dabci+F[j];
-                 for (int k=0; k<=j; k++){
-
+             double dum = 0.0;
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     long int jki = j*o*o+k*o+i;
-                     long int kij = k*o*o+i*o+j;
-                     long int ikj = i*o*o+k*o+j;
-                     long int jik = j*o*o+i*o+k;
-                     long int kji = k*o*o+j*o+i;
-                     double dum      = Z[thread][ijk]*Z2[thread][ijk] + Z[thread][ikj]*Z2[thread][ikj]
-                                     + Z[thread][jik]*Z2[thread][jik] + Z[thread][jki]*Z2[thread][jki]
-                                     + Z[thread][kij]*Z2[thread][kij] + Z[thread][kji]*Z2[thread][kji];
-
-                     dum            =  (E2abci[thread][ijk])
-                                    * ((Z[thread][ijk] + Z[thread][jki] + Z[thread][kij])*-2.0
-                                    +  (Z[thread][ikj] + Z[thread][jik] + Z[thread][kji]))
-                                    + 3.0*dum;
-                     double denom = dabcij+F[k];
-                     tripval += dum/denom;
+                     dum         += Z4[thread][ijk] * Z3[thread][ijk];
+                     //dum         += E2abci[thread][ijk] * Z3[thread][ijk];
                  }
              }
+             tripval += dum * ccsd->wfn_->centralfac[i];
          }
          etrip[thread] += tripval*abcfac;
+
          // the second bit
          for (int i=0; i<o; i++){
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     long int jki = j*o*o+k*o+i;
-                     long int kij = k*o*o+i*o+j;
-
-                     E2abci[thread][ijk]  = Z2[thread][ijk] + Z2[thread][jki] + Z2[thread][kij];
+                     E2abci[thread][ijk] = Z2[thread][ijk]*0.5*(1.0+0.5*(i==j)*(j==k));
                  }
              }
          }
-         tripval = 0.0;
+
+         // Z4 = Z(ijk)+jki+kij - 2( (ikj)+(jik)+(kji) )
          for (int i=0; i<o; i++){
-             double dabci = dabc+F[i];
-             for (int j=0; j<=i; j++){
-                 double dabcij = dabci+F[j];
-                 for (int k=0; k<=j; k++){
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
                      long int jki = j*o*o+k*o+i;
                      long int kij = k*o*o+i*o+j;
                      long int ikj = i*o*o+k*o+j;
                      long int jik = j*o*o+i*o+k;
                      long int kji = k*o*o+j*o+i;
-
-                     double dum     = (E2abci[thread][ijk])
-                                    * (Z[thread][ijk] + Z[thread][jki] + Z[thread][kij]
-                                    + (Z[thread][ikj] + Z[thread][jik] + Z[thread][kji])*-2.0);
-
-                     double denom = dabcij+F[k];
-                     tripval += dum/denom;
+                     Z4[thread][ijk] =        Z[thread][ijk] + Z[thread][jki] + Z[thread][kij]
+                                     - 2.0 * (Z[thread][ikj] + Z[thread][jik] + Z[thread][kji]);
                  }
              }
          }
-         etrip[thread] += tripval*abcfac;*/
+
+
+         // transform one index of E2abci and Z4 to lmo basis:
+         F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,Rii,o,0.0,Z3[thread],o*o);
+         F_DGEMM('n','t',o*o,o,o,1.0,Z4[thread],o*o,Rii,o,0.0,Z2[thread],o*o);
+
+         // contribute to energy:
+         tripval = 0.0;
+         for (int i=0; i<o; i++){
+             double dum = 0.0;
+             for (int j=0; j<o; j++){
+                 for (int k=0; k<o; k++){
+                     long int ijk = i*o*o+j*o+k;
+                     dum         += Z2[thread][ijk] * Z3[thread][ijk];
+                     //dum         += E2abci[thread][ijk] * Z4[thread][ijk];
+                 }
+             }
+             tripval += dum * ccsd->wfn_->centralfac[i];
+         }
+         etrip[thread] += tripval*abcfac;
+//heyheyhey
+
          // print out update 
          if (thread==0){
             int print = 0;
@@ -509,6 +575,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   ccsd->et = et;
 
   // free memory:
+  free(Rii);
   if (ccsd->t2_on_disk){
      free(ccsd->tb);
   }
@@ -517,9 +584,13 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
       free(E2abci[i]);
       free(Z[i]);
       free(Z2[i]);
+      free(Z3[i]);
+      free(Z4[i]);
   }
   free(Z);
   free(Z2);
+  free(Z3);
+  free(Z4);
   free(E2abci);
   free(etrip);
             

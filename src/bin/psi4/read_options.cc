@@ -1782,6 +1782,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
      options.add_bool("CIM_INITIALIZE", false);
      /*- cim cluster number to operate on -*/
      options.add_int("CIM_CLUSTER_NUM", 0);
+     /*- cim central domain type: single or dual environment -*/
+     options.add_str("CIM_DOMAIN_TYPE", "SECIM");
   }
   if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
      /*- Wavefunction type !expert -*/
