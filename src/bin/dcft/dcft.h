@@ -75,7 +75,7 @@ protected:
     double update_scf_density(bool damp = false);
     // DCFT analytic gradient subroutines
     void compute_gradient();
-    void orbital_response_guess();
+    void response_guess();
     void gradient_init();
     void compute_density();
     void compute_lagrangian_OV();
@@ -84,6 +84,7 @@ protected:
     void compute_orbital_response_intermediates();
     void update_orbital_response();
     void cumulant_response_guess();
+    double compute_response_coupling();
     void compute_cumulant_response_intermediates();
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
@@ -109,6 +110,8 @@ protected:
     int mindiisvecs_;
     /// The maximum number of iterations
     int maxiter_;
+    /// The current number of macroiteration for energy or gradient computation
+    int iter_;
     /// The number of occupied alpha orbitals per irrep
     int *naoccpi_;
     /// The number of occupied beta orbitals per irrep
