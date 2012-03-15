@@ -76,6 +76,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
+  /*- List of properties to compute -*/
+  options.add("PROPERTIES", new ArrayType());
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
