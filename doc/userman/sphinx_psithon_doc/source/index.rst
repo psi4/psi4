@@ -5,6 +5,23 @@
 
 .. toctree::
    :maxdepth: 2
+   :numbered:
+   :titlesonly:
+   :glob:
+   :hidden:
+
+   beginner
+   bestpractices
+   cbs
+   cbs_eqn
+   cp
+   db
+   index
+   intercalls
+   man_PsiMod
+   notes
+   opt
+   sowreap
 
 .. image:: PSI4_3.png
    :width: 100 %
@@ -40,6 +57,8 @@
 .. These are abbreviations for arrows indicating default values
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
+.. More abbreviations
+.. |PSIfour| replace:: PSI4
 
 =======
 General
@@ -55,6 +74,8 @@ interact with that output, and how the ordinary (or ambitious) user can
 extent PSI4's functionality.
 
 .. include:: notes.rst
+
+.. include:: sapt.rst
 
 ======
 Energy
@@ -90,7 +111,7 @@ Counterpoise Correct
 Database
 ========
 
-.. include:: ./db.rst
+.. hideinclude:: ./db.rst
 
 ==================
 Complete Basis Set
@@ -138,6 +159,9 @@ Psithon Programming Best Practices
 =====================
 Expert: PsiMod Module
 =====================
+
+A Secondary Header
+==================
 
 .. hideliteralinclude:: ./man_PsiMod.rst 
 
@@ -267,4 +291,16 @@ Indices and Tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+==========
+References
+==========
+
+.. include:: ref.rst
+
+========
+Glossary
+========
+
+.. include:: options_c.rst
 

@@ -28,6 +28,9 @@ void CIM::OccupiedDomains(){
   // threshold for central domains
   thresh1 = options_.get_double("THRESH1");
 
+  // maximum number of domains:
+  maxndomains = ndoccact;
+
   domain = (int**)malloc(ndoccact*sizeof(int*));
   domainsize = (int*)malloc(ndoccact*sizeof(int));
   for (int i=0; i<ndoccact; i++){
