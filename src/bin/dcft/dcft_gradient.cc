@@ -363,23 +363,19 @@ DCFTSolver::response_guess()
 
     // Copy the latest tau as a guess for relaxed tau
 
-    dpd_file2_init(&T, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
     dpd_file2_copy(&T,PSIF_DCFT_DPD,"pTau <O|O>");
     dpd_file2_close(&T);
 
-    dpd_file2_init(&T, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
     dpd_file2_copy(&T,PSIF_DCFT_DPD,"pTau <o|o>");
     dpd_file2_close(&T);
 
-    dpd_file2_init(&T, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
     dpd_file2_copy(&T,PSIF_DCFT_DPD,"pTau <V|V>");
     dpd_file2_close(&T);
 
-    dpd_file2_init(&T, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
+    dpd_file2_init(&T, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
     dpd_file2_copy(&T,PSIF_DCFT_DPD,"pTau <v|v>");
     dpd_file2_close(&T);
 
@@ -406,22 +402,15 @@ DCFTSolver::compute_density()
                   ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
     dpd_buf4_init(&Zbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
-    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
-    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau <o|o>");
-    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau <V|V>");
-    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
-    dpd_file2_init(&pT_OO, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "pTau <O|O>");
-    dpd_file2_init(&pT_oo, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "pTau <o|o>");
-    dpd_file2_init(&pT_VV, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "pTau <V|V>");
-    dpd_file2_init(&pT_vv, PSIF_DCFT_DPD, 0,
-                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "pTau <v|v>");
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+    dpd_file2_init(&pT_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "pTau <O|O>");
+    dpd_file2_init(&pT_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "pTau <o|o>");
+    dpd_file2_init(&pT_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
+    dpd_file2_init(&pT_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
 
     dpd_file2_mat_init(&T_OO);
     dpd_file2_mat_init(&T_oo);
@@ -1692,20 +1681,19 @@ DCFTSolver::iterate_orbital_response()
     dpd_file2_close(&Xai);
     dpd_file2_close(&Xia);
 
-    // Compute fake energy to control the convergence
     // Parameters are hard-coded for now. Let the user control them in the future
     double rms = 0.0;
     double convergence = 1.0E-14;
     bool converged = false;
-    int maxiter = 50;
+    int maxcycle = 50;
 
      // Start iterations
     fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ia RMS");
     fflush(outfile);
 
-    int iter = 0;
+    int cycle = 0;
     do {
-        iter++;
+        cycle++;
 
         SharedMatrix za_new, zb_new, za_old, zb_old;
 
@@ -1739,10 +1727,10 @@ DCFTSolver::iterate_orbital_response()
         converged = (fabs(rms) < fabs(convergence));
 
         // Print iterative trace
-        fprintf(outfile, "  %4d %11.3E\n", iter, rms);
+        fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
 
         // Termination condition
-        if (converged || iter >= maxiter) break;
+        if (converged || cycle >= maxcycle) break;
 
     } while (true);
 
@@ -2436,11 +2424,45 @@ DCFTSolver::iterate_cumulant_response()
 
     // iteratively solve for cumulant reponse
 
-    // update perturbed tau
+    // Parameters are hard-coded for now. Let the user control them in the future
+    double rms = 0.0;
+    double convergence = 1.0E-14;
+    bool converged = false;
+    int maxcycle = 50;
 
-    compute_cumulant_response_intermediates();
+     // Start iterations
+    fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_iajb RMS");
+    fflush(outfile);
 
-    // update cumulant response
+    int cycle = 0;
+    do {
+        cycle++;
+
+        // Build perturbed tau and delta tau
+        build_perturbed_tau();
+
+        // Compute intermediates
+        compute_cumulant_response_intermediates();
+
+        // Update the cumulant response
+        update_cumulant_response();
+
+        // Check the convergence
+
+//        // Print iterative trace
+//        fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
+
+//        // Termination condition
+//        if (converged || cycle >= maxcycle) break;
+        converged = true;
+        break;
+
+    } while (true);
+
+    fprintf(outfile, "\n");
+
+    if (converged) fprintf(outfile, "    DCFT orbital response equations converged.\n\n");
+    else throw PSIEXCEPTION("DCFT orbital response equations did not converge");
 
 
 }
@@ -2466,7 +2488,6 @@ DCFTSolver::cumulant_response_guess()
     dpd_buf4_close(&D);
     dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
-    dpd_buf4_print(&Z,outfile,1);
     dpd_buf4_add(&Z, &dC, 1.0);
     dpd_buf4_close(&dC);
     dpd_buf4_print(&Z,outfile,1);
@@ -2481,7 +2502,6 @@ DCFTSolver::cumulant_response_guess()
     dpd_buf4_close(&D);
     dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
-    dpd_buf4_print(&Z,outfile,1);
     dpd_buf4_add(&Z, &dC, 1.0);
     dpd_buf4_close(&dC);
     dpd_buf4_print(&Z,outfile,1);
@@ -2496,7 +2516,6 @@ DCFTSolver::cumulant_response_guess()
     dpd_buf4_close(&D);
     dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
-    dpd_buf4_print(&Z,outfile,1);
     dpd_buf4_add(&Z, &dC, 1.0);
     dpd_buf4_close(&dC);
     dpd_buf4_print(&Z,outfile,1);
@@ -2507,10 +2526,199 @@ DCFTSolver::cumulant_response_guess()
 }
 
 void
+DCFTSolver::build_perturbed_tau()
+{
+
+    dpdbuf4 L, Z;
+    dpdfile2 pT_OO, pT_oo, pT_VV, pT_vv, dT_OO, dT_oo, dT_VV, dT_vv, T_OO, T_oo, T_VV, T_vv;
+
+    dpd_file2_init(&pT_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
+    dpd_file2_init(&pT_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
+    dpd_file2_init(&pT_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
+    dpd_file2_init(&pT_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
+
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+
+    // pTau_IJ = -1/2 Lambda_IKAB Z_JKAB
+    dpd_contract442(&L, &Z, &pT_OO, 0, 0, -0.5, 0.0);
+
+    // pTau_AB = +1/2 Lambda_IJAC Z_IJBC
+    dpd_contract442(&L, &Z, &pT_VV, 2, 2, 0.5, 0.0);
+
+    dpd_buf4_close(&Z);
+    dpd_buf4_close(&L);
+
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+
+    // pTau_ij = -1/2 Lambda_ikab Z_jkab
+    dpd_contract442(&L, &Z, &pT_oo, 0, 0, -0.5, 0.0);
+
+    // pTau_ab = +1/2 Lambda_ijac Z_ijbc
+    dpd_contract442(&L, &Z, &pT_vv, 2, 2, 0.5, 0.0);
+
+    dpd_buf4_close(&Z);
+    dpd_buf4_close(&L);
+
+    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+
+    // pTau_IJ -= 1/2 Lambda_IkAb Z_JkAb - 1/2 Lambda_IkaB Z_JkaB
+    dpd_contract442(&L, &Z, &pT_OO, 0, 0, -1.0, 1.0);
+    // pTau_ij -= 1/2 Lambda_KiAb Z_KjAb - 1/2 Lambda_KiaB Z_KjaB
+    dpd_contract442(&L, &Z, &pT_oo, 1, 1, -1.0, 1.0);
+    // pTau_AB += 1/2 Lambda_IjAc Z_IjBc + 1/2 Lambda_iJAc Z_iJBc
+    dpd_contract442(&L, &Z, &pT_VV, 2, 2, 1.0, 1.0);
+    // pTau_ab += 1/2 Lambda_IjCa Z_IjCb + 1/2 Lambda_iJCa Z_iJCb
+    dpd_contract442(&L, &Z, &pT_vv, 3, 3, 1.0, 1.0);
+
+    dpd_buf4_close(&Z);
+    dpd_buf4_close(&L);
+
+    dpd_file2_close(&pT_OO);
+    dpd_file2_close(&pT_oo);
+    dpd_file2_close(&pT_VV);
+    dpd_file2_close(&pT_vv);
+
+    // Now symmetrize perturbed Tau: new pTau(i,j) = (pTau(i,j) + pTau(j,1))/2
+
+    dpd_file2_init(&pT_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "pTau <O|O>");
+    dpd_file2_init(&pT_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "pTau <o|o>");
+    dpd_file2_init(&pT_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
+    dpd_file2_init(&pT_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Temp <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Temp <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Temp <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Temp <v|v>");
+
+    dpd_file2_mat_init(&pT_OO);
+    dpd_file2_mat_init(&pT_oo);
+    dpd_file2_mat_init(&pT_VV);
+    dpd_file2_mat_init(&pT_vv);
+
+    dpd_file2_mat_init(&T_OO);
+    dpd_file2_mat_init(&T_oo);
+    dpd_file2_mat_init(&T_VV);
+    dpd_file2_mat_init(&T_vv);
+
+    dpd_file2_mat_rd(&T_OO);
+    dpd_file2_mat_rd(&T_oo);
+    dpd_file2_mat_rd(&T_VV);
+    dpd_file2_mat_rd(&T_vv);
+
+    for(int h = 0; h < nirrep_; ++h){
+        // pTau <O|O>
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                pT_OO.matrix[h][i][j] = pT_OO.matrix[h][j][i] = (T_OO.matrix[h][i][j] + T_OO.matrix[h][j][i]) / 2.0;
+            }
+        }
+
+        // pTau <o|o>
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                pT_oo.matrix[h][i][j] = pT_oo.matrix[h][j][i] = (T_oo.matrix[h][i][j] + T_oo.matrix[h][j][i]) / 2.0;
+            }
+        }
+
+        // pTau <V|V>
+        for(int i = 0 ; i < navirpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                pT_VV.matrix[h][i][j] = pT_VV.matrix[h][j][i] = (T_VV.matrix[h][i][j] + T_VV.matrix[h][j][i]) / 2.0;
+            }
+        }
+
+        // pTau <v|v>
+        for(int i = 0 ; i < nbvirpi_[h]; ++i){
+            for(int j = 0 ; j <= i; ++j){
+                pT_vv.matrix[h][i][j] = pT_vv.matrix[h][j][i] = (T_vv.matrix[h][i][j] + T_vv.matrix[h][j][i]) / 2.0;
+            }
+        }
+    }
+
+    dpd_file2_mat_wrt(&pT_OO);
+    dpd_file2_mat_wrt(&pT_oo);
+    dpd_file2_mat_wrt(&pT_VV);
+    dpd_file2_mat_wrt(&pT_vv);
+
+    dpd_file2_close(&pT_OO);
+    dpd_file2_close(&pT_oo);
+    dpd_file2_close(&pT_VV);
+    dpd_file2_close(&pT_vv);
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
+    // Form dTau
+    dpd_file2_init(&pT_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "pTau <O|O>");
+    dpd_file2_init(&pT_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "pTau <o|o>");
+    dpd_file2_init(&pT_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
+    dpd_file2_init(&pT_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
+
+    dpd_file2_init(&dT_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "dTau <O|O>");
+    dpd_file2_init(&dT_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "dTau <o|o>");
+    dpd_file2_init(&dT_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "dTau <V|V>");
+    dpd_file2_init(&dT_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "dTau <v|v>");
+
+    dpd_file2_axpbycz(&pT_OO, &T_OO, &dT_OO, 1.0, -1.0, 0.0);
+    dpd_file2_axpbycz(&pT_oo, &T_oo, &dT_oo, 1.0, -1.0, 0.0);
+    dpd_file2_axpbycz(&pT_VV, &T_VV, &dT_VV, 1.0, -1.0, 0.0);
+    dpd_file2_axpbycz(&pT_vv, &T_vv, &dT_vv, 1.0, -1.0, 0.0);
+
+    dpd_file2_print(&pT_OO, outfile);
+    dpd_file2_print(&pT_oo, outfile);
+    dpd_file2_print(&pT_VV, outfile);
+    dpd_file2_print(&pT_vv, outfile);
+
+    dpd_file2_print(&dT_OO, outfile);
+    dpd_file2_print(&dT_oo, outfile);
+    dpd_file2_print(&dT_VV, outfile);
+    dpd_file2_print(&dT_vv, outfile);
+
+    dpd_file2_close(&pT_OO);
+    dpd_file2_close(&pT_oo);
+    dpd_file2_close(&pT_VV);
+    dpd_file2_close(&pT_vv);
+
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+
+    dpd_file2_close(&dT_OO);
+    dpd_file2_close(&dT_oo);
+    dpd_file2_close(&dT_VV);
+    dpd_file2_close(&dT_vv);
+
+}
+
+void
 DCFTSolver::compute_cumulant_response_intermediates()
 {
 
 }
+
+void
+DCFTSolver::update_cumulant_response()
+{
+
+}
+
 
 
 }} //End namespaces
