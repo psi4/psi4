@@ -175,6 +175,13 @@ def run_cim(name, **kwargs):
    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_libcim/plugin_libcim.so"
    PsiMod.plugin_load("%s" % (plugfile))
 
+   # override symmetry:
+   molecule = PsiMod.get_active_molecule()
+   molecule.update_geometry()
+   molecule.reset_point_group('c1')
+   molecule.fix_orientation(1)
+   molecule.update_geometry()
+
    # what type of cim?
    if (name.lower() == 'ccsd'):
       PsiMod.set_global_option('compute_triples', False)
