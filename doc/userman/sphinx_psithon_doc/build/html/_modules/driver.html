@@ -155,7 +155,7 @@
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | name                    | calls method                                                                          |</span>
 <span class="sd">    +=========================+=======================================================================================+</span>
-<span class="sd">    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |</span>
+<span class="sd">    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :download:`manual &lt;userman.pdf&gt;`|</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
 <span class="sd">    | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |</span>
 <span class="sd">    +-------------------------+---------------------------------------------------------------------------------------+</span>
@@ -379,6 +379,10 @@
         <span class="n">dertype</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">func</span> <span class="o">=</span> <span class="n">energy</span>
 
+    <span class="k">if</span> <span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;REFERENCE&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;rks&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;REFERENCE&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;uks&#39;</span><span class="p">):</span>
+        <span class="n">dertype</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="n">energy</span>
+
     <span class="c"># 2. Check if the user passes dertype into this function</span>
     <span class="k">if</span> <span class="s">&#39;dertype&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
         <span class="n">opt_dertype</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;dertype&#39;</span><span class="p">]</span>
@@ -432,6 +436,15 @@
             <span class="n">opt_linkage</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;linkage&#39;</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Optimize execution mode </span><span class="se">\&#39;</span><span class="s">reap</span><span class="se">\&#39;</span><span class="s"> requires a linkage option.&#39;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;shepherd&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+            <span class="n">comm</span> <span class="o">=</span> <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span>
+            <span class="n">opt_mpisize</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_size</span><span class="p">()</span>
+            <span class="n">opt_mpirank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s">&#39;rm intco.dat&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Optimize execution mode </span><span class="se">\&#39;</span><span class="s">shepherd</span><span class="se">\&#39;</span><span class="s"> requires installation of MPI4Py.&#39;</span><span class="p">)</span> 
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Optimize execution mode </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s"> not valid.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt_mode</span><span class="p">))</span>
 
@@ -441,23 +454,36 @@
         <span class="c"># into the current reference wavefunction</span>
         <span class="n">procedures</span><span class="p">[</span><span class="s">&#39;gradient&#39;</span><span class="p">][</span><span class="n">lowername</span><span class="p">](</span><span class="n">lowername</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="s">&#39;mode&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;mode&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;sow&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&#39;Optimize execution mode </span><span class="se">\&#39;</span><span class="s">sow</span><span class="se">\&#39;</span><span class="s"> not valid for analytic gradient calculation.&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">reference_wavefunction</span><span class="p">()</span><span class="o">.</span><span class="n">energy</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="c"># If not, perform finite difference of energies</span>
 
-        <span class="n">opt_iter</span> <span class="o">=</span> <span class="mi">1</span>
-        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;opt_iter&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
-            <span class="n">opt_iter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_iter&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
-
-        <span class="k">if</span> <span class="n">opt_iter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">print</span> <span class="s">&#39;Performing finite difference calculations&#39;</span>
-
         <span class="c"># Obtain list of displacements</span>
         <span class="n">displacements</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">fd_geoms_1_0</span><span class="p">()</span>
         <span class="n">ndisp</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">displacements</span><span class="p">)</span>
+        
+        <span class="n">opt_iter</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s">&#39;opt_iter&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">opt_iter</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_iter&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">opt_iter</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span><span class="p">((</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;shepherd&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">opt_mpirank</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)):</span>
+                <span class="k">print</span> <span class="s">&#39;Performing finite difference calculations&#39;</span>
+                <span class="k">print</span> <span class="s">&#39; </span><span class="si">%d</span><span class="s"> displacements needed ...&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ndisp</span><span class="p">),</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;shepherd&#39;</span><span class="p">):</span>
+            <span class="k">print</span> <span class="s">&#39;TRY: ndisp, size, rank&#39;</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">,</span> <span class="n">opt_mpisize</span><span class="p">,</span> <span class="n">opt_mpirank</span>
+            <span class="k">if</span> <span class="n">opt_mpisize</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">ndisp</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">WARNING: Requesting </span><span class="si">%s</span><span class="s"> nodes for </span><span class="si">%s</span><span class="s"> displacements in an optimization cycle is wasteful.</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">opt_mpisize</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">ndisp</span><span class="p">)))</span>
+            <span class="n">disp_molecules</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">disp_energies</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndisp</span><span class="p">):</span>
+                <span class="n">disp_molecules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">molecule</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span>
+                <span class="n">disp_energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
         <span class="c"># This version is pretty dependent on the reference geometry being last (as it is now)</span>
-        <span class="k">print</span> <span class="s">&#39; </span><span class="si">%d</span><span class="s"> displacements needed ...&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ndisp</span><span class="p">),</span>
         <span class="n">energies</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c"># S/R: Write instructions for sow/reap procedure to output file and reap input file</span>
@@ -501,6 +527,7 @@
 
         <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">displacement</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">displacements</span><span class="p">):</span>
             <span class="n">rfile</span> <span class="o">=</span> <span class="s">&#39;OPT-</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt_iter</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="c">#rfile = &#39;OPT-fd-%s&#39; % (n + 1)</span>
 
             <span class="c"># Build string of title banner</span>
             <span class="n">banners</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
@@ -529,6 +556,47 @@
 
                 <span class="c"># Save the energy</span>
                 <span class="n">energies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">E</span><span class="p">)</span>
+
+            <span class="c"># MPI: </span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;shepherd&#39;</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">opt_mpisize</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+
+                    <span class="n">owner</span> <span class="o">=</span> <span class="n">n</span><span class="o">%</span><span class="n">opt_mpisize</span>  <span class="c"># index of sheep to run energy</span>
+                    <span class="k">print</span> <span class="s">&#39;XXX: n, size, rank, owner &#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">opt_mpisize</span><span class="p">,</span> <span class="n">opt_mpirank</span><span class="p">,</span> <span class="n">owner</span>
+                    <span class="k">if</span> <span class="n">owner</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">owner</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="c"># Print information to output.dat</span>
+                    <span class="n">PsiMod</span><span class="o">.</span><span class="n">print_out</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="p">)</span>
+                    <span class="n">banner</span><span class="p">(</span><span class="s">&#39;Loading displacement </span><span class="si">%d</span><span class="s"> of </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ndisp</span><span class="p">))</span>
+<span class="c">#                    print &#39;n, size, rank, owner &#39;, n, opt_mpisize, opt_mpirank, owner</span>
+
+                    <span class="c"># Print information to the screen</span>
+<span class="c">#                    print &#39; %d&#39; % (n + 1),</span>
+<span class="c">#                    if (n + 1) == ndisp:</span>
+<span class="c">#                        print &#39;\n&#39;,</span>
+    
+                    <span class="k">if</span> <span class="n">opt_mpirank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c"># shepherd receives energies</span>
+                        <span class="n">disp_energies</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="n">owner</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">opt_mpirank</span> <span class="o">==</span> <span class="n">owner</span><span class="p">:</span> <span class="c"># sheep compute allotted energies</span>
+                        <span class="k">print</span> <span class="s">&#39;ZZZ: n, size, rank, owner &#39;</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">opt_mpisize</span><span class="p">,</span> <span class="n">opt_mpirank</span><span class="p">,</span> <span class="n">owner</span>
+                        <span class="n">disp_molecules</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">displacements</span><span class="p">[</span><span class="n">n</span><span class="p">])</span>
+                        <span class="n">func</span><span class="p">(</span><span class="n">lowername</span><span class="p">,</span> <span class="n">molecule</span><span class="o">=</span><span class="n">disp_molecules</span><span class="p">[</span><span class="n">n</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+                        <span class="n">comm</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">PsiMod</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">),</span> <span class="n">dest</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c"># Load in displacement into the active molecule</span>
+                <span class="c">#PsiMod.get_active_molecule().set_geometry(displacement)</span>
+
+                <span class="c"># Perform the energy calculation</span>
+                <span class="c">#E = func(lowername, **kwargs)</span>
+                <span class="c">#func(lowername, **kwargs)</span>
+                <span class="c">#E = PsiMod.get_variable(&#39;CURRENT ENERGY&#39;)</span>
+                <span class="c">#E = func(**kwargs)</span>
+
+                <span class="c"># Save the energy</span>
+                <span class="c">###energies.append(E)</span>
+                <span class="n">energies</span> <span class="o">=</span> <span class="n">disp_energies</span>
+                <span class="k">print</span> <span class="n">energies</span>
+                <span class="k">print</span> <span class="n">disp_energies</span>
 
             <span class="c"># S/R: Write each displaced geometry to an input file</span>
             <span class="k">elif</span> <span class="p">(</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;sow&#39;</span><span class="p">):</span>
@@ -586,7 +654,13 @@
             <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s">&#39;CURRENT ENERGY&#39;</span><span class="p">,</span> <span class="n">energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
 
         <span class="c"># Obtain the gradient</span>
-        <span class="n">PsiMod</span><span class="o">.</span><span class="n">fd_1_0</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span><span class="p">((</span><span class="n">opt_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s">&#39;shepherd&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">opt_mpirank</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)):</span>
+            <span class="c">#disp_molecules[n].set_geometry(displacements[n])</span>
+            <span class="n">activate</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+            <span class="n">molecule</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span>
+            <span class="n">molecule</span><span class="o">.</span><span class="n">update_geometry</span><span class="p">()</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">set_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">,</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;BASIS&#39;</span><span class="p">))</span>
+            <span class="n">PsiMod</span><span class="o">.</span><span class="n">fd_1_0</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
 
         <span class="c"># The last item in the list is the reference energy, return it</span>
         <span class="k">return</span> <span class="n">energies</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -691,7 +765,8 @@
 <span class="sd">    :type mode: string</span>
 <span class="sd">    :param mode: |dl| ``&#39;continuous&#39;`` |dr| || ``&#39;sow&#39;`` || ``&#39;reap&#39;``</span>
 
-<span class="sd">        Indicates whether the calculation required to complete the</span>
+<span class="sd">        For a finite difference of energies optimization, indicates whether</span>
+<span class="sd">        the calculations required to complete the</span>
 <span class="sd">        optimization are to be run in one file (``&#39;continuous&#39;``) or are to be</span>
 <span class="sd">        farmed out in an embarrassingly parallel fashion</span>
 <span class="sd">        (``&#39;sow&#39;``/``&#39;reap&#39;``).  For the latter, run an initial job with</span>
@@ -718,14 +793,14 @@
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
 
-    <span class="n">full_hess_every</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_global_option</span><span class="p">(</span><span class="s">&#39;FULL_HESS_EVERY&#39;</span><span class="p">)</span>
+    <span class="n">full_hess_every</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s">&#39;FULL_HESS_EVERY&#39;</span><span class="p">)</span>
     <span class="n">steps_since_last_hessian</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="p">(</span><span class="s">&#39;opt_iter&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">):</span>
         <span class="n">n</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_iter&#39;</span><span class="p">]</span>
 
-    <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s">&#39;GEOM_MAXITER&#39;</span><span class="p">):</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_option</span><span class="p">(</span><span class="s">&#39;GEOM_MAXITER&#39;</span><span class="p">):</span>
         <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;opt_iter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n</span>
 
         <span class="c"># Compute the gradient</span>
@@ -870,8 +945,6 @@
 
 <span class="sd">       - RAK, why are you adding OPTKING options as GLOBALS? And shouldn&#39;t they be Py-side not C-side options?</span>
 
-<span class="sd">       - Put in a dictionary, so IRREPS can be called by symmetry element or &#39;all&#39;</span>
-
 <span class="sd">       - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.</span>
 
 <span class="sd">    :type name: string</span>
@@ -887,11 +960,12 @@
 <span class="sd">        difference of gradients (if available) or finite difference of</span>
 <span class="sd">        energies is to be performed.</span>
 
-<span class="sd">    :type irrep: int</span>
-<span class="sd">    :param irrep: |dl| ``-1`` |dr| || ``1`` || etc.</span>
+<span class="sd">    :type irrep: int or string</span>
+<span class="sd">    :param irrep: |dl| ``-1`` |dr| || ``1`` || ``&#39;b2&#39;`` || ``&#39;App&#39;`` || etc.</span>
 
-<span class="sd">        Indicates which symmetry block of vibrational freqiencies to be</span>
-<span class="sd">        computed. 1 represents :math:`a_1`, requesting only the totally symmetric modes.</span>
+<span class="sd">        Indicates which symmetry block (Cotton ordering) of vibrational</span>
+<span class="sd">        frequencies to be computed. ``1``, ``&#39;1&#39;``, or ``&#39;a1&#39;`` represents</span>
+<span class="sd">        :math:`a_1`, requesting only the totally symmetric modes.</span>
 <span class="sd">        ``-1`` indicates a full frequency calculation.</span>
 
 <span class="sd">    :examples:</span>
@@ -924,7 +998,7 @@
             <span class="n">dertype</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
     <span class="k">if</span> <span class="s">&#39;irrep&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="p">:</span>
-        <span class="n">irrep</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;irrep&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c"># externally, A1 irrep is 1; internally 0</span>
+        <span class="n">irrep</span> <span class="o">=</span> <span class="n">parse_cotton_irreps</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;irrep&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>  <span class="c"># externally, A1 irrep is 1, internally 0</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">irrep</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c"># -1 implies do all irreps</span>
 
@@ -1057,7 +1131,94 @@
     <span class="sd">&quot;&quot;&quot;Function to compute force constants. Presently identical to frequency().&quot;&quot;&quot;</span>
     <span class="n">lowername</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs_lower</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="n">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+    <span class="n">frequencies</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="parse_cotton_irreps"><a class="viewcode-back" href="../index.html#driver.parse_cotton_irreps">[docs]</a><span class="k">def</span> <span class="nf">parse_cotton_irreps</span><span class="p">(</span><span class="n">irrep</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Function to return validated Cotton ordering index from string or integer</span>
+<span class="sd">    irreducible representation *irrep*.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">cotton</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;c1&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="s">&#39;ci&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;ag&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;au&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;2&#39;</span><span class="p">:</span>  <span class="mi">2</span>
+        <span class="p">},</span>
+        <span class="s">&#39;c2&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;2&#39;</span><span class="p">:</span> <span class="mi">2</span>
+        <span class="p">},</span>
+        <span class="s">&#39;cs&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;ap&#39;</span><span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;app&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span>   <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;2&#39;</span><span class="p">:</span>   <span class="mi">2</span>
+        <span class="p">},</span>
+        <span class="s">&#39;d2&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;a&#39;</span><span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;b1&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;b2&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;b3&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;2&#39;</span><span class="p">:</span>  <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;3&#39;</span><span class="p">:</span>  <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;4&#39;</span><span class="p">:</span>  <span class="mi">4</span>
+        <span class="p">},</span>
+        <span class="s">&#39;c2v&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;a1&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;a2&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;b1&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;b2&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;2&#39;</span><span class="p">:</span>  <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;3&#39;</span><span class="p">:</span>  <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;4&#39;</span><span class="p">:</span>  <span class="mi">4</span>
+        <span class="p">},</span>
+        <span class="s">&#39;c2h&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;ag&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;bg&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;au&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;bu&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;2&#39;</span><span class="p">:</span>  <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;3&#39;</span><span class="p">:</span>  <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;4&#39;</span><span class="p">:</span>  <span class="mi">4</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s">&#39;d2h&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;ag&#39;</span><span class="p">:</span>  <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;b1g&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;b2g&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;b3g&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+            <span class="s">&#39;au&#39;</span><span class="p">:</span>  <span class="mi">5</span><span class="p">,</span>
+            <span class="s">&#39;b1u&#39;</span><span class="p">:</span> <span class="mi">6</span><span class="p">,</span>
+            <span class="s">&#39;b2u&#39;</span><span class="p">:</span> <span class="mi">7</span><span class="p">,</span>
+            <span class="s">&#39;b3u&#39;</span><span class="p">:</span> <span class="mi">8</span><span class="p">,</span>
+            <span class="s">&#39;1&#39;</span><span class="p">:</span>   <span class="mi">1</span><span class="p">,</span>
+            <span class="s">&#39;2&#39;</span><span class="p">:</span>   <span class="mi">2</span><span class="p">,</span>
+            <span class="s">&#39;3&#39;</span><span class="p">:</span>   <span class="mi">3</span><span class="p">,</span>
+            <span class="s">&#39;4&#39;</span><span class="p">:</span>   <span class="mi">4</span><span class="p">,</span>
+            <span class="s">&#39;5&#39;</span><span class="p">:</span>   <span class="mi">5</span><span class="p">,</span>
+            <span class="s">&#39;6&#39;</span><span class="p">:</span>   <span class="mi">6</span><span class="p">,</span>
+            <span class="s">&#39;7&#39;</span><span class="p">:</span>   <span class="mi">7</span><span class="p">,</span>
+            <span class="s">&#39;8&#39;</span><span class="p">:</span>   <span class="mi">8</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="n">point_group</span> <span class="o">=</span> <span class="n">PsiMod</span><span class="o">.</span><span class="n">get_active_molecule</span><span class="p">()</span><span class="o">.</span><span class="n">schoenflies_symbol</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+    <span class="n">irreducible_representation</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">irrep</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cotton</span><span class="p">[</span><span class="n">point_group</span><span class="p">][</span><span class="n">irreducible_representation</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ValidationError</span><span class="p">(</span><span class="s">&quot;Irrep </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s"> not valid for point group </span><span class="se">\&#39;</span><span class="si">%s</span><span class="se">\&#39;</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">irrep</span><span class="p">),</span> <span class="n">point_group</span><span class="p">))</span></div>
 </pre></div>
 
           </div>
@@ -1102,7 +1263,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Mar 04, 2012.
+      Last updated on Mar 15, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>

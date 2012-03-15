@@ -135,6 +135,8 @@ boost::shared_ptr<Functional> Functional::createFunctional(const std::string & n
         return boost::shared_ptr<Functional> (new wB97f_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97Xf")))
         return boost::shared_ptr<Functional> (new wB97Xf_Functional(npoints,deriv));
+
+    throw PSIEXCEPTION("Unknown functional name.");
 }
 std::string Functional::availableFunctionals()
 {
@@ -154,8 +156,8 @@ std::string Functional::availableFunctionals()
     f << "   wPBEf_X         X         X           " << endl;
     f << "   wBg_X           X         X           " << endl;
     f << "   wPBEg_X         X         X           " << endl;
- 
-    f << endl; 
+
+    f << endl;
     f << "   Available Correlation Functionals:   " << endl;
     f << "    Name:        LSDA:      GGA:     Meta: " << endl;
     f << "  ------------ --------- --------- ---------" << endl;
@@ -169,8 +171,8 @@ std::string Functional::availableFunctionals()
     f << "   PBE_C           X         X           " << endl;
     f << "   FT97_C          X         X           " << endl;
     f << "   EDF1_C          X         X           " << endl;
-    
-    f << endl; 
+
+    f << endl;
     f << "   Available Combined Functionals:   " << endl;
     f << "    Name:        LSDA:      GGA:     Meta: " << endl;
     f << "  ------------ --------- --------- ---------" << endl;
@@ -191,9 +193,9 @@ std::string Functional::availableFunctionals()
     f << "   wB97X           X         X           " << endl;
     f << "   wB97f           X         X           " << endl;
     f << "   wB97Xf          X         X           " << endl;
-    
+
     return f.str();
-    
+
 }
 std::vector<std::string> Functional::availableNames()
 {
@@ -884,7 +886,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
 std::string SuperFunctional::availableSuperFunctionals()
 {
     std::stringstream f;
-    
+
     f << "   Available Exchange SuperFunctionals:   " << endl;
     f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
     f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
@@ -898,8 +900,8 @@ std::string SuperFunctional::availableSuperFunctionals()
     f << "   wS_X            X                                                 X           " << endl;
     f << "   wBf_X           X         X                                       X           " << endl;
     f << "   wBg_X           X         X                                       X           " << endl;
- 
-    f << endl; 
+
+    f << endl;
     f << "   Available Correlation SuperFunctionals:   " << endl;
     f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
     f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
@@ -913,7 +915,7 @@ std::string SuperFunctional::availableSuperFunctionals()
     f << "   PBE_C           X         X                                                   " << endl;
     f << "   FT97_C          X         X                                                   " << endl;
 
-    f << endl; 
+    f << endl;
     f << "   Available Combined SuperFunctionals:   " << endl;
     f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
     f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
