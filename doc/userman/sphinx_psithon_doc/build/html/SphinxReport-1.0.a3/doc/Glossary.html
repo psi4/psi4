@@ -1,0 +1,157 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Glossary &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../../index.html" /> 
+    <script type="text/javascript" src="../../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="glossary">
+<h1>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h1>
+<dl class="glossary docutils">
+<dt id="term-configuration-directory">configuration directory</dt>
+<dd>The directory containing <tt class="file docutils literal"><span class="pre">conf.py</span></tt>.  By default, this is the same as
+the <a class="reference internal" href="#term-source-directory"><em class="xref std std-term">source directory</em></a>, but can be set differently with the <strong>-c</strong>
+command-line option.</dd>
+<dt id="term-labeleddata">LabeledData</dt>
+<dd><p class="first">Return type of a <tt class="xref py py-class docutils literal"><span class="pre">Tracker.Tracker</span></tt>. MultipleColumnData is a list/tuple of lists/tuples.
+The first tuple/list contains column labels, while each subsequent tuple/list contains the values
+of a column. For example <tt class="docutils literal"><span class="pre">(</span> <span class="pre">(&quot;data1&quot;,</span> <span class="pre">1),</span> <span class="pre">(&quot;data2&quot;,</span> <span class="pre">2))</span></tt> corresponds to the
+following data:</p>
+<div class="last highlight-python"><pre>data1   data2
+1       2</pre>
+</div>
+</dd>
+<dt id="term-multiplecolumndata">MultipleColumnData</dt>
+<dd><p class="first">Return type of a <tt class="xref py py-class docutils literal"><span class="pre">Tracker.Tracker</span></tt>. MultipleColumnData is a list/tuple of lists/tuples.
+The first tuple/list contains column labels, while each subsequent tuple/list contains the values
+of a column. For example <tt class="docutils literal"><span class="pre">(</span> <span class="pre">(&quot;column1&quot;,&quot;column2),</span> <span class="pre">((1,2,3,4),</span> <span class="pre">(5,6,7,8))</span> <span class="pre">)</span></tt> corresponds to the
+following data:</p>
+<div class="last highlight-python"><pre>  column1 column2
+  1       5
+  2       6
+  3       7
+  4       8
+
+In contrast to :term:`LabeledData`, all the columns are required to have the same length.</pre>
+</div>
+</dd>
+<dt id="term-render">render</dt>
+<dd>The restructured text directive supplied by the SphinxSqlPlot extension.</dd>
+<dt id="term-singlecolumndata">SingleColumnData</dt>
+<dd>Return type of a <tt class="xref py py-class docutils literal"><span class="pre">Tracker.Tracker</span></tt>. SingleColumnData is a single list or tuple of data,
+for example <tt class="docutils literal"><span class="pre">(1,2,3,4)</span></tt>.</dd>
+<dt id="term-slice">slice</dt>
+<dd>A slice through a data set, for example gender like &#8220;male&#8221; and &#8220;female&#8221;.</dd>
+<dt id="term-source-directory">source directory</dt>
+<dd>The directory which, including its subdirectories, contains all source
+files for one Sphinx project.</dd>
+<dt id="term-track">track</dt>
+<dd>A data set, for example species like &#8220;frog&#8221;, &#8220;mouse&#8221;, and &#8220;dog&#8221;.</dd>
+<dt id="term-tracker">Tracker</dt>
+<dd>A python function or functor returning data for a track, see <tt class="xref py py-class docutils literal"><span class="pre">Tracker.Tracker</span></tt>.</dd>
+</dl>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/SphinxReport-1.0.a3/doc/Glossary.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Mar 15, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

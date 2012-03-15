@@ -77,7 +77,7 @@ plugin_libcim(Options &options)
   double ecim = 0.0;
 
   int clusternum = -1;
-  for (int i=0; i<cim->ndoccact; i++){
+  for (int i=0; i<cim->maxndomains; i++){
       if (cim->skip[i]) continue;
 
       clusternum++;
