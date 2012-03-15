@@ -30,7 +30,12 @@ DCFTSolver::compute_gradient()
     while(!responseDone && iter_++ < maxiter_){
         fprintf(outfile, "\t                          *** Macro Iteration %d ***\n" "\tOrbital Response Iterations\n", iter_);
 
-//        if (!iter_) iterate_cumulant_response();
+        // Solve the cumulant response equations iteratively
+        if (iter_ > 1) {
+            iterate_cumulant_response();
+            responseDone = true;   ////
+            break;  /////
+        }
 
         // Compute the generalized densities for the MO Lagrangian
         compute_density();
@@ -47,9 +52,8 @@ DCFTSolver::compute_gradient()
 
         // Check convergence
         if (response_coupling_rms < 1.0E-14) responseDone = true;
-        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n", response_coupling_rms);
 
-        responseDone = true;
+        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n", response_coupling_rms);
 
         fprintf(outfile, "\tOrbital Response Iterations\n");
     }
@@ -62,8 +66,6 @@ DCFTSolver::compute_gradient()
 
 
 
-    // Compute the guess for the cumulant response matrix elements
-    cumulant_response_guess();
 
 
 }
@@ -1984,13 +1986,6 @@ DCFTSolver::update_orbital_response()
 
 }
 
-void
-DCFTSolver::cumulant_response_guess()
-{
-
-
-}
-
 // Returns RMS of the change in the response coupling term (C intermediate)
 double
 DCFTSolver::compute_response_coupling()
@@ -2429,6 +2424,85 @@ DCFTSolver::compute_response_coupling()
 
     // Compute RMS of dC
     return sqrt(sumSQ / nElements);
+
+}
+
+void
+DCFTSolver::iterate_cumulant_response()
+{
+
+    // Update cumulant reponse from the change in C intermediate
+    cumulant_response_guess();
+
+    // iteratively solve for cumulant reponse
+
+    // update perturbed tau
+
+    compute_cumulant_response_intermediates();
+
+    // update cumulant response
+
+
+}
+
+void
+DCFTSolver::cumulant_response_guess()
+{
+
+    dpdbuf4 Z, D, dC;
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    /*
+     * Z_ijab += dC_ijab / D_ijab
+     */
+
+    // Z_IJAB += dC_IJAB / D_IJAB
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+    dpd_buf4_init(&dC, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "C <OO|VV> new - old");
+    dpd_buf4_dirprd(&D, &dC);
+    dpd_buf4_close(&D);
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+    dpd_buf4_print(&Z,outfile,1);
+    dpd_buf4_add(&Z, &dC, 1.0);
+    dpd_buf4_close(&dC);
+    dpd_buf4_print(&Z,outfile,1);
+    dpd_buf4_close(&Z);
+
+    // Z_IjAb += dC_IjAb / D_IjAb
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
+    dpd_buf4_init(&dC, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "C <Oo|Vv> new - old");
+    dpd_buf4_dirprd(&D, &dC);
+    dpd_buf4_close(&D);
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+    dpd_buf4_print(&Z,outfile,1);
+    dpd_buf4_add(&Z, &dC, 1.0);
+    dpd_buf4_close(&dC);
+    dpd_buf4_print(&Z,outfile,1);
+    dpd_buf4_close(&Z);
+
+    // Z_ijab += dC_ijab / D_ijab
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
+    dpd_buf4_init(&dC, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "C <oo|vv> new - old");
+    dpd_buf4_dirprd(&D, &dC);
+    dpd_buf4_close(&D);
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+    dpd_buf4_print(&Z,outfile,1);
+    dpd_buf4_add(&Z, &dC, 1.0);
+    dpd_buf4_close(&dC);
+    dpd_buf4_print(&Z,outfile,1);
+    dpd_buf4_close(&Z);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
 }
 
