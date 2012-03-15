@@ -83,8 +83,9 @@ protected:
     void iterate_orbital_response();
     void compute_orbital_response_intermediates();
     void update_orbital_response();
-    void cumulant_response_guess();
     double compute_response_coupling();
+    void iterate_cumulant_response();
+    void cumulant_response_guess();
     void compute_cumulant_response_intermediates();
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
