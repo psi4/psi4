@@ -225,10 +225,12 @@ def run_cim(name, **kwargs):
        cim_n += 1
 
    PsiMod.set_variable('CURRENT ENERGY', built_energy+escf)
-   PsiMod.set_variable('TOTAL CIM-CCSD CORRELATION ENERGY', built_ccsd)
+   PsiMod.set_variable('CIM-CCSD CORRELATION ENERGY', built_ccsd)
+   PsiMod.set_variable('CIM-CCSD TOTAL ENERGY', built_ccsd+escf)
    if (name.lower()=='ccsd(t)'):
-      PsiMod.set_variable('TOTAL CIM-CCSD(T) CORRELATION ENERGY', built_ccsdt)
-      PsiMod.set_variable('TOTAL CIM-(T) CORRELATION ENERGY', built_t)
+      PsiMod.set_variable('CIM-CCSD(T) CORRELATION ENERGY', built_ccsdt)
+      PsiMod.set_variable('CIM-CCSD(T) TOTAL ENERGY', built_ccsdt+escf)
+      PsiMod.set_variable('CIM-(T) CORRELATION ENERGY', built_t)
 
    return built_energy+escf
 
