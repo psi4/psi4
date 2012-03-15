@@ -31,6 +31,7 @@ import psi4_sptheme as psp
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 # 'psi4_sptheme.ext.autodoc_sections',
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode', 'psi4_sptheme.ext.index_styling']
+#, 'SphinxReport.ext.only_directives'] #'matplotlib.sphinxext.only_directives']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

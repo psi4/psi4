@@ -1,0 +1,183 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Introduction &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../../index.html" /> 
+    <script type="text/javascript" src="../../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<span id="id1"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>The <tt class="xref py py-mod docutils literal"><span class="pre">SphinxReport</span></tt> module is an extension for <tt class="xref py py-mod docutils literal"><span class="pre">sphinx</span></tt>
+that provides facilities for data retrieval and data rendering
+within reStructured text.</p>
+<div class="section" id="requirements">
+<span id="installation"></span><h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p><tt class="xref py py-mod docutils literal"><span class="pre">SphinxReport</span></tt> requires the following software</p>
+<blockquote>
+<div><ul class="simple">
+<li><a class="reference external" href="http://www.python.org">Python</a> (2.5.2 or higher)</li>
+<li><a class="reference external" href="http://www.sqlalchemy.org/">SQLAlchemy</a> (0.4.8 or higher)</li>
+<li><a class="reference external" href="http://matplotlib.sourceforge.net/">matplotlib</a> (0.98.1 or higher)</li>
+<li><a class="reference external" href="http://sphinx.pocoo.org/">sphinx</a> (0.5-1 or higher)</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="id2">
+<h2>Installation<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>In order to install the extension, download the latest sources from <em>TODO</em> and unpack:</p>
+<blockquote>
+<div>tar -xvzf sphinx-report.tar.gz</div></blockquote>
+<p>Alternatively, check out the the latest code from the subversion repository:</p>
+<div class="highlight-python"><pre>svn checkout http://sphinx-report.googlecode.com/svn/trunk/ sphinx-report-read-only</pre>
+</div>
+<p>To install, type:</p>
+<div class="highlight-python"><pre>python setup.py build
+python setup.py install</pre>
+</div>
+</div>
+<div class="section" id="first-steps">
+<h2>First steps<a class="headerlink" href="#first-steps" title="Permalink to this headline">¶</a></h2>
+<p>To get running quickly, use the the <tt class="file docutils literal"><span class="pre">sphinxreport-quickstart`</span></tt> to
+create a skeleton project in the directory <tt class="docutils literal"><span class="pre">newproject</span></tt>:</p>
+<div class="highlight-python"><pre>sphinxreport-quickstart -d newproject</pre>
+</div>
+<p>Enter <tt class="docutils literal"><span class="pre">newproject</span></tt> and build the skeleton report:</p>
+<div class="highlight-python"><pre>make html</pre>
+</div>
+<p>Open <tt class="file docutils literal"><span class="pre">newproject/_build/html/index.html</span></tt> in your browser
+to view the skeleton documentation.</p>
+<p>At this stage you can review <a class="reference internal" href="#configuration"><em>Configuration</em></a> options
+in the file <tt class="file docutils literal"><span class="pre">conf.py</span></tt> and then start adding content
+to your report. See the <a class="reference internal" href="Tutorials.html#tutorials"><em>Tutorials</em></a> on how to do this.</p>
+</div>
+<div class="section" id="configuration">
+<span id="id3"></span><h2>Configuration<a class="headerlink" href="#configuration" title="Permalink to this headline">¶</a></h2>
+<p>Sphinx and the <tt class="xref py py-mod docutils literal"><span class="pre">SphinxReport</span></tt> extension read configuration details
+from the file <tt class="file docutils literal"><span class="pre">conf.py</span></tt> at the top-level of the installation. In order
+to use the extension, add the following entries to the variable <tt class="xref py py-data docutils literal"><span class="pre">extensions</span></tt>:</p>
+<div class="highlight-python"><pre>extensions.extend( ['SphinxReport.inheritance_diagram',
+           'SphinxReport.only_directives',
+           'SphinxReport.render_directive ] )</pre>
+</div>
+<p>Further variables can be addded to <tt class="file docutils literal"><span class="pre">conf.py</span></tt> to customize the extension. The
+variables are:</p>
+<p>This file containing python code sets mostly <tt class="xref py py-mod docutils literal"><span class="pre">sphinx</span></tt> configuration
+options (see the <a class="reference external" href="http://sphinx.pocoo.org/config.html">sphinx documentation</a>
+for more information), but some sphinxreport options as well.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Introduction</a><ul>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#id2">Installation</a></li>
+<li><a class="reference internal" href="#first-steps">First steps</a></li>
+<li><a class="reference internal" href="#configuration">Configuration</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/SphinxReport-1.0.a3/doc/Introduction.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Mar 15, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

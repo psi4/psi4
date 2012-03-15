@@ -1,0 +1,209 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Gallery &mdash; Psithon for PSI4 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/psi4.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '4.01',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/toggle_sections.js"></script>
+    <link rel="top" title="Psithon for PSI4 documentation" href="../../index.html" /> 
+    <script type="text/javascript" src="../../_static/copybutton.js"></script> 
+
+  </head>
+  <body>
+    <div class="relbar-top">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="gallery">
+<h1>Gallery<a class="headerlink" href="#gallery" title="Permalink to this headline">¶</a></h1>
+<p>The gallery lists examples of all plots and available renderers.</p>
+<div class="section" id="labeled-data">
+<h2>Labeled data<a class="headerlink" href="#labeled-data" title="Permalink to this headline">¶</a></h2>
+<p>These Renderers require <tt class="xref py py-class docutils literal"><span class="pre">DataTypes.LabeledData</span></tt>. Labeled data is
+consists of a list of labels and a list of data, for
+example <tt class="docutils literal"><span class="pre">[</span> <span class="pre">(&quot;column1&quot;,</span> <span class="pre">&quot;column2&quot;</span> <span class="pre">),</span> <span class="pre">(</span> <span class="pre">10,</span> <span class="pre">20)</span> <span class="pre">]</span></tt>.</p>
+<div class="section" id="table">
+<h3>Table<a class="headerlink" href="#table" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref py py-class docutils literal"><span class="pre">Renderer.RendererTable</span></tt> class inserts labeled data into
+a table.</p>
+</div>
+<div class="section" id="stacked-barplot">
+<h3>Stacked Barplot<a class="headerlink" href="#stacked-barplot" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref py py-class docutils literal"><span class="pre">Renderer.RendererStackedBars</span></tt> class presents labeled data
+as stacked bars.</p>
+</div>
+<div class="section" id="interleaved-barplot">
+<h3>Interleaved Barplot<a class="headerlink" href="#interleaved-barplot" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref py py-class docutils literal"><span class="pre">Renderer.RendererInterleavedBars</span></tt> class presents labeled data
+as interleaved bars. Both <em>interleaved-bars</em> and <em>bars</em> can be used.</p>
+</div>
+</div>
+<div class="section" id="single-column-data">
+<h2>Single column data<a class="headerlink" href="#single-column-data" title="Permalink to this headline">¶</a></h2>
+<p>Renderers that accept a single column of data of type <tt class="xref py py-class docutils literal"><span class="pre">DataTypes.SingleColumnData</span></tt>
+per <a class="reference internal" href="Glossary.html#term-track"><em class="xref std std-term">track</em></a> and <a class="reference internal" href="Glossary.html#term-slice"><em class="xref std std-term">slice</em></a>, for example <tt class="docutils literal"><span class="pre">[2,3,1,3,4]</span></tt>.</p>
+<div class="section" id="histogram">
+<h3>Histogram<a class="headerlink" href="#histogram" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref py py-class docutils literal"><span class="pre">Renderer.RendererHistogram</span></tt> class computes a histogram
+of data and inserts it as a table.</p>
+</div>
+<div class="section" id="histogramplot">
+<h3>HistogramPlot<a class="headerlink" href="#histogramplot" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref py py-class docutils literal"><span class="pre">Renderer.RendererHistogramPlot</span></tt> class computes a histogram
+of data and inserts a plot.</p>
+</div>
+<div class="section" id="stats">
+<h3>Stats<a class="headerlink" href="#stats" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref py py-class docutils literal"><span class="pre">Renderer.RendererStats</span></tt> class computes summary
+statistics and displays them in a table.</p>
+</div>
+<div class="section" id="boxplot">
+<h3>Boxplot<a class="headerlink" href="#boxplot" title="Permalink to this headline">¶</a></h3>
+<p>The <tt class="xref py py-class docutils literal"><span class="pre">Renderer.RendererBoxplot</span></tt> class computes boxplots.</p>
+</div>
+</div>
+<div class="section" id="multi-column-data">
+<h2>Multi-column data<a class="headerlink" href="#multi-column-data" title="Permalink to this headline">¶</a></h2>
+<p>Renderers that accept multiple columns of data of type <tt class="xref py py-class docutils literal"><span class="pre">DataTypes.SingleColumnData</span></tt>
+per <a class="reference internal" href="Glossary.html#term-track"><em class="xref std std-term">track</em></a> and <a class="reference internal" href="Glossary.html#term-slice"><em class="xref std std-term">slice</em></a>. The data is asscociated with column headers, for example
+<tt class="docutils literal"><span class="pre">[</span> <span class="pre">('column1',</span> <span class="pre">'column2'),</span> <span class="pre">(</span> <span class="pre">(</span> <span class="pre">1,2,3),</span> <span class="pre">(4,5,6)</span> <span class="pre">)]</span></tt>.</p>
+<div class="section" id="pairwise-statistics-table">
+<h3>Pairwise statistics table<a class="headerlink" href="#pairwise-statistics-table" title="Permalink to this headline">¶</a></h3>
+<p>Compute correlation statistics between all columns.</p>
+</div>
+<div class="section" id="pairwise-statistics-plot">
+<h3>Pairwise statistics plot<a class="headerlink" href="#pairwise-statistics-plot" title="Permalink to this headline">¶</a></h3>
+<p>Plot correlation coefficients between all columns.</p>
+</div>
+<div class="section" id="pairwise-scatter-plot">
+<h3>Pairwise scatter plot<a class="headerlink" href="#pairwise-scatter-plot" title="Permalink to this headline">¶</a></h3>
+<p>A scatter plot.</p>
+</div>
+<div class="section" id="grouped-table">
+<h3>Grouped table<a class="headerlink" href="#grouped-table" title="Permalink to this headline">¶</a></h3>
+<p>A grouped table.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Gallery</a><ul>
+<li><a class="reference internal" href="#labeled-data">Labeled data</a><ul>
+<li><a class="reference internal" href="#table">Table</a></li>
+<li><a class="reference internal" href="#stacked-barplot">Stacked Barplot</a></li>
+<li><a class="reference internal" href="#interleaved-barplot">Interleaved Barplot</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#single-column-data">Single column data</a><ul>
+<li><a class="reference internal" href="#histogram">Histogram</a></li>
+<li><a class="reference internal" href="#histogramplot">HistogramPlot</a></li>
+<li><a class="reference internal" href="#stats">Stats</a></li>
+<li><a class="reference internal" href="#boxplot">Boxplot</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#multi-column-data">Multi-column data</a><ul>
+<li><a class="reference internal" href="#pairwise-statistics-table">Pairwise statistics table</a></li>
+<li><a class="reference internal" href="#pairwise-statistics-plot">Pairwise statistics plot</a></li>
+<li><a class="reference internal" href="#pairwise-scatter-plot">Pairwise scatter plot</a></li>
+<li><a class="reference internal" href="#grouped-table">Grouped table</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/SphinxReport-1.0.a3/doc/Gallery.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="relbar-bottom">
+        
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+    <li><a href="../../index.html">Psithon for PSI4 Documentation</a> &raquo; </li>
+ 
+      </ul>
+    </div>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, Psi4 Project.
+      Last updated on Mar 15, 2012.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
