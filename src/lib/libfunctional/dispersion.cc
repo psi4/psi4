@@ -107,6 +107,8 @@ boost::shared_ptr<Dispersion> Dispersion::createDispersion(const std::string & n
     } else if (boost::to_upper_copy(name) == "-D3") {
         return boost::shared_ptr<Dispersion> (new D3(s6, s8, sr6, sr8));
     }
+
+    throw NotImplementedException();
 }
 D1::D1(double s6) : Dispersion()
 {
