@@ -15,8 +15,8 @@ FILTEREDLDLIBS = $(filter-out -lgfortranbegin,$(LDLIBS))
 
 # NOTE: Keep PSI_parallel last in the PSI library list (but before boost). It contains the fprintf override.
 PSILIBS = \
--lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf  -lPSI_lmp2 -lPSI_ccenergy -lPSI_ccsort -lPSI_psimrcc\
--lPSI_transqt2 -lPSI_cctriples -lPSI_mp2 -lPSI_scf_solver -lPSI_fock -lPSI_lmp2_solver -lPSI_dcft -lPSI_mcscf -lPSI_sapt\
+-lPSI_mints_wrapper -lPSI_dfmp2 -lPSI_scf  -lPSI_ccenergy -lPSI_ccsort -lPSI_psimrcc -lPSI_matrix\
+-lPSI_transqt2 -lPSI_cctriples -lPSI_mp2 -lPSI_scf_solver -lPSI_fock -lPSI_dcft -lPSI_mcscf -lPSI_sapt\
 -lPSI_sapt_solver -lPSI_cchbar -lPSI_cclambda -lPSI_ccdensity -lPSI_transqt -lPSI_dfcc -lPSI_dfcc_solver \
 -lPSI_ccresponse -lPSI_detci -lPSI_omp2 -lPSI_mrcc \
 -lPSI_cceom -lPSI_dist_matrix -lPSI_adc\
