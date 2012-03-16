@@ -1,0 +1,20 @@
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R = .9
+A = 104.5
+}
+
+plugin_load("./libmatrix.so")
+
+set {
+  basis sto-3g
+}
+
+set matrix {
+  print 1
+}
+
+plugin("./libmatrix.so")
