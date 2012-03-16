@@ -78,13 +78,13 @@ procedures = {
             # Upon adding a method to this list, add it to the docstring in frequency() below
         },
         'property' : {
-            'scf'  : run_scf_property,
-            'cc2'  : run_cc_property,
-            'ccsd' : run_cc_property,
-            'eom-cc2'  : run_cc_property,
-            'eom-ccsd' : run_cc_property,
-            'eom_cc2'  : run_cc_property,
-            'eom_ccsd' : run_cc_property
+            'scf'  : run_property,
+            'cc2'  : run_property,
+            'ccsd' : run_property,
+            'eom-cc2'  : run_property,
+            'eom-ccsd' : run_property,
+            'eom_cc2'  : run_property,
+            'eom_ccsd' : run_property
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
 

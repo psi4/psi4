@@ -981,3 +981,9 @@ def run_mrcc(name, **kwargs):
     PsiMod.print_out(iface_contents)
 
     return e
+
+# General wrapper for property computations
+def run_property(name, **kwargs):
+
+    junk = 1
+    return junk
