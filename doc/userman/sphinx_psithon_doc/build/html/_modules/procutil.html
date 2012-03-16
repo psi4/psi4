@@ -102,7 +102,7 @@
     <span class="n">commands</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
     <span class="n">commands</span> <span class="o">+=</span> <span class="s">&#39;input.process_input(&quot;&quot;&quot;</span><span class="se">\n</span><span class="s">molecule </span><span class="si">%s</span><span class="s"> {</span><span class="se">\n</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mol</span><span class="o">.</span><span class="n">name</span><span class="p">())</span>
     <span class="n">commands</span> <span class="o">+=</span> <span class="n">mol</span><span class="o">.</span><span class="n">save_string_xyz</span><span class="p">()</span>
-    <span class="n">commands</span> <span class="o">+=</span> <span class="s">&#39;units angstrom</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;)</span><span class="se">\n</span><span class="s">&#39;</span>
+    <span class="n">commands</span> <span class="o">+=</span> <span class="s">&#39;units angstrom</span><span class="se">\n</span><span class="s">}</span><span class="se">\n</span><span class="s">&quot;&quot;&quot;, 0)</span><span class="se">\n</span><span class="s">&#39;</span>
     <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">commands</span><span class="p">)</span>
 
 </div>
@@ -193,7 +193,7 @@
 
     <div class="footer">
         &copy; Copyright 2012, Psi4 Project.
-      Last updated on Mar 04, 2012.
+      Last updated on Mar 15, 2012.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
   </body>
