@@ -1520,6 +1520,20 @@ public:
      */
     bool operator==(const Distributed_Matrix *rhs) const;
     /**
+     * The overloaded == operator.  This checks to see if the two Distributed_Matrix
+     * are the same (i.e. same size and tile size).\n\n
+     * /code
+     * A == B;
+     * /endcode
+     *
+     * where A and B are a Distributed_Matrix.
+     *
+     * Returns true if the two Distributed_Matrix are the same.
+     *
+     * @param rhs The rhs Distributed_Matrix of the == operator.
+     */
+    bool operator==(boost::shared_ptr<Distributed_Matrix> rhs) const;
+    /**
      * The overloaded != operator.  This checks to see if the two Distributed_Matrix
      * are NOT the same (i.e. different size and/or tile size).  This allows the user
      * to do the following,\n\n
@@ -1609,6 +1623,36 @@ public:
      * @param rhs A pointer to the rhs Distributed_Matrix of the += operator.
      */
     Distributed_Matrix operator +(const Distributed_Matrix *rhs) const;
+
+    /**
+     * The overloaded + operator. Adds the rhs Distributed_Matrix to the lhs
+     * Distributed_Matrix (i.e. *this) and returns a Distributed_Matrix that
+     * contains the result. This allows the user to do the following,\n\n
+     * /code
+     * C = B + A;
+     * /endcode
+     *
+     * where A and B are a Distributed_Matrix and C is a pointer to a Distributed_Matrix.
+     *
+     * NOTE: MUST BE CALLED BY ALL PROCESS
+     *
+     * @param rhs A pointer to the rhs Distributed_Matrix of the += operator.
+     */
+    madness::Void operator +=(boost::shared_ptr<Distributed_Matrix> rhs);
+
+    /**
+     * The overloaded + operator. Adds the rhs Distributed_Matrix to the lhs
+     * Distributed_Matrix (i.e. *this) and returns a Distributed_Matrix that
+     * contains the result. This allows the user to do the following,\n\n
+     *
+     * NOTE: MUST BE CALLED BY ALL PROCESS
+     *
+     * @param rhs A reference to the rhs Distributed_Matrix.
+     */
+    madness::Void add(boost::shared_ptr<Distributed_Matrix> rhs)
+    { *this += rhs; return madness::None; }
+    madness::Void add(const Distributed_Matrix &rhs)
+    { *this += rhs; return madness::None; }
 
     /**
      * Scale every element in the Distributed_Matrix by the given value.
