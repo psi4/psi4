@@ -335,13 +335,13 @@ madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix &rhs)
 
 madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix *rhs)
 {
-    Communicator::world->sync();
     if (*this == rhs) {
+        Communicator::world->sync();
         for (int tij=0; tij < ntiles_; tij++) {
             if (me_ == owner(tij)) {
                 madness::Future<madness::Tensor<double> > tile = rhs->task(me_, &Distributed_Matrix::get_tile_tij, tij);
                 this->task(me_, &Distributed_Matrix::sum_tile_tij, tij, tile);
-                //                           const_cast<double*>(&rhs->data_[local(tij)](0,0)));
+                //                           const_cast<double*>(&rhs.data_[local(tij)](0,0)));
             }
         }
     }
@@ -349,6 +349,24 @@ madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix *rhs)
     Communicator::world->sync();
     return madness::None;
 }
+
+madness::Void Distributed_Matrix::operator +=(boost::shared_ptr<Distributed_Matrix> rhs)
+{
+    if (*this == rhs) {
+        Communicator::world->sync();
+        for (int tij=0; tij < ntiles_; tij++) {
+            if (me_ == owner(tij)) {
+                madness::Future<madness::Tensor<double> > tile = rhs->task(me_, &Distributed_Matrix::get_tile_tij, tij);
+                this->task(me_, &Distributed_Matrix::sum_tile_tij, tij, tile);
+                //                           const_cast<double*>(&rhs.data_[local(tij)](0,0)));
+            }
+        }
+    }
+    else throw PSIEXCEPTION("The matrices being added are not the same.\n");
+    Communicator::world->sync();
+    return madness::None;
+}
+
 
 
 madness::Void Distributed_Matrix::sum_tile(const int &ti, const int &tj,
