@@ -2444,13 +2444,16 @@ DCFTSolver::iterate_cumulant_response()
         // Compute intermediates
         compute_cumulant_response_intermediates();
 
+        // Compute cumulant response residual and its RMS
+        rms = compute_cumulant_response_residual();
+
         // Update the cumulant response
         update_cumulant_response();
 
         // Check the convergence
 
-//        // Print iterative trace
-//        fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
+        // Print iterative trace
+        fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
 
 //        // Termination condition
 //        if (converged || cycle >= maxcycle) break;
@@ -2461,8 +2464,8 @@ DCFTSolver::iterate_cumulant_response()
 
     fprintf(outfile, "\n");
 
-    if (converged) fprintf(outfile, "    DCFT orbital response equations converged.\n\n");
-    else throw PSIEXCEPTION("DCFT orbital response equations did not converge");
+    if (converged) fprintf(outfile, "    DCFT cumulant response equations converged.\n\n");
+    else throw PSIEXCEPTION("DCFT cumulant response equations did not converge");
 
 
 }
@@ -3422,9 +3425,171 @@ DCFTSolver::compute_cumulant_response_intermediates()
 
 }
 
+double
+DCFTSolver::compute_cumulant_response_residual()
+{
+    dpdbuf4 R, G, F, T, C;
+    double sumSQ = 0.0;
+    size_t nElements = 0;
+
+    /*
+     * R_ijab = G_ijab + F_ijab + T_ijab + C_ijab
+     */
+
+    // R_IJAB = G_IJAB
+    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>");
+    dpd_buf4_copy(&G, PSIF_DCFT_DPD, "R <OO|VV>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
+
+    // R_IJAB += F_IJAB
+    dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "F <OO|VV>");
+    dpd_buf4_add(&R, &F, 1.0);
+    dpd_buf4_close(&F);
+
+    // R_IJAB += T_IJAB
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
+    dpd_buf4_add(&R, &T, 1.0);
+    dpd_buf4_close(&T);
+
+    // R_IJAB += C_IJAB
+    dpd_buf4_init(&C, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "C <OO|VV> new");
+    dpd_buf4_add(&R, &C, 1.0);
+    dpd_buf4_close(&C);
+
+    for(int h = 0; h < nirrep_; ++h)
+        nElements += R.params->coltot[h] * R.params->rowtot[h];
+
+    sumSQ += dpd_buf4_dot_self(&R);
+    dpd_buf4_print(&R,outfile,1);
+    dpd_buf4_close(&R);
+
+    // R_IjAb = G_IjAb
+    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
+    dpd_buf4_copy(&G, PSIF_DCFT_DPD, "R <Oo|Vv>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+
+    // R_IjAb += F_IjAb
+    dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "F <Oo|Vv>");
+    dpd_buf4_add(&R, &F, 1.0);
+    dpd_buf4_close(&F);
+
+    // R_IjAb += T_IjAb
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "T <Oo|Vv>");
+    dpd_buf4_add(&R, &T, 1.0);
+    dpd_buf4_close(&T);
+
+    // R_IjAb += C_IjAb
+    dpd_buf4_init(&C, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "C <Oo|Vv> new");
+    dpd_buf4_add(&R, &C, 1.0);
+    dpd_buf4_close(&C);
+
+    for(int h = 0; h < nirrep_; ++h)
+        nElements += R.params->coltot[h] * R.params->rowtot[h];
+
+    sumSQ += dpd_buf4_dot_self(&R);
+    dpd_buf4_print(&R,outfile,1);
+    dpd_buf4_close(&R);
+
+    // R_ijab = G_ijab
+    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "G <oo|vv>");
+    dpd_buf4_copy(&G, PSIF_DCFT_DPD, "R <oo|vv>");
+    dpd_buf4_close(&G);
+    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
+
+    // R_ijab += F_ijab
+    dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "F <oo|vv>");
+    dpd_buf4_add(&R, &F, 1.0);
+    dpd_buf4_close(&F);
+
+    // R_ijab += T_ijab
+    dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "T <oo|vv>");
+    dpd_buf4_add(&R, &T, 1.0);
+    dpd_buf4_close(&T);
+
+    // R_ijab += C_ijab
+    dpd_buf4_init(&C, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "C <oo|vv> new");
+    dpd_buf4_add(&R, &C, 1.0);
+    dpd_buf4_close(&C);
+
+    for(int h = 0; h < nirrep_; ++h)
+        nElements += R.params->coltot[h] * R.params->rowtot[h];
+
+    sumSQ += dpd_buf4_dot_self(&R);
+    dpd_buf4_print(&R,outfile,1);
+    dpd_buf4_close(&R);
+
+    return sqrt(sumSQ / nElements);
+}
+
 void
 DCFTSolver::update_cumulant_response()
 {
+
+    dpdbuf4 Z, D, R;
+
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    /*
+     * Z_ijab += R_ijab / D_ijab
+     */
+
+    // Z_IJAB += R_IJAB / D_IJAB
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
+    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
+    dpd_buf4_dirprd(&D, &R);
+    dpd_buf4_close(&D);
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+    dpd_buf4_add(&Z, &R, 1.0);
+    dpd_buf4_close(&R);
+    dpd_buf4_close(&Z);
+
+    // Z_IjAb += R_IjAb / D_IjAb
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
+    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+    dpd_buf4_dirprd(&D, &R);
+    dpd_buf4_close(&D);
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+    dpd_buf4_add(&Z, &R, 1.0);
+    dpd_buf4_close(&R);
+    dpd_buf4_close(&Z);
+
+    // Z_ijab += R_ijab / D_ijab
+    dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
+    dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
+    dpd_buf4_dirprd(&D, &R);
+    dpd_buf4_close(&D);
+    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+    dpd_buf4_add(&Z, &R, 1.0);
+    dpd_buf4_close(&R);
+    dpd_buf4_close(&Z);
+
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
 }
 
