@@ -1,0 +1,26 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_matrix.a
+CXXDEF += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\"
+
+TRUECXXSRC = matrixwrapper.cc psi_dist_matrix.cc serialmatrix.cc
+
+
+INC = matrixwrapper.h
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
+install_inc:: $(INC)
+	$(MKDIRS) $(DESTDIR)$(incdir)/libutil
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libutil
+

@@ -62,7 +62,7 @@ namespace psi {
     namespace transqt    { PsiReturnType transqt(Options &);  }
     namespace transqt2   { PsiReturnType transqt2(Options &); }
     namespace ccsort     { PsiReturnType ccsort(Options&);    }
-    namespace lmp2       { PsiReturnType lmp2(Options&);      }
+//    namespace lmp2       { PsiReturnType lmp2(Options&);      }
     namespace cctriples  { PsiReturnType cctriples(Options&); }
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
@@ -185,7 +185,7 @@ double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
         return 0.0;
 }
 
-double py_psi_lmp2()
+/*double py_psi_lmp2()
 {
     py_psi_prepare_options_for_module("LMP2");
     if (lmp2::lmp2(Process::environment.options) == Success) {
@@ -194,6 +194,7 @@ double py_psi_lmp2()
     else
         return 0.0;
 }
+*/
 
 double py_psi_mcscf()
 {
@@ -1008,7 +1009,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("libfock", py_psi_libfock, "docstring");
     def("dfmp2", py_psi_dfmp2, "docstring");
     def("dfcc", py_psi_dfcc, "docstring");
-    def("lmp2", py_psi_lmp2, "docstring");
+//    def("lmp2", py_psi_lmp2, "docstring");
     def("mp2", py_psi_mp2, "docstring");
     def("mcscf", py_psi_mcscf, "docstring");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "docstring");
