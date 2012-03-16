@@ -153,6 +153,9 @@ boost::shared_ptr<Wavefunction> Process::Environment::reference_wavefunction() c
 
 void Process::Arguments::init(int argc, char **argv)
 {
+    argc_ = argc;
+    argv_ = argv;
+
     for (int i=0; i<argc; ++i)
         arguments_.push_back(argv[i]);
 }
