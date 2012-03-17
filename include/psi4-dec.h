@@ -84,7 +84,8 @@ public:
     class Arguments
     {
         std::vector<std::string> arguments_;
-
+        int argc_;
+        char **argv_;
     public:
         void init(int argc, char **argv);
 
@@ -92,6 +93,8 @@ public:
 
         const std::string& operator()(int argc) const;
         std::string operator()(int argc);
+
+        char** argv() const { return argv_; }
     };
 
     static Environment environment;
