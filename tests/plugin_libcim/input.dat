@@ -35,7 +35,7 @@ units bohr
 symmetry c1
 }
 
-memory 1000 mb
+memory 2000 mb
 set {
   basis 6-31g
   df_basis_scf cc-pvdz
