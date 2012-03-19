@@ -106,12 +106,14 @@ foreach $b (@HGBS) { if ($b =~ /^6-31g.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^6-31p.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^6-311.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $gbs (@HPOPLE) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Pople";
 
 print HTML_OUT "<tr><td><big><b>Ahlrichs/Karlsruhe</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Ahlrichs/Karlsruhe}} \\\\*\n";
 @HAHLRICHS = ();
 foreach $b (@HGBS) { if ($b =~ /^def2-.*\.gbs$/) { push(@HAHLRICHS, $b); } }
 foreach $gbs (@HAHLRICHS) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Ahlrichs";
 
 print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning D\$\\bm\\zeta\$}} \\\\*\n";
@@ -127,6 +129,7 @@ foreach $b (@HGBS) { if ($b =~ /^heavy-aug-cc-.*dpd.*\.gbs$/) { push(@HDDUNNING,
 foreach $b (@HGBS) { if ($b =~ /^jun-cc-.*dz.*\.gbs$/) { push(@HDDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^jun-cc-.*dpd.*\.gbs$/) { push(@HDDUNNING, $b); } }
 foreach $gbs (@HDDUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning double-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning T&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning T\$\\bm\\zeta\$}} \\\\*\n";
@@ -144,6 +147,7 @@ foreach $b (@HGBS) { if ($b =~ /^jun-cc-.*tpd.*\.gbs$/) { push(@HTDUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^may-cc-.*tz.*\.gbs$/) { push(@HTDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^may-cc-.*tpd.*\.gbs$/) { push(@HTDUNNING, $b); } }
 foreach $gbs (@HTDUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning triple-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning Q&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning Q\$\\bm\\zeta\$}} \\\\*\n";
@@ -163,6 +167,7 @@ foreach $b (@HGBS) { if ($b =~ /^may-cc-.*qpd.*\.gbs$/) { push(@HQDUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^apr-cc-.*qz.*\.gbs$/) { push(@HQDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^apr-cc-.*qpd.*\.gbs$/) { push(@HQDUNNING, $b); } }
 foreach $gbs (@HQDUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning quadruple-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning 5&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 5\$\\bm\\zeta\$}} \\\\*\n";
@@ -184,6 +189,7 @@ foreach $b (@HGBS) { if ($b =~ /^apr-cc-.*5pd.*\.gbs$/) { push(@H5DUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^mar-cc-.*5z.*\.gbs$/) { push(@H5DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^mar-cc-.*5pd.*\.gbs$/) { push(@H5DUNNING, $b); } }
 foreach $gbs (@H5DUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning 5-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning 6&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 6\$\\bm\\zeta\$}} \\\\*\n";
@@ -207,6 +213,7 @@ foreach $b (@HGBS) { if ($b =~ /^mar-cc-.*6pd.*\.gbs$/) { push(@H6DUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^feb-cc-.*6z.*\.gbs$/) { push(@H6DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^feb-cc-.*6pd.*\.gbs$/) { push(@H6DUNNING, $b); } }
 foreach $gbs (@H6DUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning 6-zeta";
 
 @HCATBASIS = (@HPOPLE,@HAHLRICHS,@HDDUNNING,@HTDUNNING,@HQDUNNING,@H5DUNNING,@H6DUNNING);
 
@@ -222,6 +229,7 @@ foreach my $item (@HGBS) {
 print HTML_OUT "<tr><td><big><b>Others</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Others}} \\\\*\n";
 foreach $gbs (@HREST) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "others";
 
 sub htmlline {
    $basisfile = shift;
