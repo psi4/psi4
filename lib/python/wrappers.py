@@ -449,7 +449,7 @@ def cp(name, **kwargs):
         to be applied to the molecule. May be any valid argument to
         :py:func:`driver.energy`; however, SAPT is not appropriate.
 
-    :type func: function
+    :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
 
         Indicates the type of calculation to be performed on the molecule
@@ -457,13 +457,18 @@ def cp(name, **kwargs):
         ``energy('name')``, while ``optimize`` perfoms a geometry optimization
         on each system, and ``cbs`` performs a compound single-point energy.
         If a nested series of python functions is intended
-        (see `Function Intercalls`_), use keyword ``cp_func`` instead of ``func``.
+        (see :ref:`sec:intercalls`), use keyword ``cp_func`` instead of ``func``.
 
-    :type check_bsse: bool
+    :type check_bsse: :ref:`boolean <op_py_boolean>`
     :param check_bsse: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether to additionally compute un-counterpoise corrected
         monomers and thus obtain an estimate for the basis set superposition error.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 
@@ -635,8 +640,8 @@ def database(name, db_name, **kwargs):
         db_name DATABASE ROOT-MEAN-SQUARE DEVIATION
 
     .. note:: It is very easy to make a database from a collection of xyz files
-        using the script ``$PSIDATADIR/databases/ixyz2database.pl``.
-        See `Creating a New Database`_ for details.
+        using the script :source:`lib/scripts/ixyz2database.pl`.
+        See :ref:`sec:createDatabase` for details.
 
     .. caution:: Some features are not yet implemented. Buy a developer some coffee.
 
@@ -656,14 +661,14 @@ def database(name, db_name, **kwargs):
         name, matching the name of a python file in ``psi4/lib/databases``.
         Consult that directory for available databases and literature citations.
 
-    :type func: function
+    :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
 
         Indicates the type of calculation to be performed on each database
         member. The default performs a single-point ``energy('name')``, while
         ``optimize`` perfoms a geometry optimization on each reagent, and
         ``cbs`` performs a compound single-point energy. If a nested series
-        of python functions is intended (see `Function Intercalls`_), use
+        of python functions is intended (see :ref:`sec:intercalls`), use
         keyword ``db_func`` instead of ``func``.
 
     :type mode: string
@@ -675,23 +680,23 @@ def database(name, db_name, **kwargs):
         (``'sow'``/``'reap'``).  For the latter, run an initial job with
         ``'sow'`` and follow instructions in its output file.
 
-    :type cp: bool
+    :type cp: :ref:`boolean <op_py_boolean>`
     :param cp: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether counterpoise correction is employed in computing
         interaction energies. Use this option and NOT the :py:func:`wrappers.cp`
         function for BSSE correction in database().  Option available
-        (See `Available Databases`_) only for databases of bimolecular complexes.
+        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes.
 
-    :type rlxd: bool
+    :type rlxd: :ref:`boolean <op_py_boolean>`
     :param rlxd: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether correction for deformation energy is
         employed in computing interaction energies.  Option available
-        (See `Available Databases`_) only for databases of bimolecular complexes 
+        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes 
         with non-frozen monomers, e.g., HBC6.
 
-    :type symm: bool
+    :type symm: :ref:`boolean <op_py_boolean>`
     :param symm: |dl| ``'on'`` |dr| || ``'off'``
 
         Indicates whether the native symmetry of the database reagents is
@@ -699,7 +704,7 @@ def database(name, db_name, **kwargs):
         (``'off'``). Some computational methods (e.g., SAPT) require no
         symmetry, and this will be set by database().
 
-    :type zpe: bool
+    :type zpe: :ref:`boolean <op_py_boolean>`
     :param zpe: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether zero-point-energy corrections are appended to
@@ -710,7 +715,7 @@ def database(name, db_name, **kwargs):
     :param benchmark: |dl| ``'default'`` |dr| || ``'S22A'`` || etc.
 
         Indicates whether a non-default set of reference energies, if
-        available (See `Available Databases`_), are employed for the
+        available (See :ref:`sec:availableDatabases`), are employed for the
         calculation of error statistics.
 
     :type tabulate: array of strings
@@ -1509,6 +1514,11 @@ def complete_basis_set(name, **kwargs):
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 

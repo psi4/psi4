@@ -337,6 +337,9 @@ props1:       RHF STO-3G dipole moment computation, performed by applying a fini
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
+psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH$@@2$ state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
+
+
 psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 

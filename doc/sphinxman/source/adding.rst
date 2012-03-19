@@ -10,4 +10,5 @@ Contributing to PSI4
    aliases
    createDatabase
    bestPractices_py
+   documentation
 
