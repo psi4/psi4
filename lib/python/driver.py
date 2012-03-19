@@ -62,7 +62,11 @@ procedures = {
             'tda'           : run_libfock,
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
-            'psimrcc_scf'   : run_psimrcc_scf
+            'psimrcc_scf'   : run_psimrcc_scf,
+            'b3lyp'         : run_dft,  # temporary
+            #'b3lyp-d1'      : run_dft,  # temporary
+            'b3lyp-d2'      : run_dft,  # temporary
+            'b3lyp-d'       : run_dft,  # temporary
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -100,10 +104,12 @@ def energy(name, **kwargs):
         CURRENT REFERENCE ENERGY
         CURRENT CORRELATION ENERGY
 
+    .. _`table:energy_gen`:
+
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :download:`manual <userman.pdf>`|
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -190,6 +196,17 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------+
 
+ .. _`table:energy_dft`:
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                          |
+    +=========================+=======================================================================================+
+    | b3lyp                   | Becke 3-parameter exchange with Lee-Yang-Parr correlation functional (B3LYP)          |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | b3lyp-d                 | B3LYP with Grimme's -D2 dispersion correction                                         |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
+ .. _`table:energy_mrcc`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method in Kallay's MRCC program                                                 |
@@ -619,6 +636,8 @@ def optimize(name, **kwargs):
 
        - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
 
+    .. _`table:grad_gen`:
+
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
@@ -833,6 +852,8 @@ def frequency(name, **kwargs):
        - RAK, why are you adding OPTKING options as GLOBALS? And shouldn't they be Py-side not C-side options?
 
        - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
+
+    .. _`table:freq_gen`:
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.

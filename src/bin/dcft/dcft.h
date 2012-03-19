@@ -87,7 +87,8 @@ protected:
     void iterate_cumulant_response();
     void cumulant_response_guess();
     void build_perturbed_tau();
-    void compute_cumulant_response_intermediates();\
+    void compute_cumulant_response_intermediates();
+    double compute_cumulant_response_residual();
     void update_cumulant_response();
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
