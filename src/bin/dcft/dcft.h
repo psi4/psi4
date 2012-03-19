@@ -90,6 +90,10 @@ protected:
     void compute_cumulant_response_intermediates();
     double compute_cumulant_response_residual();
     void update_cumulant_response();
+    void compute_lagrangian_OO();
+    void compute_lagrangian_VV();
+    void compute_ewdm();
+
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// The maximum number of lambda iterations per update
