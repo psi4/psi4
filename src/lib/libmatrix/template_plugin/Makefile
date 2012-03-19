@@ -7,7 +7,7 @@
 # Location of your PSI4 source
 top_srcdir = /Users/jturney/Code/psi4/source
 # Location of your PSI4 install, by default as listed
-top_objdir = /Users/jturney/Build/psi4/compile-debug
+top_objdir = /Users/jturney/Build/psi4/compile-parallel
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
@@ -18,10 +18,18 @@ include $(top_objdir)/src/bin/MakeVars
 # Location of your PSI4 source
 top_srcdir = /Users/jturney/Code/psi4/source
 # Location of your PSI4 install, by default as listed
-top_objdir = /Users/jturney/Build/psi4/compile-debug
+top_objdir = /Users/jturney/Build/psi4/compile-parallel
+
+# libflame and elemental
+LIBS = -L/Users/jturney/Code/libflame-r7690/elemental-flame/build/PureRelease \
+       -lelemental \
+       -L/Users/jturney/Install/libflame/lib \
+       -lflame
+CXXINC += -I/Users/jturney/Install/libflame/include -I/Users/jturney/Code/libflame-r7690/elemental-flame/build/PureRelease/include
+CXXDEF += -DHAVE_ELEMENTAL -DHAVE_MPI
 
 PSITARGET = $(shell basename `pwd`).so
-PSILIBS = -L$(top_objdir)/lib -lPSI_plugin
+PSILIBS = -L$(top_objdir)/lib -lPSI_plugin $(LIBS)
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))

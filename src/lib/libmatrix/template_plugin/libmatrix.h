@@ -1,3 +1,6 @@
+#include <libmints/dimension.h>
+#include <string>
+
 #include "detail.h"
 #include "libmints_wrapper.h"
 #include "libdist_wrapper.h"
