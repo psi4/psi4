@@ -1156,13 +1156,13 @@ void DLRSolver::correctors()
 
             // Substitute r for this vector, if norm is bad
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
-            if (norm != norm || isinf(norm)) {
+            if (norm != norm || std::isinf(norm)) {
                 C_DCOPY(dimension,rp,1,dp,1);
                 norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             } 
 
             double scale = 1.0 / norm;
-            if (scale != scale || isinf(scale)) {
+            if (scale != scale || std::isinf(scale)) {
                 scale = 0.0;
             }
 
@@ -1450,7 +1450,7 @@ void RayleighRSolver::correctors()
             
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             double scale = 1.0 / norm;
-            if (scale != scale || isinf(scale)) {
+            if (scale != scale || std::isinf(scale)) {
                 scale = 0.0;
             }
 
@@ -2006,13 +2006,13 @@ void DLRXSolver::correctors()
 
             // Substitute r for this vector, if norm is bad
             double norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
-            if (norm != norm || isinf(norm) || norm < criteria_) {
+            if (norm != norm || std::isinf(norm) || norm < criteria_) {
                 C_DCOPY(dimension,rp,1,dp,1);
                 norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             } 
 
             double scale = 1.0 / norm;
-            if (scale != scale || isinf(scale)) {
+            if (scale != scale || std::isinf(scale)) {
                 scale = 0.0;
             }
 
