@@ -16,6 +16,7 @@
    methods
    psithoninput
    psithonfunc
+   interfacing
 .. #####  LATEX-USER STOP
 .. #####  LATEX-PROG START
    adding
