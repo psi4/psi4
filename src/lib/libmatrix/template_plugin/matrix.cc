@@ -1,3 +1,5 @@
+#include "libmatrix.h"
+
 #include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
@@ -5,8 +7,6 @@
 #include <libmints/mints.h>
 #include <libdist_matrix/dist_mat.h>
 #include <libpsio/psio.hpp>
-
-#include "libmatrix.h"
 
 INIT_PLUGIN
 
