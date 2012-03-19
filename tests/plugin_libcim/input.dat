@@ -1,10 +1,12 @@
 #! sto-3g (H2O)8 Test Boys localization
 
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+sys.path.insert(0, '/home/deprince/psi4/tests')
+import plugin_libcim
+
 molecule h2o {
 0 1
-#O
-#H 1 1.0 
-#H 1 1.0 2 104.5
  O      -1.0651248364       -3.8315679992        0.7532888494
  O      -2.9143323066        0.0506352184        2.6495240589
  O       3.1809638699       -1.9024798828        1.3330724074
@@ -33,30 +35,14 @@ units bohr
 symmetry c1
 }
 
-plugin_load('../plugin_localcc/plugin_localcc.so')
-plugin_load('./plugin_libcim.so')
-memory 1000 mb
+memory 2000 mb
 set {
-  maxiter 100
-  r_convergence 1e-7
-  basis sto-3g
+  basis 6-31g
   df_basis_scf cc-pvdz
   freeze_core true
   guess sad
-  compute_triples false
   scf_type pk
-  #dipmom true
-  #print 4
-  thresh1 0.01
-  thresh3 1e-5
-  #thresh2 0.0
-  #thresh3 0.0
-  #thresh1 0.005
-  #thresh2 0.05
-  #thresh3 1e-3
-  #print 6
 }
-scf_energy = scf()
-plugin('./plugin_libcim.so')
+energy('cim-ccsd(t)')
 
 clean()

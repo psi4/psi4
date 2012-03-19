@@ -5,9 +5,9 @@
 #
 
 # Location of your PSI4 source
-top_srcdir = /home/deprince/psi4/
+top_srcdir = /Users/jturney/Code/psi4/source
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/deprince/psi4/objdir
+top_objdir = /Users/jturney/Build/psi4/compile-debug
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
@@ -16,13 +16,12 @@ include $(top_objdir)/src/bin/MakeVars
 
 # Reset these values, MakeVars changes them to valud only valid in Psi4's objdir
 # Location of your PSI4 source
-top_srcdir = /home/deprince/psi4/
+top_srcdir = /Users/jturney/Code/psi4/source
 # Location of your PSI4 install, by default as listed
-top_objdir = /home/deprince/psi4/objdir
+top_objdir = /Users/jturney/Build/psi4/compile-debug
 
 PSITARGET = $(shell basename `pwd`).so
-PSIINCLUDE = -I$(top_objdir)/boost/boost_1_48_0 -I$(top_srcdir)/include -I$(top_objdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
-PSILIBS = -L$(top_objdir)/lib -lPSI_plugin /home/deprince/psi4/tests/plugin_localcc/plugin_localcc.so
+PSILIBS = -L$(top_objdir)/lib -lPSI_plugin
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
@@ -33,7 +32,7 @@ default:: $(PSITARGET)
 
 # Add the flags needed for shared library creation
 ifeq ($(UNAME), Linux)
-    LDFLAGS = -shared -g
+    LDFLAGS = -shared
 endif
 ifeq ($(UNAME), Darwin)
     LDFLAGS = -shared -undefined dynamic_lookup
@@ -42,11 +41,10 @@ endif
 
 # The object files
 %.o: %.cc
-	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $(PYTHON_INCLUDE) -c $< $(OUTPUT_OPTION)
+	$(CXX) $(CXXFLAGS) $(CXXINCLUDE) -c $< $(OUTPUT_OPTION)
 
-#include $(top_objdir)/src/bin/MakeRules
 $(PSITARGET): $(BINOBJ)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS) && touch $(shell basename `pwd`).test
+	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
 
 # Erase all compiled intermediate files
 clean:
@@ -54,7 +52,7 @@ clean:
 
 # Dependency handling
 %.d: %.cc
-	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $< | sed 's/^$*.o/$*.o $*.d/g' > $(@F)
+	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CXXFLAGS) $(CXXINCLUDE) $< | sed 's/^$*.o/$*.o $*.d/g' > $(@F)
 
 ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
