@@ -250,8 +250,8 @@ texinfo_documents = [
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
 
+# Abbreviations
 rst_epilog = """
-.. Abbreviations
 .. |PSIfour| replace:: PSI4
 .. |psirc| replace:: ``~/.psi4rc``
 .. |dl| replace:: :math:`\Rightarrow`
@@ -267,9 +267,8 @@ rst_epilog = """
    :trim:
 .. |w---w| unicode:: U+02014 .. em dash
 """
-#.. |'\u01FA'(LATIN CAPITAL LETTER A WITH RING ABOVE AND ACUTE)  "\\'Å"
-#'\u01FB'(LATIN SMALL LETTER A WITH RING ABOVE AND ACUTE)    "\\'å"
 
+# Logo at top of page
 rst_prolog = """
 .. image:: /PSI4_banner.png
    :width: 100 %
@@ -278,5 +277,9 @@ rst_prolog = """
 
 # This option, from sphinx.ext.extlinks, allows linking to source with :trac:`lib/python/driver/py`
 extlinks = {'source': ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/')}
+
+# corrects baseline for inline math + other custom stuff for inline math, such as non-default math fonts etc.
+pngmath_latex_preamble=r'\usepackage[active]{preview}'
+pngmath_use_preview=True
 
 

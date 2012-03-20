@@ -17,19 +17,30 @@ installed. Nevertheless, installation is easy.
 
 On Mac::
 
-    easy_install sphinx
+    >>> easy_install sphinx
 
 On Linux:
 
 * Download ::
 
-    curl -O http://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.1.3.tar.gz
+   >>> curl -O http://pypi.python.org/packages/source/S/Sphinx/Sphinx-1.1.3.tar.gz
 
 * Unpack, etc.
 * Build and Install ::
 
-   python setup.py build
-   sudo python setup.py install
+   >>> python setup.py build
+   >>> sudo python setup.py install
+
+* Check the path ::
+
+   >>> which sphinx-build
+   >>> which latex
+   >>> which dvipng
+
+* LaTeX and dvipng are needed to render math. If the latter is missing,
+  the following may work. ::
+
+   >>> sudo yum install dvipng-1.14-1.fc15.x86_64
 
 Documentation Structure
 -----------------------
@@ -37,13 +48,45 @@ Documentation Structure
 Sphinx has nice capabilities for extracting docstrings from python files,
 presenting both auto generated and explicitly composed documentation in
 the same format, hyperlinking within and to trac/external websites, and
-for generating documentation in different formats from the same source.
+generating documentation in different formats from the same source.
 |PSIfour|'s documentation is a unified document covering information for
 both users and programmers, with different portions served up depending on
 the target audience. To this end, one can navigate to :source:`doc/sphinxman`
 and build the following targets.::
 
-    make html
-    make latexpdf-user 
-    make latexpdf-prog
+    >>> make html
+    >>> make latexpdf-user 
+    >>> make latexpdf-prog
+
+This will build the following files, respectively. ::
+
+    build/html/index.html
+    build/latex-prog/psi4_userman.pdf
+    build/latex-prog/psi4_progman.pdf
+    
+Much of the documentation is auto-generated from the source. At present,
+this covers:
+
+* :source:`include/physconst.h`, the physical constants
+* docstrings from \*.py files in :source:`lib/python`, Python modules of the PSI4 driver 
+* docstrings from \*.py files in :source:`lib/databases`, chemical databases
+* \*.gbs files in :source:`lib/basis`, basis sets
+* :source:`src/bin/psi4/read_options.cc`, keywords for C++ modules
+
+Running ``make clean`` will clear out the build directory and all auto-generated
+files.
+
+reStructuredText
+----------------
+
+Sphinx files are written in reStructuredText (\*.rst). In the html
+documentation, source code is available from the sidebar. Here're a
+few resources on Sphinx formatting.
+
+* `reStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_
+* `rendered test document <http://docutils.sourceforge.net/test/functional/expected/standalone_rst_html4css1.html>`_
+  *vs.* `source test document <http://svn.python.org/projects/external/docutils-0.5/docs/user/rst/demo.txt>`_
+* `reStructuredText <http://people.ee.ethz.ch/~creller/web/tricks/reST.html>`_
+* `reStructuredText and Sphinx <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
+* `LaTeX that Sphinx can handle <ftp://ftp.ams.org/ams/doc/amsmath/short-math-guide.pdf>`_
 

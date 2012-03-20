@@ -15,9 +15,9 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(S
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext latexpdf-user latexpdf-prog index.rst
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext latexpdf-user latexpdf-prog index.rst distclean
 
-DISCARD = expert_keywords.tex keywords.tex physconst.tex psi4bases.tex tests_descriptions.tex variables_list.tex warnings.txt $(SOURCEDIR)/index_html.rst $(SOURCEDIR)/index_latexuser.rst $(SOURCEDIR)/index_latexprog.rst $(SOURCEDIR)/index.rst $(SOURCEDIR)/PsiMod.pyc
+DISCARD = expert_keywords.tex keywords.tex physconst.tex psi4bases.tex tests_descriptions.tex variables_list.tex warnings.txt $(SOURCEDIR)/index.rst $(SOURCEDIR)/PsiMod.pyc
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -42,7 +42,10 @@ help:
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
 clean:
-	-rm -rf $(BUILDDIR)/* $(SOURCEDIR)/autodoc_* $(SOURCEDIR)/autodir_*/*.rst $(DISCARD)
+	-rm -rf $(SOURCEDIR)/autodoc_* $(SOURCEDIR)/autodir_*/*.rst $(DISCARD)
+
+distclean: clean
+	-rm -rf $(BUILDDIR)/*
 	touch $(BUILDDIR)/ignore
 
 index.rst:
@@ -53,7 +56,7 @@ index.rst:
 	./separate_userprogman.py
 
 html: index.rst
-	cp -p $(SOURCEDIR)/index_html.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_index_html.rst $(SOURCEDIR)/index.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -121,7 +124,7 @@ latexpdf:
 	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 latexpdf-user: index.rst
-	cp -p $(SOURCEDIR)/index_latexuser.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_index_latexuser.rst $(SOURCEDIR)/index.rst
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex-user
 	@echo "USERMAN Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex-user all-pdf
@@ -129,7 +132,7 @@ latexpdf-user: index.rst
 	mv $(BUILDDIR)/latex-user/Psi4.pdf $(BUILDDIR)/latex-user/psi4_userman.pdf
 
 latexpdf-prog: index.rst
-	cp -p $(SOURCEDIR)/index_latexprog.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_index_latexprog.rst $(SOURCEDIR)/index.rst
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex-prog
 	@echo "PROGMAN Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex-prog all-pdf
