@@ -60,10 +60,14 @@ PsiReturnType template_plugin(Options& options)
     serial_matrix d = create_specific_matrix<serial_matrix>("D", m, n);
     serial_matrix e = create_specific_matrix<serial_matrix>("E", m, n);
     serial_matrix f = create_specific_matrix<serial_matrix>("F", m, n);
+    serial_matrix g = create_specific_matrix<serial_matrix>("G", m, n);
+    serial_vector h = create_specific_vector<serial_vector>("H", n);
     d.fill(1.0);
     e.fill(2.0);
     f.gemm(false, false, 1.0, d, e, 0.0);
-    f.print();
+    f.diagonalize(g, h);
+    g.print();
+    h.print();
 
 //    d.add(c);    // throws at runtime
 

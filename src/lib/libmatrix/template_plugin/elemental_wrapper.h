@@ -90,8 +90,9 @@ namespace psi { namespace libmatrix {
             elem::Gemm(opA, opB, alpha, A.matrix_, B.matrix_, beta, matrix_);
         }
 
+        // Must assume this is destroyed
         void diagonalize(libelemental_matrix_wrapper& X, libelemental_vector_wrapper& w) {
-            // TODO: w needs to be a vector allocated using: DistMatrix<R,VR,STAR> w( g );
+            // destroys matrix_
             elem::HermitianEig( elem::LOWER, matrix_, w.vector_, X.matrix_);
 
             // Sort eigenvalues into ascending order (only functionality provided by elemental)
