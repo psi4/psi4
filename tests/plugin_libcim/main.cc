@@ -36,6 +36,10 @@ read_options(std::string name, Options &options)
      options.add_int("CIM_CLUSTER_NUM", 0);
      /*- cim central domain type: single or dual environment -*/
      options.add_str("CIM_DOMAIN_TYPE", "SECIM");
+    /*- Maximum error allowed (Max error norm in Delta tensor)
+    in the approximate energy denominators employed for most of the
+    $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ evaluation. -*/
+    options.add_double("DENOMINATOR_DELTA", 1.0E-6);
   }
   return true;
 }
