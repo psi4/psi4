@@ -1,4 +1,5 @@
 #include <string>
+#include <libmints/vector.h>
 #include <libmints/matrix.h>
 #include <stdexcept>
 
@@ -11,6 +12,20 @@ namespace psi { namespace libmatrix {
         static void initialize(int argc, char** argv) {
             // Nothing to do.
         }
+    };
+
+    struct libmints_vector_wrapper {
+        libmints_vector_wrapper(const std::string& name, const Dimension& m) :
+            vector_(name, m)
+        { }
+
+        void print() const {
+            vector_.print(stdout);
+        }
+
+        friend struct libmints_matrix_wrapper;
+    private:
+        Vector vector_;
     };
 
     struct libmints_matrix_wrapper {
@@ -32,6 +47,11 @@ namespace psi { namespace libmatrix {
                   double beta)
         {
             matrix_.gemm(ta, tb, alpha, A.matrix_, B.matrix_, beta);
+        }
+
+        // Must assume this is destroyed
+        void diagonalize(libmints_matrix_wrapper& X, libmints_vector_wrapper& w) {
+            matrix_.diagonalize(X.matrix_, w.vector_);
         }
 
         // Cause problems if the someone tries to use something other than libmints_matrix_wrapper
