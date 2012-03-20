@@ -6,9 +6,9 @@ import glob
 
 findex = open('source/template_index.rst', 'r')
 
-fhtml = open('source/index_html.rst', 'w')
-fuser = open('source/index_latexuser.rst', 'w')
-fprog = open('source/index_latexprog.rst', 'w')
+fhtml = open('source/autodoc_index_html.rst', 'w')
+fuser = open('source/autodoc_index_latexuser.rst', 'w')
+fprog = open('source/autodoc_index_latexprog.rst', 'w')
 
 bhtml = False
 buser = False
