@@ -1,21 +1,27 @@
+#if defined(HAVE_ELEMENTAL)
+    #include <string>
+    #include <libmints/dimension.h>
+    #include <elemental.hpp>
+    #include <elemental/basic.hpp>
+#endif
+
 namespace psi { namespace libmatrix {
+
+    struct libmints_matrix_wrapper;
 
 #if defined(HAVE_ELEMENTAL)
     
-    #include <elemental.hpp>
-    #include <elemental/basic_internal.hpp>
-
-    struct libelemental {
-        static bool initialized = false;
-        static mpi::Comm mpi_comm;
-        static int rank = 0;
+    struct libelemental_globals {
+        static std::string interface_name;
+        static elem::mpi::Comm mpi_comm;
+        static int rank;
         
         static void initialize(int argc, char** argv) {
-            elemental::Init(argc, argv);
-            mpi_comm = mpi::COMM_WORLD;
-            rank = mpi::commRank(mpi_comm);
+            elem::Initialize(argc, argv);
+            mpi_comm = elem::mpi::COMM_WORLD;
+            rank = elem::mpi::CommRank(mpi_comm);
         }
-    }
+    };
 
     // !! I have elemental installed on my laptop but Psi4 doesn't know
     // !! how to configure with it. This code is untested.
@@ -23,19 +29,44 @@ namespace psi { namespace libmatrix {
         libelemental_matrix_wrapper(const std::string& name, const Dimension& m, const Dimension& n) :
             name_(name), height_(m.sum()), width_(n.sum())
         { 
-            elemental::Grid g(libelemental::mpi_comm);
-            matrix_ = Distmatrix<double, MC, MR>(height_, width_, g);
+            elem::Grid g(libelemental_globals::mpi_comm);
+            matrix_ = elem::DistMatrix<double, elem::MC, elem::MR>(height_, width_, g);
         }
 
         void print() const {
             matrix_.Print(name_);
         }
 
+        /// Performs distributed matrix fill.
         void fill(double val) {
-            // elemental doesn't provide a generic fill
-            for (int m=0; m<height_; ++m)
-                for (int n=0; n<width_; ++n)
-                    matrix_.Set(m, n, val);
+            const int colShift    = matrix_.ColShift(); // first row we own
+            const int rowShift    = matrix_.RowShift(); // first col we own
+            const int colStride   = matrix_.ColStride();
+            const int rowStride   = matrix_.RowStride();
+            const int localHeight = matrix_.LocalHeight();
+            const int localWidth  = matrix_.LocalWidth();
+            for( int jLocal=0; jLocal<localWidth; ++jLocal )
+            {
+                for( int iLocal=0; iLocal<localHeight; ++iLocal )
+                {
+                    // Our process owns the rows colShift:colStride:n,
+                    //           and the columns rowShift:rowStride:n
+                    const int i = colShift + iLocal*colStride;
+                    const int j = rowShift + jLocal*rowStride;
+                    matrix_.SetLocalEntry( iLocal, jLocal, val);
+                }
+            }
+        }
+
+        void gemm(bool ta, bool tb, double alpha, 
+                  const libelemental_matrix_wrapper& A,
+                  const libelemental_matrix_wrapper& B,
+                  double beta)
+        {
+            elem::Orientation opA = ta == true ? elem::TRANSPOSE : elem::NORMAL;
+            elem::Orientation opB = tb == true ? elem::TRANSPOSE : elem::NORMAL;
+
+            elem::Gemm(opA, opB, alpha, A.matrix_, B.matrix_, beta, matrix_);
         }
 
         // Cause problems if the someone tries to use something other than libmints_matrix_wrapper
@@ -45,7 +76,7 @@ namespace psi { namespace libmatrix {
         }
 
         void add(const libelemental_matrix_wrapper& rhs) {
-            elemental::basic::Axpy(1.0, rhs.matrix_, matrix_);
+            elem::Axpy(1.0, rhs.matrix_, matrix_);
         }
 
         // Is it not unreasonable to require all matrix types to know how to work with the serial matrix object.
@@ -55,7 +86,7 @@ namespace psi { namespace libmatrix {
     private:
         int height_, width_;
         std::string name_;
-        DistMatrix<double, MC, MR> matrix_;
+        elem::DistMatrix<double, elem::MC, elem::MR> matrix_;
     };
 #else
     // We are not configured with Elemental, derive from  is_not_available to

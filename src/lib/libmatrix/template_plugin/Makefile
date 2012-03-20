@@ -21,11 +21,13 @@ top_srcdir = /Users/jturney/Code/psi4/source
 top_objdir = /Users/jturney/Build/psi4/compile-parallel
 
 # libflame and elemental
-LIBS = -L/Users/jturney/Code/libflame-r7690/elemental-flame/build/PureRelease \
+LIBS = -L/Users/jturney/Build/elemental \
        -lelemental \
+       -L/Users/jturney/Build/elemental/external/plcg \
+       -lplcg \
        -L/Users/jturney/Install/libflame/lib \
        -lflame
-CXXINC += -I/Users/jturney/Install/libflame/include -I/Users/jturney/Code/libflame-r7690/elemental-flame/build/PureRelease/include
+CXXINC += -I/Users/jturney/Install/libflame/include -I/Users/jturney/Build/elemental/include
 CXXDEF += -DHAVE_ELEMENTAL -DHAVE_MPI
 
 PSITARGET = $(shell basename `pwd`).so
