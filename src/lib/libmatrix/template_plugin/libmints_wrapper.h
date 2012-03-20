@@ -1,7 +1,13 @@
+#include <string>
+#include <libmints/matrix.h>
+#include <stdexcept>
+
 namespace psi { namespace libmatrix {
 
     // Refer to libelemental for example of global data and usage.
     struct libmints_globals {
+        static std::string interface_name;
+
         static void initialize(int argc, char** argv) {
             // Nothing to do.
         }
@@ -13,11 +19,19 @@ namespace psi { namespace libmatrix {
         { }
 
         void print() const {
-            matrix_.print();
+            matrix_.print(stdout);
         }
 
         void fill(double val) {
             matrix_.set(val);
+        }
+        
+        void gemm(bool ta, bool tb, double alpha, 
+                  const libmints_matrix_wrapper& A,
+                  const libmints_matrix_wrapper& B,
+                  double beta)
+        {
+            matrix_.gemm(ta, tb, alpha, A.matrix_, B.matrix_, beta);
         }
 
         // Cause problems if the someone tries to use something other than libmints_matrix_wrapper
