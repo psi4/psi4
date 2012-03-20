@@ -38,10 +38,14 @@ PsiReturnType template_plugin(Options& options)
     matrix a = create_matrix("A", m, n);
     matrix b = create_matrix("B", m, n);
     matrix c = create_matrix("C", m, n);
+    matrix vx= create_matrix("C", m, n);
+    vector vw= create_vector("V", n);
     a.fill(1.0);
     b.fill(2.0);
     c.gemm(false, false, 1.0, a, b, 0.0);
-    c.print();
+    c.diagonalize(vx, vw);
+    vx.print();
+    vw.print();
 
     // Create a dist_matrix:
     //     Generates compile error if madness is not available.
