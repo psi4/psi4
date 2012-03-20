@@ -31,6 +31,9 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
     int_tolerance_     = options.get_double("INTS_TOLERANCE");
     lock_occupation_   = options.get_bool("LOCK_OCC");
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
+
+    if(options.get_str("REFERENCE") != "UHF") throw PSIEXCEPTION("You must have reference=UHF in the input file");
+
     // Sets up the memory, and orbital info
     init();
 
