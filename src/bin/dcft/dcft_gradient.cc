@@ -2823,7 +2823,7 @@ DCFTSolver::compute_cumulant_response_intermediates()
 
     dpd_buf4_close(&I);
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - <OV|VO>");
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
 
     // T_IAJB -= Sum_KC Z_IAKC gbar_JBKC
     dpd_contract444(&Zaa, &I, &Taa, 0, 0, -1.0, 1.0);
@@ -2832,8 +2832,20 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_contract444(&I, &Zab, &Tab, 0, 1, -1.0, 1.0);
 
     dpd_buf4_close(&I);
+
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+
+    // T_IAJB += Sum_KC Z_IAKC (JB|KC)
+    dpd_contract444(&Zaa, &I, &Taa, 0, 0, 1.0, 1.0);
+
+    // T_IAjb += Sum_KC (JB|KC) Z_KCjb
+    dpd_contract444(&I, &Zab, &Tab, 0, 1, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
+
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - <ov|vo>");
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
 
     // T_iajb -= Sum_kc Z_iakc gbar_jbkc
     dpd_contract444(&Zbb, &I, &Tbb, 0, 0, -1.0, 1.0);
@@ -2842,6 +2854,17 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_contract444(&Zab, &I, &Tab, 0, 0, -1.0, 1.0);
 
     dpd_buf4_close(&I);
+
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+
+    // T_iajb += Sum_kc Z_iakc (JB|KC)
+    dpd_contract444(&Zbb, &I, &Tbb, 0, 0, 1.0, 1.0);
+
+    // T_IAjb += Sum_KC Z_IAkc (kc|jb)
+    dpd_contract444(&Zab, &I, &Tab, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
     dpd_buf4_close(&Zaa);
     dpd_buf4_close(&Zab);
     dpd_buf4_close(&Zbb);
