@@ -59,7 +59,11 @@ procedures = {
             'tda'           : run_libfock,
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
-            'psimrcc_scf'  : run_psimrcc_scf
+            'psimrcc_scf'   : run_psimrcc_scf,
+            'b3lyp'         : run_dft,  # temporary
+            #'b3lyp-d1'      : run_dft,  # temporary
+            'b3lyp-d2'      : run_dft,  # temporary
+            'b3lyp-d'       : run_dft,  # temporary
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -91,10 +95,12 @@ def energy(name, **kwargs):
         CURRENT REFERENCE ENERGY
         CURRENT CORRELATION ENERGY
 
+    .. _`table:energy_gen`:
+
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :download:`manual <userman.pdf>`|
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -181,6 +187,17 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------+
 
+    .. _`table:energy_dft`:
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                          |
+    +=========================+=======================================================================================+
+    | b3lyp                   | Becke 3-parameter exchange with Lee-Yang-Parr correlation functional (B3LYP)          |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | b3lyp-d                 | B3LYP with Grimme's -D2 dispersion correction                                         |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
+    .. _`table:energy_mrcc`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method in Kallay's MRCC program                                                 |
@@ -252,7 +269,12 @@ def energy(name, **kwargs):
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
-    :type bypass_scf: bool
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type bypass_scf: :ref:`boolean <op_py_boolean>`
     :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether, for *name* values built atop of scf calculations,
@@ -594,6 +616,7 @@ def optimize(name, **kwargs):
     :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
 
     :PSI variables:
+
     .. envvar:: CURRENT ENERGY
 
     .. note:: Analytic gradients area available for all methods in the table
@@ -603,6 +626,8 @@ def optimize(name, **kwargs):
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
        - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
+
+    .. _`table:grad_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
@@ -625,13 +650,13 @@ def optimize(name, **kwargs):
         to be applied to the database. May be any valid argument to
         :py:func:`driver.energy`.
 
-    :type func: function
+    :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
         Indicates the type of calculation to be performed on the molecule.
         The default dertype accesses``'gradient'`` or ``'energy'``, while
         ``'cbs'`` performs a multistage finite difference calculation.
-        If a nested series of python functions is intended (see `Function Intercalls`_),
+        If a nested series of python functions is intended (see :ref:`sec:intercalls`),
         use keyword ``opt_func`` instead of ``func``.
 
     :type mode: string
@@ -644,11 +669,16 @@ def optimize(name, **kwargs):
         (``'sow'``/``'reap'``).  For the latter, run an initial job with
         ``'sow'`` and follow instructions in its output file.
 
-    :type dertype: dertype
+    :type dertype: :ref:`dertype <op_py_dertype>`
     :param dertype: ``'gradient'`` || ``'energy'``
 
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 
@@ -815,9 +845,9 @@ def frequency(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - RAK, why are you adding OPTKING options as GLOBALS? And shouldn't they be Py-side not C-side options?
-
        - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
+
+    .. _`table:freq_gen`:
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
@@ -825,7 +855,7 @@ def frequency(name, **kwargs):
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
-    :type dertype: dertype
+    :type dertype: :ref:`dertype <op_py_dertype>`
     :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
 
         Indicates whether analytic (if available- they're not), finite
@@ -835,10 +865,15 @@ def frequency(name, **kwargs):
     :type irrep: int or string
     :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
 
-        Indicates which symmetry block (Cotton ordering) of vibrational
+        Indicates which symmetry block (:ref:`Cotton <table:irrepOrdering>` ordering) of vibrational
         frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
         :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 

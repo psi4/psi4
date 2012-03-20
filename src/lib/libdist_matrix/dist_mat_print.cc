@@ -14,6 +14,8 @@
 using namespace psi;
 using namespace std;
 
+namespace psi {
+
 // anonymous namespace, only visible in this file.
 namespace {
 string to_string(const int val)
@@ -23,8 +25,6 @@ string to_string(const int val)
     return strm.str();
 }
 }
-
-namespace psi {
 
 madness::Void Distributed_Matrix::print_tile(const int &ti, const int &tj,
                                         const madness::Tensor<double> &tile) const
