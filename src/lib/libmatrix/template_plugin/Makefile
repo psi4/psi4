@@ -25,6 +25,8 @@ LIBS = -L/Users/jturney/Build/elemental \
        -lelemental \
        -L/Users/jturney/Build/elemental/external/plcg \
        -lplcg \
+       -L/Users/jturney/Build/elemental/external/pmrrr \
+       -lpmrrr \
        -L/Users/jturney/Install/libflame/lib \
        -lflame
 CXXINC += -I/Users/jturney/Install/libflame/include -I/Users/jturney/Build/elemental/include

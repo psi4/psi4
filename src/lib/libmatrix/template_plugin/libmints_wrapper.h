@@ -44,6 +44,10 @@ namespace psi { namespace libmatrix {
             matrix_.add(rhs.matrix_);
         }
 
+        double operator()(int h, int m, int n) const {
+            return matrix_.get(h, m, n);
+        }
+
     private:
         Matrix matrix_;
     };

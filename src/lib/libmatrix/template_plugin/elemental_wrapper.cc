@@ -1,3 +1,4 @@
+#include "libmints_wrapper.h"
 #include "elemental_wrapper.h"
 
 namespace psi { namespace libmatrix {
