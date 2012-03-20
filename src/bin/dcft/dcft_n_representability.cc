@@ -648,7 +648,7 @@ DCFTSolver::dump_density()
     dpd_buf4_init(&L, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - <OV|VO>");
     OVOVEnergy += dpd_buf4_dot(&I, &L);
 //fprintf(outfile, "testaa = %16.10f\n", dpd_buf4_dot(&I, &L));
     dpd_buf4_close(&I);
@@ -683,7 +683,7 @@ DCFTSolver::dump_density()
     dpd_buf4_init(&L, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                       ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - <ov|vo>");
     OVOVEnergy += dpd_buf4_dot(&I, &L);
 //fprintf(outfile, "testbb = %16.10f\n", dpd_buf4_dot(&I, &L));
     dpd_buf4_close(&I);
