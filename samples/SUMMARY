@@ -1,4 +1,4 @@
-adc1:         ADC/6-31G** on H$@@2$O
+adc1:         ADC/6-31G** on H2O
 
 
 adc2:         ADC/aug-cc-pVDZ on two water molecules that are distant from 1000 angstroms from each other
@@ -19,19 +19,19 @@ cc11:         Frozen-core CCSD(ROHF)/cc-pVDZ on CN radical with disk-based AO al
 cc12:         Single point energies of multiple excited states with EOM-CCSD
 
 
-cc13:         UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+cc13:         UHF-CCSD/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
 
 
-cc13a:        UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+cc13a:        UHF-CCSD(T)/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
 
 
-cc14:         ROHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+cc14:         ROHF-CCSD/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
 
 
 cc15:         RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
 
 
-cc16:         UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$)
+cc16:         UHF-B-CCD(T)/cc-pVDZ $^{3}B@@1$ CH2 single-point energy (fzc, MO-basis $\langle ab|cd \rangle$ )
 
 
 cc17:         Single point energies of multiple excited states with EOM-CCSD
@@ -46,10 +46,10 @@ cc19:         CCSD/cc-pVDZ dipole polarizability at two frequencies
 cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 
 
-cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH$@@2$.
+cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.
 
 
-cc23:         ROHF-EOM-CCSD/DZ analytic gradient lowest 2B1 state of H2O+ (A1 excitation)
+cc23:         ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}B@@1$ state of H2O+ (A1 excitation)
 
 
 cc24:         Single point gradient of 1-2B1 state of H2O+ with EOM-CCSD
@@ -64,10 +64,10 @@ cc26:         Single-point gradient, analytic and via finite-differences of 2-1A
 cc27:         Single point gradient of 1-1B2 state of H2O with EOM-CCSD
 
 
-cc28:         CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z-mat H$@@2$O$@@2$
+cc28:         CCSD/cc-pVDZ optical rotation calculation (length gauge only) on Z-mat H2O2
 
 
-cc29:         CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H$@@2$O$@@2$
+cc29:         CCSD/cc-pVDZ optical rotation calculation (both gauges) on Cartesian H2O2
 
 
 cc3:          cc3: RHF-CCSD/6-31G** H2O geometry optimization and vibrational frequency analysis by finite-differences of gradients
@@ -79,16 +79,16 @@ cc30:         CCSD/sto-3g optical rotation calculation (length gauge only) at tw
 cc31:         CCSD/sto-3g optical rotation calculation (both gauges) at two frequencies on methyloxirane
 
 
-cc32:         CC3/cc-pVDZ H$@@2$O R$@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
+cc32:         CC3/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
 
 
-cc33:         CC3(UHF)/cc-pVDZ H$@@2$O R$@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
+cc33:         CC3(UHF)/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
 
 
 cc34:         RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
 
 
-cc35:         CC3(ROHF)/cc-pVDZ H$@@2$O R$@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
+cc35:         CC3(ROHF)/cc-pVDZ H2O $R@@e$ geom from Olsen et al., JCP 104, 8007 (1996)
 
 
 cc36:         CC2(RHF)/cc-pVDZ energy of H2O.
@@ -124,7 +124,7 @@ cc44:         Test case for some of the PSI4 out-of-core codes.  The code is giv
 cc45:         RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
 
-cc46:         EOM-CC2/cc-pVDZ on H$@@2$O$@@2$ with two excited states in each irrep
+cc46:         EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
 
 
 cc49:         EOM-CC3(UHF) on CH radical with user-specified basis and properties for particular root
@@ -139,7 +139,7 @@ cc5:          RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion
 cc50:         EOM-CC3(ROHF) on CH radical with user-specified basis and properties for particular root
 
 
-cc51:         EOM-CC3/cc-pVTZ on H$@@2$O
+cc51:         EOM-CC3/cc-pVTZ on H2O
 
 
 cc52:         CCSD Response for H2O2
@@ -148,7 +148,7 @@ cc52:         CCSD Response for H2O2
 cc5a:         RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion
 
 
-cc6:          Frozen-core CCSD(T)/cc-pVDZ on C$@@4$H$@@4$N anion with disk ao algorithm
+cc6:          Frozen-core CCSD(T)/cc-pVDZ on C4H4N anion with disk ao algorithm
 
 
 cc8:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
@@ -259,7 +259,7 @@ frac:         Carbon/UHF Fractionally-Occupied SCF Test Case
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.
 
 
-mcscf1:       ROHF 6-31G** energy of the $^3B@@1$ state of CH$@@2$, with Z-matrix input. The occupations are specified explicitly.
+mcscf1:       ROHF 6-31G** energy of the $^{3}B@@1$  state of CH2, with Z-matrix input. The occupations are specified explicitly.
 
 
 mcscf2:       TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.
@@ -331,16 +331,22 @@ plugin_gpu_ccsd:  cc-pvdz H2O Test CCSD energies
 plugin_libcim:  sto-3g (H2O)8 Test Boys localization
 
 
+plugin_libfock:  LibFock test input
+
+
+plugin_test_matrix:  Plugin_test_matrix test input
+
+
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
 
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
-psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH$@@2$ state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
+psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
 
-psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
+psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 
 pubchem1:     Benzene vertical singlet-triplet energy difference computation, using the PubChem database to obtain the initial geometry, at the UHF an ROHF levels of theory.
