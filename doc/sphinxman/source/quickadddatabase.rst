@@ -1,5 +1,7 @@
 
 .. _`sec:createDatabase`:
+.. index::
+   pair: database; adding new
 
 .. note:: No recompile of the PSI program is necessary for changes made to
     files in ``$PSIDATADIR``, including those described below.
