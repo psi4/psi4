@@ -57,6 +57,14 @@ DCFTSolver::compute_gradient()
 
     fprintf(outfile, "\t*=============================================*\n");
 
+    // Compute the OO block of MO Lagrangian
+    compute_lagrangian_OO();
+    // Compute the VV block of MO Lagrangian
+    compute_lagrangian_VV();
+    // Compute the energy-weighted density matrix
+    compute_ewdm();
+
+
     dpdfile2 zia;
     dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
     dpd_file2_print(&zia, outfile);
@@ -2634,7 +2642,7 @@ DCFTSolver::compute_cumulant_response_intermediates()
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    dpdfile2 F_OO, F_oo, F_VV, F_vv, X_OO, X_oo, X_VV, X_vv, T_OO, T_oo, T_VV, T_vv, tmp;
+    dpdfile2 F_OO, F_oo, F_VV, F_vv, Y_OO, Y_oo, Y_VV, Y_vv, T_OO, T_oo, T_VV, T_vv, tmp;
     dpdbuf4 I, Z, G, T, F, Taa, Tab, Tbb, Laa, Lab, Lbb, Zaa, Zab, Zbb;
 
     //
@@ -2815,7 +2823,7 @@ DCFTSolver::compute_cumulant_response_intermediates()
 
     dpd_buf4_close(&I);
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
 
     // T_IAJB -= Sum_KC Z_IAKC gbar_JBKC
     dpd_contract444(&Zaa, &I, &Taa, 0, 0, -1.0, 1.0);
@@ -2824,8 +2832,20 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_contract444(&I, &Zab, &Tab, 0, 1, -1.0, 1.0);
 
     dpd_buf4_close(&I);
+
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+
+    // T_IAJB += Sum_KC Z_IAKC (JB|KC)
+    dpd_contract444(&Zaa, &I, &Taa, 0, 0, 1.0, 1.0);
+
+    // T_IAjb += Sum_KC (JB|KC) Z_KCjb
+    dpd_contract444(&I, &Zab, &Tab, 0, 1, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
+
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
 
     // T_iajb -= Sum_kc Z_iakc gbar_jbkc
     dpd_contract444(&Zbb, &I, &Tbb, 0, 0, -1.0, 1.0);
@@ -2834,6 +2854,17 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_contract444(&Zab, &I, &Tab, 0, 0, -1.0, 1.0);
 
     dpd_buf4_close(&I);
+
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+
+    // T_iajb += Sum_kc Z_iakc (JB|KC)
+    dpd_contract444(&Zbb, &I, &Tbb, 0, 0, 1.0, 1.0);
+
+    // T_IAjb += Sum_KC Z_IAkc (kc|jb)
+    dpd_contract444(&Zab, &I, &Tab, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
     dpd_buf4_close(&Zaa);
     dpd_buf4_close(&Zab);
     dpd_buf4_close(&Zbb);
@@ -3063,7 +3094,7 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_buf4_close(&F);
 
     //
-    // Compute X intermediates
+    // Compute Y intermediates
     //
 
     dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "dTau <O|O>");
@@ -3071,143 +3102,143 @@ DCFTSolver::compute_cumulant_response_intermediates()
     dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "dTau <V|V>");
     dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "dTau <v|v>");
 
-    dpd_file2_init(&X_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
+    dpd_file2_init(&Y_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Y <V|V>");
 
-    // X_AB = (AB|CD) dTau_CD
+    // Y_AB = (AB|CD) dTau_CD
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
-    dpd_contract422(&I, &T_VV, &X_VV, 0, 0, 1.0, 0.0);
+    dpd_contract422(&I, &T_VV, &Y_VV, 0, 0, 1.0, 0.0);
     dpd_buf4_close(&I);
-    // X_AB -= <AB|CD> dTau_CD
+    // Y_AB -= <AB|CD> dTau_CD
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                   ID("[V,V]"), ID("[V,V]"), 0, "MO Ints <VV|VV>");
-    dpd_contract422(&I, &T_VV, &X_VV, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_VV, &Y_VV, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_AB += (AB|cd) dTau_cd
+    // Y_AB += (AB|cd) dTau_cd
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[v,v]"),
                   ID("[V>=V]+"), ID("[v>=v]+"), 0, "MO Ints (VV|vv)");
-    dpd_contract422(&I, &T_vv, &X_VV, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_vv, &Y_VV, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
 
-    // X_AB = +(AB|IJ) dTau_IJ
+    // Y_AB = +(AB|IJ) dTau_IJ
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"),
                   ID("[V>=V]+"), ID("[O>=O]+"), 0, "MO Ints (VV|OO)");
-    dpd_contract422(&I, &T_OO, &X_VV, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_OO, &Y_VV, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_AB -= <AB|IJ> dTau_IJ
+    // Y_AB -= <AB|IJ> dTau_IJ
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[O,O]"),
                   ID("[V,V]"), ID("[O,O]"), 0, "MO Ints <VV|OO>");
-    dpd_contract422(&I, &T_OO, &X_VV, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_OO, &Y_VV, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_AB += (AB|ij) dTau_ij
+    // Y_AB += (AB|ij) dTau_ij
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[o,o]"),
                   ID("[V>=V]+"), ID("[o>=o]+"), 0, "MO Ints (VV|oo)");
-    dpd_contract422(&I, &T_oo, &X_VV, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_oo, &Y_VV, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    dpd_file2_close(&X_VV);
+    dpd_file2_close(&Y_VV);
 
-    dpd_file2_init(&X_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "X <v|v>");
+    dpd_file2_init(&Y_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Y <v|v>");
 
-    // X_ab = +(ab|cd) dTau_cd
+    // Y_ab = +(ab|cd) dTau_cd
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
-    dpd_contract422(&I, &T_vv, &X_vv, 0, 0, 1.0, 0.0);
+    dpd_contract422(&I, &T_vv, &Y_vv, 0, 0, 1.0, 0.0);
     dpd_buf4_close(&I);
-    // X_ab -= <ab|cd> dTau_cd
+    // Y_ab -= <ab|cd> dTau_cd
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                   ID("[v,v]"), ID("[v,v]"), 0, "MO Ints <vv|vv>");
-    dpd_contract422(&I, &T_vv, &X_vv, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_vv, &Y_vv, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_ab += (ab|CD) dTau_CD
+    // Y_ab += (ab|CD) dTau_CD
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[V,V]"),
                   ID("[v,v]"), ID("[V,V]"), 0, "MO Ints (vv|VV)");
-    dpd_contract422(&I, &T_VV, &X_vv, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_VV, &Y_vv, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
 
-    // X_ab = +(ab|ij) dTau_ij
+    // Y_ab = +(ab|ij) dTau_ij
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,o]"),
                   ID("[v>=v]+"), ID("[o>=o]+"), 0, "MO Ints (vv|oo)");
-    dpd_contract422(&I, &T_oo, &X_vv, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_oo, &Y_vv, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_ab -= <ab|ij> dTau_ij
+    // Y_ab -= <ab|ij> dTau_ij
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[o,o]"),
                   ID("[v,v]"), ID("[o,o]"), 0, "MO Ints <vv|oo>");
-    dpd_contract422(&I, &T_oo, &X_vv, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_oo, &Y_vv, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_ab += (ab|IJ) dTau_IJ
+    // Y_ab += (ab|IJ) dTau_IJ
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[O,O]"),
                   ID("[v,v]"), ID("[O,O]"), 0, "MO Ints (vv|OO)");
-    dpd_contract422(&I, &T_OO, &X_vv, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_OO, &Y_vv, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    dpd_file2_close(&X_vv);
+    dpd_file2_close(&Y_vv);
 
-    dpd_file2_init(&X_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
-    // X_IJ = +(IJ|AB) dTau_AB
+    dpd_file2_init(&Y_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Y <O|O>");
+    // Y_IJ = +(IJ|AB) dTau_AB
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O>=O]+"), ID("[V>=V]+"), 0, "MO Ints (OO|VV)");
-    dpd_contract422(&I, &T_VV, &X_OO, 0, 0, 1.0, 0.0);
+    dpd_contract422(&I, &T_VV, &Y_OO, 0, 0, 1.0, 0.0);
     dpd_buf4_close(&I);
 
-    // X_IJ -= <IJ|AB> dTau_AB
+    // Y_IJ -= <IJ|AB> dTau_AB
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "MO Ints <OO|VV>");
-    dpd_contract422(&I, &T_VV, &X_OO, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_VV, &Y_OO, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_IJ += (IJ|ab) dTau_ab
+    // Y_IJ += (IJ|ab) dTau_ab
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[v,v]"),
                   ID("[O>=O]+"), ID("[v>=v]+"), 0, "MO Ints (OO|vv)");
-    dpd_contract422(&I, &T_vv, &X_OO, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_vv, &Y_OO, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_IJ = +(IJ|KL) dTau_KL
+    // Y_IJ = +(IJ|KL) dTau_KL
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O>=O]+"), ID("[O>=O]+"), 0, "MO Ints (OO|OO)");
-    dpd_contract422(&I, &T_OO, &X_OO, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_OO, &Y_OO, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_IJ -= <IJ|KL> dTau_KL
+    // Y_IJ -= <IJ|KL> dTau_KL
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
                   ID("[O,O]"), ID("[O,O]"), 0, "MO Ints <OO|OO>");
-    dpd_contract422(&I, &T_OO, &X_OO, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_OO, &Y_OO, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_IJ += (IJ|kl) dTau_kl
+    // Y_IJ += (IJ|kl) dTau_kl
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[o,o]"),
                   ID("[O>=O]+"), ID("[o>=o]+"), 0, "MO Ints (OO|oo)");
-    dpd_contract422(&I, &T_oo, &X_OO, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_oo, &Y_OO, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    dpd_file2_close(&X_OO);
+    dpd_file2_close(&Y_OO);
 
 
-    dpd_file2_init(&X_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
-    // X_ij = +(ij|ab) dTau_ab
+    dpd_file2_init(&Y_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Y <o|o>");
+    // Y_ij = +(ij|ab) dTau_ab
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o>=o]+"), ID("[v>=v]+"), 0, "MO Ints (oo|vv)");
-    dpd_contract422(&I, &T_vv, &X_oo, 0, 0, 1.0, 0.0);
+    dpd_contract422(&I, &T_vv, &Y_oo, 0, 0, 1.0, 0.0);
     dpd_buf4_close(&I);
-    // X_ij -= <ij|ab> dTau_ab
+    // Y_ij -= <ij|ab> dTau_ab
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "MO Ints <oo|vv>");
-    dpd_contract422(&I, &T_vv, &X_oo, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_vv, &Y_oo, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_ij += (ij|AB) dTau_AB
+    // Y_ij += (ij|AB) dTau_AB
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[V,V]"),
                   ID("[o,o]"), ID("[V,V]"), 0, "MO Ints (oo|VV)");
-    dpd_contract422(&I, &T_VV, &X_oo, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_VV, &Y_oo, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_ij = +(ij|kl) dTau_kl
+    // Y_ij = +(ij|kl) dTau_kl
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o>=o]+"), ID("[o>=o]+"), 0, "MO Ints (oo|oo)");
-    dpd_contract422(&I, &T_oo, &X_oo, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_oo, &Y_oo, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_ij -= <ij|kl> dTau_kl
+    // Y_ij -= <ij|kl> dTau_kl
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
                   ID("[o,o]"), ID("[o,o]"), 0, "MO Ints <oo|oo>");
-    dpd_contract422(&I, &T_oo, &X_oo, 0, 0, -1.0, 1.0);
+    dpd_contract422(&I, &T_oo, &Y_oo, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&I);
-    // X_IJ += (ij|KL) dTau_KL
+    // Y_IJ += (ij|KL) dTau_KL
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[O,O]"),
                   ID("[o,o]"), ID("[O,O]"), 0, "MO Ints (oo|OO)");
-    dpd_contract422(&I, &T_OO, &X_oo, 0, 0, 1.0, 1.0);
+    dpd_contract422(&I, &T_OO, &Y_oo, 0, 0, 1.0, 1.0);
     dpd_buf4_close(&I);
-    dpd_file2_close(&X_oo);
+    dpd_file2_close(&Y_oo);
 
     dpd_file2_close(&T_OO);
     dpd_file2_close(&T_oo);
@@ -3220,16 +3251,16 @@ DCFTSolver::compute_cumulant_response_intermediates()
 
     /*
      * The T intermediates
-     * T_ijab = 2.0 * P(ab) X_ca lambda_ijcb + 2.0 * P(ij) X_kj lambda_ikab
+     * T_ijab = 2.0 * P(ab) Y_ca lambda_ijcb + 2.0 * P(ij) Y_kj lambda_ikab
      */
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
-    // Temp_IJAB = lambda_IJCB X_AC
-    dpd_file2_init(&X_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
-    dpd_contract244(&X_VV, &Laa, &T, 1, 2, 1, 2.0, 0.0);
-    dpd_file2_close(&X_VV);
+    // Temp_IJAB = lambda_IJCB Y_AC
+    dpd_file2_init(&Y_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Y <V|V>");
+    dpd_contract244(&Y_VV, &Laa, &T, 1, 2, 1, 2.0, 0.0);
+    dpd_file2_close(&Y_VV);
     dpd_buf4_close(&Laa);
     // T_IJAB = Temp_IJAB
     dpd_buf4_copy(&T, PSIF_DCFT_DPD, "T <OO|VV>");
@@ -3246,10 +3277,10 @@ DCFTSolver::compute_cumulant_response_intermediates()
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
-    // Temp_IJAB = -lambda_KJAB X_IK
-    dpd_file2_init(&X_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
-    dpd_contract244(&X_OO, &Laa, &T, 1, 0, 0, -2.0, 0.0);
-    dpd_file2_close(&X_OO);
+    // Temp_IJAB = -lambda_KJAB Y_IK
+    dpd_file2_init(&Y_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Y <O|O>");
+    dpd_contract244(&Y_OO, &Laa, &T, 1, 0, 0, -2.0, 0.0);
+    dpd_file2_close(&Y_OO);
     dpd_buf4_close(&Laa);
     // T_IJAB += TEMP_IJAB
     dpd_buf4_add(&Taa, &T, 1.0);
@@ -3267,22 +3298,22 @@ DCFTSolver::compute_cumulant_response_intermediates()
                   ID("[O,o]"), ID("[V,v]"), 0, "T <Oo|Vv>");
     dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    // T_IjAb = lambda_IjCb X_AC
-    dpd_file2_init(&X_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
-    dpd_contract244(&X_VV, &Lab, &Tab, 1, 2, 1, 2.0, 0.0);
-    dpd_file2_close(&X_VV);
-    // T_IjAb += lambda_IjAc X_bc
-    dpd_file2_init(&X_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "X <v|v>");
-    dpd_contract424(&Lab, &X_vv, &Tab, 3, 1, 0, 2.0, 1.0);
-    dpd_file2_close(&X_vv);
-    // T_IjAb -= lambda_KjAb X_IK
-    dpd_file2_init(&X_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
-    dpd_contract244(&X_OO, &Lab, &Tab, 1, 0, 0, -2.0, 1.0);
-    dpd_file2_close(&X_OO);
-    // T_IjAb -= lambda_IkAb X_jk
-    dpd_file2_init(&X_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
-    dpd_contract424(&Lab, &X_oo, &Tab, 1, 1, 1, -2.0, 1.0);
-    dpd_file2_close(&X_oo);
+    // T_IjAb = lambda_IjCb Y_AC
+    dpd_file2_init(&Y_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Y <V|V>");
+    dpd_contract244(&Y_VV, &Lab, &Tab, 1, 2, 1, 2.0, 0.0);
+    dpd_file2_close(&Y_VV);
+    // T_IjAb += lambda_IjAc Y_bc
+    dpd_file2_init(&Y_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Y <v|v>");
+    dpd_contract424(&Lab, &Y_vv, &Tab, 3, 1, 0, 2.0, 1.0);
+    dpd_file2_close(&Y_vv);
+    // T_IjAb -= lambda_KjAb Y_IK
+    dpd_file2_init(&Y_OO, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "Y <O|O>");
+    dpd_contract244(&Y_OO, &Lab, &Tab, 1, 0, 0, -2.0, 1.0);
+    dpd_file2_close(&Y_OO);
+    // T_IjAb -= lambda_IkAb Y_jk
+    dpd_file2_init(&Y_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Y <o|o>");
+    dpd_contract424(&Lab, &Y_oo, &Tab, 1, 1, 1, -2.0, 1.0);
+    dpd_file2_close(&Y_oo);
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Tab);
 
@@ -3291,10 +3322,10 @@ DCFTSolver::compute_cumulant_response_intermediates()
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
-    // Temp_ijab = lambda_ijcb X_ac
-    dpd_file2_init(&X_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "X <v|v>");
-    dpd_contract244(&X_vv, &Lbb, &T, 1, 2, 1, 2.0, 0.0);
-    dpd_file2_close(&X_vv);
+    // Temp_ijab = lambda_ijcb Y_ac
+    dpd_file2_init(&Y_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Y <v|v>");
+    dpd_contract244(&Y_vv, &Lbb, &T, 1, 2, 1, 2.0, 0.0);
+    dpd_file2_close(&Y_vv);
     dpd_buf4_close(&Lbb);
     // T_ijab = Temp_ijab
     dpd_buf4_copy(&T, PSIF_DCFT_DPD, "T <oo|vv>");
@@ -3312,10 +3343,10 @@ DCFTSolver::compute_cumulant_response_intermediates()
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
-    // Temp_ijab = -lambda_kjab X_ik
-    dpd_file2_init(&X_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
-    dpd_contract244(&X_oo, &Lbb, &T, 1, 0, 0, -2.0, 0.0);
-    dpd_file2_close(&X_oo);
+    // Temp_ijab = -lambda_kjab Y_ik
+    dpd_file2_init(&Y_oo, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "Y <o|o>");
+    dpd_contract244(&Y_oo, &Lbb, &T, 1, 0, 0, -2.0, 0.0);
+    dpd_file2_close(&Y_oo);
     dpd_buf4_close(&Lbb);
     // T_ijab += TEMP_ijab
     dpd_buf4_add(&Tbb, &T, 1.0);
@@ -3499,6 +3530,505 @@ DCFTSolver::update_cumulant_response()
 
 }
 
+void
+DCFTSolver::compute_lagrangian_OO()
+{
+
+    psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    dpdbuf4 G, I;
+    dpdfile2 X, H, pT;
+
+    // X_OO: One-electron contributions
+
+    // X_KI = H_JK pTau_JI
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "H <O|O>");
+    dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "pTau <O|O>");
+    dpd_file2_mat_init(&X);
+    dpd_file2_mat_init(&H);
+    dpd_file2_mat_init(&pT);
+    dpd_file2_mat_rd(&H);
+    dpd_file2_mat_rd(&pT);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int k = 0 ; k < naoccpi_[h]; ++k){
+                double value = 0.0;
+                for(int j = 0 ; j < naoccpi_[h]; ++j){
+                    value += H.matrix[h][j][k] * (pT.matrix[h][j][i] + (i == j ? 1.0 : 0.0));
+                }
+                X.matrix[h][k][i] = value;
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&X);
+    dpd_file2_close(&pT);
+    dpd_file2_close(&H);
+    dpd_file2_close(&X);
+
+    // X_ki = H_jk pTau_ji
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "H <o|o>");
+    dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "pTau <o|o>");
+    dpd_file2_mat_init(&X);
+    dpd_file2_mat_init(&H);
+    dpd_file2_mat_init(&pT);
+    dpd_file2_mat_rd(&H);
+    dpd_file2_mat_rd(&pT);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int k = 0 ; k < nboccpi_[h]; ++k){
+                double value = 0.0;
+                for(int j = 0 ; j < nboccpi_[h]; ++j){
+                    value += H.matrix[h][j][k] * (pT.matrix[h][j][i] + (i == j ? 1.0 : 0.0));
+                }
+                X.matrix[h][k][i] = value;
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&X);
+    dpd_file2_close(&pT);
+    dpd_file2_close(&H);
+    dpd_file2_close(&X);
+
+    // X_OO: Two-electron contributions
+
+    //
+    // 2 * <OO||OO> Г_OOOO
+    //
+
+    // X_MI += 2 * <MJ||KL> Г_IJKL
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 1, "MO Ints <OO|OO>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+                  ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
+
+    dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_MI += 4 * <Mj|Kl> Г_IjKl
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+                  ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+                  ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
+
+    dpd_contract442(&I, &G, &X, 0, 0, 4.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_mi += 2 * <mj||kl> Г_ijkl
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[o,o]"),
+                  ID("[o,o]"), ID("[o,o]"), 1, "MO Ints <oo|oo>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
+                  ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
+
+    dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_mi += 4 * <Jm|Kl> Г_JiKl
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[O,o]"),
+                  ID("[O,o]"), ID("[O,o]"), 0, "MO Ints <Oo|Oo>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+                  ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
+
+    dpd_contract442(&I, &G, &X, 1, 1, 4.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    //
+    // <OO||VV> Г_OOVV
+    //
+
+    // X_MI += <JM||BC> Г_JIBC
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
+
+    dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_MI += <Mj|Bc> Г_IjBc
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
+
+    dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_mi += <jm||bc> Г_jibc
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
+
+    dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_mi += <Jm|Bc> Г_JiBc
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
+
+    dpd_contract442(&I, &G, &X, 1, 1, 2.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    //
+    // <OV||OV> Г_OVOV
+    //
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+    dpd_buf4_sort(&G, PSIF_DCFT_DENSITY, psrq, ID("[O,V]"),ID("[O,V]"), "Gamma (OV|OV)");
+    dpd_buf4_close(&G);
+
+
+    // X_MI += <JB||MC> Г_JBIC
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - <OV|VO>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+//                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+//                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma (OV|OV)");
+
+//    dpd_contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
+    dpd_contract442(&I, &G, &X, 0, 0, 1.0, 0.0);
+//    dpd_buf4_print(&I, outfile, 1);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_print(&X, outfile);
+    dpd_file2_close(&X);
+
+    // X_MI += <Jb|Mc> Г_JbIc
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,v]"),
+                  ID("[O,v]"), ID("[O,v]"), 0, "MO Ints <Ov|Ov>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
+                  ID("[O,v]"), ID("[O,v]"), 0, "Gamma <Ov|Ov>");
+
+//    dpd_contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
+    dpd_contract442(&I, &G, &X, 2, 2, 1.0, 0.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_print(&X, outfile);
+    dpd_file2_close(&X);
+
+    // X_MI -= <Ma|jB> Г_IajB
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('O'), "X <O|O>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[o,V]"),
+                  ID("[O,v]"), ID("[o,V]"), 0, "MO Ints <Ov|oV>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
+                  ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
+
+//    dpd_contract442(&I, &G, &X, 0, 0, -1.0, 1.0);
+    dpd_contract442(&I, &G, &X, 0, 0, -1.0, 0.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_print(&X, outfile);
+    dpd_file2_close(&X);
+
+    // X_mi += <jb||mc> Г_jbic
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - <ov|vo>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+
+    dpd_contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_mi += <jB|mC> Г_jBiC
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[o,V]"),
+                  ID("[o,V]"), ID("[o,V]"), 0, "MO Ints <oV|oV>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"),
+                  ID("[o,V]"), ID("[o,V]"), 0, "Gamma <oV|oV>");
+
+    dpd_contract442(&I, &G, &X, 2, 2, 1.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_close(&X);
+
+    // X_mi -= <Ja|mB> Г_JaiB
+    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('o'), "X <o|o>");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[o,V]"),
+                  ID("[O,v]"), ID("[o,V]"), 0, "MO Ints <Ov|oV>");
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
+                  ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
+
+    dpd_contract442(&I, &G, &X, 2, 2, -1.0, 1.0);
+    dpd_buf4_close(&G);
+    dpd_buf4_close(&I);
+    dpd_file2_print(&X, outfile);
+    dpd_file2_close(&X);
+
+    psio_->close(PSIF_DCFT_DENSITY, 1);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+}
+
+void
+DCFTSolver::compute_lagrangian_VV()
+{
+
+//    psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
+//    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+//    dpdbuf4 G, I;
+//    dpdfile2 X, H, pT;
+
+
+//    // X_OV: One-electron contributions
+
+//    // X_IA = H_IB pTau_BA
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
+//    dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
+
+//    dpd_contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
+//    dpd_file2_close(&pT);
+//    dpd_file2_close(&H);
+//    dpd_file2_close(&X);
+
+//    // X_ia = H_ib pTau_ba
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
+//    dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
+
+//    dpd_contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
+//    dpd_file2_close(&pT);
+//    dpd_file2_close(&H);
+//    dpd_file2_close(&X);
+
+//    // X_OV: Two-electron contributions
+
+//    //
+//    // 2 * <OV||VV> Г_VVVV
+//    //
+
+//    // X_IA += 2 * <IB||CD> Г_ABCD
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"),
+//                  ID("[O,V]"), ID("[V,V]"), 1, "MO Ints <OV|VV>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+//                  ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
+
+//    dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_IA += 4 * <Ib|Cd> Г_AbCd
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[V,v]"),
+//                  ID("[O,v]"), ID("[V,v]"), 0, "MO Ints <Ov|Vv>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
+//                  ID("[V,v]"), ID("[V,v]"), 0, "Gamma <Vv|Vv>");
+
+//    dpd_contract442(&I, &G, &X, 0, 0, 4.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_ia += 2 * <ib||cd> Г_abcd
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[v,v]"),
+//                  ID("[o,v]"), ID("[v,v]"), 1, "MO Ints <ov|vv>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
+//                  ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
+
+//    dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_ia += 4 * <iB|cD> Г_AbCd
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[V,v]"),
+//                  ID("[V,o]"), ID("[V,v]"), 0, "MO Ints <Vo|Vv>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
+//                  ID("[V,v]"), ID("[V,v]"), 0, "Gamma <Vv|Vv>");
+
+//    dpd_contract442(&I, &G, &X, 1, 1, 4.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    //
+//    // <OO||OV> Г_OOVV
+//    //
+
+//    // X_IA += <BI||JK> Г_BAJK
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,O]"), ID("[O,O]"),
+//                  ID("[V,O]"), ID("[O,O]"), 1, "MO Ints <VO|OO>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[O,O]"),
+//                  ID("[V,V]"), ID("[O,O]"), 0, "Gamma <VV|OO>");
+
+//    dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_IA += 2 * <Ib|Jk> Г_AbJk
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,o]"),
+//                  ID("[O,v]"), ID("[O,o]"), 0, "MO Ints <Ov|Oo>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[O,o]"),
+//                  ID("[V,v]"), ID("[O,o]"), 0, "Gamma <Vv|Oo>");
+
+//    dpd_contract442(&I, &G, &X, 0, 0, 2.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_ia += <bi||jk> Г_bajk
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,o]"), ID("[o,o]"),
+//                  ID("[v,o]"), ID("[o,o]"), 1, "MO Ints <vo|oo>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[o,o]"),
+//                  ID("[v,v]"), ID("[o,o]"), 0, "Gamma <vv|oo>");
+
+//    dpd_contract442(&I, &G, &X, 1, 1, 1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_ia += 2 * <Bi|Jk> Г_BaJk
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,o]"), ID("[O,o]"),
+//                  ID("[V,o]"), ID("[O,o]"), 0, "MO Ints <Vo|Oo>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[O,o]"),
+//                  ID("[V,v]"), ID("[O,o]"), 0, "Gamma <Vv|Oo>");
+
+//    dpd_contract442(&I, &G, &X, 1, 1, 2.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    //
+//    // <OO||OV> Г_OVOV
+//    //
+
+//    // X_IA += <JB||KI> Г_JBKA
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,O]"),
+//                  ID("[O,V]"), ID("[O,O]"), 1, "MO Ints <OV|OO>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+//                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+
+//    dpd_contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_IA += <kB|jI> Г_kBjA
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[o,O]"),
+//                  ID("[o,V]"), ID("[o,O]"), 0, "MO Ints <oV|oO>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"),
+//                  ID("[o,V]"), ID("[o,V]"), 0, "Gamma <oV|oV>");
+
+//    dpd_contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_IA -= <Kb|jI> Г_KbjA
+//    // Note: <Kb|jI> integrals are resorted <bK|jI> integrals.
+//    // <Kb||jI> Г_KbjA = (-1) * <bK|jI> * Г_KbjA
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[o,O]"),
+//                  ID("[O,v]"), ID("[o,O]"), 0, "MO Ints <Ov|oO>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
+//                  ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
+
+//    dpd_contract442(&I, &G, &X, 3, 3, -1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_ia += <jb||ki> Г_jbka
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,o]"),
+//                  ID("[o,v]"), ID("[o,o]"), 1, "MO Ints <ov|oo>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+//                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+
+//    dpd_contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_ia += <Kb|Ji> Г_KbJa
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,v]"), ID("[O,o]"),
+//                  ID("[O,v]"), ID("[O,o]"), 0, "MO Ints <Ov|Oo>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
+//                  ID("[O,v]"), ID("[O,v]"), 0, "Gamma <Ov|Ov>");
+
+//    dpd_contract442(&I, &G, &X, 3, 3, 1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+//    // X_ia -= <kB|Ji> Г_kBJa
+//    // Note: <kB|Ji> integrals are resorted <Bk|Ji> integrals.
+//    // <kB||Ji> Г_kBJa = (-1) * <Bk|Ji> * Г_kBJa
+
+//    dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+//    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,V]"), ID("[O,o]"),
+//                  ID("[o,V]"), ID("[O,o]"), 0, "MO Ints <oV|Oo>");
+//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[O,v]"),
+//                  ID("[o,V]"), ID("[O,v]"), 0, "Gamma <oV|Ov>");
+
+//    dpd_contract442(&I, &G, &X, 3, 3, -1.0, 1.0);
+//    dpd_buf4_close(&G);
+//    dpd_buf4_close(&I);
+//    dpd_file2_close(&X);
+
+
+//    psio_->close(PSIF_DCFT_DENSITY, 1);
+//    psio_->close(PSIF_LIBTRANS_DPD, 1);
+
+
+}
+
+void
+DCFTSolver::compute_ewdm()
+{
+
+}
 
 
 }} //End namespaces

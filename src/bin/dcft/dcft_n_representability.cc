@@ -326,7 +326,7 @@ DCFTSolver::dump_density()
     dpdbuf4 Laaaa, Laabb, Labba, Lbaab, Lbbbb, Taa, Tab, Tba, Tbb, Gaa2, Laa2, Lab2, Lbb2;
 
     dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma (OV|OV)");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "Lambda (OV|OV)");
     dpd_buf4_init(&Laa2, PSIF_DCFT_DPD, 0, ID("[O,V]"), ID("[O,V]"),
@@ -341,6 +341,16 @@ DCFTSolver::dump_density()
     dpd_contract444(&Lab, &Lab2, &Gaa, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Lab2);
+    dpd_buf4_close(&Gaa);
+
+    // Resort Г(OV|OV) to the Г<OV|OV>
+    dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma (OV|OV)");
+    dpd_buf4_sort(&Gaa, PSIF_DCFT_DENSITY, psrq, ID("[O,V]"),ID("[O,V]"), "Gamma <OV|OV>");
+    dpd_buf4_close(&Gaa);
+
+    dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_rd(&Gaa, h);
@@ -459,7 +469,7 @@ DCFTSolver::dump_density()
 
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma (ov|ov)");
     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "Lambda (ov|ov)");
     dpd_buf4_init(&Lbb2, PSIF_DCFT_DPD, 0, ID("[o,v]"), ID("[o,v]"),
@@ -474,6 +484,17 @@ DCFTSolver::dump_density()
     dpd_contract444(&Lab, &Lab2, &Gbb, 1, 1, -1.0, 1.0);
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Lab2);
+    dpd_buf4_close(&Gbb);
+
+    // Resort Г(ov|ov) to the Г<ov|ov>
+    dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma (ov|ov)");
+    dpd_buf4_sort(&Gbb, PSIF_DCFT_DENSITY, psrq, ID("[o,v]"), ID("[o,v]"), "Gamma <ov|ov>");
+    dpd_buf4_close(&Gbb);
+
+    dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+
     for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_rd(&Gbb, h);
@@ -648,7 +669,7 @@ DCFTSolver::dump_density()
     dpd_buf4_init(&L, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
                       ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - <OV|VO>");
     OVOVEnergy += dpd_buf4_dot(&I, &L);
 //fprintf(outfile, "testaa = %16.10f\n", dpd_buf4_dot(&I, &L));
     dpd_buf4_close(&I);
@@ -683,7 +704,7 @@ DCFTSolver::dump_density()
     dpd_buf4_init(&L, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
                       ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - <ov|vo>");
     OVOVEnergy += dpd_buf4_dot(&I, &L);
 //fprintf(outfile, "testbb = %16.10f\n", dpd_buf4_dot(&I, &L));
     dpd_buf4_close(&I);

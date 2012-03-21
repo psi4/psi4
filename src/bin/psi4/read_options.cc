@@ -244,13 +244,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         !expert -*/
     options.add_bool("FCI_STRINGS",false);
 
-    /*- Do allow `mixed' RAS II/RAS III excitations into the CI space?
+    /*- Do allow "mixed" RAS II/RAS III excitations into the CI space?
       If FALSE, then if there are any electrons
       in RAS III, then the number of holes in RAS I cannot exceed the given
       excitation level EX_LEVEL. !expert -*/
     options.add_bool("MIXED",true);
 
-    /*- Do allow `mixed' excitations involving RAS IV into the CI space.
+    /*- Do allow "mixed" excitations involving RAS IV into the CI space.
       Useful to specify a split-virtual
       CISD[TQ] computation.  If FALSE, then if there are any electrons
       in RAS IV, then the number of holes in RAS I cannot exceed the given
@@ -716,7 +716,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- Don't include the tau terms? -*/
       options.add_bool("IGNORE_TAU", false);
-      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$? -*/
+      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$ ? -*/
       options.add_bool("TAU_SQUARED", false);
       /*- Minimum absolute value below which integrals are neglected.
       See the note at the beginning of Section \ref{keywords}. -*/
@@ -730,7 +730,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- The algorithm to use for the $\left<VV||VV\right>$ terms. -*/
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
-      options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
+      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
       options.add_bool("LOCK_OCC", true);
       /*- Whether to compute DCFT gradient or not -*/
@@ -1646,7 +1646,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
     /*- Do ? -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
-    /*- Do attempt to force a two configruation solution by starting with CI coefficents of $\pm \sqrt{\frac{1}{2}}$ -*/
+    /*- Do attempt to force a two configruation solution by starting with CI coefficents of $\pm \sqrt{\frac{1}{2}}$ ? -*/
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of singly occupied orbitals, per irrep -*/
     options.add("SOCC", new ArrayType());
@@ -2218,7 +2218,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- SUBSECTION Convergence Control -*/
 
-      /*- Set of optimization criteria. Specification of MAX_ or RMS_ G_CONVERGENCE options
+      /*- Set of optimization criteria. Specification of MAX_G_CONVERGENCE or RMS_G_CONVERGENCE options
       will append or overwrite the criteria set here. -*/
       options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
       /*- Convergence criterion for geometry optmization: maximum force (internal coordinates, atomic units). 
