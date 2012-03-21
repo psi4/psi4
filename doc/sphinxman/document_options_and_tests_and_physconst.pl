@@ -125,8 +125,6 @@ sub print_hash
         printf "Auto-documenting module %s options\n", lc($Module);
         open(SSOUT,">$ssout") or die "\nI can't write to $ssout\n";
         printf SSOUT ".. _`apdx:%s`:\n\n", lc($Module);
-        #printf SSOUT ".. toctree::\n   :glob:\n\n   %s__*\n\n", lc($Module);
-        #printf SSOUT ".. toctree::\n   :glob:\n\n   %s__*\n\n", lc($Module);
         printf SSOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
         printf SSOUT ".. toctree::\n   :hidden:\n   :glob:\n\n   %s__*\n\n", lc($Module);
      }
@@ -152,21 +150,12 @@ sub print_hash
              my $UnderscoredKeyword = $Keyword;
              $UnderscoredKeyword =~ s/\\_/_/g;
              my $Keydivider = "\"" x (8+length($UnderscoredKeyword));
-             #print "$Moddivider\n";
              my $keywordfilename = lc($Module) . "__" . lc($UnderscoredKeyword);
              my $fullkeywordfilename = "source/autodir_options_c/" . $keywordfilename . ".rst";
              print SSOUT ".. include:: $keywordfilename.rst\n";
              open(SSSOUT,">$fullkeywordfilename") or die "\nI can't write to $fullkeywordfilename\n";
-             #printf SSSOUT "\n%s\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n", uc($UnderscoredKeyword);
-             #printf SSSOUT ".. glossary::\n\n";
-             #printf SSSOUT ".. glossary:: :term:`%s`\n\n", uc($UnderscoredKeyword);
-             #printf SSSOUT ".. rubric:: %s\n\n", uc($UnderscoredKeyword);
-             #printf SSSOUT "   %s\n      %s\n\n", uc($UnderscoredKeyword), $KeyHash{"SphComment"};
-             #printf SSSOUT "   :term:`%s`\n      %s\n\n", uc($UnderscoredKeyword), $KeyHash{"SphComment"};
              printf SSSOUT ":term:`%s`\n%s\n\n", uc($UnderscoredKeyword), $Keydivider;
              printf SSSOUT "      %s\n\n", $KeyHash{"SphComment"};
-             #printf SSSOUT "%s\n\n", $KeyHash{"SphComment"};
-             #printf TSOUT "   %s\n      **%s** |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
              printf TSOUT "   %s\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
              if(($KeyHash{"Type"} eq "bool") || ($KeyHash{"Type"} eq "boolean")) {
                 printf SSSOUT "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
@@ -187,7 +176,6 @@ sub print_hash
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
                   printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
                   printf SSSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
-                  #printf SSSOUT "* **Possible Values**: %s\n", join(", ", @Options);
                   printf TSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
              }
              print OUT "\\end{tabular*}\n";
@@ -372,11 +360,17 @@ foreach my $File(readdir SAMPLES){
 my $TestsFolder = $DriverPath . "../../tests";
 opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
 my $TexSummary = "tests_descriptions.tex";
+my $RstSummary = "source/autodoc_testsuite.rst";
 # Create a plain-text summary in the samples directory
 my $Summary = $SamplesFolder."/SUMMARY";
 open(SUMMARY,">$Summary") or die "I can't write to $Summary\n";
 # Make a LaTeX version for the manual, too
 open(TEXSUMMARY,">$TexSummary") or die "I can't write to $TexSummary\n";
+open(RSTSUMMARY,">$RstSummary") or die "I can't write to $RstSummary\n";
+print "Auto-documenting samples directory inputs\n";
+print RSTSUMMARY "\n=============================================   ============\n";
+print RSTSUMMARY   "Input File                                      Description \n";
+print RSTSUMMARY   "=============================================   ============\n";
 foreach my $Dir(readdir TESTS){
     my $Input = $TestsFolder."/".$Dir."/input.dat";
     # Look for an input file in each subdirectory, or move on
@@ -411,15 +405,26 @@ foreach my $Dir(readdir TESTS){
         my $Description_tex = $Description;
         $Description_tex =~ s/_/\\_/g;
         $Description_tex =~ s/@@/_/g;
+        my $Description_rst = $Description_tex;
+        $Description_rst =~ s/ \$/ :math:`/g;
+        $Description_rst =~ s/\$ /` /g;
+        $Description_rst =~ s/\$./`./g;
+        $Description_rst =~ s/\$,/`,/g;
+        $Description_rst =~ s/\$\?/`\?/g;
+        $Description_rst =~ s/\\_/_/g;
         print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
         print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
         print TEXSUMMARY "\\end{tabular*}\n";
+        my $srcfilename = ":srcsample:`" . $Dir_tex . "`";
+        printf RSTSUMMARY "%-45s  %s\n", $srcfilename, $Description_rst;
         printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
 }
-close TEXSUMMARY;
+print RSTSUMMARY "=============================================   ============\n\n";
+close TEXSUMMARY ;
+close RSTSUMMARY;
 close SUMMARY;
 closedir TESTS;
 
