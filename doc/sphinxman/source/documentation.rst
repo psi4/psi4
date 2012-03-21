@@ -107,5 +107,5 @@ signs is offset from other text. That is, expressions of the form
 :regexp:`^ $latex math$[., ]$` are good, while ``H$_2$O`` and LaTeX tables
 are not translated correctly. Python docstrings are absorbed as-is, so
 please use reST math formatting (essentially ``$latex math$`` -->
-``:math:`latex math`).
+``:math:`latex math```).
 
