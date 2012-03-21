@@ -19,6 +19,13 @@ namespace psi{ namespace libmatrix {
         //     }
         // }
 
+        template <typename vector_type>
+        struct create_vector {        
+            static vector_type create(const std::string& name, const Dimension& m) {
+                return vector_type (name, m);
+            }
+        };
+
         // If an implementation is not available due to configuration, derive from this class
         // so that compiler errors will be generated if the developer attempts to use them.
         class is_not_available

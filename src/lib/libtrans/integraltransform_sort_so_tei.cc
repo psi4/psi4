@@ -124,12 +124,11 @@ IntegralTransform::presort_so_tei()
     for(int h = 0; h < nirreps_; ++h){
         size_t rowLength = (size_t) I.params->coltot[h^(I.my_irrep)];
         for(int row=0; row < I.params->rowtot[h]; ++row) {
-            if((coreLeft - rowLength) >= 0){  // <-- This is always true (unsigned - unsigned >= 0)
+            if(coreLeft >= rowLength){
                 coreLeft -= rowLength;
                 bucketRowDim[nBuckets-1][h]++;
                 bucketSize[nBuckets-1][h] += rowLength;
-            }
-            else {
+            } else {
                 nBuckets++;
                 coreLeft = memoryd - rowLength;
                 /* Make room for another bucket */
