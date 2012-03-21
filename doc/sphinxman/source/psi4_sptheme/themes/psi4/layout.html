@@ -29,7 +29,7 @@
 {# make root link redirectable #}
 {%- set theme_roottarget = (theme_roottarget == "<toc>" and master_doc or theme_roottarget) %}
 {% block rootrellink %}
-    <li><a href="{{ pathto(theme_roottarget) }}">{{project}} for PSI4 Documentation</a> &raquo; </li>
+    <li><a href="{{ pathto(theme_roottarget) }}">{{project}}</a> &raquo; </li>
 {% endblock %}
 
 {# make logo link redirectable #}

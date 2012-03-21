@@ -16,10 +16,13 @@
    methods
    psithoninput
    psithonfunc
+   basissets
    interfacing
+   customizing
 .. #####  LATEX-USER STOP
 .. #####  LATEX-PROG START
-   adding
+   contributing
+   programming
    autodoc_driver
 .. #####  LATEX-PROG STOP
    psimod
