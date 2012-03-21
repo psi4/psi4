@@ -182,6 +182,7 @@ IntegralTransform::initialize()
     iwlAAIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
     iwlABIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
     iwlBBIntFile_  = transformationType_ == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
+    write_dpd_so_tpdm_ = false;
 
     tpdm_buffer_ = 0;
 

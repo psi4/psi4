@@ -156,6 +156,8 @@ class IntegralTransform{
 
         /*===== The set/get accessor functions =====*/
 
+        /// Set whether to write a DPD formatted SO basis TPDM to disk after density transformations
+        void set_write_dpd_so_tpdm(bool t_f) { write_dpd_so_tpdm_ = t_f; }
         /// Set the level of printing used during transformations (0 -> 6)
         void set_print(int n) {print_ = n;}
         /// The level of printing used during transformations
@@ -270,6 +272,8 @@ class IntegralTransform{
         std::map<std::string, int> dpdLookup_;
         // Whether the SO integrals have already been presorted
         bool alreadyPresorted_;
+        // Whether to also write DPD formatted SO TPDMs after density transformations
+        bool write_dpd_so_tpdm_;
         // The file to which DPD formatted integrals are written
         int dpdIntFile_;
         // The file containing alpha half-transformed integrals in DPD format
