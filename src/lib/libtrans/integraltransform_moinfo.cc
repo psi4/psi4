@@ -25,6 +25,8 @@ void IntegralTransform::common_initialize()
     sosym_   = init_int_array(nso_);
     mosym_   = init_int_array(nmo_);
     zeros_   = init_int_array(nirreps_);
+    
+    write_dpd_so_tpdm_ = false;
 
     int count = 0;
     for(int h = 0; h < nirreps_; ++h){
