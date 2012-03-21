@@ -40,6 +40,7 @@ while(<DRIVER>){
         $CurrentSubsection = "";
     }
     my $CommentString;
+    my $SphinxCommentString;
     my $Type;
     my $Default;
     my $Keyword;
@@ -56,16 +57,25 @@ while(<DRIVER>){
         $CommentString =~ s/_/\\_/g;
         # process @@ as math mode subscript in tex
         $CommentString =~ s/@@/_/g;
+        $SphinxCommentString = $CommentString;
+        $SphinxCommentString =~ s/ \$/ :math:`/g;
+        $SphinxCommentString =~ s/\$ /` /g;
+        $SphinxCommentString =~ s/\$./`./g;
+        $SphinxCommentString =~ s/\$,/`,/g;
+        $SphinxCommentString =~ s/\$\?/`\?/g;
+        $SphinxCommentString =~ s/\\_/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Type"}    = $Type;
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Default"} = $Default;
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Comment"} = $CommentString;
+            $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"SphComment"} = $SphinxCommentString;
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Possibilities"} = $Possibilities;
         }else{
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Type"}    = $Type;
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Default"} = $Default;
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Comment"} = $CommentString;
+            $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"SphComment"} = $SphinxCommentString;
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Possibilities"} = $Possibilities;
         }
     }
@@ -85,13 +95,44 @@ sub print_hash
  my $label_string = $_[3];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
  print OUT "{\n \\footnotesize\n";
+ my $tsout = "source/autodoc_glossary_options_c.rst";
+ my $sout = "source/autodoc_options_c_bymodule.rst";
+ if ($print_description) { 
+    my $sout = "source/autodoc_options_c_bymodule.rst";
+    open(TSOUT,">$tsout") or die "\nI can't write to $tsout\n";
+    print TSOUT "\n.. _`apdx:options_c_alpha`:\n\n";
+    print TSOUT "Keywords by Alpha\n=================\n\n";
+    print TSOUT ".. glossary::\n   :sorted:\n\n";
+    open(SOUT,">$sout") or die "\nI can't write to $sout\n";
+    print SOUT "\n.. _`apdx:options_c_module`:\n\n";
+    print SOUT "Keywords by Module\n==================\n\n.. toctree::\n   :maxdepth: 1\n\n";
+ }
+ else { 
+    open(TSOUT,">>$tsout") or die "\nI can't write to $tsout\n";
+    open(SOUT,">/dev/null");
+ }
  my @RearrModules = sort {$a cmp $b} keys %hash;
  @RearrModules = grep { $_ ne "GLOBALS"} @RearrModules;
  unshift(@RearrModules, "GLOBALS");
  foreach my $Module (@RearrModules){
      $Module =~ s/_/-/g; # Things like plugin_module_name will screw things up...
      push(@temp, $Module);
+     my $Moddivider = "=" x length($Module);
      printf OUT "\n\\subsection{%s}\\label{%s-%s}\n",$Module,$label_string, $Module;
+     print SOUT "   autodir_options_c/module__" . lc($Module) . "\n";
+     my $ssout = "source/autodir_options_c/module__" . lc($Module) . ".rst";
+     if ($print_description) { 
+        printf "Auto-documenting module %s options\n", lc($Module);
+        open(SSOUT,">$ssout") or die "\nI can't write to $ssout\n";
+        printf SSOUT ".. _`apdx:%s`:\n\n", lc($Module);
+        #printf SSOUT ".. toctree::\n   :glob:\n\n   %s__*\n\n", lc($Module);
+        #printf SSOUT ".. toctree::\n   :glob:\n\n   %s__*\n\n", lc($Module);
+        printf SSOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
+        printf SSOUT ".. toctree::\n   :hidden:\n   :glob:\n\n   %s__*\n\n", lc($Module);
+     }
+     else { 
+        open(SSOUT,">>$ssout") or die "\nI can't write to $ssout\n";
+     }
      if (exists $ModuleDescriptions{$Module} and $print_description){
          printf OUT "\n{\\normalsize $ModuleDescriptions{$Module}}\\\\\n";
          # Insert an empty table entry as a spacer
@@ -108,20 +149,64 @@ sub print_hash
              my %KeyHash = %{$SectionHash{$Keyword}};
              my $DashedKeyword = $Keyword;
              $DashedKeyword =~ s/\\_/-/g;
+             my $UnderscoredKeyword = $Keyword;
+             $UnderscoredKeyword =~ s/\\_/_/g;
+             my $Keydivider = "\"" x (8+length($UnderscoredKeyword));
+             #print "$Moddivider\n";
+             my $keywordfilename = lc($Module) . "__" . lc($UnderscoredKeyword);
+             my $fullkeywordfilename = "source/autodir_options_c/" . $keywordfilename . ".rst";
+             print SSOUT ".. include:: $keywordfilename.rst\n";
+             open(SSSOUT,">$fullkeywordfilename") or die "\nI can't write to $fullkeywordfilename\n";
+             #printf SSSOUT "\n%s\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n", uc($UnderscoredKeyword);
+             #printf SSSOUT ".. glossary::\n\n";
+             #printf SSSOUT ".. glossary:: :term:`%s`\n\n", uc($UnderscoredKeyword);
+             #printf SSSOUT ".. rubric:: %s\n\n", uc($UnderscoredKeyword);
+             #printf SSSOUT "   %s\n      %s\n\n", uc($UnderscoredKeyword), $KeyHash{"SphComment"};
+             #printf SSSOUT "   :term:`%s`\n      %s\n\n", uc($UnderscoredKeyword), $KeyHash{"SphComment"};
+             printf SSSOUT ":term:`%s`\n%s\n\n", uc($UnderscoredKeyword), $Keydivider;
+             printf SSSOUT "      %s\n\n", $KeyHash{"SphComment"};
+             #printf SSSOUT "%s\n\n", $KeyHash{"SphComment"};
+             #printf TSOUT "   %s\n      **%s** |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+             printf TSOUT "   %s\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+             if(($KeyHash{"Type"} eq "bool") || ($KeyHash{"Type"} eq "boolean")) {
+                printf SSSOUT "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
+                printf TSOUT  "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
+             }
+             elsif (($KeyHash{"Type"} eq "double") && ((lc($Keyword) =~ /conv/) || (lc($Keyword) =~ /tol/))) {
+                printf SSSOUT "      * **Type**: :ref:`conv double <op_c_conv>`\n";
+                printf TSOUT  "      * **Type**: :ref:`conv double <op_c_conv>`\n";
+             }
+             else {
+                printf SSSOUT "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf TSOUT  "      * **Type**: %s\n", $KeyHash{"Type"};
+             }
              printf OUT "\\paragraph{%s}\\label{op-%s-%s} \n", $Keyword, $Module, $DashedKeyword;
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.05\\textwidth}p{0.95\\textwidth}}';
              printf OUT "\n\t & %s \\\\ \n", $KeyHash{"Comment"};
              if($KeyHash{"Possibilities"}){
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
                   printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
+                  printf SSSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
+                  #printf SSSOUT "* **Possible Values**: %s\n", join(", ", @Options);
+                  printf TSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
              }
              print OUT "\\end{tabular*}\n";
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
              printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", $KeyHash{"Type"}, $KeyHash{"Default"};
+             printf SSSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
+             #printf SSSOUT "* **Default**: %s\n\n", $KeyHash{"Default"};
+             printf TSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
              print OUT "\\end{tabular*}\n";
-         }
-     }
- }
+             close SSSOUT;
+         }  # keyword
+     }  # subsection
+     print SSOUT "\n";
+     close SSOUT;
+ }  # module
+ print SOUT "\n";
+ close SOUT;
+ print TSOUT "\n";
+ close TSOUT;
  print OUT "}\n";
  close OUT;
 }
@@ -411,6 +496,7 @@ while(<PHYSCONST>){
     $Comment =~ s/@@/_/g;  # process @@ as math mode subscript in tex
     printf TEXOUT "psi%-25s & %-20s & %-40s\\\\\n", $Var, $Val, $Comment;
 }
+print "Auto-documenting constants file physconst.h\n";
 close PHYSCONST;
 close PYOUT;
 close TEXOUT;

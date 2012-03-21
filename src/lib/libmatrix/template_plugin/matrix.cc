@@ -1,3 +1,5 @@
+#include "libmatrix.h"
+
 #include <libplugin/plugin.h>
 #include <psi4-dec.h>
 #include <libparallel/parallel.h>
@@ -6,8 +8,6 @@
 #include <libdist_matrix/dist_mat.h>
 #include <libpsio/psio.hpp>
 
-#include "libmatrix.h"
-
 INIT_PLUGIN
 
 namespace psi { namespace libmatrix {
@@ -15,17 +15,19 @@ namespace psi { namespace libmatrix {
 extern "C" 
 int read_options(std::string name, Options& options)
 {
-    if (name == "LIBMATRIX"|| options.read_globals()) {
+    if (name == "TEMPLATE_PLUGIN"|| options.read_globals()) {
     }
 
     return true;
 }
 
 extern "C" 
-PsiReturnType libmatrix(Options& options)
+PsiReturnType template_plugin(Options& options)
 {
     // NOTE: This will only initialize the "default" matrix type.
     matrix_globals::initialize(Process::arguments.argc(), Process::arguments.argv());
+
+    printf("Using %s matrix interface\n", matrix_globals::interface_name.c_str());
 
     Dimension m(1), n(1);
     m[0] = n[0] = 10;
@@ -35,10 +37,15 @@ PsiReturnType libmatrix(Options& options)
     //    decided at configure/compile time.
     matrix a = create_matrix("A", m, n);
     matrix b = create_matrix("B", m, n);
+    matrix c = create_matrix("C", m, n);
+    matrix vx= create_matrix("C", m, n);
+    vector vw= create_vector("V", n);
     a.fill(1.0);
     b.fill(2.0);
-    a.add(b);
-    a.print();
+    c.gemm(false, false, 1.0, a, b, 0.0);
+    c.diagonalize(vx, vw);
+    vx.print();
+    vw.print();
 
     // Create a dist_matrix:
     //     Generates compile error if madness is not available.
@@ -49,8 +56,18 @@ PsiReturnType libmatrix(Options& options)
 
     // Create a serial_matrix
     //     serial_matrix is always available. Compiler errors should never be generated.
-//    serial_matrix d = create_specific_matrix<serial_matrix>("D", m, n);
-//    d.print();
+    printf("Using serial_matrix objects\n");
+    serial_matrix d = create_specific_matrix<serial_matrix>("D", m, n);
+    serial_matrix e = create_specific_matrix<serial_matrix>("E", m, n);
+    serial_matrix f = create_specific_matrix<serial_matrix>("F", m, n);
+    serial_matrix g = create_specific_matrix<serial_matrix>("G", m, n);
+    serial_vector h = create_specific_vector<serial_vector>("H", n);
+    d.fill(1.0);
+    e.fill(2.0);
+    f.gemm(false, false, 1.0, d, e, 0.0);
+    f.diagonalize(g, h);
+    g.print();
+    h.print();
 
 //    d.add(c);    // throws at runtime
 

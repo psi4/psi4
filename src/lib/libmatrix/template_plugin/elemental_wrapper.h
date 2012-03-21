@@ -1,21 +1,48 @@
+#if defined(HAVE_ELEMENTAL)
+#   include <string>
+#   include <libmints/dimension.h>
+#   include <elemental.hpp>
+#   include <elemental/basic.hpp>
+#endif
+
 namespace psi { namespace libmatrix {
+
+    struct libmints_matrix_wrapper;
+    struct libelemental_vector_wrapper;
+    struct libelemental_matrix_wrapper;
 
 #if defined(HAVE_ELEMENTAL)
     
-    #include <elemental.hpp>
-    #include <elemental/basic_internal.hpp>
-
-    struct libelemental {
-        static bool initialized = false;
-        static mpi::Comm mpi_comm;
-        static int rank = 0;
+    struct libelemental_globals {
+        static std::string interface_name;
+        static elem::mpi::Comm mpi_comm;
+        static int rank;
         
         static void initialize(int argc, char** argv) {
-            elemental::Init(argc, argv);
-            mpi_comm = mpi::COMM_WORLD;
-            rank = mpi::commRank(mpi_comm);
+            elem::Initialize(argc, argv);
+            mpi_comm = elem::mpi::COMM_WORLD;
+            rank = elem::mpi::CommRank(mpi_comm);
         }
-    }
+    };
+
+    struct libelemental_vector_wrapper {
+        libelemental_vector_wrapper(const std::string& name, const Dimension& m) :
+            name_(name), length_(m.sum())
+        {
+            elem::Grid g(libelemental_globals::mpi_comm);
+            vector_ = elem::DistMatrix<double, elem::VR, elem::STAR>(true, length_, g);
+        }
+
+        void print() const {
+            vector_.Print(name_);
+        }
+
+        friend struct libelemental_matrix_wrapper;
+    private:
+        int length_;
+        std::string name_;
+        elem::DistMatrix<double, elem::VR, elem::STAR> vector_;
+    };
 
     // !! I have elemental installed on my laptop but Psi4 doesn't know
     // !! how to configure with it. This code is untested.
@@ -23,19 +50,53 @@ namespace psi { namespace libmatrix {
         libelemental_matrix_wrapper(const std::string& name, const Dimension& m, const Dimension& n) :
             name_(name), height_(m.sum()), width_(n.sum())
         { 
-            elemental::Grid g(libelemental::mpi_comm);
-            matrix_ = Distmatrix<double, MC, MR>(height_, width_, g);
+            elem::Grid g(libelemental_globals::mpi_comm);
+            matrix_ = elem::DistMatrix<double, elem::MC, elem::MR>(height_, width_, g);
         }
 
         void print() const {
             matrix_.Print(name_);
         }
 
+        /// Performs distributed matrix fill.
         void fill(double val) {
-            // elemental doesn't provide a generic fill
-            for (int m=0; m<height_; ++m)
-                for (int n=0; n<width_; ++n)
-                    matrix_.Set(m, n, val);
+            const int colShift    = matrix_.ColShift(); // first row we own
+            const int rowShift    = matrix_.RowShift(); // first col we own
+            const int colStride   = matrix_.ColStride();
+            const int rowStride   = matrix_.RowStride();
+            const int localHeight = matrix_.LocalHeight();
+            const int localWidth  = matrix_.LocalWidth();
+            for( int jLocal=0; jLocal<localWidth; ++jLocal )
+            {
+                for( int iLocal=0; iLocal<localHeight; ++iLocal )
+                {
+                    // Our process owns the rows colShift:colStride:n,
+                    //           and the columns rowShift:rowStride:n
+                    const int i = colShift + iLocal*colStride;
+                    const int j = rowShift + jLocal*rowStride;
+                    matrix_.SetLocalEntry( iLocal, jLocal, val);
+                }
+            }
+        }
+
+        void gemm(bool ta, bool tb, double alpha, 
+                  const libelemental_matrix_wrapper& A,
+                  const libelemental_matrix_wrapper& B,
+                  double beta)
+        {
+            elem::Orientation opA = ta == true ? elem::TRANSPOSE : elem::NORMAL;
+            elem::Orientation opB = tb == true ? elem::TRANSPOSE : elem::NORMAL;
+
+            elem::Gemm(opA, opB, alpha, A.matrix_, B.matrix_, beta, matrix_);
+        }
+
+        // Must assume this is destroyed
+        void diagonalize(libelemental_matrix_wrapper& X, libelemental_vector_wrapper& w) {
+            // destroys matrix_
+            elem::HermitianEig( elem::LOWER, matrix_, w.vector_, X.matrix_);
+
+            // Sort eigenvalues into ascending order (only functionality provided by elemental)
+            elem::SortEig( w.vector_, X.matrix_ );
         }
 
         // Cause problems if the someone tries to use something other than libmints_matrix_wrapper
@@ -44,19 +105,36 @@ namespace psi { namespace libmatrix {
             throw std::logic_error("Don't know how to add different matrix types together.");
         }
 
-        void add(const libelemental_matrix_wrapper& rhs) {
-            elemental::basic::Axpy(1.0, rhs.matrix_, matrix_);
+        void add(const libmints_matrix_wrapper& rhs) {
+            const int colShift    = matrix_.ColShift(); // first row we own
+            const int rowShift    = matrix_.RowShift(); // first col we own
+            const int colStride   = matrix_.ColStride();
+            const int rowStride   = matrix_.RowStride();
+            const int localHeight = matrix_.LocalHeight();
+            const int localWidth  = matrix_.LocalWidth();
+            for( int jLocal=0; jLocal<localWidth; ++jLocal )
+            {
+                for( int iLocal=0; iLocal<localHeight; ++iLocal )
+                {
+                    // Our process owns the rows colShift:colStride:n,
+                    //           and the columns rowShift:rowStride:n
+                    const int i = colShift + iLocal*colStride;
+                    const int j = rowShift + jLocal*rowStride;
+                    matrix_.SetLocalEntry(iLocal, jLocal, rhs(0, iLocal, jLocal));  // elemental version doesn't understand symmetry yet
+                }
+            }
         }
 
-        // Is it not unreasonable to require all matrix types to know how to work with the serial matrix object.
-        void add(const libmints_matrix_wrapper& rhs) {
-            // TODO: implement
+        void add(const libelemental_matrix_wrapper& rhs) {
+            elem::Axpy(1.0, rhs.matrix_, matrix_);
         }
+
     private:
         int height_, width_;
         std::string name_;
-        DistMatrix<double, MC, MR> matrix_;
+        elem::DistMatrix<double, elem::MC, elem::MR> matrix_;
     };
+
 #else
     // We are not configured with Elemental, derive from  is_not_available to
     // cause compiler errors when libelemental_matrix_wrapper is instantiated in

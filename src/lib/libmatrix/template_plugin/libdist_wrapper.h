@@ -1,6 +1,15 @@
+#include <string>
+#include <libdist_matrix/dist_mat.h>
+#include <libmints/dimension.h>
+
 namespace psi { namespace libmatrix {
 
+    struct libmints_matrix_wrapper;
+
     struct libdist_globals {
+        
+        static std::string interface_name;
+
         static void initialize(int argc, char** argv) {
             // Nothing to do. Psi4 already prepares the environment.
         }
