@@ -7,7 +7,7 @@ R = .9
 A = 104.5
 }
 
-plugin_load("./libmatrix.so")
+plugin_load("./template_plugin.so")
 
 set {
   basis sto-3g
@@ -17,4 +17,4 @@ set matrix {
   print 1
 }
 
-plugin("./libmatrix.so")
+plugin("./template_plugin.so")
