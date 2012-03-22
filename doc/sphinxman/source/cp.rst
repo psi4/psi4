@@ -1,5 +1,9 @@
 
-.. _`func:cp()`:
+.. index::
+   triple: setting; keywords; cp()
+   see: counterpoise_correct(); cp()
+
+.. _`sec:cp()`:
 
 Counterpoise Correct
 ====================

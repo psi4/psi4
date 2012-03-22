@@ -1,10 +1,18 @@
 
-.. _`func:db()`:
+.. index::
+   triple: setting; keywords; database()
+   see: db(); database()
+   single: database()
+
+.. _`sec:db()`:
 
 Database
 ========
 
 .. autofunction:: wrappers.database(name, db_name [, func, mode, cp, rlxd, symm, zpe, benchmark, tabulate, subset])
+
+.. index:: 
+   pair: database(); output
 
 Output
 ^^^^^^
@@ -72,6 +80,8 @@ of atoms in each reagent. ::
               RMS Dev                         0.0240
     -----------------------------------------------------------------------------------
 
+.. index:: database(); available
+
 .. _`sec:availableDatabases`:
 
 Available Databases
@@ -85,10 +95,6 @@ and may be found in the database file. The database Python files are very
 readable and should be consulted for more particular questions.
 
 ----
-
-.. toctree::
-
-   autodoc_available_databases
 
 .. include:: autodoc_available_databases.rst
 

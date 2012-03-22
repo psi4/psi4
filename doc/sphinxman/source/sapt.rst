@@ -33,35 +33,29 @@ a complete description of SAPT, the reader is referred to the excellent
 review by Jeziorski, Moszynski, and Szalewicz [Jeziorski:1994:1887]_.
 
 Several truncations of the SAPT expansion are available in the SAPT
-module of |PSIfour|. The simplest truncation of SAPT is denoted SAPT0.
-
-.. _`eqn:SAPT0`:
+module of |PSIfour|. The simplest truncation of SAPT is denoted SAPT0
+and defined in Eq. :eq:`SAPT0`.
 
 .. math:: E_{SAPT0} = E_{elst}^{(10)} + E_{exch}^{(10)} + E_{ind,resp}^{(20)} +
    E_{exch-ind,resp}^{(20)} + E_{disp}^{(20)} + E_{exch-disp}^{(20)}
+   :label: SAPT0
 
 In this notation, :math:`E^{(vw)}` defines the order in :math:`V` and in :math:`W_A+W_B`; the
 subscript, :math:`resp`, indicates that orbital relaxation effects are included.
 
-.. example reference to equation `eqn:SAPT0`_
-
-.. _`eqn:SAPT2`:
-
 .. math:: E_{SAPT2} = E_{SAPT0} + E_{elst,resp}^{(12)} + E_{exch}^{(11)} +
    E_{exch}^{(12)} +\/ ^{t}\!E_{ind}^{(22)} +\/ ^{t}\!E_{exch-ind}^{(22)}
-
-.. _`eqn:SAPT2+`:
+   :label: SAPT2
 
 .. math:: E_{SAPT2+} = E_{SAPT2} + E_{disp}^{(21)} + E_{disp}^{(22)}
-
-.. _`eqn:SAPT2+p3`:
+   :label: SAPT2p
 
 .. math:: E_{SAPT2+(3)} = E_{SAPT2+} + E_{elst,resp}^{(13)} + E_{disp}^{(30)}
-
-.. _`eqn:SAPT2+3`:
+   :label: SAPT2pparen3
 
 .. math:: E_{SAPT2+3} = E_{SAPT2+(3)}
    + E_{exch-disp}^{(30)} + E_{ind-disp}^{(30)} + E_{exch-ind-disp}^{(30)}
+   :label: SAPT2p3
 
 A thorough analysis of the performance of these truncations of SAPT can be
 found in a review by Hohenstein and Sherrill [Hohenstein:2012:WIREs]_.

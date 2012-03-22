@@ -1,3 +1,4 @@
+
 .. _`sec:bestPractices_py`:
 
 Best Practices for Python Functions
@@ -14,7 +15,7 @@ Best Practices for Python Functions
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
 
-- Preferrably, the python function signature (for functions intended to be called in input files) is ``function(name, **kwargs)``. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see :ref:`func:db()` argument db_name for example).
+- Preferrably, the python function signature (for functions intended to be called in input files) is ``function(name, **kwargs)``. For functions that have other positional keywords, please bundle them into kwargs at earliest convenience (see :ref:`sec:db()` argument db_name for example).
 
 - After the docstring, the first two lines of your function should be the ones below. The first provides a case insensitive handle to the name argument value. The second converts all the kwargs dictionary keys to lowercase versions of themselves, so that input files can be case insensitive. ::
 
@@ -72,7 +73,7 @@ Best Practices for Python Functions
         if (func is xx):
             raise ValidationError('Wrapper database is unhappy to be calling function \'%s\'.' % (func.__name__))
 
-    - Create a multipart test case that runs some intercalls between your function and others (akin to pywrap_all). In trials, permute the order of calls a few times to expose any calls that don't clean up after themselves and need further attention.
+    - Create a multipart test case that runs some intercalls between your function and others (akin to :srcsample:`pywrap_all)`. In trials, permute the order of calls a few times to expose any calls that don't clean up after themselves and need further attention.
 
     - When all is validated, add your findings to the great :ref:`table:intercalls` table in the documentation.
 

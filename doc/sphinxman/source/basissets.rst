@@ -1,15 +1,10 @@
 
+.. index:: basis set; available by family
 .. _`sec:basisBuiltIn`:
-.. index:: basis set; available
 
 ==========
 Basis Sets
 ==========
-
-* :ref:`Specifying basis sets <sec:jobControl>`
-* Built-in basis sets by family (below)
-* :ref:`Built-in basis sets by element <apdx:basisElement>`
-* :ref:`User-Defined basis sets <sec:basisUserDefined>`
 
 Basis sets in |PSIfour| are Gaussian functions (not Slater-type functions or plane waves),
 all-electron [no effective core potentials (ECPs)],
@@ -19,6 +14,18 @@ but their mixtures are not, neither within a basis set (*e.g.*, 6D/7F) nor withi
 (*e.g.*, cartesian for the orbital basis and spherical for the fitting basis).
 For built-in basis sets, the correct ``spherical``/``cartesian`` value for :term:`PUREAM`
 is set internally from the orbital basis.
+
+* :ref:`Specifying basis sets <sec:jobControl>`
+* Built-in basis sets by family (below)
+* :ref:`Built-in basis sets by element <apdx:basisElement>`
+* :ref:`User-Defined basis sets <sec:basisUserDefined>`
+
+.. comment * Important Keywords
+.. comment   - .. include:: autodir_options_c/mints__basis.rst
+.. comment   - .. include:: autodir_options_c/scf__df_basis_scf.rst
+.. comment   - .. include:: autodir_options_c/dfmp2__df_basis_mp2.rst
+.. comment   - .. include:: autodir_options_c/sapt__df_basis_sapt.rst
+.. comment   - .. include:: autodir_options_c/sapt__df_basis_elst.rst
 
 Tables :ref:`Pople <table:basisPopleOrbital>`,
 :ref:`Dunning <table:basisDunningOrbital>`, 
