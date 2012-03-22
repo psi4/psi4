@@ -175,6 +175,13 @@ def run_cim(name, **kwargs):
    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_libcim/plugin_libcim.so"
    PsiMod.plugin_load("%s" % (plugfile))
 
+   # override symmetry:
+   molecule = PsiMod.get_active_molecule()
+   molecule.update_geometry()
+   molecule.reset_point_group('c1')
+   molecule.fix_orientation(1)
+   molecule.update_geometry()
+
    # what type of cim?
    if (name.lower() == 'ccsd'):
       PsiMod.set_global_option('compute_triples', False)
@@ -218,12 +225,14 @@ def run_cim(name, **kwargs):
        cim_n += 1
 
    PsiMod.set_variable('CURRENT ENERGY', built_energy+escf)
-   PsiMod.set_variable('TOTAL CIM-CCSD CORRELATION ENERGY', built_ccsd)
+   PsiMod.set_variable('CIM-CCSD CORRELATION ENERGY', built_ccsd)
+   PsiMod.set_variable('CIM-CCSD TOTAL ENERGY', built_ccsd+escf)
    if (name.lower()=='ccsd(t)'):
-      PsiMod.set_variable('TOTAL CIM-CCSD(T) CORRELATION ENERGY', built_ccsdt)
-      PsiMod.set_variable('TOTAL CIM-(T) CORRELATION ENERGY', built_t)
+      PsiMod.set_variable('CIM-CCSD(T) CORRELATION ENERGY', built_ccsdt)
+      PsiMod.set_variable('CIM-CCSD(T) TOTAL ENERGY', built_ccsdt+escf)
+      PsiMod.set_variable('CIM-(T) CORRELATION ENERGY', built_t)
 
-   return built_energy
+   return built_energy+escf
 
 
 # Integration with driver routines

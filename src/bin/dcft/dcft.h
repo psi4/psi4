@@ -6,6 +6,7 @@
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
+#include <libmints/dimension.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -67,22 +68,33 @@ protected:
                        int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
     void compute_tau_squared();
     void compute_energy_tau_squared();
-    void compute_gradient();
-    void orbital_response_guess();
-    void gradient_init();
-    void cumulant_response_guess();
-    void compute_density();
-    void compute_lagrangian_OV();
-    void compute_lagrangian_VO();
-    void iterate_orbital_response();
-    void compute_orbital_response_intermediates();
-    void update_orbital_response();
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
     double compute_lambda_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
+    // DCFT analytic gradient subroutines
+    void compute_gradient();
+    void response_guess();
+    void gradient_init();
+    void compute_density();
+    void compute_lagrangian_OV();
+    void compute_lagrangian_VO();
+    void iterate_orbital_response();
+    void compute_orbital_response_intermediates();
+    void update_orbital_response();
+    double compute_response_coupling();
+    void iterate_cumulant_response();
+    void cumulant_response_guess();
+    void build_perturbed_tau();
+    void compute_cumulant_response_intermediates();
+    double compute_cumulant_response_residual();
+    void update_cumulant_response();
+    void compute_lagrangian_OO();
+    void compute_lagrangian_VV();
+    void compute_ewdm();
+
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// The maximum number of lambda iterations per update
@@ -107,14 +119,16 @@ protected:
     int mindiisvecs_;
     /// The maximum number of iterations
     int maxiter_;
+    /// The current number of macroiteration for energy or gradient computation
+    int iter_;
     /// The number of occupied alpha orbitals per irrep
-    int *naoccpi_;
+    Dimension naoccpi_;
     /// The number of occupied beta orbitals per irrep
-    int *nboccpi_;
+    Dimension nboccpi_;
     /// The number of virtual alpha orbitals per irrep
-    int *navirpi_;
+    Dimension navirpi_;
     /// The number of virtual beta orbitals per irrep
-    int *nbvirpi_;
+    Dimension nbvirpi_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero
