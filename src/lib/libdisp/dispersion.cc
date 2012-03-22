@@ -45,6 +45,18 @@ void Dispersion::print(FILE* out, int level) const
     fprintf(out, "    S6 = %14.6E\n", s6_);
     fprintf(out, "\n");
 }
+double Dispersion::compute_energy(boost::shared_ptr<Molecule> m)
+{
+    throw PSIEXCEPTION("Dispersion: Dispersion is abstract");
+}
+SharedMatrix Dispersion::compute_gradient(boost::shared_ptr<Molecule> m)
+{
+    throw PSIEXCEPTION("Dispersion: Dispersion is abstract");
+}
+SharedMatrix Dispersion::compute_hessian(boost::shared_ptr<Molecule> m)
+{
+    throw PSIEXCEPTION("Dispersion: Dispersion is abstract");
+}
 std::string Dispersion::print_energy(boost::shared_ptr<Molecule> m)
 {
     double e = compute_energy(m);

@@ -32,7 +32,7 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->set_omega(1.0);
         x->set_name("S_X");
         x->set_description("    Slater Exchange\n");
-        x->set_citation("   J.C. Slater, Phys. Rev., 81(3):385-390, 1951\n");
+        x->set_citation("    J.C. Slater, Phys. Rev., 81(3):385-390, 1951\n");
 
         fun = static_cast<Functional*>(x);
     }

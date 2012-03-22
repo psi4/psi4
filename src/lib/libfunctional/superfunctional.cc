@@ -30,7 +30,7 @@ void SuperFunctional::print(FILE* out, int level) const
 {
     if (level < 1) return;
 
-    fprintf(out, "  ==> %s Composite Functional <==\n\n", name_.c_str());
+    fprintf(out, "   => %s Composite Functional <= \n\n", name_.c_str());
 
     fprintf(out, "%s", description_.c_str());
     fprintf(out, "\n");
@@ -100,6 +100,14 @@ void SuperFunctional::print(FILE* out, int level) const
     if (dispersion_) {
         dispersion_->print();
     }
+}
+void SuperFunctional::add_x_functional(boost::shared_ptr<Functional> fun) 
+{
+    x_functionals_.push_back(fun);
+}
+void SuperFunctional::add_c_functional(boost::shared_ptr<Functional> fun) 
+{
+    c_functionals_.push_back(fun);
 }
 bool SuperFunctional::is_gga() const 
 {

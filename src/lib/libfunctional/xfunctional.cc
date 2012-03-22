@@ -161,8 +161,8 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
 
         // > LSDA < //
         double E, E_rho;
-        E = - _K0_ * rho43;
-        E_rho = -4.0/3.0 * rho13;
+        E = - 0.5 * _K0_ * rho43;
+        E_rho = -4.0/6.0 * _K0_ * rho13;
     
         // > GGA < //
 
@@ -341,10 +341,12 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
         // Fk
         double Fk, Fk_k;
         switch (sr_type_) {
-            case SR_None:
+            case SR_None: {
                 Fk = 1.0;
                 Fk_k = 0.0;
-            default:    
+                break;
+            } 
+            default: {    
                 double a = omega_ / (2.0 * k);
                 double a_k = - omega_ / (2.0 * k * k); 
 
@@ -399,6 +401,8 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
                 
                 Fk = F1k + F2k;
                 Fk_k = (F1k_a + F2k_a) * a_k;
+                break;
+            }
         }
     
         // => Assembly <= //
