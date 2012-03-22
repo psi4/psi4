@@ -8,15 +8,24 @@
 namespace psi {
 
 class Functional;
+class Dispersion;
 
 /** 
  * SuperFunctional: High-level semilocal DFA object
+ *
+ * This class directly holds semilocal DFA objects
+ * and a possible empirical dispersion correction factor,
+ * and sketches the definition of the generalized Kohn-Sham functional
+ * via alpha and omega parameters for long-range and global hybrid
+ * exact exchange mixing, and alpha and omega parameters for long-range
+ * and global MP2-like correlation.
  * 
  * A DFT functional is defined as:
  * 
- * E_XC = E_X + E_C
+ * E_XC = E_X + E_C + E(-D)
  * E_X  = (1-\alpha_x) E_X^DFA [\omega_x] + \alpha E_X^HF + (1-\alpha) E_X^HF,LR
  * E_C  = (1-\alpha_c) E_C^DFA [\omega_c] + \alpha E_C^MP2 + (1-\alpha) E_C^MP2,LR
+ * E(-D) is an empirical dispersion correction of some form 
  * 
  **/
 class SuperFunctional {
@@ -40,6 +49,10 @@ protected:
     std::vector<boost::shared_ptr<Functional> > c_functionals_;
     double c_alpha_;
     double c_omega_;
+
+    // => Empirical Dispersion Correction <= //
+    
+    boost::shared_ptr<Dispersion> dispersion_; 
      
     // => Functional values and partials <= //
 
@@ -67,12 +80,12 @@ public:
 
     // => Computers <= //
     
-    const std::map<std::string, SharedVector>& computeRKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
-    const std::map<std::string, SharedVector>& computeUKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
+    std::map<std::string, SharedVector>& computeRKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
+    std::map<std::string, SharedVector>& computeUKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
 
     // => Input/Output <= //
 
-    const std::map<std::string, SharedVector>& values() const { return values_; }
+    std::map<std::string, SharedVector>& values() { return values_; }
 
     std::vector<boost::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<boost::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
@@ -90,6 +103,8 @@ public:
     void set_x_alpha(double alpha) { x_alpha_ = alpha; partition_gks(); }
     void set_c_alpha(double alpha) { c_alpha_ = alpha; partition_gks(); }
 
+    void set_dispersion(boost::shared_ptr<Dispersion> disp) { dispersion_ = disp; }
+
     // => Accessors <= //
 
     std::string name() const { return name_; }
@@ -101,6 +116,8 @@ public:
     double x_alpha() const { return x_alpha_; }
     double c_alpha() const { return c_alpha_; }
 
+    boost::shared_ptr<Dispersion> dispersion() const { return dispersion_; }
+
     bool is_meta() const;
     bool is_gga() const;
     bool is_x_lrc() const { return x_omega_ != 0.0; }
@@ -108,10 +125,12 @@ public:
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
     bool is_c_hybrid() const { return c_alpha_ != 0.0; }
 
+    int ansatz() const;
     int max_points() const { return max_points_; }
     int deriv() const { return deriv_; }
     
     // => Utility <= //
+
     void print(FILE* out = outfile, int print = 1) const;
 
 };

@@ -7,14 +7,11 @@
 
 namespace psi {
 
-namespace functional {
-class SuperFunctional;
-}
-
 class Options;
 class DFTGrid;
 class RKSFunctions;
 class UKSFunctions;
+class SuperFunctional;
 
 // => BASE CLASS <= //
 
@@ -37,7 +34,7 @@ protected:
     /// Basis set used in the integration
     boost::shared_ptr<BasisSet> primary_;
     /// Desired superfunctional kernal
-    boost::shared_ptr<functional::SuperFunctional> functional_;
+    boost::shared_ptr<SuperFunctional> functional_;
     /// Integration grid, built by KSPotential
     boost::shared_ptr<DFTGrid> grid_;
     /// Quadrature values obtained during integration 
@@ -80,7 +77,7 @@ protected:
     /// Set things up
     void common_init();
 public:
-    VBase(boost::shared_ptr<functional::SuperFunctional> functional,
+    VBase(boost::shared_ptr<SuperFunctional> functional,
         boost::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~VBase();
@@ -88,7 +85,7 @@ public:
     static boost::shared_ptr<VBase> build_V(Options& options, const std::string& type = "RV");
 
     boost::shared_ptr<BasisSet> basis() const { return primary_; }
-    boost::shared_ptr<functional::SuperFunctional> functional() const { return functional_; }
+    boost::shared_ptr<SuperFunctional> functional() const { return functional_; }
     boost::shared_ptr<DFTGrid> grid() const { return grid_; }
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
 
@@ -122,7 +119,7 @@ protected:
     virtual void compute_V();
 
 public:
-    RV(boost::shared_ptr<functional::SuperFunctional> functional,
+    RV(boost::shared_ptr<SuperFunctional> functional,
         boost::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~RV();
@@ -143,7 +140,7 @@ protected:
     virtual void compute_V();
 
 public:
-    UV(boost::shared_ptr<functional::SuperFunctional> functional,
+    UV(boost::shared_ptr<SuperFunctional> functional,
         boost::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~UV();
@@ -162,7 +159,7 @@ protected:
     virtual void compute_V();
 
 public:
-    RK(boost::shared_ptr<functional::SuperFunctional> functional,
+    RK(boost::shared_ptr<SuperFunctional> functional,
         boost::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~RK();
@@ -178,7 +175,7 @@ protected:
     virtual void compute_V();
 
 public:
-    UK(boost::shared_ptr<functional::SuperFunctional> functional,
+    UK(boost::shared_ptr<SuperFunctional> functional,
         boost::shared_ptr<BasisSet> primary,
         Options& options);
     virtual ~UK();

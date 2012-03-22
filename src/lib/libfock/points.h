@@ -52,6 +52,7 @@ public:
 
     void set_derivative(int deriv);
     SharedMatrix basis_value(const std::string& key);
+    std::map<std::string, SharedMatrix> basis_values() { return basis_values_; }
 
     virtual void print(FILE* out = outfile, int print = 2) const;
 
@@ -100,7 +101,9 @@ public:
     SharedMatrix scratch() const { return temp_; }
 
     void computeProperties(boost::shared_ptr<BlockOPoints> block);
+
     boost::shared_ptr<Vector> property_value(const std::string& key);
+    std::map<std::string, SharedVector>& property_values() { return property_values_; }
 
     virtual void print(FILE* out = outfile, int print = 2) const;
 };
@@ -157,7 +160,9 @@ public:
     SharedMatrix scratchB() const { return tempb_; }
 
     void computeProperties(boost::shared_ptr<BlockOPoints> block);
+
     boost::shared_ptr<Vector> property_value(const std::string& key);
+    std::map<std::string, SharedVector>& property_values() { return property_values_; }
 
     virtual void print(FILE* out = outfile, int print = 2) const;
 };

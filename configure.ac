@@ -960,6 +960,7 @@ AC_CONFIG_FILES([
           src/lib/libparallel/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
+          src/lib/libdisp/Makefile
           src/lib/libplugin/Makefile
           src/lib/lib3index/Makefile
           src/lib/libsmartptr/Makefile

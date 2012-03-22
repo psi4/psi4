@@ -1,4 +1,5 @@
 #include <libmints/vector.h>
+#include <libdisp/dispersion.h>
 #include "superfunctional.h"
 #include "functional.h"
 
@@ -39,10 +40,10 @@ void SuperFunctional::print(FILE* out, int level) const
     
     fprintf(out, "    Points   = %14d\n", max_points_);
     fprintf(out, "    Deriv    = %14d\n", deriv_);
-    fprintf(out, "\n");
-    
     fprintf(out, "    GGA      = %14s\n", (is_gga() ? "TRUE" : "FALSE"));
     fprintf(out, "    Meta     = %14s\n", (is_meta() ? "TRUE" : "FALSE"));
+    fprintf(out, "\n");
+
     fprintf(out, "    X_LRC    = %14s\n", (is_x_lrc() ? "TRUE" : "FALSE"));
     fprintf(out, "    X_Hybrid = %14s\n", (is_x_hybrid() ? "TRUE" : "FALSE"));
     fprintf(out, "    X_Alpha  = %14.6E\n", x_alpha_);
@@ -55,7 +56,7 @@ void SuperFunctional::print(FILE* out, int level) const
     
     fprintf(out, "   => Exchange Functionals <=\n\n");
     for (int i = 0; i < x_functionals_.size(); i++) {
-        fprintf(out, "   %6.4f %5s\n", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
+        fprintf(out, "    %6.4f %5s", (1.0 - x_alpha_) * x_functionals_[i]->alpha(),
             x_functionals_[i]->name().c_str());
         if (x_functionals_[i]->omega()) {
             fprintf(out, " [\\omega = %6.4f]", x_functionals_[i]->omega());
@@ -63,16 +64,16 @@ void SuperFunctional::print(FILE* out, int level) const
         fprintf(out,"\n");
     }    
     if (x_alpha_) {
-        fprintf(out, "   %6.4f %5s \n", x_alpha_, "HF");
+        fprintf(out, "    %6.4f %5s \n", x_alpha_, "HF");
     }
     if (x_omega_) {
-        fprintf(out, "   %6.4f %5s [\\omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+        fprintf(out, "    %6.4f %5s [\\omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
     }
     fprintf(out, "\n");
      
     fprintf(out, "   => Correlation Functionals <=\n\n");
     for (int i = 0; i < c_functionals_.size(); i++) {
-        fprintf(out, "   %6.4f %5s\n", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
+        fprintf(out, "    %6.4f %5s", (1.0 - c_alpha_) * c_functionals_[i]->alpha(),
             c_functionals_[i]->name().c_str());
         if (c_functionals_[i]->omega()) {
             fprintf(out, " [\\omega = %6.4f]", c_functionals_[i]->omega());
@@ -80,10 +81,10 @@ void SuperFunctional::print(FILE* out, int level) const
         fprintf(out,"\n");
     }    
     if (c_alpha_) {
-        fprintf(out, "   %6.4f %5s \n", c_alpha_, "MP2");
+        fprintf(out, "    %6.4f %5s \n", c_alpha_, "MP2");
     }
     if (c_omega_) {
-        fprintf(out, "   %6.4f %5s [\\omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
+        fprintf(out, "    %6.4f %5s [\\omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
     }
     fprintf(out, "\n");
 
@@ -94,6 +95,10 @@ void SuperFunctional::print(FILE* out, int level) const
         for (int i = 0; i < c_functionals_.size(); i++) {
             c_functionals_[i]->print(out,level);
         }
+    }
+
+    if (dispersion_) {
+        dispersion_->print();
     }
 }
 bool SuperFunctional::is_gga() const 
@@ -219,7 +224,7 @@ void SuperFunctional::allocate()
         values_[list[i]] = SharedVector(new Vector(list[i],max_points_));
     }
 }
-const std::map<std::string, SharedVector>& SuperFunctional::computeRKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints)
+std::map<std::string, SharedVector>& SuperFunctional::computeRKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints)
 {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
     
@@ -229,15 +234,15 @@ const std::map<std::string, SharedVector>& SuperFunctional::computeRKSFunctional
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
-        x_functionals_[i]->computeRKSFunctional(vals, values_, npoints, deriv_, (1.0 -x_alpha_));
+        x_functionals_[i]->computeRKSFunctional(vals, values_, npoints, deriv_, (1.0 - x_alpha_));
     }
     for (int i = 0; i < c_functionals_.size(); i++) {
-        c_functionals_[i]->computeRKSFunctional(vals, values_, npoints, deriv_, (1.0 -c_alpha_));
+        c_functionals_[i]->computeRKSFunctional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
     }
     
     return values_;
 }
-const std::map<std::string, SharedVector>& SuperFunctional::computeUKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints)
+std::map<std::string, SharedVector>& SuperFunctional::computeUKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints)
 {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
     
@@ -247,13 +252,19 @@ const std::map<std::string, SharedVector>& SuperFunctional::computeUKSFunctional
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
-        x_functionals_[i]->computeUKSFunctional(vals, values_, npoints, deriv_, (1.0 -x_alpha_));
+        x_functionals_[i]->computeUKSFunctional(vals, values_, npoints, deriv_, (1.0 - x_alpha_));
     }
     for (int i = 0; i < c_functionals_.size(); i++) {
-        c_functionals_[i]->computeUKSFunctional(vals, values_, npoints, deriv_, (1.0 -c_alpha_));
+        c_functionals_[i]->computeUKSFunctional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
     }
     
     return values_;
+}
+int SuperFunctional::ansatz() const 
+{
+    if (is_meta()) return 2;
+    if (is_gga())  return 1;
+    return 0;
 }
 
 }

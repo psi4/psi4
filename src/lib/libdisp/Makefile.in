@@ -1,0 +1,23 @@
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_disp.a
+
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(incdir)/libdisp
+	$(INSTALL_INCLUDE) $^ $(incdir)/libdisp
+
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
