@@ -17,7 +17,7 @@ I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
 
 .PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext latexpdf-user latexpdf-prog index.rst distclean psi4docs
 
-DISCARD = expert_keywords.tex keywords.tex physconst.tex psi4bases.tex tests_descriptions.tex variables_list.tex warnings.txt $(SOURCEDIR)/index.rst $(SOURCEDIR)/PsiMod.pyc
+DISCARD = expert_keywords.tex keywords.tex physconst.tex psi4bases.tex psi4bases.html tests_descriptions.tex variables_list.tex warnings.txt $(SOURCEDIR)/index.rst $(SOURCEDIR)/PsiMod.pyc
 
 help:
 	@echo "For PSI4, use one of"
@@ -38,7 +38,6 @@ distclean: clean
 index.rst:
 	./document_python_modules.py
 	./document_bases.pl
-	mv psi4bases.html $(SOURCEDIR)/autodoc_psi4bases.html
 	./document_options_and_tests_and_physconst.pl
 	./separate_userprogman.py
 

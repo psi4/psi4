@@ -1,10 +1,11 @@
 
-.. _`sec:methodAlias`:
 .. index::
    pair: method alias; adding new
 
 .. note:: No recompile of the PSI program is necessary for changes made to
     files in ``$PSIDATADIR`` aka :source:`lib`, including those described below.
+
+.. _`sec:methodAlias`:
 
 Defining a Method Alias
 =======================

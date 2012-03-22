@@ -15,8 +15,8 @@ this section we will describe the essential features of the Psithon language.
 samples subdirectory of the top-level |PSIfour| source directory, and should
 serve as useful examples.
 
-.. _`sec:psirc`:
 .. index:: physical constants
+.. _`sec:psirc`:
 
 Scratch Files, the |psirc| File, and Physical Constants
 =======================================================
@@ -96,8 +96,8 @@ messy) flag will prevent files being deleted at the end of the run::
 
     psi4 -m
 
-.. _`sec:moleculeSpecification`:
 .. index:: molecule; specification
+.. _`sec:moleculeSpecification`:
 
 Molecule Specification
 ======================
@@ -158,8 +158,8 @@ examples of geometry specification, see the :srcsample:`mints1` input file in th
 folder. It is also possible to mix Cartesian and Z-matrix geometry
 specifications, as demonstrated in the :srcsample:`mints4` sample input file.
 
-.. _`sec:multipleMolecules`:
 .. index:: molecule; multiple in input file
+.. _`sec:multipleMolecules`:
 
 Multiple Molecules
 ^^^^^^^^^^^^^^^^^^
@@ -215,7 +215,6 @@ Note that whenever the molecule is changed, the basis set must be specified
 again. The following section provides more details about the job control
 keywords used in the above examples.
 
-.. _`sec:moleculeKeywords`:
 .. index::
    triple: setting; keywords; molecule
    pair: molecule; charge
@@ -223,6 +222,7 @@ keywords used in the above examples.
    pair: molecule; symmetry
    pair: molecule; no_reorient
    pair: molecule; units
+.. _`sec:moleculeKeywords`:
 
 Molecule Keywords
 ^^^^^^^^^^^^^^^^^
@@ -241,10 +241,10 @@ achieved by adding either ``no_reorient`` or ``noreorient``. By default,
 ``units spec``, where ``spec`` is one of ``ang``,
 ``angstrom``, ``a.u.``, ``au``, or ``bohr``.
 
-.. _`sec:pubchem`:
 .. index:: 
    single: PubChem
    single: molecule; PubChem
+.. _`sec:pubchem`:
 
 Geometries from the `PubChem <http://pubchem.ncbi.nlm.nih.gov/>`_ Database
 ==========================================================================
@@ -327,8 +327,8 @@ symmetry is utilized.
 The standard keywords, described in Sec. :ref:`sec:moleculeKeywords`, can be
 used in conjuction to specify charge, multiplicity, symmetry to use, *etc.* .
 
-.. _`sec:symmetry`:
 .. index:: symmetry, Cotton-ordering
+.. _`sec:symmetry`:
 
 Symmetry
 ========
@@ -388,8 +388,8 @@ labels are valid.  For :math:`C_s` symmetry the labels ``csx``, ``csy``, and
 respectively.  If no unique axis is specified, |PSIfour| will choose an appropriate
 subgroup.
 
-.. _`sec:fragments`:
 .. index:: molecule; multiple fragments
+.. _`sec:fragments`:
 
 Non-Covalently Bonded Molecule Fragments
 ========================================
@@ -427,10 +427,10 @@ considering interacting fragments, the overall charge is simply the sum of all
 fragment charges, and any unpaired electrons are assumed to be coupled to
 yield the highest possible :math:`M_s` value.
 
-.. _`sec:jobControl`:
 .. index::
    single: basis set; specification
    triple: setting; keywords; C-side
+.. _`sec:jobControl`:
 
 Job Control
 ===========
@@ -530,8 +530,8 @@ the input file, so if the last four commands in the above example were to read :
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes.
 
-.. _`sec:psithonBasissets`:
 .. index:: basis set; multiple within molecule
+.. _`sec:psithonBasissets`:
 
 Assigning Basis Sets
 ====================
@@ -590,8 +590,8 @@ otherwise by setting the auxiliary basis set in the input.  Finally, we note
 that the ``basis`` block may also be used for defining basis sets, as
 detailed in Sec. :ref:`sec:basisUserDefined`.
 
-.. _`sec:memory`:
 .. index:: memory
+.. _`sec:memory`:
 
 Memory Specification
 ====================
@@ -615,8 +615,8 @@ to |PSIfour|::
 One convenient way to override the |PSIfour| default memory is to place a memory
 command in the |psirc| file, as detailed in Sec. :ref:`sec:psirc`.
 
-.. _`sec:threading`:
 .. index:: parallel operation, threading
+.. _`sec:threading`:
 
 Threading
 =========

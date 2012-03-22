@@ -165,6 +165,12 @@ sub print_hash
                 printf SSSOUT "      * **Type**: :ref:`conv double <op_c_conv>`\n";
                 printf TSOUT  "      * **Type**: :ref:`conv double <op_c_conv>`\n";
              }
+             elsif (($KeyHash{"Type"} eq "string") && ((lc($Keyword) eq "basis") || (index(lc($Keyword), "df\\_basis") == 0))) {
+                printf SSSOUT "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf TSOUT  "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf SSSOUT "      * **Possible Values**: :ref:`basis string <apdx:basisElement>`\n";
+                printf TSOUT  "      * **Possible Values**: :ref:`basis string <apdx:basisElement>`\n";
+             }
              else {
                 printf SSSOUT "      * **Type**: %s\n", $KeyHash{"Type"};
                 printf TSOUT  "      * **Type**: %s\n", $KeyHash{"Type"};

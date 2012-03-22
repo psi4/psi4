@@ -1,5 +1,9 @@
 
-.. _`func:opt()`:
+.. index::
+   triple: setting; keywords; optimize()
+   see: opt(); optimize()
+
+.. _`sec:opt()`:
 
 Optimize
 ========
