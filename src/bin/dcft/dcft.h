@@ -6,6 +6,7 @@
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
+#include <libmints/dimension.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -121,13 +122,13 @@ protected:
     /// The current number of macroiteration for energy or gradient computation
     int iter_;
     /// The number of occupied alpha orbitals per irrep
-    int *naoccpi_;
+    Dimension naoccpi_;
     /// The number of occupied beta orbitals per irrep
-    int *nboccpi_;
+    Dimension nboccpi_;
     /// The number of virtual alpha orbitals per irrep
-    int *navirpi_;
+    Dimension navirpi_;
     /// The number of virtual beta orbitals per irrep
-    int *nbvirpi_;
+    Dimension nbvirpi_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero
