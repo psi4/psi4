@@ -1,4 +1,4 @@
-#! Mk-MRCCSD(T) single point. $^1A@@1$ CH$@@2$ state described using
+#! Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using
 #! the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
 
 memory 250 mb

@@ -32,7 +32,7 @@ void CIM::QuasiCanonicalOrbitals(int cluster){
       if (central[cluster][j]!=isempty) ntimes[j]=1;
   }
   // which orbtals are central in all other clusters?
-  for (int j=0; j<ndoccact; j++){
+  for (int j=0; j<maxndomains; j++){
       if (skip[j]) continue;
       if (cluster==j) continue;
       for (int k=0; k<ndoccact; k++){

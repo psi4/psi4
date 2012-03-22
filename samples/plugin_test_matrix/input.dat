@@ -1,3 +1,4 @@
+#! Plugin_test_matrix test input
 memory 250 mb
 
 molecule n2 {
