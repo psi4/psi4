@@ -65,7 +65,7 @@ namespace psi { namespace libmatrix {
         }
 
         double operator()(int h, int m, int n) const {
-            return matrix_.get(h, m, n);
+            return matrix_(h, m, n);
         }
 
     private:

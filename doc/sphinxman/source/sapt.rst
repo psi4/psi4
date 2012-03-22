@@ -1,6 +1,15 @@
 
+.. _`sec:sapt`:
+.. index:: SAPT
+
+.. index::
+   pair: SAPT; theory
+
 Symmetry-Adapted Perturbation Theory
 ====================================
+
+.. codeauthor:: Edward G. Hohenstein
+.. sectionauthor:: Edward G. Hohenstein
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the
@@ -125,6 +134,8 @@ These options will perform the SAPT computation with DF-HF and a
 superposition-of-atomic-densities guess. This is the preferred method of 
 running the SAPT module.
 
+.. index:: SAPT; SAPT0
+
 SAPT0
 ^^^^^
 
@@ -142,6 +153,7 @@ should cite the following publications: [Hohenstein:2010:184111]_ and
 Basic SAPT0 Keywords
 ~~~~~~~~~~~~~~~~~~~~
 
+.. index:: SAPT_LEVEL
 .. include:: autodir_options_c/sapt__sapt_level.rst
 .. include:: autodir_options_c/sapt__basis.rst
 .. include:: autodir_options_c/sapt__df_basis_sapt.rst
@@ -164,6 +176,8 @@ Advanced SAPT0 Keywords
 .. include:: autodir_options_c/sapt__sapt_os_scale.rst
 .. include:: autodir_options_c/sapt__sapt_ss_scale.rst
 .. include:: autodir_options_c/globals__debug.rst
+
+.. index:: SAPT; higher-order
 
 Higher-Order SAPT
 ^^^^^^^^^^^^^^^^^
@@ -223,6 +237,8 @@ Advanced Keywords Controlling MP2 NO Approximations
 
 .. include:: autodir_options_c/sapt__nat_orbs_t2.rst
 
+.. index:: SAPT; charge-transfer
+
 Charge-Transfer in SAPT
 ^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -255,6 +271,9 @@ charge-transfer results::
 
 These results are for the water dimer geometry shown above computed with 
 SAPT0/aug-cc-pVDZ. 
+
+.. index:: 
+   pair: SAPT; output
 
 Interpreting SAPT Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^

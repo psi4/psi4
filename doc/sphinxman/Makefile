@@ -15,31 +15,18 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(S
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext latexpdf-user latexpdf-prog index.rst distclean
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext latexpdf-user latexpdf-prog index.rst distclean psi4docs
 
 DISCARD = expert_keywords.tex keywords.tex physconst.tex psi4bases.tex tests_descriptions.tex variables_list.tex warnings.txt $(SOURCEDIR)/index.rst $(SOURCEDIR)/PsiMod.pyc
 
 help:
-	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  html       to make standalone HTML files"
-	@echo "  dirhtml    to make HTML files named index.html in directories"
-	@echo "  singlehtml to make a single large HTML file"
-	@echo "  pickle     to make pickle files"
-	@echo "  json       to make JSON files"
-	@echo "  htmlhelp   to make HTML files and a HTML help project"
-	@echo "  qthelp     to make HTML files and a qthelp project"
-	@echo "  devhelp    to make HTML files and a Devhelp project"
-	@echo "  epub       to make an epub"
-	@echo "  latex      to make LaTeX files, you can set PAPER=a4 or PAPER=letter"
-	@echo "  latexpdf   to make LaTeX files and run them through pdflatex"
-	@echo "  text       to make text files"
-	@echo "  man        to make manual pages"
-	@echo "  texinfo    to make Texinfo files"
-	@echo "  info       to make Texinfo files and run them through makeinfo"
-	@echo "  gettext    to make PO message catalogs"
-	@echo "  changes    to make an overview of all changed/added/deprecated items"
-	@echo "  linkcheck  to check all external links for integrity"
-	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "For PSI4, use one of"
+	@echo "  html                to make standalone complete manual"
+	@echo "  latexpdf-user       to make LaTeX pdf user manual"
+	@echo "  latexpdf-prog       to make LaTeX pdf programmer manual"
+	@echo "  clean               to clean intermediate and autodoc files"
+	@echo "  distclean           to clean additionally the build directory"
+	@echo "  psi4docs            to make all three manual targets (NYI)"
 
 clean:
 	-rm -rf $(SOURCEDIR)/autodoc_* $(SOURCEDIR)/autodir_*/*.rst $(DISCARD)
@@ -57,6 +44,7 @@ index.rst:
 
 html: index.rst
 	cp -p $(SOURCEDIR)/autodoc_index_html.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_html.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -125,6 +113,7 @@ latexpdf:
 
 latexpdf-user: index.rst
 	cp -p $(SOURCEDIR)/autodoc_index_latexuser.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_latexuser.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex-user
 	@echo "USERMAN Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex-user all-pdf
@@ -133,6 +122,7 @@ latexpdf-user: index.rst
 
 latexpdf-prog: index.rst
 	cp -p $(SOURCEDIR)/autodoc_index_latexprog.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_latexprog.rst $(SOURCEDIR)/appendices.rst
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex-prog
 	@echo "PROGMAN Running LaTeX files through pdflatex..."
 	$(MAKE) -C $(BUILDDIR)/latex-prog all-pdf
@@ -182,3 +172,6 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+psi4docs: html latexpdf-user latexpdf-prog
+
