@@ -19,6 +19,7 @@
 #include <libfock/jk.h>
 #include <libfock/v.h>
 #include <libfunctional/superfunctional.h>
+#include <libdisp/dispersion.h>
 #include <lib3index/3index.h>
 #include "ks.h"
 #include "integralfunctors.h"
@@ -26,7 +27,6 @@
 
 using namespace std;
 using namespace psi;
-using namespace psi::functional;
 using namespace boost;
 
 namespace psi { namespace scf {
@@ -54,13 +54,7 @@ void KS::common_init()
     potential_->initialize();
     functional_ = potential_->functional();
 
-    // Print some info on the DFT functional
-    fprintf(outfile,"  ==> KS-DFT <==\n\n"); 
-    fprintf(outfile,"   Selected Functional is %s.\n",functional_->getName().c_str());
-    if (functional_->isRangeCorrected()) 
-        fprintf(outfile,"   Range-separation omega is %11.3E.\n", functional_->getOmega());  
-    fprintf(outfile,"\n");
-    
+    // Print the KS-specific stuff
     potential_->print_header();
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
@@ -84,13 +78,13 @@ void RKS::integrals()
 {
     HF::integrals();
 
-    if (!functional_->isRangeCorrected()) return;
+    if (!functional_->is_x_lrc()) return;
            
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
         boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
         std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
         for (int i=0; i<Communicator::world->nthread(); ++i)
-            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
+            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else {
@@ -133,18 +127,18 @@ void RKS::form_G()
         const std::vector<SharedMatrix> & wK = jk_->wK();
         J_ = J[0];
         J_->scale(2.0);
-        if (functional_->isHybrid()) {
+        if (functional_->is_x_hybrid()) {
             K_ = K[0];
         }
-        if (functional_->isRangeCorrected()) {
+        if (functional_->is_x_lrc()) {
             wK_ = wK[0];
         }
         
         G_->copy(J_);
         
     } else { 
-        if (functional_->isRangeCorrected()) {
-            Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
+        if (functional_->is_x_lrc()) {
+            Omega_K_Functor k_builder(functional_->x_omega(), wK_, D_, Ca_, nalphapi_);
             process_omega_tei(k_builder);
         }
         J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
@@ -154,7 +148,7 @@ void RKS::form_G()
 
     G_->add(V_);
 
-    double alpha = functional_->getExactExchange();
+    double alpha = functional_->x_alpha();
     double beta = 1.0 - alpha;
 
     if (alpha != 0.0) {
@@ -165,7 +159,7 @@ void RKS::form_G()
         K_->zero();
     }
 
-    if (functional_->isRangeCorrected()) {
+    if (functional_->is_x_lrc()) {
         wK_->scale(beta);
         G_->subtract(wK_);
         wK_->scale(1.0/beta);
@@ -189,13 +183,19 @@ double RKS::compute_E()
     std::map<std::string, double>& quad = potential_->quadrature_values();  
     double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
-    double alpha = functional_->getExactExchange();
+    double alpha = functional_->x_alpha();
     double beta = 1.0 - alpha;
-    if (functional_->isHybrid()) {
+    if (functional_->is_x_hybrid()) {
         exchange_E -= alpha*Da_->vector_dot(K_);
     }
-    if (functional_->isRangeCorrected()) {
+    if (functional_->is_x_lrc()) {
         exchange_E -=  beta*Da_->vector_dot(wK_);
+    }
+
+    double dashD_E = 0.0;
+    boost::shared_ptr<Dispersion> disp;
+    if (disp) {
+        dashD_E = disp->compute_energy(HF::molecule_);
     }
 
     double Etotal = 0.0;
@@ -204,10 +204,6 @@ double RKS::compute_E()
     Etotal += coulomb_E;
     Etotal += exchange_E;
     Etotal += XC_E; 
-    double dashD_E = 0.0;
-    if (functional_->isDashD()) {
-        dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
-    }
     Etotal += dashD_E;
 
     if (debug_) {
@@ -244,13 +240,13 @@ void UKS::integrals()
 {
     HF::integrals();
 
-    if (!functional_->isRangeCorrected()) return;
+    if (!functional_->is_x_lrc()) return;
            
     if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
         boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
         std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
         for (int i=0; i<Communicator::world->nthread(); ++i)
-            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
+            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->x_omega())));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
     } else {
@@ -296,11 +292,11 @@ void UKS::form_G()
         const std::vector<SharedMatrix> & wK = jk_->wK();
         J_->copy(J[0]);
         J_->add(J[1]);
-        if (functional_->isHybrid()) {
+        if (functional_->is_x_hybrid()) {
             Ka_ = K[0];
             Kb_ = K[1];
         }
-        if (functional_->isRangeCorrected()) {
+        if (functional_->is_x_lrc()) {
             wKa_ = wK[0];
             wKb_ = wK[1];
         }
@@ -308,8 +304,8 @@ void UKS::form_G()
         Gb_->copy(J_);
         
     } else { 
-        if (functional_->isRangeCorrected()) {
-            Omega_Ka_Kb_Functor k_builder(functional_->getOmega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
+        if (functional_->is_x_lrc()) {
+            Omega_Ka_Kb_Functor k_builder(functional_->x_omega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
             process_omega_tei<Omega_Ka_Kb_Functor>(k_builder);
         }
             
@@ -323,7 +319,7 @@ void UKS::form_G()
     Ga_->add(Va_);
     Gb_->add(Vb_);
 
-    double alpha = functional_->getExactExchange();
+    double alpha = functional_->x_alpha();
     double beta = 1.0 - alpha;
     if (alpha != 0.0) {
         Ka_->scale(alpha);
@@ -337,7 +333,7 @@ void UKS::form_G()
         Kb_->zero();
     }
 
-    if (functional_->isRangeCorrected()) {
+    if (functional_->is_x_lrc()) {
         wKa_->scale(beta);
         wKb_->scale(beta);
         Ga_->subtract(wKa_);
@@ -370,15 +366,21 @@ double UKS::compute_E()
     std::map<std::string, double>& quad = potential_->quadrature_values();  
     double XC_E = quad["FUNCTIONAL"];
     double exchange_E = 0.0;
-    double alpha = functional_->getExactExchange();
+    double alpha = functional_->x_alpha();
     double beta = 1.0 - alpha;
-    if (functional_->isHybrid()) {
+    if (functional_->is_x_hybrid()) {
         exchange_E -= alpha*Da_->vector_dot(Ka_);
         exchange_E -= alpha*Db_->vector_dot(Kb_);
     }
-    if (functional_->isRangeCorrected()) {
+    if (functional_->is_x_lrc()) {
         exchange_E -=  beta*Da_->vector_dot(wKa_);
         exchange_E -=  beta*Db_->vector_dot(wKb_);
+    }
+
+    double dashD_E = 0.0;
+    boost::shared_ptr<Dispersion> disp;
+    if (disp) {
+        dashD_E = disp->compute_energy(HF::molecule_);
     }
 
     double Etotal = 0.0;
@@ -387,10 +389,6 @@ double UKS::compute_E()
     Etotal += 0.5 * coulomb_E;
     Etotal += 0.5 * exchange_E;
     Etotal += XC_E; 
-    double dashD_E=0.0;
-    if (functional_->isDashD()) {
-        dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
-    }
     Etotal += dashD_E;
 
     if (debug_) {

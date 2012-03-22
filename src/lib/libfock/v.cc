@@ -13,7 +13,7 @@ using namespace psi;
 
 namespace psi {
 
-VBase::VBase(boost::shared_ptr<functional::SuperFunctional> functional,
+VBase::VBase(boost::shared_ptr<SuperFunctional> functional,
     boost::shared_ptr<BasisSet> primary,
     Options& options):
     functional_(functional), primary_(primary), options_(options)
@@ -38,11 +38,11 @@ boost::shared_ptr<VBase> VBase::build_V(Options& options, const std::string& typ
         depth = 2;
 
     int block_size = options.get_int("DFT_BLOCK_MAX_POINTS");
-    boost::shared_ptr<functional::SuperFunctional> functional = functional::SuperFunctional::createSuperFunctional(options.get_str("DFT_FUNCTIONAL"),block_size,depth);
+    boost::shared_ptr<SuperFunctional> functional = SuperFunctional::build(options.get_str("DFT_FUNCTIONAL"),block_size,depth);
 
     // Let the user to spec a custom range-separation omega
-    if (options["DFT_OMEGA"].has_changed() && functional->isRangeCorrected()) {
-        functional->setOmega(options.get_double("DFT_OMEGA"));
+    if (options["DFT_OMEGA"].has_changed() && functional->is_x_lrc()) {
+        functional->set_x_omega(options.get_double("DFT_OMEGA"));
     }
 
     boost::shared_ptr<VBase> v;
@@ -357,10 +357,12 @@ void VBase::finalize()
 }
 void VBase::print_header() const
 {
-    // TODO: Print functional, grid, props, etc
+    fprintf(outfile, "  ==> DFT Potential <==\n\n");
+    functional_->print(outfile, print_);  
+    grid_->print(outfile,print_);
 }
 
-RV::RV(boost::shared_ptr<functional::SuperFunctional> functional,
+RV::RV(boost::shared_ptr<SuperFunctional> functional,
     boost::shared_ptr<BasisSet> primary,
     Options& options) : VBase(functional,primary,options)
 {
@@ -374,8 +376,8 @@ void RV::initialize()
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions(); 
     properties_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
-    properties_->set_derivative(functional_->getDeriv());
-    properties_->set_ansatz(functional_->getLocalAnsatz());
+    properties_->set_derivative(functional_->deriv());
+    properties_->set_ansatz(functional_->ansatz());
 }
 void RV::finalize()
 {
@@ -384,11 +386,7 @@ void RV::finalize()
 }
 void RV::print_header() const
 {
-    if (print_) {
-    	fprintf(outfile, "  ==> RV: RKS XC Potential <==\n\n");
-        VBase::print_header();
-        properties_->print(outfile, print_);
-    }
+    VBase::print_header();
 }
 void RV::compute_V()
 {
@@ -402,7 +400,7 @@ void RV::compute_V()
     properties_->reset_pointers(D_AO,C_AO);
 
     // What local XC ansatz are we in?
-    int ansatz = functional_->getLocalAnsatz();
+    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions(); 
@@ -443,7 +441,7 @@ void RV::compute_V()
         properties_->computeProperties(block);
         timer_off("Properties");
         timer_on("Functional");
-        functional_->computeRKSFunctional(properties_); 
+        std::map<std::string, SharedVector>& vals = functional_->computeRKSFunctional(properties_->property_values(), npoints); 
         timer_off("Functional");
 
         if (debug_ > 4) {
@@ -454,8 +452,8 @@ void RV::compute_V()
         timer_on("V_XC");
         double** phi = properties_->basis_value("PHI")->pointer();
         double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
-        double *restrict zk = functional_->getFunctionalValue();
-        double *restrict v_rho_a = functional_->getV_RhoA();
+        double *restrict zk = vals["V"]->pointer(); 
+        double *restrict v_rho_a = vals["V_RHO_A"]->pointer();
 
         // => Quadrature values <= //
         functionalq += C_DDOT(npoints,w,1,zk,1);
@@ -484,7 +482,7 @@ void RV::compute_V()
             double *restrict rho_ax = properties_->property_value("RHO_AX")->pointer();
             double *restrict rho_ay = properties_->property_value("RHO_AY")->pointer();
             double *restrict rho_az = properties_->property_value("RHO_AZ")->pointer();
-            double *restrict v_sigma_aa = functional_->getV_GammaAA();
+            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer(); 
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal,v_sigma_aa[P] * rho_ax[P] * w[P], phix[P], 1, Tp[P], 1); 
@@ -512,7 +510,7 @@ void RV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict v_tau_a = functional_->getV_TauA();
+            double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
             
             // \nabla x
             for (int P = 0; P < npoints; P++) {
@@ -570,7 +568,7 @@ void RV::compute_V()
     }
 }
 
-UV::UV(boost::shared_ptr<functional::SuperFunctional> functional,
+UV::UV(boost::shared_ptr<SuperFunctional> functional,
     boost::shared_ptr<BasisSet> primary,
     Options& options) : VBase(functional,primary,options)
 {
@@ -584,8 +582,8 @@ void UV::initialize()
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions(); 
     properties_ = boost::shared_ptr<UKSFunctions>(new UKSFunctions(primary_,max_points,max_functions));
-    properties_->set_derivative(functional_->getDeriv());
-    properties_->set_ansatz(functional_->getLocalAnsatz());
+    properties_->set_derivative(functional_->deriv());
+    properties_->set_ansatz(functional_->ansatz());
 }
 void UV::finalize()
 {
@@ -594,16 +592,12 @@ void UV::finalize()
 }
 void UV::print_header() const
 {
-    if (print_) {
-    	fprintf(outfile, "  ==> UV: UKS XC Potential <==\n\n");
-        VBase::print_header();
-        properties_->print(outfile, print_);
-    }
+    VBase::print_header();
 }
 void UV::compute_V()
 {
     if ((D_AO_.size() != 2) || (V_AO_.size() != 2) || (C_AO_.size() != 2))
-        throw PSIEXCEPTION("V: RKS should have two D/C/V Matrices"); 
+        throw PSIEXCEPTION("V: UKS should have two D/C/V Matrices"); 
 
     // Setup the pointers
     SharedMatrix Da_AO = D_AO_[0];
@@ -615,7 +609,7 @@ void UV::compute_V()
     properties_->reset_pointers(Da_AO,Ca_AO,Db_AO,Cb_AO);
 
     // What local XC ansatz are we in?
-    int ansatz = functional_->getLocalAnsatz();
+    int ansatz = functional_->ansatz();
 
     // How many functions are there (for lda in Vtemp, T)
     int max_functions = grid_->max_functions();
@@ -665,7 +659,7 @@ void UV::compute_V()
         properties_->computeProperties(block);
         timer_off("Properties");
         timer_on("Functional");
-        functional_->computeUKSFunctional(properties_); 
+        std::map<std::string, SharedVector>& vals = functional_->computeUKSFunctional(properties_->property_values(), npoints); 
         timer_off("Functional");
 
         if (debug_ > 3) {
@@ -677,9 +671,9 @@ void UV::compute_V()
         double** phi = properties_->basis_value("PHI")->pointer();
         double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
         double *restrict rho_b = properties_->property_value("RHO_B")->pointer();
-        double *restrict zk = functional_->getFunctionalValue();
-        double *restrict v_rho_a = functional_->getV_RhoA();
-        double *restrict v_rho_b = functional_->getV_RhoB();
+        double *restrict zk = vals["V"]->pointer(); 
+        double *restrict v_rho_a = vals["V_RHO_A"]->pointer(); 
+        double *restrict v_rho_b = vals["V_RHO_B"]->pointer(); 
 
         // => Quadrature values <= //
         functionalq += C_DDOT(npoints,w,1,zk,1);
@@ -718,9 +712,9 @@ void UV::compute_V()
             double *restrict rho_bx = properties_->property_value("RHO_BX")->pointer();
             double *restrict rho_by = properties_->property_value("RHO_BY")->pointer();
             double *restrict rho_bz = properties_->property_value("RHO_BZ")->pointer();
-            double *restrict v_sigma_aa = functional_->getV_GammaAA();
-            double *restrict v_sigma_ab = functional_->getV_GammaAB();
-            double *restrict v_sigma_bb = functional_->getV_GammaBB();
+            double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer(); 
+            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer(); 
+            double *restrict v_sigma_bb = vals["V_GAMMA_BB"]->pointer(); 
 
             for (int P = 0; P < npoints; P++) {
                 C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_bx[P]), phix[P], 1, Tap[P], 1); 
@@ -753,8 +747,8 @@ void UV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict v_tau_a = functional_->getV_TauA();
-            double *restrict v_tau_b = functional_->getV_TauB();
+            double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
+            double *restrict v_tau_b = vals["V_TAU_B"]->pointer(); 
            
             // Alpha 
             // \nabla x
@@ -838,7 +832,7 @@ void UV::compute_V()
     }
 }
 
-RK::RK(boost::shared_ptr<functional::SuperFunctional> functional,
+RK::RK(boost::shared_ptr<SuperFunctional> functional,
     boost::shared_ptr<BasisSet> primary,
     Options& options) : RV(functional,primary,options)
 {
@@ -848,185 +842,14 @@ RK::~RK()
 }
 void RK::print_header() const
 {
-    if (print_) {
-    	fprintf(outfile, "  ==> RK: RKS LR XC Potential <==\n\n");
-        VBase::print_header();
-        properties_->print(outfile, print_);
-    }
+    VBase::print_header();
 }
 void RK::compute_V()
 {
-    if ((D_AO_.size() != 1) || (C_AO_.size() != 1))
-        throw PSIEXCEPTION("V: RKS should have only one D/C Matrix"); 
-
-    // Setup the pointers
-    SharedMatrix D_AO = D_AO_[0];
-    SharedMatrix C_AO = C_AO_[0];
-    properties_->reset_pointers(D_AO,C_AO);
-
-    // What local XC ansatz are we in?
-    int ansatz = functional_->getLocalAnsatz();
-
-    // How many functions are there (for lda in Vtemp, T)
-    int max_functions = grid_->max_functions(); 
-    int max_points = grid_->max_points();
-
-    // Local/global V matrices
-    SharedMatrix V_local(new Matrix("V Temp", max_functions, max_functions));
-    double** V2p = V_local->pointer();
-
-    // Scratch
-    SharedMatrix T_local = properties_->scratch();
-    double** Tp = T_local->pointer();
-
-    double* rho_x;
-    double* rho_y;
-    double* rho_z;
-    if(ansatz >= 1) {
-        rho_x = new double[max_points];
-        rho_y = new double[max_points];
-        rho_z = new double[max_points];
-    }
-
-    // Traverse the blocks of points
-    double functionalq = 0.0;
-    double rhoaq       = 0.0;
-    double rhoaxq      = 0.0;
-    double rhoayq      = 0.0;
-    double rhoazq      = 0.0;
-
-    boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
-    double *restrict QTp = QT->pointer();
-    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
-
-    for (int Q = 0; Q < blocks.size(); Q++) {
-
-        boost::shared_ptr<BlockOPoints> block = blocks[Q];
-        int npoints = block->npoints();
-        double *restrict x = block->x();
-        double *restrict y = block->y();
-        double *restrict z = block->z();
-        double *restrict w = block->w();
-        const std::vector<int>& function_map = block->functions_local_to_global();
-        int nlocal = function_map.size();
-
-        timer_on("Properties");
-        properties_->computeProperties(block);
-        timer_off("Properties");
-
-        // Copy density gradient in for GGA contributions
-        if (ansatz >= 1) {
-            double *restrict rho_ax = properties_->property_value("RHO_AX")->pointer();
-            double *restrict rho_ay = properties_->property_value("RHO_AY")->pointer();
-            double *restrict rho_az = properties_->property_value("RHO_AZ")->pointer();
-            ::memcpy((void*) rho_x, (void*) rho_ax, npoints);
-            ::memcpy((void*) rho_y, (void*) rho_ay, npoints);
-            ::memcpy((void*) rho_z, (void*) rho_az, npoints);
-        }
-
-        timer_on("Functional");
-        functional_->computeRKSFunctional(properties_); 
-        timer_off("Functional");
-
-        if (debug_ > 4) {
-            block->print(outfile, debug_);
-            properties_->print(outfile, debug_);
-        }
-
-        double** phi = properties_->basis_value("PHI")->pointer();
-        double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
-        double *restrict zk = functional_->getFunctionalValue();
-
-        // => Quadrature values <= //
-        functionalq += C_DDOT(npoints,w,1,zk,1);
-        for (int P = 0; P < npoints; P++) {
-            QTp[P] = w[P] * rho_a[P];
-        }
-        rhoaq       += C_DDOT(npoints,w,1,rho_a,1);
-        rhoaxq      += C_DDOT(npoints,QTp,1,x,1);
-        rhoayq      += C_DDOT(npoints,QTp,1,y,1);
-        rhoazq      += C_DDOT(npoints,QTp,1,z,1);
-
-        // Loop over all perturbations
-        timer_on("K_XC");
-        for (int A = 0; A < P_AO_.size(); A++) {
-
-            // Which V are we adding into?
-            SharedMatrix V_AO = V_AO_[A];
-            double** Vp = V_AO->pointer();
-
-            // Which P is ther perturbation density to be computed from
-            SharedMatrix P_AO = P_AO_[A];
-            properties_->reset_pointers(P_AO,C_AO);
-            timer_on("Properties");
-            properties_->computeProperties(block);
-            timer_off("Properties");
-
-            // => LSDA contribution (symmetrized) <= //
-            // TODO: Use GEMV instead
-            timer_on("LSDA");
-            double *restrict v_rho_a_rho_a = functional_->getV_RhoA_RhoA();
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,1.0 * rho_a[P] * v_rho_a_rho_a[P] * w[P], phi[P], 1, Tp[P], 1); 
-            }
-            timer_off("LSDA");
-        
-            // TODO GGA
-
-            // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-            timer_on("LSDA");
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tp[0],max_functions,0.0,V2p[0],max_functions);
-
-            // Symmetrization (V is Hermitian)
-            for (int m = 0; m < nlocal; m++) {
-                for (int n = 0; n <= m; n++) {
-                    V2p[m][n] = V2p[n][m] = V2p[m][n] + V2p[n][m]; 
-                }
-            } 
-            timer_off("LSDA");
-
-            // => Unpacking <= //
-            for (int ml = 0; ml < nlocal; ml++) {
-                int mg = function_map[ml];
-                for (int nl = 0; nl < ml; nl++) {
-                    int ng = function_map[nl];
-                    Vp[mg][ng] += V2p[ml][nl];
-                    Vp[ng][mg] += V2p[ml][nl];
-                }
-                Vp[mg][mg] += V2p[ml][ml];
-            }
-        }
-        timer_off("K_XC");
-    } 
-   
-    quad_values_["FUNCTIONAL"] = functionalq;
-    quad_values_["RHO_A"]      = rhoaq; 
-    quad_values_["RHO_AX"]     = rhoaxq; 
-    quad_values_["RHO_AY"]     = rhoayq; 
-    quad_values_["RHO_AZ"]     = rhoazq; 
-    quad_values_["RHO_B"]      = rhoaq; 
-    quad_values_["RHO_BX"]     = rhoaxq; 
-    quad_values_["RHO_BY"]     = rhoayq; 
-    quad_values_["RHO_BZ"]     = rhoazq; 
- 
-    if (debug_) {
-        fprintf(outfile, "   => Numerical Integrals <=\n\n");
-        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
-        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
-        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
-        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
-        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
-    }
-
-    if (ansatz >= 1) {
-        delete[] rho_x;
-        delete[] rho_y;
-        delete[] rho_z;
-    }
+    // TODO
 }
 
-UK::UK(boost::shared_ptr<functional::SuperFunctional> functional,
+UK::UK(boost::shared_ptr<SuperFunctional> functional,
     boost::shared_ptr<BasisSet> primary,
     Options& options) : UV(functional,primary,options)
 {
@@ -1036,11 +859,7 @@ UK::~UK()
 }
 void UK::print_header() const
 {
-    if (print_) {
-    	fprintf(outfile, "  ==> UK: UKS LR XC Potential <==\n\n");
-        VBase::print_header();
-        properties_->print(outfile, print_);
-    }
+    VBase::print_header();
 }
 void UK::compute_V()
 {

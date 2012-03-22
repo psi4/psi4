@@ -12,8 +12,10 @@ namespace psi {
 
 class XFunctional : public Functional {
 
+friend class Functional;
+
 /**
-* Fake polymorhpic behavior
+* Fake polymorphic behavior
 **/ 
 public:
     enum GGA_Type { GGA_None, B, B88, PBE, PW91, FT97, B97 }; 

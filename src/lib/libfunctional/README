@@ -5,7 +5,8 @@ Global:
 superfunctional.h/.cc : Encapsulates complete functional specifications
 functional.h/.cc      : Encapsulates DFA specifications
 utility.h/.cc         : Defines unusual math functions needed for DFAs
-factory.cc            : Provides abstracted factory routines for functionals/superfunctionals
+superfactory.cc       : Provides abstracted factory routines for superfunctionals
+factory.cc            : Provides abstracted factory routines for functionals
 
 Functional Types:
 
