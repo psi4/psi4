@@ -483,8 +483,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     The default is determined by the value of the multiplicity.  This is used
     for two things: (1) determining the phase of the redundant half of the CI
     vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making
-    sure the guess vector has the desired value of $\langle S^2\rangle$ (if S_SQUARED is TRUE
-    and ICORE=1). -*/
+    sure the guess vector has the desired value of $\langle S^2\rangle$ 
+    (if :term:`S_SQUARED` is TRUE and :term:`ICORE` = 1). -*/
     options.add_double("S", 0.0);
 
     /*- An array of length EX_LEVEL specifying whether each excitation type

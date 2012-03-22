@@ -34,3 +34,8 @@ Bibliography
 
 .. [PubChem]
 
+.. [Sherrill:1999:CI]
+   C. D. Sherrill and H. F. Schaefer,
+   *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots| wdin
+   (Academic Press, New York, 1999), pages 143-269.
+

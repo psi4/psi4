@@ -286,6 +286,10 @@ rst_epilog = """
 .. |---| unicode:: U+02014 .. em dash
    :trim:
 .. |w---w| unicode:: U+02014 .. em dash
+.. |o_dots| unicode:: U+00F6
+   :rtrim:
+.. |o_slash| unicode:: U+00F8
+   :rtrim:
 """
 
 # Logo at top of page
