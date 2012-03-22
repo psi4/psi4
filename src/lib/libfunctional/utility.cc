@@ -1,14 +1,6 @@
-////////////////////////////////////////////////////////////////////////////////
-// Expoential integral code adapted from webtrellis                           //
-// File: utility.cc                                                           //
-// Routine(s):                                                                //
-//    Exponential_Integral_Ei                                                 //
-//    xExponential_Integral_Ei                                                //
-////////////////////////////////////////////////////////////////////////////////
-
 #include <cmath>           // required for fabsl(), expl() and logl()        
 #include <cfloat>          // required for LDBL_EPSILON, DBL_MAX
-#include "functional.h"
+#include "utility.h"
 
 // Error Function alternative
 #ifndef HAVE_FUNC_ERF
@@ -17,10 +9,12 @@ double erf(double x)
     throw psi::PSIEXCEPTION("erf not implemented, get a C99 compiler to run this functional.");
     return 0.0; 
 }
+double erfc(double x)
+{
+    throw psi::PSIEXCEPTION("erf not implemented, get a C99 compiler to run this functional.");
+    return 0.0; 
+}
 #endif
-
-namespace psi {
-namespace functional {
 
 //                         Internally Defined Routines                        //
 long double xExponential_Integral_Ei( long double x );
@@ -273,5 +267,4 @@ static long double Argument_Addition_Series_Ei(long double x)
    
    return ei[k-7] + Sn * expl(xx); 
 }
-}}
 

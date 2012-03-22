@@ -1,0 +1,15 @@
+Master File Table:
+
+Global:
+
+superfunctional.h/.cc : Encapsulates complete functional specifications
+functional.h/.cc      : Encapsulates DFA specifications
+utility.h/.cc         : Defines unusual math functions needed for DFAs
+factory.cc            : Provides abstracted factory routines for functionals/superfunctionals
+
+Functional Types:
+
+xfunctional.h/.cc      : Generic exchange-type functionals
+wpbex_functional.h/.cc : SR-wPBE functional (exact exchange hole integral)
+
+ 

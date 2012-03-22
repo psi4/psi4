@@ -1,179 +1,111 @@
-#ifndef functional_h
-#define functional_h
+#ifndef FUNCTIONAL_H
+#define FUNCTIONAL_H
 
-/**********************************************************
-* functional.h: declarations for functionals for KS-DFT
-* Robert Parrish, robparrish@gmail.com
-* 09/01/2010
-*
-***********************************************************/
-#include <psiconfig.h>
-#include <psi4-dec.h>
-#include <string>
+#include <libmints/typedefs.h>
+#include <map>
 #include <vector>
-
-namespace boost {
-template<class T> class shared_ptr;
-}
-
-#ifndef HAVE_FUNC_ERF
-double erf(double x);
-#endif
 
 namespace psi {
 
-class RKSFunctions;
-class UKSFunctions;
-
-namespace functional {
-
-/// heaviside(x) = 1.0 if x >  0
-//                 0.0 if x <= 0
-// for matlab peicewise functions
-inline double heaviside(double x)
-{
-    return (x > 0.0 ? 1.0 : 0.0);
-}
-/// dirac(...) = 0.0 for all x
-/// this is due to MATLAB's ccode
-inline double dirac(double x, ...)
-{
-    return 0.0;
-}
-double Ei(double x);
-
+/** 
+ * Functional: Generic Semilocal Exchange or Correlation DFA functional
+ * 
+ * A DFT functional is defined as:
+ * 
+ * E_XC = E_X + E_C
+ * E_X  = (1-\alpha_x) E_X^DFA [\omega_x] + \alpha E_X^HF + (1-\alpha) E_X^HF,LR
+ * E_C  = (1-\alpha_c) E_C^DFA [\omega_c] + \alpha E_C^MP2 + (1-\alpha) E_C^MP2,LR
+ * 
+ **/
 class Functional {
-    public:
 
-        static boost::shared_ptr<Functional> createFunctional(const std::string & name, int npoints = 5000, int deriv = 1);
-        static std::string availableFunctionals();
-        static std::vector<std::string> availableNames();
-        //static std::string testFunctionals();
+protected:
 
-        Functional(int npoints = 5000, int deriv = 1);
-        ~Functional();
+    // => Meta-Data <= //
 
-        std::string getName() const { return name_; }
-        std::string getDescription() const { return description_; }
-        std::string getCitation() const { return citation_; }
-        std::string getParametersString();
-        std::vector<std::pair<std::string,double> > getParameters() const { return params_; }
-        void setName(const std::string & name) { name_ = name; }
-        void setDescription(const std::string & description) { description_ = description; }
-        void setCitation(const std::string & citation) { citation_ = citation; }
-        void setParameters(const std::vector<std::pair<std::string,double> > & params) { params_ = params; }
-        void setParameter(const std::string & key, double value);
+    // Actually (1-\alpha)*w, the final scale of all computed values
+    double alpha_; 
+    // Omega, defaults to zero, throws if set for non-omega functionals
+    double omega_;
 
-        //std::string testFunctional(boost::shared_ptr<Properties> props);
+    // Name of the functional (shorthand)
+    std::string name_;
+    // Description of functional
+    std::string description_;
+    // Citations(s) defining functionals 
+    std::string citation_;
+    
+    // Is GGA?
+    bool gga_;
+    // Is Meta?
+    bool meta_;
+    // Is LRC?
+    bool lrc_;
 
-        bool isGGA() const { return is_gga_; }
-        bool isMeta() const { return is_meta_; }
+    // Parameter set
+    std::map<std::string, double> parameters_;
 
-        void setNPoints(int npoints) { reallocate(npoints,deriv_); }
-        void setDeriv(int deriv) { reallocate(npoints_,deriv); }
-        int getNPoints() const { return npoints_; }
-        int getDeriv() const { return deriv_; }
+    // Densty-based cutoff
+    double lsda_cutoff_;
+    // Tau-based cutoff
+    double meta_cutoff_;
 
-        double getDensityCutoff() const { return cutoff_; }
-        void setDensityCutoff(double cutoff) {cutoff = cutoff; }
+    // Initialize null functional
+    void common_init();
 
-        virtual void computeRKSFunctional(boost::shared_ptr<RKSFunctions> props) {}
-        virtual void computeUKSFunctional(boost::shared_ptr<UKSFunctions> props) {}
+public:
 
-        double* getFunctional() const { return functional_; }
-        double* getV_RhoA() const { return v_rho_a_; }
-        double* getV_RhoB() const { return v_rho_b_; }
-        double* getV_RhoA_RhoA() const { return v_rho_a_rho_a_; }
-        double* getV_RhoA_RhoB() const { return v_rho_a_rho_b_; }
-        double* getV_RhoB_RhoB() const { return v_rho_b_rho_b_; }
-        double* getV_GammaAA() const { return v_gamma_aa_; }
-        double* getV_GammaAB() const { return v_gamma_ab_; }
-        double* getV_GammaBB() const { return v_gamma_bb_; }
-        double* getV_RhoA_GammaAA() const { return v_rho_a_gamma_aa_; }
-        double* getV_RhoA_GammaAB() const { return v_rho_a_gamma_ab_; }
-        double* getV_RhoA_GammaBB() const { return v_rho_a_gamma_bb_; }
-        double* getV_RhoB_GammaAA() const { return v_rho_b_gamma_aa_; }
-        double* getV_RhoB_GammaAB() const { return v_rho_b_gamma_ab_; }
-        double* getV_RhoB_GammaBB() const { return v_rho_b_gamma_bb_; }
-        double* getV_GammaAA_GammaAA() const { return v_gamma_aa_gamma_aa_; }
-        double* getV_GammaAA_GammaAB() const { return v_gamma_aa_gamma_ab_; }
-        double* getV_GammaAA_GammaBB() const { return v_gamma_aa_gamma_bb_; }
-        double* getV_GammaAB_GammaAB() const { return v_gamma_ab_gamma_ab_; }
-        double* getV_GammaAB_GammaBB() const { return v_gamma_ab_gamma_bb_; }
-        double* getV_GammaBB_GammaBB() const { return v_gamma_bb_gamma_bb_; }
-        double* getV_TauA() const { return v_tau_a_; }
-        double* getV_TauB() const { return v_tau_b_; }
-        double* getV_RhoA_TauA() const { return v_rho_a_tau_a_; }
-        double* getV_RhoA_TauB() const { return v_rho_a_tau_b_; }
-        double* getV_RhoB_TauA() const { return v_rho_b_tau_a_; }
-        double* getV_RhoB_TauB() const { return v_rho_b_tau_b_; }
-        double* getV_GammaAA_TauA() const { return v_gamma_aa_tau_a_; }
-        double* getV_GammaAA_TauB() const { return v_gamma_aa_tau_b_; }
-        double* getV_GammaAB_TauA() const { return v_gamma_ab_tau_a_; }
-        double* getV_GammaAB_TauB() const { return v_gamma_ab_tau_b_; }
-        double* getV_GammaBB_TauA() const { return v_gamma_bb_tau_a_; }
-        double* getV_GammaBB_TauB() const { return v_gamma_bb_tau_b_; }
-        double* getV_TauA_TauA() const { return v_tau_a_tau_a_; }
-        double* getV_TauA_TauB() const { return v_tau_a_tau_b_; }
-        double* getV_TauB_TauB() const { return v_tau_b_tau_b_; }
+    // => Constructors (Use the factory constructor, or really know what's up) <= //
 
-     protected:
+    Functional();
+    virtual ~Functional(); 
 
-        void reallocate(int npoints, int deriv);
-        void release();
-        void allocate();
+    static boost::shared_ptr<Functional> build(const std::string alias);
+        
+    // => Computers <= //
+    
+    virtual void computeRKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha) = 0;
+    virtual void computeUKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha) = 0;
 
-        std::string name_;
-        std::string description_;
-        std::string citation_;
-        std::vector<std::pair<std::string, double> > params_;
+    // => Parameters <= //
+    
+    const std::map<std::string, double>& parameters() { return parameters_; }
+    virtual void set_parameter(const std::string& key, double val);
 
-        bool is_gga_;
-        bool is_meta_;
+    // => Setters <= //
 
-        double cutoff_;
+    void set_gga(bool gga) { gga_ = gga; }
+    void set_meta(bool meta) { meta_ = meta; }
+    void set_alpha(double alpha) { alpha_ = alpha; }
+    void set_omega(double omega) { omega_ = omega; lrc_ = (omega_ != 0.0); }
+    void set_name(const std::string & name) { name_ = name; }
+    void set_description(const std::string & description) { description_ = description; }
+    void set_citation(const std::string & citation) { citation_ = citation; }
 
-        double* restrict functional_;
-        double* restrict v_rho_a_;
-        double* restrict v_rho_b_;
-        double* restrict v_rho_a_rho_a_;
-        double* restrict v_rho_a_rho_b_;
-        double* restrict v_rho_b_rho_b_;
-        double* restrict v_gamma_aa_;
-        double* restrict v_gamma_ab_;
-        double* restrict v_gamma_bb_;
-        double* restrict v_rho_a_gamma_aa_;
-        double* restrict v_rho_a_gamma_ab_;
-        double* restrict v_rho_a_gamma_bb_;
-        double* restrict v_rho_b_gamma_aa_;
-        double* restrict v_rho_b_gamma_ab_;
-        double* restrict v_rho_b_gamma_bb_;
-        double* restrict v_gamma_aa_gamma_aa_;
-        double* restrict v_gamma_aa_gamma_ab_;
-        double* restrict v_gamma_aa_gamma_bb_;
-        double* restrict v_gamma_ab_gamma_ab_;
-        double* restrict v_gamma_ab_gamma_bb_;
-        double* restrict v_gamma_bb_gamma_bb_;
-        double* restrict v_tau_a_;
-        double* restrict v_tau_b_;
-        double* restrict v_rho_a_tau_a_;
-        double* restrict v_rho_a_tau_b_;
-        double* restrict v_rho_b_tau_a_;
-        double* restrict v_rho_b_tau_b_;
-        double* restrict v_gamma_aa_tau_a_;
-        double* restrict v_gamma_aa_tau_b_;
-        double* restrict v_gamma_ab_tau_a_;
-        double* restrict v_gamma_ab_tau_b_;
-        double* restrict v_gamma_bb_tau_a_;
-        double* restrict v_gamma_bb_tau_b_;
-        double* restrict v_tau_a_tau_a_;
-        double* restrict v_tau_a_tau_b_;
-        double* restrict v_tau_b_tau_b_;
+    void set_lsda_cutoff(double cut) { lsda_cutoff_ = cut; }
+    void set_meta_cutoff(double cut) { meta_cutoff_ = cut; }
 
-        int npoints_;
-        int deriv_;
+    // => Accessors <= //
+
+    std::string name() const { return name_; }
+    std::string description() const { return description_; }
+    std::string citation() const { return citation_; }
+    
+    bool is_meta() const { return meta_; }
+    bool is_gga() const { return gga_; }
+    bool is_lrc() const { return lrc_; }
+
+    double alpha() const { return alpha_; }
+    double omega() const { return omega_; }
+
+    double lsda_cutoff() const { return lsda_cutoff_; }
+    double meta_cutoff() const { return meta_cutoff_; }
+
+    // => Utility <= //
+    virtual void print(FILE* out = outfile, int print = 1) const;
+
 };
 
-}}
+}
 
 #endif

@@ -1,193 +1,121 @@
-#ifndef super_functional_h
-#define super_functional_h
+#ifndef SUPERFUNCTIONAL_H
+#define SUPERFUNCTIONAL_H
 
-/**********************************************************
-* superfunctional.h: declarations for super (aliased) functionals for KS-DFT
-* Robert Parrish, robparrish@gmail.com
-* 09/01/2010
-*
-***********************************************************/
-#include "functional.h"
-#include "dispersion.h"
-#include <psiconfig.h>
-#include <psi4-dec.h>
-#include <stdlib.h>
-#include <string>
+#include <libmints/typedefs.h>
+#include <map>
 #include <vector>
 
 namespace psi {
 
-class RKSFunctions; 
-class UKSFunctions; 
+class Functional;
 
-namespace functional {
-
+/** 
+ * SuperFunctional: High-level semilocal DFA object
+ * 
+ * A DFT functional is defined as:
+ * 
+ * E_XC = E_X + E_C
+ * E_X  = (1-\alpha_x) E_X^DFA [\omega_x] + \alpha E_X^HF + (1-\alpha) E_X^HF,LR
+ * E_C  = (1-\alpha_c) E_C^DFA [\omega_c] + \alpha E_C^MP2 + (1-\alpha) E_C^MP2,LR
+ * 
+ **/
 class SuperFunctional {
-    public:
 
-        static boost::shared_ptr<SuperFunctional> createSuperFunctional(const std::string & alias, int npoints = 5000, int deriv = 1);
-        static boost::shared_ptr<SuperFunctional> buildSuperFunctional(const std::string & build, int npoints = 5000, int deriv = 1);
-        static std::string availableSuperFunctionals();
-        static std::vector<std::string> availableNames();
-        //static std::string testSuperFunctionals();
+protected:
 
-        SuperFunctional(int npoints = 5000, int deriv = 1);
-        ~SuperFunctional();
+    // => Meta-Data <= //
 
-        std::string getName() const { return name_; }
-        std::string getDescription() const { return description_; }
-        std::string getCitation() const { return citation_; }
-        void setName(const std::string & name) { name_ = name; }
-        void setDescription(const std::string & description) { description_ = description; }
-        void setCitation(const std::string & citation) { citation_ = citation; }
+    std::string name_;
+    std::string description_;
+    std::string citation_;
 
-        void print(FILE* out = outfile, int level = 2) const {}
+    // => Exchange-side DFA functionals <= //
 
-        std::string getComposition();
+    std::vector<boost::shared_ptr<Functional> > x_functionals_;
+    double x_alpha_;
+    double x_omega_;
 
-        bool isGGA();
-        bool isMeta();
+    // => Correlation-side DFA functionals <= //
 
-        /// 0 - LSDA, 1 - GGA, 2 - Meta-GGA
-        int getLocalAnsatz();
+    std::vector<boost::shared_ptr<Functional> > c_functionals_;
+    double c_alpha_;
+    double c_omega_;
+     
+    // => Functional values and partials <= //
 
-        bool isHybrid() { return  exact_exchange_ > 0.0; }
-        bool isDoubleHybrid() { return pt2_ > 0.0; }
-        bool isRangeCorrected() { return omega_ > 0.0; }
-        bool isDashD() { return dashD_weight_ > 0.0; }
+    int max_points_;
+    int deriv_;
+    std::map<std::string, SharedVector> values_;
 
-        void setParameter(const std::string & functional, const std::string & param, double val);
+    // The omegas or alphas have changed, we're in a GKS environment. 
+    // Update the short-range DFAs
+    void partition_gks();
+    // Set up a null Superfunctional
+    void common_init();
 
-        //std::string testSuperFunctional(boost::shared_ptr<Properties> props);
+public:
 
-        double getExactExchange() { return exact_exchange_; }
-        void setExactExchange(double exch) {exact_exchange_ = exch; }
+    // => Constructors (Use the factory constructor, or really know what's up) <= //
 
-        double getOmega() { return omega_; }
-        void setOmega(double omega);
+    SuperFunctional();
+    virtual ~SuperFunctional(); 
 
-        double getPT2() { return pt2_; }
-        void setPT2(double pt2) {pt2_ = pt2; }
+    static boost::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1); 
 
-        double getDashDWeight() { return dashD_weight_; }
-        boost::shared_ptr<Dispersion> getDashD() { return dashD_; }
-        void setDashD(boost::shared_ptr<Dispersion> disp, double weight);
+    // Allocate values (MUST be called after adding new functionals to the superfunctional)
+    void allocate();
 
-        void setNPoints(int npoints) { reallocate(npoints,deriv_); }
-        void setDeriv(int deriv) { reallocate(npoints_,deriv); }
-        int getNPoints() const { return npoints_; }
-        int getDeriv() const { return deriv_; }
+    // => Computers <= //
+    
+    const std::map<std::string, SharedVector>& computeRKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
+    const std::map<std::string, SharedVector>& computeUKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
 
-        void computeRKSFunctional(boost::shared_ptr<RKSFunctions> props);
-        void computeUKSFunctional(boost::shared_ptr<UKSFunctions> props);
-        void collectResults();
+    // => Input/Output <= //
 
-        void addFunctional(const boost::shared_ptr<Functional> & f, double weight);
-        void addFunctional(const std::string & name, double weight);
-        boost::shared_ptr<Functional>& operator[](int index) { return functionals_[index].first; }
-        boost::shared_ptr<Functional> getFunctional(int index) { return functionals_[index].first; }
-        double getWeight(int index) { return functionals_[index].second; }
-        int size() { return functionals_.size(); }
+    const std::map<std::string, SharedVector>& values() const { return values_; }
 
-        double* getFunctionalValue() const { return functional_; }
-        double* getV_RhoA() const { return v_rho_a_; }
-        double* getV_RhoB() const { return v_rho_b_; }
-        double* getV_RhoA_RhoA() const { return v_rho_a_rho_a_; }
-        double* getV_RhoA_RhoB() const { return v_rho_a_rho_b_; }
-        double* getV_RhoB_RhoB() const { return v_rho_b_rho_b_; }
-        double* getV_GammaAA() const { return v_gamma_aa_; }
-        double* getV_GammaAB() const { return v_gamma_ab_; }
-        double* getV_GammaBB() const { return v_gamma_bb_; }
-        double* getV_RhoA_GammaAA() const { return v_rho_a_gamma_aa_; }
-        double* getV_RhoA_GammaAB() const { return v_rho_a_gamma_ab_; }
-        double* getV_RhoA_GammaBB() const { return v_rho_a_gamma_bb_; }
-        double* getV_RhoB_GammaAA() const { return v_rho_b_gamma_aa_; }
-        double* getV_RhoB_GammaAB() const { return v_rho_b_gamma_ab_; }
-        double* getV_RhoB_GammaBB() const { return v_rho_b_gamma_bb_; }
-        double* getV_GammaAA_GammaAA() const { return v_gamma_aa_gamma_aa_; }
-        double* getV_GammaAA_GammaAB() const { return v_gamma_aa_gamma_ab_; }
-        double* getV_GammaAA_GammaBB() const { return v_gamma_aa_gamma_bb_; }
-        double* getV_GammaAB_GammaAB() const { return v_gamma_ab_gamma_ab_; }
-        double* getV_GammaAB_GammaBB() const { return v_gamma_ab_gamma_bb_; }
-        double* getV_GammaBB_GammaBB() const { return v_gamma_bb_gamma_bb_; }
-        double* getV_TauA() const { return v_tau_a_; }
-        double* getV_TauB() const { return v_tau_b_; }
-        double* getV_RhoA_TauA() const { return v_rho_a_tau_a_; }
-        double* getV_RhoA_TauB() const { return v_rho_a_tau_b_; }
-        double* getV_RhoB_TauA() const { return v_rho_b_tau_a_; }
-        double* getV_RhoB_TauB() const { return v_rho_b_tau_b_; }
-        double* getV_GammaAA_TauA() const { return v_gamma_aa_tau_a_; }
-        double* getV_GammaAA_TauB() const { return v_gamma_aa_tau_b_; }
-        double* getV_GammaAB_TauA() const { return v_gamma_ab_tau_a_; }
-        double* getV_GammaAB_TauB() const { return v_gamma_ab_tau_b_; }
-        double* getV_GammaBB_TauA() const { return v_gamma_bb_tau_a_; }
-        double* getV_GammaBB_TauB() const { return v_gamma_bb_tau_b_; }
-        double* getV_TauA_TauA() const { return v_tau_a_tau_a_; }
-        double* getV_TauA_TauB() const { return v_tau_a_tau_b_; }
-        double* getV_TauB_TauB() const { return v_tau_b_tau_b_; }
+    std::vector<boost::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
+    std::vector<boost::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
 
-    protected:
+    // => Setters <= //
 
-        void reallocate(int npoints, int deriv);
-        void release();
-        void allocate();
+    void set_name(const std::string & name) { name_ = name; }
+    void set_description(const std::string & description) { description_ = description; }
+    void set_citation(const std::string & citation) { citation_ = citation; }
 
-        std::vector<std::pair<boost::shared_ptr<Functional>, double> > functionals_;
+    void set_max_points(int max_points) { max_points_ = max_points; allocate(); }
+    void set_deriv(int deriv) { deriv_ = deriv;  allocate(); }
+    void set_x_omega(double omega) { x_omega_ = omega; partition_gks(); }
+    void set_c_omega(double omega) { c_omega_ = omega; partition_gks(); }
+    void set_x_alpha(double alpha) { x_alpha_ = alpha; partition_gks(); }
+    void set_c_alpha(double alpha) { c_alpha_ = alpha; partition_gks(); }
 
-        std::string name_;
-        std::string description_;
-        std::string citation_;
+    // => Accessors <= //
 
-        double exact_exchange_;
-        double omega_;
-        double pt2_;
-        double dashD_weight_;
-        boost::shared_ptr<Dispersion> dashD_;
+    std::string name() const { return name_; }
+    std::string description() const { return description_; }
+    std::string citation() const { return citation_; }
+    
+    double x_omega() const { return x_omega_; }
+    double c_omega() const { return c_omega_; }
+    double x_alpha() const { return x_alpha_; }
+    double c_alpha() const { return c_alpha_; }
 
-        double* restrict functional_;
-        double* restrict v_rho_a_;
-        double* restrict v_rho_b_;
-        double* restrict v_rho_a_rho_a_;
-        double* restrict v_rho_a_rho_b_;
-        double* restrict v_rho_b_rho_b_;
-        double* restrict v_gamma_aa_;
-        double* restrict v_gamma_ab_;
-        double* restrict v_gamma_bb_;
-        double* restrict v_rho_a_gamma_aa_;
-        double* restrict v_rho_a_gamma_ab_;
-        double* restrict v_rho_a_gamma_bb_;
-        double* restrict v_rho_b_gamma_aa_;
-        double* restrict v_rho_b_gamma_ab_;
-        double* restrict v_rho_b_gamma_bb_;
-        double* restrict v_gamma_aa_gamma_aa_;
-        double* restrict v_gamma_aa_gamma_ab_;
-        double* restrict v_gamma_aa_gamma_bb_;
-        double* restrict v_gamma_ab_gamma_ab_;
-        double* restrict v_gamma_ab_gamma_bb_;
-        double* restrict v_gamma_bb_gamma_bb_;
-        double* restrict v_tau_a_;
-        double* restrict v_tau_b_;
-        double* restrict v_rho_a_tau_a_;
-        double* restrict v_rho_a_tau_b_;
-        double* restrict v_rho_b_tau_a_;
-        double* restrict v_rho_b_tau_b_;
-        double* restrict v_gamma_aa_tau_a_;
-        double* restrict v_gamma_aa_tau_b_;
-        double* restrict v_gamma_ab_tau_a_;
-        double* restrict v_gamma_ab_tau_b_;
-        double* restrict v_gamma_bb_tau_a_;
-        double* restrict v_gamma_bb_tau_b_;
-        double* restrict v_tau_a_tau_a_;
-        double* restrict v_tau_a_tau_b_;
-        double* restrict v_tau_b_tau_b_;
+    bool is_meta() const;
+    bool is_gga() const;
+    bool is_x_lrc() const { return x_omega_ != 0.0; }
+    bool is_c_lrc() const { return c_omega_ != 0.0; }
+    bool is_x_hybrid() const { return x_alpha_ != 0.0; }
+    bool is_c_hybrid() const { return c_alpha_ != 0.0; }
 
-        int npoints_;
-        int deriv_;
-        bool oldGGA_;
-        bool oldMeta_;
+    int max_points() const { return max_points_; }
+    int deriv() const { return deriv_; }
+    
+    // => Utility <= //
+    void print(FILE* out = outfile, int print = 1) const;
 
 };
 
-}}
+}
 
 #endif
