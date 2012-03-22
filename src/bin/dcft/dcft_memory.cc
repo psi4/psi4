@@ -28,30 +28,20 @@ DCFTSolver::init()
     enuc_       = Process::environment.molecule()->nuclear_repulsion_energy();
     scf_energy_ = reference_wavefunction_->reference_energy();
     ntriso_     = nso_ * (nso_ + 1) / 2;
-    for(int h = 0; h < nirrep_; ++h){
-        soccpi_[h] = reference_wavefunction_->soccpi()[h];
-        doccpi_[h] = reference_wavefunction_->doccpi()[h];
-        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
-        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
-        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
-        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
-    }
-
-    naoccpi_ = new int[nirrep_];
-    nboccpi_ = new int[nirrep_];
-    navirpi_ = new int[nirrep_];
-    nbvirpi_ = new int[nirrep_];
-    nalpha_  = nbeta_ =  navir_ = nbvir_ = 0;
-    for(int h = 0; h < nirrep_; ++h){
-        naoccpi_[h] = doccpi_[h] + soccpi_[h];
-        nboccpi_[h] = doccpi_[h];
-        navirpi_[h] = nmopi_[h] - doccpi_[h] - soccpi_[h] - frzvpi_[h];
-        nbvirpi_[h] = nmopi_[h] - doccpi_[h] - frzvpi_[h];
-        for(int n = 0; n < naoccpi_[h]; ++n) ++nalpha_;
-        for(int n = 0; n < nboccpi_[h]; ++n) ++nbeta_;
-        for(int n = 0; n < navirpi_[h]; ++n) ++navir_;
-        for(int n = 0; n < nbvirpi_[h]; ++n) ++nbvir_;
-    }
+    soccpi_ = reference_wavefunction_->soccpi();
+    doccpi_ = reference_wavefunction_->doccpi();
+    frzcpi_ = reference_wavefunction_->frzcpi();
+    frzvpi_ = reference_wavefunction_->frzvpi();
+    nmopi_  = reference_wavefunction_->nmopi();
+    nsopi_  = reference_wavefunction_->nsopi();
+    naoccpi_ = doccpi_ + soccpi_;
+    nboccpi_ = doccpi_;
+    navirpi_ = nmopi_ - doccpi_ - soccpi_ - frzvpi_;
+    nbvirpi_ = nmopi_ - doccpi_ - frzvpi_;
+    nalpha_  = naoccpi_.sum();
+    nbeta_  = nboccpi_.sum();
+    navir_  = navirpi_.sum();
+    nbvir_  = nbvirpi_.sum();
 
     aocc_c_      = SharedMatrix(new Matrix("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_));
     bocc_c_      = SharedMatrix(new Matrix("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_));
@@ -147,10 +137,10 @@ DCFTSolver::finalize()
 //    }
 //    delete [] a_tau_;
 //    delete [] b_tau_;
-    delete [] naoccpi_;
-    delete [] nboccpi_;
-    delete [] navirpi_;
-    delete [] nbvirpi_;
+//    delete [] naoccpi_;
+//    delete [] nboccpi_;
+//    delete [] navirpi_;
+//    delete [] nbvirpi_;
 }
 
 }}//Namespaces
