@@ -80,11 +80,12 @@ class Dispersion {
         std::string print_gradient(boost::shared_ptr<Molecule> m);
         std::string print_hessian(boost::shared_ptr<Molecule> m);
 
-        virtual double compute_energy(boost::shared_ptr<Molecule> m) = 0; 
-        virtual SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m) = 0; 
-        virtual SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m) = 0; 
+        virtual double compute_energy(boost::shared_ptr<Molecule> m); 
+        virtual SharedMatrix compute_gradient(boost::shared_ptr<Molecule> m); 
+        virtual SharedMatrix compute_hessian(boost::shared_ptr<Molecule> m);
 
         virtual void print(FILE* out = outfile, int level = 1) const;
+        void py_print() const { print(outfile, 1); }
 };
 
 class D1 : public Dispersion {

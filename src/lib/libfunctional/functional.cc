@@ -55,5 +55,11 @@ void Functional::print(FILE* out, int level) const
         fprintf(out, "\n");
     }
 } 
+void Functional::computeRKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
+{
+}
+void Functional::computeUKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
+{
+}
 
 }

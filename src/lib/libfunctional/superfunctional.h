@@ -89,6 +89,8 @@ public:
 
     std::vector<boost::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<boost::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
+    void add_x_functional(boost::shared_ptr<Functional> fun);
+    void add_c_functional(boost::shared_ptr<Functional> fun);
 
     // => Setters <= //
 
@@ -132,6 +134,7 @@ public:
     // => Utility <= //
 
     void print(FILE* out = outfile, int print = 1) const;
+    void py_print() const { print(outfile, 1); }
 
 };
 
