@@ -15,13 +15,15 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(S
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext latexpdf-user latexpdf-prog index.rst distclean psi4docs
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext latexpdf-user latexpdf-prog index.rst distclean psi4docs html-user html-prog
 
 DISCARD = expert_keywords.tex keywords.tex physconst.tex psi4bases.tex psi4bases.html tests_descriptions.tex variables_list.tex warnings.txt $(SOURCEDIR)/index.rst $(SOURCEDIR)/PsiMod.pyc
 
 help:
 	@echo "For PSI4, use one of"
-	@echo "  html                to make standalone complete manual"
+	@echo "  html                to make html complete manual"
+	@echo "  html-user           to make html user manual"
+	@echo "  html-prog           to make html programmer manual"
 	@echo "  latexpdf-user       to make LaTeX pdf user manual"
 	@echo "  latexpdf-prog       to make LaTeX pdf programmer manual"
 	@echo "  clean               to clean intermediate and autodoc files"
@@ -47,6 +49,20 @@ html: index.rst
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+html-user: index.rst
+	cp -p $(SOURCEDIR)/autodoc_index_htmluser.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_htmluser.rst $(SOURCEDIR)/appendices.rst
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-user
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html-user."
+
+html-prog: index.rst
+	cp -p $(SOURCEDIR)/autodoc_index_htmlprog.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_htmlprog.rst $(SOURCEDIR)/appendices.rst
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-prog
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html-prog."
 
 dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml

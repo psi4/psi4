@@ -75,6 +75,9 @@ this covers:
 * Sample Inputs: input.dat files in :source:`samples`
 
 Running ``make clean`` will clear out all auto-generated files.
+Running ``make distclean`` additionally clears out the built documentation.
+Run one of these before check-in to avoid adding non-source files
+to the repository.
 
 reStructuredText
 ^^^^^^^^^^^^^^^^
@@ -104,8 +107,8 @@ been written in LaTeX (with the special substitution ``@@`` for
 subscripting underscore). The autodoc script has been trained to convert
 inline LaTeX math to reST math, provided the expression within dollar
 signs is offset from other text. That is, expressions of the form
-:regexp:`^ $latex math$[., ]$` are good, while ``H$_2$O`` and LaTeX tables
+:regexp:`^ $latex math$[., ]$` (pseudo-regex) are good, while ``H$_2$O`` and LaTeX tables
 are not translated correctly. Python docstrings are absorbed as-is, so
-please use reST math formatting (essentially ``$latex math$`` -->
+please use reST math formatting (essentially ``$latex math$`` :math:`\Rightarrow`
 ``:math:`latex math```).
 
