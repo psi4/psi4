@@ -37,11 +37,10 @@
 
 namespace psi {
 	
-double **dpd_block_matrix(int n, int m)
+double **dpd_block_matrix(size_t n, size_t m)
 {
   int i;
   double **A, *B;
-  long int size;  /* rows * cols */
 
 #ifdef DPD_TIMER
   timer_on("block_mat");
@@ -49,66 +48,66 @@ double **dpd_block_matrix(int n, int m)
 
   A = NULL;  B = NULL;
 
-  size = ((long) m) * ((long) n);
+  size_t size = m * n;
 
   while((dpd_main.memory - dpd_main.memused - size) < 0) {
-    /* Delete cache entries until there's enough memory or no more cache */
+      /* Delete cache entries until there's enough memory or no more cache */
 
-    /* Priority-based cache */
-    if(dpd_main.cachetype == 1) {
-      if(dpd_file4_cache_del_low()) {
-	dpd_file4_cache_print(stderr);
-	fprintf(stderr, "dpd_block_matrix: n = %d  m = %d\n", n, m);
-	dpd_error("dpd_block_matrix: No memory left.", stderr);
+      /* Priority-based cache */
+      if(dpd_main.cachetype == 1) {
+          if(dpd_file4_cache_del_low()) {
+              dpd_file4_cache_print(stderr);
+              fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+              dpd_error("dpd_block_matrix: No memory left.", stderr);
+          }
       }
-    }
 
-    /* Least-recently-used cache */
-    else if(dpd_main.cachetype == 0) {
-      if(dpd_file4_cache_del_lru()) {
-	dpd_file4_cache_print(stderr);
-	fprintf(stderr, "dpd_block_matrix: n = %d  m = %d\n", n, m);
-	dpd_error("dpd_block_matrix: No memory left.", stderr);
+      /* Least-recently-used cache */
+      else if(dpd_main.cachetype == 0) {
+          if(dpd_file4_cache_del_lru()) {
+              dpd_file4_cache_print(stderr);
+              fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+              dpd_error("dpd_block_matrix: No memory left.", stderr);
+          }
       }
-    }
 
-    else dpd_error("LIBDPD Error: invalid cachetype.", stderr);
+      else dpd_error("LIBDPD Error: invalid cachetype.", stderr);
   }
 
   if(!m || !n) {
 #ifdef DPD_TIMER
-    timer_off("block_mat");
+      timer_off("block_mat");
 #endif
-    return(NULL);
+      return(NULL);
   }
   
   if((A = (double **) malloc(n * sizeof(double *)))==NULL) {
-    fprintf(stderr,"dpd_block_matrix: trouble allocating memory \n");
-    fprintf(stderr,"n = %d  m = %d\n",n, m);
-    exit(PSI_RETURN_FAILURE);
+      fprintf(stderr,"dpd_block_matrix: trouble allocating memory \n");
+      fprintf(stderr,"n = %zd  m = %zd\n",n, m);
+      exit(PSI_RETURN_FAILURE);
   }
 
   /* Allocate the main block here */
   /* NB: If we delete the entire cache and STILL get NULL from malloc(), */
   /* we're either out of real memory or the heap is seriously fragmented */
   while((B = (double *) malloc(size * sizeof(double))) == NULL) {
-    /* Priority-based cache */
-    if(dpd_main.cachetype == 1) {
-      if(dpd_file4_cache_del_low()) {
-	dpd_file4_cache_print(stderr);
-	fprintf(stderr, "dpd_block_matrix: n = %d  m = %d\n", n, m);
-	dpd_error("dpd_block_matrix: No memory left.", stderr);
+      /* Priority-based cache */
+      if(dpd_main.cachetype == 1) {
+          if(dpd_file4_cache_del_low()) {
+              dpd_file4_cache_print(stderr);
+              fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+              dpd_error("dpd_block_matrix: No memory left.", stderr);
+          }
       }
-    }
 
-    /* Least-recently-used cache */
-    else if(dpd_main.cachetype == 0) {
-      if(dpd_file4_cache_del_lru()) {
-	dpd_file4_cache_print(stderr);
-	fprintf(stderr, "dpd_block_matrix: n = %d  m = %d\n", n, m);
-	dpd_error("dpd_block_matrix: No memory left.", stderr);
+      /* Least-recently-used cache */
+      else if(dpd_main.cachetype == 0) {
+          if(dpd_file4_cache_del_lru()) {
+              dpd_file4_cache_print(stderr);
+              fprintf(stderr, "dpd_block_matrix: n = %zd  m = %zd\n", n, m);
+              dpd_error("dpd_block_matrix: No memory left.", stderr);
+          }
       }
-    }
   }
 
   /*  memset((void *) B, 0, m*n*sizeof(double)); */
@@ -127,15 +126,14 @@ double **dpd_block_matrix(int n, int m)
   return(A);
 }
 
-void dpd_free_block(double **array, int n, int m)
+void dpd_free_block(double **array, size_t n, size_t m)
 {
-  long size;
-  size = ((long) m) * ((long) n);
-  if(array == NULL) return;
-  free(array[0]);
-  free(array);
-  /* Decrement the global memory counter */
-  dpd_main.memused -= size;
+    size_t size =  m * n;
+    if(array == NULL) return;
+    free(array[0]);
+    free(array);
+    /* Decrement the global memory counter */
+    dpd_main.memused -= size;
 }
 
 }

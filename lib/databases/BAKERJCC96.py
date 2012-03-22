@@ -1,9 +1,21 @@
+"""
+**BAKERJCC96**
+
+| Geometries from Baker and Chan J. Comput. Chem. 17 888 (1996),
+|   as reported in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002).
+| No reference energies defined.
+
+- **cp**  ``'off'``
+
+- **rlxd** ``'off'``
+
+----
+
+"""
 import re
 import input
 
 # <<< BAKERJCC96 Database Module >>>
-# Geometries from Baker and Chan J. Comput. Chem. 17 888 (1996), as reported
-# in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002).
 dbse = 'BAKERJCC96'
 isOS = 'true'
 
@@ -326,8 +338,7 @@ units bohr
 rxnpattern = re.compile(r'^(.+)-(.+)-(.+)$')
 GEOS = {}
 for rxn in HRXN:
-   for rgt in ACTV['%s-%s' % (dbse, rxn)]:
+    for rgt in ACTV['%s-%s' % (dbse, rxn)]:
 
-            molname = rxnpattern.match(rgt)
-            GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
-
+        molname = rxnpattern.match(rgt)
+        GEOS['%s' % (rgt)] = eval('%s_%s' % (dbse, molname.group(2)))
