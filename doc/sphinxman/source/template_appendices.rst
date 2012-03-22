@@ -1,5 +1,7 @@
 
-.. #####  HTML START
+.. #####  HTML-ALL START
+.. #####  HTML-USER START
+.. #####  HTML-PROG START
 .. #####  LATEX-USER START
 .. #####  LATEX-PROG START
 
@@ -16,11 +18,15 @@ Appendices
    testsuite
    basissets_byelement
 .. #####  LATEX-PROG STOP
+.. #####  HTML-PROG STOP
    autodoc_glossary_options_c
 .. #####  LATEX-USER STOP
+.. #####  HTML-USER STOP
    autodoc_options_c_bymodule
 
-.. #####  HTML STOP
+.. #####  HTML-ALL STOP
+.. #####  HTML-USER STOP
+.. #####  HTML-PROG STOP
 .. #####  LATEX-USER STOP
 .. #####  LATEX-PROG STOP
 
