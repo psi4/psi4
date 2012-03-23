@@ -4114,8 +4114,6 @@ DCFTSolver::compute_ewdm()
     dpd_file2_close(&zI_VV);
     dpd_file2_close(&z_OV);
 
-    aW.print();
-
     // Beta spin
     dpd_file2_init(&zI_OV, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "zI <o|v>");
     dpd_file2_init(&zI_VO, PSIF_DCFT_DPD, 0, ID('v'), ID('o'), "zI <v|o>");
