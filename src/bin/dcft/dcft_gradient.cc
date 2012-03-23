@@ -4208,6 +4208,10 @@ DCFTSolver::compute_ewdm()
     a_opdm->add(a_zia);
     b_opdm->add(b_zia);
 
+    // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
+    aW.scale(-2.0);
+    bW.scale(-2.0);
+
     // Reorder the energy-weighted density matrix to the QT order
 
     double **a_qt = block_matrix(nmo_, nmo_);
@@ -4304,7 +4308,7 @@ DCFTSolver::compute_ewdm()
         offset += nmopi_[h];
     }
 
-    dpdbuf4 G, T;
+    dpdbuf4 G;
 
     struct iwlbuf AA, AB, BB;
     iwl_buf_init(&AA, PSIF_MO_AA_TPDM, 1.0E-15, 0, 0);
@@ -4565,7 +4569,7 @@ DCFTSolver::compute_ewdm()
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
               ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
-    dpd_buf4_dump(&G, &AA, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    dpd_buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OOOO
@@ -4903,7 +4907,7 @@ DCFTSolver::compute_ewdm()
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[v,v]"),
               ID("[o,v]"), ID("[v,v]"), 0, "Gamma <ov|vv>");
-    dpd_buf4_dump(&G, &AA, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    dpd_buf4_dump(&G, &BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
