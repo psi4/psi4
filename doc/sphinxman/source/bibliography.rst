@@ -39,3 +39,7 @@ Bibliography
    *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots| wdin
    (Academic Press, New York, 1999), pages 143-269.
 
+.. [Hirata:2000:216]
+
+.. [Olsen:2000:7140]
+

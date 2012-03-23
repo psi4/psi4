@@ -491,7 +491,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do store converged vector(s) at the end of
     the run?  The vector(s) is(are) stored in a transparent format such that
     other programs can use it easily. The format is specified in
-    src/lib/libqt/slaterdset.h. -*/
+    :source:`src/lib/libqt/slaterdset.h` . -*/
     options.add_bool("VECS_WRITE", false);
 
     /*- Number of vectors to export -*/
@@ -529,7 +529,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do use Wigner formulas in the Empn series? !expert -*/
     options.add_bool("MPN_WIGNER",true);
 
-    /*- $z$ in $H = H@@0 + z H@@1$ !expert -*/
+    /*- The magnitude of perturbation $z$ in $H = H@@0 + z H@@1$ !expert -*/
     options.add_double("PERTURB_MAGNITUDE",1.0);
 
 
@@ -2184,7 +2184,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
     /*- The order of coupling terms to include in MRCCSDT computations -*/
     options.add_str("COUPLING","CUBIC","NONE LINEAR QUADRATIC CUBIC");
-    /*- The symmetry of the target wavefunction, specified either by Sch\"onflies symbol,
+    /*- The symmetry of the target wavefunction, specified either by Sch\ |o_dots| nflies symbol,
         or irrep number (in Cotton ordering) -*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
     /*- The type of algorithm to use for (T) computations -*/
@@ -2395,7 +2395,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC.
           If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
           that value is used. When set, this option overrides everything. Be aware
-          the``-n`` command-line option described in section :ref:`sec:threading`
+          the ``-n`` command-line option described in section :ref:`sec:threading`
           does not affect MRCC.
           !expert -*/
       options.add_int("MRCC_OMP_NUM_THREADS", 1);
