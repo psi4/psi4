@@ -27,10 +27,12 @@ my $DriverFile = $DriverPath . "../../src/bin/psi4/read_options.cc";
 my $CurrentModule;
 my %Keywords;
 my %ModuleDescriptions;
+my %ModuleSubsections;
 my %Expert;
 open(DRIVER, $DriverFile) or die "\nI can't read the PSI driver file\n";
 
 my $CurrentSubsection = "";
+my @OrderedSubsection = ();
 
 # Start looping over the driver file
 while(<DRIVER>){
@@ -38,6 +40,7 @@ while(<DRIVER>){
     if(/name\s*\=\=\s*\"(\w+)\"/){
         $CurrentModule = $1;
         $CurrentSubsection = "";
+        @OrderedSubsection = ();
     }
     my $CommentString;
     my $SphinxCommentString;
@@ -50,6 +53,8 @@ while(<DRIVER>){
     # don't know if it's a multi-line comment, let's find out
     if(/\/\*-\s*SUBSECTION\s+(.*)-\*\// and $CurrentModule){
         $CurrentSubsection = $1;
+        print "$CurrentSubsection\n";
+        push @{$ModuleSubsections{$CurrentModule}}, $CurrentSubsection;
     }elsif(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
         $ModuleDescriptions{$CurrentModule} = get_description($_);
     }elsif(/\/\*-/ and $CurrentModule){
@@ -59,10 +64,11 @@ while(<DRIVER>){
         $CommentString =~ s/@@/_/g;
         $SphinxCommentString = $CommentString;
         $SphinxCommentString =~ s/ \$/ :math:`/g;
+        $SphinxCommentString =~ s/\(\$/(\\ :math:`/g;
         $SphinxCommentString =~ s/\$ /` /g;
-        $SphinxCommentString =~ s/\$./`./g;
+        $SphinxCommentString =~ s/\$\./`./g;
         $SphinxCommentString =~ s/\$,/`,/g;
-        $SphinxCommentString =~ s/\$\?/`\?/g;
+        $SphinxCommentString =~ s/\$\)/`\\ \)/g;
         $SphinxCommentString =~ s/\\_/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
@@ -81,6 +87,17 @@ while(<DRIVER>){
     }
 }
 close DRIVER;
+
+
+print "\n\nARRAY\n";
+         foreach my $country (sort keys %ModuleSubsections) {
+           print "$country: ";
+           my @cities = @{$ModuleSubsections{$country}};
+           print join ', ', @cities;
+           print ".\n";
+         }
+print "ENDARRAY\n\n";
+
 
 my @temp = ();
 print_hash(\%Keywords, "keywords.tex", 1, "kw");
@@ -138,10 +155,28 @@ sub print_hash
          printf OUT "\n\t  \\\\ \n";
          print OUT "\\end{tabular*}\n";
      }
-     foreach my $Subsection (sort {$a cmp $b} keys %{$hash{$Module}}){
+     my @OrderedSubsection = ("");
+     if (exists $ModuleSubsections{$Module}) {
+          @OrderedSubsection = @{$ModuleSubsections{$Module}};
+     }
+     foreach my $Subsection (@OrderedSubsection) {
+       if (defined(%{$hash{$Module}{$Subsection}})) { 
          if($Subsection){
-             print OUT "\\subsubsection{$Subsection}\n";
+             if ($print_description) { 
+                 my $Secdivider = "_" x (length($Subsection)-1);
+                 print OUT "\\subsubsection{$Subsection}\n";
+                 print SSOUT "\n$Subsection\n$Secdivider\n\n";
+             }
+             else {
+                 my $Secdivider = "_" x (8+length($Subsection));
+                 print OUT "\\subsubsection{$Subsection}\n";
+                 print SSOUT "\n*Expert* $Subsection\n$Secdivider\n\n";
+             }
          }
+         else {
+            if ($print_description) { print SSOUT "\nGeneral\n_______\n\n"; }
+            else                    { print SSOUT "\n*Expert*\n________\n\n"; }
+         }    
          my %SectionHash = %{$hash{$Module}{$Subsection}};
          foreach my $Keyword (sort {$a cmp $b} keys %SectionHash){
              my %KeyHash = %{$SectionHash{$Keyword}};
@@ -188,11 +223,11 @@ sub print_hash
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
              printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", $KeyHash{"Type"}, $KeyHash{"Default"};
              printf SSSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
-             #printf SSSOUT "* **Default**: %s\n\n", $KeyHash{"Default"};
              printf TSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
              print OUT "\\end{tabular*}\n";
              close SSSOUT;
          }  # keyword
+       }
      }  # subsection
      print SSOUT "\n";
      close SSOUT;
@@ -413,10 +448,11 @@ foreach my $Dir(readdir TESTS){
         $Description_tex =~ s/@@/_/g;
         my $Description_rst = $Description_tex;
         $Description_rst =~ s/ \$/ :math:`/g;
+        $Description_rst =~ s/\(\$/(\\ :math:`/g;
         $Description_rst =~ s/\$ /` /g;
-        $Description_rst =~ s/\$./`./g;
+        $Description_rst =~ s/\$\./`./g;
         $Description_rst =~ s/\$,/`,/g;
-        $Description_rst =~ s/\$\?/`\?/g;
+        $Description_rst =~ s/\$\)/`\\ \)/g;
         $Description_rst =~ s/\\_/_/g;
         print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
         print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
