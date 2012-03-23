@@ -59,10 +59,11 @@ while(<DRIVER>){
         $CommentString =~ s/@@/_/g;
         $SphinxCommentString = $CommentString;
         $SphinxCommentString =~ s/ \$/ :math:`/g;
+        $SphinxCommentString =~ s/\(\$/(\\ :math:`/g;
         $SphinxCommentString =~ s/\$ /` /g;
-        $SphinxCommentString =~ s/\$./`./g;
+        $SphinxCommentString =~ s/\$\./`./g;
         $SphinxCommentString =~ s/\$,/`,/g;
-        $SphinxCommentString =~ s/\$\?/`\?/g;
+        $SphinxCommentString =~ s/\$\)/`\\ \)/g;
         $SphinxCommentString =~ s/\\_/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
@@ -422,7 +423,6 @@ foreach my $Dir(readdir TESTS){
         $Description_rst =~ s/\$ /` /g;
         $Description_rst =~ s/\$./`./g;
         $Description_rst =~ s/\$,/`,/g;
-        $Description_rst =~ s/\$\?/`\?/g;
         $Description_rst =~ s/\\_/_/g;
         print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
         print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
