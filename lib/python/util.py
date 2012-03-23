@@ -140,3 +140,108 @@ def compare_vectors(expected, computed, digits, label):
             expected.print_out()
             sys.exit(1)
     success(label)
+
+def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
+
+    """Function to move file into scratch with correct naming
+    convention.
+
+    Arguments:
+
+    @arg filename  full path to file
+    @arg prefix    computation prefix, usually 'psi'
+    @arg namespace context namespace, usually molecule name
+    @arg unit      unit number, e.g. 32 
+    @arg move      copy or move? (default copy)
+
+    Example:
+        
+    Assume PID is 12345 and SCRATCH is /scratch/parrish/ 
+
+    copy_file_to_scratch('temp', 'psi', 'h2o', 32):
+        -cp ./temp /scratch/parrish/psi.12345.h2o.32
+    copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
+        -cp /tmp/temp /scratch/parrish/psi.12345.h2o.32
+    copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
+        -cp /tmp/temp /scratch/parrish/psi.12345.32
+    copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
+        -mv /tmp/temp /scratch/parrish/psi.12345.32
+
+    """
+
+    pid = str(os.getpid())
+    scratch = PsiMod.IOManager.shared_object().get_file_path(int(unit))
+
+    cp = '/bin/cp';
+    if move:
+        cp = '/bin/mv';
+
+    unit = str(unit)
+
+    target = ''
+    target += prefix
+    target += '.'
+    target += pid
+    if len(namespace):
+        target += '.'
+        target += namespace
+    target += '.'
+    target += unit 
+
+    command = ('%s %s %s/%s' % (cp, filename, scratch, target))
+    
+    os.system(command)
+    #print command
+
+def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
+
+    """Function to move file out of scratch with correct naming
+    convention.
+
+    Arguments:
+
+    @arg filename  full path to target file
+    @arg prefix    computation prefix, usually 'psi'
+    @arg namespace context namespace, usually molecule name
+    @arg unit      unit number, e.g. 32 
+    @arg move      copy or move? (default copy)
+
+    Example:
+        
+    Assume PID is 12345 and SCRATCH is /scratch/parrish/ 
+
+    copy_file_to_scratch('temp', 'psi', 'h2o', 32):
+        -cp /scratch/parrish/psi.12345.h2o.32 .temp  
+    copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
+        -cp /scratch/parrish/psi.12345.h2o.32 /tmp/temp 
+    copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
+        -cp /scratch/parrish/psi.12345.32 /tmp/temp 
+    copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
+        -mv /scratch/parrish/psi.12345.32 /tmp/temp
+
+    """
+
+    pid = str(os.getpid())
+    scratch = PsiMod.IOManager.shared_object().get_file_path(int(unit))
+
+    cp = '/bin/cp';
+    if move:
+        cp = '/bin/mv';
+
+    unit = str(unit)
+
+    target = ''
+    target += prefix
+    target += '.'
+    target += pid
+    if len(namespace):
+        target += '.'
+        target += namespace
+    target += '.'
+    target += unit 
+
+    command = ('%s %s/%s %s' % (cp, scratch, target, filename))
+    
+    os.system(command)
+    #print command
+
