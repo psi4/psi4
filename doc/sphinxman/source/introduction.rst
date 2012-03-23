@@ -112,7 +112,7 @@ available in |PSIfour| are provided below.
 
 * "Large-scale Symmetry-adapted Perturbation Theory Computations via
   Density Fitting and Laplace Transformation Techniques: Investigating the
-  Fundamental Forces of {DNA}-Intercalator Interactions," E. G. Hohenstein,
+  Fundamental Forces of DNA-Intercalator Interactions," E. G. Hohenstein,
   R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, *J.
   Chem. Phys.* **135**, 174017 (2011).
 

@@ -1036,10 +1036,6 @@ DCFTSolver::compute_density()
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Zab);
 
-    dpd_buf4_init(&Gba, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
-                  ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
-    dpd_buf4_close(&Gba);
-
     // Г<iajb> spin case:
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
@@ -4118,8 +4114,6 @@ DCFTSolver::compute_ewdm()
     dpd_file2_close(&zI_VV);
     dpd_file2_close(&z_OV);
 
-    aW.print();
-
     // Beta spin
     dpd_file2_init(&zI_OV, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "zI <o|v>");
     dpd_file2_init(&zI_VO, PSIF_DCFT_DPD, 0, ID('v'), ID('o'), "zI <v|o>");
@@ -4213,6 +4207,10 @@ DCFTSolver::compute_ewdm()
 
     a_opdm->add(a_zia);
     b_opdm->add(b_zia);
+
+    // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
+    aW.scale(-2.0);
+    bW.scale(-2.0);
 
     // Reorder the energy-weighted density matrix to the QT order
 
@@ -4319,9 +4317,6 @@ DCFTSolver::compute_ewdm()
 
     psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
 
-    akappa_->print();
-    aocc_tau_->print();
-    a_zia->print();
     // Compute the OOOV densities
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
                   ID("[O,O]"), ID("[O,V]"), 0, "Gamma <OO|OV>");
@@ -4341,8 +4336,8 @@ DCFTSolver::compute_ewdm()
                 size_t a = G.params->colorb[h][ka][1];
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
-                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (akappa_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) * a_zia->get(Gj, j, a + naoccpi_[h]);
-                if(Gj == Gk && Gi == Ga) G.matrix[h][ij][ka] -= 0.5 * (akappa_->get(Gj, j, k) + aocc_tau_->get(Gj, j, k)) * a_zia->get(Gi, i, a + naoccpi_[h]);
+                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (akappa_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) * a_zia->get(Gj, j, a + naoccpi_[Gj]);
+                if(Gj == Gk && Gi == Ga) G.matrix[h][ij][ka] -= 0.5 * (akappa_->get(Gj, j, k) + aocc_tau_->get(Gj, j, k)) * a_zia->get(Gi, i, a + naoccpi_[Gi]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&G, h);
@@ -4368,7 +4363,7 @@ DCFTSolver::compute_ewdm()
                 size_t a = G.params->colorb[h][ka][1];
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
-                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (akappa_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) * b_zia->get(Gj, j, a + naoccpi_[h]);
+                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (akappa_->get(Gi, i, k) + aocc_tau_->get(Gi, i, k)) * b_zia->get(Gj, j, a + nboccpi_[Gj]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&G, h);
@@ -4394,15 +4389,13 @@ DCFTSolver::compute_ewdm()
                 size_t a = G.params->colorb[h][ka][1];
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
-                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (bkappa_->get(Gi, i, k) + bocc_tau_->get(Gi, i, k)) * a_zia->get(Gj, j, a + naoccpi_[h]);
+                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (bkappa_->get(Gi, i, k) + bocc_tau_->get(Gi, i, k)) * a_zia->get(Gj, j, a + naoccpi_[Gj]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&G, h);
         dpd_buf4_mat_irrep_close(&G, h);
     }
     dpd_buf4_close(&G);
-
-    // Check that!!!
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
                   ID("[o,o]"), ID("[o,v]"), 0, "Gamma <oo|ov>");
@@ -4422,8 +4415,8 @@ DCFTSolver::compute_ewdm()
                 size_t a = G.params->colorb[h][ka][1];
                 int Ga = G.params->ssym[a];
                 a -= G.params->soff[Ga];
-                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (bkappa_->get(Gi, i, k) + bocc_tau_->get(Gi, i, k)) * b_zia->get(Gj, j, a + naoccpi_[h]);
-                if(Gj == Gk && Gi == Ga) G.matrix[h][ij][ka] -= 0.5 * (bkappa_->get(Gj, j, k) + bocc_tau_->get(Gj, j, k)) * b_zia->get(Gi, i, a + naoccpi_[h]);
+                if(Gi == Gk && Gj == Ga) G.matrix[h][ij][ka] = 0.5 * (bkappa_->get(Gi, i, k) + bocc_tau_->get(Gi, i, k)) * b_zia->get(Gj, j, a + nboccpi_[Gj]);
+                if(Gj == Gk && Gi == Ga) G.matrix[h][ij][ka] -= 0.5 * (bkappa_->get(Gj, j, k) + bocc_tau_->get(Gj, j, k)) * b_zia->get(Gi, i, a + nboccpi_[Gi]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&G, h);
@@ -4450,8 +4443,8 @@ DCFTSolver::compute_ewdm()
                 size_t c = G.params->colorb[h][bc][1];
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
-                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * avir_tau_->get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[h]);
-                if(Gi == Gc && Ga == Gb) G.matrix[h][ia][bc] -= 0.5 * avir_tau_->get(Ga, a, b) * a_zia->get(Gi, i, c + naoccpi_[h]);
+                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * avir_tau_->get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
+                if(Gi == Gc && Ga == Gb) G.matrix[h][ia][bc] -= 0.5 * avir_tau_->get(Ga, a, b) * a_zia->get(Gi, i, c + naoccpi_[Gi]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&G, h);
@@ -4477,7 +4470,7 @@ DCFTSolver::compute_ewdm()
                 size_t c = G.params->colorb[h][bc][1];
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
-                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * bvir_tau_->get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[h]);
+                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * bvir_tau_->get(Ga, a, c) * a_zia->get(Gi, i, b + naoccpi_[Gi]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&G, h);
@@ -4503,7 +4496,7 @@ DCFTSolver::compute_ewdm()
                 size_t c = G.params->colorb[h][bc][1];
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
-                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * avir_tau_->get(Ga, a, c) * b_zia->get(Gi, i, b + naoccpi_[h]);
+                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * avir_tau_->get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
 
             }
         }
@@ -4530,8 +4523,8 @@ DCFTSolver::compute_ewdm()
                 size_t c = G.params->colorb[h][bc][1];
                 int Gc = G.params->ssym[c];
                 c -= G.params->soff[Gc];
-                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * bvir_tau_->get(Ga, a, c) * b_zia->get(Gi, i, b + naoccpi_[h]);
-                if(Gi == Gc && Ga == Gb) G.matrix[h][ia][bc] -= 0.5 * bvir_tau_->get(Ga, a, b) * b_zia->get(Gi, i, c + naoccpi_[h]);
+                if(Gi == Gb && Ga == Gc) G.matrix[h][ia][bc] = 0.5 * bvir_tau_->get(Ga, a, c) * b_zia->get(Gi, i, b + nboccpi_[Gi]);
+                if(Gi == Gc && Ga == Gb) G.matrix[h][ia][bc] -= 0.5 * bvir_tau_->get(Ga, a, b) * b_zia->get(Gi, i, c + nboccpi_[Gi]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&G, h);
@@ -4539,161 +4532,383 @@ DCFTSolver::compute_ewdm()
     }
     dpd_buf4_close(&G);
 
+    // Dump the density to IWL
+    // VVVV
+
+    // Note (TODO): So far the contraction of TEI derivatives with Gamma is not restricted.
+    // We need to restrict it by scaling Gamma and switching bk_pack in dpd_buf4_dump to 1
+    // If restriction is used it seems that one needs to do a seperate dpd_buf4_sort to the chemists' notation
+    // before calling dpd_buf4_dump - check that with swap23 = 0 (AYS)
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
+              ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
+    dpd_buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
+              ID("[V,v]"), ID("[V,v]"), 0, "Gamma <Vv|Vv>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ab = 0; ab < G.params->rowtot[h]; ++ab){
+            int a = G.params->roworb[h][ab][0];
+            int b = G.params->roworb[h][ab][1];
+            int A = avir_qt[a];
+            int B = bvir_qt[b];
+            for(size_t cd = 0; cd < G.params->coltot[h]; ++cd){
+                int c = G.params->colorb[h][cd][0];
+                int d = G.params->colorb[h][cd][1];
+                int C = avir_qt[c];
+                int D = bvir_qt[d];
+                double value = 4.0 * G.matrix[h][ab][cd];
+                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
+              ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
+    dpd_buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
+    dpd_buf4_close(&G);
+
+    // OOOO
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
+              ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
+    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
+              ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
+
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            int I = aocc_qt[i];
+            int J = bocc_qt[j];
+            for(size_t kl = 0; kl < G.params->coltot[h]; ++kl){
+                int k = G.params->colorb[h][kl][0];
+                int l = G.params->colorb[h][kl][1];
+                int K = aocc_qt[k];
+                int L = bocc_qt[l];
+                double value = 4.0 * G.matrix[h][ij][kl];
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
+              ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
+    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
+    dpd_buf4_close(&G);
+
+    // OOVV
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
+              ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
+    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
+              ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            int I = aocc_qt[i];
+            int J = bocc_qt[j];
+            for(size_t ab = 0; ab < G.params->coltot[h]; ++ab){
+                int a = G.params->colorb[h][ab][0];
+                int b = G.params->colorb[h][ab][1];
+                int A = avir_qt[a];
+                int B = bvir_qt[b];
+                double value = 4.0 * G.matrix[h][ij][ab];
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
+              ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
+    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
+    dpd_buf4_close(&G);
+
+    // OVOV
+    // Г<OV|OV> must be antisymmetrized before contracting it with TEI derivatives:
+    // Г<OV|OV> contribution
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+              ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = aocc_qt[i];
+            int A = avir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = aocc_qt[j];
+                int B = avir_qt[b];
+                double value = 0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    // -Г<ov|vo> contribution:
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+              ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = aocc_qt[i];
+            int A = avir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = aocc_qt[j];
+                int B = avir_qt[b];
+                double value = -0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
+              ID("[O,v]"), ID("[O,v]"), 0, "Gamma <Ov|Ov>");
+    dpd_buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
+    dpd_buf4_close(&G);
+
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"),
+                  ID("[o,V]"), ID("[o,V]"), 0, "Gamma <oV|oV>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = bocc_qt[i];
+            int A = avir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = bocc_qt[j];
+                int B = avir_qt[b];
+                double value = G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&AB, A, B, I, J, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    // Resort Г<Ia|jB> -> (-1.0) * Г(IB|ja) and dump it
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
+                  ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = aocc_qt[i];
+            int A = bvir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = bocc_qt[j];
+                int B = avir_qt[b];
+                double value = (-2.0) * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    // Г<ov|ov> must be antisymmetrized before contracting it with TEI derivatives:
+    // Г<ov|ov> contribution
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+              ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = bocc_qt[i];
+            int A = bvir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = bocc_qt[j];
+                int B = bvir_qt[b];
+                double value = 0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    // -Г<ov|vo> contribution:
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = bocc_qt[i];
+            int A = bvir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = bocc_qt[j];
+                int B = bvir_qt[b];
+                double value = -0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    // OOOV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
-                  ID("[O,O]"), ID("[O,V]"), 0, "Gamma <OO|OV>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[O,O]"), ID("[O,V]"), 0, "Gamma <OO|OV>");
+    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,v]"),
-                  ID("[O,o]"), ID("[O,v]"), 0, "Gamma <Oo|Ov>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[O,o]"), ID("[O,v]"), 0, "Gamma <Oo|Ov>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            int I = aocc_qt[i];
+            int J = bocc_qt[j];
+            for(size_t ka = 0; ka < G.params->coltot[h]; ++ka){
+                int k = G.params->colorb[h][ka][0];
+                int a = G.params->colorb[h][ka][1];
+                int K = aocc_qt[k];
+                int A = bvir_qt[a];
+                double value = G.matrix[h][ij][ka];
+                iwl_buf_wrt_val(&AB, I, K, J, A, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, I, K, A, J, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,O]"), ID("[o,V]"),
-                  ID("[o,O]"), ID("[o,V]"), 0, "Gamma <oO|oV>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[o,O]"), ID("[o,V]"), 0, "Gamma <oO|oV>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            int I = bocc_qt[i];
+            int J = aocc_qt[j];
+            for(size_t ka = 0; ka < G.params->coltot[h]; ++ka){
+                int k = G.params->colorb[h][ka][0];
+                int a = G.params->colorb[h][ka][1];
+                int K = bocc_qt[k];
+                int A = avir_qt[a];
+                double value = G.matrix[h][ij][ka];
+                iwl_buf_wrt_val(&AB, A, J, K, I, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, J, A, K, I, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
-                  ID("[o,o]"), ID("[o,v]"), 0, "Gamma <oo|ov>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[o,o]"), ID("[o,v]"), 0, "Gamma <oo|ov>");
+    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
+    // OVVV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[V,V]"),
-                  ID("[O,V]"), ID("[V,V]"), 0, "Gamma <OV|VV>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[O,V]"), ID("[V,V]"), 0, "Gamma <OV|VV>");
+    dpd_buf4_dump(&G, &AA, aocc_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[V,v]"),
-                  ID("[O,v]"), ID("[V,v]"), 0, "Gamma <Ov|Vv>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[O,v]"), ID("[V,v]"), 0, "Gamma <Ov|Vv>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = aocc_qt[i];
+            int A = bvir_qt[a];
+            for(size_t bc = 0; bc < G.params->coltot[h]; ++bc){
+                int b = G.params->colorb[h][bc][0];
+                int c = G.params->colorb[h][bc][1];
+                int B = avir_qt[b];
+                int C = bvir_qt[c];
+                double value = G.matrix[h][ia][bc];
+                iwl_buf_wrt_val(&AB, I, B, A, C, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, B, I, A, C, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[v,V]"),
-                  ID("[o,V]"), ID("[v,V]"), 0, "Gamma <oV|vV>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[o,V]"), ID("[v,V]"), 0, "Gamma <oV|vV>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = bocc_qt[i];
+            int A = avir_qt[a];
+            for(size_t bc = 0; bc < G.params->coltot[h]; ++bc){
+                int b = G.params->colorb[h][bc][0];
+                int c = G.params->colorb[h][bc][1];
+                int B = bvir_qt[b];
+                int C = avir_qt[c];
+                double value = G.matrix[h][ia][bc];
+                iwl_buf_wrt_val(&AB, C, A, B, I, value, 0, (FILE *) NULL, 0);
+                iwl_buf_wrt_val(&AB, C, A, I, B, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[v,v]"),
-                  ID("[o,v]"), ID("[v,v]"), 0, "Gamma <ov|vv>");
-    dpd_buf4_print(&G, outfile, 1);
+              ID("[o,v]"), ID("[v,v]"), 0, "Gamma <ov|vv>");
+    dpd_buf4_dump(&G, &BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
-
-//    // Dump the density to IWL
-//    // VVVV
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
-//              ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
-//    dpd_buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
-//              ID("[V,v]"), ID("[V,v]"), 0, "Gamma <Vv|Vv>");
-//    dpd_buf4_dump(&G, &AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
-//              ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
-//    dpd_buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    // OOOO
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
-//              ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
-//    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
-//              ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
-//    dpd_buf4_dump(&G, &AB, aocc_qt, bocc_qt, aocc_qt, bocc_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
-//              ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
-//    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    // OOVV
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
-//              ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
-//    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
-//              ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
-//    dpd_buf4_dump(&G, &AB, aocc_qt, bocc_qt, avir_qt, bvir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
-//              ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
-//    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    // OVOV
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
-//              ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
-//    dpd_buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
-//              ID("[O,v]"), ID("[O,v]"), 0, "Gamma <Ov|Ov>");
-//    dpd_buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 1, 1);
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"),
-//                  ID("[o,V]"), ID("[o,V]"), 0, "Gamma <oV|oV>");
-//    for(int h = 0; h < nirrep_; ++h){
-//        dpd_buf4_mat_irrep_init(&G, h);
-//        dpd_buf4_mat_irrep_rd(&G, h);
-//        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
-//            int i = G.params->roworb[h][ia][0];
-//            int a = G.params->roworb[h][ia][1];
-//            int I = bocc_qt[i];
-//            int A = avir_qt[a];
-//            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
-//                int j = G.params->colorb[h][jb][0];
-//                int b = G.params->colorb[h][jb][1];
-//                int J = bocc_qt[j];
-//                int B = avir_qt[b];
-//                double value = G.matrix[ia][jb];
-//                iwl_buf_wrt_val(AB, A, B, I, J, value, 0, (FILE *) NULL, 0);
-//            }
-//        }
-//        dpd_buf4_mat_irrep_wrt(&G, h);
-//        dpd_buf4_mat_irrep_close(&G, h);
-//    }
-//    dpd_buf4_close(&G);
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
-//                  ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
-//    for(int h = 0; h < nirrep_; ++h){
-//        dpd_buf4_mat_irrep_init(&G, h);
-//        dpd_buf4_mat_irrep_rd(&G, h);
-//        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
-//            int i = G.params->roworb[h][ia][0];
-//            int a = G.params->roworb[h][ia][1];
-//            int I = aocc_qt[i];
-//            int A = bvir_qt[a];
-//            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
-//                int j = G.params->colorb[h][jb][0];
-//                int b = G.params->colorb[h][jb][1];
-//                int J = bocc_qt[j];
-//                int B = avir_qt[b];
-//                double value = G.matrix[ia][jb];
-//                iwl_buf_wrt_val(AB, A, B, I, J, value, 0, (FILE *) NULL, 0);
-//            }
-//        }
-//        dpd_buf4_mat_irrep_wrt(&G, h);
-//        dpd_buf4_mat_irrep_close(&G, h);
-//    }
-//    dpd_buf4_close(&G);
-
-
-
-
-//    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
-//              ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
-//    dpd_buf4_dump(&G, &BB, bocc_qt, bvir_qt, bocc_qt, bvir_qt, 1, 1);
-//    dpd_buf4_close(&G);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
 
