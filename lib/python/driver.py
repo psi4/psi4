@@ -723,8 +723,10 @@ def optimize(name, **kwargs):
                 if(PsiMod.me() == 0):
                     shutil.copy(restartfile, get_psifile(1))
 
+        # print 'full_hess_every', full_hess_every
+        # print 'steps_since_last_hessian', steps_since_last_hessian
         # compute Hessian as requested; frequency wipes out gradient so stash it
-        if ((full_hess_every > -1) and (n == 0)) or (steps_since_last_hessian == full_hess_every):
+        if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
             G = PsiMod.get_gradient()
             PsiMod.IOManager.shared_object().set_specific_retention(1, True)
             PsiMod.IOManager.shared_object().set_specific_path(1, './')
@@ -734,14 +736,16 @@ def optimize(name, **kwargs):
             PsiMod.set_global_option('CART_HESS_READ', True)
         else:
             PsiMod.set_global_option('CART_HESS_READ', False)
+            steps_since_last_hessian += 1
 
-        steps_since_last_hessian += 1
-
+        # print 'cart_hess_read', PsiMod.get_global_option('CART_HESS_READ')
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print 'Optimizer: Optimization complete!'
             PsiMod.get_active_molecule().print_in_input_format()
-            PsiMod.opt_clean()
+            # Check if user wants to see the intcos; if so, don't delete them.
+            if (PsiMod.get_global_option('INTCOS_GENERATE_EXIT') == False):
+              PsiMod.opt_clean()
             PsiMod.clean()
 
             # S/R: Clean up opt input file

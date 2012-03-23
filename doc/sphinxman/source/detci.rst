@@ -83,7 +83,7 @@ RAS spaces, or frozen vs. active orbitals, etc., needs to be clear not
 only to \PSIdetci\ , but also at least to the transformation program
 (and in the case of MCSCF, to other programs as well).  Thus, orbital
 subspace keywords such as :term:`RAS1`,
-:term:`RAS2`, :term:`RAS3`, :term:`FROZEN-DOCC`, :term:`FROZEN-UOCC`,
+:term:`RAS2`, :term:`RAS3`, :term:`FROZEN_DOCC`, :term:`FROZEN_UOCC`,
 :term:`ACTIVE`, etc., should be set
 in the global section of input so they may also be read by other modules.
 
@@ -99,7 +99,7 @@ RASCI, can be performed by setting the appropriate keywords and calling the
 module generically like ``energy(detci)``.  The latter approach
 will also work for any of the previously-mentioned CI wavefunctions for
 which the driver has built-in shortcuts, so long as the relevant options
-(especially :term:`EX-LEVEL`) are set appropriately.  Some
+(especially :term:`EX_LEVEL`) are set appropriately.  Some
 examples of single-refence CI, RASCI, and full CI computations are provided
 in ``psi4/samples/``.
 
@@ -151,10 +151,10 @@ For the interested reader, the additional user options that are
 automatically set up by the calls above are as follows.  A call like
 ``energy(mp10)`` sets :term:`MPN` to TRUE.
 The program uses the Wigner (2n+1) rule by default
-(:term:`MPN-WIGNER` = TRUE)
+(:term:`MPN_WIGNER` = TRUE)
 and figures out what order of wavefunction is
 necessary to reach the desired order in the energy.  The program then
-sets :term:`MAX-NUM-VECS` to the required order in the
+sets :term:`MAX_NUM_VECS` to the required order in the
 wavefunction.
 By default, the requested n-th order energy is saved as the current
 energy to the process environment.   ZAPTN works essentially the same
@@ -187,7 +187,7 @@ its active-space CCSDtq analog [Piecuch:1999:6103]_.
 
 To perform arbitrary-order coupled-cluster, set the DETCI
 option :term:`CC` to TRUE, and set
-:term:`CC-EX-LEVEL` (note: not :term:`EX_LEVEL`)
+:term:`CC_EX_LEVEL` (note: not :term:`EX_LEVEL`)
 to the desired coupled-cluster excitation level, and invoke 
 ``energy(detci)``.  Various other DETCI options have a similar
 option for coupled-cluster, usually named beginning with CC.  The full
