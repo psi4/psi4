@@ -1,215 +1,57 @@
 \section{Geometry Optimization} \label{sec:opt}
 \renewcommand{\optionname}[2]{\texttt{\nameref{op-#2-#1}}}
 
-%\PSIthree\ is capable of carrying out geometry optimizations (minimization
-%only, at present) for a variety of molecular structures using either analytic
-%and numerical energy gradients.  
-%
-%When present, internal coordinates provided in the INTCO: section of the
-%input will be read and used by \PSIthree.  If these are missing, \PSIthree\
-%will automatically generate and use redundant, simple internal
-%coordinates for carrying out the optimization.  These simple stretch, bend,
-%torsion, and linear bend coordinates are determined by distance
-%criteria using the input geometry.
-%
-%By default, optimization is performed in redundant internal coordinates
-%regardless of how the geometry was provided in the input.  Alternatively,
-%the user may specify zmat\_simples=true, in which case the simple internal
-%coordinates will be taken from the ZMAT given in the input file.  Also,
-%the user may specify optimization in non-redundant, delocalized internal coordinates
-%with delocalize=true.  In this case, the automatically generated simple
-%coordinates are delocalized and redandancies are removed.  Advanced users
-%may wish to specify the simple internal coordinates in the intco.dat file, and
-%then allow \PSIthree\ to delocalize them.
-%
-%Only those coordinates or combinations of coordinates that are specified
-%by the "symm =" keyword in the INTCO: section are optimized.  Coordinates can
-%be approximately frozen by commenting them out within the "symm =" section.
-%Geometrical constraints may be precisely imposed by the addition of a section
-%with nearly the same format as in INTCO:.  For example, to fix the distance
-%between atoms 1 and 2, as well as the angle between atoms 2, 1 and 3
-%in an optimization, add the following to your input file.
-%\\
-%\noindent
-%fixed\_intco: ( \\
-%  stre = ( \\
-%    (1 2) \\
-%  ) \\
-%  bend = ( \\
-%    (2 1 3) \\
-%  ) \\
-%) \\
-%
-%The constrained simple internals must be ones present (either manually or
-%automatically) among the simple internals in the INTCO: section.  Alternatively,
-%the z-matrix input format may be used to specify constrained optimizations.
-%If zmat\_simples=true, then variables in the z-matrix which end in
-%a dollar sign will be taken as simple internals to be optimized, and
-%all other variables will be taken as simple internals to keep frozen.
-%
-%To aid optimizations, force constants may be computed using "jobtype = symm\_fc".
-%The determined force constants will be saved in a binary file PSIF\_OPTKING
-%(currently file 1).  Subsequent optimizations will read and use these force
-%constants.  In general, \PSIthree\ looks for force constants in the following
-%order: in this binary file, in the FCONST: section of the input, and in the fconst.dat
-%file.  If no force constants are found in any of these, then an empirical 
-%diagonal force constant matrix is generated.
-%
-%For methods for which only energies are available, \PSIthree\ will use non-redundant,
-%symmetry-adapted delocalized internal coordinates to generate geometrical
-%displacements for computing finite-difference gradients. The simple
-%coordinates can be linearly combined by hand or automatically.  The goal
-%is to form 3N-6(5) symmetry-adapted internal coordinates.  The automated
-%delocalized coordinates may work for low-symmetry molecules without
-%linear angles, but have not been extensively tested.  For both analytic-
-%and finite-difference-gradient optimization methods, Hessian updates are
-%performed using the BFGS method.
-%
-%The list below shows which coordinates are used by default for different types of jobs. \\
-%jobtype=freq    dertype=first  symmetry-adapted cartesians \\
-%jobtype=freq    dertype=none   symmetry-adapted cartesians \\
-%jobtype=fc      dertype=first  delocalized internals (or user-defined SALCs) \\
-%jobtype=symm\_fc dertype=first  delocalized internals (or user-defined SALCs) \\
-%jobtype=opt     dertype=first  redundant internals \\
-%jobtype=opt     dertype=none   delocalized internals (or user-defined SALCS) \\
-%\\
-%
-%The following keywords are pertinent for geometry optimizations.
-%\begin{description}
-%\item[JOBTYPE = string]\mbox{}\\
-%This keyword must be set to {\tt OPT} for geometry optimizations and
-%{\tt SYMM\_FC} to compute force constants.
-%\item[DERTYPE = string]\mbox{}\\
-%This keyword must be set to {\tt NONE} if only energies are available
-%for the chosen method and {\tt FIRST} if analytic gradients are available.
-%\item[CONV = integer]\mbox{}\\
-%The maximum force criteria for optimization is $10^{-conv}$.
-%\item[BFGS = boolean]\mbox{}\\
-%If true (the default), a BFGS Hessian update is performed.
-%\item[BFGS\_USE\_LAST = integer]\mbox{}\\
-%This keyword is used to specify the number of gradient step for the BFGS
-%update of the Hessian.  The default is six.  
-%\item[SCALE\_CONNECTIVITY = float]\mbox{}\\
-%Determines how close atoms must be to be considered bonded in the automatic
-%generation of the bonded list.  The default is 1.3.
-%\item[DELOCALIZE = integer]\mbox{}\\
-%Whether to delocalize simple internal coordinates to attempt to produce
-%a symmetry-adapted, non-redundant set.
-%\item[MIX\_TYPES = boolean]\mbox{}\\
-%If set to false, different types of internal coordinates are not allowed
-%to mix in the formation of the delocalized coordinates.  Although this
-%produces cleaner coordinates, often the resulting delocalized coordinates
-%form a redundant set.
-%\item[ZMAT\_SIMPLES = boolean]\mbox{}\\
-%If set to true, the simple internal coordinates are taken from the zmat
-%entry in the input file.  The default is false.
-%\item[POINTS = 3 or 5]\mbox{}\\
-%Specifies a 3-point or a 5-point formula for optimization by energy points.
-%\item[EDISP = float]\mbox{}\\
-%The default displacment size (in au) for finite-difference computations.  The
-%default is 0.005.
-%\item[FRAGMENT\_DISTANCE\_INVERSE = boolean]\mbox{}\\
-%For interfragment coordinates.  If true, then 1/R(AB) is used, if false,
-%then R(AB) is used.  The default is true.
-%\item[FIX\_INTRAFRAGMENT = boolean]\mbox{}\\
-%If true, all intrafragment coordinates are constrained.
-%\item[FIX\_INTERFRAGMENT = boolean]\mbox{}\\
-%If true, all interfragment coordinates are constrained.
-%\item[DUMMY\_AXIS\_1 = 1 or 2 or 3]\mbox{}\\
-%Specifies the axis for the location of a dummy atom for the definition
-%of a linear bending coordinate.  The default is 2.
-%\item[DUMMY\_AXIS\_2 = 1 or 2 or 3]\mbox{}\\
-%Specifies the axis for the location of a dummy atom for the definition
-%of a linear bending coordinate.  The default is 3.
-%\item[TEST\_B = boolean]\mbox{}\\
-%If set to true, a numerical test of the B-matrix is performed.
-%\item[PRINT\_FCONST = boolean]\mbox{}\\
-%If set to true and jobtype=symm\_fc, then the force constants will
-%be written to the fconst.dat file.  This allows force constants to be
-%reused even if the binary PSIF\_OPTKING file is no longer present.
-%\item[Print options]\mbox{}\\
-%The following when set to true, print additional information to the
-%output file: PRINT\_SIMPLES, PRINT\_PARAMS, PRINT\_DELOCALIZE,
-%PRINT\_SYMMETRY, PRINT\_HESSIAN, PRINT\_CARTESIANS.
-%\item[DISPLACEMENTS = ( (integer float ...) ...)]\mbox{}\\
-%A user may specify displacments along internal coordinates using this
-%keyword.  For example, displacements = ( (2 0.01 3 0.01) ) will compute
-%a new cartesian geometry with the second and third internal coordinates
-%increased by 0.01.
-%\end{description}
-%
-%
-%\section{Vibrational Frequency Computations} \label{sec:freq}
-%\PSIthree\ is also capable of computing harmonic vibrational frequencies
-%for a number of different methods using energy points or analytic energy first or
-%second derivatives.  (At present, only RHF-SCF analytic second derivatives
-%are available.)  If analytic energy second derivatives are not available,
-%\PSIthree\ will generate displaced geometries along symmetry adapted cartesian
-%coordinates, compute the appropriate energies or first derivatives, and use
-%finite-difference methods to compute the Hessian.
-%
-%The following keywords are pertinent for vibrational frequency analyses:
-%\begin{description}
-%\item[JOBTYPE = string]\mbox{}\\
-%This keyword must be set to {\tt FREQ} for frequency analyses.
-%\item[DERTYPE = string]\mbox{}\\
-%This keyword may be set to {\tt NONE} if only energies are available
-%for the chosen method, or {\tt FIRST} if analytic gradients are available.
-%\item[POINTS = 3 or 5]\mbox{}\\
-%Specifies whether frequencies are determined by a 3-point or a 5-point
-%formula of gradient differences.  If only energy points are used, more
-%displacements are required, but the effect of this keyword in terms of
-%accuracy is the same.
-%\end{description}
-%
-%\begin{em}
-%Note: In some situations, vibrational frequency analysis via finite
-%differences may fail if the full point group symmetry is specified via
-%the {\tt symmetry} keyword.  This happens because the user-given
-%{\tt symmetry} value can become incompatible with the actual symmetry
-%of the molecule when energies or gradients are evaluated for
-%symmetry-lowering displacements.  In such situations, the user is
-%advised to let the program determine the symmetry automatically, rather
-%than specifying {\tt symmetry} manually.  Otherwise, an error such as the
-%following may result:
-%\end{em}
-%
-%\begin{verbatim}
-%error: problem assigning number of operations per class
-%         *** stopping execution ***
-%\end{verbatim}
-%
-%The manual pages for the \PSInormco\ and \PSIintder\ modules contain
-%information on additional tools useful in vibrational frequency analysis
-%and coordinate transformation.
-
-\PSIfour\ carries out optimizations using a module called \PSIoptking.
-The optking program performs optimization of molecular geometries given
-nuclear gradients, and optionally second derivatives in cartesian
-coordinates. The default minimization algorithm employs redundant internal
-coordinates with an RFO step and a BFGS Hessian update.
+\PSIfour\ carries out molecular optimizations using a module called
+\PSIoptking.  The optking program takes as input nuclear gradients and,
+optionally, nuclear second derivatives --- both in cartesian coordinates.
+The default minimization algorithm employs an empirical model Hessian,
+redundant internal coordinates, an RFO step, and the BFGS Hessian update.
 
 The principal literature references include the introduction of redundant
-internal coordinates in C. Peng, P.Y. Ayala, H.B. Schlegel, and M.J.
-Frisch, J. Comput. Chem., 17, 49 (1996). The general approach employed in
-this code is similar to the 'model Hessian plus RF method' described and
-tested in V. Bakken and T. Helgaker, J. Chem. Phys., 117, 9160 (2002).
-(However, for separated fragments, we have chosen not to employ their
-'extra-redundant' coordinates defined by their 'auxiliary interfragment'
-bonds.)
+internal coordinates by Peng, Ayala, Schlegel, and Frisch in
+{\it J.\ Comput.\ Chem.} 17, 49 (1996). The general approach employed in this code
+is similar to the ''model Hessian plus RF method'' described and tested by Bakken and
+Helgaker in {\it J.\ Chem.\ Phys.} 117, 9160 (2002). (However, for separated
+fragments, we have chosen not to employ by default their ''extra-redundant''
+coordinates defined by their ''auxiliary interfragment'' bonds.  These can be
+included via the option \optionname{ADD_AUXILIARY_BONDS}{OPTKING}).
+
+The internal coordinates are generated automatically based on an assumed bond
+connectivity.  The connectivity is determined by testing if the interatomic
+distance is less than the sum of atomic radii times the value of
+\optionname{COVALENT_CONNECT}{OPTKING}.  If the user finds that some
+connectivity is lacking by default, then this value may be increased.
+Otherwise, the internal coordinate definitions may be modified.  If one
+desires to see or modify the internal coordinates being used, then one can set
+\optionname{INTCOS_GENERATE_EXIT}{OPTKING} to true.  The internal coordinate
+definitions are provided in the file named ''intco.dat''.  See the Examples
+section for more detail.
+
+The ongoing development of optking is providing for unique treatment of
+coordinates which connect distinct molecular fragments.  Thus, several keywords
+relate to ''interfragment modes'', though many of these capabilities are
+still under development.  Presently, by default separate fragments are bonded by
+nearest atoms and the whole system is treated as if it were part of one
+molecule.  However, with the option \optioname{FRAG_MODE}{OPTKING}, fragments
+may instead be related by a unique set of interfragment coordinates defined by
+reference points within each fragment.  The reference points can be atomic
+positions (which is the current default), linear combinations of
+atomic positions, or located on the principal axes (not yet working).
 
 \subsection{Hessian}
-If cartesian second derivatives have been computed, optking can read them
-and transform them into internal coordinates to make the initial Hessian.
-Otherwise, an initial empirical Hessian is determined according to either
-Schlegel, Theor. Chim. Acta, 66, 333 (1984) or Fischer and Almlof, J. Phys.
-Chem., 96, 9770 (1992). For interfragment coordinates, the initial guess
-can be computed using the Fischer formulas or a simple diagonal guess.
-For Hessian update formulas, see Schlegel Ab Initio Methods in Quantum
-Chemistry (1987) and J. M. Bofill, J. Comp. Chem., Vol. 15, pages 1-11
-(1994). 
+If cartesian second derivatives are available, optking can read them
+and transform them into internal coordinates to make an initial Hessian in
+internal coordinates.  Otherwise, several empirical Hessians are available,
+including those of Schlegel from {\it Theor.\ Chim.\ Acta} 66, 333 (1984) and 
+Fischer and Almlof from {\it J.\ Phys.\ Chem.} 96, 9770 (1992).
+Either of these or a simple diagonal Hessian may be selected using the 
+\optionname{INTRAFRAG_HESS} keyword.
 
-The Hessian may be updated every few iterations using the following
+All the common Hessian update schemes are available.  For formulas, see
+Schlegel in {\it Ab Initio Methods in Quantum Chemistry} (1987) and
+Bofill in {\it J.\ Comp.\ Chem.}, 15, 1-11 (1994). 
+
+The Hessian may be computed during an optimization using the following
 keyword: \\
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
          \optionname{FULL-HESS-EVERY}{GLOBALS} & 
@@ -223,6 +65,121 @@ keyword: \\
          & & \\
 \end{tabular*}
 
+\subsection{Examples}
+First, define your molecule and basis in your input.
+\begin{Snippet}
+molecule h2o {
+  O
+  H 1 1.0
+  H 1 1.0 2 105.0
+}
+set globals basis dz
+\end{Snippet}
+
+Then the following are examples of various types of calculations that can be completed.
+
+Optimize a geometry using default methods (RFO step):
+\begin{Snippet}
+ optimize('scf')
+\end{Snippet}
+
+Optimize using Newton-Raphson steps instead of RFO steps:
+\begin{Snippet}
+set optking step_type nr
+optimize('scf')
+\end{Snippet}
+
+Optimize using energy points instead of gradients:
+\begin{Snippet}
+optimize('scf', dertype=0)
+\end{Snippet}
+
+Optimize, limiting the initial step size to 0.1 au:
+\begin{Snippet}
+set optking intrafrag_step_limit 0.1
+optimize('scf')
+\end{Snippet}
+
+Optimize, limiting the step size to 0.1 au always: 
+\begin{Snippet}
+set optking {
+  intrafrag_step_limit     0.1
+  intrafrag_step_limit_min 0.1
+  intrafrag_step_limit_max 0.1
+}
+optimize('scf')
+\end{Snippet}
+
+Optimize, calculating the Hessian at every step (note that the necessary option is a global option):
+\begin{Snippet}
+set globals full_hess_every 1
+optimize('scf')
+\end{Snippet}
+
+Calculate a starting Hessian and optimize the ''transition state'' of
+linear water (note that without a reasonable starting geometry and
+Hessian, such a straightforward search often fails):
+\begin{Snippet}
+molecule h2o {
+   O
+   H 1 1.0
+   H 1 1.0 2 160.0
+}
+set globals {
+ basis dz
+ full_hess_every 0
+}
+set optking opt_type ts
+optimize('scf')
+\end{Snippet}
+
+At a transition state (planar HOOH), compute the second derivative, and
+then follow the intrinsic reaction path to the minimum:
+\begin{Snippet}
+molecule hooh {
+ symmetry c1
+ H
+ O 1 0.946347
+ O 2 1.397780 1  107.243777
+ H 3 0.946347 2  107.243777   1 0.0
+}
+set globals {
+ basis dzp
+ opt_type irc
+ geom_maxiter 50
+}
+frequencies('scf')
+optimize('scf')
+\end{Snippet}
+
+Generate the internal coordinates and then stop:
+\begin{Snippet}
+set globals intcos_generate_exit true
+optimize('scf')
+\end{Snippet}
+The coordinates may then be found in the file ''intco.dat''.  In this case, the file contains:
+\begin{Snippet}
+F 1 3
+R      1     2
+R      1     3
+B      2     1     3
+\end{Snippet}
+The first line indicates a fragment containing atoms 1-3.  The following lines define
+two distance coordinates (bonds) and one bend coordinate.  This file can be modified, and if present,
+is used in subsequent optimizations.  Since the multiple-fragment coordinates are still under
+development, they are not documented here.  However, if desired, one can change the value
+of \optionname{FRAG_MODE}{OPTKING}, generate the internal coordinates, and see how multiple
+fragment systems are defined.
+
+Coordinates may be frozen or fixed, by adding an asterisk after the letter of the coordinate.
+To optimize with the bond lengths fixed at their initial values, it is currently necessary to
+generate and then modify the internal coordinate definitions as follows:
+\begin{Snippet}
+F 1 3
+R*     1     2
+R*     1     3
+B      2     1     3
+\end{Snippet}
 
 \subsection{Convergence Criteria}
 
