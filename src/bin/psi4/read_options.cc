@@ -76,6 +76,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat !expert -*/
   options.add_int("MAT_NUM_COLUMN_PRINT", 5);
+  /*- Do only generate the internal coordinates and then stop? -*/
+  options.add_bool("INTCOS_GENERATE_EXIT", false);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -2340,8 +2342,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("COVALENT_CONNECT", 1.3);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("H_BOND_CONNECT", 4.3);
-      /*- Do only generate the internal coordinates and then stop? -*/
-      options.add_bool("INTCOS_GENERATE_EXIT", false);
 
       /*- SUBSECTION Misc. -*/
 
