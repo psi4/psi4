@@ -1,35 +1,56 @@
 #include <boost/shared_ptr.hpp>
+#include <boost/python.hpp>
+#include <boost/python/object.hpp>
 #include <psi4-dec.h>
 #include "superfunctional.h"
 #include "functional.h"
+
+#define PY_TRY(ptr, command)  \
+     if(!(ptr = command)){    \
+         PyErr_Print();       \
+         exit(1);             \
+     }
+
+using namespace boost::python;
 
 namespace psi {
 
 boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias, int max_points, int deriv)
 {
-    SuperFunctional* super = new SuperFunctional();
-    super->set_max_points(max_points);
-    super->set_deriv(deriv);
+    boost::shared_ptr<SuperFunctional> super;
 
-    std::vector<boost::shared_ptr<Functional> >& x_funs = super->x_functionals();
-    std::vector<boost::shared_ptr<Functional> >& c_funs = super->c_functionals();
+    if (Py_IsInitialized()) {
+        try {
+            // Grab the SuperFunctional off of the Python plane
+            PyObject *functional;
+            PY_TRY(functional, PyImport_ImportModule("functional") );
+            PyObject *function;
+            PY_TRY(function, PyObject_GetAttrString(functional, "build_superfunctional"));
+            PyObject *pargs;
+            PY_TRY(pargs, Py_BuildValue("(sii)", alias.c_str(), max_points, deriv));
+            PyObject *ret;
+            PY_TRY(ret, PyEval_CallObject(function, pargs));
 
-    if (alias == "S_X") {
-        super->set_name("S_X");
-        super->set_description("    Slater Exchange Functional\n");
-        super->set_citation("    J.C. Slater, Phys. Rev., 81(3):385-390, 1951\n");
+            // Extract the SuperFunctional
+            super = boost::python::extract<boost::shared_ptr<SuperFunctional> >(ret);
 
-        x_funs.push_back(Functional::build("S_X"));
-
-        super->set_x_omega(0.0); 
-        super->set_c_omega(0.0); 
-        super->set_x_alpha(0.0); 
-        super->set_c_alpha(0.0); 
-    } else {
-        throw PSIEXCEPTION("Superfunctional: Unrecognized superfunctional alias");
+            // Decref Python env pointers
+            Py_DECREF(ret);
+            Py_DECREF(pargs);
+            Py_DECREF(function);
+            Py_DECREF(functional);
+        }
+        catch (error_already_set const& e)
+        {
+            PyErr_Print();
+            exit(1);
+        }
+    }
+    else {
+        throw PSIEXCEPTION("Unable to parse superfunctional.\n");
     }
 
-    return boost::shared_ptr<SuperFunctional>(super);
+    return super;
 }
 
 }

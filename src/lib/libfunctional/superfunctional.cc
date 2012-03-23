@@ -26,6 +26,10 @@ void SuperFunctional::common_init()
     x_alpha_ = 0.0;
     c_alpha_ = 0.0;
 }
+boost::shared_ptr<SuperFunctional> SuperFunctional::blank()
+{
+    return boost::shared_ptr<SuperFunctional>(new SuperFunctional());
+}
 void SuperFunctional::print(FILE* out, int level) const 
 {
     if (level < 1) return;

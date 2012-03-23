@@ -74,6 +74,7 @@ public:
     virtual ~SuperFunctional(); 
 
     static boost::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1); 
+    static boost::shared_ptr<SuperFunctional> blank();
 
     // Allocate values (MUST be called after adding new functionals to the superfunctional)
     void allocate();
@@ -100,6 +101,7 @@ public:
 
     void set_max_points(int max_points) { max_points_ = max_points; allocate(); }
     void set_deriv(int deriv) { deriv_ = deriv;  allocate(); }
+
     void set_x_omega(double omega) { x_omega_ = omega; partition_gks(); }
     void set_c_omega(double omega) { c_omega_ = omega; partition_gks(); }
     void set_x_alpha(double alpha) { x_alpha_ = alpha; partition_gks(); }
@@ -113,6 +115,10 @@ public:
     std::string description() const { return description_; }
     std::string citation() const { return citation_; }
     
+    int ansatz() const;
+    int max_points() const { return max_points_; }
+    int deriv() const { return deriv_; }
+
     double x_omega() const { return x_omega_; }
     double c_omega() const { return c_omega_; }
     double x_alpha() const { return x_alpha_; }
@@ -126,10 +132,6 @@ public:
     bool is_c_lrc() const { return c_omega_ != 0.0; }
     bool is_x_hybrid() const { return x_alpha_ != 0.0; }
     bool is_c_hybrid() const { return c_alpha_ != 0.0; }
-
-    int ansatz() const;
-    int max_points() const { return max_points_; }
-    int deriv() const { return deriv_; }
     
     // => Utility <= //
 
