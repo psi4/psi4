@@ -257,7 +257,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     !expert -*/
     options.add_bool("R4S",false);
 
-
     /*- SUBSECTION Diagonalization Methods -*/
 
     /*- This specifies which method is to be used in diagonalizing the
@@ -508,7 +507,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     possible if NUM_ROOTS = 1.) !expert -*/
     options.add_bool("NO_DFILE",false);
 
-
     /*- SUBSECTION General-Order Perturbation Theory -*/
 
     /*- Do compute the MPn series out to
@@ -640,27 +638,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     how their clever scheme might be extended to RAS in general. !expert -*/
     options.add_bool("BENDAZZOLI", false);
   }
+
   if (name == "SAPT"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) analysis
-        to quantitatively analyze noncovalent interactions. -*/
+    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) 
+    analysis to quantitatively analyze noncovalent interactions. -*/
+
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
-    /*- Convergence criterion for energy (change) in the SAPT $E@@{ind,resp}^{(20)}$
-    term during solution of the CPHF equations. -*/
+
+    /*- Convergence criterion for energy (change) in the SAPT 
+    $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations. -*/
+
     options.add_double("E_CONVERGENCE",1e-10);
+
     /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
     $E@@{ind,resp}^{(20)}$ term. -*/
     options.add_double("D_CONVERGENCE",1e-8);
+
     /*- Don't solve the CPHF equations? Evaluate $E@@{ind}^{(20)}$ and
     $E@@{exch-ind}^{(20)}$ instead of their response-including coupterparts.
-    Only turn on this option if the induction energy is not going to be used. -*/
+    Only turn on this option if the induction energy is not going to be 
+    used. -*/
     options.add_bool("NO_RESPONSE",false);
+
     /*- Do use asynchronous disk I/O in the solution of the CPHF equations?
-    Use may speed up the computation slightly at the cost of spawning an additional thread. -*/
+    Use may speed up the computation slightly at the cost of spawning an 
+    additional thread. -*/
     options.add_bool("AIO_CPHF",false);
+
     /*- Do use asynchronous disk I/O in the formation of the DF integrals?
-    Use may speed up the computation slightly at the cost of spawning an additional thread. -*/
+    Use may speed up the computation slightly at the cost of spawning an 
+    additional thread. -*/
     options.add_bool("AIO_DF_INTS",false);
+
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
     /*- Do compute third-order corrections? !expert -*/
@@ -685,15 +695,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
-    /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory?
-    Turning this off is ill-advised. -*/
+    /*- Do force SAPT2 and higher to die if it thinks there isn't enough 
+    memory?  Turning this off is ill-advised. -*/
     options.add_bool("SAPT_MEM_CHECK",true);
     /*- Primary basis set, describes the monomer molecular orbitals -*/
     options.add_str("BASIS", "");
-    /*- Auxiliary basis set for SAPT density fitting computations. Defaults to BASIS-RI. -*/
+    /*- Auxiliary basis set for SAPT density fitting computations. Defaults 
+    to BASIS-RI. -*/
     options.add_str("DF_BASIS_SAPT", "");
-    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting computations,
-    may be important if heavier elements are involved. Defaults to BASIS-RI. -*/
+    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting 
+    computations, may be important if heavier elements are involved. Defaults 
+    to BASIS-RI. -*/
     options.add_str("DF_BASIS_ELST", "");
     /*- Maximum error allowed (Max error norm in Delta tensor)
     in the approximate energy denominators employed for most of the
@@ -702,11 +714,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Denominator algorithm for PT methods. Laplace transformations
     are slightly more efficient. -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- The scale factor used for opposite-spin pairs in SCS computations. SS/OS
-    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. -*/
+    /*- The scale factor used for opposite-spin pairs in SCS computations. 
+    SS/OS decomposition performed for $E@@{disp}^{(20)}$ and 
+    $E@@{exch-disp}^{(20)}$ terms. -*/
     options.add_double("SAPT_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations. SS/OS
-    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. -*/
+    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ 
+    terms. -*/
     options.add_double("SAPT_SS_SCALE", 1.0/3.0);
     /*- The scope of core orbitals to freeze in evaluation of SAPT
     $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. Recommended true
@@ -714,11 +728,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
     /*- The amount of information to print to the output file for the sapt
     module. For 0, only the header and final results are printed. For 1,
-    (recommended for large calculations) some intermediate quantities are also printed. -*/
+    (recommended for large calculations) some intermediate quantities are also 
+    printed. -*/
     options.add_int("PRINT", 1);
   }
+
   if(name == "DCFT"|| options.read_globals()) {
-      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory computations -*/
+      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory 
+      computations -*/
+
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEVEL", 2);
       /*- The shift applied to the denominator -*/
@@ -729,23 +747,26 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("SCF_MAXITER", 50);
       /*- Maximum number of iterations -*/
       options.add_int("MAXITER", 40);
-      /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
+      /*- Do compute the full two particle density matrix at the end of the 
+      computation, for properties? -*/
       options.add_bool("TPDM", 0);
       /*- Convergence criterion for the SCF density (RMS error). -*/
       options.add_double("SCF_D_CONVERGENCE", 1e-8);
-      /*- Convergence criterion for residuals (RMS error) in density cummulant equations. -*/
+      /*- Convergence criterion for residuals (RMS error) in density cumulant 
+      equations. -*/
       options.add_double("R_CONVERGENCE", 1e-10);
       /*- Do relax the orbitals? -*/
       options.add_bool("MO_RELAX", true);
-      /*- The amount (percentage) of damping to apply to the initial SCF procedures
-      0 will result in a full update, 100 will completely stall the update. A
-      value around 20 (which corresponds to 20\% of the previous iteration's
-      density being mixed into the current iteration)
+      /*- The amount (percentage) of damping to apply to the initial SCF 
+      procedures 0 will result in a full update, 100 will completely stall the 
+      update. A value around 20 (which corresponds to 20\% of the previous 
+      iteration's density being mixed into the current iteration)
       can help in cases where oscillatory convergence is observed. -*/
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- Don't include the tau terms? -*/
       options.add_bool("IGNORE_TAU", false);
-      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$ ? -*/
+      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to 
+      $\tau$ ? -*/
       options.add_bool("TAU_SQUARED", false);
       /*- Minimum absolute value below which integrals are neglected. -*/
       options.add_double("INTS_TOLERANCE", 1e-14);
@@ -765,14 +786,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("COMPUTE_GRADIENT", false);
   }
   if (name == "MINTS"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Called at the beginning of SCF computations, whenever disk-based molecular
-          integrals are required -*/
+      /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 
+      whenever disk-based molecular integrals are required -*/
+
       /*- Primary basis set -*/
       options.add_str("BASIS","");
   }
   if (name == "SCF"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and Density Functional Theory) computations.
-          These are the starting points for most computations, so this code is called in most cases. -*/
+    /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and 
+    Density Functional Theory) computations.  These are the starting 
+    points for most computations, so this code is called in most cases. -*/
 
     /*- SUBSECTION General Wavefunction Info -*/
 
@@ -782,7 +805,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- Primary basis set -*/
     options.add_str("BASIS", "");
-    /*- Auxiliary basis set for SCF density fitting computations. Defaults to BASIS-JKFIT. -*/
+    /*- Auxiliary basis set for SCF density fitting computations. 
+    Defaults to BASIS-JKFIT. -*/
     options.add_str("DF_BASIS_SCF", "");
     /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
@@ -790,7 +814,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SAVE_JK", false);
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
-    /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies. -*/
+    /*- Minimum S matrix eigenvalue to be used before compensating for linear 
+    dependencies. -*/
     options.add_double("S_TOLERANCE",1E-7);
     /*- Minimum absolute value below which TEI are neglected. -*/
     options.add_double("INTS_TOLERANCE", 0.0);
