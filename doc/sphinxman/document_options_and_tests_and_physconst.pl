@@ -140,8 +140,14 @@ sub print_hash
      }
      foreach my $Subsection (sort {$a cmp $b} keys %{$hash{$Module}}){
          if($Subsection){
+             my $Secdivider = "_" x (length($Subsection)-1);
              print OUT "\\subsubsection{$Subsection}\n";
+             print SSOUT "\n$Subsection\n$Secdivider\n\n";
          }
+         else {
+            if ($print_description) { print SSOUT "\nGeneral\n_______\n\n"; }
+            else                    { print SSOUT "\nExpert\n______\n\n"; }
+         }    
          my %SectionHash = %{$hash{$Module}{$Subsection}};
          foreach my $Keyword (sort {$a cmp $b} keys %SectionHash){
              my %KeyHash = %{$SectionHash{$Keyword}};

@@ -3,7 +3,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. #####  HTML START
+.. #####  HTML-ALL START
+.. #####  HTML-USER START
+.. #####  HTML-PROG START
 .. #####  LATEX-USER START
 .. #####  LATEX-PROG START
 
@@ -11,6 +13,7 @@
    :maxdepth: 2
    
 .. #####  LATEX-PROG STOP
+.. #####  HTML-PROG STOP
    introduction
    tutorial
    methods
@@ -20,14 +23,19 @@
    interfacing
    customizing
 .. #####  LATEX-USER STOP
+.. #####  HTML-USER STOP
 .. #####  LATEX-PROG START
+.. #####  HTML-PROG START
    contributing
    programming
    autodoc_driver
 .. #####  LATEX-PROG STOP
+.. #####  HTML-PROG STOP
    psimod
 .. #####  LATEX-PROG START
+.. #####  HTML-PROG START
 .. #####  LATEX-USER START
+.. #####  HTML-USER START
    appendices
 
 * Indices
@@ -35,7 +43,9 @@
  - :ref:`modindex`
  - :ref:`search`
 
-.. #####  HTML STOP
+.. #####  HTML-ALL STOP
+.. #####  HTML-USER STOP
+.. #####  HTML-PROG STOP
 .. #####  LATEX-USER STOP
 .. #####  LATEX-PROG STOP
 
