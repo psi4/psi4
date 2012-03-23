@@ -106,14 +106,16 @@ void wPBEXFunctional::computeFunctional(const std::map<std::string,SharedVector>
         double s, s_rho, s_gamma;
         s = sqrt(gamma) / rho43;
         s_rho = - 4.0 / 3.0 * sqrt(gamma) / rho73;
-        s_gamma = 1.0 / 2.0 * pow(gamma,-1.0/2.0) * rho43; 
+        s_gamma = 1.0 / 2.0 * pow(gamma,-1.0/2.0) / rho43; 
 
         // F
         double F, F_rho, F_s;
         F = 1.0;
         F_rho = 0.0;
         F_s = 0.0;
-        // TODO
+
+        // Call Dr. Scuseria's nice function
+        wpbe_F(rho, s, omega_, &F, &F_rho, &F_s);
 
         // => Assembly <= //
         v[Q] += E * F;
