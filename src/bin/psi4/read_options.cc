@@ -86,19 +86,33 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   // frozen_uocc.
 
   if (name == "DETCI" || options.read_globals()) {
-    /*- Wavefunction type !expert -*/
+    /*- MODULEDESCRIPTION Performs configuration interaction (CI)
+    computations of various types, including restricted-active-space
+    (RAS) CI, full CI, the CI component of multi-configuration
+    self-consistent-field (MCSCF) and complete-active-space 
+    self-consistent-field (CASSCF) computations, and arbitrary-order
+    perturbation theory and arbitrary-order coupled-cluster
+    computations for small molecules -*/
+
+    /*- SUBSECTION General Options -*/
+
+    /*- Wavefunction type.  This should be set automatically from
+    the calling Psithon function.  !expert -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
 
-    /*- Convergence criterion for CI residual vector in the Davidson algorithm (RMS error).
-    The default is 1e-4 for energies and 1e-7 for gradients.
-    See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for CI residual vector in the Davidson 
+    algorithm (RMS error).
+    The default is 1e-4 for energies and 1e-7 for gradients. -*/
     options.add_double("R_CONVERGENCE", 1e-4);
 
-    /*- Convergence criterion for energy. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for energy. -*/
     options.add_double("E_CONVERGENCE", 1e-6);
+
+    /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
+    options.add_int("MAXITER", 12);
 
     /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LEVEL -*/
     options.add_bool("FCI",false);
@@ -106,19 +120,58 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The CI excitation level -*/
     options.add_int("EX_LEVEL", 2);
 
-    /*- The CC excitation level -*/
-    options.add_int("CC_EX_LEVEL", 2);
-
     /*- In a RAS CI, this is the additional excitation level for allowing
     electrons out of RAS I into RAS II.  The maximum number of holes in
     RAS I is therefore EX_LEVEL + VAL_EX_LEVEL. -*/
     options.add_int("VAL_EX_LEVEL", 0);
 
-    /*- The CC valence excitation level -*/
-    options.add_int("CC_VAL_EX_LEVEL", 0);
-
     /*- number of CI roots to find -*/
     options.add_int("NUM_ROOTS", 1);
+
+    /*- Do stop DETCI after string information is formed
+    and before integrals are read? -*/
+    options.add_bool("ISTOP",false);
+
+    /*- Do print a summary of the CI blocks? -*/
+    options.add_bool("CIBLKS_PRINT",false);
+
+    /*- Number of important determinants to print -*/
+    options.add_int("NUM_DETS_PRINT",20);
+
+    /*- Do freeze core orbitals? -*/
+    // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
+    options.add_bool("DETCI_FREEZE_CORE",true);
+
+    /*- Do calculate the value of $\langle S^2\rangle$ for each root? -*/
+    options.add_bool("S_SQUARED",false);
+
+    /*- Specifies how to handle buffering of CI vectors.  A value of 0
+    makes the program perform I/O one RAS subblock at a time; 1
+    uses entire CI vectors at a time; and 2 uses one irrep block
+    at a time.  Values of 0 or 2 cause some inefficiency in the I/O
+    (requiring multiple reads of the C vector when constructing
+    H in the iterative subspace if DIAG_METHOD = SEM), but require
+    less core memory. -*/
+    options.add_int("ICORE", 1);
+
+    /*- Number of threads -*/
+    options.add_int("NUM_THREADS", 1);
+
+    /*- Do print the sigma overlap matrix?  Not generally useful.  !expert -*/
+    options.add_bool("SIGMA_OVERLAP", false);
+
+    /*- Array giving the root numbers of the states to average in a
+    state-averaged procedure such as SA-CASSCF. Root numbering starts
+    from 1. -*/
+    options.add("AVG_STATES", new ArrayType());
+
+    /*- Array giving the weights for each state in a state-averaged
+    procedure -*/
+    // CDS:TODO - Does this work for doubles??
+    options.add("AVG_WEIGHTS", new ArrayType());
+
+
+    /*- SUBSECTION Specifying the CI Space -*/
 
     /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
     options.add("RAS1", new ArrayType());
@@ -147,154 +200,26 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     using RAS keywords) -*/
     options.add("ACTIVE", new ArrayType());
 
+    /*- The value of the spin quantum number S is given by this option.
+    The default is determined by the value of the multiplicity.  This is used
+    for two things: (1) determining the phase of the redundant half of the CI
+    vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making
+    sure the guess vector has the desired value of $\langle S^2\rangle$ 
+    (if :term:`S_SQUARED` is TRUE and :term:`ICORE` = 1). -*/
+    options.add_double("S", 0.0);
+
     /*- Do use the $M@@s = 0$ component of the state? Defaults to TRUE
     if closed-shell and FALSE otherwise. Related to the S option. -*/
     options.add_bool("MS0",false);
 
-    /*- Do stop DETCI after string information is formed
-    and before integrals are read? -*/
-    options.add_bool("ISTOP",false);
+    /*- An array of length EX_LEVEL specifying whether each excitation type
+    (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed).  Used to
+    specify non-standard CI spaces such as CIST.  !expert -*/
+    options.add("EX_ALLOW", new ArrayType());
 
-    /*- Do print a summary of the CI blocks? -*/
-    options.add_bool("CIBLKS_PRINT",false);
-
-    /*- Guess vector type.  Accepted values are UNIT for a unit vector
-    guess (NUM_ROOTS and NUM_INIT_VECS must both be 1); H0_BLOCK to use
-    eigenvectors from the H0 BLOCK submatrix (default); DFILE to use
-    NUM_ROOTS previously converged vectors in the D file; IMPORT to
-    import a guess previously exported from a CI computation
-    (possibly using a different CI space) !expert -*/
-    options.add_str("GUESS_VECTOR", "H0_BLOCK", "UNIT H0_BLOCK DFILE IMPORT");
-
-    /*- The number of initial vectors to use in the CI iterative procedure.
-    Defaults to the number of roots. !expert -*/
-    options.add_int("NUM_INIT_VECS", 0);
-
-    /*- Irrep for CI vectors;  -1 = find automatically.
-    This option allows the user to look for CI vectors of a different irrep
-    than the reference.  This probably only makes sense for Full CI,
-    and it would probably not work with unit vector guesses.  Numbering
-    starts from zero for the totally-symmetric irrep. !expert -*/
-    options.add_int("REFERENCE_SYM", -1);
-
-    /*- This parameter specifies the size of the H0 block of the Hamiltonian
-    which is solved exactly.  The n determinants with the lowest SCF
-    energy are selected, and a submatrix of the Hamiltonian is formed
-    using these determinants.  This submatrix is used to accelerate
-    convergence of the CI iterations in the BOLSEN and MITRUSHENKOV
-    iteration schemes, and also to find a good starting guess for the
-    SEM method if GUESS_VECTOR = H0_BLOCK.  Defaults to 400.
-    Note that the program may change the given size for Ms=0 cases
-    (Ms0 = TRUE) if it determines that the H0 block includes only
-    one member of a pair of determinants related by time reversal symmetry.
-    For very small block sizes, this could conceivably eliminate the entire
-    H0 block; the program should print warnings if this occurs. !expert -*/
-    options.add_int("H0_BLOCKSIZE", 400);
-
-    /*- size of H0 block for initial guess !expert -*/
-    options.add_int("H0_GUESS_SIZE", 400);
-
-    /*- Do use coupling block in preconditioner? !expert -*/
-    options.add_bool("H0_BLOCK_COUPLING",false);
-
-    /*- Parameters which specifies the size of the coupling block
-     within the generalized davidson preconditioner. !expert -*/
-    options.add_int("H0_BLOCK_COUPLING_SIZE",0);
-
-    /*- Number of important determinants to print -*/
-    options.add_int("NUM_DETS_PRINT",20);
-
-    /*- Number of important CC amplitudes per excitation level to print.
-    CC analog to NUM_DETS_PRINT -*/
-    options.add_int("NUM_AMPS_PRINT",10);
-
-    /*- How to average H diag energies over spin coupling sets.
-      HD_EXACT uses the exact diagonal energies which results in expansion
-      vectors which break spin symmetry. HD_KAVE averages the diagonal
-      energies over a spin-coupling set yielding spin pure expansion vectors.
-      ORB_ENER employs the sum of orbital energy approximation giving
-      spin pure expansion vectors but usually doubles the number of Davidson
-      iterations. EVANGELISTI uses the sums and differences of orbital
-      energies with the SCF reference energy to produce spin pure expansion
-      vectors. LEININGER approximation which subtracts the one-electron
-      contribution from the orbital energies, multiplies by 0.5, and adds
-      the one-electron contribution back in, producing spin pure expansion
-      vectors and developed by Matt Leininger and works as well as
-      EVANGELISTI. !expert -*/
-    options.add_str("HD_AVG", "EVANGELISTI",
-      "EVANGELISTI HD_EXACT HD_KAVE ORB_ENER LEININGER Z_KAVE");
-
-    /*- Do compute the diagonal elements of the Hamiltonian matrix
-      on-the-fly? Otherwise, a diagonal element vector is written
-      to a separate file on disk. !expert -*/
-    options.add_bool("HD_OTF",true);
-
-    /*- Do use the last vector space in the BVEC file to write
-      scratch DVEC rather than using a separate DVEC file? (Only
-      possible if NUM_ROOTS = 1.) !expert -*/
-    options.add_bool("NO_DFILE",false);
-
-    /*- Do freeze core orbitals? -*/
-    // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
-    options.add_bool("DETCI_FREEZE_CORE",true);
-
-    /*- Do store strings specifically for FCI? (Defaults to TRUE for FCI.)
-        !expert -*/
-    options.add_bool("FCI_STRINGS",false);
-
-    /*- Do allow "mixed" RAS II/RAS III excitations into the CI space?
-      If FALSE, then if there are any electrons
-      in RAS III, then the number of holes in RAS I cannot exceed the given
-      excitation level EX_LEVEL. !expert -*/
-    options.add_bool("MIXED",true);
-
-    /*- Do allow "mixed" excitations involving RAS IV into the CI space.
-      Useful to specify a split-virtual
-      CISD[TQ] computation.  If FALSE, then if there are any electrons
-      in RAS IV, then the number of holes in RAS I cannot exceed the given
-      excitation level EX_LEVEL.  !expert -*/
-    options.add_bool("MIXED4",true);
-
-    /*- Do restrict strings with $e-$ in RAS IV?  Useful to reduce the number of
-      strings required if MIXED4=true, as in a split-virutal CISD[TQ]
-      computation.  If more than one electron is in RAS IV, then the
-      holes in RAS I cannot exceed the number of particles in
-      RAS III + RAS IV (i.e., EX_LEVEL), or else the string is discarded.
-      !expert -*/
-    options.add_bool("R4S",false);
-
-    /*- Do string replacements on the fly in DETCI? Can
-      save a gigantic amount of memory (especially for truncated CI's) but
-      is somewhat flaky and hasn't been tested for a while.  It may work
-      only works for certain classes of RAS calculations.  The current
-      code is very slow with this option turned on. !expert -*/
-    options.add_bool("REPL_OTF",false);
-
-    /*- Do calculate the value of $\langle S^2\rangle$ for each root? -*/
-    options.add_bool("S_SQUARED",false);
-
-    /*- Do compute the MPn series out to
-    kth order where k is determined by MAX_NUM_VECS?  For open-shell systems
-    (REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series.
-    GUESS_VECTOR must be set to UNIT, HD_OTF must be set to TRUE, and
-    HD_AVG must be set to orb_ener; these should happen by default for
-    MPN=TRUE. -*/
-    options.add_bool("MPN",false);
-
-    /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if
-    available from MPN_WIGNER=true); if 2, save the MP(2n-2) energy (if
-    available from MPN_WIGNER=true). !expert -*/
-    options.add_int("MPN_ORDER_SAVE",0);
-
-    /*- Do employ an orthonormal vector space rather than
-      storing the kth order wavefunction? !expert -*/
-    options.add_bool("MPN_SCHMIDT",false);
-
-    /*- Do use Wigner formulas in the Empn series? !expert -*/
-    options.add_bool("MPN_WIGNER",true);
-
-    /*- $z$ in $H = H@@0 + z H@@1$ !expert -*/
-    options.add_double("PERTURB_MAGNITUDE",1.0);
+    /*- Do eliminate determinants not valid for spin-complete spin-flip CI's?
+    [see J. S. Sears et al, J. Chem. Phys. 118, 9084-9094 (2003)] !expert -*/
+    options.add_bool("SF_RESTRICT", false);
 
     /*- maximum number of alpha electrons in RAS III -*/
     options.add_int("A_RAS3_MAX",-1);
@@ -302,38 +227,38 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- maximum number of beta electrons in RAS III -*/
     options.add_int("B_RAS3_MAX",-1);
 
-    /*- maximum number of alpha electrons in RAS III, for CC -*/
-    options.add_int("CC_A_RAS3_MAX",-1);
-
-    /*- maximum number of beta electrons in RAS III, for CC -*/
-    options.add_int("CC_B_RAS3_MAX",-1);
-
     /*- maximum number of electrons in RAS III -*/
     options.add_int("RAS3_MAX",-1);
-
-    /*- maximum number of electrons in RAS III, for CC -*/
-    options.add_int("CC_RAS3_MAX",-1);
 
     /*- maximum number of electrons in RAS IV -*/
     options.add_int("RAS4_MAX",-1);
 
-    /*- maximum number of electrons in RAS IV, for CC -*/
-    options.add_int("CC_RAS4_MAX",-1);
-
     /*- maximum number of electrons in RAS III + IV -*/
     options.add_int("RAS34_MAX",-1);
 
-    /*- maximum number of electrons in RAS III + IV, for CC -*/
-    options.add_int("CC_RAS34_MAX",-1);
+    /*- Do allow "mixed" RAS II/RAS III excitations into the CI space?
+    If FALSE, then if there are any electrons
+    in RAS III, then the number of holes in RAS I cannot exceed the given
+    excitation level EX_LEVEL. !expert -*/
+    options.add_bool("MIXED",true);
 
-    /*- Specifies how to handle buffering of CI vectors.  A value of 0
-    makes the program perform I/O one RAS subblock at a time; 1
-    uses entire CI vectors at a time; and 2 uses one irrep block
-    at a time.  Values of 0 or 2 cause some inefficiency in the I/O
-    (requiring multiple reads of the C vector when constructing
-    H in the iterative subspace if DIAG_METHOD = SEM), but require
-    less core memory. -*/
-    options.add_int("ICORE", 1);
+    /*- Do allow "mixed" excitations involving RAS IV into the CI space.
+    Useful to specify a split-virtual
+    CISD[TQ] computation.  If FALSE, then if there are any electrons
+    in RAS IV, then the number of holes in RAS I cannot exceed the given
+    excitation level EX_LEVEL.  !expert -*/
+    options.add_bool("MIXED4",true);
+
+    /*- Do restrict strings with $e-$ in RAS IV?  Useful to reduce the number 
+    of strings required if MIXED4=true, as in a split-virutal CISD[TQ]
+    computation.  If more than one electron is in RAS IV, then the
+    holes in RAS I cannot exceed the number of particles in
+    RAS III + RAS IV (i.e., EX_LEVEL), or else the string is discarded.
+    !expert -*/
+    options.add_bool("R4S",false);
+
+
+    /*- SUBSECTION Diagonalization Methods -*/
 
     /*- This specifies which method is to be used in diagonalizing the
     Hamiltonian.  The valid options are: RSP, to form the entire H
@@ -366,21 +291,45 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     is DAVIDSON. -*/
     options.add_str("UPDATE", "DAVIDSON", "DAVIDSON OLSEN");
 
-    /*- Gives the maximum number of Davidson subspace vectors which can
-    be held on disk for the CI coefficient and sigma vectors.  (There
-    is one H(diag) vector and the number of D vectors is equal to the
-    number of roots).  When the number of vectors on disk reaches
-    the value of MAX_NUM_VECS, the Davidson subspace will be
-    collapsed to COLLAPSE_SIZE vectors for each root.  This is very
-    helpful for saving disk space.  Defaults to MAXITER * NUM_ROOTS
-    + NUM_INIT_VECS. -*/
-    options.add_int("MAX_NUM_VECS", 0);
+    /*- How to average H diag energies over spin coupling sets.
+    HD_EXACT uses the exact diagonal energies which results in expansion
+    vectors which break spin symmetry. HD_KAVE averages the diagonal
+    energies over a spin-coupling set yielding spin pure expansion vectors.
+    ORB_ENER employs the sum of orbital energy approximation giving
+    spin pure expansion vectors but usually doubles the number of Davidson
+    iterations. EVANGELISTI uses the sums and differences of orbital
+    energies with the SCF reference energy to produce spin pure expansion
+    vectors. LEININGER approximation which subtracts the one-electron
+    contribution from the orbital energies, multiplies by 0.5, and adds
+    the one-electron contribution back in, producing spin pure expansion
+    vectors and developed by Matt Leininger and works as well as
+    EVANGELISTI. !expert -*/
+    options.add_str("HD_AVG", "EVANGELISTI",
+      "EVANGELISTI HD_EXACT HD_KAVE ORB_ENER LEININGER Z_KAVE");
 
-    /*- Gives the number of vectors to retain when the Davidson subspace is
-    collapsed (see MAX_NUM_VECS below).  If greater than one, the
-    collapsed subspace retains the best estimate of the CI vector for
-    the previous n iterations.   Defaults to 1. -*/
-    options.add_int("COLLAPSE_SIZE", 1);
+    /*- This parameter specifies the size of the H0 block of the Hamiltonian
+    which is solved exactly.  The n determinants with the lowest SCF
+    energy are selected, and a submatrix of the Hamiltonian is formed
+    using these determinants.  This submatrix is used to accelerate
+    convergence of the CI iterations in the OLSEN and MITRUSHENKOV
+    iteration schemes, and also to find a good starting guess for the
+    SEM method if GUESS_VECTOR = H0_BLOCK.  Defaults to 400.
+    Note that the program may change the given size for Ms=0 cases
+    (Ms0 = TRUE) if it determines that the H0 block includes only
+    one member of a pair of determinants related by time reversal symmetry.
+    For very small block sizes, this could conceivably eliminate the entire
+    H0 block; the program should print warnings if this occurs. !expert -*/
+    options.add_int("H0_BLOCKSIZE", 400);
+
+    /*- size of H0 block for initial guess !expert -*/
+    options.add_int("H0_GUESS_SIZE", 400);
+
+    /*- Do use coupling block in preconditioner? !expert -*/
+    options.add_bool("H0_BLOCK_COUPLING",false);
+
+    /*- Parameters which specifies the size of the coupling block
+    within the generalized davidson preconditioner. !expert -*/
+    options.add_int("H0_BLOCK_COUPLING_SIZE",0);
 
     /*- Do use least-squares extrapolation in iterative solution of CI
     vector? -*/
@@ -393,29 +342,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     extrapolation to be performed -*/
     options.add_double("LSE_TOLERANCE", 3);
 
-    /*- Do result a DETCI iteration that
-    terminated prematurely? It assumes that the CI and sigma vectors are on
-    disk; the number of vectors specified by RESTART_VECS is collapsed
-    down to one vector per root. -*/
-    options.add_bool("RESTART",false);
 
-    /*- Do use some routines based on the papers of Bendazzoli
-    et al. to calculate sigma?  Seems to be slower and not worthwhile; may disappear
-    eventually.  Works only for full CI and I don't remember if I could see
-    how their clever scheme might be extended to RAS in general. !expert -*/
-    options.add_bool("BENDAZZOLI", false);
-
-    /*- Do coupled-cluster computation? -*/
-    options.add_bool("CC", false);
+    /*- SUBSECTION Density Matrices -*/
 
     /*- Do compute one-particle density matrix if not otherwise required? -*/
     options.add_bool("OPDM", false);
 
     /*- Do compute two-particle density matrix if not otherwise required? -*/
     options.add_bool("TPDM", false);
-
-    /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
-    options.add_int("MAXITER", 12);
 
     /*- Do print the one-particle density matrix for each root? -*/
     options.add_bool("OPDM_PRINT", false);
@@ -439,12 +373,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do print the two-particle density matrix? (Warning: large tensor) -*/
     options.add_bool("TPDM_PRINT", false);
 
-    /*- The root to write out the two-particle density matrix for
-    (the one-particle density matrices are written for all roots).
-    Useful for a state-specific CASSCF or CI optimization on an
-    excited state. -*/
-    options.add_int("FOLLOW_ROOT", 1);
-
     /*- Do compute the transition density?  Note: only transition densities
     between roots of the same symmetry will be evaluated.  DETCI
     does not compute states of different irreps within the same
@@ -460,40 +388,56 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do compute the dipole moment? -*/
     options.add_bool("DIPMOM", false);
 
-    /*- Number of threads -*/
-    options.add_int("NUM_THREADS", 1);
 
-    /*- Do store converged vector(s) at the end of
-    the run?  The vector(s) is(are) stored in a transparent format such that
-    other programs can use it easily. The format is specified in
-    src/lib/libqt/slaterdset.h. -*/
-    options.add_bool("VECS_WRITE", false);
+    /*- SUBSECTION Root Following -*/
 
-    /*- Number of vectors to export -*/
-    options.add_int("NUM_VECS_WRITE", 1);
+    /*- The root to write out the two-particle density matrix for
+    (the one-particle density matrices are written for all roots).
+    Useful for a state-specific CASSCF or CI optimization on an
+    excited state. -*/
+    options.add_int("FOLLOW_ROOT", 1);
 
-    /*- Do eliminate determinants not valid for spin-complete spin-flip CI's?
-    [see J. S. Sears et al, J. Chem. Phys. 118, 9084-9094 (2003)] !expert -*/
-    options.add_bool("SF_RESTRICT", false);
+    /*- In following a particular root (see ROOT keyword), sometimes the
+    root number changes.  To follow a root of a particular character,
+    one can specify a list of determinants and their coefficients,
+    and the code will follow the root with the closest overlap.  The
+    user specifies arrays containing the absolute alpha string indices
+    (A_i below), absolute beta indices (B_i below), and CI coefficients
+    (C_i below) to form the desired vector.
+    FOLLOW_VECTOR_ALPHAS specifies the alpha string indices. The
+    format is FOLLOW_VECTOR = [ [[A_1, B_1], C_1], [[A_2, B_2], C_2], ...].
+    !expert -*/
+    options.add("FOLLOW_VECTOR", new ArrayType());
 
-    /*- Do print the sigma overlap matrix?  Not generally useful.  !expert -*/
-    options.add_bool("SIGMA_OVERLAP", false);
+    /*- SUBSECTION Guess Vectors -*/
 
-    /*- The value of the spin quantum number S is given by this option.
-    The default is determined by the value of the multiplicity.  This is used
-    for two things: (1) determining the phase of the redundant half of the CI
-    vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making
-    sure the guess vector has the desired value of $\langle S^2\rangle$ 
-    (if :term:`S_SQUARED` is TRUE and :term:`ICORE` = 1). -*/
-    options.add_double("S", 0.0);
+    /*- Guess vector type.  Accepted values are UNIT for a unit vector
+    guess (NUM_ROOTS and NUM_INIT_VECS must both be 1); H0_BLOCK to use
+    eigenvectors from the H0 BLOCK submatrix (default); DFILE to use
+    NUM_ROOTS previously converged vectors in the D file; IMPORT to
+    import a guess previously exported from a CI computation
+    (possibly using a different CI space) !expert -*/
+    options.add_str("GUESS_VECTOR", "H0_BLOCK", "UNIT H0_BLOCK DFILE IMPORT");
 
-    /*- An array of length EX_LEVEL specifying whether each excitation type
-    (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed).  Used to
-    specify non-standard CI spaces such as CIST.  !expert -*/
-    options.add("EX_ALLOW", new ArrayType());
+    /*- The number of initial vectors to use in the CI iterative procedure.
+    Defaults to the number of roots. !expert -*/
+    options.add_int("NUM_INIT_VECS", 0);
 
-    /*- Do invoke the FILTER_GUESS options that are used to filter out some trial
-    vectors which may not have the appropriate phase convention
+    /*- Irrep for CI vectors;  -1 = find automatically.
+    This option allows the user to look for CI vectors of a different irrep
+    than the reference.  This probably only makes sense for Full CI,
+    and it would probably not work with unit vector guesses.  Numbering
+    starts from zero for the totally-symmetric irrep. !expert -*/
+    options.add_int("REFERENCE_SYM", -1);
+
+    /*- Do restart a DETCI iteration that
+    terminated prematurely? It assumes that the CI and sigma vectors are on
+    disk; the number of vectors specified by RESTART_VECS is collapsed
+    down to one vector per root. -*/
+    options.add_bool("RESTART",false);
+
+    /*- Do invoke the FILTER_GUESS options that are used to filter out some 
+    trial vectors which may not have the appropriate phase convention
     between two determinants?  This is useful to remove, e.g.,
     delta states when a sigma state is desired.  The user
     inputs two determinants (by giving the absolute alpha string
@@ -526,27 +470,116 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     this option was experimental and may not be effective.  !expert -*/
     options.add("FILTER_ZERO_DET", new ArrayType());
 
-    /*- Array giving the root numbers of the states to average in a
-    state-averaged procedure such as SA-CASSCF. Root numbering starts
-    from 1. -*/
-    options.add("AVG_STATES", new ArrayType());
 
-    /*- Array giving the weights for each state in a state-averaged
-    procedure -*/
-    // CDS:TODO - Does this work for doubles??
-    options.add("AVG_WEIGHTS", new ArrayType());
+    /*- SUBSECTION File Handling -*/
 
-    /*- In following a particular root (see ROOT keyword), sometimes the
-    root number changes.  To follow a root of a particular character,
-    one can specify a list of determinants and their coefficients,
-    and the code will follow the root with the closest overlap.  The
-    user specifies arrays containing the absolute alpha string indices
-    (A_i below), absolute beta indices (B_i below), and CI coefficients
-    (C_i below) to form the desired vector.
-    FOLLOW_VECTOR_ALPHAS specifies the alpha string indices. The
-    format is FOLLOW_VECTOR = [ [[A_1, B_1], C_1], [[A_2, B_2], C_2], ...].
-    !expert -*/
-    options.add("FOLLOW_VECTOR", new ArrayType());
+    /*- Gives the maximum number of Davidson subspace vectors which can
+    be held on disk for the CI coefficient and sigma vectors.  (There
+    is one H(diag) vector and the number of D vectors is equal to the
+    number of roots).  When the number of vectors on disk reaches
+    the value of MAX_NUM_VECS, the Davidson subspace will be
+    collapsed to COLLAPSE_SIZE vectors for each root.  This is very
+    helpful for saving disk space.  Defaults to MAXITER * NUM_ROOTS
+    + NUM_INIT_VECS. -*/
+    options.add_int("MAX_NUM_VECS", 0);
+
+    /*- Gives the number of vectors to retain when the Davidson subspace is
+    collapsed (see MAX_NUM_VECS below).  If greater than one, the
+    collapsed subspace retains the best estimate of the CI vector for
+    the previous n iterations.   Defaults to 1. -*/
+    options.add_int("COLLAPSE_SIZE", 1);
+
+    /*- Do store converged vector(s) at the end of
+    the run?  The vector(s) is(are) stored in a transparent format such that
+    other programs can use it easily. The format is specified in
+    src/lib/libqt/slaterdset.h. -*/
+    options.add_bool("VECS_WRITE", false);
+
+    /*- Number of vectors to export -*/
+    options.add_int("NUM_VECS_WRITE", 1);
+
+    /*- Do compute the diagonal elements of the Hamiltonian matrix
+    on-the-fly? Otherwise, a diagonal element vector is written
+    to a separate file on disk. !expert -*/
+    options.add_bool("HD_OTF",true);
+
+    /*- Do use the last vector space in the BVEC file to write
+    scratch DVEC rather than using a separate DVEC file? (Only
+    possible if NUM_ROOTS = 1.) !expert -*/
+    options.add_bool("NO_DFILE",false);
+
+
+    /*- SUBSECTION General-Order Perturbation Theory -*/
+
+    /*- Do compute the MPn series out to
+    kth order where k is determined by MAX_NUM_VECS?  For open-shell systems
+    (REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series.
+    GUESS_VECTOR must be set to UNIT, HD_OTF must be set to TRUE, and
+    HD_AVG must be set to orb_ener; these should happen by default for
+    MPN=TRUE. -*/
+    options.add_bool("MPN",false);
+
+    /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if
+    available from MPN_WIGNER=true); if 2, save the MP(2n-2) energy (if
+    available from MPN_WIGNER=true). !expert -*/
+    options.add_int("MPN_ORDER_SAVE",0);
+
+    /*- Do employ an orthonormal vector space rather than
+      storing the kth order wavefunction? !expert -*/
+    options.add_bool("MPN_SCHMIDT",false);
+
+    /*- Do use Wigner formulas in the Empn series? !expert -*/
+    options.add_bool("MPN_WIGNER",true);
+
+    /*- $z$ in $H = H@@0 + z H@@1$ !expert -*/
+    options.add_double("PERTURB_MAGNITUDE",1.0);
+
+
+    /*- SUBSECTION General-Order Coupled-Cluster -*/
+
+    /*- Do coupled-cluster computation? -*/
+    options.add_bool("CC", false);
+
+    /*- The CC excitation level -*/
+    options.add_int("CC_EX_LEVEL", 2);
+
+    /*- The CC valence excitation level -*/
+    options.add_int("CC_VAL_EX_LEVEL", 0);
+
+    /*- Do use DIIS extrapolation to accelerate CC convergence? -*/
+    options.add_bool("DIIS", true);
+
+    /*- Iteration at which to start using DIIS -*/
+    options.add_int("DIIS_START_ITER", 1);
+
+    /*- How often to do a DIIS extrapolation. 1 means do DIIS every
+    iteration, 2 is every other iteration, etc. -*/
+    options.add_int("DIIS_FREQ", 1);
+
+    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MIN_VECS", 2);
+
+    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
+    options.add_int("DIIS_MAX_VECS", 5);
+
+    /*- Number of important CC amplitudes per excitation level to print.
+    CC analog to NUM_DETS_PRINT -*/
+    options.add_int("NUM_AMPS_PRINT",10);
+
+    /*- maximum number of alpha electrons in RAS III, for CC -*/
+    options.add_int("CC_A_RAS3_MAX",-1);
+
+    /*- maximum number of beta electrons in RAS III, for CC -*/
+    options.add_int("CC_B_RAS3_MAX",-1);
+
+    /*- maximum number of electrons in RAS III, for CC -*/
+    options.add_int("CC_RAS3_MAX",-1);
+
+    /*- maximum number of electrons in RAS IV, for CC -*/
+    options.add_int("CC_RAS4_MAX",-1);
+
+    /*- maximum number of electrons in RAS III + IV, for CC -*/
+    options.add_int("CC_RAS34_MAX",-1);
 
     /*- Do export a CC vector to disk? -*/
     options.add_bool("CC_VECS_WRITE", false);
@@ -575,22 +608,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     do this).  Not doing this is experimental.  !expert -*/
     options.add_bool("CC_UPDATE_EPS", true);
 
-    /*- Do use DIIS extrapolation to accelerate CC convergence? -*/
-    options.add_bool("DIIS", true);
-
-    /*- Iteration at which to start using DIIS -*/
-    options.add_int("DIIS_START_ITER", 1);
-
-    /*- How often to do a DIIS extrapolation. 1 means do DIIS every
-    iteration, 2 is every other iteration, etc. -*/
-    options.add_int("DIIS_FREQ", 1);
-
-    /*- Minimum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MIN_VECS", 2);
-
-    /*- Maximum number of error vectors stored for DIIS extrapolation -*/
-    options.add_int("DIIS_MAX_VECS", 5);
-
     /*- CC_MACRO = [ [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
                      [ex_lvl, max_holes_I, max_parts_IV, max_I+IV], ... ]
     Optional additional restrictions on allowed exictations in
@@ -603,30 +620,59 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     in RAS I + RAS IV].  !expert -*/
     options.add("CC_MACRO", new ArrayType());
 
+
+    /*- SUBSECTION Alternative Algorithms -*/
+
+    /*- Do store strings specifically for FCI? (Defaults to TRUE for FCI.)
+        !expert -*/
+    options.add_bool("FCI_STRINGS",false);
+
+    /*- Do string replacements on the fly in DETCI? Can
+    save a gigantic amount of memory (especially for truncated CI's) but
+    is somewhat flaky and hasn't been tested for a while.  It may work
+    only works for certain classes of RAS calculations.  The current
+    code is very slow with this option turned on. !expert -*/
+    options.add_bool("REPL_OTF",false);
+
+    /*- Do use some routines based on the papers of Bendazzoli et al. 
+    to calculate sigma?  Seems to be slower and not worthwhile; may disappear
+    eventually.  Works only for full CI and I don't remember if I could see
+    how their clever scheme might be extended to RAS in general. !expert -*/
+    options.add_bool("BENDAZZOLI", false);
   }
+
   if (name == "SAPT"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) analysis
-        to quantitatively analyze noncovalent interactions. -*/
+    /*- MODULEDESCRIPTION Performs symmetry adapted perturbation theory (SAPT) 
+    analysis to quantitatively analyze noncovalent interactions. -*/
+
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
-    /*- Convergence criterion for energy (change) in the SAPT $E@@{ind,resp}^{(20)}$
-    term during solution of the CPHF equations.
+
+    /*- Convergence criterion for energy (change) in the SAPT 
+    $E@@{ind,resp}^{(20)}$ term during solution of the CPHF equations.
     See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGENCE",1e-10);
+
     /*- Convergence criterion for residual of the CPHF coefficients in the SAPT
-    $E@@{ind,resp}^{(20)}$ term.
-    See the note at the beginning of Section \ref{keywords}. -*/
+    $E@@{ind,resp}^{(20)}$ term. -*/
     options.add_double("D_CONVERGENCE",1e-8);
+
     /*- Don't solve the CPHF equations? Evaluate $E@@{ind}^{(20)}$ and
     $E@@{exch-ind}^{(20)}$ instead of their response-including coupterparts.
-    Only turn on this option if the induction energy is not going to be used. -*/
+    Only turn on this option if the induction energy is not going to be 
+    used. -*/
     options.add_bool("NO_RESPONSE",false);
+
     /*- Do use asynchronous disk I/O in the solution of the CPHF equations?
-    Use may speed up the computation slightly at the cost of spawning an additional thread. -*/
+    Use may speed up the computation slightly at the cost of spawning an 
+    additional thread. -*/
     options.add_bool("AIO_CPHF",false);
+
     /*- Do use asynchronous disk I/O in the formation of the DF integrals?
-    Use may speed up the computation slightly at the cost of spawning an additional thread. -*/
+    Use may speed up the computation slightly at the cost of spawning an 
+    additional thread. -*/
     options.add_bool("AIO_DF_INTS",false);
+
     /*- Maxmum number of CPHF iterations -*/
     options.add_int("MAXITER",50);
     /*- Do compute third-order corrections? !expert -*/
@@ -642,7 +688,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NAT_ORBS_T2",false);
     /*- Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual
     natural orbitals are discarded for evaluating the triples contribution
-    to dispersion. See the note at the beginning of Section \ref{keywords}. -*/
+    to dispersion. -*/
     options.add_double("OCC_TOLERANCE",1.0E-6);
     /*- Minimum absolute value below which all three-index DF integrals
     and those contributing to four-index integrals are neglected. The
@@ -652,15 +698,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("INTS_TOLERANCE",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
-    /*- Do force SAPT2 and higher to die if it thinks there isn't enough memory?
-    Turning this off is ill-advised. -*/
+    /*- Do force SAPT2 and higher to die if it thinks there isn't enough 
+    memory?  Turning this off is ill-advised. -*/
     options.add_bool("SAPT_MEM_CHECK",true);
     /*- Primary basis set, describes the monomer molecular orbitals -*/
     options.add_str("BASIS", "");
-    /*- Auxiliary basis set for SAPT density fitting computations. Defaults to BASIS-RI. -*/
+    /*- Auxiliary basis set for SAPT density fitting computations. Defaults 
+    to BASIS-RI. -*/
     options.add_str("DF_BASIS_SAPT", "");
-    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting computations,
-    may be important if heavier elements are involved. Defaults to BASIS-RI. -*/
+    /*- Auxiliary basis set for SAPT Elst10 and Exch10 density fitting 
+    computations, may be important if heavier elements are involved. Defaults 
+    to BASIS-RI. -*/
     options.add_str("DF_BASIS_ELST", "");
     /*- Maximum error allowed (Max error norm in Delta tensor)
     in the approximate energy denominators employed for most of the
@@ -669,11 +717,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Denominator algorithm for PT methods. Laplace transformations
     are slightly more efficient. -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
-    /*- The scale factor used for opposite-spin pairs in SCS computations. SS/OS
-    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. -*/
+    /*- The scale factor used for opposite-spin pairs in SCS computations. 
+    SS/OS decomposition performed for $E@@{disp}^{(20)}$ and 
+    $E@@{exch-disp}^{(20)}$ terms. -*/
     options.add_double("SAPT_OS_SCALE", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations. SS/OS
-    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. -*/
+    decomposition performed for $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ 
+    terms. -*/
     options.add_double("SAPT_SS_SCALE", 1.0/3.0);
     /*- The scope of core orbitals to freeze in evaluation of SAPT
     $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ terms. Recommended true
@@ -681,11 +731,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("FREEZE_CORE","FALSE", "FALSE TRUE SMALL LARGE");
     /*- The amount of information to print to the output file for the sapt
     module. For 0, only the header and final results are printed. For 1,
-    (recommended for large calculations) some intermediate quantities are also printed. -*/
+    (recommended for large calculations) some intermediate quantities are also 
+    printed. -*/
     options.add_int("PRINT", 1);
   }
+
   if(name == "DCFT"|| options.read_globals()) {
-      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory computations -*/
+      /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory 
+      computations -*/
+
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEVEL", 2);
       /*- The shift applied to the denominator -*/
@@ -696,25 +750,27 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("SCF_MAXITER", 50);
       /*- Maximum number of iterations -*/
       options.add_int("MAXITER", 40);
-      /*- Do compute the full two particle density matrix at the end of the computation, for properties? -*/
+      /*- Do compute the full two particle density matrix at the end of the 
+      computation, for properties? -*/
       options.add_bool("TPDM", 0);
       /*- Convergence criterion for the SCF density (RMS error).
       See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("SCF_D_CONVERGENCE", 1e-8);
-      /*- Convergence criterion for residuals (RMS error) in density cummulant equations.
-      See the note at the beginning of Section \ref{keywords}. -*/
+      /*- Convergence criterion for residuals (RMS error) in density cumulant 
+      equations. -*/
       options.add_double("R_CONVERGENCE", 1e-10);
       /*- Do relax the orbitals? -*/
       options.add_bool("MO_RELAX", true);
-      /*- The amount (percentage) of damping to apply to the initial SCF procedures
-      0 will result in a full update, 100 will completely stall the update. A
-      value around 20 (which corresponds to 20\% of the previous iteration's
-      density being mixed into the current iteration)
+      /*- The amount (percentage) of damping to apply to the initial SCF 
+      procedures 0 will result in a full update, 100 will completely stall the 
+      update. A value around 20 (which corresponds to 20\% of the previous 
+      iteration's density being mixed into the current iteration)
       can help in cases where oscillatory convergence is observed. -*/
       options.add_double("DAMPING_PERCENTAGE",0.0);
       /*- Don't include the tau terms? -*/
       options.add_bool("IGNORE_TAU", false);
-      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to $\tau$ ? -*/
+      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to 
+      $\tau$ ? -*/
       options.add_bool("TAU_SQUARED", false);
       /*- Minimum absolute value below which integrals are neglected.
       See the note at the beginning of Section \ref{keywords}. -*/
@@ -735,14 +791,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("COMPUTE_GRADIENT", false);
   }
   if (name == "MINTS"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Called at the beginning of SCF computations, whenever disk-based molecular
-          integrals are required -*/
+      /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 
+      whenever disk-based molecular integrals are required -*/
+
       /*- Primary basis set -*/
       options.add_str("BASIS","");
   }
   if (name == "SCF"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and Density Functional Theory) computations.
-          These are the starting points for most computations, so this code is called in most cases. -*/
+    /*- MODULEDESCRIPTION Performs self consistent field (Hartree-Fock and 
+    Density Functional Theory) computations.  These are the starting 
+    points for most computations, so this code is called in most cases. -*/
 
     /*- SUBSECTION General Wavefunction Info -*/
 
@@ -752,7 +810,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- Primary basis set -*/
     options.add_str("BASIS", "");
-    /*- Auxiliary basis set for SCF density fitting computations. Defaults to BASIS-JKFIT. -*/
+    /*- Auxiliary basis set for SCF density fitting computations. 
+    Defaults to BASIS-JKFIT. -*/
     options.add_str("DF_BASIS_SCF", "");
     /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
@@ -760,8 +819,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SAVE_JK", false);
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
-    /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies.
-        See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Minimum S matrix eigenvalue to be used before compensating for linear 
+    dependencies.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("S_TOLERANCE",1E-7);
     /*- Minimum absolute value below which TEI are neglected.
     See the note at the beginning of Section \ref{keywords}. -*/
@@ -773,9 +832,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 100);
-    /*- Convergence criterion for SCF energy. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for SCF energy. -*/
     options.add_double("E_CONVERGENCE", 1e-8);
-    /*- Convergence criterion for SCF density. See the note at the beginning of Section \ref{keywords}. -*/
+    /*- Convergence criterion for SCF density. -*/
     options.add_double("D_CONVERGENCE", 1e-8);
     /*- The amount (percentage) of damping to apply to the early density updates.
         0 will result in a full update, 100 will completely stall the update.  A
