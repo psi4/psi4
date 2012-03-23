@@ -5,6 +5,8 @@
 
 namespace psi {
 
+void wpbe_F(double rho, double s, double omega, double* F, double* F_rho, double* F_s);
+
 
 /** 
  * Short-range PBE functional 

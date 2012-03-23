@@ -171,7 +171,7 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
         if (gga_) {
             s = sqrt(gamma) / rho43;
             s_rho = - 4.0 / 3.0 * sqrt(gamma) / rho73;
-            s_gamma = 1.0 / 2.0 * pow(gamma,-1.0/2.0) * rho43; 
+            s_gamma = 1.0 / 2.0 * pow(gamma,-1.0/2.0) / rho43; 
             s_tau = 0.0;
         } else {
             s = 0.0;
@@ -209,6 +209,24 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
                 Fs_s = 2.0 / (mus2 * mus2) * _PBE_mu_ * s / (4.0 * _k0_ * _k0_); 
                 break;
             }
+            case PW91: {
+                double bs = _PW91_a2_ * s;
+                double bs2 = bs * bs;
+                double bs2p1 = 1.0 + bs2;        
+                double bs2p1_12 = sqrt(bs2p1);
+                double aasinhv = _PW91_a1_ * log(1.0 + bs2p1_12);   
+                double dexpv = _PW91_a4_ * exp(-_PW91_a5_ * s * s);
+
+                double N = 1.0 + aasinhv * s + (_PW91_a3_ - dexpv) * s * s;
+                double D = 1.0 + aasinhv * s  + _PW91_a6_ * s * s * s * s;
+                
+                double N_s =  aasinhv + _PW91_a1_ * _PW91_a2_ * s / bs2p1_12 + 2.0 * s * (_PW91_a3_ - dexpv) + 2.0 * s * s * s * dexpv;
+                double D_s =  aasinhv + _PW91_a1_ * _PW91_a2_ * s / bs2p1_12 + 4.0 * _PW91_a6_ * s * s * s; 
+            
+                Fs = N / D;
+                Fs_s = (N_s * D - D_s * N) / (D * D);
+                break;
+            }
             case B97: {
                 int size = _B97_a_.size();
                 Fs = 0.0;
@@ -228,24 +246,6 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
                     buf2 = buf;
                     buf *= g;                  
                 }
-                break;
-            }
-            case PW91: {
-                double bs = _PW91_a2_ * s;
-                double bs2 = bs * bs;
-                double bs2p1 = 1.0 + bs2;        
-                double bs2p1_12 = sqrt(bs2p1);
-                double aasinhv = _PW91_a1_ * log(1.0 + bs2p1_12);   
-                double dexpv = _PW91_a4_ * exp(-_PW91_a5_ * s * s);
-
-                double N = 1.0 + aasinhv * s + (_PW91_a3_ - dexpv) * s * s;
-                double D = 1.0 + aasinhv * s  + _PW91_a6_ * s * s * s * s;
-                
-                double N_s =  aasinhv + _PW91_a1_ * _PW91_a2_ * s / bs2p1_12 + 2.0 * s * (_PW91_a3_ - dexpv) + 2.0 * s * s * s * dexpv;
-                double D_s =  aasinhv + _PW91_a1_ * _PW91_a2_ * s / bs2p1_12 + 4.0 * _PW91_a6_ * s * s * s; 
-            
-                Fs = N / D;
-                Fs_s = (N_s * D - D_s * N) / (D * D);
                 break;
             }
         }
