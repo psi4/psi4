@@ -33,7 +33,9 @@ DCFTSolver::compute_gradient()
         fprintf(outfile, "\t                          *** Macro Iteration %d ***\n" "\tOrbital Response Iterations\n", iter_);
 
         // Solve the cumulant response equations iteratively
-        if (iter_ > 1) iterate_cumulant_response();
+        if (iter_ > 1) {
+            iterate_cumulant_response();
+        }
 
         // Compute the generalized densities for the MO Lagrangian
         compute_density();
@@ -1119,7 +1121,6 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
     dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
-
     dpd_contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
     dpd_file2_close(&pT);
     dpd_file2_close(&H);
@@ -1129,7 +1130,6 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
     dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
     dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
-
     dpd_contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
     dpd_file2_close(&pT);
     dpd_file2_close(&H);
@@ -1321,7 +1321,6 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_buf4_close(&G);
     dpd_buf4_close(&I);
     dpd_file2_close(&X);
-
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -1643,7 +1642,7 @@ DCFTSolver::iterate_orbital_response()
     double rms = 0.0;
     double convergence = 1.0E-14;
     bool converged = false;
-    int maxcycle = 50;
+    int maxcycle = 100;
 
      // Start iterations
     fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ia RMS");
@@ -2367,7 +2366,7 @@ DCFTSolver::iterate_cumulant_response()
     double rms = 0.0;
     double convergence = 1.0E-14;
     bool converged = false;
-    int maxcycle = 50;
+    int maxcycle = 100;
 
      // Start iterations
     fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ijab RMS");
@@ -4087,6 +4086,7 @@ DCFTSolver::compute_ewdm()
                 aW.set(h, i, j, value);
                 aW.set(h, j, i, value);
                 a_opdm->set(h, i, j, (aocc_ptau_->get(h,i,j) + akappa_->get(h,i,j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_ptau_->get(h,i,j) + akappa_->get(h,i,j)));
             }
         }
         // V-V
@@ -4101,6 +4101,7 @@ DCFTSolver::compute_ewdm()
                 aW.set(h, a + naoccpi_[h], b + naoccpi_[h], value);
                 aW.set(h, b + naoccpi_[h], a + naoccpi_[h], value);
                 a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_ptau_->get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_ptau_->get(h, a, b));
             }
         }
     }
