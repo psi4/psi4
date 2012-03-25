@@ -744,7 +744,7 @@ def optimize(name, **kwargs):
             print 'Optimizer: Optimization complete!'
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (PsiMod.get_global_option('INTCOS_GENERATE_EXIT') == False):
+            if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
               PsiMod.opt_clean()
             PsiMod.clean()
 
