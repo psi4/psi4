@@ -68,30 +68,29 @@ DCFTSolver::compute_gradient()
     // Compute the energy-weighted density matrix
     compute_ewdm();
 
+//    dpdfile2 zia;
+//    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+//    dpd_file2_print(&zia, outfile);
+//    dpd_file2_close(&zia);
+//    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+//    dpd_file2_print(&zia, outfile);
+//    dpd_file2_close(&zia);
 
-    dpdfile2 zia;
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-    dpd_file2_print(&zia, outfile);
-    dpd_file2_close(&zia);
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    dpd_file2_print(&zia, outfile);
-    dpd_file2_close(&zia);
+//    dpdbuf4 Z;
+//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+//                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+//    dpd_buf4_print(&Z, outfile, 1);
+//    dpd_buf4_close(&Z);
 
-    dpdbuf4 Z;
-    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
-    dpd_buf4_print(&Z, outfile, 1);
-    dpd_buf4_close(&Z);
+//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+//                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+//    dpd_buf4_print(&Z, outfile, 1);
+//    dpd_buf4_close(&Z);
 
-    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
-    dpd_buf4_print(&Z, outfile, 1);
-    dpd_buf4_close(&Z);
-
-    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
-    dpd_buf4_print(&Z, outfile, 1);
-    dpd_buf4_close(&Z);
+//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+//                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+//    dpd_buf4_print(&Z, outfile, 1);
+//    dpd_buf4_close(&Z);
 
 }
 

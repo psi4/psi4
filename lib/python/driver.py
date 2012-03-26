@@ -71,7 +71,8 @@ procedures = {
             'ccsd'          : run_cc_gradient,
             'ccsd(t)'       : run_cc_gradient,
             'mp2'           : run_mp2_gradient,
-            'eom-ccsd'      : run_eom_cc_gradient
+            'eom-ccsd'      : run_eom_cc_gradient,
+            'dcft'          : run_dcft_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
