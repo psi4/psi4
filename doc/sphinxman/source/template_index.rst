@@ -16,10 +16,11 @@
 .. #####  HTML-PROG STOP
    introduction
    tutorial
-   methods
+   external
    psithoninput
-   psithonfunc
    basissets
+   methods
+   psithonfunc
    interfacing
    customizing
 .. #####  LATEX-USER STOP
@@ -42,6 +43,7 @@
  - :ref:`genindex`
  - :ref:`modindex`
  - :ref:`search`
+
 
 .. #####  HTML-ALL STOP
 .. #####  HTML-USER STOP

@@ -152,30 +152,6 @@ installation instructions at the |PSIfour| website above or to the file
 :source:`INSTALL` distributed with the package. Additional compilation
 hints may be found at `Psi Compiling <http://sirius.chem.vt.edu/trac/wiki/CompilingPsi>`_.
 
-.. index:: scratch files
-.. index:: psi4rc
-
-Scratch File Configuration
-==========================
-
-One very important part of user configuration at the end of the
-installation process is to tell |PSIfour| where to write its temporary
-("scratch") files.  Electronic structure packages like |PSIfour| can
-create rather large temporary disk files.  It is very important to 
-ensure that |PSIfour| is writing its temporary files to a disk drive
-phsyically attached to the computer running the computation.  If it
-is not, it will significantly slow down the program and the network.
-By default, PSI4 will write temporary files to ``/tmp``, but this
-directory is often not large enough for typical computations.  Therefore,
-you need to (a) make sure there is a sufficiently large directory on a
-locally-attached disk drive (100GB--1TB or more, depending on the size of
-the molecules to be studied) and (b) tell |PSIfour| the path to this
-directory.  The |PSIfour| installation instructions explain how to set up a
-resource file, |psirc| (example :source:`samples/example_psi4rc_file`),
-for each user providing this information.
-Alternately, the scratch directory can be set through the environment
-variable :envvar:`PSI_SCRATCH` (overrides |psirc| settings).
-
 .. index:: architectures
 .. index:: compilers
 

@@ -237,7 +237,7 @@ ADC::compute_energy()
     fprintf(outfile, "\t------------------------------------------------------------------------------\n\n");
 */    
     energy_ += corr_energy;
-    Process::environment.globals["CURRENT ENRGY"] = energy_;
+    Process::environment.globals["CURRENT ENERGY"] = energy_;
     fprintf(outfile, "->\tCorreponsing GS total energy (a.u.) = %20.14f\n", energy_);
 
     release_mem();

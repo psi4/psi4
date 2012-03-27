@@ -141,15 +141,15 @@ opendir(BASISDIR, $BasisFolder) or die "I can't read $BasisFolder\n";
 @HGBS = grep { /^.*\.gbs$/ } readdir(BASISDIR);
 closedir(BASISDIR);
 
-$divdash = '+' . ('-' x 47) . '+' . ('-' x 8) . ('+------' x ($#HELEM+1)) . '+';
-$diveqal = '+' . ('=' x 47) . '+' . ('=' x 8) . ('+======' x ($#HELEM+1)) . '+';
-printf RST_OUT "   $divdash\n   | %-45s | %-6s |", "Basis Set", "PUREAM";
+$divdash = '+' . ('-' x 67) . '+' . ('-' x 8) . ('+------' x ($#HELEM+1)) . '+';
+$diveqal = '+' . ('=' x 67) . '+' . ('=' x 8) . ('+======' x ($#HELEM+1)) . '+';
+printf RST_OUT "   $divdash\n   | %-65s | %-6s |", "Basis Set", "PUREAM";
 foreach $element (@HELEM) { print RST_OUT "$SELEM{$element}"; }
 print RST_OUT "\n   $diveqal\n";
 
 print HTML_OUT "<tr><td><big><b>Pople</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Pople}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Pople**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Pople**", "", "";
 @HPOPLE = ("sto-3g.gbs","3-21g.gbs");
 foreach $b (@HGBS) { if ($b =~ /^6-31g.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^6-31p.*\.gbs$/) { push(@HPOPLE, $b); } }
@@ -159,7 +159,7 @@ printf "Auto-documenting basis set files %s\n", "Pople";
 
 print HTML_OUT "<tr><td><big><b>Ahlrichs/Karlsruhe</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Ahlrichs/Karlsruhe}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Ahlrichs/Karlsruhe**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Ahlrichs/Karlsruhe**", "", "";
 @HAHLRICHS = ();
 foreach $b (@HGBS) { if ($b =~ /^def2-.*\.gbs$/) { push(@HAHLRICHS, $b); } }
 foreach $gbs (@HAHLRICHS) { htmlline($gbs); }
@@ -167,7 +167,7 @@ printf "Auto-documenting basis set files %s\n", "Ahlrichs";
 
 print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning D\$\\bm\\zeta\$}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Dunning D-zeta**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning D-zeta**", "", "";
 @HDDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*dz.*\.gbs$/) { push(@HDDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*dpd.*\.gbs$/) { push(@HDDUNNING, $b); } }
@@ -184,7 +184,7 @@ printf "Auto-documenting basis set files %s\n", "Dunning double-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning T&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning T\$\\bm\\zeta\$}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Dunning T-zeta**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning T-zeta**", "", "";
 @HTDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*tz.*\.gbs$/) { push(@HTDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*tpd.*\.gbs$/) { push(@HTDUNNING, $b); } }
@@ -203,7 +203,7 @@ printf "Auto-documenting basis set files %s\n", "Dunning triple-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning Q&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning Q\$\\bm\\zeta\$}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Dunning Q-zeta**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning Q-zeta**", "", "";
 @HQDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*qz.*\.gbs$/) { push(@HQDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*qpd.*\.gbs$/) { push(@HQDUNNING, $b); } }
@@ -224,7 +224,7 @@ printf "Auto-documenting basis set files %s\n", "Dunning quadruple-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning 5&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 5\$\\bm\\zeta\$}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Dunning 5-zeta**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning 5-zeta**", "", "";
 @H5DUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*5z.*\.gbs$/) { push(@H5DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*5pd.*\.gbs$/) { push(@H5DUNNING, $b); } }
@@ -247,7 +247,7 @@ printf "Auto-documenting basis set files %s\n", "Dunning 5-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning 6&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 6\$\\bm\\zeta\$}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Dunning 6-zeta**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning 6-zeta**", "", "";
 @H6DUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*6z.*\.gbs$/) { push(@H6DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*6pd.*\.gbs$/) { push(@H6DUNNING, $b); } }
@@ -283,7 +283,7 @@ foreach my $item (@HGBS) {
 
 print HTML_OUT "<tr><td><big><b>Others</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Others}} \\\\*\n";
-printf RST_OUT "   $divdash\n   | %-45s | %6s | %249s |\n   $divdash\n", "**Others**", "", "";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Others**", "", "";
 foreach $gbs (@HREST) { htmlline($gbs); }
 printf "Auto-documenting basis set files %s\n", "others";
 
@@ -336,7 +336,7 @@ sub htmlline {
    print LATEX_OUT "\\\\\n\n";
 
    $basislink = ":srcbasis:`" . $basisfile . "`";
-   printf RST_OUT "   | %-45s | %-6s |", $basislink, $puream;
+   printf RST_OUT "   | %-65s | %-6s |", $basislink, $puream;
    foreach $element (@HELEM) { print RST_OUT "$rsthash{$element}"; }
    print RST_OUT "\n   $divdash\n";
 }
