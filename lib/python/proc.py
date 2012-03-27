@@ -24,6 +24,15 @@ def run_dcft(name, **kwargs):
     return PsiMod.dcft()
 
 
+def run_dcft_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DCFT gradient calculation.
+
+    """
+    run_dcft(name, **kwargs)
+    PsiMod.deriv()
+
+
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a self-consistent-field theory (HF & DFT) calculation.

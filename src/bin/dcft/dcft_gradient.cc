@@ -30,10 +30,13 @@ DCFTSolver::compute_gradient()
 
     // Start macro-iterations
     while(!responseDone && iter_++ < maxiter_){
-        fprintf(outfile, "\t                          *** Macro Iteration %d ***\n" "\tOrbital Response Iterations\n", iter_);
+        fprintf(outfile, "\t                          *** Macro Iteration %d ***\n", iter_);
 
         // Solve the cumulant response equations iteratively
-        if (iter_ > 1) iterate_cumulant_response();
+        if (iter_ > 1) {
+            fprintf(outfile, "\tCumulant Response Iterations\n");
+            iterate_cumulant_response();
+        }
 
         // Compute the generalized densities for the MO Lagrangian
         compute_density();
@@ -43,15 +46,16 @@ DCFTSolver::compute_gradient()
         compute_lagrangian_VO();
 
         // Solve the orbital response equations iteratively
+        fprintf(outfile, "\tOrbital Response Iterations\n");
         iterate_orbital_response();
 
         // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
         double response_coupling_rms = compute_response_coupling();
 
         // Check convergence
-        if (response_coupling_rms < 1.0E-14) responseDone = true;
+        if (response_coupling_rms < lambda_threshold_) responseDone = true;
 
-        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n", response_coupling_rms);
+        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n\n", response_coupling_rms);
     }
 
     if (responseDone) fprintf(outfile, "    DCFT response equations converged.\n\n");
@@ -66,30 +70,29 @@ DCFTSolver::compute_gradient()
     // Compute the energy-weighted density matrix
     compute_ewdm();
 
+//    dpdfile2 zia;
+//    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+//    dpd_file2_print(&zia, outfile);
+//    dpd_file2_close(&zia);
+//    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+//    dpd_file2_print(&zia, outfile);
+//    dpd_file2_close(&zia);
 
-    dpdfile2 zia;
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-    dpd_file2_print(&zia, outfile);
-    dpd_file2_close(&zia);
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    dpd_file2_print(&zia, outfile);
-    dpd_file2_close(&zia);
+//    dpdbuf4 Z;
+//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+//                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+//    dpd_buf4_print(&Z, outfile, 1);
+//    dpd_buf4_close(&Z);
 
-    dpdbuf4 Z;
-    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
-    dpd_buf4_print(&Z, outfile, 1);
-    dpd_buf4_close(&Z);
+//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+//                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+//    dpd_buf4_print(&Z, outfile, 1);
+//    dpd_buf4_close(&Z);
 
-    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
-    dpd_buf4_print(&Z, outfile, 1);
-    dpd_buf4_close(&Z);
-
-    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
-    dpd_buf4_print(&Z, outfile, 1);
-    dpd_buf4_close(&Z);
+//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+//                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+//    dpd_buf4_print(&Z, outfile, 1);
+//    dpd_buf4_close(&Z);
 
 }
 
@@ -1119,7 +1122,6 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('V'), "H <O|V>");
     dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "pTau <V|V>");
-
     dpd_contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
     dpd_file2_close(&pT);
     dpd_file2_close(&H);
@@ -1129,7 +1131,6 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_file2_init(&X, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
     dpd_file2_init(&H, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('v'), "H <o|v>");
     dpd_file2_init(&pT, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "pTau <v|v>");
-
     dpd_contract222(&H, &pT, &X, 0, 1, 1.0, 0.0);
     dpd_file2_close(&pT);
     dpd_file2_close(&H);
@@ -1321,7 +1322,6 @@ DCFTSolver::compute_lagrangian_OV()
     dpd_buf4_close(&G);
     dpd_buf4_close(&I);
     dpd_file2_close(&X);
-
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
@@ -1585,65 +1585,14 @@ void
 DCFTSolver::iterate_orbital_response()
 {
 
-    // dX_ia = 2.0 * (X_ia - X_ai)
-    SharedMatrix dXa (new Matrix("Delta(X) Alpha", nirrep_, naoccpi_, navirpi_));
-    SharedMatrix dXb (new Matrix("Delta(X) Beta", nirrep_, nboccpi_, nbvirpi_));
-
-    dpdfile2 Xia, Xai, zia;
+    dpdfile2 zia;
 
     // Compute guess for the orbital response matrix elements
-
-    // Alpha spin
-    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
-    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-    dpd_file2_mat_init(&Xia);
-    dpd_file2_mat_init(&Xai);
-    dpd_file2_mat_init(&zia);
-    dpd_file2_mat_rd(&Xia);
-    dpd_file2_mat_rd(&Xai);
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0 ; i < naoccpi_[h]; ++i){
-            for(int a = 0 ; a < navirpi_[h]; ++a){
-                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                zia.matrix[h][i][a] = value_dX / (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
-                dXa->set(h, i, a, value_dX);
-            }
-        }
-    }
-    dpd_file2_mat_wrt(&zia);
-    dpd_file2_close(&zia);
-    dpd_file2_close(&Xai);
-    dpd_file2_close(&Xia);
-
-    // Beta spin
-    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
-    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('v'), ID('o'), "X <v|o>");
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    dpd_file2_mat_init(&Xia);
-    dpd_file2_mat_init(&Xai);
-    dpd_file2_mat_init(&zia);
-    dpd_file2_mat_rd(&Xia);
-    dpd_file2_mat_rd(&Xai);
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0 ; i < nboccpi_[h]; ++i){
-            for(int a = 0 ; a < nbvirpi_[h]; ++a){
-                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                zia.matrix[h][i][a] = value_dX / (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
-                dXb->set(h, i, a, value_dX);
-            }
-        }
-    }
-    dpd_file2_mat_wrt(&zia);
-    dpd_file2_close(&zia);
-    dpd_file2_close(&Xai);
-    dpd_file2_close(&Xia);
+    if (iter_ == 1) orbital_response_guess();
 
     // Parameters are hard-coded for now. Let the user control them in the future
     double rms = 0.0;
-    double convergence = 1.0E-14;
     bool converged = false;
-    int maxcycle = 50;
 
      // Start iterations
     fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ia RMS");
@@ -1682,13 +1631,13 @@ DCFTSolver::iterate_orbital_response()
         zb_old->subtract(zb_new);
 
         rms = za_old->rms() + zb_old->rms();
-        converged = (fabs(rms) < fabs(convergence));
+        converged = (fabs(rms) < fabs(scf_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
 
         // Termination condition
-        if (converged || cycle >= maxcycle) break;
+        if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
@@ -1696,6 +1645,58 @@ DCFTSolver::iterate_orbital_response()
 
     if (converged) fprintf(outfile, "    DCFT orbital response equations converged.\n\n");
     else throw PSIEXCEPTION("DCFT orbital response equations did not converge");
+
+}
+
+void
+DCFTSolver::orbital_response_guess()
+{
+
+    dpdfile2 Xia, Xai, zia;
+
+    // Alpha spin
+    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
+    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+    dpd_file2_mat_init(&Xia);
+    dpd_file2_mat_init(&Xai);
+    dpd_file2_mat_init(&zia);
+    dpd_file2_mat_rd(&Xia);
+    dpd_file2_mat_rd(&Xai);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int a = 0 ; a < navirpi_[h]; ++a){
+                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
+                zia.matrix[h][i][a] = value_dX / (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&zia);
+    dpd_file2_close(&zia);
+    dpd_file2_close(&Xai);
+    dpd_file2_close(&Xia);
+
+    // Beta spin
+    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('v'), ID('o'), "X <v|o>");
+    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+    dpd_file2_mat_init(&Xia);
+    dpd_file2_mat_init(&Xai);
+    dpd_file2_mat_init(&zia);
+    dpd_file2_mat_rd(&Xia);
+    dpd_file2_mat_rd(&Xai);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int a = 0 ; a < nbvirpi_[h]; ++a){
+                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
+                zia.matrix[h][i][a] = value_dX / (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&zia);
+    dpd_file2_close(&zia);
+    dpd_file2_close(&Xai);
+    dpd_file2_close(&Xia);
 
 }
 
@@ -2365,9 +2366,7 @@ DCFTSolver::iterate_cumulant_response()
 
     // Parameters are hard-coded for now. Let the user control them in the future
     double rms = 0.0;
-    double convergence = 1.0E-14;
     bool converged = false;
-    int maxcycle = 50;
 
      // Start iterations
     fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ijab RMS");
@@ -2390,13 +2389,13 @@ DCFTSolver::iterate_cumulant_response()
         update_cumulant_response();
 
         // Check the convergence
-        converged = (fabs(rms) < fabs(convergence));
+        converged = (fabs(rms) < fabs(lambda_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
 
         // Termination condition
-        if (converged || cycle >= maxcycle) break;
+        if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
@@ -4087,6 +4086,7 @@ DCFTSolver::compute_ewdm()
                 aW.set(h, i, j, value);
                 aW.set(h, j, i, value);
                 a_opdm->set(h, i, j, (aocc_ptau_->get(h,i,j) + akappa_->get(h,i,j)));
+                if (i != j) a_opdm->set(h, j, i, (aocc_ptau_->get(h,i,j) + akappa_->get(h,i,j)));
             }
         }
         // V-V
@@ -4101,6 +4101,7 @@ DCFTSolver::compute_ewdm()
                 aW.set(h, a + naoccpi_[h], b + naoccpi_[h], value);
                 aW.set(h, b + naoccpi_[h], a + naoccpi_[h], value);
                 a_opdm->set(h, a + naoccpi_[h], b + naoccpi_[h], avir_ptau_->get(h, a, b));
+                if (a != b) a_opdm->set(h, b + naoccpi_[h], a + naoccpi_[h], avir_ptau_->get(h, a, b));
             }
         }
     }
@@ -4208,6 +4209,10 @@ DCFTSolver::compute_ewdm()
     a_opdm->add(a_zia);
     b_opdm->add(b_zia);
 
+    // Scale the energy-weighted density matrix by -2.0 to make it the same form as in the coupled-cluster code
+    aW.scale(-2.0);
+    bW.scale(-2.0);
+
     // Reorder the energy-weighted density matrix to the QT order
 
     double **a_qt = block_matrix(nmo_, nmo_);
@@ -4304,7 +4309,7 @@ DCFTSolver::compute_ewdm()
         offset += nmopi_[h];
     }
 
-    dpdbuf4 G, T;
+    dpdbuf4 G;
 
     struct iwlbuf AA, AB, BB;
     iwl_buf_init(&AA, PSIF_MO_AA_TPDM, 1.0E-15, 0, 0);
@@ -4530,62 +4535,166 @@ DCFTSolver::compute_ewdm()
 
     // Dump the density to IWL
     // VVVV
+
+    // Note (TODO): So far the contraction of TEI derivatives with Gamma is not restricted.
+    // We need to restrict it by scaling Gamma and switching bk_pack in dpd_buf4_dump to 1
+    // If restriction is used it seems that one needs to do a seperate dpd_buf4_sort to the chemists' notation
+    // before calling dpd_buf4_dump - check that with swap23 = 0 (AYS)
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
               ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
-    dpd_buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 1, 1);
+    dpd_buf4_dump(&G, &AA, avir_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
               ID("[V,v]"), ID("[V,v]"), 0, "Gamma <Vv|Vv>");
-    dpd_buf4_dump(&G, &AB, avir_qt, avir_qt, bvir_qt, bvir_qt, 1, 1);
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ab = 0; ab < G.params->rowtot[h]; ++ab){
+            int a = G.params->roworb[h][ab][0];
+            int b = G.params->roworb[h][ab][1];
+            int A = avir_qt[a];
+            int B = bvir_qt[b];
+            for(size_t cd = 0; cd < G.params->coltot[h]; ++cd){
+                int c = G.params->colorb[h][cd][0];
+                int d = G.params->colorb[h][cd][1];
+                int C = avir_qt[c];
+                int D = bvir_qt[d];
+                double value = 4.0 * G.matrix[h][ab][cd];
+                iwl_buf_wrt_val(&AB, A, C, B, D, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
               ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
-    dpd_buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 1, 1);
+    dpd_buf4_dump(&G, &BB, bvir_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OOOO
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
               ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
-    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 1, 1);
+    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, aocc_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
               ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
-    dpd_buf4_dump(&G, &AB, aocc_qt, bocc_qt, aocc_qt, bocc_qt, 1, 1);
+
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            int I = aocc_qt[i];
+            int J = bocc_qt[j];
+            for(size_t kl = 0; kl < G.params->coltot[h]; ++kl){
+                int k = G.params->colorb[h][kl][0];
+                int l = G.params->colorb[h][kl][1];
+                int K = aocc_qt[k];
+                int L = bocc_qt[l];
+                double value = 4.0 * G.matrix[h][ij][kl];
+                iwl_buf_wrt_val(&AB, I, K, J, L, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
               ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
-    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 1, 1);
+    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bocc_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OOVV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[V,V]"),
               ID("[O,O]"), ID("[V,V]"), 0, "Gamma <OO|VV>");
-    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 1, 1);
+    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, avir_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[V,v]"),
               ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
-    dpd_buf4_dump(&G, &AB, aocc_qt, bocc_qt, avir_qt, bvir_qt, 1, 1);
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ij = 0; ij < G.params->rowtot[h]; ++ij){
+            int i = G.params->roworb[h][ij][0];
+            int j = G.params->roworb[h][ij][1];
+            int I = aocc_qt[i];
+            int J = bocc_qt[j];
+            for(size_t ab = 0; ab < G.params->coltot[h]; ++ab){
+                int a = G.params->colorb[h][ab][0];
+                int b = G.params->colorb[h][ab][1];
+                int A = avir_qt[a];
+                int B = bvir_qt[b];
+                double value = 4.0 * G.matrix[h][ij][ab];
+                iwl_buf_wrt_val(&AB, I, A, J, B, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
               ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
-    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 1, 1);
+    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OVOV
+    // Г<OV|OV> must be antisymmetrized before contracting it with TEI derivatives:
+    // Г<OV|OV> contribution
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
               ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
-    dpd_buf4_dump(&G, &AA, aocc_qt, avir_qt, aocc_qt, avir_qt, 1, 1);
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = aocc_qt[i];
+            int A = avir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = aocc_qt[j];
+                int B = avir_qt[b];
+                double value = 0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&AA, I, J, A, B, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    // -Г<ov|vo> contribution:
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[O,V]"),
+              ID("[O,V]"), ID("[O,V]"), 0, "Gamma <OV|OV>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = aocc_qt[i];
+            int A = avir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = aocc_qt[j];
+                int B = avir_qt[b];
+                double value = -0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&AA, I, B, A, J, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[O,v]"),
               ID("[O,v]"), ID("[O,v]"), 0, "Gamma <Ov|Ov>");
-    dpd_buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 1, 1);
+    dpd_buf4_dump(&G, &AB, aocc_qt, bvir_qt, aocc_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,V]"), ID("[o,V]"),
@@ -4612,7 +4721,6 @@ DCFTSolver::compute_ewdm()
     dpd_buf4_close(&G);
 
     // Resort Г<Ia|jB> -> (-1.0) * Г(IB|ja) and dump it
-
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[o,V]"),
                   ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
     for(int h = 0; h < nirrep_; ++h){
@@ -4628,7 +4736,7 @@ DCFTSolver::compute_ewdm()
                 int b = G.params->colorb[h][jb][1];
                 int J = bocc_qt[j];
                 int B = avir_qt[b];
-                double value = (-1.0) * G.matrix[h][ia][jb];
+                double value = (-2.0) * G.matrix[h][ia][jb];
                 iwl_buf_wrt_val(&AB, I, B, J, A, value, 0, (FILE *) NULL, 0);
             }
         }
@@ -4636,15 +4744,59 @@ DCFTSolver::compute_ewdm()
     }
     dpd_buf4_close(&G);
 
+    // Г<ov|ov> must be antisymmetrized before contracting it with TEI derivatives:
+    // Г<ov|ov> contribution
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
               ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
-    dpd_buf4_dump(&G, &BB, bocc_qt, bvir_qt, bocc_qt, bvir_qt, 1, 1);
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = bocc_qt[i];
+            int A = bvir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = bocc_qt[j];
+                int B = bvir_qt[b];
+                double value = 0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&BB, I, J, A, B, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
+    dpd_buf4_close(&G);
+
+    // -Г<ov|vo> contribution:
+    dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "Gamma <ov|ov>");
+    for(int h = 0; h < nirrep_; ++h){
+        dpd_buf4_mat_irrep_init(&G, h);
+        dpd_buf4_mat_irrep_rd(&G, h);
+        for(size_t ia = 0; ia < G.params->rowtot[h]; ++ia){
+            int i = G.params->roworb[h][ia][0];
+            int a = G.params->roworb[h][ia][1];
+            int I = bocc_qt[i];
+            int A = bvir_qt[a];
+            for(size_t jb = 0; jb < G.params->coltot[h]; ++jb){
+                int j = G.params->colorb[h][jb][0];
+                int b = G.params->colorb[h][jb][1];
+                int J = bocc_qt[j];
+                int B = bvir_qt[b];
+                double value = -0.5 * G.matrix[h][ia][jb];
+                iwl_buf_wrt_val(&BB, I, B, A, J, value, 0, (FILE *) NULL, 0);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&G, h);
+    }
     dpd_buf4_close(&G);
 
     // OOOV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,V]"),
               ID("[O,O]"), ID("[O,V]"), 0, "Gamma <OO|OV>");
-    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 1, 1);
+    dpd_buf4_dump(&G, &AA, aocc_qt, aocc_qt, aocc_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,v]"),
@@ -4697,13 +4849,13 @@ DCFTSolver::compute_ewdm()
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,v]"),
               ID("[o,o]"), ID("[o,v]"), 0, "Gamma <oo|ov>");
-    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 1, 1);
+    dpd_buf4_dump(&G, &BB, bocc_qt, bocc_qt, bocc_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     // OVVV
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,V]"), ID("[V,V]"),
               ID("[O,V]"), ID("[V,V]"), 0, "Gamma <OV|VV>");
-    dpd_buf4_dump(&G, &AA, aocc_qt, avir_qt, avir_qt, avir_qt, 1, 1);
+    dpd_buf4_dump(&G, &AA, aocc_qt, avir_qt, avir_qt, avir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[O,v]"), ID("[V,v]"),
@@ -4756,7 +4908,7 @@ DCFTSolver::compute_ewdm()
 
     dpd_buf4_init(&G, PSIF_DCFT_DENSITY, 0, ID("[o,v]"), ID("[v,v]"),
               ID("[o,v]"), ID("[v,v]"), 0, "Gamma <ov|vv>");
-    dpd_buf4_dump(&G, &AA, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 1, 1);
+    dpd_buf4_dump(&G, &BB, bocc_qt, bvir_qt, bvir_qt, bvir_qt, 0, 1);
     dpd_buf4_close(&G);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);

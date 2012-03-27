@@ -71,7 +71,8 @@ procedures = {
             'ccsd'          : run_cc_gradient,
             'ccsd(t)'       : run_cc_gradient,
             'mp2'           : run_mp2_gradient,
-            'eom-ccsd'      : run_eom_cc_gradient
+            'eom-ccsd'      : run_eom_cc_gradient,
+            'dcft'          : run_dcft_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -748,7 +749,7 @@ def optimize(name, **kwargs):
             print 'Optimizer: Optimization complete!'
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
-            if (PsiMod.get_global_option('INTCOS_GENERATE_EXIT') == False):
+            if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
               PsiMod.opt_clean()
             PsiMod.clean()
 
