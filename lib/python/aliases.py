@@ -118,30 +118,10 @@ def run_mp2_5(name, **kwargs):
     return e_mp25
 
 
-def run_plugin_ccsd_serial(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls so that
-    Eugene DePrince's ccsd_serial plugin can be called via :py:func:`driver.energy`.
-
-    >>> energy('plugin_ccsd_serial')
-
-    """
-    lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
-
-    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
-    PsiMod.plugin_load("%s" % (plugfile))
-    PsiMod.set_global_option('WFN', 'CCSD')
-    run_scf("scf", **kwargs)
-    PsiMod.transqt2()
-    PsiMod.plugin("plugin_ccsd_serial.so")
-
-    return PsiMod.get_variable("CURRENT ENERGY")
-
-
 # A direct translation of a plugin input file into a function call. Function calls are the only
 #     way to call plugins in sow/reap mode for db(), opt(), etc. This isn't best practices
-#     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated
-#     procedure where different options are set for different qc steps.
+#     but is an example of what to do for a more complicated procedure where different options 
+#     are set for different qc steps.
 def run_plugin_omega(name, **kwargs):
     """Function encoding sequence of PSI module and plugin calls, as well
     as typical options, to access Rob Parrish's omega plugin.
@@ -172,80 +152,8 @@ def run_plugin_omega(name, **kwargs):
 
     return PsiMod.get_variable('SCF TOTAL ENERGY')
 
-def run_cim(name, **kwargs):
-   """Eugene's CIM driven by Python"""
-
-   lowername = name.lower()
-   kwargs = kwargs_lower(kwargs)
-
-   plugfile1 = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_localcc/plugin_localcc.so"
-   PsiMod.plugin_load("%s" % (plugfile1))
-
-   plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_libcim/plugin_libcim.so"
-   PsiMod.plugin_load("%s" % (plugfile))
-
-   # override symmetry:
-   molecule = PsiMod.get_active_molecule()
-   molecule.update_geometry()
-   molecule.reset_point_group('c1')
-   molecule.fix_orientation(1)
-   molecule.update_geometry()
-
-   # what type of cim?
-   if (name.lower() == 'ccsd'):
-      PsiMod.set_global_option('compute_triples', False)
-   if (name.lower() == 'ccsd(t)'):
-      PsiMod.set_global_option('compute_triples', True)
-
-   # some options aren't set right...
-   PsiMod.set_global_option('r_convergence', 1e-7)
-   PsiMod.set_global_option('maxiter', 100)
-
-   energy('scf', **kwargs)
-   PsiMod.set_global_option('cim_initialize', True)
-   PsiMod.plugin("plugin_libcim.so")
-
-   cluster_ccsd  = []
-   cluster_ccsdt = []
-   cluster_t     = []
-   built_ccsd   = 0.0
-   built_t      = 0.0
-   built_ccsdt  = 0.0
-   built_energy = 0.0
-   escf = PsiMod.get_variable('SCF TOTAL ENERGY')
-   PsiMod.set_global_option('cim_initialize', False)
-   cim_n = 0
-   while cim_n < PsiMod.get_variable('CIM CLUSTERS'):
-       # run plugin_libcim:
-       PsiMod.set_global_option('CIM_CLUSTER_NUM', cim_n)
-       PsiMod.plugin("plugin_libcim.so")
-
-       # accumulate correlation energies
-       cluster_ccsd.append(PsiMod.get_variable('CURRENT CLUSTER CCSD CORRELATION ENERGY'))
-       built_ccsd  += PsiMod.get_variable('CURRENT CLUSTER CCSD CORRELATION ENERGY')
-       built_energy = built_ccsd
-       if (name.lower()=='ccsd(t)'):
-          cluster_ccsdt.append(PsiMod.get_variable('CURRENT CLUSTER CCSD(T) CORRELATION ENERGY'))
-          cluster_t.append(PsiMod.get_variable('CURRENT CLUSTER (T) CORRELATION ENERGY'))
-          built_ccsdt += PsiMod.get_variable('CURRENT CLUSTER CCSD(T) CORRELATION ENERGY')
-          built_t     += PsiMod.get_variable('CURRENT CLUSTER (T) CORRELATION ENERGY')
-          built_energy = built_ccsdt
-
-       cim_n += 1
-
-   PsiMod.set_variable('CURRENT ENERGY', built_energy+escf)
-   PsiMod.set_variable('CIM-CCSD CORRELATION ENERGY', built_ccsd)
-   PsiMod.set_variable('CIM-CCSD TOTAL ENERGY', built_ccsd+escf)
-   if (name.lower()=='ccsd(t)'):
-      PsiMod.set_variable('CIM-CCSD(T) CORRELATION ENERGY', built_ccsdt)
-      PsiMod.set_variable('CIM-CCSD(T) TOTAL ENERGY', built_ccsdt+escf)
-      PsiMod.set_variable('CIM-(T) CORRELATION ENERGY', built_t)
-
-   return built_energy+escf
-
 
 # Integration with driver routines
 procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
-procedures['energy']['plugin_ccsd_serial'] = run_plugin_ccsd_serial
 procedures['energy']['plugin_omega'] = run_plugin_omega
