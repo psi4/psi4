@@ -366,7 +366,7 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
                     // Conventional
                     double b = expv - 1.0;
                     double c = 2.0* a * a * b + 0.5; 
-                    F2k = 8.0 / 3.0 * a * (2.0 * a * (b - c));
+                    F2k = -8.0 / 3.0 * a * (2.0 * a * (b - c));
                     F2k_a = -4.0 / (3.0 * x * x) * (b - c) +
                         4.0 / (3.0 * x) * (expv - 1.0 / (2.0 * x * x) * (expv - 1.0) + 1.0 / (2.0 * x) * expv);
 
@@ -375,7 +375,7 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
 
                 } else {
                     // Taylor Series (sixth terms guarantees 10^-15 relative accuracy for a > 10.0)
-                    int N = 6;
+                    int N = 7;
                     double xp = 1.0;
                     double xpm1 = 0.0;
                     int factp1 = 1;
