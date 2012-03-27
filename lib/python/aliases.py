@@ -67,6 +67,15 @@ def run_mp2_5(name, **kwargs):
     """Function that computes MP2.5 energy from results of a DETCI
     MP3 calculation.
 
+    .. math:: E_{total}^{\\text{MP2.5}} = E_{total,\; \\text{SCF}} \; + E_{corl,\; \\text{MP2}} + E_{corl, \; \\text{MP3}}
+
+    :PSI variables: 
+    .. hlist:: 
+       :columns: 1 
+     
+       * :psivar:`MP2.5 TOTAL ENERGY <MP2.5TOTALENERGY>` 
+       * :psivar:`MP2.5 CORRELATION ENERGY <MP2.5CORRELATIONENERGY>` 
+
     >>> energy('mp2.5')
 
     """

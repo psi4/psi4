@@ -432,9 +432,11 @@ def cp(name, **kwargs):
     :returns: (*float*) Counterpoise-corrected interaction energy in kcal/mol
 
     :PSI variables:
-
-    .. envvar:: CP-CORRECTED 2-BODY INTERACTION ENERGY
-        UNCP-CORRECTED 2-BODY INTERACTION ENERGY
+    .. hlist::
+       :columns: 1
+    
+       * :psivar:`CP-CORRECTED 2-BODY INTERACTION ENERGY <CP-CORRECTED2-BODYINTERACTIONENERGY>`
+       * :psivar:`UNCP-CORRECTED 2-BODY INTERACTION ENERGY <UNCP-CORRECTED2-BODYINTERACTIONENERGY>`
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -634,10 +636,12 @@ def database(name, db_name, **kwargs):
     :returns: (*float*) Mean absolute deviation of the database in kcal/mol
 
     :PSI variables:
-
-    .. envvar:: db_name DATABASE MEAN SIGNED DEVIATION
-        db_name DATABASE MEAN ABSOLUTE DEVIATION
-        db_name DATABASE ROOT-MEAN-SQUARE DEVIATION
+    .. hlist::
+       :columns: 1
+    
+       * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
+       * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
+       * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
 
     .. note:: It is very easy to make a database from a collection of xyz files
         using the script :source:`lib/scripts/ixyz2database.pl`.
@@ -1383,13 +1387,15 @@ def complete_basis_set(name, **kwargs):
     :returns: (*float*) -- Total electronic energy in Hartrees
 
     :PSI variables:
-
-    .. envvar:: CBS TOTAL ENERGY
-        CBS REFERENCE ENERGY
-        CBS CORRELATION ENERGY
-        CURRENT ENERGY
-        CURRENT REFERENCE ENERGY
-        CURRENT CORRELATION ENERGY
+    .. hlist::
+       :columns: 1
+    
+       * :psivar:`CBS TOTAL ENERGY <CBSTOTALENERGY>`
+       * :psivar:`CBS REFERENCE ENERGY <CBSREFERENCEENERGY>`
+       * :psivar:`CBS CORRELATION ENERGY <CBSCORRELATIONENERGY>`
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
