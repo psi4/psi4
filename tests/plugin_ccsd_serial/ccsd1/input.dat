@@ -1,5 +1,10 @@
 #! cc-pvdz H2O Test CCSD(T) energies
 
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+sys.path.insert(0, '/home/deprince/psi4/tests')
+import plugin_ccsd_serial
+
 molecule h2o {
 0 1
 O
@@ -12,7 +17,7 @@ set {
   basis cc-pvdz
   freeze_core true
 }
-energy("plugin_ccsd_serial")
+energy("_ccsd(t)")
 
 refnuc     = 8.80146552997   # TEST
 refscf     = -76.0214184452  # TEST
