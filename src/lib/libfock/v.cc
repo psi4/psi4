@@ -75,6 +75,7 @@ void VBase::compute_D()
     for (int A = 0; A < C_.size(); A++) {
         SharedMatrix C = C_[A];    
         SharedMatrix D = D_[A];    
+        D->zero();
         for (int h = 0; h < C->nirrep(); h++) {
             int nso = C->rowspi()[h];
             int nmo = C->colspi()[h];
