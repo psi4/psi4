@@ -1988,7 +1988,7 @@ def reconstitute_bracketed_basis(needarray):
 
 def highest_1(**largs):
     """Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`wrappers.complete_basis_set`.
+    zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^X
 
@@ -2035,7 +2035,7 @@ def highest_1(**largs):
 # Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
 
@@ -2083,7 +2083,7 @@ def corl_xtpl_helgaker_2(**largs):
 
 def scf_xtpl_helgaker_3(**largs):
     """Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}
 
@@ -2138,7 +2138,7 @@ def scf_xtpl_helgaker_3(**largs):
 
 def scf_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63
 

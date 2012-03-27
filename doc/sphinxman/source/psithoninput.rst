@@ -701,7 +701,7 @@ PSI variables accumulate over a |PSIfour| instance and are not cleared by
 followed by a aug-cc-pVQZ SCF followed by a ``print_variables()``
 command, the last will include both {\tt SCF TOTAL ENERGY} and
 {\tt FCI TOTAL ENERGY}. Don't get excited that you got a high-quality calculation
-cheaply. Refer to Appendix :ref:`apdx:psiVariables` for a listing of the
+cheaply. Refer to Appendix :ref:`apdx:psivariables_module` for a listing of the
 variables set by each module.
 
 .. _`sec:loops`:
