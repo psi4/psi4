@@ -30,10 +30,11 @@ DCFTSolver::compute_gradient()
 
     // Start macro-iterations
     while(!responseDone && iter_++ < maxiter_){
-        fprintf(outfile, "\t                          *** Macro Iteration %d ***\n" "\tOrbital Response Iterations\n", iter_);
+        fprintf(outfile, "\t                          *** Macro Iteration %d ***\n", iter_);
 
         // Solve the cumulant response equations iteratively
         if (iter_ > 1) {
+            fprintf(outfile, "\tCumulant Response Iterations\n");
             iterate_cumulant_response();
         }
 
@@ -45,15 +46,16 @@ DCFTSolver::compute_gradient()
         compute_lagrangian_VO();
 
         // Solve the orbital response equations iteratively
+        fprintf(outfile, "\tOrbital Response Iterations\n");
         iterate_orbital_response();
 
         // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
         double response_coupling_rms = compute_response_coupling();
 
         // Check convergence
-        if (response_coupling_rms < 1.0E-14) responseDone = true;
+        if (response_coupling_rms < lambda_threshold_) responseDone = true;
 
-        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n", response_coupling_rms);
+        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n\n", response_coupling_rms);
     }
 
     if (responseDone) fprintf(outfile, "    DCFT response equations converged.\n\n");
@@ -1583,65 +1585,14 @@ void
 DCFTSolver::iterate_orbital_response()
 {
 
-    // dX_ia = 2.0 * (X_ia - X_ai)
-    SharedMatrix dXa (new Matrix("Delta(X) Alpha", nirrep_, naoccpi_, navirpi_));
-    SharedMatrix dXb (new Matrix("Delta(X) Beta", nirrep_, nboccpi_, nbvirpi_));
-
-    dpdfile2 Xia, Xai, zia;
+    dpdfile2 zia;
 
     // Compute guess for the orbital response matrix elements
-
-    // Alpha spin
-    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
-    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-    dpd_file2_mat_init(&Xia);
-    dpd_file2_mat_init(&Xai);
-    dpd_file2_mat_init(&zia);
-    dpd_file2_mat_rd(&Xia);
-    dpd_file2_mat_rd(&Xai);
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0 ; i < naoccpi_[h]; ++i){
-            for(int a = 0 ; a < navirpi_[h]; ++a){
-                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                zia.matrix[h][i][a] = value_dX / (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
-                dXa->set(h, i, a, value_dX);
-            }
-        }
-    }
-    dpd_file2_mat_wrt(&zia);
-    dpd_file2_close(&zia);
-    dpd_file2_close(&Xai);
-    dpd_file2_close(&Xia);
-
-    // Beta spin
-    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
-    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('v'), ID('o'), "X <v|o>");
-    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-    dpd_file2_mat_init(&Xia);
-    dpd_file2_mat_init(&Xai);
-    dpd_file2_mat_init(&zia);
-    dpd_file2_mat_rd(&Xia);
-    dpd_file2_mat_rd(&Xai);
-    for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0 ; i < nboccpi_[h]; ++i){
-            for(int a = 0 ; a < nbvirpi_[h]; ++a){
-                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
-                zia.matrix[h][i][a] = value_dX / (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
-                dXb->set(h, i, a, value_dX);
-            }
-        }
-    }
-    dpd_file2_mat_wrt(&zia);
-    dpd_file2_close(&zia);
-    dpd_file2_close(&Xai);
-    dpd_file2_close(&Xia);
+    if (iter_ == 1) orbital_response_guess();
 
     // Parameters are hard-coded for now. Let the user control them in the future
     double rms = 0.0;
-    double convergence = 1.0E-14;
     bool converged = false;
-    int maxcycle = 100;
 
      // Start iterations
     fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ia RMS");
@@ -1680,13 +1631,13 @@ DCFTSolver::iterate_orbital_response()
         zb_old->subtract(zb_new);
 
         rms = za_old->rms() + zb_old->rms();
-        converged = (fabs(rms) < fabs(convergence));
+        converged = (fabs(rms) < fabs(scf_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
 
         // Termination condition
-        if (converged || cycle >= maxcycle) break;
+        if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
@@ -1694,6 +1645,58 @@ DCFTSolver::iterate_orbital_response()
 
     if (converged) fprintf(outfile, "    DCFT orbital response equations converged.\n\n");
     else throw PSIEXCEPTION("DCFT orbital response equations did not converge");
+
+}
+
+void
+DCFTSolver::orbital_response_guess()
+{
+
+    dpdfile2 Xia, Xai, zia;
+
+    // Alpha spin
+    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
+    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
+    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+    dpd_file2_mat_init(&Xia);
+    dpd_file2_mat_init(&Xai);
+    dpd_file2_mat_init(&zia);
+    dpd_file2_mat_rd(&Xia);
+    dpd_file2_mat_rd(&Xai);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int a = 0 ; a < navirpi_[h]; ++a){
+                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
+                zia.matrix[h][i][a] = value_dX / (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&zia);
+    dpd_file2_close(&zia);
+    dpd_file2_close(&Xai);
+    dpd_file2_close(&Xia);
+
+    // Beta spin
+    dpd_file2_init(&Xia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
+    dpd_file2_init(&Xai, PSIF_DCFT_DPD, 0, ID('v'), ID('o'), "X <v|o>");
+    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+    dpd_file2_mat_init(&Xia);
+    dpd_file2_mat_init(&Xai);
+    dpd_file2_mat_init(&zia);
+    dpd_file2_mat_rd(&Xia);
+    dpd_file2_mat_rd(&Xai);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int a = 0 ; a < nbvirpi_[h]; ++a){
+                double value_dX = 2.0 * (Xia.matrix[h][i][a] - Xai.matrix[h][a][i]);
+                zia.matrix[h][i][a] = value_dX / (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
+            }
+        }
+    }
+    dpd_file2_mat_wrt(&zia);
+    dpd_file2_close(&zia);
+    dpd_file2_close(&Xai);
+    dpd_file2_close(&Xia);
 
 }
 
@@ -2363,9 +2366,7 @@ DCFTSolver::iterate_cumulant_response()
 
     // Parameters are hard-coded for now. Let the user control them in the future
     double rms = 0.0;
-    double convergence = 1.0E-14;
     bool converged = false;
-    int maxcycle = 100;
 
      // Start iterations
     fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ijab RMS");
@@ -2388,13 +2389,13 @@ DCFTSolver::iterate_cumulant_response()
         update_cumulant_response();
 
         // Check the convergence
-        converged = (fabs(rms) < fabs(convergence));
+        converged = (fabs(rms) < fabs(lambda_threshold_));
 
         // Print iterative trace
         fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
 
         // Termination condition
-        if (converged || cycle >= maxcycle) break;
+        if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
