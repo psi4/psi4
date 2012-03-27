@@ -466,3 +466,130 @@ def superfunctional_list():
     for key in superfunctionals.keys():
         val.append(superfunctionals[key](key,1,1))
     return val
+
+def test_ccl_functional(functional, ccl_functional):
+
+    if (not os.path.exists('data_pt_%s.html' %(ccl_functional))):
+        os.system('wget ftp://ftp.dl.ac.uk/qcg/dft_library/data_pt_%s.html' % ccl_functional)
+    fh = open('data_pt_%s.html' %(ccl_functional))
+    lines = fh.readlines()
+    fh.close()
+    
+    points = []
+    point = {}
+    
+    rho_line = re.compile(r'^\s*rhoa=\s*(-?\d+\.\d+E[+-]\d+)\s*rhob=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmaaa=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmaab=\s*(-?\d+\.\d+E[+-]\d+)\s*sigmabb=\s*(-?\d+\.\d+E[+-]\d+)\s*')
+    val_line = re.compile(r'^\s*(\w*)\s*=\s*(-?\d+\.\d+E[+-]\d+)')
+    
+    aliases = { 'zk'            : 'v',
+                'vrhoa'         : 'v_rho_a',
+                'vrhob'         : 'v_rho_b',
+                'vsigmaaa'      : 'v_gamma_aa',
+                'vsigmaab'      : 'v_gamma_ab',
+                'vsigmabb'      : 'v_gamma_bb',
+                'v2rhoa2'       : 'v_rho_a_rho_a',
+                'v2rhoab'       : 'v_rho_a_rho_b',
+                'v2rhob2'       : 'v_rho_b_rho_b',
+                'v2rhoasigmaaa' : 'v_rho_a_gamma_aa',
+                'v2rhoasigmaab' : 'v_rho_a_gamma_ab',
+                'v2rhoasigmabb' : 'v_rho_a_gamma_bb',
+                'v2rhobsigmaaa' : 'v_rho_b_gamma_aa',
+                'v2rhobsigmaab' : 'v_rho_b_gamma_ab',
+                'v2rhobsigmabb' : 'v_rho_b_gamma_bb',
+                'v2sigmaaa2'    : 'v_gamma_aa_gamma_aa',
+                'v2sigmaaaab'   : 'v_gamma_aa_gamma_ab',
+                'v2sigmaaabb'   : 'v_gamma_aa_gamma_bb',
+                'v2sigmaab2'    : 'v_gamma_ab_gamma_ab',
+                'v2sigmaabbb'   : 'v_gamma_ab_gamma_bb',
+                'v2sigmabb2'    : 'v_gamma_bb_gamma_bb',
+              }
+    
+    for line in lines:
+    
+        mobj = re.match(rho_line, line)
+        if (mobj):
+    
+            if len(point):
+                points.append(point)
+                point = {}    
+    
+            point['rho_a']    = float(mobj.group(1))
+            point['rho_b']    = float(mobj.group(2))
+            point['gamma_aa'] = float(mobj.group(3))
+            point['gamma_ab'] = float(mobj.group(4))
+            point['gamma_bb'] = float(mobj.group(5))
+    
+            continue
+    
+        mobj = re.match(val_line, line)
+        if (mobj):
+            point[aliases[mobj.group(1)]] = float(mobj.group(2))
+    
+    points.append(point)
+            
+    N = len(points)
+    rho_a = PsiMod.Vector(N)
+    rho_b = PsiMod.Vector(N)
+    gamma_aa = PsiMod.Vector(N)
+    gamma_ab = PsiMod.Vector(N)
+    gamma_bb = PsiMod.Vector(N)
+    tau_a = PsiMod.Vector(N)
+    tau_b = PsiMod.Vector(N)
+    
+    index = 0;
+    for point in points:
+        rho_a[index] = point['rho_a']
+        rho_b[index] = point['rho_b']
+        gamma_aa[index] = point['gamma_aa']
+        gamma_ab[index] = point['gamma_ab']
+        gamma_bb[index] = point['gamma_bb']
+        index = index + 1
+    
+    super = build_superfunctional(functional, N, 1) 
+    super.test_functional(rho_a,rho_b,gamma_aa,gamma_ab,gamma_bb,tau_a,tau_b)
+    
+    v = super.value('V')
+    v_rho_a = super.value('V_RHO_A')
+    v_rho_b = super.value('V_RHO_B')
+    v_gamma_aa = super.value('V_GAMMA_AA')
+    v_gamma_ab = super.value('V_GAMMA_AB')
+    v_gamma_bb = super.value('V_GAMMA_BB')
+    
+    if not v_gamma_aa:
+        v_gamma_aa = tau_a
+        v_gamma_ab = tau_a
+        v_gamma_bb = tau_a
+    
+    tasks = ['v', 'v_rho_a', 'v_rho_b', 'v_gamma_aa', 'v_gamma_ab', 'v_gamma_bb']
+    mapping = {
+            'v' : v,
+            'v_rho_a' : v_rho_a,
+            'v_rho_b' : v_rho_b,
+            'v_gamma_aa' : v_gamma_aa,
+            'v_gamma_ab' : v_gamma_ab,
+            'v_gamma_bb' : v_gamma_bb,
+        }
+    
+    super.print_detail(3)
+    index = 0;
+    for point in points:
+        PsiMod.print_out('rho_a= %11.3E, rho_b= %11.3E, gamma_aa= %11.3E, gamma_ab= %11.3E, gamma_bb= %11.3E\n' %(rho_a[index], rho_b[index], gamma_aa[index], gamma_ab[index], gamma_bb[index]))
+    
+        for task in tasks:
+            v_ref = point[task]
+            v_obs = mapping[task][index]
+            delta = v_obs - v_ref
+            if (v_ref == 0.0):
+                epsilon = 0.0
+            else:
+                epsilon = abs(delta / v_ref)
+            if (epsilon < 1.0E-11):
+                passed = 'PASSED'
+            else:
+                passed = 'FAILED'
+    
+            PsiMod.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' % (task, v_ref, v_obs, delta, epsilon, passed))
+    
+        index = index + 1
+
+    PsiMod.print_out('\n')

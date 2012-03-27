@@ -375,8 +375,7 @@ void RV::initialize()
     VBase::initialize();
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions(); 
-    properties_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
-    properties_->set_derivative(functional_->deriv());
+    properties_ = boost::shared_ptr<PointFunctions>(new RKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->ansatz());
 }
 void RV::finalize()
@@ -397,7 +396,7 @@ void RV::compute_V()
     SharedMatrix D_AO = D_AO_[0];
     SharedMatrix C_AO = C_AO_[0];
     SharedMatrix V_AO = V_AO_[0];
-    properties_->reset_pointers(D_AO,C_AO);
+    properties_->set_pointers(D_AO,C_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -412,7 +411,8 @@ void RV::compute_V()
     double** Vp = V_AO->pointer();
 
     // Scratch
-    SharedMatrix T_local = properties_->scratch();
+    std::vector<SharedMatrix> scratch = properties_->scratch();
+    SharedMatrix T_local = scratch[0];
     double** Tp = T_local->pointer();
 
     // Traverse the blocks of points
@@ -438,10 +438,10 @@ void RV::compute_V()
         int nlocal = function_map.size();
 
         timer_on("Properties");
-        properties_->computeProperties(block);
+        properties_->compute_points(block);
         timer_off("Properties");
         timer_on("Functional");
-        std::map<std::string, SharedVector>& vals = functional_->computeRKSFunctional(properties_->property_values(), npoints); 
+        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints); 
         timer_off("Functional");
 
         if (debug_ > 4) {
@@ -451,7 +451,7 @@ void RV::compute_V()
 
         timer_on("V_XC");
         double** phi = properties_->basis_value("PHI")->pointer();
-        double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
+        double *restrict rho_a = properties_->point_value("RHO_A")->pointer();
         double *restrict zk = vals["V"]->pointer(); 
         double *restrict v_rho_a = vals["V_RHO_A"]->pointer();
 
@@ -479,15 +479,16 @@ void RV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict rho_ax = properties_->property_value("RHO_AX")->pointer();
-            double *restrict rho_ay = properties_->property_value("RHO_AY")->pointer();
-            double *restrict rho_az = properties_->property_value("RHO_AZ")->pointer();
+            double *restrict rho_ax = properties_->point_value("RHO_AX")->pointer();
+            double *restrict rho_ay = properties_->point_value("RHO_AY")->pointer();
+            double *restrict rho_az = properties_->point_value("RHO_AZ")->pointer();
             double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer(); 
+            double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer(); 
 
             for (int P = 0; P < npoints; P++) {
-                C_DAXPY(nlocal,v_sigma_aa[P] * rho_ax[P] * w[P], phix[P], 1, Tp[P], 1); 
-                C_DAXPY(nlocal,v_sigma_aa[P] * rho_ay[P] * w[P], phiy[P], 1, Tp[P], 1); 
-                C_DAXPY(nlocal,v_sigma_aa[P] * rho_az[P] * w[P], phiz[P], 1, Tp[P], 1); 
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ax[P] + v_sigma_ab[P] * rho_ax[P]), phix[P], 1, Tp[P], 1); 
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_ay[P] + v_sigma_ab[P] * rho_ay[P]), phiy[P], 1, Tp[P], 1); 
+                C_DAXPY(nlocal,w[P] * (2.0 * v_sigma_aa[P] * rho_az[P] + v_sigma_ab[P] * rho_az[P]), phiz[P], 1, Tp[P], 1); 
             }        
             timer_off("GGA");
         }
@@ -581,8 +582,7 @@ void UV::initialize()
     VBase::initialize();
     int max_points = grid_->max_points();
     int max_functions = grid_->max_functions(); 
-    properties_ = boost::shared_ptr<UKSFunctions>(new UKSFunctions(primary_,max_points,max_functions));
-    properties_->set_derivative(functional_->deriv());
+    properties_ = boost::shared_ptr<PointFunctions>(new UKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->ansatz());
 }
 void UV::finalize()
@@ -606,7 +606,7 @@ void UV::compute_V()
     SharedMatrix Db_AO = D_AO_[1];
     SharedMatrix Cb_AO = C_AO_[1];
     SharedMatrix Vb_AO = V_AO_[1];
-    properties_->reset_pointers(Da_AO,Ca_AO,Db_AO,Cb_AO);
+    properties_->set_pointers(Da_AO,Ca_AO,Db_AO,Cb_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -624,9 +624,10 @@ void UV::compute_V()
     double** Vbp = Vb_AO->pointer();
 
     // Scratch
-    SharedMatrix Ta_local = properties_->scratchA();
+    std::vector<SharedMatrix> scratch = properties_->scratch();
+    SharedMatrix Ta_local = scratch[0];
+    SharedMatrix Tb_local = scratch[1]; 
     double** Tap = Ta_local->pointer();
-    SharedMatrix Tb_local = properties_->scratchB();
     double** Tbp = Tb_local->pointer();
 
     // Traverse the blocks of points
@@ -656,10 +657,10 @@ void UV::compute_V()
         int nlocal = function_map.size();
 
         timer_on("Properties");
-        properties_->computeProperties(block);
+        properties_->compute_points(block);
         timer_off("Properties");
         timer_on("Functional");
-        std::map<std::string, SharedVector>& vals = functional_->computeUKSFunctional(properties_->property_values(), npoints); 
+        std::map<std::string, SharedVector>& vals = functional_->compute_functional(properties_->point_values(), npoints); 
         timer_off("Functional");
 
         if (debug_ > 3) {
@@ -669,8 +670,8 @@ void UV::compute_V()
 
         timer_on("V_XC");
         double** phi = properties_->basis_value("PHI")->pointer();
-        double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
-        double *restrict rho_b = properties_->property_value("RHO_B")->pointer();
+        double *restrict rho_a = properties_->point_value("RHO_A")->pointer();
+        double *restrict rho_b = properties_->point_value("RHO_B")->pointer();
         double *restrict zk = vals["V"]->pointer(); 
         double *restrict v_rho_a = vals["V_RHO_A"]->pointer(); 
         double *restrict v_rho_b = vals["V_RHO_B"]->pointer(); 
@@ -706,12 +707,12 @@ void UV::compute_V()
             double** phix = properties_->basis_value("PHI_X")->pointer();
             double** phiy = properties_->basis_value("PHI_Y")->pointer();
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
-            double *restrict rho_ax = properties_->property_value("RHO_AX")->pointer();
-            double *restrict rho_ay = properties_->property_value("RHO_AY")->pointer();
-            double *restrict rho_az = properties_->property_value("RHO_AZ")->pointer();
-            double *restrict rho_bx = properties_->property_value("RHO_BX")->pointer();
-            double *restrict rho_by = properties_->property_value("RHO_BY")->pointer();
-            double *restrict rho_bz = properties_->property_value("RHO_BZ")->pointer();
+            double *restrict rho_ax = properties_->point_value("RHO_AX")->pointer();
+            double *restrict rho_ay = properties_->point_value("RHO_AY")->pointer();
+            double *restrict rho_az = properties_->point_value("RHO_AZ")->pointer();
+            double *restrict rho_bx = properties_->point_value("RHO_BX")->pointer();
+            double *restrict rho_by = properties_->point_value("RHO_BY")->pointer();
+            double *restrict rho_bz = properties_->point_value("RHO_BZ")->pointer();
             double *restrict v_sigma_aa = vals["V_GAMMA_AA"]->pointer(); 
             double *restrict v_sigma_ab = vals["V_GAMMA_AB"]->pointer(); 
             double *restrict v_sigma_bb = vals["V_GAMMA_BB"]->pointer(); 

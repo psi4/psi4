@@ -1,4 +1,5 @@
 #include <boost/python.hpp>
+#include <libmints/vector.h>
 #include <libfunctional/superfunctional.h>
 #include <libfunctional/functional.h>
 #include <libdisp/dispersion.h>
@@ -17,6 +18,8 @@ void export_functional()
         def("allocate", &SuperFunctional::allocate, "docstring").
         def("add_x_functional", &SuperFunctional::add_x_functional, "docstring").
         def("add_c_functional", &SuperFunctional::add_c_functional, "docstring").
+        def("test_functional", &SuperFunctional::test_functional, "docstring").
+        def("value", &SuperFunctional::value, "docstring").
         def("name", &SuperFunctional::name, "docstring").
         def("description", &SuperFunctional::description, "docstring").
         def("citation", &SuperFunctional::citation, "docstring").
@@ -44,7 +47,8 @@ void export_functional()
         def("set_x_alpha", &SuperFunctional::set_x_alpha, "docstring").
         def("set_c_alpha", &SuperFunctional::set_c_alpha, "docstring").
         def("set_dispersion", &SuperFunctional::set_dispersion, "docstring").
-        def("print_out",&SuperFunctional::py_print, "docstring");
+        def("print_out",&SuperFunctional::py_print, "docstring").
+        def("print_detail",&SuperFunctional::py_print_level, "docstring");
 
     class_<Functional, boost::shared_ptr<Functional>, boost::noncopyable >("Functional", "docstring", no_init).
         def("build_base", &Functional::build_base, "docstring").

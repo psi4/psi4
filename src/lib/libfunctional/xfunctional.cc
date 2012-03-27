@@ -35,7 +35,7 @@ void XFunctional::common_init()
     _PW91_a1_ = 0.19645 / (2.0 * _k0_);
     _PW91_a2_ = 7.7956 / (2.0 * _k0_);
     _PW91_a3_ = 0.2743 / (4.0 * _k0_ * _k0_);
-    _PW91_a4_ = 0.150 / (4.0 * _k0_ * _k0_);
+    _PW91_a4_ = 0.1508 / (4.0 * _k0_ * _k0_);
     _PW91_a5_ = 100.0 / (4.0 * _k0_ * _k0_);
     _PW91_a6_ = 0.004 / (16.0 * _k0_ * _k0_ * _k0_ * _k0_);
 
@@ -81,17 +81,12 @@ void XFunctional::set_parameter(const std::string& key, double val)
         throw PSIEXCEPTION("Error, unknown generalized exchange functional parameter");    
     }
 }
-void XFunctional::computeRKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
+void XFunctional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
 {
-    computeFunctional(in,out,npoints,deriv,alpha,true, true);
-    computeFunctional(in,out,npoints,deriv,alpha,true, false);
+    compute_sigma_functional(in,out,npoints,deriv,alpha,true);
+    compute_sigma_functional(in,out,npoints,deriv,alpha,false);
 }
-void XFunctional::computeUKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
-{
-    computeFunctional(in,out,npoints,deriv,alpha,true, true);
-    computeFunctional(in,out,npoints,deriv,alpha,false, false);
-}
-void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha, bool in_alpha, bool out_alpha)
+void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha, bool spin)
 {
     if (deriv > 1) {
         throw PSIEXCEPTION("XFunctional: 2nd and higher partials not implemented yet.");
@@ -105,12 +100,12 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
     double* rho_s = NULL;
     double* gamma_s = NULL;
     double* tau_s = NULL;
-    rho_s = in.find(in_alpha ? "RHO_A" : "RHO_B")->second->pointer();
+    rho_s = in.find(spin ? "RHO_A" : "RHO_B")->second->pointer();
     if (gga_) {
-        gamma_s = in.find(in_alpha ? "GAMMA_AA" : "GAMMA_BB")->second->pointer();
+        gamma_s = in.find(spin ? "GAMMA_AA" : "GAMMA_BB")->second->pointer();
     }
     if (meta_) {
-        tau_s = in.find(in_alpha ? "TAU_A" : "TAU_B")->second->pointer();
+        tau_s = in.find(spin ? "TAU_A" : "TAU_B")->second->pointer();
     }
 
     // => Output variables <= //
@@ -120,14 +115,14 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
     double* v_gamma = NULL;
     double* v_tau = NULL;
     
-    v = out.find(out_alpha ? "V" : "V")->second->pointer();
-    if (deriv >=1) {
-        v_rho = out.find(out_alpha ? "V_RHO_A" : "V_RHO_B")->second->pointer();
+    v = out.find(spin ? "V" : "V")->second->pointer();
+    if (deriv >= 1) {
+        v_rho = out.find(spin ? "V_RHO_A" : "V_RHO_B")->second->pointer();
         if (gga_) {
-            v_gamma = out.find(out_alpha ? "V_GAMMA_AA" : "V_GAMMA_BB")->second->pointer();
+            v_gamma = out.find(spin ? "V_GAMMA_AA" : "V_GAMMA_BB")->second->pointer();
         }
         if (meta_) {
-            v_tau = out.find(out_alpha ? "V_TAU_A" : "V_TAU_B")->second->pointer();
+            v_tau = out.find(spin ? "V_TAU_A" : "V_TAU_B")->second->pointer();
         }
     }
      
@@ -193,10 +188,10 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
                 double s2p1_12 = sqrt(s2p1);
                 double asinhs = log(s + s2p1_12);
 
-                double N = 2.0 * _B88_a_ * _B88_d_ * s * s;
+                double N = 2.0 / _K0_ * _B88_a_ * _B88_d_ * s * s;
                 double D = 1.0 + 6.0 * _B88_d_ * s * asinhs;
 
-                double N_s = 4.0 * _B88_a_ * _B88_d_ * s;
+                double N_s = 4.0 / _K0_ * _B88_a_ * _B88_d_ * s;
                 double D_s = 6.0 * _B88_d_ * asinhs + 6.0 * _B88_d_ * s / s2p1_12;
                 
                 Fs = 1.0 + N / D;
@@ -214,13 +209,13 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
                 double bs2 = bs * bs;
                 double bs2p1 = 1.0 + bs2;        
                 double bs2p1_12 = sqrt(bs2p1);
-                double aasinhv = _PW91_a1_ * log(1.0 + bs2p1_12);   
+                double aasinhv = _PW91_a1_ * log(bs + bs2p1_12);   
                 double dexpv = _PW91_a4_ * exp(-_PW91_a5_ * s * s);
 
                 double N = 1.0 + aasinhv * s + (_PW91_a3_ - dexpv) * s * s;
                 double D = 1.0 + aasinhv * s  + _PW91_a6_ * s * s * s * s;
                 
-                double N_s =  aasinhv + _PW91_a1_ * _PW91_a2_ * s / bs2p1_12 + 2.0 * s * (_PW91_a3_ - dexpv) + 2.0 * s * s * s * dexpv;
+                double N_s =  aasinhv + _PW91_a1_ * _PW91_a2_ * s / bs2p1_12 + 2.0 * s * (_PW91_a3_ - dexpv) + 2.0 * s * s * s * _PW91_a5_ * dexpv;
                 double D_s =  aasinhv + _PW91_a1_ * _PW91_a2_ * s / bs2p1_12 + 4.0 * _PW91_a6_ * s * s * s; 
             
                 Fs = N / D;
@@ -371,8 +366,8 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
                     // Conventional
                     double b = expv - 1.0;
                     double c = 2.0* a * a * b + 0.5; 
-                    F2k = 1.0 - 8.0 / 3.0 * a * (2.0 * a * (b - c));
-                    F2k_a = -4.0 / (3.0 * x * x) * (a * (b - c)) +
+                    F2k = 8.0 / 3.0 * a * (2.0 * a * (b - c));
+                    F2k_a = -4.0 / (3.0 * x * x) * (b - c) +
                         4.0 / (3.0 * x) * (expv - 1.0 / (2.0 * x * x) * (expv - 1.0) + 1.0 / (2.0 * x) * expv);
 
                     // Chain rule
@@ -406,21 +401,19 @@ void XFunctional::computeFunctional(const std::map<std::string,SharedVector>& in
         }
     
         // => Assembly <= //
-        v[Q] += E * Fs * Fw * Fk;
+        v[Q] += A * E * Fs * Fw * Fk;
         if (deriv >= 1) {
             v_rho[Q] += A * (Fs * Fw * Fk * (E_rho) +
                              E  * Fw * Fk * (Fs_s * s_rho) +
                              E  * Fs * Fk * (Fw_w * w_rho) + 
                              E  * Fs * Fw * (Fk_k * k_rho));
             if (gga_) {
-                v_gamma[Q] += A * (Fs * Fw * Fk * (E_rho) +
-                                   E  * Fw * Fk * (Fs_s * s_gamma) +
+                v_gamma[Q] += A * (E  * Fw * Fk * (Fs_s * s_gamma) +
                                    E  * Fs * Fk * (Fw_w * w_gamma) + 
                                    E  * Fs * Fw * (Fk_k * k_gamma));
             }
             if (meta_) {
-                v_tau[Q] += A * (Fs * Fw * Fk * (E_rho) +
-                                 E  * Fw * Fk * (Fs_s * s_tau) +
+                v_tau[Q] += A * (E  * Fw * Fk * (Fs_s * s_tau) +
                                  E  * Fs * Fk * (Fw_w * w_tau) + 
                                  E  * Fs * Fw * (Fk_k * k_tau));
             }

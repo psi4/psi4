@@ -9,8 +9,7 @@ namespace psi {
 
 class Options;
 class DFTGrid;
-class RKSFunctions;
-class UKSFunctions;
+class PointFunctions;
 class SuperFunctional;
 
 // => BASE CLASS <= //
@@ -35,6 +34,8 @@ protected:
     boost::shared_ptr<BasisSet> primary_;
     /// Desired superfunctional kernal
     boost::shared_ptr<SuperFunctional> functional_;
+    /// Point function computer (densities, gammas, basis values)
+    boost::shared_ptr<PointFunctions> properties_;
     /// Integration grid, built by KSPotential
     boost::shared_ptr<DFTGrid> grid_;
     /// Quadrature values obtained during integration 
@@ -86,6 +87,7 @@ public:
 
     boost::shared_ptr<BasisSet> basis() const { return primary_; }
     boost::shared_ptr<SuperFunctional> functional() const { return functional_; }
+    boost::shared_ptr<PointFunctions> properties() const { return properties_; }
     boost::shared_ptr<DFTGrid> grid() const { return grid_; }
     std::map<std::string, double>& quadrature_values() { return quad_values_; }
 
@@ -113,8 +115,6 @@ class RV : public VBase {
 
 protected:
 
-    /// Functions object
-    boost::shared_ptr<RKSFunctions> properties_;
     // Actually build V_AO
     virtual void compute_V();
 
@@ -134,8 +134,6 @@ class UV : public VBase {
 
 protected:
 
-    /// Functions object
-    boost::shared_ptr<UKSFunctions> properties_;
     // Actually build V_AO
     virtual void compute_V();
 

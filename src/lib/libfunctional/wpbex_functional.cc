@@ -36,17 +36,12 @@ void wPBEXFunctional::set_parameter(const std::string& key, double val)
 {
     throw PSIEXCEPTION("wPBEX functional does not contain any adjustable parameters");
 }
-void wPBEXFunctional::computeRKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
+void wPBEXFunctional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
 {
-    computeFunctional(in,out,npoints,deriv,alpha,true, true);
-    computeFunctional(in,out,npoints,deriv,alpha,true, false);
+    compute_sigma_functional(in,out,npoints,deriv,alpha,true);
+    compute_sigma_functional(in,out,npoints,deriv,alpha,false);
 }
-void wPBEXFunctional::computeUKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
-{
-    computeFunctional(in,out,npoints,deriv,alpha,true, true);
-    computeFunctional(in,out,npoints,deriv,alpha,false, false);
-}
-void wPBEXFunctional::computeFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha, bool in_alpha, bool out_alpha)
+void wPBEXFunctional::compute_sigma_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha, bool spin)
 {
     if (deriv > 1) {
         throw PSIEXCEPTION("wPBEXFunctional: 2nd and higher partials not implemented yet.");
@@ -60,8 +55,8 @@ void wPBEXFunctional::computeFunctional(const std::map<std::string,SharedVector>
     double* rho_s = NULL;
     double* gamma_s = NULL;
     double* tau_s = NULL;
-    rho_s = in.find(in_alpha ? "RHO_A" : "RHO_B")->second->pointer();
-    gamma_s = in.find(in_alpha ? "GAMMA_AA" : "GAMMA_BB")->second->pointer();
+    rho_s = in.find(spin ? "RHO_A" : "RHO_B")->second->pointer();
+    gamma_s = in.find(spin ? "GAMMA_AA" : "GAMMA_BB")->second->pointer();
 
     // => Output variables <= //
 
@@ -69,10 +64,10 @@ void wPBEXFunctional::computeFunctional(const std::map<std::string,SharedVector>
     double* v_rho = NULL;
     double* v_gamma = NULL;
     
-    v = out.find(out_alpha ? "V" : "V")->second->pointer();
+    v = out.find(spin ? "V" : "V")->second->pointer();
     if (deriv >=1) {
-        v_rho = out.find(out_alpha ? "V_RHO_A" : "V_RHO_B")->second->pointer();
-        v_gamma = out.find(out_alpha ? "V_GAMMA_AA" : "V_GAMMA_BB")->second->pointer();
+        v_rho = out.find(spin ? "V_RHO_A" : "V_RHO_B")->second->pointer();
+        v_gamma = out.find(spin ? "V_GAMMA_AA" : "V_GAMMA_BB")->second->pointer();
     }
      
     // => Main Loop over points <= //
@@ -97,8 +92,8 @@ void wPBEXFunctional::computeFunctional(const std::map<std::string,SharedVector>
 
         // > LSDA < //
         double E, E_rho;
-        E = - _K0_ * rho43;
-        E_rho = -4.0/3.0 * rho13;
+        E = - 0.5 * _K0_ * rho43;
+        E_rho = -4.0/6.0 * rho13;
     
         // > Mixed LSDA/GGA spin-enhancement factor < //
 
@@ -108,20 +103,24 @@ void wPBEXFunctional::computeFunctional(const std::map<std::string,SharedVector>
         s_rho = - 4.0 / 3.0 * sqrt(gamma) / rho73;
         s_gamma = 1.0 / 2.0 * pow(gamma,-1.0/2.0) / rho43; 
 
+        // Spin unpolarized intermediates
+        double P = 2.0 * rho;
+        double S = 1.0 / (2.0 * _k0_) * s;
+
         // F
-        double F, F_rho, F_s;
-        F = 1.0;
-        F_rho = 0.0;
-        F_s = 0.0;
+        double F, F_P, F_S;
 
         // Call Dr. Scuseria's nice function
-        wpbe_F(rho, s, omega_, &F, &F_rho, &F_s);
+        wpbe_F(rho, s, omega_, &F, &F_P, &F_S);
+
+        double F_rho = 2.0 * F_P;
+        double F_s = 1.0 / (2.0 * _k0_) * F_S;
 
         // => Assembly <= //
-        v[Q] += E * F;
+        v[Q] += A * E * F;
         if (deriv >= 1) {
             v_rho[Q] += A * (F * E_rho + E * F_rho + E * F_s * s_rho);
-            v_gamma[Q] += A * (E_rho * F_s * s_gamma);
+            v_gamma[Q] += A * (E * F_s * s_gamma);
         }
     }
 }
