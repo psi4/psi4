@@ -24,9 +24,9 @@ from procutil import *
 
 def sherrillgroup_gold_standard(name='mp2', **kwargs):
     """Function to call the quantum chemical method known as 'Gold Standard'
-    in the Sherrill group. Uses :py:func:`wrappers.complete_basis_set` to evaluateo
+    in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluateo
     the following expression. Two-point extrapolation of the correlation energy
-    performed according to :py:func:`wrappers.corl_xtpl_helgaker_2`.
+    performed according to :py:func:`~wrappers.corl_xtpl_helgaker_2`.
 
     .. math:: E_{total}^{\\text{Au\_std}} = E_{total,\; \\text{SCF}}^{\\text{aug-cc-pVQZ}} \; + E_{corl,\; \\text{MP2}}^{\\text{aug-cc-pV[TQ]Z}} \; + \delta_{\\text{MP2}}^{\\text{CCSD(T)}}\\big\\vert_{\\text{aug-cc-pVTZ}}
 

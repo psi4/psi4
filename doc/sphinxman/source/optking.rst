@@ -123,8 +123,8 @@ Either of these or a simple diagonal Hessian may be selected using the
 All the common Hessian update schemes are available.  For formulas, see
 Schlegel [Schlegel:1987:AIMQC]_ and Bofill [Bofill:1994:1]_.
 
-The Hessian may be computed during an optimization using the following
-:term:`FULL_HESS_EVERY` keyword
+The Hessian may be computed during an optimization using the 
+:term:`FULL_HESS_EVERY` keyword.
 
 .. index:: 
    pair: geometry optimization; transition state
