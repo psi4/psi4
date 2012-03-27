@@ -1,4 +1,5 @@
 #include "functional.h"
+#include <psi4-dec.h>
 
 namespace psi {
 
@@ -55,11 +56,9 @@ void Functional::print(FILE* out, int level) const
         fprintf(out, "\n");
     }
 } 
-void Functional::computeRKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
+void Functional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
 {
-}
-void Functional::computeUKSFunctional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
-{
+    throw PSIEXCEPTION("Functional: pseudo-abstract class.");
 }
 
 }

@@ -81,12 +81,19 @@ public:
 
     // => Computers <= //
     
-    std::map<std::string, SharedVector>& computeRKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
-    std::map<std::string, SharedVector>& computeUKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
+    std::map<std::string, SharedVector>& compute_functional(const std::map<std::string, SharedVector>& vals, int npoints = -1);
+    void test_functional(SharedVector rho_a, 
+                         SharedVector rho_b,
+                         SharedVector gamma_aa,
+                         SharedVector gamma_ab,
+                         SharedVector gamma_bb,
+                         SharedVector tau_a,
+                         SharedVector tau_b);
 
     // => Input/Output <= //
 
     std::map<std::string, SharedVector>& values() { return values_; }
+    SharedVector value(const std::string& key);
 
     std::vector<boost::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<boost::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
@@ -137,6 +144,7 @@ public:
 
     void print(FILE* out = outfile, int print = 1) const;
     void py_print() const { print(outfile, 1); }
+    void py_print_level(int level) const { print(outfile, level); }
 
 };
 

@@ -236,7 +236,7 @@ void SuperFunctional::allocate()
         values_[list[i]] = SharedVector(new Vector(list[i],max_points_));
     }
 }
-std::map<std::string, SharedVector>& SuperFunctional::computeRKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints)
+std::map<std::string, SharedVector>& SuperFunctional::compute_functional(const std::map<std::string, SharedVector>& vals, int npoints)
 {
     npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
     
@@ -246,31 +246,35 @@ std::map<std::string, SharedVector>& SuperFunctional::computeRKSFunctional(const
     }
 
     for (int i = 0; i < x_functionals_.size(); i++) {
-        x_functionals_[i]->computeRKSFunctional(vals, values_, npoints, deriv_, (1.0 - x_alpha_));
+        x_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0 - x_alpha_));
     }
     for (int i = 0; i < c_functionals_.size(); i++) {
-        c_functionals_[i]->computeRKSFunctional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
+        c_functionals_[i]->compute_functional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
     }
     
     return values_;
 }
-std::map<std::string, SharedVector>& SuperFunctional::computeUKSFunctional(const std::map<std::string, SharedVector>& vals, int npoints)
+void SuperFunctional::test_functional(SharedVector rho_a, 
+                                      SharedVector rho_b,
+                                      SharedVector gamma_aa,
+                                      SharedVector gamma_ab,
+                                      SharedVector gamma_bb,
+                                      SharedVector tau_a,
+                                      SharedVector tau_b)
 {
-    npoints = (npoints == -1 ? vals.find("RHO_A")->second->dimpi()[0] : npoints);
-    
-    for (std::map<std::string, SharedVector>::const_iterator it = values_.begin();
-        it != values_.end(); ++it) {
-        ::memset((void*)((*it).second->pointer()),'\0',sizeof(double) * npoints);
-    }
-
-    for (int i = 0; i < x_functionals_.size(); i++) {
-        x_functionals_[i]->computeUKSFunctional(vals, values_, npoints, deriv_, (1.0 - x_alpha_));
-    }
-    for (int i = 0; i < c_functionals_.size(); i++) {
-        c_functionals_[i]->computeUKSFunctional(vals, values_, npoints, deriv_, (1.0 - c_alpha_));
-    }
-    
-    return values_;
+    std::map<std::string, SharedVector> props;
+    props["RHO_A"] = rho_a;
+    props["RHO_B"] = rho_b;
+    props["GAMMA_AA"] = gamma_aa;
+    props["GAMMA_AB"] = gamma_ab;
+    props["GAMMA_BB"] = gamma_bb;
+    props["TAU_A"] = tau_a;
+    props["TAU_B"] = tau_b;
+    compute_functional(props);
+}
+SharedVector SuperFunctional::value(const std::string& key) 
+{
+    return values_[key];
 }
 int SuperFunctional::ansatz() const 
 {

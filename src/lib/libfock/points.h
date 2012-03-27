@@ -19,15 +19,13 @@ class BlockOPoints;
 
 extern FILE* outfile;
 
-class PointFunctions {
+class BasisFunctions {
 
 protected:
-    /// Basis set for this PointFunctions
+    /// Basis set for this BasisFunctions
     boost::shared_ptr<BasisSet> primary_;
     /// Pure AM or not
     bool puream_;
-    /// Current number of points
-    int npoints_;
     /// Maximum number of points in a block
     int max_points_;
     /// Maximum number of functions in a block
@@ -43,34 +41,85 @@ protected:
 
     /// Setup spherical_transforms_
     void build_spherical();
+    /// Allocate registers
+    virtual void allocate();
 
 public:
-    PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
-    virtual ~PointFunctions();
+    // => Constructors <= //
 
-    void computePoints(boost::shared_ptr<BlockOPoints> block);
+    BasisFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
+    virtual ~BasisFunctions();
 
-    void set_derivative(int deriv);
+    // => Computers <= //
+
+    void compute_functions(boost::shared_ptr<BlockOPoints> block);
+
+    // => Accessors <= //
+
     SharedMatrix basis_value(const std::string& key);
-    std::map<std::string, SharedMatrix> basis_values() { return basis_values_; }
-
-    virtual void print(FILE* out = outfile, int print = 2) const;
+    std::map<std::string, SharedMatrix>& basis_values() { return basis_values_; }
 
     int max_functions() const { return max_functions_; }
     int max_points() const { return max_points_; }
-    int npoints() const { return npoints_; }
+    int deriv() const { return deriv_; }
 
+    virtual void print(FILE* out = outfile, int print = 2) const;
+    
+    // => Setters <= //
+
+    void set_deriv(int deriv) { deriv_ = deriv; allocate(); }
+    void set_max_functions(int max_functions) { max_functions_ = max_functions; allocate(); }
+    void set_max_points(int max_points) { max_points_ = max_points; allocate(); }
 };
+
+class PointFunctions : public BasisFunctions {
+
+protected:
+    /// Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
+    int ansatz_;
+    /// Map of value names to Vectors containing values
+    std::map<std::string, boost::shared_ptr<Vector> > point_values_;
+
+public:
+    // => Constructors <= //
+
+    PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
+    virtual ~PointFunctions();
+    
+    // => Computers <= //
+
+    virtual void compute_points(boost::shared_ptr<BlockOPoints> block) = 0;
+
+    // => Accessors <= //
+
+    boost::shared_ptr<Vector> point_value(const std::string& key);
+    std::map<std::string, SharedVector>& point_values() { return point_values_; }
+
+    virtual std::vector<SharedMatrix> scratch() = 0;
+
+    int ansatz() const { return ansatz_; }
+
+    // => Setters <= //
+
+    void set_ansatz(int ansatz) { ansatz_ = ansatz; deriv_ = ansatz; allocate(); } 
+    virtual void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO) = 0; 
+    virtual void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO,
+                      SharedMatrix Db_occ_AO, SharedMatrix Cb_occ_AO) = 0;
+
+}; 
 
 class RKSFunctions : public PointFunctions {
 
 protected:
+    // => Pointers <= //
+    
     /// Density matrix, AO
     SharedMatrix D_AO_;
     /// Occupied C matrix, AO
     SharedMatrix Cocc_AO_;
 
     // => Temps <= //
+
     /// Buffer for half-transform
     SharedMatrix temp_;
     /// Buffer for KE density
@@ -80,37 +129,31 @@ protected:
     /// Local Cocc matrix
     SharedMatrix C_local_;
 
-    /// RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
-    int ansatz_;
-    /// Map of value names to Vectors containing values
-    std::map<std::string, boost::shared_ptr<Vector> > property_values_;
-
-    ///Build temporary work arrays
+    /// Build temporary work arrays
     void build_temps();
+    /// Allocate registers
+    void allocate();
 
 public:
     RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~RKSFunctions();
 
-    /// Set RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
-    void set_ansatz(int ansatz);
-    /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change)
-    void  reset_pointers(SharedMatrix D_AO, SharedMatrix Cocc_AO);
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO); 
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO,
+                      SharedMatrix Db_occ_AO, SharedMatrix Cb_occ_AO);
 
-    /// Scratch array of size max_points() x max_functions()
-    SharedMatrix scratch() const { return temp_; }
+    void compute_points(boost::shared_ptr<BlockOPoints> block);
 
-    void computeProperties(boost::shared_ptr<BlockOPoints> block);
+    std::vector<SharedMatrix> scratch();
 
-    boost::shared_ptr<Vector> property_value(const std::string& key);
-    std::map<std::string, SharedVector>& property_values() { return property_values_; }
-
-    virtual void print(FILE* out = outfile, int print = 2) const;
+    void print(FILE* out = outfile, int print = 2) const;
 };
 
 class UKSFunctions : public PointFunctions {
 
 protected:
+    // => Pointers <= //
+    
     /// Density matrix, AO
     SharedMatrix Da_AO_;
     /// Occupied C matrix, AO
@@ -121,6 +164,7 @@ protected:
     SharedMatrix Cbocc_AO_;
 
     // => Temps <= //
+    
     /// Buffer for half-transform
     SharedMatrix tempa_;
     /// Buffer for half-transform
@@ -136,35 +180,25 @@ protected:
     /// Local Cocc matrix
     SharedMatrix Cb_local_;
 
-    /// RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
-    int ansatz_;
-    /// Map of value names to Vectors containing values
-    std::map<std::string, boost::shared_ptr<Vector> > property_values_;
-
-    ///Build temporary work arrays
+    /// Build temporary work arrays
     void build_temps();
+    /// Allocate registers
+    void allocate();
 
 public:
     UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~UKSFunctions();
 
-    /// Set RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
-    void set_ansatz(int ansatz);
     /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change)
-    void  reset_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
-                         SharedMatrix Db_AO, SharedMatrix Cbocc_AO);
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO); 
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO,
+                      SharedMatrix Db_occ_AO, SharedMatrix Cb_occ_AO);
 
-    /// Scratch array of size max_points() x max_functions()
-    SharedMatrix scratchA() const { return tempa_; }
-    /// Scratch array of size max_points() x max_functions()
-    SharedMatrix scratchB() const { return tempb_; }
+    void compute_points(boost::shared_ptr<BlockOPoints> block);
 
-    void computeProperties(boost::shared_ptr<BlockOPoints> block);
+    std::vector<SharedMatrix> scratch();
 
-    boost::shared_ptr<Vector> property_value(const std::string& key);
-    std::map<std::string, SharedVector>& property_values() { return property_values_; }
-
-    virtual void print(FILE* out = outfile, int print = 2) const;
+    void print(FILE* out = outfile, int print = 2) const;
 };
 
 
