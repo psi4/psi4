@@ -2,11 +2,11 @@
 Notes on Options
 ================
 
-.. warning:: Python naming practices of file_that_includes_function.function_name()
+.. comment warning:: Python naming practices of file_that_includes_function.function_name()
    are followed below. In psi4 input files, it is only necessary to call the
    function name alone. That is, use ``energy('scf')``, not ``driver.energy('scf')``.
 
-.. note:: The Python options referred to in the :ref:`sec:psithonfunc` section below
+.. note:: The Python options referred to in the :ref:`sec:psithonFunc` section below
    and indexed in :ref:`apdx:options_py` are placed as arguments to a Python
    function (like ``energy()``), not in ``set`` blocks or commands.
 

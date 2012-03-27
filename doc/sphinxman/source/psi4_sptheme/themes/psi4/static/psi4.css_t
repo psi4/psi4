@@ -323,7 +323,8 @@ div.body p2.rubric
 
     color: {{ theme_headtextcolor }};
 
-    font-family: {{ theme_headfont }};
+    font-family: {{ theme_head2font }};
+    /*font-family: {{ theme_headfont }};*/
     font-weight: normal;
     text-shadow: 1px 1px 0 rgba(0,0,0,.1);
 }

@@ -8,7 +8,7 @@ Documentation
 and lives in :source:`doc/sphinxman`. 
 
 Installing Sphinx
------------------
+^^^^^^^^^^^^^^^^^
 
 Installing Sphinx is only necessary to build the documentation 
 yourself, locally. Ultimately, the docs will be served, either 
@@ -43,7 +43,7 @@ On Linux:
    >>> sudo yum install dvipng-1.14-1.fc15.x86_64
 
 Documentation Structure
------------------------
+^^^^^^^^^^^^^^^^^^^^^^^
 
 Sphinx has nice capabilities for extracting docstrings from python files,
 presenting both auto generated and explicitly composed documentation in
@@ -67,17 +67,20 @@ This will build the following files, respectively. ::
 Much of the documentation is auto-generated from the source. At present,
 this covers:
 
-* :source:`include/physconst.h`, the physical constants
-* docstrings from \*.py files in :source:`lib/python`, Python modules of the PSI4 driver 
-* docstrings from \*.py files in :source:`lib/databases`, chemical databases
-* \*.gbs files in :source:`lib/basis`, basis sets
-* :source:`src/bin/psi4/read_options.cc`, keywords for C++ modules
+* Physical Constants: :source:`include/physconst.h`
+* Python Driver: docstrings from \*.py files in :source:`lib/python`
+* Databases: docstrings from \*.py files in :source:`lib/databases`
+* Basis Sets: \*.gbs files in :source:`lib/basis`
+* C++ Keywords: :source:`src/bin/psi4/read_options.cc` 
+* Sample Inputs: input.dat files in :source:`samples`
 
-Running ``make clean`` will clear out the build directory and all auto-generated
-files.
+Running ``make clean`` will clear out all auto-generated files.
+Running ``make distclean`` additionally clears out the built documentation.
+Run one of these before check-in to avoid adding non-source files
+to the repository.
 
 reStructuredText
-----------------
+^^^^^^^^^^^^^^^^
 
 Sphinx files are written in reStructuredText (\*.rst). In the html
 documentation, source code is available from the sidebar. Here're a
@@ -86,7 +89,26 @@ few resources on Sphinx formatting.
 * `reStructuredText <http://docutils.sourceforge.net/docs/user/rst/quickref.html>`_
 * `rendered test document <http://docutils.sourceforge.net/test/functional/expected/standalone_rst_html4css1.html>`_
   *vs.* `source test document <http://svn.python.org/projects/external/docutils-0.5/docs/user/rst/demo.txt>`_
-* `reStructuredText <http://people.ee.ethz.ch/~creller/web/tricks/reST.html>`_
-* `reStructuredText and Sphinx <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
+* `Another reStructuredText <http://people.ee.ethz.ch/~creller/web/tricks/reST.html>`_
+* `A third reStructuredText and Sphinx <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
 * `LaTeX that Sphinx can handle <ftp://ftp.ams.org/ams/doc/amsmath/short-math-guide.pdf>`_
+* `Sphinx <http://sphinx.pocoo.org/contents.html>`_
+
+Math in the Codebase
+^^^^^^^^^^^^^^^^^^^^
+
+It is often useful to have mathematical expressions in docstrings or
+comments in the code that are auto-documented into the manual. Such
+locations include the ``#! comment`` comments at the top of test case
+input files, the ``/*- comment -*/`` comments in
+:source:`src/bin/psi4/read_options.cc`, and the ``""" comment """``
+docstrings in python modules. For the two former, math has traditionally
+been written in LaTeX (with the special substitution ``@@`` for
+subscripting underscore). The autodoc script has been trained to convert
+inline LaTeX math to reST math, provided the expression within dollar
+signs is offset from other text. That is, expressions of the form
+:regexp:`^ $latex math$[., ]$` (pseudo-regex) are good, while ``H$_2$O`` and LaTeX tables
+are not translated correctly. Python docstrings are absorbed as-is, so
+please use reST math formatting (essentially ``$latex math$`` :math:`\Rightarrow`
+``:math:`latex math```).
 

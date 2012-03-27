@@ -4,11 +4,6 @@
 Introduction
 ============
 
-.. only:: html
-
-   See2 :download:`this example script <autodoc_psi4bases.html>`
-
-
 Overview
 ========
 
@@ -102,7 +97,7 @@ appropriate references for the underlying theory):
 
 .. rubric:: SAPT (General)
 
-All capabilities of the \PSIsapt\ module are based on Symmetry Adapted
+All capabilities of the SAPT module are based on Symmetry Adapted
 Perturbation Theory.  A good review article for this method is as
 follows:
 
@@ -117,7 +112,7 @@ available in |PSIfour| are provided below.
 
 * "Large-scale Symmetry-adapted Perturbation Theory Computations via
   Density Fitting and Laplace Transformation Techniques: Investigating the
-  Fundamental Forces of {DNA}-Intercalator Interactions," E. G. Hohenstein,
+  Fundamental Forces of DNA-Intercalator Interactions," E. G. Hohenstein,
   R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F. Schaefer, *J.
   Chem. Phys.* **135**, 174017 (2011).
 
@@ -157,6 +152,9 @@ installation instructions at the |PSIfour| website above or to the file
 :source:`INSTALL` distributed with the package. Additional compilation
 hints may be found at `Psi Compiling <http://sirius.chem.vt.edu/trac/wiki/CompilingPsi>`_.
 
+.. index:: scratch files
+.. index:: psi4rc
+
 Scratch File Configuration
 ==========================
 
@@ -178,6 +176,8 @@ for each user providing this information.
 Alternately, the scratch directory can be set through the environment
 variable :envvar:`PSI_SCRATCH` (overrides |psirc| settings).
 
+.. index:: architectures
+.. index:: compilers
 
 Supported Architectures
 =======================
@@ -268,6 +268,8 @@ or energy points.  Likewise, vibrational frequencies can be
 computed by analytic second derivatives, by finite
 differences of analytic gradients, or by finite differences of energies.
 |PSIfour| can also compute an extensive list of one-electron properties.
+
+.. index:: contact
 
 Technical Support
 =================

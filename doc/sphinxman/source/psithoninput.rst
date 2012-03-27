@@ -1,5 +1,5 @@
 
-.. _`sec:psithoninput`:
+.. _`sec:psithonInput`:
 
 ==================================
 Psithon: Structuring an Input File
@@ -8,13 +8,14 @@ Psithon: Structuring an Input File
 To allow arbitrarily complex computations to be performed, |PSIfour| was built
 upon the Python interpreter. However, to make the input syntax simpler, some
 pre-processing of the input file is performed before it is interpreted,
-resulting in Python syntax that is customized for \PSI, termed Psithon.  In
+resulting in Python syntax that is customized for PSI, termed Psithon.  In
 this section we will describe the essential features of the Psithon language.
 |PSIfour| is distributed with an extensive test suite, described in section
 :ref:`apdx:testSuite`; the input files for these test cases can be found in the
 samples subdirectory of the top-level |PSIfour| source directory, and should
 serve as useful examples.
 
+.. index:: physical constants
 .. _`sec:psirc`:
 
 Scratch Files, the |psirc| File, and Physical Constants
@@ -46,6 +47,8 @@ made available within all |PSIfour| input files.
 
 The ``psi_`` prefix is to prevent clashes with user-defined variables in
 |PSIfour| input files.
+
+.. index:: scratch files
 
 Another important use of the |psirc| file is to control the
 handling of scratch files.  |PSIfour| has a number of utilities that manage
@@ -93,7 +96,8 @@ messy) flag will prevent files being deleted at the end of the run::
 
     psi4 -m
 
-.. _`sec:moleculespecification`:
+.. index:: molecule; specification
+.. _`sec:moleculeSpecification`:
 
 Molecule Specification
 ======================
@@ -150,11 +154,12 @@ example, the geometry for H\ :sub:`2` can be specified a number of ways, using t
 Blank lines are ignored and, unlike regular Python syntax, indentation within
 the ``molecule`` block does not matter, although the ``molecule`` keyword itself must
 be aligned within the input according to standard Python syntax. For more
-examples of geometry specification, see the :source:`samples/mints1/input.dat` input file in the samples
+examples of geometry specification, see the :srcsample:`mints1` input file in the samples
 folder. It is also possible to mix Cartesian and Z-matrix geometry
-specifications, as demonstrated in the :source:`samples/mints4/input.dat` sample input file.
+specifications, as demonstrated in the :srcsample:`mints4` sample input file.
 
-.. _`sec:multiplemolecules`:
+.. index:: molecule; multiple in input file
+.. _`sec:multipleMolecules`:
 
 Multiple Molecules
 ^^^^^^^^^^^^^^^^^^
@@ -210,7 +215,14 @@ Note that whenever the molecule is changed, the basis set must be specified
 again. The following section provides more details about the job control
 keywords used in the above examples.
 
-.. _`sec:moleculekeywords`:
+.. index::
+   triple: setting; keywords; molecule
+   pair: molecule; charge
+   pair: molecule; multiplicity
+   pair: molecule; symmetry
+   pair: molecule; no_reorient
+   pair: molecule; units
+.. _`sec:moleculeKeywords`:
 
 Molecule Keywords
 ^^^^^^^^^^^^^^^^^
@@ -229,6 +241,9 @@ achieved by adding either ``no_reorient`` or ``noreorient``. By default,
 ``units spec``, where ``spec`` is one of ``ang``,
 ``angstrom``, ``a.u.``, ``au``, or ``bohr``.
 
+.. index:: 
+   single: PubChem
+   single: molecule; PubChem
 .. _`sec:pubchem`:
 
 Geometries from the `PubChem <http://pubchem.ncbi.nlm.nih.gov/>`_ Database
@@ -312,6 +327,7 @@ symmetry is utilized.
 The standard keywords, described in Sec. :ref:`sec:moleculeKeywords`, can be
 used in conjuction to specify charge, multiplicity, symmetry to use, *etc.* .
 
+.. index:: symmetry, Cotton-ordering
 .. _`sec:symmetry`:
 
 Symmetry
@@ -372,6 +388,7 @@ labels are valid.  For :math:`C_s` symmetry the labels ``csx``, ``csy``, and
 respectively.  If no unique axis is specified, |PSIfour| will choose an appropriate
 subgroup.
 
+.. index:: molecule; multiple fragments
 .. _`sec:fragments`:
 
 Non-Covalently Bonded Molecule Fragments
@@ -410,7 +427,10 @@ considering interacting fragments, the overall charge is simply the sum of all
 fragment charges, and any unpaired electrons are assumed to be coupled to
 yield the highest possible :math:`M_s` value.
 
-.. _`sec:jobcontrol`:
+.. index::
+   single: basis set; specification
+   triple: setting; keywords; C-side
+.. _`sec:jobControl`:
 
 Job Control
 ===========
@@ -510,14 +530,15 @@ the input file, so if the last four commands in the above example were to read :
 the commands that set the print level would be ineffective, as they would be
 processed after the CCSD computation completes.
 
-.. _`sec:psithonbasissets`:
+.. index:: basis set; multiple within molecule
+.. _`sec:psithonBasissets`:
 
 Assigning Basis Sets
 ====================
 
 While the above syntax will suffice for specifying basis sets in most cases,
 the user may need to assign basis sets to specific atoms.  To achieve this, a
-``basis`` block can be used.  We use a snippet from the :source:`samples/mints2/input.dat` sample
+``basis`` block can be used.  We use a snippet from the :srcsample:`mints2` sample
 input file, which performs a benzene SCF computation, to demonstrate this
 feature. ::
 
@@ -537,6 +558,8 @@ basis set to just the carbon atoms labelled ``C1``.  This bizzare example was
 constructed to demonstrate the syntax, but the flexibility of the basis set
 specification is advantageous, for example, when selectivily omitting diffuse
 functions to make computations more tractable.
+
+.. index:: basis set; auxiliary
 
 In the above example the basis sets have been assigned asymmetrically, reducing
 the effective symmetry from :math:`D_{6h}` to :math:`C_{2v}`; |PSIfour| will detect this
@@ -562,11 +585,12 @@ command is used::
 
 When Dunning's correlation consistent basis sets (cc-pV*X*Z), and core-valence
 and diffuse variants thereof, are being used the SCF and DF-MP2 codes will
-chose the appropriate auxilliary basis set automatically, unless instructed
-otherwise by setting theauxiliary basis set in the input.  Finally, we note
+chose the appropriate auxiliary basis set automatically, unless instructed
+otherwise by setting the auxiliary basis set in the input.  Finally, we note
 that the ``basis`` block may also be used for defining basis sets, as
-detailed in Sec. :ref:`sec:basissetSpecification`.
+detailed in Sec. :ref:`sec:basisUserDefined`.
 
+.. index:: memory
 .. _`sec:memory`:
 
 Memory Specification
@@ -591,6 +615,7 @@ to |PSIfour|::
 One convenient way to override the |PSIfour| default memory is to place a memory
 command in the |psirc| file, as detailed in Sec. :ref:`sec:psirc`.
 
+.. index:: parallel operation, threading
 .. _`sec:threading`:
 
 Threading
@@ -616,7 +641,8 @@ explained below. Note that each deeper level trumps all previous levels.
 .. rubric:: (1) OpenMP/MKL Environment Variables
 
 The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
-environment variables. For instance, in tcsh::
+environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`. 
+For instance, in tcsh::
 
     setenv OMP_NUM_THREADS 4
     setenv MKL_NUM_THREADS 4
@@ -674,7 +700,7 @@ to explicitly control the number of threads used for integral formation. Setting
 this variable to 0 (the default) uses the number of threads specified by the
 :py:func:`util.set_num_threads` Psithon method or the default environmental variables.
 
-.. _`sec:psivariables`:
+.. _`sec:psiVariables`:
 
 Return Values and PSI Variables
 ===============================
@@ -771,7 +797,7 @@ the loops. Note that we do not need the dollar sign to access the Python
 variable in this example; that is required only when using Python variables
 with the ``set`` keyword.
 
-.. _`sec:resultstables`:
+.. _`sec:resultsTables`:
 
 Tables of Results
 =================
@@ -828,7 +854,7 @@ Among these are automated computations of interaction energies through
 :py:func:`wrappers.cp`, of a model chemistry applied to a database of systems through
 :py:func:`wrappers.database`, and of several model chemistries together approximating greater
 accuracy through :py:func:`wrappers.cbs`. 
-These are discussed separately in Sec. :ref:`sec:psithonfunc`.
+These are discussed separately in Sec. :ref:`sec:psithonFunc`.
 Note that the options documented for Python functions are placed as arguments
 in the command that calls the function 
 not in the ``set globals`` block or with any other ``set`` command.

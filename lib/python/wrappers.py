@@ -1462,25 +1462,25 @@ def complete_basis_set(name, **kwargs):
         Currently, the basis set set through ``set`` commands have no influence
         on a cbs calculation.
 
-    :type scf_basis: string
+    :type scf_basis: :ref:`basis string <apdx:basisElement>`
     :param scf_basis: |dl| ``corl_basis`` |dr| || ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the reference energy.
         If any correlation method is specified, ``scf_basis`` can default
         to ``corl_basis``.
 
-    :type corl_basis: string
+    :type corl_basis: :ref:`basis string <apdx:basisElement>`
     :param corl_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the correlation energy.
 
-    :type delta_basis: string
+    :type delta_basis: :ref:`basis string <apdx:basisElement>`
     :param delta_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the delta correction
         to the correlation energy.
 
-    :type delta2_basis: string
+    :type delta2_basis: :ref:`basis string <apdx:basisElement>`
     :param delta2_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the second delta correction

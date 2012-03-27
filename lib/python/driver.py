@@ -75,7 +75,7 @@ procedures = {
             'ccsd(t)'       : run_cc_gradient,
             'mp2'           : run_mp2_gradient,
             'eom-ccsd'      : run_eom_cc_gradient,
-            'eom_ccsd'      : run_eom_cc_gradient
+            'dcft'          : run_dcft_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
@@ -159,9 +159,9 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccenergy                | **expert** full control over ccenergy module                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp *n*                  | *n* th-order Moller--Plesset perturbation theory                                      |
+    | mp\ *n*                 | *n*\ th-order Moller--Plesset perturbation theory                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | zapt *n*                | *n* th-order z-averaged perturbation theory (ZAPT)                                    |
+    | zapt\ *n*               | *n*\ th-order z-averaged perturbation theory (ZAPT)                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cisd                    | configuration interaction (CI) singles and doubles (CISD)                             |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -169,7 +169,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | cisdtq                  | CI singles, doubles, triples, and quadruples (CISDTQ)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ci *n*                  | *n* th-order CI                                                                       |
+    | ci\ *n*                 | *n*\ th-order CI                                                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | fci                     | full configuration interaction (FCI)                                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -738,8 +738,10 @@ def optimize(name, **kwargs):
                 if(PsiMod.me() == 0):
                     shutil.copy(restartfile, get_psifile(1))
 
+        # print 'full_hess_every', full_hess_every
+        # print 'steps_since_last_hessian', steps_since_last_hessian
         # compute Hessian as requested; frequency wipes out gradient so stash it
-        if ((full_hess_every > -1) and (n == 0)) or (steps_since_last_hessian == full_hess_every):
+        if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
             G = PsiMod.get_gradient()
             PsiMod.IOManager.shared_object().set_specific_retention(1, True)
             PsiMod.IOManager.shared_object().set_specific_path(1, './')
@@ -749,14 +751,16 @@ def optimize(name, **kwargs):
             PsiMod.set_global_option('CART_HESS_READ', True)
         else:
             PsiMod.set_global_option('CART_HESS_READ', False)
+            steps_since_last_hessian += 1
 
-        steps_since_last_hessian += 1
-
+        # print 'cart_hess_read', PsiMod.get_global_option('CART_HESS_READ')
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print 'Optimizer: Optimization complete!'
             PsiMod.get_active_molecule().print_in_input_format()
-            PsiMod.opt_clean()
+            # Check if user wants to see the intcos; if so, don't delete them.
+            if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
+              PsiMod.opt_clean()
             PsiMod.clean()
 
             # S/R: Clean up opt input file

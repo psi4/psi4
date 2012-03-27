@@ -8,16 +8,16 @@ molecule {
 plugin_load("./plugin_backtrans.so")
 
 set  {
-   basis       DZ
-   print       1
-   charge      1
-   wfn         ccsd
-   dertype     first
-   delete_tei  false
-   convergence 10
-   jobtype     sp
-   relax_opdm  true
-   reference   uhf
+   basis         DZ
+   print         1
+   wfn           ccsd
+   dertype       first
+   delete_tei    false
+   d_convergence 10
+   r_convergence 10
+   e_convergence 10
+   jobtype       sp
+   reference     uhf
 }
 
 

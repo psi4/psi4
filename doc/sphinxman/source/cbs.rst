@@ -1,5 +1,9 @@
 
-.. _`func:cbs()`:
+.. index::
+   triple: setting; keywords; cbs()
+   see: complete_basis_set(); cbs()
+
+.. _`sec:cbs()`:
 
 Complete Basis Set
 ==================
@@ -10,6 +14,9 @@ Complete Basis Set
    cbs_eqn
 
 .. autofunction:: wrappers.complete_basis_set(name [, scf_basis, scf_scheme, corl_wfn, corl_basis, corl_scheme, delta_wfn, delta_wfn_lesser, delta_basis, delta_scheme, delta2_wfn, delta2_wfn_lesser, delta2_basis, delta2_scheme])
+
+.. index::
+   pair: cbs(); output
 
 Output
 ^^^^^^
@@ -82,7 +89,10 @@ of the cbs procedure. The stage energies of this section sum outright to the tot
      total            CBS                         -1.16281105
     ----------------------------------------------------------------------------------
 
-
+.. index::
+   single: cbs(); extrapolation schemes
+   single: extrapolation schemes
+   single: basis set; extrapolation
 
 Extrapolation Schemes
 ^^^^^^^^^^^^^^^^^^^^^
