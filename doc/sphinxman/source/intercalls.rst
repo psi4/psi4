@@ -21,15 +21,15 @@ table is not yet validated for calls with cp().
     +-------------------------+-----+-----+-----+-----+--------+
     |                         | cp  | db  | opt | cbs | energy |
     +=========================+=====+=====+=====+=====+========+
-    | :ref:`func:cp()`        |     | --- |  Y  |  Y  |   Y    |
+    | :ref:`sec:cp()`         |     | --- |  Y  |  Y  |   Y    |
     +-------------------------+-----+-----+-----+-----+--------+
-    | :ref:`func:db()`        | --- |     |  Y  |  Y  |   Y    |
+    | :ref:`sec:db()`         | --- |     |  Y  |  Y  |   Y    |
     +-------------------------+-----+-----+-----+-----+--------+
-    | :ref:`func:opt()`       | --- | --- |     |  Y  |   Y    |
+    | :ref:`sec:opt()`        | --- | --- |     |  Y  |   Y    |
     +-------------------------+-----+-----+-----+-----+--------+
-    | :ref:`func:cbs()`       | --- | --- | --- |     |   Y    |
+    | :ref:`sec:cbs()`        | --- | --- | --- |     |   Y    |
     +-------------------------+-----+-----+-----+-----+--------+
-    | :ref:`func:energy()`    | --- | --- | --- | --- |        |
+    | :ref:`sec:energy()`     | --- | --- | --- | --- |        |
     +-------------------------+-----+-----+-----+-----+--------+
 
 - The command db(opt(cbs(energy()))) is actually expressed as ``db(...,
@@ -37,7 +37,7 @@ table is not yet validated for calls with cp().
   ``cbs_func=energy`` is not necessary since energy() is always the function
   called by default. Also, the outermost internal function call (``db_func``
   above can be called as just ``func``. Several examples of intercalls
-  between Python functions can be found in sample input :source:`samples/pywrap_all/input.dat`.
+  between Python functions can be found in sample input :srcsample:`pywrap_all`.
 
 - All keyword arguments are passed along to each function traversed in the
   Python driver, so there should be no concern for separating them, grouping

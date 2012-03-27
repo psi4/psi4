@@ -21,22 +21,12 @@ Running a Basic Hartree--Fock Calculation
 
 In our first example, we will consider a Hartree--Fock SCF computation
 for the water molecule using a cc-pVDZ basis set.  We will specify the
-geometry of our water molecule using a standard Z-matrix. ::
+geometry of our water molecule using a standard Z-matrix.
 
-   # Any line starting with the # character is a comment line
-   # Here's a sample HF/cc-pVDZ H2O computation
-   
-   molecule h2o {
-     O
-     H 1 0.96
-     H 1 0.96 2 104.5
-   }
-   
-   set basis cc-pVDZ
-   energy('scf')
+.. literalinclude:: ../../../samples/tu1-h2o-energy/input.dat
 
 For your convenience, this example can be found in 
-:source:`samples/tu1-h2o-energy/input.dat`.
+:srcsample:`tu1-h2o-energy`.
 You can run it if you wish.
 Once |PSIfour| is in your path (see the User Configuration section of
 the installation instructions), you can run this computation by typing
@@ -75,27 +65,12 @@ can get the charge and multiplicity as the first two integers in the
 Z-matrix.  Note the line with ``0 3`` at the beginning of the molecule
 specification below.  In this example we will also specify the bond length
 and bond angle as variables (:math:`R` and :math:`A`), whose values are given
-at the end of the Z-matrix specification.  ::
+at the end of the Z-matrix specification.
 
-   # Here's a sample UHF/6-31G** CH2 computation
-   
-   molecule ch2 {
-     0 3
-     C
-     H 1 R
-     H 1 R 2 A
-   
-     R = 1.075
-     A = 133.93
-   }
-   
-   set basis 6-31G**
-   set reference uhf
-   
-   energy ('scf')
+.. literalinclude:: ../../../samples/tu2-ch2-energy/input.dat
 
 This sample input can be found in 
-:source:`samples/tu2-ch2-energy/input.dat` and as
+:srcsample:`tu2-ch2-energy` and as
 before it can be run through the command ``psi4 input.dat output.dat``
 (actually, because ``psi4`` by default looks for an input file named
 ``input.dat`` and writes by default to a file called ``output.dat``, in this
@@ -122,18 +97,9 @@ vibrational frequency computations.  These can be specified by replacing
 
 Here's an example of optimizing the H\ :sub:`2`\ O molecule using Hartree--Fock with
 a cc-pVDZ basis set (located in
-:source:`samples/tu3-h2o-opt/input.dat`. ::
+:srcsample:`tu3-h2o-opt`.
 
-   # Optimize H2O HF/cc-pVDZ
-   
-   molecule h2o {
-     O
-     H 1 0.96
-     H 1 0.96 2 104.5
-   }
-   
-   set basis cc-pVDZ
-   optimize('scf')
+.. literalinclude:: ../../../samples/tu3-h2o-opt/input.dat
 
 This should perform a series of gradient computations.  The gradient points
 which way is downhill in energy, and the optimizer then modifies the
@@ -162,18 +128,9 @@ and the bond angle is about 104.575 degrees.  It's good to give this many
 digits (or more) to make sure there's not significant roundoff error in the
 geometry when running a frequency computation.  So, our frequency
 computation input (which can be found as test case
-:source:`samples/tu4-h2o-freq/input.dat` is::
+:srcsample:`tu4-h2o-freq` is:
 
-   # Frequencies for H2O HF/cc-pVDZ at optimized geometry
-   
-   molecule h2o {
-     O
-     H 1 0.9463
-     H 1 0.9463 2 104.575
-   }
-   
-   set basis cc-pVDZ
-   frequencies('scf')
+.. literalinclude:: ../../../samples/tu4-h2o-freq/input.dat
 
 Alternatively, it's also possible for |PSIfour| to use Cartesian coordinate
 input.  Here, the Cartesian coordinates of the optimized geometry can be
@@ -380,36 +337,9 @@ a series of different interatomic distances.  And let's print out a table
 of the interatomic distances we've considered, and the CP-corrected CCSD(T)
 interaction energies (in |kcalpermol|) at each geometry.  Doing all this
 in a single input is surprisingly easy in |PSIfour|.  Here's the input
-(available as :source:`samples/tu6-cp-ne2/input.dat`). ::
+(available as :srcsample:`tu6-cp-ne2`).
 
-   #! Example potential energy surface scan and CP-correction for Ne2
-   
-   molecule dimer {
-     Ne
-   --
-     Ne 1 R
-   }
-   
-   Rvals=[2.5, 3.0, 4.0]
-   
-   set basis aug-cc-pVDZ
-   set freeze_core True
-   
-   # Initialize a blank dictionary of counterpoise corrected energies
-   # (Need this for the syntax below to work)
-   ecp = {}
-   
-   for R in Rvals:
-     dimer.R = R
-     ecp[R] = cp('ccsd(t)')
-   
-   print "\n"
-   print "CP-corrected CCSD(T)/aug-cc-pVDZ interaction energies\n\n"
-   print "        R (Ang)         E_int (kcal/mol)             \n"
-   print "-----------------------------------------------------\n"
-   for R in Rvals:
-     e = ecp[R] * psi_hartree2kcalmol
-     print "        %3.1f            %10.6f\n" % (R, e)
+.. literalinclude:: ../../../samples/tu6-cp-ne2/input.dat
 
 First, you can see the ``molecule`` block has a couple dashes to
 separate the monomers from each other.  Also note we've used a Z-matrix to

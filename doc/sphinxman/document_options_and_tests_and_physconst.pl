@@ -27,10 +27,12 @@ my $DriverFile = $DriverPath . "../../src/bin/psi4/read_options.cc";
 my $CurrentModule;
 my %Keywords;
 my %ModuleDescriptions;
+my %ModuleSubsections;
 my %Expert;
 open(DRIVER, $DriverFile) or die "\nI can't read the PSI driver file\n";
 
 my $CurrentSubsection = "";
+my @OrderedSubsection = ();
 
 # Start looping over the driver file
 while(<DRIVER>){
@@ -38,6 +40,7 @@ while(<DRIVER>){
     if(/name\s*\=\=\s*\"(\w+)\"/){
         $CurrentModule = $1;
         $CurrentSubsection = "";
+        @OrderedSubsection = ();
     }
     my $CommentString;
     my $SphinxCommentString;
@@ -50,6 +53,8 @@ while(<DRIVER>){
     # don't know if it's a multi-line comment, let's find out
     if(/\/\*-\s*SUBSECTION\s+(.*)-\*\// and $CurrentModule){
         $CurrentSubsection = $1;
+        print "$CurrentSubsection\n";
+        push @{$ModuleSubsections{$CurrentModule}}, $CurrentSubsection;
     }elsif(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
         $ModuleDescriptions{$CurrentModule} = get_description($_);
     }elsif(/\/\*-/ and $CurrentModule){
@@ -59,10 +64,11 @@ while(<DRIVER>){
         $CommentString =~ s/@@/_/g;
         $SphinxCommentString = $CommentString;
         $SphinxCommentString =~ s/ \$/ :math:`/g;
+        $SphinxCommentString =~ s/\(\$/(\\ :math:`/g;
         $SphinxCommentString =~ s/\$ /` /g;
-        $SphinxCommentString =~ s/\$./`./g;
+        $SphinxCommentString =~ s/\$\./`./g;
         $SphinxCommentString =~ s/\$,/`,/g;
-        $SphinxCommentString =~ s/\$\?/`\?/g;
+        $SphinxCommentString =~ s/\$\)/`\\ \)/g;
         $SphinxCommentString =~ s/\\_/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
@@ -81,6 +87,17 @@ while(<DRIVER>){
     }
 }
 close DRIVER;
+
+
+print "\n\nARRAY\n";
+         foreach my $country (sort keys %ModuleSubsections) {
+           print "$country: ";
+           my @cities = @{$ModuleSubsections{$country}};
+           print join ', ', @cities;
+           print ".\n";
+         }
+print "ENDARRAY\n\n";
+
 
 my @temp = ();
 print_hash(\%Keywords, "keywords.tex", 1, "kw");
@@ -125,8 +142,6 @@ sub print_hash
         printf "Auto-documenting module %s options\n", lc($Module);
         open(SSOUT,">$ssout") or die "\nI can't write to $ssout\n";
         printf SSOUT ".. _`apdx:%s`:\n\n", lc($Module);
-        #printf SSOUT ".. toctree::\n   :glob:\n\n   %s__*\n\n", lc($Module);
-        #printf SSOUT ".. toctree::\n   :glob:\n\n   %s__*\n\n", lc($Module);
         printf SSOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
         printf SSOUT ".. toctree::\n   :hidden:\n   :glob:\n\n   %s__*\n\n", lc($Module);
      }
@@ -140,10 +155,28 @@ sub print_hash
          printf OUT "\n\t  \\\\ \n";
          print OUT "\\end{tabular*}\n";
      }
-     foreach my $Subsection (sort {$a cmp $b} keys %{$hash{$Module}}){
+     my @OrderedSubsection = ("");
+     if (exists $ModuleSubsections{$Module}) {
+          @OrderedSubsection = @{$ModuleSubsections{$Module}};
+     }
+     foreach my $Subsection (@OrderedSubsection) {
+       if (defined(%{$hash{$Module}{$Subsection}})) { 
          if($Subsection){
-             print OUT "\\subsubsection{$Subsection}\n";
+             if ($print_description) { 
+                 my $Secdivider = "_" x (length($Subsection)-1);
+                 print OUT "\\subsubsection{$Subsection}\n";
+                 print SSOUT "\n$Subsection\n$Secdivider\n\n";
+             }
+             else {
+                 my $Secdivider = "_" x (8+length($Subsection));
+                 print OUT "\\subsubsection{$Subsection}\n";
+                 print SSOUT "\n*Expert* $Subsection\n$Secdivider\n\n";
+             }
          }
+         else {
+            if ($print_description) { print SSOUT "\nGeneral\n_______\n\n"; }
+            else                    { print SSOUT "\n*Expert*\n________\n\n"; }
+         }    
          my %SectionHash = %{$hash{$Module}{$Subsection}};
          foreach my $Keyword (sort {$a cmp $b} keys %SectionHash){
              my %KeyHash = %{$SectionHash{$Keyword}};
@@ -152,21 +185,12 @@ sub print_hash
              my $UnderscoredKeyword = $Keyword;
              $UnderscoredKeyword =~ s/\\_/_/g;
              my $Keydivider = "\"" x (8+length($UnderscoredKeyword));
-             #print "$Moddivider\n";
              my $keywordfilename = lc($Module) . "__" . lc($UnderscoredKeyword);
              my $fullkeywordfilename = "source/autodir_options_c/" . $keywordfilename . ".rst";
              print SSOUT ".. include:: $keywordfilename.rst\n";
              open(SSSOUT,">$fullkeywordfilename") or die "\nI can't write to $fullkeywordfilename\n";
-             #printf SSSOUT "\n%s\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n", uc($UnderscoredKeyword);
-             #printf SSSOUT ".. glossary::\n\n";
-             #printf SSSOUT ".. glossary:: :term:`%s`\n\n", uc($UnderscoredKeyword);
-             #printf SSSOUT ".. rubric:: %s\n\n", uc($UnderscoredKeyword);
-             #printf SSSOUT "   %s\n      %s\n\n", uc($UnderscoredKeyword), $KeyHash{"SphComment"};
-             #printf SSSOUT "   :term:`%s`\n      %s\n\n", uc($UnderscoredKeyword), $KeyHash{"SphComment"};
              printf SSSOUT ":term:`%s`\n%s\n\n", uc($UnderscoredKeyword), $Keydivider;
              printf SSSOUT "      %s\n\n", $KeyHash{"SphComment"};
-             #printf SSSOUT "%s\n\n", $KeyHash{"SphComment"};
-             #printf TSOUT "   %s\n      **%s** |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
              printf TSOUT "   %s\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
              if(($KeyHash{"Type"} eq "bool") || ($KeyHash{"Type"} eq "boolean")) {
                 printf SSSOUT "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
@@ -175,6 +199,12 @@ sub print_hash
              elsif (($KeyHash{"Type"} eq "double") && ((lc($Keyword) =~ /conv/) || (lc($Keyword) =~ /tol/))) {
                 printf SSSOUT "      * **Type**: :ref:`conv double <op_c_conv>`\n";
                 printf TSOUT  "      * **Type**: :ref:`conv double <op_c_conv>`\n";
+             }
+             elsif (($KeyHash{"Type"} eq "string") && ((lc($Keyword) eq "basis") || (index(lc($Keyword), "df\\_basis") == 0))) {
+                printf SSSOUT "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf TSOUT  "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf SSSOUT "      * **Possible Values**: :ref:`basis string <apdx:basisElement>`\n";
+                printf TSOUT  "      * **Possible Values**: :ref:`basis string <apdx:basisElement>`\n";
              }
              else {
                 printf SSSOUT "      * **Type**: %s\n", $KeyHash{"Type"};
@@ -187,18 +217,17 @@ sub print_hash
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
                   printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
                   printf SSSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
-                  #printf SSSOUT "* **Possible Values**: %s\n", join(", ", @Options);
                   printf TSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
              }
              print OUT "\\end{tabular*}\n";
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
              printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", $KeyHash{"Type"}, $KeyHash{"Default"};
              printf SSSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
-             #printf SSSOUT "* **Default**: %s\n\n", $KeyHash{"Default"};
              printf TSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
              print OUT "\\end{tabular*}\n";
              close SSSOUT;
          }  # keyword
+       }
      }  # subsection
      print SSOUT "\n";
      close SSOUT;
@@ -372,11 +401,17 @@ foreach my $File(readdir SAMPLES){
 my $TestsFolder = $DriverPath . "../../tests";
 opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
 my $TexSummary = "tests_descriptions.tex";
+my $RstSummary = "source/autodoc_testsuite.rst";
 # Create a plain-text summary in the samples directory
 my $Summary = $SamplesFolder."/SUMMARY";
 open(SUMMARY,">$Summary") or die "I can't write to $Summary\n";
 # Make a LaTeX version for the manual, too
 open(TEXSUMMARY,">$TexSummary") or die "I can't write to $TexSummary\n";
+open(RSTSUMMARY,">$RstSummary") or die "I can't write to $RstSummary\n";
+print "Auto-documenting samples directory inputs\n";
+print RSTSUMMARY "\n=============================================   ============\n";
+print RSTSUMMARY   "Input File                                      Description \n";
+print RSTSUMMARY   "=============================================   ============\n";
 foreach my $Dir(readdir TESTS){
     my $Input = $TestsFolder."/".$Dir."/input.dat";
     # Look for an input file in each subdirectory, or move on
@@ -411,15 +446,27 @@ foreach my $Dir(readdir TESTS){
         my $Description_tex = $Description;
         $Description_tex =~ s/_/\\_/g;
         $Description_tex =~ s/@@/_/g;
+        my $Description_rst = $Description_tex;
+        $Description_rst =~ s/ \$/ :math:`/g;
+        $Description_rst =~ s/\(\$/(\\ :math:`/g;
+        $Description_rst =~ s/\$ /` /g;
+        $Description_rst =~ s/\$\./`./g;
+        $Description_rst =~ s/\$,/`,/g;
+        $Description_rst =~ s/\$\)/`\\ \)/g;
+        $Description_rst =~ s/\\_/_/g;
         print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
         print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
         print TEXSUMMARY "\\end{tabular*}\n";
+        my $srcfilename = ":srcsample:`" . $Dir_tex . "`";
+        printf RSTSUMMARY "%-45s  %s\n", $srcfilename, $Description_rst;
         printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
 }
-close TEXSUMMARY;
+print RSTSUMMARY "=============================================   ============\n\n";
+close TEXSUMMARY ;
+close RSTSUMMARY;
 close SUMMARY;
 closedir TESTS;
 
