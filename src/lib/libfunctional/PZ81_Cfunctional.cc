@@ -1,0 +1,1420 @@
+#include <libmints/vector.h>
+#include "PZ81_Cfunctional.h"
+#include "utility.h"
+#include <cmath>
+
+using namespace psi;
+
+namespace psi {
+
+PZ81_CFunctional::PZ81_CFunctional()
+{
+    name_ = "PZ81_C";
+    description_ = "    PZ81 Correlation\n";
+    citation_ = "    J.P. Perdew, A. Zunger, Phys. Rev. B., 23, 5048-5079, 1981\n";
+    alpha_ = 1.0;
+    omega_ = 0.0;
+    lrc_ = false;
+    gga_ = false;
+    meta_ = false;
+    parameters_["c"] =   6.2035049089939986E-01;
+    parameters_["two_13"] =   1.2599210498948732E+00;
+    parameters_["EcPld_1"] =  -1.4230000000000001E-01;
+    parameters_["EcPld_2"] =   1.0528999999999999E+00;
+    parameters_["EcPld_3"] =   3.3339999999999997E-01;
+    parameters_["EcFld_1"] =  -8.4300000000000000E-02;
+    parameters_["EcFld_2"] =   1.3980999999999999E+00;
+    parameters_["EcFld_3"] =   2.6110000000000000E-01;
+    parameters_["EcPhd_1"] =   3.1099999999999999E-02;
+    parameters_["EcPhd_2"] =  -4.8000000000000001E-02;
+    parameters_["EcPhd_3"] =   2.0000000000000000E-03;
+    parameters_["EcPhd_4"] =  -1.1599999999999999E-02;
+    parameters_["EcFhd_1"] =   1.5550000000000000E-02;
+    parameters_["EcFhd_2"] =  -2.6900000000000000E-02;
+    parameters_["EcFhd_3"] =   6.9999999999999999E-04;
+    parameters_["EcFhd_4"] =  -4.7999999999999996E-03;
+}
+PZ81_CFunctional::~PZ81_CFunctional()
+{
+}
+void PZ81_CFunctional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
+{
+    double c = parameters_["c"];
+    double two_13 = parameters_["two_13"];
+    double EcPld_1 = parameters_["EcPld_1"];
+    double EcPld_2 = parameters_["EcPld_2"];
+    double EcPld_3 = parameters_["EcPld_3"];
+    double EcFld_1 = parameters_["EcFld_1"];
+    double EcFld_2 = parameters_["EcFld_2"];
+    double EcFld_3 = parameters_["EcFld_3"];
+    double EcPhd_1 = parameters_["EcPhd_1"];
+    double EcPhd_2 = parameters_["EcPhd_2"];
+    double EcPhd_3 = parameters_["EcPhd_3"];
+    double EcPhd_4 = parameters_["EcPhd_4"];
+    double EcFhd_1 = parameters_["EcFhd_1"];
+    double EcFhd_2 = parameters_["EcFhd_2"];
+    double EcFhd_3 = parameters_["EcFhd_3"];
+    double EcFhd_4 = parameters_["EcFhd_4"];
+
+    // Overall scale factor
+    double scale = alpha_ * alpha;
+
+    // => Input variables <= //
+
+    double* rho_ap = NULL;
+    double* rho_bp = NULL;
+    double* gamma_aap = NULL;
+    double* gamma_abp = NULL;
+    double* gamma_bbp = NULL;
+    double* tau_ap = NULL;
+    double* tau_bp = NULL;
+
+    if (true) {
+        rho_ap = in.find("RHO_A")->second->pointer();
+        rho_bp = in.find("RHO_B")->second->pointer();
+    }
+    if (gga_) {  
+        gamma_aap = in.find("GAMMA_AA")->second->pointer();
+        gamma_abp = in.find("GAMMA_AB")->second->pointer();
+        gamma_bbp = in.find("GAMMA_BB")->second->pointer();
+    } 
+    if (meta_)  {
+        tau_ap = in.find("TAU_A")->second->pointer();
+        tau_bp = in.find("TAU_B")->second->pointer();
+    }
+
+    // => Outut variables <= //
+
+    double* v = NULL;
+
+    double* v_rho_a = NULL;
+    double* v_rho_b = NULL;
+    double* v_gamma_aa = NULL;
+    double* v_gamma_ab = NULL;
+    double* v_gamma_bb = NULL;
+    double* v_tau_a = NULL;
+    double* v_tau_b = NULL;
+     
+    double* v_rho_a_rho_a = NULL;
+    double* v_rho_a_rho_b = NULL;
+    double* v_rho_b_rho_b = NULL;
+    double* v_gamma_aa_gamma_aa = NULL;
+    double* v_gamma_aa_gamma_ab = NULL;
+    double* v_gamma_aa_gamma_bb = NULL;
+    double* v_gamma_ab_gamma_ab = NULL;
+    double* v_gamma_ab_gamma_bb = NULL;
+    double* v_gamma_bb_gamma_bb = NULL;
+    double* v_tau_a_tau_a = NULL;
+    double* v_tau_a_tau_b = NULL;
+    double* v_tau_b_tau_b = NULL;
+    double* v_rho_a_gamma_aa = NULL;
+    double* v_rho_a_gamma_ab = NULL;
+    double* v_rho_a_gamma_bb = NULL;
+    double* v_rho_b_gamma_aa = NULL;
+    double* v_rho_b_gamma_ab = NULL;
+    double* v_rho_b_gamma_bb = NULL;
+    double* v_rho_a_tau_a = NULL;
+    double* v_rho_a_tau_b = NULL;
+    double* v_rho_b_tau_a = NULL;
+    double* v_rho_b_tau_b = NULL;
+    double* v_gamma_aa_tau_a = NULL;
+    double* v_gamma_aa_tau_b = NULL;
+    double* v_gamma_ab_tau_a = NULL;
+    double* v_gamma_ab_tau_b = NULL;
+    double* v_gamma_bb_tau_a = NULL;
+    double* v_gamma_bb_tau_b = NULL;
+
+    if (deriv >= 0) {
+        v = out.find("V")->second->pointer();
+    } 
+    if (deriv >= 1) {
+        if (true) {
+            v_rho_a = out.find("V_RHO_A")->second->pointer();
+            v_rho_b = out.find("V_RHO_B")->second->pointer();
+        }
+        if (gga_) {
+            v_gamma_aa = out.find("V_GAMMA_AA")->second->pointer();
+            v_gamma_ab = out.find("V_GAMMA_AB")->second->pointer();
+            v_gamma_bb = out.find("V_GAMMA_BB")->second->pointer();
+        }
+        if (meta_) {    
+            v_tau_a = out.find("V_TAU_A")->second->pointer();
+            v_tau_b = out.find("V_TAU_B")->second->pointer();
+        }
+    }
+    if (deriv >= 2) {
+        if (true) {
+            v_rho_a_rho_a = out.find("V_RHO_A_RHO_A")->second->pointer();
+            v_rho_a_rho_b = out.find("V_RHO_A_RHO_B")->second->pointer();
+            v_rho_b_rho_b = out.find("V_RHO_B_RHO_B")->second->pointer();
+        }
+        if (gga_) {
+            v_gamma_aa_gamma_aa = out.find("V_GAMMA_AA_GAMMA_AA")->second->pointer();
+            v_gamma_aa_gamma_ab = out.find("V_GAMMA_AA_GAMMA_AB")->second->pointer();
+            v_gamma_aa_gamma_bb = out.find("V_GAMMA_AA_GAMMA_BB")->second->pointer();
+            v_gamma_ab_gamma_ab = out.find("V_GAMMA_AB_GAMMA_AB")->second->pointer();
+            v_gamma_ab_gamma_bb = out.find("V_GAMMA_AB_GAMMA_BB")->second->pointer();
+            v_gamma_bb_gamma_bb = out.find("V_GAMMA_BB_GAMMA_BB")->second->pointer();
+        }
+        if (meta_) {
+            v_tau_a_tau_a = out.find("V_TAU_A_TAU_A")->second->pointer();
+            v_tau_a_tau_b = out.find("V_TAU_A_TAU_B")->second->pointer();
+            v_tau_b_tau_b = out.find("V_TAU_B_TAU_B")->second->pointer();
+        }
+        if (gga_) {
+            v_rho_a_gamma_aa = out.find("V_RHO_A_GAMMA_AA")->second->pointer();
+            v_rho_a_gamma_ab = out.find("V_RHO_A_GAMMA_AB")->second->pointer();
+            v_rho_a_gamma_bb = out.find("V_RHO_A_GAMMA_BB")->second->pointer();
+            v_rho_b_gamma_aa = out.find("V_RHO_B_GAMMA_AA")->second->pointer();
+            v_rho_b_gamma_ab = out.find("V_RHO_B_GAMMA_AB")->second->pointer();
+            v_rho_b_gamma_bb = out.find("V_RHO_B_GAMMA_BB")->second->pointer();
+        }
+        if (meta_) {
+            v_rho_a_tau_a = out.find("V_RHO_A_TAU_A")->second->pointer();
+            v_rho_a_tau_b = out.find("V_RHO_A_TAU_B")->second->pointer();
+            v_rho_b_tau_a = out.find("V_RHO_B_TAU_A")->second->pointer();
+            v_rho_b_tau_b = out.find("V_RHO_B_TAU_B")->second->pointer();
+        }
+        if (gga_ && meta_) {
+            v_gamma_aa_tau_a = out.find("V_GAMMA_AA_TAU_A")->second->pointer();
+            v_gamma_aa_tau_b = out.find("V_GAMMA_AA_TAU_B")->second->pointer();
+            v_gamma_ab_tau_a = out.find("V_GAMMA_AB_TAU_A")->second->pointer();
+            v_gamma_ab_tau_b = out.find("V_GAMMA_AB_TAU_B")->second->pointer();
+            v_gamma_bb_tau_a = out.find("V_GAMMA_BB_TAU_A")->second->pointer();
+            v_gamma_bb_tau_b = out.find("V_GAMMA_BB_TAU_B")->second->pointer();
+        }
+    }
+
+    // => Loop over points <= //
+
+    for (int Q = 0; Q < npoints; Q++) {
+
+        // Input variables 
+        double rho_a;
+        double rho_b;
+        double gamma_aa;
+        double gamma_ab;
+        double gamma_bb;
+        double tau_a;
+        double tau_b;
+
+        if (true) {
+            rho_a = rho_ap[Q];
+            rho_b = rho_bp[Q];
+        }        
+        if (gga_) {
+            gamma_aa = gamma_aap[Q];
+            gamma_ab = gamma_abp[Q];
+            gamma_bb = gamma_bbp[Q];
+        }        
+        if (meta_) {
+            tau_a = tau_ap[Q];
+            tau_b = tau_bp[Q];
+        }        
+
+        // Definitions (asymptotics to prevent numerical problems)
+        if (rho_a < lsda_cutoff_ && rho_b < lsda_cutoff_) {
+            continue;
+        } else if (rho_a < lsda_cutoff_) {
+            // v
+            if (deriv >= 0) {
+                double t13066 = rho_a+rho_b;
+                double t13067 = 1.0/pow(t13066,1.0/3.0);
+                double t13068 = c*t13067;
+                double t13069 = log(t13068);
+                double t13070 = EcPhd_1*t13069;
+                double t13071 = pow(2.0,1.0/3.0);
+                double t13072 = t13071*2.0;
+                double t13073 = t13072-2.0;
+                double t13074 = two_13*2.0;
+                double t13075 = t13074-2.0;
+                double t13076 = 1.0/t13075;
+                double t13077 = sqrt(t13068);
+                double t13078 = EcPld_2*t13077;
+                double t13079 = EcPld_3*c*t13067;
+                double t13080 = t13078+t13079+1.0;
+                double t13081 = 1.0/t13080;
+                double t13082 = EcPld_1*t13081;
+                v[Q] += scale * t13066*(heaviside(-c*t13067+1.0)*(EcPhd_2+t13070+t13073*t13076*(EcFhd_2-EcPhd_2-t13070+EcFhd_1*t13069+EcFhd_4*c*t13067-EcPhd_4*c*t13067+EcFhd_3*c*t13067*t13069-EcPhd_3*c*t13067*t13069)+EcPhd_4*c*t13067+EcPhd_3*c*t13067*t13069)+heaviside(t13068-1.0)*(t13082-t13073*t13076*(t13082-EcFld_1/(EcFld_2*t13077+EcFld_3*c*t13067+1.0))));
+            }
+            
+            // v_rho_a
+            if (deriv >= 1) {
+                double t13084 = rho_a+rho_b;
+                double t13085 = 1.0/pow(t13084,4.0/3.0);
+                double t13086 = 1.0/pow(t13084,1.0/3.0);
+                double t13087 = c*t13086;
+                double t13088 = 1.0/sqrt(t13087);
+                double t13089 = sqrt(t13087);
+                double t13090 = EcPld_3*c*t13085*(1.0/3.0);
+                double t13091 = EcPld_2*c*t13085*t13088*(1.0/6.0);
+                double t13092 = t13090+t13091;
+                double t13093 = EcPld_2*t13089;
+                double t13094 = EcPld_3*c*t13086;
+                double t13095 = t13093+t13094+1.0;
+                double t13096 = 1.0/(t13095*t13095);
+                double t13097 = EcPld_1*t13092*t13096;
+                double t13098 = pow(2.0,1.0/3.0);
+                double t13099 = t13098*2.0;
+                double t13100 = t13099-2.0;
+                double t13101 = two_13*2.0;
+                double t13102 = t13101-2.0;
+                double t13103 = 1.0/t13102;
+                double t13104 = 1.0/t13084;
+                double t13105 = EcPhd_1*t13104*(1.0/3.0);
+                double t13106 = log(t13087);
+                double t13107 = EcPhd_3*c*t13085*(1.0/3.0);
+                double t13108 = EcPhd_4*c*t13085*(1.0/3.0);
+                double t13109 = EcPhd_3*c*t13106*t13085*(1.0/3.0);
+                double t13110 = t13087-1.0;
+                double t13111 = EcPhd_1*t13106;
+                double t13112 = dirac(t13110);
+                double t13113 = EcFld_2*t13089;
+                double t13114 = EcFld_3*c*t13086;
+                double t13115 = t13113+t13114+1.0;
+                double t13116 = 1.0/t13095;
+                double t13117 = EcPld_1*t13116;
+                double t13118 = -t13087+1.0;
+                double t13119 = heaviside(t13118);
+                double t13120 = EcFhd_1*t13106;
+                double t13121 = EcFhd_4*c*t13086;
+                double t13122 = EcPhd_4*c*t13086;
+                double t13123 = EcFhd_3*c*t13106*t13086;
+                double t13124 = EcPhd_3*c*t13106*t13086;
+                double t13125 = heaviside(t13110);
+                double t13126 = 1.0/t13115;
+                double t13127 = t13117-EcFld_1*t13126;
+                double t13128 = t13117-t13100*t13103*t13127;
+                v_rho_a[Q] += scale * t13119*(EcPhd_2+t13111+t13122+t13124+t13100*t13103*(EcFhd_2-EcPhd_2-t13111+t13120+t13121-t13122+t13123-t13124))+t13125*t13128+t13084*(t13125*(t13097-t13100*t13103*(t13097-EcFld_1*1.0/(t13115*t13115)*(EcFld_3*c*t13085*(1.0/3.0)+EcFld_2*c*t13085*t13088*(1.0/6.0))))-t13119*(t13105+t13107+t13108+t13109-t13100*t13103*(t13105+t13107+t13108+t13109-EcFhd_1*t13104*(1.0/3.0)-EcFhd_3*c*t13085*(1.0/3.0)-EcFhd_4*c*t13085*(1.0/3.0)-EcFhd_3*c*t13106*t13085*(1.0/3.0)))-c*t13112*t13128*t13085*(1.0/3.0)+c*t13112*t13085*(EcPhd_2+t13111+t13122+t13124+t13100*t13103*(EcFhd_2-EcPhd_2-t13111+t13120+t13121+t13123-EcPhd_4*c*t13086-EcPhd_3*c*t13106*t13086))*(1.0/3.0));
+            }
+            
+            // v_rho_b
+            if (deriv >= 1) {
+                double t13130 = rho_a+rho_b;
+                double t13131 = 1.0/pow(t13130,4.0/3.0);
+                double t13132 = 1.0/pow(t13130,1.0/3.0);
+                double t13133 = c*t13132;
+                double t13134 = 1.0/sqrt(t13133);
+                double t13135 = sqrt(t13133);
+                double t13136 = EcPld_3*c*t13131*(1.0/3.0);
+                double t13137 = EcPld_2*c*t13131*t13134*(1.0/6.0);
+                double t13138 = t13136+t13137;
+                double t13139 = EcPld_2*t13135;
+                double t13140 = EcPld_3*c*t13132;
+                double t13141 = t13140+t13139+1.0;
+                double t13142 = 1.0/(t13141*t13141);
+                double t13143 = EcPld_1*t13142*t13138;
+                double t13144 = pow(2.0,1.0/3.0);
+                double t13145 = t13144*2.0;
+                double t13146 = t13145-2.0;
+                double t13147 = two_13*2.0;
+                double t13148 = t13147-2.0;
+                double t13149 = 1.0/t13148;
+                double t13150 = 1.0/t13130;
+                double t13151 = EcPhd_1*t13150*(1.0/3.0);
+                double t13152 = log(t13133);
+                double t13153 = EcPhd_3*c*t13131*(1.0/3.0);
+                double t13154 = EcPhd_4*c*t13131*(1.0/3.0);
+                double t13155 = EcPhd_3*c*t13131*t13152*(1.0/3.0);
+                double t13156 = t13133-1.0;
+                double t13157 = EcPhd_1*t13152;
+                double t13158 = dirac(t13156);
+                double t13159 = EcFld_2*t13135;
+                double t13160 = EcFld_3*c*t13132;
+                double t13161 = t13160+t13159+1.0;
+                double t13162 = 1.0/t13141;
+                double t13163 = EcPld_1*t13162;
+                double t13164 = -t13133+1.0;
+                double t13165 = heaviside(t13164);
+                double t13166 = EcFhd_1*t13152;
+                double t13167 = EcFhd_4*c*t13132;
+                double t13168 = EcPhd_4*c*t13132;
+                double t13169 = EcFhd_3*c*t13132*t13152;
+                double t13170 = EcPhd_3*c*t13132*t13152;
+                double t13171 = heaviside(t13156);
+                double t13172 = 1.0/t13161;
+                double t13173 = t13163-EcFld_1*t13172;
+                double t13174 = t13163-t13146*t13173*t13149;
+                v_rho_b[Q] += scale * t13165*(EcPhd_2+t13170+t13157+t13168+t13146*t13149*(EcFhd_2-EcPhd_2-t13170-t13157+t13166+t13167-t13168+t13169))+t13171*t13174+t13130*(t13171*(t13143-t13146*t13149*(t13143-EcFld_1*1.0/(t13161*t13161)*(EcFld_3*c*t13131*(1.0/3.0)+EcFld_2*c*t13131*t13134*(1.0/6.0))))-t13165*(t13151+t13153+t13154+t13155-t13146*t13149*(t13151+t13153+t13154+t13155-EcFhd_1*t13150*(1.0/3.0)-EcFhd_3*c*t13131*(1.0/3.0)-EcFhd_4*c*t13131*(1.0/3.0)-EcFhd_3*c*t13131*t13152*(1.0/3.0)))-c*t13131*t13174*t13158*(1.0/3.0)+c*t13131*t13158*(EcPhd_2+t13170+t13157+t13168+t13146*t13149*(EcFhd_2-EcPhd_2-t13157+t13166+t13167+t13169-EcPhd_4*c*t13132-EcPhd_3*c*t13132*t13152))*(1.0/3.0));
+            }
+            
+            // v_rho_a_rho_a
+            if (deriv >= 2) {
+                double t13181 = rho_a+rho_b;
+                double t13182 = 1.0/pow(t13181,4.0/3.0);
+                double t13183 = 1.0/pow(t13181,1.0/3.0);
+                double t13184 = c*t13183;
+                double t13185 = 1.0/sqrt(t13184);
+                double t13186 = sqrt(t13184);
+                double t13187 = EcPld_3*c*t13182*(1.0/3.0);
+                double t13188 = EcPld_2*c*t13182*t13185*(1.0/6.0);
+                double t13189 = t13187+t13188;
+                double t13190 = EcPld_2*t13186;
+                double t13191 = EcPld_3*c*t13183;
+                double t13192 = t13190+t13191+1.0;
+                double t13193 = 1.0/(t13192*t13192);
+                double t13194 = EcPld_1*t13193*t13189;
+                double t13195 = t13184-1.0;
+                double t13196 = heaviside(t13195);
+                double t13197 = pow(2.0,1.0/3.0);
+                double t13198 = t13197*2.0;
+                double t13199 = t13198-2.0;
+                double t13200 = two_13*2.0;
+                double t13201 = t13200-2.0;
+                double t13202 = 1.0/t13201;
+                double t13203 = EcFld_3*c*t13182*(1.0/3.0);
+                double t13204 = EcFld_2*c*t13182*t13185*(1.0/6.0);
+                double t13205 = t13203+t13204;
+                double t13206 = EcFld_2*t13186;
+                double t13207 = EcFld_3*c*t13183;
+                double t13208 = t13206+t13207+1.0;
+                double t13209 = t13189*t13189;
+                double t13210 = 1.0/(t13192*t13192*t13192);
+                double t13211 = EcPld_1*t13210*t13209*2.0;
+                double t13212 = 1.0/pow(t13181,7.0/3.0);
+                double t13213 = 1.0/(t13208*t13208);
+                double t13214 = c*c;
+                double t13215 = 1.0/pow(t13181,8.0/3.0);
+                double t13216 = 1.0/pow(t13184,3.0/2.0);
+                double t13217 = EcPld_3*c*t13212*(4.0/9.0);
+                double t13218 = EcPld_2*c*t13212*t13185*(2.0/9.0);
+                double t13219 = t13217+t13218-EcPld_2*t13214*t13215*t13216*(1.0/3.6E1);
+                double t13220 = EcPld_1*t13219*t13193;
+                double t13221 = 1.0/(t13181*t13181);
+                double t13222 = EcPhd_1*t13221*(1.0/3.0);
+                double t13223 = log(t13184);
+                double t13224 = EcPhd_3*c*t13212*(5.0/9.0);
+                double t13225 = EcPhd_4*c*t13212*(4.0/9.0);
+                double t13226 = EcPhd_3*c*t13212*t13223*(4.0/9.0);
+                double t13227 = 1.0/t13192;
+                double t13228 = EcPld_1*t13227;
+                double t13229 = t13194-EcFld_1*t13213*t13205;
+                double t13230 = t13194-t13202*t13229*t13199;
+                double t13231 = dirac(t13195);
+                double t13232 = EcPhd_1*t13223;
+                double t13233 = 1.0/t13181;
+                double t13234 = EcPhd_1*t13233*(1.0/3.0);
+                double t13235 = EcPhd_3*c*t13182*(1.0/3.0);
+                double t13236 = EcPhd_4*c*t13182*(1.0/3.0);
+                double t13237 = EcPhd_3*c*t13223*t13182*(1.0/3.0);
+                double t13238 = 1.0/t13208;
+                double t13254 = EcFld_1*t13238;
+                double t13239 = -t13254+t13228;
+                double t13240 = t13228-t13202*t13239*t13199;
+                double t13241 = dirac(t13195,1.0);
+                double t13242 = EcFhd_1*t13223;
+                double t13243 = EcFhd_4*c*t13183;
+                double t13244 = EcPhd_4*c*t13183;
+                double t13245 = EcFhd_3*c*t13223*t13183;
+                double t13246 = EcPhd_3*c*t13223*t13183;
+                double t13247 = EcFhd_2-EcPhd_2-t13232+t13242+t13243-t13244+t13245-t13246;
+                double t13248 = t13202*t13247*t13199;
+                double t13249 = EcPhd_2+t13232+t13244+t13246+t13248;
+                double t13250 = -t13184+1.0;
+                double t13251 = heaviside(t13250);
+                double t13252 = t13234+t13235+t13236+t13237-EcFhd_1*t13233*(1.0/3.0)-EcFhd_3*c*t13182*(1.0/3.0)-EcFhd_4*c*t13182*(1.0/3.0)-EcFhd_3*c*t13223*t13182*(1.0/3.0);
+                double t13253 = t13234+t13235+t13236+t13237-t13202*t13252*t13199;
+                v_rho_a_rho_a[Q] += scale * -t13181*(-t13251*(t13222+t13224+t13225+t13226-t13202*t13199*(t13222+t13224+t13225+t13226-EcFhd_1*t13221*(1.0/3.0)-EcFhd_3*c*t13212*(5.0/9.0)-EcFhd_4*c*t13212*(4.0/9.0)-EcFhd_3*c*t13212*t13223*(4.0/9.0)))+t13196*(-t13211+t13220+t13202*t13199*(t13211-t13220-EcFld_1*(t13205*t13205)*1.0/(t13208*t13208*t13208)*2.0+EcFld_1*t13213*(EcFld_3*c*t13212*(4.0/9.0)-EcFld_2*t13214*t13215*t13216*(1.0/3.6E1)+EcFld_2*c*t13212*t13185*(2.0/9.0))))-c*t13212*t13231*t13240*(4.0/9.0)+c*t13230*t13231*t13182*(2.0/3.0)+c*t13212*t13231*t13249*(4.0/9.0)+c*t13231*t13253*t13182*(2.0/3.0)-t13240*t13214*t13241*t13215*(1.0/9.0)+t13214*t13241*t13215*t13249*(1.0/9.0))-t13251*t13253*2.0+t13230*t13196*2.0+c*t13231*t13182*t13249*(2.0/3.0)-c*t13231*t13182*(t13228+t13202*t13199*(t13254-t13228))*(2.0/3.0);
+            }
+            
+            // v_rho_a_rho_b
+            if (deriv >= 2) {
+                double t13256 = rho_a+rho_b;
+                double t13257 = 1.0/pow(t13256,4.0/3.0);
+                double t13258 = 1.0/pow(t13256,1.0/3.0);
+                double t13259 = c*t13258;
+                double t13260 = 1.0/sqrt(t13259);
+                double t13261 = sqrt(t13259);
+                double t13262 = EcPld_3*c*t13257*(1.0/3.0);
+                double t13263 = EcPld_2*c*t13260*t13257*(1.0/6.0);
+                double t13264 = t13262+t13263;
+                double t13265 = EcPld_2*t13261;
+                double t13266 = EcPld_3*c*t13258;
+                double t13267 = t13265+t13266+1.0;
+                double t13268 = 1.0/(t13267*t13267);
+                double t13269 = EcPld_1*t13264*t13268;
+                double t13270 = t13259-1.0;
+                double t13271 = heaviside(t13270);
+                double t13272 = pow(2.0,1.0/3.0);
+                double t13273 = t13272*2.0;
+                double t13274 = t13273-2.0;
+                double t13275 = two_13*2.0;
+                double t13276 = t13275-2.0;
+                double t13277 = 1.0/t13276;
+                double t13278 = EcFld_3*c*t13257*(1.0/3.0);
+                double t13279 = EcFld_2*c*t13260*t13257*(1.0/6.0);
+                double t13280 = t13278+t13279;
+                double t13281 = EcFld_2*t13261;
+                double t13282 = EcFld_3*c*t13258;
+                double t13283 = t13281+t13282+1.0;
+                double t13284 = t13264*t13264;
+                double t13285 = 1.0/(t13267*t13267*t13267);
+                double t13286 = EcPld_1*t13284*t13285*2.0;
+                double t13287 = 1.0/pow(t13256,7.0/3.0);
+                double t13288 = 1.0/(t13283*t13283);
+                double t13289 = c*c;
+                double t13290 = 1.0/pow(t13256,8.0/3.0);
+                double t13291 = 1.0/pow(t13259,3.0/2.0);
+                double t13292 = EcPld_3*c*t13287*(4.0/9.0);
+                double t13293 = EcPld_2*c*t13260*t13287*(2.0/9.0);
+                double t13294 = t13292+t13293-EcPld_2*t13290*t13291*t13289*(1.0/3.6E1);
+                double t13295 = EcPld_1*t13294*t13268;
+                double t13296 = 1.0/(t13256*t13256);
+                double t13297 = EcPhd_1*t13296*(1.0/3.0);
+                double t13298 = log(t13259);
+                double t13299 = EcPhd_3*c*t13287*(5.0/9.0);
+                double t13300 = EcPhd_4*c*t13287*(4.0/9.0);
+                double t13301 = EcPhd_3*c*t13287*t13298*(4.0/9.0);
+                double t13302 = 1.0/t13267;
+                double t13303 = EcPld_1*t13302;
+                double t13304 = t13269-EcFld_1*t13280*t13288;
+                double t13305 = t13269-t13304*t13274*t13277;
+                double t13306 = dirac(t13270);
+                double t13307 = EcPhd_1*t13298;
+                double t13308 = 1.0/t13256;
+                double t13309 = EcPhd_1*t13308*(1.0/3.0);
+                double t13310 = EcPhd_3*c*t13257*(1.0/3.0);
+                double t13311 = EcPhd_4*c*t13257*(1.0/3.0);
+                double t13312 = EcPhd_3*c*t13257*t13298*(1.0/3.0);
+                double t13313 = 1.0/t13283;
+                double t13329 = EcFld_1*t13313;
+                double t13314 = t13303-t13329;
+                double t13330 = t13314*t13274*t13277;
+                double t13315 = t13303-t13330;
+                double t13316 = dirac(t13270,1.0);
+                double t13317 = EcFhd_1*t13298;
+                double t13318 = EcFhd_4*c*t13258;
+                double t13319 = EcPhd_4*c*t13258;
+                double t13320 = EcFhd_3*c*t13258*t13298;
+                double t13321 = EcPhd_3*c*t13258*t13298;
+                double t13322 = EcFhd_2-EcPhd_2+t13320-t13321-t13307+t13317+t13318-t13319;
+                double t13323 = t13322*t13274*t13277;
+                double t13324 = EcPhd_2+t13321+t13323+t13307+t13319;
+                double t13325 = -t13259+1.0;
+                double t13326 = heaviside(t13325);
+                double t13327 = t13310+t13311+t13312+t13309-EcFhd_1*t13308*(1.0/3.0)-EcFhd_3*c*t13257*(1.0/3.0)-EcFhd_4*c*t13257*(1.0/3.0)-EcFhd_3*c*t13257*t13298*(1.0/3.0);
+                double t13328 = t13310+t13311+t13312+t13309-t13327*t13274*t13277;
+                v_rho_a_rho_b[Q] += scale * -t13256*(-t13326*(t13300+t13301+t13297+t13299-t13274*t13277*(t13300+t13301+t13297+t13299-EcFhd_1*t13296*(1.0/3.0)-EcFhd_3*c*t13287*(5.0/9.0)-EcFhd_4*c*t13287*(4.0/9.0)-EcFhd_3*c*t13287*t13298*(4.0/9.0)))+t13271*(-t13286+t13295+t13274*t13277*(t13286-t13295-EcFld_1*(t13280*t13280)*1.0/(t13283*t13283*t13283)*2.0+EcFld_1*t13288*(EcFld_3*c*t13287*(4.0/9.0)-EcFld_2*t13290*t13291*t13289*(1.0/3.6E1)+EcFld_2*c*t13260*t13287*(2.0/9.0))))+c*t13305*t13306*t13257*(2.0/3.0)-c*t13306*t13315*t13287*(4.0/9.0)+c*t13306*t13324*t13287*(4.0/9.0)+c*t13306*t13328*t13257*(2.0/3.0)-t13315*t13316*t13290*t13289*(1.0/9.0)+t13324*t13316*t13290*t13289*(1.0/9.0))+t13305*t13271*2.0-t13326*t13328*2.0-c*t13306*t13315*t13257*(2.0/3.0)+c*t13306*t13324*t13257*(2.0/3.0);
+            }
+            
+            // v_rho_b_rho_b
+            if (deriv >= 2) {
+                double t13332 = rho_a+rho_b;
+                double t13333 = 1.0/pow(t13332,4.0/3.0);
+                double t13334 = 1.0/pow(t13332,1.0/3.0);
+                double t13335 = c*t13334;
+                double t13336 = 1.0/sqrt(t13335);
+                double t13337 = sqrt(t13335);
+                double t13338 = EcPld_3*c*t13333*(1.0/3.0);
+                double t13339 = EcPld_2*c*t13333*t13336*(1.0/6.0);
+                double t13340 = t13338+t13339;
+                double t13341 = EcPld_2*t13337;
+                double t13342 = EcPld_3*c*t13334;
+                double t13343 = t13341+t13342+1.0;
+                double t13344 = 1.0/(t13343*t13343);
+                double t13345 = EcPld_1*t13340*t13344;
+                double t13346 = t13335-1.0;
+                double t13347 = heaviside(t13346);
+                double t13348 = pow(2.0,1.0/3.0);
+                double t13349 = t13348*2.0;
+                double t13350 = t13349-2.0;
+                double t13351 = two_13*2.0;
+                double t13352 = t13351-2.0;
+                double t13353 = 1.0/t13352;
+                double t13354 = EcFld_3*c*t13333*(1.0/3.0);
+                double t13355 = EcFld_2*c*t13333*t13336*(1.0/6.0);
+                double t13356 = t13354+t13355;
+                double t13357 = EcFld_2*t13337;
+                double t13358 = EcFld_3*c*t13334;
+                double t13359 = t13357+t13358+1.0;
+                double t13360 = t13340*t13340;
+                double t13361 = 1.0/(t13343*t13343*t13343);
+                double t13362 = EcPld_1*t13360*t13361*2.0;
+                double t13363 = 1.0/pow(t13332,7.0/3.0);
+                double t13364 = 1.0/(t13359*t13359);
+                double t13365 = c*c;
+                double t13366 = 1.0/pow(t13332,8.0/3.0);
+                double t13367 = 1.0/pow(t13335,3.0/2.0);
+                double t13368 = EcPld_3*c*t13363*(4.0/9.0);
+                double t13369 = EcPld_2*c*t13336*t13363*(2.0/9.0);
+                double t13370 = t13368+t13369-EcPld_2*t13365*t13366*t13367*(1.0/3.6E1);
+                double t13371 = EcPld_1*t13370*t13344;
+                double t13372 = 1.0/(t13332*t13332);
+                double t13373 = EcPhd_1*t13372*(1.0/3.0);
+                double t13374 = log(t13335);
+                double t13375 = EcPhd_3*c*t13363*(5.0/9.0);
+                double t13376 = EcPhd_4*c*t13363*(4.0/9.0);
+                double t13377 = EcPhd_3*c*t13363*t13374*(4.0/9.0);
+                double t13378 = 1.0/t13343;
+                double t13379 = EcPld_1*t13378;
+                double t13380 = t13345-EcFld_1*t13364*t13356;
+                double t13381 = t13345-t13350*t13353*t13380;
+                double t13382 = dirac(t13346);
+                double t13383 = EcPhd_1*t13374;
+                double t13384 = 1.0/t13332;
+                double t13385 = EcPhd_1*t13384*(1.0/3.0);
+                double t13386 = EcPhd_3*c*t13333*(1.0/3.0);
+                double t13387 = EcPhd_4*c*t13333*(1.0/3.0);
+                double t13388 = EcPhd_3*c*t13333*t13374*(1.0/3.0);
+                double t13389 = 1.0/t13359;
+                double t13405 = EcFld_1*t13389;
+                double t13390 = -t13405+t13379;
+                double t13391 = t13379-t13350*t13353*t13390;
+                double t13392 = dirac(t13346,1.0);
+                double t13393 = EcFhd_1*t13374;
+                double t13394 = EcFhd_4*c*t13334;
+                double t13395 = EcPhd_4*c*t13334;
+                double t13396 = EcFhd_3*c*t13334*t13374;
+                double t13397 = EcPhd_3*c*t13334*t13374;
+                double t13398 = EcFhd_2-EcPhd_2-t13383+t13393+t13394-t13395+t13396-t13397;
+                double t13399 = t13350*t13353*t13398;
+                double t13400 = EcPhd_2+t13383+t13395+t13397+t13399;
+                double t13401 = -t13335+1.0;
+                double t13402 = heaviside(t13401);
+                double t13403 = t13385+t13386+t13387+t13388-EcFhd_1*t13384*(1.0/3.0)-EcFhd_3*c*t13333*(1.0/3.0)-EcFhd_4*c*t13333*(1.0/3.0)-EcFhd_3*c*t13333*t13374*(1.0/3.0);
+                double t13404 = t13385+t13386+t13387+t13388-t13403*t13350*t13353;
+                v_rho_b_rho_b[Q] += scale * -t13332*(-t13402*(t13373+t13375+t13376+t13377-t13350*t13353*(t13373+t13375+t13376+t13377-EcFhd_1*t13372*(1.0/3.0)-EcFhd_3*c*t13363*(5.0/9.0)-EcFhd_4*c*t13363*(4.0/9.0)-EcFhd_3*c*t13363*t13374*(4.0/9.0)))+t13347*(-t13362+t13371+t13350*t13353*(t13362-t13371-EcFld_1*(t13356*t13356)*1.0/(t13359*t13359*t13359)*2.0+EcFld_1*t13364*(EcFld_3*c*t13363*(4.0/9.0)-EcFld_2*t13365*t13366*t13367*(1.0/3.6E1)+EcFld_2*c*t13336*t13363*(2.0/9.0))))+c*t13400*t13363*t13382*(4.0/9.0)+c*t13404*t13333*t13382*(2.0/3.0)+c*t13333*t13381*t13382*(2.0/3.0)-c*t13363*t13382*t13391*(4.0/9.0)+t13400*t13365*t13392*t13366*(1.0/9.0)-t13391*t13365*t13392*t13366*(1.0/9.0))-t13402*t13404*2.0+t13381*t13347*2.0+c*t13400*t13333*t13382*(2.0/3.0)-c*t13333*t13382*(t13379+t13350*t13353*(t13405-t13379))*(2.0/3.0);
+            }
+            
+        } else if (rho_b < lsda_cutoff_) {
+            // v
+            if (deriv >= 0) {
+                double t13432 = rho_a+rho_b;
+                double t13433 = 1.0/pow(t13432,1.0/3.0);
+                double t13434 = c*t13433;
+                double t13435 = log(t13434);
+                double t13436 = EcPhd_1*t13435;
+                double t13437 = pow(2.0,1.0/3.0);
+                double t13438 = t13437*2.0;
+                double t13439 = t13438-2.0;
+                double t13440 = two_13*2.0;
+                double t13441 = t13440-2.0;
+                double t13442 = 1.0/t13441;
+                double t13443 = sqrt(t13434);
+                double t13444 = EcPld_2*t13443;
+                double t13445 = EcPld_3*c*t13433;
+                double t13446 = t13444+t13445+1.0;
+                double t13447 = 1.0/t13446;
+                double t13448 = EcPld_1*t13447;
+                v[Q] += scale * t13432*(heaviside(-c*t13433+1.0)*(EcPhd_2+t13436+t13442*t13439*(EcFhd_2-EcPhd_2-t13436+EcFhd_1*t13435+EcFhd_4*c*t13433-EcPhd_4*c*t13433+EcFhd_3*c*t13433*t13435-EcPhd_3*c*t13433*t13435)+EcPhd_4*c*t13433+EcPhd_3*c*t13433*t13435)+heaviside(t13434-1.0)*(t13448-t13442*t13439*(t13448-EcFld_1/(EcFld_2*t13443+EcFld_3*c*t13433+1.0))));
+            }
+            
+            // v_rho_a
+            if (deriv >= 1) {
+                double t13450 = rho_a+rho_b;
+                double t13451 = 1.0/pow(t13450,4.0/3.0);
+                double t13452 = 1.0/pow(t13450,1.0/3.0);
+                double t13453 = c*t13452;
+                double t13454 = 1.0/sqrt(t13453);
+                double t13455 = sqrt(t13453);
+                double t13456 = EcPld_3*c*t13451*(1.0/3.0);
+                double t13457 = EcPld_2*c*t13451*t13454*(1.0/6.0);
+                double t13458 = t13456+t13457;
+                double t13459 = EcPld_2*t13455;
+                double t13460 = EcPld_3*c*t13452;
+                double t13461 = t13460+t13459+1.0;
+                double t13462 = 1.0/(t13461*t13461);
+                double t13463 = EcPld_1*t13462*t13458;
+                double t13464 = pow(2.0,1.0/3.0);
+                double t13465 = t13464*2.0;
+                double t13466 = t13465-2.0;
+                double t13467 = two_13*2.0;
+                double t13468 = t13467-2.0;
+                double t13469 = 1.0/t13468;
+                double t13470 = 1.0/t13450;
+                double t13471 = EcPhd_1*t13470*(1.0/3.0);
+                double t13472 = log(t13453);
+                double t13473 = EcPhd_3*c*t13451*(1.0/3.0);
+                double t13474 = EcPhd_4*c*t13451*(1.0/3.0);
+                double t13475 = EcPhd_3*c*t13451*t13472*(1.0/3.0);
+                double t13476 = t13453-1.0;
+                double t13477 = EcPhd_1*t13472;
+                double t13478 = dirac(t13476);
+                double t13479 = EcFld_2*t13455;
+                double t13480 = EcFld_3*c*t13452;
+                double t13481 = t13480+t13479+1.0;
+                double t13482 = 1.0/t13461;
+                double t13483 = EcPld_1*t13482;
+                double t13484 = -t13453+1.0;
+                double t13485 = heaviside(t13484);
+                double t13486 = EcFhd_1*t13472;
+                double t13487 = EcFhd_4*c*t13452;
+                double t13488 = EcPhd_4*c*t13452;
+                double t13489 = EcFhd_3*c*t13452*t13472;
+                double t13490 = EcPhd_3*c*t13452*t13472;
+                double t13491 = heaviside(t13476);
+                double t13492 = 1.0/t13481;
+                double t13493 = t13483-EcFld_1*t13492;
+                double t13494 = t13483-t13466*t13493*t13469;
+                v_rho_a[Q] += scale * t13485*(EcPhd_2+t13490+t13477+t13488+t13466*t13469*(EcFhd_2-EcPhd_2-t13490-t13477+t13486+t13487-t13488+t13489))+t13491*t13494+t13450*(t13491*(t13463-t13466*t13469*(t13463-EcFld_1*1.0/(t13481*t13481)*(EcFld_3*c*t13451*(1.0/3.0)+EcFld_2*c*t13451*t13454*(1.0/6.0))))-t13485*(t13471+t13473+t13474+t13475-t13466*t13469*(t13471+t13473+t13474+t13475-EcFhd_1*t13470*(1.0/3.0)-EcFhd_3*c*t13451*(1.0/3.0)-EcFhd_4*c*t13451*(1.0/3.0)-EcFhd_3*c*t13451*t13472*(1.0/3.0)))-c*t13451*t13494*t13478*(1.0/3.0)+c*t13451*t13478*(EcPhd_2+t13490+t13477+t13488+t13466*t13469*(EcFhd_2-EcPhd_2-t13477+t13486+t13487+t13489-EcPhd_4*c*t13452-EcPhd_3*c*t13452*t13472))*(1.0/3.0));
+            }
+            
+            // v_rho_b
+            if (deriv >= 1) {
+                double t13496 = rho_a+rho_b;
+                double t13497 = 1.0/pow(t13496,4.0/3.0);
+                double t13498 = 1.0/pow(t13496,1.0/3.0);
+                double t13499 = c*t13498;
+                double t13500 = 1.0/sqrt(t13499);
+                double t13501 = sqrt(t13499);
+                double t13502 = EcPld_3*c*t13497*(1.0/3.0);
+                double t13503 = EcPld_2*c*t13500*t13497*(1.0/6.0);
+                double t13504 = t13502+t13503;
+                double t13505 = EcPld_2*t13501;
+                double t13506 = EcPld_3*c*t13498;
+                double t13507 = t13505+t13506+1.0;
+                double t13508 = 1.0/(t13507*t13507);
+                double t13509 = EcPld_1*t13504*t13508;
+                double t13510 = pow(2.0,1.0/3.0);
+                double t13511 = t13510*2.0;
+                double t13512 = t13511-2.0;
+                double t13513 = two_13*2.0;
+                double t13514 = t13513-2.0;
+                double t13515 = 1.0/t13514;
+                double t13516 = 1.0/t13496;
+                double t13517 = EcPhd_1*t13516*(1.0/3.0);
+                double t13518 = log(t13499);
+                double t13519 = EcPhd_3*c*t13497*(1.0/3.0);
+                double t13520 = EcPhd_4*c*t13497*(1.0/3.0);
+                double t13521 = EcPhd_3*c*t13518*t13497*(1.0/3.0);
+                double t13522 = t13499-1.0;
+                double t13523 = EcPhd_1*t13518;
+                double t13524 = dirac(t13522);
+                double t13525 = EcFld_2*t13501;
+                double t13526 = EcFld_3*c*t13498;
+                double t13527 = t13525+t13526+1.0;
+                double t13528 = 1.0/t13507;
+                double t13529 = EcPld_1*t13528;
+                double t13530 = -t13499+1.0;
+                double t13531 = heaviside(t13530);
+                double t13532 = EcFhd_1*t13518;
+                double t13533 = EcFhd_4*c*t13498;
+                double t13534 = EcPhd_4*c*t13498;
+                double t13535 = EcFhd_3*c*t13518*t13498;
+                double t13536 = EcPhd_3*c*t13518*t13498;
+                double t13537 = heaviside(t13522);
+                double t13538 = 1.0/t13527;
+                double t13539 = t13529-EcFld_1*t13538;
+                double t13540 = t13529-t13512*t13515*t13539;
+                v_rho_b[Q] += scale * t13531*(EcPhd_2+t13523+t13534+t13536+t13512*t13515*(EcFhd_2-EcPhd_2-t13523+t13532+t13533-t13534+t13535-t13536))+t13540*t13537+t13496*(t13537*(t13509-t13512*t13515*(t13509-EcFld_1*1.0/(t13527*t13527)*(EcFld_3*c*t13497*(1.0/3.0)+EcFld_2*c*t13500*t13497*(1.0/6.0))))-t13531*(t13520+t13521+t13517+t13519-t13512*t13515*(t13520+t13521+t13517+t13519-EcFhd_1*t13516*(1.0/3.0)-EcFhd_3*c*t13497*(1.0/3.0)-EcFhd_4*c*t13497*(1.0/3.0)-EcFhd_3*c*t13518*t13497*(1.0/3.0)))-c*t13540*t13524*t13497*(1.0/3.0)+c*t13524*t13497*(EcPhd_2+t13523+t13534+t13536+t13512*t13515*(EcFhd_2-EcPhd_2-t13523+t13532+t13533+t13535-EcPhd_4*c*t13498-EcPhd_3*c*t13518*t13498))*(1.0/3.0));
+            }
+            
+            // v_rho_a_rho_a
+            if (deriv >= 2) {
+                double t13547 = rho_a+rho_b;
+                double t13548 = 1.0/pow(t13547,4.0/3.0);
+                double t13549 = 1.0/pow(t13547,1.0/3.0);
+                double t13550 = c*t13549;
+                double t13551 = 1.0/sqrt(t13550);
+                double t13552 = sqrt(t13550);
+                double t13553 = EcPld_3*c*t13548*(1.0/3.0);
+                double t13554 = EcPld_2*c*t13551*t13548*(1.0/6.0);
+                double t13555 = t13553+t13554;
+                double t13556 = EcPld_2*t13552;
+                double t13557 = EcPld_3*c*t13549;
+                double t13558 = t13556+t13557+1.0;
+                double t13559 = 1.0/(t13558*t13558);
+                double t13560 = EcPld_1*t13555*t13559;
+                double t13561 = t13550-1.0;
+                double t13562 = heaviside(t13561);
+                double t13563 = pow(2.0,1.0/3.0);
+                double t13564 = t13563*2.0;
+                double t13565 = t13564-2.0;
+                double t13566 = two_13*2.0;
+                double t13567 = t13566-2.0;
+                double t13568 = 1.0/t13567;
+                double t13569 = EcFld_3*c*t13548*(1.0/3.0);
+                double t13570 = EcFld_2*c*t13551*t13548*(1.0/6.0);
+                double t13571 = t13570+t13569;
+                double t13572 = EcFld_2*t13552;
+                double t13573 = EcFld_3*c*t13549;
+                double t13574 = t13572+t13573+1.0;
+                double t13575 = t13555*t13555;
+                double t13576 = 1.0/(t13558*t13558*t13558);
+                double t13577 = EcPld_1*t13575*t13576*2.0;
+                double t13578 = 1.0/pow(t13547,7.0/3.0);
+                double t13579 = 1.0/(t13574*t13574);
+                double t13580 = c*c;
+                double t13581 = 1.0/pow(t13547,8.0/3.0);
+                double t13582 = 1.0/pow(t13550,3.0/2.0);
+                double t13583 = EcPld_3*c*t13578*(4.0/9.0);
+                double t13584 = EcPld_2*c*t13551*t13578*(2.0/9.0);
+                double t13585 = t13583+t13584-EcPld_2*t13580*t13581*t13582*(1.0/3.6E1);
+                double t13586 = EcPld_1*t13585*t13559;
+                double t13587 = 1.0/(t13547*t13547);
+                double t13588 = EcPhd_1*t13587*(1.0/3.0);
+                double t13589 = log(t13550);
+                double t13590 = EcPhd_3*c*t13578*(5.0/9.0);
+                double t13591 = EcPhd_4*c*t13578*(4.0/9.0);
+                double t13592 = EcPhd_3*c*t13578*t13589*(4.0/9.0);
+                double t13593 = 1.0/t13558;
+                double t13594 = EcPld_1*t13593;
+                double t13595 = t13560-EcFld_1*t13571*t13579;
+                double t13596 = t13560-t13565*t13568*t13595;
+                double t13597 = dirac(t13561);
+                double t13598 = EcPhd_1*t13589;
+                double t13599 = 1.0/t13547;
+                double t13600 = EcPhd_1*t13599*(1.0/3.0);
+                double t13601 = EcPhd_3*c*t13548*(1.0/3.0);
+                double t13602 = EcPhd_4*c*t13548*(1.0/3.0);
+                double t13603 = EcPhd_3*c*t13548*t13589*(1.0/3.0);
+                double t13604 = 1.0/t13574;
+                double t13620 = EcFld_1*t13604;
+                double t13605 = -t13620+t13594;
+                double t13606 = t13594-t13605*t13565*t13568;
+                double t13607 = dirac(t13561,1.0);
+                double t13608 = EcFhd_1*t13589;
+                double t13609 = EcFhd_4*c*t13549;
+                double t13610 = EcPhd_4*c*t13549;
+                double t13611 = EcFhd_3*c*t13549*t13589;
+                double t13612 = EcPhd_3*c*t13549*t13589;
+                double t13613 = EcFhd_2-EcPhd_2-t13610+t13611-t13612+t13608+t13609-t13598;
+                double t13614 = t13613*t13565*t13568;
+                double t13615 = EcPhd_2+t13610+t13612+t13614+t13598;
+                double t13616 = -t13550+1.0;
+                double t13617 = heaviside(t13616);
+                double t13618 = t13600+t13601+t13602+t13603-EcFhd_1*t13599*(1.0/3.0)-EcFhd_3*c*t13548*(1.0/3.0)-EcFhd_4*c*t13548*(1.0/3.0)-EcFhd_3*c*t13548*t13589*(1.0/3.0);
+                double t13619 = t13600+t13601+t13602+t13603-t13618*t13565*t13568;
+                v_rho_a_rho_a[Q] += scale * -t13547*(-t13617*(t13590+t13591+t13592+t13588-t13565*t13568*(t13590+t13591+t13592+t13588-EcFhd_1*t13587*(1.0/3.0)-EcFhd_3*c*t13578*(5.0/9.0)-EcFhd_4*c*t13578*(4.0/9.0)-EcFhd_3*c*t13578*t13589*(4.0/9.0)))+t13562*(-t13577+t13586+t13565*t13568*(t13577-t13586-EcFld_1*(t13571*t13571)*1.0/(t13574*t13574*t13574)*2.0+EcFld_1*t13579*(EcFld_3*c*t13578*(4.0/9.0)-EcFld_2*t13580*t13581*t13582*(1.0/3.6E1)+EcFld_2*c*t13551*t13578*(2.0/9.0))))-c*t13606*t13578*t13597*(4.0/9.0)+c*t13615*t13578*t13597*(4.0/9.0)+c*t13619*t13548*t13597*(2.0/3.0)+c*t13548*t13596*t13597*(2.0/3.0)-t13606*t13580*t13607*t13581*(1.0/9.0)+t13615*t13580*t13607*t13581*(1.0/9.0))-t13617*t13619*2.0+t13562*t13596*2.0+c*t13615*t13548*t13597*(2.0/3.0)-c*t13548*t13597*(t13594+t13565*t13568*(t13620-t13594))*(2.0/3.0);
+            }
+            
+            // v_rho_a_rho_b
+            if (deriv >= 2) {
+                double t13622 = rho_a+rho_b;
+                double t13623 = 1.0/pow(t13622,4.0/3.0);
+                double t13624 = 1.0/pow(t13622,1.0/3.0);
+                double t13625 = c*t13624;
+                double t13626 = 1.0/sqrt(t13625);
+                double t13627 = sqrt(t13625);
+                double t13628 = EcPld_3*c*t13623*(1.0/3.0);
+                double t13629 = EcPld_2*c*t13623*t13626*(1.0/6.0);
+                double t13630 = t13628+t13629;
+                double t13631 = EcPld_2*t13627;
+                double t13632 = EcPld_3*c*t13624;
+                double t13633 = t13631+t13632+1.0;
+                double t13634 = 1.0/(t13633*t13633);
+                double t13635 = EcPld_1*t13630*t13634;
+                double t13636 = t13625-1.0;
+                double t13637 = heaviside(t13636);
+                double t13638 = pow(2.0,1.0/3.0);
+                double t13639 = t13638*2.0;
+                double t13640 = t13639-2.0;
+                double t13641 = two_13*2.0;
+                double t13642 = t13641-2.0;
+                double t13643 = 1.0/t13642;
+                double t13644 = EcFld_3*c*t13623*(1.0/3.0);
+                double t13645 = EcFld_2*c*t13623*t13626*(1.0/6.0);
+                double t13646 = t13644+t13645;
+                double t13647 = EcFld_2*t13627;
+                double t13648 = EcFld_3*c*t13624;
+                double t13649 = t13647+t13648+1.0;
+                double t13650 = t13630*t13630;
+                double t13651 = 1.0/(t13633*t13633*t13633);
+                double t13652 = EcPld_1*t13650*t13651*2.0;
+                double t13653 = 1.0/pow(t13622,7.0/3.0);
+                double t13654 = 1.0/(t13649*t13649);
+                double t13655 = c*c;
+                double t13656 = 1.0/pow(t13622,8.0/3.0);
+                double t13657 = 1.0/pow(t13625,3.0/2.0);
+                double t13658 = EcPld_3*c*t13653*(4.0/9.0);
+                double t13659 = EcPld_2*c*t13626*t13653*(2.0/9.0);
+                double t13660 = t13658+t13659-EcPld_2*t13655*t13656*t13657*(1.0/3.6E1);
+                double t13661 = EcPld_1*t13660*t13634;
+                double t13662 = 1.0/(t13622*t13622);
+                double t13663 = EcPhd_1*t13662*(1.0/3.0);
+                double t13664 = log(t13625);
+                double t13665 = EcPhd_3*c*t13653*(5.0/9.0);
+                double t13666 = EcPhd_4*c*t13653*(4.0/9.0);
+                double t13667 = EcPhd_3*c*t13653*t13664*(4.0/9.0);
+                double t13668 = 1.0/t13633;
+                double t13669 = EcPld_1*t13668;
+                double t13670 = t13635-EcFld_1*t13654*t13646;
+                double t13671 = t13635-t13640*t13643*t13670;
+                double t13672 = dirac(t13636);
+                double t13673 = EcPhd_1*t13664;
+                double t13674 = 1.0/t13622;
+                double t13675 = EcPhd_1*t13674*(1.0/3.0);
+                double t13676 = EcPhd_3*c*t13623*(1.0/3.0);
+                double t13677 = EcPhd_4*c*t13623*(1.0/3.0);
+                double t13678 = EcPhd_3*c*t13623*t13664*(1.0/3.0);
+                double t13679 = 1.0/t13649;
+                double t13695 = EcFld_1*t13679;
+                double t13680 = -t13695+t13669;
+                double t13681 = t13669-t13640*t13643*t13680;
+                double t13682 = dirac(t13636,1.0);
+                double t13683 = EcFhd_1*t13664;
+                double t13684 = EcFhd_4*c*t13624;
+                double t13685 = EcPhd_4*c*t13624;
+                double t13686 = EcFhd_3*c*t13624*t13664;
+                double t13687 = EcPhd_3*c*t13624*t13664;
+                double t13688 = EcFhd_2-EcPhd_2-t13673+t13683+t13684-t13685+t13686-t13687;
+                double t13689 = t13640*t13643*t13688;
+                double t13690 = EcPhd_2+t13673+t13685+t13687+t13689;
+                double t13691 = -t13625+1.0;
+                double t13692 = heaviside(t13691);
+                double t13693 = t13675+t13676+t13677+t13678-EcFhd_1*t13674*(1.0/3.0)-EcFhd_3*c*t13623*(1.0/3.0)-EcFhd_4*c*t13623*(1.0/3.0)-EcFhd_3*c*t13623*t13664*(1.0/3.0);
+                double t13694 = t13675+t13676+t13677+t13678-t13640*t13643*t13693;
+                v_rho_a_rho_b[Q] += scale * -t13622*(-t13692*(t13663+t13665+t13666+t13667-t13640*t13643*(t13663+t13665+t13666+t13667-EcFhd_1*t13662*(1.0/3.0)-EcFhd_3*c*t13653*(5.0/9.0)-EcFhd_4*c*t13653*(4.0/9.0)-EcFhd_3*c*t13653*t13664*(4.0/9.0)))+t13637*(-t13652+t13661+t13640*t13643*(t13652-t13661-EcFld_1*(t13646*t13646)*1.0/(t13649*t13649*t13649)*2.0+EcFld_1*t13654*(EcFld_3*c*t13653*(4.0/9.0)-EcFld_2*t13655*t13656*t13657*(1.0/3.6E1)+EcFld_2*c*t13626*t13653*(2.0/9.0))))+c*t13623*t13671*t13672*(2.0/3.0)-c*t13653*t13672*t13681*(4.0/9.0)+c*t13653*t13672*t13690*(4.0/9.0)+c*t13623*t13672*t13694*(2.0/3.0)-t13681*t13655*t13682*t13656*(1.0/9.0)+t13690*t13655*t13682*t13656*(1.0/9.0))+t13671*t13637*2.0-t13692*t13694*2.0+c*t13623*t13672*t13690*(2.0/3.0)-c*t13623*t13672*(t13669+t13640*t13643*(t13695-t13669))*(2.0/3.0);
+            }
+            
+            // v_rho_b_rho_b
+            if (deriv >= 2) {
+                double t13697 = rho_a+rho_b;
+                double t13698 = 1.0/pow(t13697,4.0/3.0);
+                double t13699 = 1.0/pow(t13697,1.0/3.0);
+                double t13700 = c*t13699;
+                double t13701 = 1.0/sqrt(t13700);
+                double t13702 = sqrt(t13700);
+                double t13703 = EcPld_3*c*t13698*(1.0/3.0);
+                double t13704 = EcPld_2*c*t13701*t13698*(1.0/6.0);
+                double t13705 = t13703+t13704;
+                double t13706 = EcPld_2*t13702;
+                double t13707 = EcPld_3*c*t13699;
+                double t13708 = t13706+t13707+1.0;
+                double t13709 = 1.0/(t13708*t13708);
+                double t13710 = EcPld_1*t13705*t13709;
+                double t13711 = t13700-1.0;
+                double t13712 = heaviside(t13711);
+                double t13713 = pow(2.0,1.0/3.0);
+                double t13714 = t13713*2.0;
+                double t13715 = t13714-2.0;
+                double t13716 = two_13*2.0;
+                double t13717 = t13716-2.0;
+                double t13718 = 1.0/t13717;
+                double t13719 = EcFld_3*c*t13698*(1.0/3.0);
+                double t13720 = EcFld_2*c*t13701*t13698*(1.0/6.0);
+                double t13721 = t13720+t13719;
+                double t13722 = EcFld_2*t13702;
+                double t13723 = EcFld_3*c*t13699;
+                double t13724 = t13722+t13723+1.0;
+                double t13725 = t13705*t13705;
+                double t13726 = 1.0/(t13708*t13708*t13708);
+                double t13727 = EcPld_1*t13725*t13726*2.0;
+                double t13728 = 1.0/pow(t13697,7.0/3.0);
+                double t13729 = 1.0/(t13724*t13724);
+                double t13730 = c*c;
+                double t13731 = 1.0/pow(t13697,8.0/3.0);
+                double t13732 = 1.0/pow(t13700,3.0/2.0);
+                double t13733 = EcPld_3*c*t13728*(4.0/9.0);
+                double t13734 = EcPld_2*c*t13701*t13728*(2.0/9.0);
+                double t13735 = t13733+t13734-EcPld_2*t13730*t13731*t13732*(1.0/3.6E1);
+                double t13736 = EcPld_1*t13735*t13709;
+                double t13737 = 1.0/(t13697*t13697);
+                double t13738 = EcPhd_1*t13737*(1.0/3.0);
+                double t13739 = log(t13700);
+                double t13740 = EcPhd_3*c*t13728*(5.0/9.0);
+                double t13741 = EcPhd_4*c*t13728*(4.0/9.0);
+                double t13742 = EcPhd_3*c*t13728*t13739*(4.0/9.0);
+                double t13743 = 1.0/t13708;
+                double t13744 = EcPld_1*t13743;
+                double t13745 = t13710-EcFld_1*t13721*t13729;
+                double t13746 = t13710-t13715*t13718*t13745;
+                double t13747 = dirac(t13711);
+                double t13748 = EcPhd_1*t13739;
+                double t13749 = 1.0/t13697;
+                double t13750 = EcPhd_1*t13749*(1.0/3.0);
+                double t13751 = EcPhd_3*c*t13698*(1.0/3.0);
+                double t13752 = EcPhd_4*c*t13698*(1.0/3.0);
+                double t13753 = EcPhd_3*c*t13739*t13698*(1.0/3.0);
+                double t13754 = 1.0/t13724;
+                double t13770 = EcFld_1*t13754;
+                double t13755 = -t13770+t13744;
+                double t13756 = t13744-t13715*t13718*t13755;
+                double t13757 = dirac(t13711,1.0);
+                double t13758 = EcFhd_1*t13739;
+                double t13759 = EcFhd_4*c*t13699;
+                double t13760 = EcPhd_4*c*t13699;
+                double t13761 = EcFhd_3*c*t13739*t13699;
+                double t13762 = EcPhd_3*c*t13739*t13699;
+                double t13763 = EcFhd_2-EcPhd_2-t13760+t13761-t13762-t13748+t13758+t13759;
+                double t13764 = t13715*t13718*t13763;
+                double t13765 = EcPhd_2+t13760+t13762+t13764+t13748;
+                double t13766 = -t13700+1.0;
+                double t13767 = heaviside(t13766);
+                double t13768 = t13750+t13751+t13752+t13753-EcFhd_1*t13749*(1.0/3.0)-EcFhd_3*c*t13698*(1.0/3.0)-EcFhd_4*c*t13698*(1.0/3.0)-EcFhd_3*c*t13739*t13698*(1.0/3.0);
+                double t13769 = t13750+t13751+t13752+t13753-t13715*t13718*t13768;
+                v_rho_b_rho_b[Q] += scale * -t13697*(-t13767*(t13740+t13741+t13742+t13738-t13715*t13718*(t13740+t13741+t13742+t13738-EcFhd_1*t13737*(1.0/3.0)-EcFhd_3*c*t13728*(5.0/9.0)-EcFhd_4*c*t13728*(4.0/9.0)-EcFhd_3*c*t13728*t13739*(4.0/9.0)))+t13712*(-t13727+t13736+t13715*t13718*(t13727-t13736-EcFld_1*(t13721*t13721)*1.0/(t13724*t13724*t13724)*2.0+EcFld_1*t13729*(EcFld_3*c*t13728*(4.0/9.0)-EcFld_2*t13730*t13731*t13732*(1.0/3.6E1)+EcFld_2*c*t13701*t13728*(2.0/9.0))))-c*t13728*t13747*t13756*(4.0/9.0)+c*t13728*t13747*t13765*(4.0/9.0)+c*t13746*t13747*t13698*(2.0/3.0)+c*t13747*t13769*t13698*(2.0/3.0)-t13730*t13731*t13756*t13757*(1.0/9.0)+t13730*t13731*t13765*t13757*(1.0/9.0))+t13712*t13746*2.0-t13767*t13769*2.0+c*t13747*t13765*t13698*(2.0/3.0)-c*t13747*t13698*(t13744+t13715*t13718*(t13770-t13744))*(2.0/3.0);
+            }
+            
+        } else {
+            // v
+            if (deriv >= 0) {
+                double t12584 = rho_a+rho_b;
+                double t12585 = 1.0/pow(t12584,1.0/3.0);
+                double t12586 = 1.0/t12584;
+                double t12587 = rho_a-rho_b;
+                double t12588 = t12586*t12587;
+                double t12589 = c*t12585;
+                double t12590 = log(t12589);
+                double t12591 = EcPhd_1*t12590;
+                double t12592 = two_13*2.0;
+                double t12593 = t12592-2.0;
+                double t12594 = 1.0/t12593;
+                double t12595 = sqrt(t12589);
+                double t12596 = EcPld_2*t12595;
+                double t12597 = EcPld_3*c*t12585;
+                double t12598 = t12596+t12597+1.0;
+                double t12599 = 1.0/t12598;
+                double t12600 = EcPld_1*t12599;
+                double t12601 = t12588+1.0;
+                double t12602 = pow(t12601,4.0/3.0);
+                double t12603 = -t12588+1.0;
+                double t12604 = pow(t12603,4.0/3.0);
+                double t12605 = t12602+t12604-2.0;
+                v[Q] += scale * t12584*(heaviside(-c*t12585+1.0)*(EcPhd_2+t12591+t12605*t12594*(EcFhd_2-EcPhd_2-t12591+EcFhd_1*t12590+EcFhd_4*c*t12585-EcPhd_4*c*t12585+EcFhd_3*c*t12590*t12585-EcPhd_3*c*t12590*t12585)+EcPhd_4*c*t12585+EcPhd_3*c*t12590*t12585)+heaviside(t12589-1.0)*(t12600-t12605*t12594*(t12600-EcFld_1/(EcFld_2*t12595+EcFld_3*c*t12585+1.0))));
+            }
+            
+            // v_rho_a
+            if (deriv >= 1) {
+                double t12607 = rho_a+rho_b;
+                double t12608 = 1.0/pow(t12607,1.0/3.0);
+                double t12609 = 1.0/t12607;
+                double t12610 = rho_a-rho_b;
+                double t12611 = t12610*t12609;
+                double t12612 = c*t12608;
+                double t12613 = log(t12612);
+                double t12614 = EcPhd_1*t12613;
+                double t12615 = 1.0/pow(t12607,4.0/3.0);
+                double t12616 = two_13*2.0;
+                double t12617 = t12616-2.0;
+                double t12618 = 1.0/t12617;
+                double t12619 = t12611+1.0;
+                double t12620 = pow(t12619,4.0/3.0);
+                double t12621 = -t12611+1.0;
+                double t12622 = pow(t12621,4.0/3.0);
+                double t12623 = t12620+t12622-2.0;
+                double t12624 = EcPhd_1*t12609*(1.0/3.0);
+                double t12625 = EcPhd_3*c*t12615*(1.0/3.0);
+                double t12626 = EcPhd_4*c*t12615*(1.0/3.0);
+                double t12627 = 1.0/(t12607*t12607);
+                double t12638 = t12610*t12627;
+                double t12628 = t12609-t12638;
+                double t12629 = EcFhd_1*t12613;
+                double t12630 = EcFhd_4*c*t12608;
+                double t12631 = EcPhd_4*c*t12608;
+                double t12632 = EcFhd_3*c*t12613*t12608;
+                double t12633 = EcPhd_3*c*t12613*t12608;
+                double t12634 = EcPhd_3*c*t12613*t12615*(1.0/3.0);
+                double t12635 = 1.0/sqrt(t12612);
+                double t12636 = sqrt(t12612);
+                double t12637 = pow(t12619,1.0/3.0);
+                double t12639 = t12628*t12637*(4.0/3.0);
+                double t12640 = pow(t12621,1.0/3.0);
+                double t12641 = t12639-t12640*t12628*(4.0/3.0);
+                double t12642 = EcFld_2*t12636;
+                double t12643 = EcFld_3*c*t12608;
+                double t12644 = t12642+t12643+1.0;
+                double t12645 = EcPld_2*t12636;
+                double t12646 = EcPld_3*c*t12608;
+                double t12647 = t12645+t12646+1.0;
+                double t12648 = EcPld_3*c*t12615*(1.0/3.0);
+                double t12649 = EcPld_2*c*t12615*t12635*(1.0/6.0);
+                double t12650 = t12648+t12649;
+                double t12651 = 1.0/(t12647*t12647);
+                double t12652 = t12612-1.0;
+                double t12653 = EcFhd_2-EcPhd_2+t12630-t12631-t12614+t12632-t12633+t12629;
+                double t12654 = dirac(t12652);
+                double t12655 = 1.0/t12647;
+                double t12656 = EcPld_1*t12655;
+                double t12657 = 1.0/t12644;
+                double t12660 = EcFld_1*t12657;
+                double t12658 = -t12660+t12656;
+                double t12659 = heaviside(t12652);
+                v_rho_a[Q] += scale * -t12607*(heaviside(-t12612+1.0)*(t12624+t12625+t12634+t12626-t12623*t12618*(t12624+t12625+t12634+t12626-EcFhd_1*t12609*(1.0/3.0)-EcFhd_3*c*t12615*(1.0/3.0)-EcFhd_4*c*t12615*(1.0/3.0)-EcFhd_3*c*t12613*t12615*(1.0/3.0))-t12641*t12653*t12618)-t12659*(t12623*t12618*(EcFld_1*1.0/(t12644*t12644)*(EcFld_3*c*t12615*(1.0/3.0)+EcFld_2*c*t12615*t12635*(1.0/6.0))-EcPld_1*t12650*t12651)+EcPld_1*t12650*t12651-t12641*t12618*t12658)+c*t12615*t12654*(t12656-t12623*t12618*t12658)*(1.0/3.0)-c*t12615*t12654*(EcPhd_2+t12631+t12614+t12633+t12623*t12653*t12618)*(1.0/3.0))+heaviside(-c*t12608+1.0)*(EcPhd_2+t12631+t12614+t12633+t12623*t12618*(EcFhd_2-EcPhd_2+t12630-t12614+t12632+t12629-EcPhd_4*c*t12608-EcPhd_3*c*t12613*t12608))+t12659*(t12656+t12623*t12618*(t12660-t12656));
+            }
+            
+            // v_rho_b
+            if (deriv >= 1) {
+                double t12662 = rho_a+rho_b;
+                double t12663 = 1.0/pow(t12662,1.0/3.0);
+                double t12664 = 1.0/t12662;
+                double t12665 = rho_a-rho_b;
+                double t12666 = t12664*t12665;
+                double t12667 = c*t12663;
+                double t12668 = log(t12667);
+                double t12669 = EcPhd_1*t12668;
+                double t12670 = 1.0/pow(t12662,4.0/3.0);
+                double t12671 = two_13*2.0;
+                double t12672 = t12671-2.0;
+                double t12673 = 1.0/t12672;
+                double t12674 = t12666+1.0;
+                double t12675 = pow(t12674,4.0/3.0);
+                double t12676 = -t12666+1.0;
+                double t12677 = pow(t12676,4.0/3.0);
+                double t12678 = t12675+t12677-2.0;
+                double t12679 = EcPhd_1*t12664*(1.0/3.0);
+                double t12680 = EcPhd_3*c*t12670*(1.0/3.0);
+                double t12681 = EcPhd_4*c*t12670*(1.0/3.0);
+                double t12682 = 1.0/(t12662*t12662);
+                double t12683 = t12682*t12665;
+                double t12684 = t12664+t12683;
+                double t12685 = EcFhd_1*t12668;
+                double t12686 = EcFhd_4*c*t12663;
+                double t12687 = EcPhd_4*c*t12663;
+                double t12688 = EcFhd_3*c*t12663*t12668;
+                double t12689 = EcPhd_3*c*t12663*t12668;
+                double t12690 = EcPhd_3*c*t12670*t12668*(1.0/3.0);
+                double t12691 = 1.0/sqrt(t12667);
+                double t12692 = sqrt(t12667);
+                double t12693 = pow(t12674,1.0/3.0);
+                double t12694 = t12684*t12693*(4.0/3.0);
+                double t12695 = pow(t12676,1.0/3.0);
+                double t12696 = t12694-t12684*t12695*(4.0/3.0);
+                double t12697 = EcFld_2*t12692;
+                double t12698 = EcFld_3*c*t12663;
+                double t12699 = t12697+t12698+1.0;
+                double t12700 = EcPld_2*t12692;
+                double t12701 = EcPld_3*c*t12663;
+                double t12702 = t12700+t12701+1.0;
+                double t12703 = EcPld_3*c*t12670*(1.0/3.0);
+                double t12704 = EcPld_2*c*t12670*t12691*(1.0/6.0);
+                double t12705 = t12703+t12704;
+                double t12706 = 1.0/(t12702*t12702);
+                double t12707 = t12667-1.0;
+                double t12708 = EcFhd_2-EcPhd_2+t12685+t12686-t12669-t12687+t12688-t12689;
+                double t12709 = dirac(t12707);
+                double t12710 = 1.0/t12702;
+                double t12711 = EcPld_1*t12710;
+                double t12712 = 1.0/t12699;
+                double t12715 = EcFld_1*t12712;
+                double t12713 = t12711-t12715;
+                double t12714 = heaviside(t12707);
+                double t12716 = t12711-t12713*t12673*t12678;
+                v_rho_b[Q] += scale * -t12662*(heaviside(-t12667+1.0)*(t12680+t12681+t12690+t12679-t12673*t12678*(t12680+t12681+t12690+t12679-EcFhd_1*t12664*(1.0/3.0)-EcFhd_3*c*t12670*(1.0/3.0)-EcFhd_4*c*t12670*(1.0/3.0)-EcFhd_3*c*t12670*t12668*(1.0/3.0))+t12708*t12673*t12696)-t12714*(t12673*t12678*(EcFld_1*1.0/(t12699*t12699)*(EcFld_3*c*t12670*(1.0/3.0)+EcFld_2*c*t12670*t12691*(1.0/6.0))-EcPld_1*t12705*t12706)+EcPld_1*t12705*t12706+t12713*t12673*t12696)+c*t12670*t12716*t12709*(1.0/3.0)-c*t12670*t12709*(EcPhd_2+t12669+t12687+t12689+t12708*t12673*t12678)*(1.0/3.0))+t12714*t12716+heaviside(-c*t12663+1.0)*(EcPhd_2+t12669+t12687+t12689+t12673*t12678*(EcFhd_2-EcPhd_2+t12685+t12686-t12669+t12688-EcPhd_4*c*t12663-EcPhd_3*c*t12663*t12668));
+            }
+            
+            // v_rho_a_rho_a
+            if (deriv >= 2) {
+                double t12723 = rho_a+rho_b;
+                double t12724 = 1.0/pow(t12723,4.0/3.0);
+                double t12725 = 1.0/pow(t12723,1.0/3.0);
+                double t12726 = c*t12725;
+                double t12733 = 1.0/sqrt(t12726);
+                double t12735 = EcPld_3*c*t12724*(1.0/3.0);
+                double t12736 = EcPld_2*c*t12724*t12733*(1.0/6.0);
+                double t12727 = t12735+t12736;
+                double t12728 = 1.0/t12723;
+                double t12729 = rho_a-rho_b;
+                double t12730 = t12728*t12729;
+                double t12731 = 1.0/(t12723*t12723);
+                double t12768 = t12731*t12729;
+                double t12732 = t12728-t12768;
+                double t12734 = sqrt(t12726);
+                double t12737 = EcPld_2*t12734;
+                double t12738 = EcPld_3*c*t12725;
+                double t12739 = t12737+t12738+1.0;
+                double t12740 = two_13*2.0;
+                double t12741 = t12740-2.0;
+                double t12742 = 1.0/t12741;
+                double t12743 = t12730+1.0;
+                double t12744 = -t12730+1.0;
+                double t12745 = EcFld_3*c*t12724*(1.0/3.0);
+                double t12746 = EcFld_2*c*t12724*t12733*(1.0/6.0);
+                double t12747 = t12745+t12746;
+                double t12748 = EcFld_2*t12734;
+                double t12749 = EcFld_3*c*t12725;
+                double t12750 = t12748+t12749+1.0;
+                double t12751 = t12727*t12727;
+                double t12752 = 1.0/(t12739*t12739*t12739);
+                double t12753 = EcPld_1*t12751*t12752*2.0;
+                double t12754 = 1.0/pow(t12723,7.0/3.0);
+                double t12755 = 1.0/(t12750*t12750);
+                double t12756 = c*c;
+                double t12757 = 1.0/pow(t12723,8.0/3.0);
+                double t12758 = 1.0/pow(t12726,3.0/2.0);
+                double t12759 = 1.0/(t12739*t12739);
+                double t12760 = EcPld_3*c*t12754*(4.0/9.0);
+                double t12761 = EcPld_2*c*t12733*t12754*(2.0/9.0);
+                double t12762 = t12760+t12761-EcPld_2*t12756*t12757*t12758*(1.0/3.6E1);
+                double t12763 = pow(t12743,1.0/3.0);
+                double t12764 = pow(t12744,1.0/3.0);
+                double t12765 = t12731*2.0;
+                double t12766 = 1.0/(t12723*t12723*t12723);
+                double t12770 = t12729*t12766*2.0;
+                double t12767 = -t12770+t12765;
+                double t12769 = t12732*t12732;
+                double t12771 = t12764*t12767*(4.0/3.0);
+                double t12772 = 1.0/pow(t12743,2.0/3.0);
+                double t12773 = t12772*t12769*(4.0/9.0);
+                double t12774 = 1.0/pow(t12744,2.0/3.0);
+                double t12775 = t12774*t12769*(4.0/9.0);
+                double t12776 = t12771+t12773+t12775-t12763*t12767*(4.0/3.0);
+                double t12777 = log(t12726);
+                double t12778 = pow(t12743,4.0/3.0);
+                double t12779 = pow(t12744,4.0/3.0);
+                double t12780 = t12778+t12779-2.0;
+                double t12781 = EcPhd_1*t12731*(1.0/3.0);
+                double t12782 = EcPhd_3*c*t12754*(5.0/9.0);
+                double t12783 = EcPhd_4*c*t12754*(4.0/9.0);
+                double t12784 = t12732*t12763*(4.0/3.0);
+                double t12804 = t12732*t12764*(4.0/3.0);
+                double t12785 = -t12804+t12784;
+                double t12786 = EcPhd_3*c*t12754*t12777*(4.0/9.0);
+                double t12787 = t12726-1.0;
+                double t12788 = 1.0/t12739;
+                double t12789 = EcPld_1*t12788;
+                double t12790 = 1.0/t12750;
+                double t12809 = EcFld_1*t12790;
+                double t12791 = -t12809+t12789;
+                double t12792 = EcFhd_1*t12777;
+                double t12793 = EcPhd_1*t12777;
+                double t12794 = EcFhd_4*c*t12725;
+                double t12795 = EcFhd_3*c*t12725*t12777;
+                double t12796 = dirac(t12787);
+                double t12797 = EcFhd_1*t12728*(1.0/3.0);
+                double t12798 = EcPhd_1*t12728*(1.0/3.0);
+                double t12799 = EcFhd_3*c*t12724*(1.0/3.0);
+                double t12800 = EcFhd_4*c*t12724*(1.0/3.0);
+                double t12801 = EcPhd_3*c*t12724*(1.0/3.0);
+                double t12802 = EcPhd_4*c*t12724*(1.0/3.0);
+                double t12803 = EcFhd_3*c*t12724*t12777*(1.0/3.0);
+                double t12805 = EcPhd_4*c*t12725;
+                double t12806 = EcPhd_3*c*t12725*t12777;
+                double t12807 = EcFld_1*t12755*t12747;
+                double t12810 = EcPld_1*t12727*t12759;
+                double t12808 = -t12810+t12807;
+                double t12811 = t12809-t12789;
+                double t12812 = dirac(t12787,1.0);
+                double t12813 = EcFhd_2-EcPhd_2-t12805-t12806+t12792-t12793+t12794+t12795;
+                double t12814 = EcPld_1*t12762*t12759;
+                double t12815 = t12813*t12742*t12780;
+                double t12816 = EcPhd_2+t12805+t12806+t12815+t12793;
+                double t12818 = EcPhd_3*c*t12724*t12777*(1.0/3.0);
+                double t12817 = t12800-t12801-t12802+t12803-t12818+t12797-t12798+t12799;
+                double t12819 = -t12726+1.0;
+                double t12820 = heaviside(t12819);
+                double t12821 = t12742*t12780*t12817;
+                double t12822 = t12801+t12802+t12821+t12818+t12798-t12813*t12742*t12785;
+                double t12823 = heaviside(t12787);
+                double t12824 = t12742*t12780*t12808;
+                double t12825 = t12811*t12742*t12785;
+                double t12826 = t12810+t12824+t12825;
+                double t12827 = t12811*t12742*t12780;
+                double t12828 = t12827+t12789;
+                v_rho_a_rho_a[Q] += scale * t12723*(t12823*(-t12814+t12753+t12742*t12780*(t12814-t12753+EcFld_1*1.0/(t12750*t12750*t12750)*(t12747*t12747)*2.0-EcFld_1*t12755*(EcFld_3*c*t12754*(4.0/9.0)-EcFld_2*t12756*t12757*t12758*(1.0/3.6E1)+EcFld_2*c*t12733*t12754*(2.0/9.0)))+t12742*t12808*t12785*2.0-t12742*t12791*t12776)+t12820*(t12781+t12782+t12783+t12786-t12742*t12780*(t12781+t12782+t12783+t12786-EcFhd_1*t12731*(1.0/3.0)-EcFhd_3*c*t12754*(5.0/9.0)-EcFhd_4*c*t12754*(4.0/9.0)-EcFhd_3*c*t12754*t12777*(4.0/9.0))+t12813*t12742*t12776-t12742*t12817*t12785*2.0)-c*t12822*t12724*t12796*(2.0/3.0)-c*t12724*t12826*t12796*(2.0/3.0)-c*t12816*t12754*t12796*(4.0/9.0)+c*t12754*t12828*t12796*(4.0/9.0)-t12812*t12816*t12756*t12757*(1.0/9.0)+t12812*t12756*t12757*(t12789-t12742*t12780*t12791)*(1.0/9.0))-t12820*t12822*2.0+t12823*t12826*2.0+c*t12724*t12816*t12796*(2.0/3.0)-c*t12724*t12828*t12796*(2.0/3.0);
+            }
+            
+            // v_rho_a_rho_b
+            if (deriv >= 2) {
+                double t12830 = rho_a+rho_b;
+                double t12831 = rho_a-rho_b;
+                double t12832 = 1.0/t12830;
+                double t12833 = t12831*t12832;
+                double t12834 = 1.0/(t12830*t12830*t12830);
+                double t12835 = t12833+1.0;
+                double t12836 = 1.0/(t12830*t12830);
+                double t12837 = t12831*t12836;
+                double t12838 = -t12833+1.0;
+                double t12839 = t12832+t12837;
+                double t12840 = t12832-t12837;
+                double t12841 = 1.0/pow(t12830,1.0/3.0);
+                double t12842 = c*t12841;
+                double t12843 = log(t12842);
+                double t12844 = 1.0/pow(t12830,7.0/3.0);
+                double t12845 = two_13*2.0;
+                double t12846 = t12845-2.0;
+                double t12847 = 1.0/t12846;
+                double t12848 = EcPhd_1*t12836*(1.0/3.0);
+                double t12849 = EcPhd_3*c*t12844*(5.0/9.0);
+                double t12850 = EcPhd_4*c*t12844*(4.0/9.0);
+                double t12851 = pow(t12835,1.0/3.0);
+                double t12852 = pow(t12838,1.0/3.0);
+                double t12853 = 1.0/pow(t12830,4.0/3.0);
+                double t12854 = EcFhd_1*t12832*(1.0/3.0);
+                double t12855 = EcFhd_3*c*t12853*(1.0/3.0);
+                double t12856 = EcFhd_4*c*t12853*(1.0/3.0);
+                double t12857 = EcFhd_3*c*t12843*t12853*(1.0/3.0);
+                double t12910 = EcPhd_1*t12832*(1.0/3.0);
+                double t12911 = EcPhd_3*c*t12853*(1.0/3.0);
+                double t12912 = EcPhd_4*c*t12853*(1.0/3.0);
+                double t12913 = EcPhd_3*c*t12843*t12853*(1.0/3.0);
+                double t12858 = -t12910-t12911-t12912-t12913+t12854+t12855+t12856+t12857;
+                double t12859 = EcPhd_3*c*t12843*t12844*(4.0/9.0);
+                double t12863 = 1.0/sqrt(t12842);
+                double t12865 = EcPld_3*c*t12853*(1.0/3.0);
+                double t12866 = EcPld_2*c*t12853*t12863*(1.0/6.0);
+                double t12860 = t12865+t12866;
+                double t12861 = t12851*t12839*(4.0/3.0);
+                double t12914 = t12852*t12839*(4.0/3.0);
+                double t12862 = -t12914+t12861;
+                double t12864 = sqrt(t12842);
+                double t12867 = EcPld_2*t12864;
+                double t12868 = EcPld_3*c*t12841;
+                double t12869 = t12867+t12868+1.0;
+                double t12870 = t12840*t12851*(4.0/3.0);
+                double t12918 = t12840*t12852*(4.0/3.0);
+                double t12871 = t12870-t12918;
+                double t12872 = EcFld_3*c*t12853*(1.0/3.0);
+                double t12873 = EcFld_2*c*t12853*t12863*(1.0/6.0);
+                double t12874 = t12872+t12873;
+                double t12875 = EcFld_2*t12864;
+                double t12876 = EcFld_3*c*t12841;
+                double t12877 = t12875+t12876+1.0;
+                double t12878 = 1.0/(t12877*t12877);
+                double t12879 = EcFld_1*t12874*t12878;
+                double t12880 = 1.0/(t12869*t12869);
+                double t12920 = EcPld_1*t12860*t12880;
+                double t12881 = -t12920+t12879;
+                double t12882 = pow(t12835,4.0/3.0);
+                double t12883 = pow(t12838,4.0/3.0);
+                double t12884 = t12882+t12883-2.0;
+                double t12885 = t12860*t12860;
+                double t12886 = 1.0/(t12869*t12869*t12869);
+                double t12887 = EcPld_1*t12885*t12886*2.0;
+                double t12888 = c*c;
+                double t12889 = 1.0/pow(t12830,8.0/3.0);
+                double t12890 = 1.0/pow(t12842,3.0/2.0);
+                double t12891 = EcPld_3*c*t12844*(4.0/9.0);
+                double t12892 = EcPld_2*c*t12844*t12863*(2.0/9.0);
+                double t12893 = t12891+t12892-EcPld_2*t12890*t12888*t12889*(1.0/3.6E1);
+                double t12894 = t12831*t12834*t12852*(8.0/3.0);
+                double t12895 = 1.0/pow(t12835,2.0/3.0);
+                double t12896 = t12840*t12839*t12895*(4.0/9.0);
+                double t12897 = 1.0/pow(t12838,2.0/3.0);
+                double t12898 = t12840*t12839*t12897*(4.0/9.0);
+                double t12899 = t12894+t12896+t12898-t12831*t12851*t12834*(8.0/3.0);
+                double t12900 = t12842-1.0;
+                double t12901 = 1.0/t12869;
+                double t12902 = EcPld_1*t12901;
+                double t12903 = 1.0/t12877;
+                double t12921 = EcFld_1*t12903;
+                double t12904 = t12902-t12921;
+                double t12905 = EcFhd_1*t12843;
+                double t12906 = EcPhd_1*t12843;
+                double t12907 = EcFhd_4*c*t12841;
+                double t12908 = EcFhd_3*c*t12841*t12843;
+                double t12909 = dirac(t12900);
+                double t12915 = EcPhd_4*c*t12841;
+                double t12916 = EcPhd_3*c*t12841*t12843;
+                double t12917 = t12847*t12884*t12858;
+                double t12919 = EcFhd_2-EcPhd_2+t12905-t12906-t12915+t12907-t12916+t12908;
+                double t12922 = t12881*t12847*t12884;
+                double t12934 = t12904*t12847*t12884;
+                double t12923 = t12902-t12934;
+                double t12924 = dirac(t12900,1.0);
+                double t12925 = t12847*t12919*t12884;
+                double t12926 = EcPhd_2+t12906+t12915+t12916+t12925;
+                double t12927 = -t12842+1.0;
+                double t12928 = heaviside(t12927);
+                double t12929 = t12862*t12847*t12919;
+                double t12930 = t12910+t12911+t12912+t12913+t12917+t12929;
+                double t12931 = t12910+t12911+t12912+t12913+t12917-t12871*t12847*t12919;
+                double t12932 = heaviside(t12900);
+                double t12933 = t12920+t12922-t12904*t12871*t12847;
+                v_rho_a_rho_b[Q] += scale * t12932*(t12920+t12922+t12862*t12847*(t12902-t12921))+t12932*t12933-t12930*t12928-t12931*t12928-t12830*(-t12932*(t12887-EcPld_1*t12880*t12893-t12862*t12881*t12847+t12871*t12881*t12847+t12904*t12847*t12899-t12847*t12884*(t12887-EcFld_1*(t12874*t12874)*1.0/(t12877*t12877*t12877)*2.0-EcPld_1*t12880*t12893+EcFld_1*t12878*(EcFld_3*c*t12844*(4.0/9.0)-EcFld_2*t12890*t12888*t12889*(1.0/3.6E1)+EcFld_2*c*t12844*t12863*(2.0/9.0))))-t12928*(t12850+t12848+t12849+t12859-t12847*t12884*(t12850+t12848+t12849+t12859-EcFhd_1*t12836*(1.0/3.0)-EcFhd_3*c*t12844*(5.0/9.0)-EcFhd_4*c*t12844*(4.0/9.0)-EcFhd_3*c*t12843*t12844*(4.0/9.0))+t12862*t12847*t12858-t12871*t12847*t12858-t12847*t12919*t12899)+c*t12930*t12853*t12909*(1.0/3.0)+c*t12931*t12853*t12909*(1.0/3.0)-c*t12923*t12844*t12909*(4.0/9.0)+c*t12933*t12853*t12909*(1.0/3.0)+c*t12844*t12926*t12909*(4.0/9.0)-t12923*t12924*t12888*t12889*(1.0/9.0)+t12924*t12926*t12888*t12889*(1.0/9.0)+c*t12853*t12909*(t12920+t12922+t12904*t12862*t12847)*(1.0/3.0))-c*t12923*t12853*t12909*(2.0/3.0)+c*t12853*t12926*t12909*(2.0/3.0);
+            }
+            
+            // v_rho_b_rho_b
+            if (deriv >= 2) {
+                double t12936 = rho_a+rho_b;
+                double t12937 = 1.0/pow(t12936,4.0/3.0);
+                double t12938 = 1.0/pow(t12936,1.0/3.0);
+                double t12939 = c*t12938;
+                double t12947 = 1.0/sqrt(t12939);
+                double t12949 = EcPld_3*c*t12937*(1.0/3.0);
+                double t12950 = EcPld_2*c*t12937*t12947*(1.0/6.0);
+                double t12940 = t12950+t12949;
+                double t12941 = 1.0/t12936;
+                double t12942 = rho_a-rho_b;
+                double t12943 = t12941*t12942;
+                double t12944 = 1.0/(t12936*t12936);
+                double t12945 = t12942*t12944;
+                double t12946 = t12941+t12945;
+                double t12948 = sqrt(t12939);
+                double t12951 = EcPld_2*t12948;
+                double t12952 = EcPld_3*c*t12938;
+                double t12953 = t12951+t12952+1.0;
+                double t12954 = two_13*2.0;
+                double t12955 = t12954-2.0;
+                double t12956 = 1.0/t12955;
+                double t12957 = t12943+1.0;
+                double t12958 = -t12943+1.0;
+                double t12959 = EcFld_3*c*t12937*(1.0/3.0);
+                double t12960 = EcFld_2*c*t12937*t12947*(1.0/6.0);
+                double t12961 = t12960+t12959;
+                double t12962 = EcFld_2*t12948;
+                double t12963 = EcFld_3*c*t12938;
+                double t12964 = t12962+t12963+1.0;
+                double t12965 = t12940*t12940;
+                double t12966 = 1.0/(t12953*t12953*t12953);
+                double t12967 = EcPld_1*t12965*t12966*2.0;
+                double t12968 = 1.0/pow(t12936,7.0/3.0);
+                double t12969 = 1.0/(t12964*t12964);
+                double t12970 = c*c;
+                double t12971 = 1.0/pow(t12936,8.0/3.0);
+                double t12972 = 1.0/pow(t12939,3.0/2.0);
+                double t12973 = 1.0/(t12953*t12953);
+                double t12974 = EcPld_3*c*t12968*(4.0/9.0);
+                double t12975 = EcPld_2*c*t12947*t12968*(2.0/9.0);
+                double t12976 = t12974+t12975-EcPld_2*t12970*t12971*t12972*(1.0/3.6E1);
+                double t12977 = pow(t12957,1.0/3.0);
+                double t12978 = pow(t12958,1.0/3.0);
+                double t12979 = t12944*2.0;
+                double t12980 = 1.0/(t12936*t12936*t12936);
+                double t12981 = t12942*t12980*2.0;
+                double t12982 = t12981+t12979;
+                double t12983 = t12946*t12946;
+                double t12984 = t12982*t12977*(4.0/3.0);
+                double t12985 = 1.0/pow(t12957,2.0/3.0);
+                double t12986 = t12983*t12985*(4.0/9.0);
+                double t12987 = 1.0/pow(t12958,2.0/3.0);
+                double t12988 = t12983*t12987*(4.0/9.0);
+                double t12989 = t12984+t12986+t12988-t12982*t12978*(4.0/3.0);
+                double t12990 = log(t12939);
+                double t12991 = pow(t12957,4.0/3.0);
+                double t12992 = pow(t12958,4.0/3.0);
+                double t12993 = t12991+t12992-2.0;
+                double t12994 = EcPhd_1*t12944*(1.0/3.0);
+                double t12995 = EcPhd_3*c*t12968*(5.0/9.0);
+                double t12996 = EcPhd_4*c*t12968*(4.0/9.0);
+                double t12997 = t12946*t12977*(4.0/3.0);
+                double t13017 = t12946*t12978*(4.0/3.0);
+                double t12998 = t12997-t13017;
+                double t12999 = EcPhd_3*c*t12990*t12968*(4.0/9.0);
+                double t13000 = t12939-1.0;
+                double t13001 = 1.0/t12953;
+                double t13002 = EcPld_1*t13001;
+                double t13003 = 1.0/t12964;
+                double t13022 = EcFld_1*t13003;
+                double t13004 = t13002-t13022;
+                double t13005 = EcFhd_1*t12990;
+                double t13006 = EcPhd_1*t12990;
+                double t13007 = EcFhd_4*c*t12938;
+                double t13008 = EcFhd_3*c*t12990*t12938;
+                double t13009 = dirac(t13000);
+                double t13010 = EcFhd_1*t12941*(1.0/3.0);
+                double t13011 = EcPhd_1*t12941*(1.0/3.0);
+                double t13012 = EcFhd_3*c*t12937*(1.0/3.0);
+                double t13013 = EcFhd_4*c*t12937*(1.0/3.0);
+                double t13014 = EcPhd_3*c*t12937*(1.0/3.0);
+                double t13015 = EcPhd_4*c*t12937*(1.0/3.0);
+                double t13016 = EcFhd_3*c*t12990*t12937*(1.0/3.0);
+                double t13018 = EcPhd_4*c*t12938;
+                double t13019 = EcPhd_3*c*t12990*t12938;
+                double t13020 = EcFld_1*t12961*t12969;
+                double t13023 = EcPld_1*t12940*t12973;
+                double t13021 = t13020-t13023;
+                double t13039 = t12956*t12993*t13004;
+                double t13024 = t13002-t13039;
+                double t13025 = dirac(t13000,1.0);
+                double t13026 = EcFhd_2-EcPhd_2+t13005-t13006+t13007+t13008-t13018-t13019;
+                double t13027 = EcPld_1*t12973*t12976;
+                double t13028 = t12956*t12993*t13026;
+                double t13029 = EcPhd_2+t13006+t13018+t13019+t13028;
+                double t13031 = EcPhd_3*c*t12990*t12937*(1.0/3.0);
+                double t13030 = t13010-t13011+t13012+t13013-t13031-t13014-t13015+t13016;
+                double t13032 = -t12939+1.0;
+                double t13033 = heaviside(t13032);
+                double t13034 = t12956*t12993*t13030;
+                double t13035 = t12956*t12998*t13026;
+                double t13036 = t13011+t13031+t13014+t13015+t13034+t13035;
+                double t13037 = heaviside(t13000);
+                double t13038 = t12956*t12993*t13021;
+                v_rho_b_rho_b[Q] += scale * t13037*(t13023+t13038+t12956*t12998*(t13002-t13022))*2.0-t13033*t13036*2.0-t12936*(t13037*(-t12967+t13027+t12956*t12993*(t12967-t13027-EcFld_1*(t12961*t12961)*1.0/(t12964*t12964*t12964)*2.0+EcFld_1*t12969*(EcFld_3*c*t12968*(4.0/9.0)-EcFld_2*t12970*t12971*t12972*(1.0/3.6E1)+EcFld_2*c*t12947*t12968*(2.0/9.0)))+t12956*t12998*t13021*2.0+t12956*t12989*t13004)-t13033*(t12994+t12995+t12996+t12999-t12956*t12993*(t12994+t12995+t12996+t12999-EcFhd_1*t12944*(1.0/3.0)-EcFhd_3*c*t12968*(5.0/9.0)-EcFhd_4*c*t12968*(4.0/9.0)-EcFhd_3*c*t12990*t12968*(4.0/9.0))+t12956*t12998*t13030*2.0+t12956*t12989*t13026)+c*t12937*t13009*t13036*(2.0/3.0)-c*t12968*t13024*t13009*(4.0/9.0)+c*t12968*t13009*t13029*(4.0/9.0)-t12970*t12971*t13024*t13025*(1.0/9.0)+t12970*t12971*t13025*t13029*(1.0/9.0)+c*t12937*t13009*(t13023+t13038+t12956*t12998*t13004)*(2.0/3.0))-c*t12937*t13024*t13009*(2.0/3.0)+c*t12937*t13009*t13029*(2.0/3.0);
+            }
+            
+        }
+    }
+}
+
+}

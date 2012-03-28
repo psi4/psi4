@@ -206,6 +206,33 @@ def build_wpbe_x_functional(name):
 
     return fun
 
+def build_lyp_c_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('LYP_C')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('LYP_C')
+    # Tab in, trailing newlines 
+    fun.set_description('    LYP GGA Correlation Functional\n')
+    # Tab in, trailing newlines 
+    fun.set_citation('    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    # Always built-in for this functional
+
+    # => End User-Customization <= #
+
+    return fun
+
 # Functional lookup table
 functionals = {
         's_x'         : build_s_x_functional,
@@ -215,6 +242,7 @@ functionals = {
         'pw91_x'      : build_pw91_x_functional,
         'ws_x'        : build_ws_x_functional,
         'wpbe_x'      : build_wpbe_x_functional,
+        'lyp_c'       : build_lyp_c_functional,
     }
 
 def build_functional(alias):
@@ -446,6 +474,69 @@ def build_wpbe_x_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup 
 
+def build_lyp_c_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('LYP_C')
+    # Tab in, trailing newlines 
+    sup.set_description('    LYP GGA Correlation Functional\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
+
+    # Add member functionals
+    sup.add_c_functional(build_functional('LYP_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
+def build_blyp_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('BLYP')
+    # Tab in, trailing newlines 
+    sup.set_description('    BLYP GGA Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n    B. Miehlich et. al., Chem. Phys. Lett., 157(3), 200-206 1989\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('B88_X'))
+    sup.add_c_functional(build_functional('LYP_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
 # Superfunctional lookup table
 superfunctionals = {
         's_x'    : build_s_x_superfunctional,
@@ -455,6 +546,8 @@ superfunctionals = {
         'pw91_x' : build_pw91_x_superfunctional,
         'ws_x'   : build_ws_x_superfunctional,
         'wpbe_x' : build_wpbe_x_superfunctional,
+        'lyp_c'  : build_lyp_c_superfunctional,
+        'blyp'   : build_blyp_superfunctional,
     }
 
 def build_superfunctional(alias, npoints, deriv):

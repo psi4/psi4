@@ -76,12 +76,9 @@ if (functional.deriv2 == 0)
     deriv = 1;
 end
 
-buildPartials(functional.functional, deriv)
-system('./purify.py functional');
-buildPartials(functional.functional_a0, deriv)
-system('./purify.py functional_rho_a0');
-buildPartials(functional.functional_b0, deriv)
-system('./purify.py functional_rho_b0');
+buildPartials(functional.functional, 'functional', deriv)
+buildPartials(functional.functional_a0, 'functional_rho_a0', deriv)
+buildPartials(functional.functional_b0, 'functional_rho_b0', deriv)
 
 system(sprintf('/bin/cp %s/functional.cc %sfunctional.cc', paths.templates, functional.name));
 system(sprintf('/bin/cp %s/functional.h %sfunctional.h', paths.templates, functional.name));

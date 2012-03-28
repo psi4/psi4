@@ -1,4 +1,4 @@
-function buildPartials(fun, deriv)
+function buildPartials(fun, name, deriv)
 
 syms rho_a rho_b gamma_aa gamma_ab gamma_bb tau_a tau_b real;
 zero = sym('0');
@@ -48,3 +48,4 @@ if (deriv >= 2)
     ccode(diff(diff(fun + zero,gamma_bb,1),tau_b,1),'file','v_gamma_bb_tau_b');
 end
 
+system(['./purify.py ' name]);
