@@ -233,6 +233,36 @@ def build_lyp_c_functional(name):
 
     return fun
 
+def build_primitive_functional(name):
+
+    # Call this first
+    key = name.upper()
+    if (key[0] == 'W'):
+        key[0] = 'w'
+    fun = PsiMod.Functional.build_base(key)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name(key)
+    # Tab in, trailing newlines 
+    fun.set_description(fun.description())
+    # Tab in, trailing newlines 
+    fun.set_citation(fun.citation())
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(fun.is_gga())
+    fun.set_meta(fun.is_meta())
+    fun.set_alpha(fun.alpha())
+    fun.set_omega(fun.omega())
+
+    # Custom parameters
+    # Always built-in for this functional
+
+    # => End User-Customization <= #
+
+    return fun
+
 # Functional lookup table
 functionals = {
         's_x'         : build_s_x_functional,
@@ -242,7 +272,6 @@ functionals = {
         'pw91_x'      : build_pw91_x_functional,
         'ws_x'        : build_ws_x_functional,
         'wpbe_x'      : build_wpbe_x_functional,
-        'lyp_c'       : build_lyp_c_functional,
     }
 
 def build_functional(alias):
@@ -537,6 +566,46 @@ def build_blyp_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup 
 
+def build_primitive_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    key = name.upper()
+    if (key[0] == 'W'):
+        key[0] = 'w'
+    fun = build_functional(key)
+
+    # No spaces, keep it short and according to convention
+    sup.set_name(key)
+    # Tab in, trailing newlines 
+    sup.set_description(fun.description())
+    # Tab in, trailing newlines 
+    sup.set_citation(fun.citation())
+
+    # Add member functionals
+    
+    if (key[-1] == 'X'):
+        sup.add_x_functional(fun)
+    else:
+        sup.add_c_functional(fun)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
 # Superfunctional lookup table
 superfunctionals = {
         's_x'    : build_s_x_superfunctional,
@@ -546,7 +615,6 @@ superfunctionals = {
         'pw91_x' : build_pw91_x_superfunctional,
         'ws_x'   : build_ws_x_superfunctional,
         'wpbe_x' : build_wpbe_x_superfunctional,
-        'lyp_c'  : build_lyp_c_superfunctional,
         'blyp'   : build_blyp_superfunctional,
     }
 
