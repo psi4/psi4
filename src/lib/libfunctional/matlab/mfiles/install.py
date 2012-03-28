@@ -3,6 +3,7 @@ import os, re, sys
 
 name = sys.argv[1]
 path = sys.argv[2]
+python = sys.argv[3]
 
 os.system('mv %sfunctional.* %s/' %(name, path))
 
@@ -40,3 +41,46 @@ if not header_found:
     
     fh.close()
 
+
+fh = open('%s/functional.py' %(python),'r')
+lines = fh.readlines()
+fh.close()
+
+hook_found = False;
+key = name.lower();
+re_hook = re.compile(r"^(\s+)'%s'(\s+): build_primitive_functional" %(key))
+
+for line in lines:
+    if (re.match(re_hook, line)):
+        hook_found = True 
+
+if not hook_found:
+
+    functional_hook = "        '%s'        : build_primitive_functional,\n" %(key)
+    superfunctional_hook = "        '%s'   : build_primitive_superfunctional,\n" %(key)
+
+    fh = open('%s/functional.py' %(python),'w')
+    
+    re_fun2 = re.compile(r"^\s+\S+\s+: build_\S+_functional");
+    re_super2 = re.compile(r"^\s+\S+\s+: build_\S+_superfunctional");
+
+    in_fun = False;
+    in_super = False;
+
+    for line in lines:
+
+        if (in_fun and (not re.match(re_fun2, line))):
+            fh.write(functional_hook)
+            in_fun = False            
+        if (in_super and (not re.match(re_super2, line))):
+            fh.write(superfunctional_hook)
+            in_super = False            
+
+        if (re.match(re_fun2, line)):
+            in_fun = True;
+        if (re.match(re_super2, line)):
+            in_super = True;
+
+        fh.write(line)    
+
+    fh.close()
