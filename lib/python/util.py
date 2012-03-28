@@ -155,18 +155,18 @@ def copy_file_to_scratch(filename, prefix, namespace, unit, move = False):
     @arg unit      unit number, e.g. 32 
     @arg move      copy or move? (default copy)
 
-    Example:
+    Example::
         
-    Assume PID is 12345 and SCRATCH is /scratch/parrish/ 
+       Assume PID is 12345 and SCRATCH is /scratch/parrish/ 
 
-    copy_file_to_scratch('temp', 'psi', 'h2o', 32):
-        -cp ./temp /scratch/parrish/psi.12345.h2o.32
-    copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
-        -cp /tmp/temp /scratch/parrish/psi.12345.h2o.32
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
-        -cp /tmp/temp /scratch/parrish/psi.12345.32
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
-        -mv /tmp/temp /scratch/parrish/psi.12345.32
+       copy_file_to_scratch('temp', 'psi', 'h2o', 32):
+           -cp ./temp /scratch/parrish/psi.12345.h2o.32
+       copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
+           -cp /tmp/temp /scratch/parrish/psi.12345.h2o.32
+       copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
+           -cp /tmp/temp /scratch/parrish/psi.12345.32
+       copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
+           -mv /tmp/temp /scratch/parrish/psi.12345.32
 
     """
 
@@ -207,18 +207,18 @@ def copy_file_from_scratch(filename, prefix, namespace, unit, move = False):
     @arg unit      unit number, e.g. 32 
     @arg move      copy or move? (default copy)
 
-    Example:
+    Example::
         
-    Assume PID is 12345 and SCRATCH is /scratch/parrish/ 
+       Assume PID is 12345 and SCRATCH is /scratch/parrish/ 
 
-    copy_file_to_scratch('temp', 'psi', 'h2o', 32):
-        -cp /scratch/parrish/psi.12345.h2o.32 .temp  
-    copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
-        -cp /scratch/parrish/psi.12345.h2o.32 /tmp/temp 
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
-        -cp /scratch/parrish/psi.12345.32 /tmp/temp 
-    copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
-        -mv /scratch/parrish/psi.12345.32 /tmp/temp
+       copy_file_to_scratch('temp', 'psi', 'h2o', 32):
+           -cp /scratch/parrish/psi.12345.h2o.32 .temp  
+       copy_file_to_scratch('/tmp/temp', 'psi', 'h2o', 32):
+           -cp /scratch/parrish/psi.12345.h2o.32 /tmp/temp 
+       copy_file_to_scratch('/tmp/temp', 'psi', '', 32):
+           -cp /scratch/parrish/psi.12345.32 /tmp/temp 
+       copy_file_to_scratch('/tmp/temp', 'psi', '', 32, True):
+           -mv /scratch/parrish/psi.12345.32 /tmp/temp
 
     """
 
