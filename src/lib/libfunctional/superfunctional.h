@@ -144,7 +144,7 @@ public:
 
     void print(FILE* out = outfile, int print = 1) const;
     void py_print() const { print(outfile, 1); }
-    void py_print_level(int level) const { print(outfile, level); }
+    void py_print_detail(int level) const { print(outfile, level); }
 
 };
 
