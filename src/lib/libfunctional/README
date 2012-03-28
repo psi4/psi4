@@ -12,5 +12,6 @@ Functional Types:
 
 xfunctional.h/.cc      : Generic exchange-type functionals
 wpbex_functional.h/.cc : SR-wPBE functional (exact exchange hole integral)
-
+*_Xfunctional.h/.cc    : MATLAB-generated exchange-type functionals
+*_Cfunctional.h/.cc    : MATLAB-generated correlation-type functionals
  

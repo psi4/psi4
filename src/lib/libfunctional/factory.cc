@@ -4,6 +4,16 @@
 #include "xfunctional.h"
 #include "wpbex_functional.h"
 #include "LYP_Cfunctional.h"
+#include "FT97B_Xfunctional.h"
+#include "PZ81_Cfunctional.h"
+#include "P86_Cfunctional.h"
+#include "VWN_Cfunctional.h"
+#include "PW91_Cfunctional.h"
+#include "PW92_Cfunctional.h"
+#include "PBE_Cfunctional.h"
+#include "FT97_Cfunctional.h"
+#include "B972_Cfunctional.h"
+#include "B974_Cfunctional.h"
 
 namespace psi {
 
@@ -63,6 +73,26 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         fun = new wPBEXFunctional(); 
     } else if (alias == "LYP_C") {
         fun = new LYP_CFunctional();
+    } else if (alias == "FT97B_X") {
+        fun = new FT97B_XFunctional();
+    } else if (alias == "PZ81_C") {
+        fun = new PZ81_CFunctional();
+    } else if (alias == "P86_C") {
+        fun = new P86_CFunctional();
+    } else if (alias == "VWN_C") {
+        fun = new VWN_CFunctional();
+    } else if (alias == "PW91_C") {
+        fun = new PW91_CFunctional();
+    } else if (alias == "PW92_C") {
+        fun = new PW92_CFunctional();
+    } else if (alias == "PBE_C") {
+        fun = new PBE_CFunctional();
+    } else if (alias == "FT97_C") {
+        fun = new FT97_CFunctional();
+    } else if (alias == "B972_C") {
+        fun = new B972_CFunctional();
+    } else if (alias == "B974_C") {
+        fun = new B974_CFunctional();
     } else {
         throw PSIEXCEPTION("Functional::build_base: Unrecognized base Functional.");
     }
