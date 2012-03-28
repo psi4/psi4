@@ -5,7 +5,7 @@
 PsiMod: Linking C++ and Python
 ==============================
 
-.. literalinclude:: man_PsiMod.rst 
+.. literalinclude:: man_PsiMod.txt
 
 ..  * NOTES (LAB 2-28-2012)
     * How to get PsiMod.py documentation into Sphinx
@@ -16,10 +16,10 @@ PsiMod: Linking C++ and Python
     * (3) cd into a testcase directory
           cd tests/tu1-h2o-energy/
           make clean
-          make > $PSIDATADIR/../doc/sphinxman/source/man_PsiMod.rst 
-    * (4) Edit man_PsiMod.rst to remove junk at end of file.
+          make > $PSIDATADIR/../doc/sphinxman/source/man_PsiMod.txt
+    * (4) Edit man_PsiMod.txt to remove junk at end of file.
     * (5) Rebuild Sphinx docs.
-    * (6) LaTeX build can't handle including man_PsiMod.rst so comment out by default.
+    * (6) LaTeX build can't handle including man_PsiMod.txt so comment out by default.
     * (7) Rebuild psi4 with lines in (1) commented.
 
 .. toctree::

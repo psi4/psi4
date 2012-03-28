@@ -53,7 +53,7 @@ while(<DRIVER>){
     # don't know if it's a multi-line comment, let's find out
     if(/\/\*-\s*SUBSECTION\s+(.*)-\*\// and $CurrentModule){
         $CurrentSubsection = $1;
-        print "$CurrentSubsection\n";
+        #print "$CurrentSubsection\n";
         push @{$ModuleSubsections{$CurrentModule}}, $CurrentSubsection;
     }elsif(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
         $ModuleDescriptions{$CurrentModule} = get_description($_);
@@ -87,16 +87,6 @@ while(<DRIVER>){
     }
 }
 close DRIVER;
-
-
-print "\n\nARRAY\n";
-         foreach my $country (sort keys %ModuleSubsections) {
-           print "$country: ";
-           my @cities = @{$ModuleSubsections{$country}};
-           print join ', ', @cities;
-           print ".\n";
-         }
-print "ENDARRAY\n\n";
 
 
 my @temp = ();
@@ -139,7 +129,7 @@ sub print_hash
      print SOUT "   autodir_options_c/module__" . lc($Module) . "\n";
      my $ssout = "source/autodir_options_c/module__" . lc($Module) . ".rst";
      if ($print_description) { 
-        printf "Auto-documenting module %s options\n", lc($Module);
+        printf "Auto-documenting options in module %s\n", lc($Module);
         open(SSOUT,">$ssout") or die "\nI can't write to $ssout\n";
         printf SSOUT ".. _`apdx:%s`:\n\n", lc($Module);
         printf SSOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
@@ -191,7 +181,11 @@ sub print_hash
              open(SSSOUT,">$fullkeywordfilename") or die "\nI can't write to $fullkeywordfilename\n";
              printf SSSOUT ":term:`%s`\n%s\n\n", uc($UnderscoredKeyword), $Keydivider;
              printf SSSOUT "      %s\n\n", $KeyHash{"SphComment"};
-             printf TSOUT "   %s\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+             if ($print_description) {
+                printf TSOUT "   %s\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+             } else {
+                printf TSOUT "   %s\n      :ref:`apdx:%s` **(Expert)** |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+             }
              if(($KeyHash{"Type"} eq "bool") || ($KeyHash{"Type"} eq "boolean")) {
                 printf SSSOUT "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
                 printf TSOUT  "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
@@ -477,9 +471,15 @@ closedir TESTS;
 
 my $SrcFolder = $DriverPath . "../../src";
 $TexSummary = "variables_list.tex";
+$RstSummary = "source/autodoc_psivariables_bymodule.rst";
 open(TEXOUT,">$TexSummary") or die "I can't write to $TexSummary\n";
 print TEXOUT "{\n \\footnotesize\n";
-
+open(VOUT,">$RstSummary") or die "I can't write to $RstSummary\n";
+print VOUT "\n.. _`apdx:psivariables_module`:\n\n";
+print VOUT "PSI Variables by Module\n=======================\n\n";
+print VOUT ".. note:: Lowercase letters in PSI variable names represent variable portions of the name.\n";
+print VOUT "   See :ref:`apdx:psivariables_alpha` for fuller description.\n\n";
+print VOUT ".. toctree::\n   :maxdepth: 1\n\n";
 # Grab psi modules and ordering from options parsing above
 foreach my $Module (@PSIMODULES) {
     # Set path for each module of bin/module and lib/libmodule_solver
@@ -513,14 +513,31 @@ foreach my $Module (@PSIMODULES) {
     foreach my $EnvVar (@EnvVariables){
          $EnvHash{$EnvVar} = 1 if $EnvVar;
     }
-    foreach my $Var (sort keys %EnvHash) {
-        printf TEXOUT '\\begin{tabular*}{\\textwidth}[tb]{p{1.0\\textwidth}}';
-        printf TEXOUT "\n\t %s \\\\ \n", $Var;
-        print TEXOUT "\\end{tabular*}\n";
+    if (scalar keys %EnvHash > 0) {
+       print VOUT "   autodir_psivariables/module__" . lc($Module) . "\n";
+       my $vvout = "source/autodir_psivariables/module__" . lc($Module) . ".rst";
+       open(VVOUT,">$vvout") or die "I can't write to $vvout\n";
+       printf VVOUT ".. _`apdx:%s_psivar`:\n\n", lc($Module);
+       my $Moddivider = "=" x length($Module);
+       printf VVOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
+       print VVOUT ".. hlist::\n   :columns: 1\n\n";
+       foreach my $Var (sort keys %EnvHash) {
+           printf TEXOUT '\\begin{tabular*}{\\textwidth}[tb]{p{1.0\\textwidth}}';
+           printf TEXOUT "\n\t %s \\\\ \n", $Var;
+           print TEXOUT "\\end{tabular*}\n";
+           my $squashedVar = $Var;
+           $squashedVar =~ s/ //g;
+           printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;
+       }
+       print VVOUT "\n";
+       close VVOUT;
+       printf "Auto-documenting psi variables in module %s\n", lc($Module);
     }
 }
 print TEXOUT "}\n";
 close TEXOUT;
+print VOUT "\n";
+close VOUT;
 
 #
 # Now, grab the physical constants

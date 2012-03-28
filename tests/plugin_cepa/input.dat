@@ -1,4 +1,39 @@
 # cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
+
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+sys.path.insert(0, '/home/deprince/psi4/tests')
+import plugin_cepa
+
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+}
+
+set {
+  r_convergence 1e-7
+  basis cc-pvdz
+  freeze_core true
+}
+
+energy('cepa(1)')
+energy('cepa(2)')
+energy('cepa(3)')
+
+# also evaluate dipoles/quadrupoles for the stationary methods
+set dipmom true
+set print 2
+
+energy('cepa(0)')
+energy('acpf')
+energy('aqcc')
+energy('sdci')
+
+# also check against detci cisd implementation
+energy("cisd")
+
 refnuc     = 8.80146552997   # TEST
 refscf     = -76.0214184452  # TEST
 refcisd    = -0.20576704897  # TEST
@@ -17,53 +52,6 @@ refQdpCEPA = -5.79763143854  # TEST
 refQdpCISD = -5.75628641309  # TEST
 refQdpACPF = -5.78358853983  # TEST
 refQdpAQCC = -5.77402246385  # TEST
-
-molecule h2o {
-0 1
-O
-H 1 1.0 
-H 1 1.0 2 104.5
-}
-
-plugin_load('./plugin_cepa.so')
-PsiMod.set_global_option('WFN', 'CCSD')
-
-set {
-  r_convergence 1e-7
-  basis cc-pvdz
-  freeze_core true
-}
-
-scf_energy = scf()
-transqt2()
-
-set cepa_level cepa1
-plugin('./plugin_cepa.so')
-
-set cepa_level cepa2
-plugin('./plugin_cepa.so')
-
-set cepa_level cepa3
-plugin('./plugin_cepa.so')
-
-# also evaluate dipoles/quadrupoles for the stationary methods
-set dipmom true
-set print 2
-
-set cepa_level cepa0
-plugin('./plugin_cepa.so')
-
-set cepa_level acpf
-plugin('./plugin_cepa.so')
-
-set cepa_level aqcc
-plugin('./plugin_cepa.so')
-
-set cepa_level cisd
-plugin('./plugin_cepa.so')
-
-# also check against detci cisd implementation
-energy("cisd")
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
