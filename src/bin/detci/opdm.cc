@@ -633,10 +633,24 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 
     // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
 
-    /*- Process::environment.globals["CI ROOT $N$ DIPOLE $X$,\quad for $X = $\;X, Y, Z"] -*/
-    /*- Process::environment.globals["CI ROOT $N$ QUADRUPOLE $X$,\quad for $X = $\;XX, XY, XZ, YY, YZ, ZZ"] -*/
-    /*- Process::environment.globals["CI ROOT $N$ $\rightarrow$ ROOT $M$ DIPOLE $X$,\quad for $X = $\;X, Y, Z"] -*/
-    /*- Process::environment.globals["CI ROOT $N$ $\rightarrow$ ROOT $M$ QUADRUPOLE $X$,\quad for $X = $\;XX, XY, XZ, YY, YZ, ZZ"] -*/
+    /*- Process::environment.globals["CI ROOT n DIPOLE X"] -*/
+    /*- Process::environment.globals["CI ROOT n DIPOLE Y"] -*/
+    /*- Process::environment.globals["CI ROOT n DIPOLE Z"] -*/
+    /*- Process::environment.globals["CI ROOT n QUADRUPOLE XX"] -*/
+    /*- Process::environment.globals["CI ROOT n QUADRUPOLE XY"] -*/
+    /*- Process::environment.globals["CI ROOT n QUADRUPOLE XZ"] -*/
+    /*- Process::environment.globals["CI ROOT n QUADRUPOLE YY"] -*/
+    /*- Process::environment.globals["CI ROOT n QUADRUPOLE YZ"] -*/
+    /*- Process::environment.globals["CI ROOT n QUADRUPOLE ZZ"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE X"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Y"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m DIPOLE Z"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XX"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XY"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE XZ"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YY"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE YZ"] -*/
+    /*- Process::environment.globals["CI ROOT n -> ROOT m QUADRUPOLE ZZ"] -*/
 
     // if this is the "special" root, then copy over OEProp 
     // Process::environment variables from the current root into

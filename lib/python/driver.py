@@ -90,11 +90,13 @@ def energy(name, **kwargs):
 
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
-    :PSI variables:
-
-    .. envvar:: CURRENT ENERGY
-        CURRENT REFERENCE ENERGY
-        CURRENT CORRELATION ENERGY
+    :PSI variables: 
+    .. hlist:: 
+       :columns: 1 
+     
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>` 
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>` 
 
     .. _`table:energy_gen`:
 
@@ -616,9 +618,11 @@ def optimize(name, **kwargs):
 
     :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
 
-    :PSI variables:
-
-    .. envvar:: CURRENT ENERGY
+    :PSI variables: 
+    .. hlist:: 
+       :columns: 1 
+     
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
 
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
@@ -634,6 +638,8 @@ def optimize(name, **kwargs):
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -696,7 +702,7 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_option('FULL_HESS_EVERY')
+    full_hess_every = PsiMod.get_local_option('OPTKING','FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
     n = 1

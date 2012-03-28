@@ -114,7 +114,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of iterations to diagonalize the Hamiltonian -*/
     options.add_int("MAXITER", 12);
 
-    /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LEVEL -*/
+    /*- Do a full CI (FCI)? If TRUE, overrides the value of :term:`EX_LEVEL` -*/
     options.add_bool("FCI",false);
 
     /*- The CI excitation level -*/
@@ -122,7 +122,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- In a RAS CI, this is the additional excitation level for allowing
     electrons out of RAS I into RAS II.  The maximum number of holes in
-    RAS I is therefore EX_LEVEL + VAL_EX_LEVEL. -*/
+    RAS I is therefore :term:`EX_LEVEL` + :term:`VAL_EX_LEVEL`. -*/
     options.add_int("VAL_EX_LEVEL", 0);
 
     /*- number of CI roots to find -*/
@@ -212,7 +212,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     if closed-shell and FALSE otherwise. Related to the S option. -*/
     options.add_bool("MS0",false);
 
-    /*- An array of length EX_LEVEL specifying whether each excitation type
+    /*- An array of length :term:`EX_LEVEL` specifying whether each excitation type
     (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed).  Used to
     specify non-standard CI spaces such as CIST.  !expert -*/
     options.add("EX_ALLOW", new ArrayType());
@@ -239,21 +239,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do allow "mixed" RAS II/RAS III excitations into the CI space?
     If FALSE, then if there are any electrons
     in RAS III, then the number of holes in RAS I cannot exceed the given
-    excitation level EX_LEVEL. !expert -*/
+    excitation level :term:`EX_LEVEL`. !expert -*/
     options.add_bool("MIXED",true);
 
     /*- Do allow "mixed" excitations involving RAS IV into the CI space.
     Useful to specify a split-virtual
     CISD[TQ] computation.  If FALSE, then if there are any electrons
     in RAS IV, then the number of holes in RAS I cannot exceed the given
-    excitation level EX_LEVEL.  !expert -*/
+    excitation level :term:`EX_LEVEL`.  !expert -*/
     options.add_bool("MIXED4",true);
 
     /*- Do restrict strings with $e-$ in RAS IV?  Useful to reduce the number 
     of strings required if MIXED4=true, as in a split-virutal CISD[TQ]
     computation.  If more than one electron is in RAS IV, then the
     holes in RAS I cannot exceed the number of particles in
-    RAS III + RAS IV (i.e., EX_LEVEL), or else the string is discarded.
+    RAS III + RAS IV (i.e., :term:`EX_LEVEL`), or else the string is discarded.
     !expert -*/
     options.add_bool("R4S",false);
 
@@ -2238,9 +2238,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
       /*- SUBSECTION Convergence Control -*/
 
-      /*- Set of optimization criteria. Specification of :term:`MAX_G_CONVERGENCE` 
-      or :term:`RMS_G_CONVERGENCE` options
-      will append or overwrite the criteria set here. -*/
+      /*- Set of optimization criteria. Specification of any MAX_*_G_CONVERGENCE 
+      or RMS_*_G_CONVERGENCE options will append to overwrite the criteria set here
+      unless :term:`FLEXIBLE_G_CONVERGENCE` is also on. 
+      See Table :ref:`Geometry Convergence <table:optkingconv>` for details. -*/
       options.add_str("G_CONVERGENCE", "QCHEM", "QCHEM MOLPRO GAU GAU_LOOSE GAU_TIGHT GAU_VERYTIGHT TURBOMOLE CFOUR NWCHEM_LOOSE");
       /*- Convergence criterion for geometry optmization: maximum force 
       (internal coordinates, atomic units). -*/
