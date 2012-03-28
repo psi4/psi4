@@ -48,7 +48,7 @@ void export_functional()
         def("set_c_alpha", &SuperFunctional::set_c_alpha, "docstring").
         def("set_dispersion", &SuperFunctional::set_dispersion, "docstring").
         def("print_out",&SuperFunctional::py_print, "docstring").
-        def("print_detail",&SuperFunctional::py_print_level, "docstring");
+        def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
     class_<Functional, boost::shared_ptr<Functional>, boost::noncopyable >("Functional", "docstring", no_init).
         def("build_base", &Functional::build_base, "docstring").
@@ -73,7 +73,8 @@ void export_functional()
         def("set_lsda_cutoff", &Functional::set_lsda_cutoff, "docstring").
         def("set_meta_cutoff", &Functional::set_meta_cutoff, "docstring").
         def("set_parameter", &Functional::set_parameter, "docstring").
-        def("print_out", &Functional::py_print, "docstring");
+        def("print_out", &Functional::py_print, "docstring").
+        def("print_detail",&SuperFunctional::py_print_detail, "docstring");
 
     class_<Dispersion, boost::shared_ptr<Dispersion>, boost::noncopyable >("Dispersion", "docstring", no_init).
         def("build", &Dispersion::build, "docstring").
