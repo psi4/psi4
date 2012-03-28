@@ -18,8 +18,8 @@ serve as useful examples.
 .. index:: physical constants
 .. _`sec:psirc`:
 
-Scratch Files, the |psirc| File, and Physical Constants
-=======================================================
+Physical Constants
+==================
 
 For convenience, the Python interpreter will execute the contents of the
 |psirc| file in the current user's home area (if present) before performing any
@@ -47,54 +47,6 @@ made available within all |PSIfour| input files.
 
 The ``psi_`` prefix is to prevent clashes with user-defined variables in
 |PSIfour| input files.
-
-.. index:: scratch files
-
-Another important use of the |psirc| file is to control the
-handling of scratch files.  |PSIfour| has a number of utilities that manage
-input and output (I/O) of quantities to and from the hard disk.  Most
-quantities, such as molecular integrals, are intermediates that are not of
-interest to the user and can be deleted after the computation finishes, but
-pertinent details of computations are also written to a checkpoint file and
-might be useful in subsequent computations.  All files are sequentially
-numbered and are written to ``/tmp``, then deleted at the end of the computation,
-unless otherwise instructed by the user.
-
-A Python callable handle to the |PSIfour| I/O management routines is available,
-and is called ``psi4_io``.  To instruct the I/O manager to send all files to
-another location, say ``/scratch/user``, add the following command to the |psirc|
-file (note the trailing "/")::
-
-    psi4_io.set_default_path('/scratch/user/')
-
-For batch jobs running through a queue, it might be more convenient to use an
-environmental variable (in this case ``$MYSCRATCH``) to set the scratch directory;
-the following code will do that::
-
-    scratch_dir = os.environ.get('MYSCRATCH')
-    if scratch_dir:
-        psi4_io.set_default_path(scratch_dir + '/')
-
-Individual files can be send to specific locations.  For example, file 32 is
-the checkpoint file that the user might want to retain in the working directory
-(*i.e.*, where |PSIfour| was launched from) for restart purposes.  This is
-accomplished by the commands below::
-
-    psi4_io.set_specific_path(32, './')
-    psi4_io.set_specific_retention(32, True)
-
-To circumvent difficulties with running multiple jobs in the same scratch, the
-process ID (PID) of the |PSIfour| instance is incorporated into the full file
-name; therefore, it is safe to use the same scratch directory for calculations
-running simultaneously.
-
-To override any of these defaults for selected jobs, simply place the
-appropriate commands from the snippets above in the input file itself.  During
-excecution, the |psirc| defaults will be loaded in first, but then the commands
-in the input file will be executed.  Executing |PSIfour| with the ``-m`` (for
-messy) flag will prevent files being deleted at the end of the run::
-
-    psi4 -m
 
 .. index:: molecule; specification
 .. _`sec:moleculeSpecification`:
@@ -231,14 +183,14 @@ In addition to specifying the geometry, additional information can be provided
 in the ``molecule`` block. If two integers are encountered on any line of the
 ``molecule`` block, they are interpreted as the molecular charge and multiplicity
 (:math:`2 \times M_s + 1`), respectively.  The symmetry can be specified by a line reading
-``symmetry symbol``, where ``symbol`` is
-the Sch\"onflies symbol of the (Abelian) point group to use for the
+:samp:`symmetry {symbol}`, where :samp:`{symbol}` is
+the Sch\ |o_dots|\ nflies symbol of the (Abelian) point group to use for the
 computation; see Sec. :ref:`sec:symmetry` for more details. This need not be
 specified, as the molecular symmetry is automatically detected by |PSIfour|.
 Certain computations require that the molecule is not reoriented; this can be
 achieved by adding either ``no_reorient`` or ``noreorient``. By default,
-\AA ngstr\"om units are used; this is changed by adding a line that reads
-``units spec``, where ``spec`` is one of ``ang``,
+|Angstrom| units are used; this is changed by adding a line that reads
+:samp:`units {spec}`, where :samp:`{spec}` is one of ``ang``,
 ``angstrom``, ``a.u.``, ``au``, or ``bohr``.
 
 .. index:: 
@@ -653,7 +605,7 @@ variables are typically defined in a ``.tcshrc`` or ``.bashrc``.
 
 .. rubric:: (2) The -n Command Line Flag
 
-To change the number of threads at runtime, the ``-n`` flag may be used. An
+To change the number of threads at runtime, the :option:`psi4 -n` flag may be used. An
 example is::
 
     psi4 -i input.dat -o output.dat -n 4
@@ -664,7 +616,7 @@ which will run on four threads.
 
 For more explicit control, the Process::environment class in |PSIfour| can
 override the number of threads set by environment variables. This functionality
-is accessed via the :py:func:`util.set_num_threads` Psithon function, which controls
+is accessed via the :py:func:`~util.set_num_threads` Psithon function, which controls
 both MKL and OpenMP thread numbers. The number of threads may be changed
 multiple times in a |PSIfour| input file. An example input for this feature is::
 
@@ -698,7 +650,7 @@ these integrals. For general DF algorithms, the user may specify::
 
 to explicitly control the number of threads used for integral formation. Setting
 this variable to 0 (the default) uses the number of threads specified by the
-:py:func:`util.set_num_threads` Psithon method or the default environmental variables.
+:py:func:`~util.set_num_threads` Psithon method or the default environmental variables.
 
 .. _`sec:psiVariables`:
 
@@ -730,7 +682,7 @@ and H atom::
     D_e = psi_hartree2kcalmol*(2*h_energy - h2_energy)
     print"De=%f"%D_e
 
-The :py:func:`driver.energy` function returns the final result of the computation, which we
+The :py:func:`~driver.energy` function returns the final result of the computation, which we
 assign to a Python variable. The two energies are then converted to a
 dissociation energy and printed to the output file using standard Python
 notation. Sometimes there are multiple quantities of interest; these can be
@@ -749,7 +701,7 @@ PSI variables accumulate over a |PSIfour| instance and are not cleared by
 followed by a aug-cc-pVQZ SCF followed by a ``print_variables()``
 command, the last will include both {\tt SCF TOTAL ENERGY} and
 {\tt FCI TOTAL ENERGY}. Don't get excited that you got a high-quality calculation
-cheaply. Refer to Appendix :ref:`apdx:psiVariables` for a listing of the
+cheaply. Refer to Appendix :ref:`apdx:psivariables_module` for a listing of the
 variables set by each module.
 
 .. _`sec:loops`:
@@ -802,7 +754,7 @@ with the ``set`` keyword.
 Tables of Results
 =================
 
-The results of computations can be compactly tabulated with the :py:func:`text.Table()` Psithon
+The results of computations can be compactly tabulated with the :py:func:`~text.Table()` Psithon
 function. For example, in the following potential energy surface scan for water ::
 
     molecule h2o {
@@ -851,12 +803,11 @@ The Python foundations of the |PSIfour| driver and Psithon syntax permit
 many commonly performed post-processing procedures to be integrated into
 the |PSIfour| suite.
 Among these are automated computations of interaction energies through
-:py:func:`wrappers.cp`, of a model chemistry applied to a database of systems through
-:py:func:`wrappers.database`, and of several model chemistries together approximating greater
-accuracy through :py:func:`wrappers.cbs`. 
-These are discussed separately in Sec. :ref:`sec:psithonFunc`.
+:py:func:`~wrappers.cp`, of a model chemistry applied to a database of systems through
+:py:func:`~wrappers.database`, and of several model chemistries together approximating greater
+accuracy through :py:func:`~wrappers.cbs`. 
+These are discussed separately in section :ref:`sec:psithonFunc`.
 Note that the options documented for Python functions are placed as arguments
 in the command that calls the function 
 not in the ``set globals`` block or with any other ``set`` command.
-
 
