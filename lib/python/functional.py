@@ -272,6 +272,17 @@ functionals = {
         'pw91_x'      : build_pw91_x_functional,
         'ws_x'        : build_ws_x_functional,
         'wpbe_x'      : build_wpbe_x_functional,
+        'lyp_c'        : build_primitive_functional,
+        'ft97b_x'        : build_primitive_functional,
+        'pz81_c'        : build_primitive_functional,
+        'p86_c'        : build_primitive_functional,
+        'vwn_c'        : build_primitive_functional,
+        'pw91_c'        : build_primitive_functional,
+        'pw92_c'        : build_primitive_functional,
+        'pbe_c'        : build_primitive_functional,
+        'ft97_c'        : build_primitive_functional,
+        'b972_c'        : build_primitive_functional,
+        'b974_c'        : build_primitive_functional,
     }
 
 def build_functional(alias):
@@ -616,6 +627,17 @@ superfunctionals = {
         'ws_x'   : build_ws_x_superfunctional,
         'wpbe_x' : build_wpbe_x_superfunctional,
         'blyp'   : build_blyp_superfunctional,
+        'lyp_c'   : build_primitive_superfunctional,
+        'ft97b_x'   : build_primitive_superfunctional,
+        'pz81_c'   : build_primitive_superfunctional,
+        'p86_c'   : build_primitive_superfunctional,
+        'vwn_c'   : build_primitive_superfunctional,
+        'pw91_c'   : build_primitive_superfunctional,
+        'pw92_c'   : build_primitive_superfunctional,
+        'pbe_c'   : build_primitive_superfunctional,
+        'ft97_c'   : build_primitive_superfunctional,
+        'b972_c'   : build_primitive_superfunctional,
+        'b974_c'   : build_primitive_superfunctional,
     }
 
 def build_superfunctional(alias, npoints, deriv):
@@ -629,6 +651,8 @@ def superfunctional_list():
     return val
 
 def test_ccl_functional(functional, ccl_functional):
+
+    check = True;
 
     if (not os.path.exists('data_pt_%s.html' %(ccl_functional))):
         os.system('wget ftp://ftp.dl.ac.uk/qcg/dft_library/data_pt_%s.html' % ccl_functional)
@@ -748,9 +772,11 @@ def test_ccl_functional(functional, ccl_functional):
                 passed = 'PASSED'
             else:
                 passed = 'FAILED'
+                check = False;
     
             PsiMod.print_out('\t%-15s %24.16E %24.16E %24.16E %24.16E %6s\n' % (task, v_ref, v_obs, delta, epsilon, passed))
     
         index = index + 1
 
     PsiMod.print_out('\n')
+    return check

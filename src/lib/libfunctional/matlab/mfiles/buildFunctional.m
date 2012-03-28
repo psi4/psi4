@@ -9,6 +9,7 @@ if (nargin < 3)
     paths.install = '../../';
     paths.python = '../mfiles/';
     paths.templates = '../templates/';
+    paths.driver = '../../../../../lib/python/';
 end
 
 disp(sprintf('\n'))
@@ -85,7 +86,7 @@ system(sprintf('/bin/cp %s/functional.h %sfunctional.h', paths.templates, functi
 system(sprintf('./assemble.py %s', functional.name));
 
 if (install)
-    system(sprintf('./install.py %s %s', functional.name, paths.install));
+    system(sprintf('./install.py %s %s %s', functional.name, paths.install, paths.driver));
 end
 
 system(sprintf('rm *py'));

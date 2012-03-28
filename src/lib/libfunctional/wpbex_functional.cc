@@ -107,11 +107,14 @@ void wPBEXFunctional::compute_sigma_functional(const std::map<std::string,Shared
         double P = 2.0 * rho;
         double S = 1.0 / (2.0 * _k0_) * s;
 
+        // Omega is all weird in this case
+        double omega = omega_ * pow(2.0, -1.0/6.0);
+
         // F
         double F, F_P, F_S;
 
         // Call Dr. Scuseria's nice function
-        wpbe_F(rho, s, omega_, &F, &F_P, &F_S);
+        wpbe_F(rho, s, omega, &F, &F_P, &F_S);
 
         double F_rho = 2.0 * F_P;
         double F_s = 1.0 / (2.0 * _k0_) * F_S;
