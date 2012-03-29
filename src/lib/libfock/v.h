@@ -99,6 +99,9 @@ public:
     const std::vector<SharedMatrix>& V() const { return V_; }
     const std::vector<SharedMatrix>& D() const { return D_; }
 
+    /// Throws by default
+    virtual SharedMatrix compute_gradient();
+
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
 
@@ -127,6 +130,8 @@ public:
     virtual void initialize();
     virtual void finalize();
 
+    virtual SharedMatrix compute_gradient();
+
     virtual void print_header() const;
 };
 
@@ -145,6 +150,8 @@ public:
 
     virtual void initialize();
     virtual void finalize();
+
+    virtual SharedMatrix compute_gradient();
 
     virtual void print_header() const;
 };

@@ -74,6 +74,7 @@ protected:
     virtual void form_G();
     virtual double compute_E();
     virtual void integrals();
+    virtual void finalize();
 
     void common_init();
 public:
@@ -98,6 +99,7 @@ protected:
     virtual void form_G();
     virtual double compute_E();
     virtual void integrals();
+    virtual void finalize();
 
     void common_init();
 public:

@@ -21,6 +21,18 @@ std::vector<SharedMatrix> RKSFunctions::scratch()
     vec.push_back(temp_);
     return vec;
 }
+std::vector<SharedMatrix> RKSFunctions::D_scratch()
+{
+    std::vector<SharedMatrix> vec;
+    vec.push_back(D_local_);
+    return vec;
+}
+std::vector<SharedMatrix> RKSFunctions::C_scratch()
+{
+    std::vector<SharedMatrix> vec;
+    vec.push_back(C_local_);
+    return vec;
+}
 void RKSFunctions::build_temps()
 {
     temp_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
@@ -214,6 +226,20 @@ std::vector<SharedMatrix> UKSFunctions::scratch()
     std::vector<SharedMatrix> vec;
     vec.push_back(tempa_);
     vec.push_back(tempb_);
+    return vec;
+}
+std::vector<SharedMatrix> UKSFunctions::D_scratch()
+{
+    std::vector<SharedMatrix> vec;
+    vec.push_back(Da_local_);
+    vec.push_back(Db_local_);
+    return vec;
+}
+std::vector<SharedMatrix> UKSFunctions::C_scratch()
+{
+    std::vector<SharedMatrix> vec;
+    vec.push_back(Ca_local_);
+    vec.push_back(Cb_local_);
     return vec;
 }
 void UKSFunctions::build_temps()

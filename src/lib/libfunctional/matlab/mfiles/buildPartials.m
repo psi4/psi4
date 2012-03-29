@@ -49,3 +49,4 @@ if (deriv >= 2)
 end
 
 system(['./purify.py ' name]);
+system(['./expei.py ' name]);

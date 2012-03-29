@@ -22,6 +22,9 @@ inline double dirac(double x, ...)
 {
     return 0.0;
 }
+
 double Ei(double x);
+double expei(double x);
+static const double expei_cutoff = 700.0;
 
 #endif
