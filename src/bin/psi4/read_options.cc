@@ -956,6 +956,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
     /*- The blocking scheme for DFT. -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
+    /*- Testing of XC gradient !expert -*/
+    options.add_bool("XC_GRADIENT", false);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed

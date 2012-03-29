@@ -96,6 +96,8 @@ public:
     std::map<std::string, SharedVector>& point_values() { return point_values_; }
 
     virtual std::vector<SharedMatrix> scratch() = 0;
+    virtual std::vector<SharedMatrix> D_scratch() = 0;
+    virtual std::vector<SharedMatrix> C_scratch() = 0;
 
     int ansatz() const { return ansatz_; }
 
@@ -145,6 +147,8 @@ public:
     void compute_points(boost::shared_ptr<BlockOPoints> block);
 
     std::vector<SharedMatrix> scratch();
+    std::vector<SharedMatrix> D_scratch();
+    std::vector<SharedMatrix> C_scratch();
 
     void print(FILE* out = outfile, int print = 2) const;
 };
@@ -197,6 +201,8 @@ public:
     void compute_points(boost::shared_ptr<BlockOPoints> block);
 
     std::vector<SharedMatrix> scratch();
+    std::vector<SharedMatrix> D_scratch();
+    std::vector<SharedMatrix> C_scratch();
 
     void print(FILE* out = outfile, int print = 2) const;
 };

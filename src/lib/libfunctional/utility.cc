@@ -1,5 +1,7 @@
 #include <cmath>           // required for fabsl(), expl() and logl()        
 #include <cfloat>          // required for LDBL_EPSILON, DBL_MAX
+#include <limits>
+#include <cstdio>
 #include "utility.h"
 
 // Error Function alternative
@@ -26,6 +28,35 @@ static long double Argument_Addition_Series_Ei( long double x);
 
 //                         Internally Defined Constants                       //
 static const long double epsilon = 10.0 * LDBL_EPSILON;
+
+static const double expei_a1 = 4.03640E0;
+static const double expei_a2 = 1.15198E0;
+static const double expei_a3 = 5.03627E0;
+static const double expei_a4 = 4.19160E0;
+
+////////////////////////////////////////////////////////////////////////////////
+// double expei( double x )                                                   //
+//                                                                            //
+//  Description:                                                              //
+//      exp(x) Ei(-x) for x > expei_cutoff (700.0)                            //
+//  Thanks to Gus Scuseria for this one
+////////////////////////////////////////////////////////////////////////////////
+
+double expei(double x)
+{
+    double val;
+
+    if (x == (std::numeric_limits<double>::infinity())) {
+        val = 0.0;
+    } else if (x == (-std::numeric_limits<double>::infinity())) {
+        val = std::numeric_limits<double>::infinity(); 
+    } else {
+        val = -1.0 / x * ((x * x + expei_a1 * x + expei_a2) / (x * x + expei_a3 * x + expei_a4));
+    } 
+
+    return val;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // double Ei( double x )                                                      //
@@ -54,9 +85,18 @@ static const long double epsilon = 10.0 * LDBL_EPSILON;
 //                                                                            //
 //     y = _Ei( x );                                                          //
 ////////////////////////////////////////////////////////////////////////////////
-double Ei( double x )
+double Ei(double x)
 {
-   return (double) xExponential_Integral_Ei( (long double) x);
+    double val;
+    if (x == (-std::numeric_limits<double>::infinity())) {
+        val = 0.0;
+    } else if (x == (std::numeric_limits<double>::infinity())) {
+        val = std::numeric_limits<double>::infinity(); 
+    } else {
+        val = (double) xExponential_Integral_Ei( (long double) x);
+    }
+    //printf("%24.16E %24.16E\n", x, val);
+    return val;
 }
 
 
