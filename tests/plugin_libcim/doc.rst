@@ -1,8 +1,9 @@
-.. _`sec:plugin_libcim`:
-.. index:: plugin; plugin_libcim
+
+Theory, Usage, and Notes
+------------------------
 
 Cluster-in-molecule local correlation calculations
-=============
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. codeauthor:: A. Eugene DePrince
 .. sectionauthor:: A. Eugene DePrince
@@ -61,7 +62,7 @@ cluster of 8 water molecules. ::
 
 Note that we have included the path to the plugin directory (here, /Users/deprince/psi4/tests/)
 and imported the plugin.  These commands are necesarry to call the CIM procedure via the 
-``energy`` function.  Note also that we have specified a df basis even though this is not
+:py:func:`~driver.energy` function.  Note also that we have specified a df basis even though this is not
 a df computation.  The construction of the virtual orbitals in this CIM implementation uses
 scaled opposite-spin MP2 natural orbitals, the construction of which require df technology.
 Ideally, one should select a df basis that corresponds to the full basis, but, when no
@@ -70,6 +71,7 @@ Publications from the use of the CIM code should cite my non-existent paper: [De
 
 Basic CIM Keywords
 ~~~~~~~~~~~~~~~~~~
+
 :term:`BASIS`
 """""""""""""
 

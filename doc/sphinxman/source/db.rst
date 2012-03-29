@@ -96,5 +96,13 @@ readable and should be consulted for more particular questions.
 
 ----
 
+.. comment This toctree directive only here to suppress warning at build time.
+   include line below is doing the work.
+
+.. toctree::
+   :hidden:
+
+   autodoc_available_databases
+
 .. include:: autodoc_available_databases.rst
 

@@ -29,6 +29,7 @@
 .. #####  HTML-PROG START
    contributing
    programming
+   autodoc_available_plugins
    autodoc_driver
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP
