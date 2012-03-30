@@ -514,6 +514,12 @@ def build_wpbe_x_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup 
 
+def build_wpbe0_x_superfunctional(name, npoints, deriv):
+
+    sup = build_wpbe_x_superfunctional(name, npoints, deriv)
+    sup.set_x_omega(0.0);
+    return sup
+
 def build_lyp_c_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -626,6 +632,7 @@ superfunctionals = {
         'pw91_x' : build_pw91_x_superfunctional,
         'ws_x'   : build_ws_x_superfunctional,
         'wpbe_x' : build_wpbe_x_superfunctional,
+        'wpbe0_x' : build_wpbe0_x_superfunctional,
         'blyp'   : build_blyp_superfunctional,
         'lyp_c'   : build_primitive_superfunctional,
         'ft97b_x'   : build_primitive_superfunctional,
