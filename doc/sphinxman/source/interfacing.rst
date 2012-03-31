@@ -8,9 +8,11 @@ software packages. These programs aren't necessary
 for |PSIfour| to operate and may require additional licences, special 
 platform capabilities, *etc*. 
 
-* :ref:`sec:mrcc` PSI4 can drive the MRCC program of M. Kallay and J. Gauss
+* :ref:`sec:mrcc` PSI4 can drive the MRCC program of M. K\ |a_acute|\ llay and J. Gauss
 * MPI4Py
 * MADNESS
+* Grimme's dft-d3
+* MATLAB for new dft functionals
 
 .. toctree::
    :maxdepth: 2

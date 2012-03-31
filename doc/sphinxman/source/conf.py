@@ -18,6 +18,7 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../../../lib/python/'))
 sys.path.insert(0, os.path.abspath('../../../lib/databases/'))
+sys.path.insert(0, os.path.abspath('../../../tests/'))
 sys.path.insert(0, os.path.abspath('.'))
 
 import psi4_sptheme as psp
@@ -33,9 +34,8 @@ needs_sphinx = '1.1'
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 # 'psi4_sptheme.ext.autodoc_sections',
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode', 'psi4_sptheme.ext.index_styling', 'sphinx.ext.extlinks',
-   'psi4_sptheme.ext.psidomain']
-#, 'SphinxReport.ext.only_directives'] #'matplotlib.sphinxext.only_directives']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode', 
+    'sphinx.ext.extlinks', 'psi4_sptheme.ext.index_styling', 'psi4_sptheme.ext.psidomain']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -283,7 +283,6 @@ rst_epilog = """
 .. |Angstrom| replace:: |AA|\ ngstr\ |o_dots|\ m
 .. |AA| unicode:: U+00C5
 .. |aa| unicode:: U+00E5
-   :rtrim:
 .. |--| unicode:: U+02013 .. en dash
    :trim:
 .. |---| unicode:: U+02014 .. em dash
@@ -291,14 +290,13 @@ rst_epilog = """
 .. |w---w| unicode:: U+02014 .. em dash
 .. |o_dots| unicode:: U+00F6
 .. |o_slash| unicode:: U+00F8
-   :rtrim:
 .. |a_grave| unicode:: U+00E0
 .. |a_acute| unicode:: U+00E1
 """
 
 # Logo at top of page
 rst_prolog = """
-.. image:: /PSI4_banner.png
+.. image:: /psi4banner.png
    :width: 100 %
    :alt: PSI4 Project Logo
 """
