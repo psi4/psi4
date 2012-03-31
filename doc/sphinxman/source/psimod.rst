@@ -22,7 +22,3 @@ PsiMod: Linking C++ and Python
     * (6) LaTeX build can't handle including man_PsiMod.txt so comment out by default.
     * (7) Rebuild psi4 with lines in (1) commented.
 
-.. toctree::
-   
-   man_PsiMod
-

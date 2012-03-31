@@ -882,7 +882,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An ExternalPotential (built by Python or NULL/None) -*/
     options.add("EXTERN", new PythonDataType());
 
-    /*- SUBESCTION Parallel Runtime -*/
+    /*- SUBSECTION Parallel Runtime -*/
 
     /*- The dimension sizes of the processor grid !expert -*/
     options.add("PROCESS_GRID", new ArrayType());
@@ -905,7 +905,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- IO caching for CP corrections, etc !expert -*/
     options.add_str("DF_INTS_IO", "NONE", "NONE SAVE LOAD");
     /*- Fitting Condition !expert -*/
-    options.add_int("DF_FITTING_CONDITION", 1.0E-12);
+    options.add_double("DF_FITTING_CONDITION", 1.0E-12);
 
     /*- SUBSECTION SAD Guess Algorithm -*/
 
