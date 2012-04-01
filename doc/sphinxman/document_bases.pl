@@ -10,6 +10,9 @@ print_html_topfile ();
 # Make a LaTeX version for the manual, too
 open(LATEX_OUT,">psi4bases.tex") or die "I can't write to psi4bases.tex\n";
 print_latex_topfile();
+# Make a RST table for the newest incarnation of the manual, too
+open(RST_OUT,">source/autodoc_psi4bases.rst") or die "I can't write to psi4basis.rst\n";
+print_rst_topfile();
 
 @HELEM = (H,HE,LI,BE,B,C,N,O,F,NE,NA,MG,AL,SI,P,S,CL,AR,K,CA,SC,TI,V,CR,MN,FE,CO,NI,CU,ZN,GA,GE,AS,SE,BR,KR);
 
@@ -94,27 +97,77 @@ print_latex_topfile();
    "KR"  => "\\cellcolor{R3} Kr & ",
 );
 
+%SELEM = (
+
+   "H"   => " |H|  |",
+   "HE"  => " |He| |",
+   "LI"  => " |Li| |",
+   "BE"  => " |Be| |",
+   "B"   => " |B|  |",
+   "C"   => " |C|  |",
+   "N"   => " |N|  |",
+   "O"   => " |O|  |",
+   "F"   => " |F|  |",
+   "NE"  => " |Ne| |",
+   "NA"  => " |Na| |",
+   "MG"  => " |Mg| |",
+   "AL"  => " |Al| |",
+   "SI"  => " |Si| |",
+   "P"   => " |P|  |",
+   "S"   => " |S|  |",
+   "CL"  => " |Cl| |",
+   "AR"  => " |Ar| |",
+   "K"   => " |K|  |",
+   "CA"  => " |Ca| |",
+   "SC"  => " |Sc| |",
+   "TI"  => " |Ti| |",
+   "V"   => " |V|  |",
+   "CR"  => " |Cr| |",
+   "MN"  => " |Mn| |",
+   "FE"  => " |Fe| |",
+   "CO"  => " |Co| |",
+   "NI"  => " |Ni| |",
+   "CU"  => " |Cu| |",
+   "ZN"  => " |Zn| |",
+   "GA"  => " |Ga| |",
+   "GE"  => " |Ge| |",
+   "AS"  => " |As| |",
+   "SE"  => " |Se| |",
+   "BR"  => " |Br| |",
+   "KR"  => " |Kr| |",
+);
+
 opendir(BASISDIR, $BasisFolder) or die "I can't read $BasisFolder\n";
 @HGBS = grep { /^.*\.gbs$/ } readdir(BASISDIR);
 closedir(BASISDIR);
 
+$divdash = '+' . ('-' x 67) . '+' . ('-' x 8) . ('+------' x ($#HELEM+1)) . '+';
+$diveqal = '+' . ('=' x 67) . '+' . ('=' x 8) . ('+======' x ($#HELEM+1)) . '+';
+printf RST_OUT "   $divdash\n   | %-65s | %-6s |", "Basis Set", "PUREAM";
+foreach $element (@HELEM) { print RST_OUT "$SELEM{$element}"; }
+print RST_OUT "\n   $diveqal\n";
 
 print HTML_OUT "<tr><td><big><b>Pople</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Pople}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Pople**", "", "";
 @HPOPLE = ("sto-3g.gbs","3-21g.gbs");
 foreach $b (@HGBS) { if ($b =~ /^6-31g.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^6-31p.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^6-311.*\.gbs$/) { push(@HPOPLE, $b); } }
 foreach $gbs (@HPOPLE) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Pople";
 
 print HTML_OUT "<tr><td><big><b>Ahlrichs/Karlsruhe</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Ahlrichs/Karlsruhe}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Ahlrichs/Karlsruhe**", "", "";
 @HAHLRICHS = ();
 foreach $b (@HGBS) { if ($b =~ /^def2-.*\.gbs$/) { push(@HAHLRICHS, $b); } }
 foreach $gbs (@HAHLRICHS) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Ahlrichs";
 
 print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning D\$\\bm\\zeta\$}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning D-zeta**", "", "";
 @HDDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*dz.*\.gbs$/) { push(@HDDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*dpd.*\.gbs$/) { push(@HDDUNNING, $b); } }
@@ -127,9 +180,11 @@ foreach $b (@HGBS) { if ($b =~ /^heavy-aug-cc-.*dpd.*\.gbs$/) { push(@HDDUNNING,
 foreach $b (@HGBS) { if ($b =~ /^jun-cc-.*dz.*\.gbs$/) { push(@HDDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^jun-cc-.*dpd.*\.gbs$/) { push(@HDDUNNING, $b); } }
 foreach $gbs (@HDDUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning double-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning T&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning T\$\\bm\\zeta\$}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning T-zeta**", "", "";
 @HTDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*tz.*\.gbs$/) { push(@HTDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*tpd.*\.gbs$/) { push(@HTDUNNING, $b); } }
@@ -144,9 +199,11 @@ foreach $b (@HGBS) { if ($b =~ /^jun-cc-.*tpd.*\.gbs$/) { push(@HTDUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^may-cc-.*tz.*\.gbs$/) { push(@HTDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^may-cc-.*tpd.*\.gbs$/) { push(@HTDUNNING, $b); } }
 foreach $gbs (@HTDUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning triple-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning Q&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning Q\$\\bm\\zeta\$}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning Q-zeta**", "", "";
 @HQDUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*qz.*\.gbs$/) { push(@HQDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*qpd.*\.gbs$/) { push(@HQDUNNING, $b); } }
@@ -163,9 +220,11 @@ foreach $b (@HGBS) { if ($b =~ /^may-cc-.*qpd.*\.gbs$/) { push(@HQDUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^apr-cc-.*qz.*\.gbs$/) { push(@HQDUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^apr-cc-.*qpd.*\.gbs$/) { push(@HQDUNNING, $b); } }
 foreach $gbs (@HQDUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning quadruple-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning 5&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 5\$\\bm\\zeta\$}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning 5-zeta**", "", "";
 @H5DUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*5z.*\.gbs$/) { push(@H5DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*5pd.*\.gbs$/) { push(@H5DUNNING, $b); } }
@@ -184,9 +243,11 @@ foreach $b (@HGBS) { if ($b =~ /^apr-cc-.*5pd.*\.gbs$/) { push(@H5DUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^mar-cc-.*5z.*\.gbs$/) { push(@H5DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^mar-cc-.*5pd.*\.gbs$/) { push(@H5DUNNING, $b); } }
 foreach $gbs (@H5DUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning 5-zeta";
 
 print HTML_OUT "<tr><td><big><b>Dunning 6&#950;</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Dunning 6\$\\bm\\zeta\$}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Dunning 6-zeta**", "", "";
 @H6DUNNING = ();
 foreach $b (@HGBS) { if ($b =~ /^cc-.*6z.*\.gbs$/) { push(@H6DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^cc-.*6pd.*\.gbs$/) { push(@H6DUNNING, $b); } }
@@ -207,6 +268,7 @@ foreach $b (@HGBS) { if ($b =~ /^mar-cc-.*6pd.*\.gbs$/) { push(@H6DUNNING, $b); 
 foreach $b (@HGBS) { if ($b =~ /^feb-cc-.*6z.*\.gbs$/) { push(@H6DUNNING, $b); } }
 foreach $b (@HGBS) { if ($b =~ /^feb-cc-.*6pd.*\.gbs$/) { push(@H6DUNNING, $b); } }
 foreach $gbs (@H6DUNNING) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "Dunning 6-zeta";
 
 @HCATBASIS = (@HPOPLE,@HAHLRICHS,@HDDUNNING,@HTDUNNING,@HQDUNNING,@H5DUNNING,@H6DUNNING);
 
@@ -221,7 +283,9 @@ foreach my $item (@HGBS) {
 
 print HTML_OUT "<tr><td><big><b>Others</b></big></td></tr>\n\n";
 print LATEX_OUT "\n\n\\\\*\n{\\normalsize\\textbf{Others}} \\\\*\n";
+printf RST_OUT "   $divdash\n   | %-65s | %6s | %249s |\n   $divdash\n", "**Others**", "", "";
 foreach $gbs (@HREST) { htmlline($gbs); }
+printf "Auto-documenting basis set files %s\n", "others";
 
 sub htmlline {
    $basisfile = shift;
@@ -230,10 +294,10 @@ sub htmlline {
    foreach $element (@HELEM) { 
       $entryhash{$element} = "<td>&nbsp;</td>";
       $latexhash{$element} = " & ";
+      $rsthash{$element}   = "      |";
    }
 
    open IN, "$BasisFolder/$basisfile";
-   #open IN, $basisfile;
    @text = <IN>;
    close(IN);
 
@@ -254,6 +318,7 @@ sub htmlline {
          $element =~ tr/a-z/A-Z/;
          $entryhash{$element} = "$DELEM{$element}";
          $latexhash{$element} = "$LELEM{$element}";
+         $rsthash{$element}   = "$SELEM{$element}";
 
       }
 
@@ -270,9 +335,15 @@ sub htmlline {
    foreach $element (@HELEM) { print LATEX_OUT "$latexhash{$element}"; }
    print LATEX_OUT "\\\\\n\n";
 
+   $basislink = ":srcbasis:`" . $basisfile . "`";
+   printf RST_OUT "   | %-65s | %-6s |", $basislink, $puream;
+   foreach $element (@HELEM) { print RST_OUT "$rsthash{$element}"; }
+   print RST_OUT "\n   $divdash\n";
 }
 
 print_latex_endfile();
+print RST_OUT "\n";
+close(RST_OUT);
 close(LATEX_OUT);
 close(HTML_OUT);
 #system("open -a /Applications/Safari.app psi4bases.html");
@@ -293,6 +364,104 @@ sub print_html_topfile {
    <th bgcolor=#cceecc>As</th><th bgcolor=#cceecc>Se</th><th bgcolor=#cceecc>Br</th><th bgcolor=#cceecc>Kr</th>
    <tr>\n";
 }
+
+
+sub print_rst_topfile {
+
+   print RST_OUT ".. role:: pbg\n";
+   print RST_OUT ".. raw:: html\n";
+   print RST_OUT "\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script>\n";
+   print RST_OUT "     \$(document).ready(function() {\n";
+   print RST_OUT "       \$(\".pbg\").parent().addClass(\"pbg-parent\");\n";
+   print RST_OUT "     });\n";
+   print RST_OUT "   </script>\n";
+   print RST_OUT "   <style>\n";
+   print RST_OUT "      .pbg-parent {background-color:#ffdddd;}\n";
+   print RST_OUT "   </style>\n";
+   print RST_OUT "\n";
+   print RST_OUT ".. role:: gbg\n";
+   print RST_OUT ".. raw:: html\n";
+   print RST_OUT "\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script>\n";
+   print RST_OUT "     \$(document).ready(function() {\n";
+   print RST_OUT "       \$(\".gbg\").parent().addClass(\"gbg-parent\");\n";
+   print RST_OUT "     });\n";
+   print RST_OUT "   </script>\n";
+   print RST_OUT "   <style>\n";
+   print RST_OUT "      .gbg-parent {background-color:#cceecc;}\n";
+   print RST_OUT "   </style>\n";
+   print RST_OUT "\n";
+   print RST_OUT ".. role:: bbg\n";
+   print RST_OUT ".. raw:: html\n";
+   print RST_OUT "\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script>\n";
+   print RST_OUT "     \$(document).ready(function() {\n";
+   print RST_OUT "       \$(\".bbg\").parent().addClass(\"bbg-parent\");\n";
+   print RST_OUT "     });\n";
+   print RST_OUT "   </script>\n";
+   print RST_OUT "   <style>\n";
+   print RST_OUT "      .bbg-parent {background-color:#99ccee;}\n";
+   print RST_OUT "   </style>\n";
+   print RST_OUT "\n";
+   print RST_OUT ".. role:: lbg\n";
+   print RST_OUT ".. raw:: html\n";
+   print RST_OUT "\n";
+   print RST_OUT "   <script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js\"></script>\n";
+   print RST_OUT "   <script>\n";
+   print RST_OUT "     \$(document).ready(function() {\n";
+   print RST_OUT "       \$(\".lbg\").parent().addClass(\"lbg-parent\");\n";
+   print RST_OUT "     });\n";
+   print RST_OUT "   </script>\n";
+   print RST_OUT "   <style>\n";
+   print RST_OUT "      .lbg-parent {background-color:#ccccee;}\n";
+   print RST_OUT "   </style>\n";
+   print RST_OUT "\n";
+   print RST_OUT ".. |H|  replace:: :pbg:`H`\n";
+   print RST_OUT ".. |He| replace:: :pbg:`He`\n";
+   print RST_OUT ".. |Li| replace:: :bbg:`Li`\n";
+   print RST_OUT ".. |Be| replace:: :bbg:`Be`\n";
+   print RST_OUT ".. |B|  replace:: :bbg:`B`\n";
+   print RST_OUT ".. |C|  replace:: :bbg:`C`\n";
+   print RST_OUT ".. |N|  replace:: :bbg:`N`\n";
+   print RST_OUT ".. |O|  replace:: :bbg:`O`\n";
+   print RST_OUT ".. |F|  replace:: :bbg:`F`\n";
+   print RST_OUT ".. |Ne| replace:: :bbg:`Ne`\n";
+   print RST_OUT ".. |Na| replace:: :lbg:`Na`\n";
+   print RST_OUT ".. |Mg| replace:: :lbg:`Mg`\n";
+   print RST_OUT ".. |Al| replace:: :lbg:`Al`\n";
+   print RST_OUT ".. |Si| replace:: :lbg:`Si`\n";
+   print RST_OUT ".. |P|  replace:: :lbg:`P`\n";
+   print RST_OUT ".. |S|  replace:: :lbg:`S`\n";
+   print RST_OUT ".. |Cl| replace:: :lbg:`Cl`\n";
+   print RST_OUT ".. |Ar| replace:: :lbg:`Ar`\n";
+   print RST_OUT ".. |K|  replace:: :gbg:`K`\n";
+   print RST_OUT ".. |Ca| replace:: :gbg:`Ca`\n";
+   print RST_OUT ".. |Sc| replace:: :gbg:`Sc`\n";
+   print RST_OUT ".. |Ti| replace:: :gbg:`Ti`\n";
+   print RST_OUT ".. |V|  replace:: :gbg:`V`\n";
+   print RST_OUT ".. |Cr| replace:: :gbg:`Cr`\n";
+   print RST_OUT ".. |Mn| replace:: :gbg:`Mn`\n";
+   print RST_OUT ".. |Fe| replace:: :gbg:`Fe`\n";
+   print RST_OUT ".. |Co| replace:: :gbg:`Co`\n";
+   print RST_OUT ".. |Ni| replace:: :gbg:`Ni`\n";
+   print RST_OUT ".. |Cu| replace:: :gbg:`Cu`\n";
+   print RST_OUT ".. |Zn| replace:: :gbg:`Zn`\n";
+   print RST_OUT ".. |Ga| replace:: :gbg:`Ga`\n";
+   print RST_OUT ".. |Ge| replace:: :gbg:`Ge`\n";
+   print RST_OUT ".. |As| replace:: :gbg:`As`\n";
+   print RST_OUT ".. |Se| replace:: :gbg:`Se`\n";
+   print RST_OUT ".. |Br| replace:: :gbg:`Br`\n";
+   print RST_OUT ".. |Kr| replace:: :gbg:`Kr`\n";
+
+   print RST_OUT "\n\n.. _`table:basisElement`:\n";
+   print RST_OUT "\n.. table:: Basis set availability by element in |PSIfour|\n\n";
+
+}
+
 
 
 sub print_latex_topfile {

@@ -25,7 +25,7 @@ int read_options(std::string name, Options &options)
         options.add_int("PRINT", 1);
         /*- How to handle the <AB|CD> term in coupled cluster -*/
         options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-        /*- Should we semicanonicalize ROHF references" -*/
+        /*- Should we semicanonicalize ROHF references? -*/
         options.add_bool("SEMICANONICAL", 0);
     }
 

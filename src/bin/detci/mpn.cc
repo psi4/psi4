@@ -238,10 +238,10 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
        fprintf(outfile,"\t %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
 
        /*- strings so that variable-name psi variables get parsed in docs -*/
-       /*- Process::environment.globals["ZAPT$N$ TOTAL ENERGY"] -*/ 
-       /*- Process::environment.globals["MP$N$ TOTAL ENERGY"] -*/ 
-       /*- Process::environment.globals["ZAPT$N$ CORRELATION ENERGY"] -*/ 
-       /*- Process::environment.globals["MP$N$ CORRELATION ENERGY"] -*/ 
+       /*- Process::environment.globals["ZAPTn TOTAL ENERGY"] -*/ 
+       /*- Process::environment.globals["MPn TOTAL ENERGY"] -*/ 
+       /*- Process::environment.globals["ZAPTn CORRELATION ENERGY"] -*/ 
+       /*- Process::environment.globals["MPn CORRELATION ENERGY"] -*/ 
        std::stringstream s;
        s << label << (2*k) << " TOTAL ENERGY";
        Process::environment.globals[s.str()] = Empn2;

@@ -6,6 +6,7 @@
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
 #include <libciomr/libciomr.h>
+#include <libmints/dimension.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -81,14 +82,20 @@ protected:
     void compute_lagrangian_OV();
     void compute_lagrangian_VO();
     void iterate_orbital_response();
+    void orbital_response_guess();
     void compute_orbital_response_intermediates();
     void update_orbital_response();
     double compute_response_coupling();
     void iterate_cumulant_response();
     void cumulant_response_guess();
     void build_perturbed_tau();
-    void compute_cumulant_response_intermediates();\
+    void compute_cumulant_response_intermediates();
+    double compute_cumulant_response_residual();
     void update_cumulant_response();
+    void compute_lagrangian_OO();
+    void compute_lagrangian_VV();
+    void compute_ewdm();
+
     /// Whether to force the code to keep the same occupation from SCF
     bool lock_occupation_;
     /// The maximum number of lambda iterations per update
@@ -116,13 +123,13 @@ protected:
     /// The current number of macroiteration for energy or gradient computation
     int iter_;
     /// The number of occupied alpha orbitals per irrep
-    int *naoccpi_;
+    Dimension naoccpi_;
     /// The number of occupied beta orbitals per irrep
-    int *nboccpi_;
+    Dimension nboccpi_;
     /// The number of virtual alpha orbitals per irrep
-    int *navirpi_;
+    Dimension navirpi_;
     /// The number of virtual beta orbitals per irrep
-    int *nbvirpi_;
+    Dimension nbvirpi_;
     /// The nuclear repulsion energy in Hartree
     double enuc_;
     /// The cutoff below which and integral is assumed to be zero

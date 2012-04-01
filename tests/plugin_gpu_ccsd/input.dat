@@ -1,5 +1,10 @@
 #! cc-pvdz H2O Test CCSD energies
 
+# PYTHONPATH must include directory above plugin directory.
+#     Define either externally or here, then import plugin.
+sys.path.insert(0, '/home/deprince/psi4/tests')
+import plugin_gpu_ccsd
+
 molecule h2o {
 0 1
 O
@@ -7,17 +12,13 @@ H 1 1.0
 H 1 1.0 2 104.5
 }
 
-plugin_load('./plugin_gpu_ccsd.so')
-memory 15000 mb
+memory 500 mb
 set {
   r_convergence 1e-7
   basis cc-pvdz
   freeze_core true
 }
-PsiMod.set_global_option('WFN', 'CCSD')
-scf_energy = scf()
-transqt2()
-plugin('./plugin_gpu_ccsd.so')
+energy('gpu-ccsd(t)')
 
 clean()
 

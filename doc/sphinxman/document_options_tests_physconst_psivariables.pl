@@ -27,10 +27,12 @@ my $DriverFile = $DriverPath . "../../src/bin/psi4/read_options.cc";
 my $CurrentModule;
 my %Keywords;
 my %ModuleDescriptions;
+my %ModuleSubsections;
 my %Expert;
 open(DRIVER, $DriverFile) or die "\nI can't read the PSI driver file\n";
 
 my $CurrentSubsection = "";
+my @OrderedSubsection = ();
 
 # Start looping over the driver file
 while(<DRIVER>){
@@ -38,8 +40,10 @@ while(<DRIVER>){
     if(/name\s*\=\=\s*\"(\w+)\"/){
         $CurrentModule = $1;
         $CurrentSubsection = "";
+        @OrderedSubsection = ();
     }
     my $CommentString;
+    my $SphinxCommentString;
     my $Type;
     my $Default;
     my $Keyword;
@@ -49,6 +53,8 @@ while(<DRIVER>){
     # don't know if it's a multi-line comment, let's find out
     if(/\/\*-\s*SUBSECTION\s+(.*)-\*\// and $CurrentModule){
         $CurrentSubsection = $1;
+        #print "$CurrentSubsection\n";
+        push @{$ModuleSubsections{$CurrentModule}}, $CurrentSubsection;
     }elsif(/\/\*-\s*MODULEDESCRIPTION/ and $CurrentModule){
         $ModuleDescriptions{$CurrentModule} = get_description($_);
     }elsif(/\/\*-/ and $CurrentModule){
@@ -56,21 +62,32 @@ while(<DRIVER>){
         $CommentString =~ s/_/\\_/g;
         # process @@ as math mode subscript in tex
         $CommentString =~ s/@@/_/g;
+        $SphinxCommentString = $CommentString;
+        $SphinxCommentString =~ s/ \$/ :math:`/g;
+        $SphinxCommentString =~ s/\(\$/(\\ :math:`/g;
+        $SphinxCommentString =~ s/\$ /` /g;
+        $SphinxCommentString =~ s/\$\./`./g;
+        $SphinxCommentString =~ s/\$,/`,/g;
+        $SphinxCommentString =~ s/\$\)/`\\ \)/g;
+        $SphinxCommentString =~ s/\\_/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Type"}    = $Type;
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Default"} = $Default;
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Comment"} = $CommentString;
+            $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"SphComment"} = $SphinxCommentString;
             $Expert{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Possibilities"} = $Possibilities;
         }else{
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Type"}    = $Type;
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Default"} = $Default;
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Comment"} = $CommentString;
+            $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"SphComment"} = $SphinxCommentString;
             $Keywords{$CurrentModule}{$CurrentSubsection}{$Keyword}{"Possibilities"} = $Possibilities;
         }
     }
 }
 close DRIVER;
+
 
 my @temp = ();
 print_hash(\%Keywords, "keywords.tex", 1, "kw");
@@ -85,13 +102,42 @@ sub print_hash
  my $label_string = $_[3];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
  print OUT "{\n \\footnotesize\n";
+ my $tsout = "source/autodoc_glossary_options_c.rst";
+ my $sout = "source/autodoc_options_c_bymodule.rst";
+ if ($print_description) { 
+    my $sout = "source/autodoc_options_c_bymodule.rst";
+    open(TSOUT,">$tsout") or die "\nI can't write to $tsout\n";
+    print TSOUT "\n.. _`apdx:options_c_alpha`:\n\n";
+    print TSOUT "Keywords by Alpha\n=================\n\n";
+    print TSOUT ".. glossary::\n   :sorted:\n\n";
+    open(SOUT,">$sout") or die "\nI can't write to $sout\n";
+    print SOUT "\n.. _`apdx:options_c_module`:\n\n";
+    print SOUT "Keywords by Module\n==================\n\n.. toctree::\n   :maxdepth: 1\n\n";
+ }
+ else { 
+    open(TSOUT,">>$tsout") or die "\nI can't write to $tsout\n";
+    open(SOUT,">/dev/null");
+ }
  my @RearrModules = sort {$a cmp $b} keys %hash;
  @RearrModules = grep { $_ ne "GLOBALS"} @RearrModules;
  unshift(@RearrModules, "GLOBALS");
  foreach my $Module (@RearrModules){
      $Module =~ s/_/-/g; # Things like plugin_module_name will screw things up...
      push(@temp, $Module);
+     my $Moddivider = "=" x length($Module);
      printf OUT "\n\\subsection{%s}\\label{%s-%s}\n",$Module,$label_string, $Module;
+     print SOUT "   autodir_options_c/module__" . lc($Module) . "\n";
+     my $ssout = "source/autodir_options_c/module__" . lc($Module) . ".rst";
+     if ($print_description) { 
+        printf "Auto-documenting options in module %s\n", lc($Module);
+        open(SSOUT,">$ssout") or die "\nI can't write to $ssout\n";
+        printf SSOUT ".. _`apdx:%s`:\n\n", lc($Module);
+        printf SSOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
+        printf SSOUT ".. toctree::\n   :hidden:\n   :glob:\n\n   %s__*\n\n", lc($Module);
+     }
+     else { 
+        open(SSOUT,">>$ssout") or die "\nI can't write to $ssout\n";
+     }
      if (exists $ModuleDescriptions{$Module} and $print_description){
          printf OUT "\n{\\normalsize $ModuleDescriptions{$Module}}\\\\\n";
          # Insert an empty table entry as a spacer
@@ -99,29 +145,91 @@ sub print_hash
          printf OUT "\n\t  \\\\ \n";
          print OUT "\\end{tabular*}\n";
      }
-     foreach my $Subsection (sort {$a cmp $b} keys %{$hash{$Module}}){
+     my @OrderedSubsection = ("");
+     if (exists $ModuleSubsections{$Module}) {
+          @OrderedSubsection = @{$ModuleSubsections{$Module}};
+     }
+     foreach my $Subsection (@OrderedSubsection) {
+       if (defined(%{$hash{$Module}{$Subsection}})) { 
          if($Subsection){
-             print OUT "\\subsubsection{$Subsection}\n";
+             if ($print_description) { 
+                 my $Secdivider = "_" x (length($Subsection)-1);
+                 print OUT "\\subsubsection{$Subsection}\n";
+                 print SSOUT "\n$Subsection\n$Secdivider\n\n";
+             }
+             else {
+                 my $Secdivider = "_" x (8+length($Subsection));
+                 print OUT "\\subsubsection{$Subsection}\n";
+                 print SSOUT "\n*Expert* $Subsection\n$Secdivider\n\n";
+             }
          }
+         else {
+            if ($print_description) { print SSOUT "\nGeneral\n_______\n\n"; }
+            else                    { print SSOUT "\n*Expert*\n________\n\n"; }
+         }    
          my %SectionHash = %{$hash{$Module}{$Subsection}};
          foreach my $Keyword (sort {$a cmp $b} keys %SectionHash){
              my %KeyHash = %{$SectionHash{$Keyword}};
              my $DashedKeyword = $Keyword;
              $DashedKeyword =~ s/\\_/-/g;
+             my $UnderscoredKeyword = $Keyword;
+             $UnderscoredKeyword =~ s/\\_/_/g;
+             my $Keydivider = "\"" x (8+length($UnderscoredKeyword));
+             my $keywordfilename = lc($Module) . "__" . lc($UnderscoredKeyword);
+             my $fullkeywordfilename = "source/autodir_options_c/" . $keywordfilename . ".rst";
+             print SSOUT ".. include:: $keywordfilename.rst\n";
+             open(SSSOUT,">$fullkeywordfilename") or die "\nI can't write to $fullkeywordfilename\n";
+             printf SSSOUT ":term:`%s`\n%s\n\n", uc($UnderscoredKeyword), $Keydivider;
+             printf SSSOUT "      %s\n\n", $KeyHash{"SphComment"};
+             if ($print_description) {
+                printf TSOUT "   %s\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+             } else {
+                printf TSOUT "   %s\n      :ref:`apdx:%s` **(Expert)** |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+             }
+             if(($KeyHash{"Type"} eq "bool") || ($KeyHash{"Type"} eq "boolean")) {
+                printf SSSOUT "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
+                printf TSOUT  "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
+             }
+             elsif (($KeyHash{"Type"} eq "double") && ((lc($Keyword) =~ /conv/) || (lc($Keyword) =~ /tol/))) {
+                printf SSSOUT "      * **Type**: :ref:`conv double <op_c_conv>`\n";
+                printf TSOUT  "      * **Type**: :ref:`conv double <op_c_conv>`\n";
+             }
+             elsif (($KeyHash{"Type"} eq "string") && ((lc($Keyword) eq "basis") || (index(lc($Keyword), "df\\_basis") == 0))) {
+                printf SSSOUT "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf TSOUT  "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf SSSOUT "      * **Possible Values**: :ref:`basis string <apdx:basisElement>`\n";
+                printf TSOUT  "      * **Possible Values**: :ref:`basis string <apdx:basisElement>`\n";
+             }
+             else {
+                printf SSSOUT "      * **Type**: %s\n", $KeyHash{"Type"};
+                printf TSOUT  "      * **Type**: %s\n", $KeyHash{"Type"};
+             }
              printf OUT "\\paragraph{%s}\\label{op-%s-%s} \n", $Keyword, $Module, $DashedKeyword;
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.05\\textwidth}p{0.95\\textwidth}}';
              printf OUT "\n\t & %s \\\\ \n", $KeyHash{"Comment"};
              if($KeyHash{"Possibilities"}){
                   my @Options = split(/ +/, $KeyHash{"Possibilities"});
                   printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
+                  printf SSSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
+                  printf TSOUT "      * **Possible Values**: %s\n", join(", ", @Options);
              }
              print OUT "\\end{tabular*}\n";
              printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
              printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", $KeyHash{"Type"}, $KeyHash{"Default"};
+             printf SSSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
+             printf TSOUT "      * **Default**: %s\n\n", $KeyHash{"Default"};
              print OUT "\\end{tabular*}\n";
-         }
-     }
- }
+             close SSSOUT;
+         }  # keyword
+       }
+     }  # subsection
+     print SSOUT "\n";
+     close SSOUT;
+ }  # module
+ print SOUT "\n";
+ close SOUT;
+ print TSOUT "\n";
+ close TSOUT;
  print OUT "}\n";
  close OUT;
 }
@@ -287,11 +395,17 @@ foreach my $File(readdir SAMPLES){
 my $TestsFolder = $DriverPath . "../../tests";
 opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
 my $TexSummary = "tests_descriptions.tex";
+my $RstSummary = "source/autodoc_testsuite.rst";
 # Create a plain-text summary in the samples directory
 my $Summary = $SamplesFolder."/SUMMARY";
 open(SUMMARY,">$Summary") or die "I can't write to $Summary\n";
 # Make a LaTeX version for the manual, too
 open(TEXSUMMARY,">$TexSummary") or die "I can't write to $TexSummary\n";
+open(RSTSUMMARY,">$RstSummary") or die "I can't write to $RstSummary\n";
+print "Auto-documenting samples directory inputs\n";
+print RSTSUMMARY "\n=============================================   ============\n";
+print RSTSUMMARY   "Input File                                      Description \n";
+print RSTSUMMARY   "=============================================   ============\n";
 foreach my $Dir(readdir TESTS){
     my $Input = $TestsFolder."/".$Dir."/input.dat";
     # Look for an input file in each subdirectory, or move on
@@ -326,15 +440,27 @@ foreach my $Dir(readdir TESTS){
         my $Description_tex = $Description;
         $Description_tex =~ s/_/\\_/g;
         $Description_tex =~ s/@@/_/g;
+        my $Description_rst = $Description_tex;
+        $Description_rst =~ s/ \$/ :math:`/g;
+        $Description_rst =~ s/\(\$/(\\ :math:`/g;
+        $Description_rst =~ s/\$ /` /g;
+        $Description_rst =~ s/\$\./`./g;
+        $Description_rst =~ s/\$,/`,/g;
+        $Description_rst =~ s/\$\)/`\\ \)/g;
+        $Description_rst =~ s/\\_/_/g;
         print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
         print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
         print TEXSUMMARY "\\end{tabular*}\n";
+        my $srcfilename = ":srcsample:`" . $Dir_tex . "`";
+        printf RSTSUMMARY "%-45s  %s\n", $srcfilename, $Description_rst;
         printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
 }
-close TEXSUMMARY;
+print RSTSUMMARY "=============================================   ============\n\n";
+close TEXSUMMARY ;
+close RSTSUMMARY;
 close SUMMARY;
 closedir TESTS;
 
@@ -345,9 +471,15 @@ closedir TESTS;
 
 my $SrcFolder = $DriverPath . "../../src";
 $TexSummary = "variables_list.tex";
+$RstSummary = "source/autodoc_psivariables_bymodule.rst";
 open(TEXOUT,">$TexSummary") or die "I can't write to $TexSummary\n";
 print TEXOUT "{\n \\footnotesize\n";
-
+open(VOUT,">$RstSummary") or die "I can't write to $RstSummary\n";
+print VOUT "\n.. _`apdx:psivariables_module`:\n\n";
+print VOUT "PSI Variables by Module\n=======================\n\n";
+print VOUT ".. note:: Lowercase letters in PSI variable names represent variable portions of the name.\n";
+print VOUT "   See :ref:`apdx:psivariables_alpha` for fuller description.\n\n";
+print VOUT ".. toctree::\n   :maxdepth: 1\n\n";
 # Grab psi modules and ordering from options parsing above
 foreach my $Module (@PSIMODULES) {
     # Set path for each module of bin/module and lib/libmodule_solver
@@ -381,14 +513,31 @@ foreach my $Module (@PSIMODULES) {
     foreach my $EnvVar (@EnvVariables){
          $EnvHash{$EnvVar} = 1 if $EnvVar;
     }
-    foreach my $Var (sort keys %EnvHash) {
-        printf TEXOUT '\\begin{tabular*}{\\textwidth}[tb]{p{1.0\\textwidth}}';
-        printf TEXOUT "\n\t %s \\\\ \n", $Var;
-        print TEXOUT "\\end{tabular*}\n";
+    if (scalar keys %EnvHash > 0) {
+       print VOUT "   autodir_psivariables/module__" . lc($Module) . "\n";
+       my $vvout = "source/autodir_psivariables/module__" . lc($Module) . ".rst";
+       open(VVOUT,">$vvout") or die "I can't write to $vvout\n";
+       printf VVOUT ".. _`apdx:%s_psivar`:\n\n", lc($Module);
+       my $Moddivider = "=" x length($Module);
+       printf VVOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
+       print VVOUT ".. hlist::\n   :columns: 1\n\n";
+       foreach my $Var (sort keys %EnvHash) {
+           printf TEXOUT '\\begin{tabular*}{\\textwidth}[tb]{p{1.0\\textwidth}}';
+           printf TEXOUT "\n\t %s \\\\ \n", $Var;
+           print TEXOUT "\\end{tabular*}\n";
+           my $squashedVar = $Var;
+           $squashedVar =~ s/ //g;
+           printf VVOUT "   * :psivar:`%s <%s>`\n\n", $Var, $squashedVar;
+       }
+       print VVOUT "\n";
+       close VVOUT;
+       printf "Auto-documenting psi variables in module %s\n", lc($Module);
     }
 }
 print TEXOUT "}\n";
 close TEXOUT;
+print VOUT "\n";
+close VOUT;
 
 #
 # Now, grab the physical constants
@@ -411,6 +560,7 @@ while(<PHYSCONST>){
     $Comment =~ s/@@/_/g;  # process @@ as math mode subscript in tex
     printf TEXOUT "psi%-25s & %-20s & %-40s\\\\\n", $Var, $Val, $Comment;
 }
+print "Auto-documenting constants file physconst.h\n";
 close PHYSCONST;
 close PYOUT;
 close TEXOUT;
