@@ -15,59 +15,15 @@ set {
   freeze_core true
   states_per_irrep [2, 2]
   prop_all true
-  properties = ['oscillator' 'rotation' 'polarizability']
 }
 
-properties = ['test', 'polarizability', 'dipole', 'polarizability']
+property('ccsd', properties=['test','polarizability','dipole','polarizability'])
 
-oneel_properties = [
-  'dipole',
-  'quadrupole',
-]
-
-twoel_properties = [
-]
-
-response_properties = [
-  'polarizability',
-  'optrot',
-  'dipole-quadrupole'
-]
-
-one = []
-two = []
-response = []
-invalid = []
-
-for prop in properties:
-  if prop in oneel_properties:
-    one.append(prop)
-  elif prop in twoel_properties:
-    two.append(prop)
-  elif prop in response_properties:
-    response.append(prop)
-  else:
-    invalid.append(prop)
-
-one = drop_duplicates(one)
-two = drop_duplicates(two)
-response = drop_duplicates(response)
-invalid = drop_duplicates(invalid)
-
-print "properties = %s\n" % properties
-print "one = %s\n" % one
-print "two = %s\n" % two
-print "response = %s\n" % response
-print "invalid = %s\n" % invalid
-
-#energy('eom-cc2')
-
-
+#run_eom_cc('eom-cc2')
+#
 #PsiMod.set_global_option('WFN', 'EOM_CC2')
 #PsiMod.set_global_option('DERTYPE', 'NONE')
 #PsiMod.set_global_option('ONEPDM', 'TRUE')
 #
-#
 #PsiMod.cclambda()
 #PsiMod.ccdensity()
-
