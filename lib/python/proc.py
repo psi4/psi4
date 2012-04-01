@@ -321,10 +321,12 @@ def run_cc_property(name, **kwargs):
     oneel_properties = [ 'dipole', 'quadrupole', ]
     twoel_properties = [ ]
     response_properties = [ 'polarizability', 'rotation', 'roa' ]
+    excited_properties = ['oscillator_strength', 'rotational_strength']
 
     one = []
     two = []
     response = []
+    excited = []
     invalid = []
 
     if 'properties' in kwargs:
@@ -338,12 +340,15 @@ def run_cc_property(name, **kwargs):
           two.append(prop)
         elif prop in response_properties:
           response.append(prop)
+        elif prop in excited_properties:
+          excited.append(prop)
         else:
           invalid.append(prop)
       print "properties = %s\n" % properties
       print "one = %s\n" % one
       print "two = %s\n" % two
       print "response = %s\n" % response
+      print "excited = %s\n" % excited
       print "invalid = %s\n" % invalid
     else:
       print >>sys.stderr, 'Properties keyword required for property() function.'
@@ -352,6 +357,7 @@ def run_cc_property(name, **kwargs):
     n_one = len(one)
     n_two = len(two)
     n_response = len(response)
+    n_excited = len(excited)
 
     if not n_one:
       print "No one-electron properties requested."
