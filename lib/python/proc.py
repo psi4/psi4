@@ -13,6 +13,7 @@ import input
 import physconst
 from molutil import *
 from text import *
+from wrappers import *
 
 
 def run_dcft(name, **kwargs):
@@ -308,27 +309,74 @@ def run_bccd_t(name, **kwargs):
     return PsiMod.cctriples()
 
 
+def run_scf_property(name, **kwargs):
+
+    run_scf(name, **kwargs)
+
 def run_cc_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     all CC property calculation.
 
     """
+    oneel_properties = [ 'dipole', 'quadrupole', ]
+    twoel_properties = [ ]
+    response_properties = [ 'polarizability', 'rotation', 'roa' ]
 
+    one = []
+    two = []
+    response = []
+    invalid = []
 
-    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+    if 'properties' in kwargs:
+      properties = kwargs.pop('properties')
+      properties = drop_duplicates(properties)
+
+      for prop in properties:
+        if prop in oneel_properties:
+          one.append(prop)
+        elif prop in twoel_properties:
+          two.append(prop)
+        elif prop in response_properties:
+          response.append(prop)
+        else:
+          invalid.append(prop)
+      print "properties = %s\n" % properties
+      print "one = %s\n" % one
+      print "two = %s\n" % two
+      print "response = %s\n" % response
+      print "invalid = %s\n" % invalid
+    else:
+      print >>sys.stderr, 'Properties keyword required for property() function.'
+      exit(1)
+
+    n_one = len(one)
+    n_two = len(two)
+    n_response = len(response)
+
+    if not n_one:
+      print "No one-electron properties requested."
+    if not n_two:
+      print "No two-electron properties requested."
+    if not n_response:
+      print "No response properties requested."
+
+    if (len(one) > 0 or len(two) > 0) and (len(response) > 0):
+      print "Computing both density- and response-based properties."
 
     if (name.lower() == 'ccsd'):
-        PsiMod.set_global_option('WFN', 'CCSD')
-        run_ccenergy('ccsd', **kwargs)
-        PsiMod.set_global_option('WFN', 'CCSD')
+      PsiMod.set_global_option('WFN', 'CCSD')
+      run_ccenergy('ccsd', **kwargs)
+      PsiMod.set_global_option('WFN', 'CCSD')
     elif (name.lower() == 'cc2'):
-        PsiMod.set_global_option('WFN', 'CC2')
-        run_ccenergy('cc2', **kwargs)
-        PsiMod.set_global_option('WFN', 'CC2')
+      PsiMod.set_global_option('WFN', 'CC2')
+      run_ccenergy('cc2', **kwargs)
+      PsiMod.set_global_option('WFN', 'CC2')
 
     PsiMod.cchbar()
     PsiMod.cclambda()
-    PsiMod.ccresponse()
+
+#    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+#    PsiMod.ccresponse()
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
@@ -390,6 +438,10 @@ def run_eom_cc_gradient(name, **kwargs):
     PsiMod.revoke_global_option_changed('WFN')
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
+
+def run_eomcc_property(name, **kwargs):
+
+    run_eom_cc(name, **kwargs)
 
 
 def run_adc(name, **kwargs):
