@@ -26,12 +26,12 @@ read_options(std::string name, Options &options)
      options.add_int("DIIS_MAX_VECS", 8);
      /*- For GPU code, cap the amount of memory registerred with the GPU -*/
      options.add_int("MAX_MAPPED_MEMORY", 1000);
-     /*- Compute triples contribution? */
+     /*- Compute triples contribution? -*/
      options.add_bool("COMPUTE_TRIPLES", true);
      /*- Use MP2 NOs to truncate virtual space for (T)? -*/
-     options.add_bool("TRIPLES_USE_NOS", false);
+     options.add_bool("NAT_ORBS", false);
      /*- Cutoff for occupation of MP2 NO orbitals in (T) -*/
-     options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
+     options.add_double("OCC_TOLERANCE", 1.0e-6);
      /*- Desired number of threads. This will override OMP_NUM_THREADS in (T) -*/
      options.add_int("NUM_THREADS", 1);
      /*- Do SCS-MP2? -*/

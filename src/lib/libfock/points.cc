@@ -1,6 +1,6 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
-#include <math.h>
+#include <cmath>
 #include "points.h"
 #include "cubature.h"
 #include "psiconfig.h"

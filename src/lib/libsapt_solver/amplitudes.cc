@@ -159,9 +159,9 @@ void SAPT2::theta(int ampfile, const char *amplabel, const char trans,
     antisym(tARBS,aoccA,nvirA);
 
   double **B_p_OV; 
-  if (OVlabel == "AR RI Integrals") 
+  if (!strcmp(OVlabel, "AR RI Integrals"))
     B_p_OV = get_AR_ints(1,foccA_);
-  else if (OVlabel == "BS RI Integrals") 
+  else if (!strcmp(OVlabel, "BS RI Integrals"))
     B_p_OV = get_BS_ints(1,foccB_);
   else 
     throw PsiException("Those integrals do not exist",__FILE__,__LINE__);

@@ -432,9 +432,11 @@ def cp(name, **kwargs):
     :returns: (*float*) Counterpoise-corrected interaction energy in kcal/mol
 
     :PSI variables:
-
-    .. envvar:: CP-CORRECTED 2-BODY INTERACTION ENERGY
-        UNCP-CORRECTED 2-BODY INTERACTION ENERGY
+    .. hlist::
+       :columns: 1
+    
+       * :psivar:`CP-CORRECTED 2-BODY INTERACTION ENERGY <CP-CORRECTED2-BODYINTERACTIONENERGY>`
+       * :psivar:`UNCP-CORRECTED 2-BODY INTERACTION ENERGY <UNCP-CORRECTED2-BODYINTERACTIONENERGY>`
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -449,7 +451,7 @@ def cp(name, **kwargs):
         to be applied to the molecule. May be any valid argument to
         :py:func:`driver.energy`; however, SAPT is not appropriate.
 
-    :type func: function
+    :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
 
         Indicates the type of calculation to be performed on the molecule
@@ -457,13 +459,18 @@ def cp(name, **kwargs):
         ``energy('name')``, while ``optimize`` perfoms a geometry optimization
         on each system, and ``cbs`` performs a compound single-point energy.
         If a nested series of python functions is intended
-        (see `Function Intercalls`_), use keyword ``cp_func`` instead of ``func``.
+        (see :ref:`sec:intercalls`), use keyword ``cp_func`` instead of ``func``.
 
-    :type check_bsse: bool
+    :type check_bsse: :ref:`boolean <op_py_boolean>`
     :param check_bsse: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether to additionally compute un-counterpoise corrected
         monomers and thus obtain an estimate for the basis set superposition error.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 
@@ -629,14 +636,16 @@ def database(name, db_name, **kwargs):
     :returns: (*float*) Mean absolute deviation of the database in kcal/mol
 
     :PSI variables:
-
-    .. envvar:: db_name DATABASE MEAN SIGNED DEVIATION
-        db_name DATABASE MEAN ABSOLUTE DEVIATION
-        db_name DATABASE ROOT-MEAN-SQUARE DEVIATION
+    .. hlist::
+       :columns: 1
+    
+       * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
+       * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
+       * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
 
     .. note:: It is very easy to make a database from a collection of xyz files
-        using the script ``$PSIDATADIR/databases/ixyz2database.pl``.
-        See `Creating a New Database`_ for details.
+        using the script :source:`lib/scripts/ixyz2database.pl`.
+        See :ref:`sec:createDatabase` for details.
 
     .. caution:: Some features are not yet implemented. Buy a developer some coffee.
 
@@ -656,14 +665,14 @@ def database(name, db_name, **kwargs):
         name, matching the name of a python file in ``psi4/lib/databases``.
         Consult that directory for available databases and literature citations.
 
-    :type func: function
+    :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``energy`` |dr| || ``optimize`` || ``cbs``
 
         Indicates the type of calculation to be performed on each database
         member. The default performs a single-point ``energy('name')``, while
         ``optimize`` perfoms a geometry optimization on each reagent, and
         ``cbs`` performs a compound single-point energy. If a nested series
-        of python functions is intended (see `Function Intercalls`_), use
+        of python functions is intended (see :ref:`sec:intercalls`), use
         keyword ``db_func`` instead of ``func``.
 
     :type mode: string
@@ -675,23 +684,23 @@ def database(name, db_name, **kwargs):
         (``'sow'``/``'reap'``).  For the latter, run an initial job with
         ``'sow'`` and follow instructions in its output file.
 
-    :type cp: bool
+    :type cp: :ref:`boolean <op_py_boolean>`
     :param cp: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether counterpoise correction is employed in computing
         interaction energies. Use this option and NOT the :py:func:`wrappers.cp`
         function for BSSE correction in database().  Option available
-        (See `Available Databases`_) only for databases of bimolecular complexes.
+        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes.
 
-    :type rlxd: bool
+    :type rlxd: :ref:`boolean <op_py_boolean>`
     :param rlxd: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether correction for deformation energy is
         employed in computing interaction energies.  Option available
-        (See `Available Databases`_) only for databases of bimolecular complexes 
+        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes 
         with non-frozen monomers, e.g., HBC6.
 
-    :type symm: bool
+    :type symm: :ref:`boolean <op_py_boolean>`
     :param symm: |dl| ``'on'`` |dr| || ``'off'``
 
         Indicates whether the native symmetry of the database reagents is
@@ -699,7 +708,7 @@ def database(name, db_name, **kwargs):
         (``'off'``). Some computational methods (e.g., SAPT) require no
         symmetry, and this will be set by database().
 
-    :type zpe: bool
+    :type zpe: :ref:`boolean <op_py_boolean>`
     :param zpe: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether zero-point-energy corrections are appended to
@@ -710,7 +719,7 @@ def database(name, db_name, **kwargs):
     :param benchmark: |dl| ``'default'`` |dr| || ``'S22A'`` || etc.
 
         Indicates whether a non-default set of reference energies, if
-        available (See `Available Databases`_), are employed for the
+        available (See :ref:`sec:availableDatabases`), are employed for the
         calculation of error statistics.
 
     :type tabulate: array of strings
@@ -1378,13 +1387,15 @@ def complete_basis_set(name, **kwargs):
     :returns: (*float*) -- Total electronic energy in Hartrees
 
     :PSI variables:
-
-    .. envvar:: CBS TOTAL ENERGY
-        CBS REFERENCE ENERGY
-        CBS CORRELATION ENERGY
-        CURRENT ENERGY
-        CURRENT REFERENCE ENERGY
-        CURRENT CORRELATION ENERGY
+    .. hlist::
+       :columns: 1
+    
+       * :psivar:`CBS TOTAL ENERGY <CBSTOTALENERGY>`
+       * :psivar:`CBS REFERENCE ENERGY <CBSREFERENCEENERGY>`
+       * :psivar:`CBS CORRELATION ENERGY <CBSCORRELATIONENERGY>`
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -1457,25 +1468,25 @@ def complete_basis_set(name, **kwargs):
         Currently, the basis set set through ``set`` commands have no influence
         on a cbs calculation.
 
-    :type scf_basis: string
+    :type scf_basis: :ref:`basis string <apdx:basisElement>`
     :param scf_basis: |dl| ``corl_basis`` |dr| || ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the reference energy.
         If any correlation method is specified, ``scf_basis`` can default
         to ``corl_basis``.
 
-    :type corl_basis: string
+    :type corl_basis: :ref:`basis string <apdx:basisElement>`
     :param corl_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the correlation energy.
 
-    :type delta_basis: string
+    :type delta_basis: :ref:`basis string <apdx:basisElement>`
     :param delta_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the delta correction
         to the correlation energy.
 
-    :type delta2_basis: string
+    :type delta2_basis: :ref:`basis string <apdx:basisElement>`
     :param delta2_basis: ``'cc-pV[TQ]Z'`` || ``'jun-cc-pv[tq5]z'`` || ``'6-31G*'`` || etc.
 
         Indicates the sequence of basis sets employed for the second delta correction
@@ -1509,6 +1520,11 @@ def complete_basis_set(name, **kwargs):
 
         Indicates the basis set extrapolation scheme to be applied to the second delta correction
         to the correlation energy.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 
@@ -1972,7 +1988,7 @@ def reconstitute_bracketed_basis(needarray):
 
 def highest_1(**largs):
     """Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`wrappers.complete_basis_set`.
+    zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^X
 
@@ -2019,7 +2035,7 @@ def highest_1(**largs):
 # Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
 
@@ -2067,7 +2083,7 @@ def corl_xtpl_helgaker_2(**largs):
 
 def scf_xtpl_helgaker_3(**largs):
     """Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}
 
@@ -2122,7 +2138,7 @@ def scf_xtpl_helgaker_3(**largs):
 
 def scf_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63
 

@@ -225,25 +225,45 @@ DCFTSolver::build_intermediates()
 
     dpd_buf4_close(&I);
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
-                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV>");
 
-    // T_IAJB -= Sum_KC lambda_IAKC gbar_JBKC
+    // T_IAJB -= Sum_KC lambda_IAKC g_JBKC
     dpd_contract444(&Laa, &I, &Taa, 0, 0, -1.0, 1.0);
 
-    // T_IAjb -= Sum_KC gbar_IAKC lambda_KCjb
+    // T_IAjb -= Sum_KC g_IAKC lambda_KCjb
     dpd_contract444(&I, &Lab, &Tab, 0, 1, -1.0, 1.0);
 
     dpd_buf4_close(&I);
-    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
-                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
+                  ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
 
-    // T_iajb -= Sum_kc lambda_iakc gbar_jbkc
+    // T_IAJB += Sum_KC lambda_IAKC (JB|KC)
+    dpd_contract444(&Laa, &I, &Taa, 0, 0, 1.0, 1.0);
+
+    // T_IAjb += Sum_KC (JB|KC) lambda_KCjb
+    dpd_contract444(&I, &Lab, &Tab, 0, 1, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov>");
+
+    // T_iajb -= Sum_kc lambda_iakc g_jbkc
     dpd_contract444(&Lbb, &I, &Tbb, 0, 0, -1.0, 1.0);
 
-    // T_IAjb -= Sum_KC lambda_IAkc gbar_jbkc
+    // T_IAjb -= Sum_KC lambda_IAkc g_jbkc
     dpd_contract444(&Lab, &I, &Tab, 0, 0, -1.0, 1.0);
-
     dpd_buf4_close(&I);
+
+    dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
+                  ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
+
+    // T_iajb += Sum_kc lambda_iakc (JB|KC)
+    dpd_contract444(&Lbb, &I, &Tbb, 0, 0, 1.0, 1.0);
+
+    // T_IAjb += Sum_KC lambda_IAkc (kc|jb)
+    dpd_contract444(&Lab, &I, &Tab, 0, 0, 1.0, 1.0);
+    dpd_buf4_close(&I);
+
     dpd_buf4_close(&Laa);
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Lbb);

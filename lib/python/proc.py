@@ -24,6 +24,15 @@ def run_dcft(name, **kwargs):
     return PsiMod.dcft()
 
 
+def run_dcft_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DCFT gradient calculation.
+
+    """
+    run_dcft(name, **kwargs)
+    PsiMod.deriv()
+
+
 def run_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a self-consistent-field theory (HF & DFT) calculation.
@@ -402,6 +411,47 @@ def run_adc(name, **kwargs):
     return PsiMod.adc()
 
 
+def run_dft(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    user_fctl = PsiMod.get_global_option('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_global_option('REFERENCE')
+
+    if lowername.startswith('b3lyp'):
+        if lowername.endswith('b3lyp'):
+            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP')
+        #elif lowername.endswith('-d1'):
+        #    PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D1')
+        elif lowername.endswith('-d2'):
+            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
+        elif lowername.endswith('-d'):
+            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
+        else:
+            raise ValidationError('Requested B3LYP variant \'%s\' is not available.' % (lowername))
+    else:
+        raise ValidationError('How did you even get here? Edit the procedures dictionary.')
+
+    if (user_ref == 'RHF'):
+        PsiMod.set_global_option('REFERENCE', 'RKS')
+    elif (user_ref == 'UHF'):
+        PsiMod.set_global_option('REFERENCE', 'UKS')
+    elif (user_ref == 'ROHF'):
+        raise ValidationError('RO reference for DFT is not available.')
+
+    returnvalue = scf_helper(name, **kwargs)
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
+    PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    PsiMod.set_global_option('REFERENCE', user_ref)
+    PsiMod.revoke_global_option_changed('REFERENCE')
+
+    return returnvalue
+
+
 def run_detci(name, **kwargs):
     """Function encoding sequence of PSI module calls for
     a configuration interaction calculation, namely FCI,
@@ -549,22 +599,25 @@ def run_dfcc(name, **kwargs):
     e_dfcc = PsiMod.dfcc()
     return e_dfcc
 
+
 def run_psimrcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
      using a reference from the MCSCF module
 
-    """  
+    """
     run_mcscf(name, **kwargs)
     return PsiMod.psimrcc()
+
 
 def run_psimrcc_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
      using a reference from the SCF module
 
-    """ 
+    """
 
     run_scf(name, **kwargs)
     return PsiMod.psimrcc()
+
 
 def run_mp2c(name, **kwargs):
     """Function encoding sequence of PSI module calls for

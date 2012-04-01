@@ -202,8 +202,8 @@ int dpd_set_default(int dpd_num);
 
 void dpd_error(const char *caller, FILE *outfile);
 
-double **dpd_block_matrix(int n, int m);
-void dpd_free_block(double **array, int n, int m);
+double **dpd_block_matrix(size_t n, size_t m);
+void dpd_free_block(double **array, size_t n, size_t m);
 long int dpd_memfree(void);
 void dpd_memset(long int);
 

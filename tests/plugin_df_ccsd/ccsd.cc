@@ -245,16 +245,16 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
       if (iter>0){
          memset((void*)w1,'\0',o*v*sizeof(double));
          for (int i=0; i<ncctasks; i++) {
-             double start = 0.0;
-             #ifdef _OPENMP
-                 start = omp_get_wtime();
-             #endif
+             //double start = 0.0;
+             //#ifdef _OPENMP
+             //    start = omp_get_wtime();
+             //#endif
              (*this.*CCTasklist[i].func)(CCParams[i]);
-             double end = 0.0;
-             #ifdef _OPENMP
-                 end = omp_get_wtime();
-             #endif
-             printf("task %5i took %10.2lf s\n",i,end-start);fflush(stdout);
+             //double end = 0.0;
+             //#ifdef _OPENMP
+             //    end = omp_get_wtime();
+             //#endif
+             //printf("task %5i took %10.2lf s\n",i,end-start);fflush(stdout);
          }
       }
 

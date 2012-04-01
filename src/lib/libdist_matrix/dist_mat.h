@@ -1489,7 +1489,7 @@ public:
      *
      * @param val The value to fill the Distributed_Matrix.
      */
-    madness::Void operator=(const double &val) { fill(val); }
+    madness::Void operator=(const double &val) { fill(val); return madness::Void(); }
 
     /**
      * The overloaded == operator.  This checks to see if the two Distributed_Matrix
