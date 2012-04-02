@@ -17,6 +17,7 @@ set {
   basis "aug-cc-pVTZ"
   states_per_irrep [1, 0, 0, 1]
   cachelevel 0
+  scf_type out_of_core
 }
 
 energy('eom-ccsd')
