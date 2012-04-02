@@ -13,18 +13,13 @@ extern "C" int
 read_options(std::string name, Options &options)
 {
   if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
-     /*- Memory in mb.  Use this to override global option, 
-         which is limited to <16gb because of dpd in transqt2 -*/
-     options.add_int("CCMEMORY", 256);
-     /*- Wavefunction type !expert -*/
-     options.add_str("WFN", "CCSD");
      /*- Convergence for the CC amplitudes-*/
      options.add_double("R_CONVERGENCE", 1.0e-7);
      /*- Maximum number of CC iterations -*/
      options.add_int("MAXITER", 50);
      /*- Desired number of DIIS vectors -*/
      options.add_int("DIIS_MAX_VECS", 8);
-     /*- For GPU code, cap the amount of memory registerred with the GPU -*/
+     /*- For GPU code, cap the amount of memory (mb) registerred with the GPU -*/
      options.add_int("MAX_MAPPED_MEMORY", 1000);
      /*- Compute triples contribution? -*/
      options.add_bool("COMPUTE_TRIPLES", true);

@@ -1799,66 +1799,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
-  if (name == "PLUGIN_LIBCIM"|| options.read_globals()) {
-     /*- Convergence for the localization procedure-*/
-     options.add_double("BOYS_CONVERGENCE", 1.0e-6);
-     /*- Maximum number of iterations to converge the orbital localization
-     procedure -*/
-     options.add_int("BOYS_MAXITER", 100);
-     /*- Desired number of threads -*/
-     options.add_int("NUM_THREADS", 1);
-     /*- cim threshold 1 -*/
-     options.add_double("THRESH1", 0.001);
-     /*- cim threshold 2 -*/
-     options.add_double("THRESH2", 0.05);
-     /*- cim threshold 3 -*/
-     options.add_double("THRESH3", 5e-5);
-     /*- Should the CIM procedure return after the occupied domains are
-     determined?  This parameter is used internally by the python driver
-     if the calculation is going to be run in parallel.  Changing this
-     won't have any effect on the procedure. -*/
-     options.add_bool("CIM_INITIALIZE", false);
-     /*- For which cluster number should the correlation energy be
-     evaluated? This parameter is used internally by the python driver if
-     the calculation is going to be run in parallel.  Changing this won't
-     have any effect on the procedure. -*/
-     options.add_int("CIM_CLUSTER_NUM", 0);
-     /*- CIM central domain type (dual- or single-environment CIM)
-     Recommeneded SECIM for all CIM computations. -*/
-     options.add_str("CIM_DOMAIN_TYPE", "SECIM", "SECIM DECIM");
-  }
-  if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
-     /*- Wavefunction type !expert -*/
-     options.add_str("WFN", "CCSD");
-     /*- Convergence for the CC amplitudes-*/
-     options.add_double("R_CONVERGENCE", 1.0e-7);
-     /*- Maximum number of CC iterations -*/
-     options.add_int("MAXITER", 50);
-     /*- Desired number of DIIS vectors -*/
-     options.add_int("DIIS_MAX_VECS", 8);
-     /*- For GPU code, cap the amount of memory registerred with the GPU -*/
-     options.add_int("MAX_MAPPED_MEMORY", 1000);
-     /*- Compute triples contribution? */
-     options.add_bool("COMPUTE_TRIPLES", true);
-     /*- Use MP2 NOs to truncate virtual space for (T)? -*/
-     options.add_bool("TRIPLES_USE_NOS", false);
-     /*- Cutoff for occupation of MP2 NO orbitals in (T) -*/
-     options.add_double("VIRTUAL_CUTOFF", 1.0e-6);
-     /*- Desired number of threads. This will override OMP_NUM_THREADS in (T) -*/
-     options.add_int("NUM_THREADS", 1);
-     /*- Do SCS-MP2? -*/
-     options.add_bool("SCS_MP2", false);
-     /*- Do SCS-CCSD? -*/
-     options.add_bool("SCS_CCSD", false);
-     /*- Opposite-spin scaling factor for SCS-MP2 -*/
-     options.add_double("MP2_SCALE_OS",1.20);
-     /*- Same-spin scaling factor for SCS-MP2 -*/
-     options.add_double("MP2_SCALE_SS",1.0/3.0);
-     /*- Oppposite-spin scaling factor for SCS-CCSD -*/
-     options.add_double("CC_SCALE_OS", 1.27);
-     /*- Same-spin scaling factor for SCS-CCSD -*/
-     options.add_double("CC_SCALE_SS",1.13);
-  }
   if(name == "CIS"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs configuration interaction singles (CIS) computations. Currently unused in
         Psi4. -*/
