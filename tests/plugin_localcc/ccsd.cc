@@ -998,8 +998,8 @@ void CoupledCluster::SCS_CCSD(){
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   jaib = iajb + (i-j)*v*(1-v*o);
-                  osenergy += integrals[iajb]*(tempt[ijab])*wfn_->centralfac[i];;
-                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*wfn_->centralfac[i];;
+                  osenergy += integrals[iajb]*(tempt[ijab])*wfn_->centralfac[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*wfn_->centralfac[i];
                           
                   ijab++;
               }
@@ -1048,90 +1048,6 @@ void CoupledCluster::SCS_MP2(){
   emp2_ss = ssenergy;
 
   psio.reset();
-}
-double CoupledCluster::CIMEnergy(){
-
-  long int v = nvirt;
-  long int o = ndoccact;
-  long int rs = nmo;
-  long int i,j,a,b;
-  double ta,tnew,dijab,da,dab,dabi;
-  long int iajb,jaib;
-  double energy = 0.0;
-  boost::shared_ptr<PSIO> psio(new PSIO());
-  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
-  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  psio->close(PSIF_KLCD,1);
-  double**Rii = wfn_->Rii->pointer();
-  // transform E2klcd back from quasi-canonical basis
-  for (i=0; i<o; i++){
-      for (a=0; a<v; a++){
-          for (j=0; j<o; j++){
-              for (b=0; b<v; b++){
-                  double dum = 0.0;
-                  for (int ip=0; ip<o; ip++){
-                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii[ip][i];
-                  }
-                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
-              }
-          }
-      }
-  }
-
-  if (t2_on_disk){
-     psio->open(PSIF_T2,PSIO_OPEN_OLD);
-     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
-     psio->close(PSIF_T2,1);
-     tb = tempv;
-  }
-  // transform t2 back from quasi-canonical basis
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  double dum = 0.0;
-                  for (int ip=0; ip<o; ip++){
-                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii[ip][i];
-                  }
-                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
-              }
-          }
-      }
-  }
-  for (a=0; a<v; a++){
-      for (b=0; b<v; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
-              }
-          }
-      }
-  }
-
-  for (a=o; a<rs; a++){
-      for (b=o; b<rs; b++){
-          for (i=0; i<o; i++){
-              for (j=0; j<o; j++){
-                  energy += (2.*integrals[i*o*v*v+(a-o)*o*v+j*v+(b-o)]-integrals[i*o*v*v+(b-o)*o*v+j*v+(a-o)])
-                          * (tempt[(a-o)*o*o*v+(b-o)*o*o+i*o+j])
-                          * wfn_->centralfac[i];
-              }
-          }
-      }
-  }
-
-  psio.reset();
-
-  return energy;
 }
 double CoupledCluster::CheckEnergy(){
 

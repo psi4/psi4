@@ -12,7 +12,7 @@
 using namespace psi;
 
 namespace psi{
-  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal);
 };
 
 // position in a symmetric packed matrix
@@ -25,8 +25,10 @@ long int Position(long int i,long int j){
 
 namespace psi{
 
-CoupledPair::CoupledPair()
-{}
+CoupledPair::CoupledPair(boost::shared_ptr<psi::CIM> wfn)
+{
+  wfn_ = wfn;
+}
 CoupledPair::~CoupledPair()
 {}
 
@@ -82,17 +84,14 @@ void CoupledPair::WriteBanner(Options&options){
 ================================================================*/
 void CoupledPair::Initialize(Options &options){
  
-  // grab the reference wave function and its parameters
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
-
-  if (ref.get() !=NULL){
+  if (wfn_.get() !=NULL){
      escf    = Process::environment.globals["SCF TOTAL ENERGY"];
-     nirreps = ref->nirrep();
-     sorbs   = ref->nsopi();
-     orbs    = ref->nmopi();
-     docc    = ref->doccpi();
-     fzc     = ref->frzcpi();
-     fzv     = ref->frzvpi();
+     nirreps = wfn_->nirrep();
+     sorbs   = wfn_->nsopi();
+     orbs    = wfn_->nmopi();
+     docc    = wfn_->doccpi();
+     fzc     = wfn_->frzcpi();
+     fzv     = wfn_->frzvpi();
   }
   if (nirreps>1){
      //throw PsiException("plugin_cepa requires symmetry c1",__FILE__,__LINE__);
@@ -177,7 +176,7 @@ void CoupledPair::Initialize(Options &options){
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
+  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt,wfn_->islocal);
 
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -192,13 +191,13 @@ void CoupledPair::Initialize(Options &options){
   eps = (double*)malloc(nmo*sizeof(double));
   int count=0;
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = fzc[h]; norb<docc[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
   }
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
@@ -216,7 +215,6 @@ void CoupledPair::Initialize(Options &options){
 
 ===================================================================*/
 PsiReturnType CoupledPair::CEPAIterations(Options&options){
-
 
   // timer stuff:
   struct tms total_tmstime;
@@ -312,7 +310,7 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
       fflush(outfile);
       iter++;
       if (iter==1) emp2 = ecepa;
-      if (iter==1 && options.get_bool("SCS_MP2"))  SCS_MP2();
+      if (iter==1) SCS_MP2();
   }
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -324,7 +322,14 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
      throw PsiException("  CEPA iterations did not converge.",__FILE__,__LINE__);
   }
 
-  if (options.get_bool("SCS_CEPA")) SCS_CEPA();
+  // is this a cim-cepa computation?
+  if (wfn_->islocal){
+     Local_SCS_CEPA();
+     ecepa = ecepa_os + ecepa_ss;
+  }
+  else{
+     SCS_CEPA();
+  }
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  %s iterations converged!\n",cepa_type);
@@ -733,6 +738,97 @@ void CoupledPair::UpdateT1(long int iter){
   F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   F_DCOPY(o*v,w1,1,t1,1);
+}
+void CoupledPair::Local_SCS_CEPA(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int iajb,jaib,ijab=0;
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+
+  double**Rii = wfn_->Rii->pointer();
+  // transform E2klcd back from quasi-canonical basis
+  for (i=0; i<o; i++){
+      for (a=0; a<v; a++){
+          for (j=0; j<o; j++){
+              for (b=0; b<v; b++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii[ip][i];
+                  }
+                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
+              }
+          }
+      }
+  }
+
+
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempv;
+  }
+
+  // transform t2 back from quasi-canonical basis
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii[ip][i];
+                  }
+                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+
+
+  for (a=o; a<rs; a++){
+      for (b=o; b<rs; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  jaib = iajb + (i-j)*v*(1-v*o);
+                  osenergy += integrals[iajb]*(tempt[ijab])*wfn_->centralfac[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*wfn_->centralfac[i];
+                  ijab++;
+              }
+          }
+      }
+  }
+  ecepa_os = ecepa_os_fac * osenergy;
+  ecepa_ss = ecepa_ss_fac * ssenergy;
+
+  psio.reset();
 }
 void CoupledPair::SCS_CEPA(){
 

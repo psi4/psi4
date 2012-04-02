@@ -12,12 +12,15 @@ The cluster-in-molecule (CIM) local correlation framework decomposes the correla
 energy into contributions from individual occupied orbitals.  Within a local molecular
 orbital (LMO) basis, the contribution to the correlation energy from LMO, i, can
 usually be determined quite accurately even while ignoring a large subset of occupied
-LMOs that interact only weakly with LMO, i.  In principle, the CIM framework can be
-applied to any post-Hartree-Fock method, but this implementation is currently 
-limited to the CCSD and CCSD(T) methods.
+LMOs that interact only weakly with LMO, i.  A simplistic CIM procedure would be one 
+in which a correlated calculation was performed to obtain a correlation energy for 
+each occupied LMO, i, where only those occupied orbitals, j, that interact strongly
+with i are active in the calculation.  In general, there are far fewer occupied 
+orbitals in each subcalculation than in the original molecule, leading to a drastic
+reduction in computational cost.
 
-A First Example
-^^^^^^^^^^^^^^^
+Example input
+^^^^^^^^^^^^^^^^
 
 The following is a simple input that will perform a CIM-CCSD(T) computation on a 
 cluster of 8 water molecules. ::
@@ -55,19 +58,28 @@ cluster of 8 water molecules. ::
 	memory 2000 mb
 	set {
 		basis 6-31g
-		df_basis_scf cc-pvdz
 		freeze_core true
 	}
 	energy('cim-ccsd(t)')
 
-Note that we have included the path to the plugin directory (here, /Users/deprince/psi4/tests/)
-and imported the plugin.  These commands are necesarry to call the CIM procedure via the 
-:py:func:`~driver.energy` function.  Note also that we have specified a df basis even though this is not
-a df computation.  The construction of the virtual orbitals in this CIM implementation uses
-scaled opposite-spin MP2 natural orbitals, the construction of which require df technology.
-Ideally, one should select a df basis that corresponds to the full basis, but, when no
-corresponding basis exists, I just use the smallest basis available in |PSIfour|, cc-pVDZ.
-Publications from the use of the CIM code should cite my non-existent paper: [DePrince!]_.
+Note that we have included the path to the plugin directory (here, /Users/deprince/psi4/tests/) and imported the plugin. These commands are necesarry to call the CIM procedure via the :py:func:`~driver.energy`. Publications from the use of the CIM code should cite my non-existent paper: [DePrince!].
+
+Basic CIM Keywords
+~~~~~~~~~~~~~~~~~~
+
+CIM
+^^^^^^^^^^^^^^^^
+
+In principle, the CIM framework can be
+applied to any post-Hartree-Fock method. Current capabilities include
+CCSD, CCSD(T), and a family of coupled-pair methods:
+
+* cim-ccsd, coupled cluster with single and double excitations (CCSD)
+* cim-ccsd(t), CCSD with perturbative triples
+* cim-cepa(n), coupled electron pair approximation (CEPA), variant n
+* cim-acpf, averaged coupled pair functional (ACPF)
+* cim-aqcc, averaged quadratic coupled cluster (AQCC)
+* cim-cisd, configuration interaction with single and double excitations (CISD)
 
 Basic CIM Keywords
 ~~~~~~~~~~~~~~~~~~
@@ -76,31 +88,6 @@ Basic CIM Keywords
 .. include:: /autodir_options_c/scf__df_basis_scf.rst
 .. include:: /autodir_options_c/globals__freeze_core.rst
 .. include:: /autodir_plugins/plugin_libcim__cim_domain_type.rst
-
-*CIM_SE_TOLERANCE*
-""""""""""""""""""
-
-      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be in i's cluster. Only applies if |plugin_libcim__cim_domain_type| is ``SECIM``.
-
-      * **Type**: double
-      * **Default**: 0.001
-
-*CIM_DE_TOLERANCE1*
-"""""""""""""""""""
-
-      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be included in the MO domain of LMO, i. Only applies if |plugin_libcim__cim_domain_type| is ``DECIM``.
-
-      * **Type**: double
-      * **Default**: 0.01
-
-*CIM_DE_TOLERANCE2*
-"""""""""""""""""""
-
-      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be included in the environmental domain of LMO, i. Only applies if |plugin_libcim__cim_domain_type| is ``DECIM``.
-
-      * **Type**: double
-      * **Default**: 0.05
-
 .. include:: /autodir_plugins/plugin_ccsd_serial__occ_tolerance.rst
 
 Advanced CIM Keywords
@@ -112,3 +99,7 @@ Advanced CIM Keywords
 .. include:: /autodir_plugins/plugin_libcim__cim_initialize.rst
 .. include:: /autodir_plugins/plugin_libcim__cim_cluster_num.rst
 
+Running CIM in parallel
+^^^^^^^^^^^^^^^^^^^^^^^
+
+One desirable feature of the CIM framework is the embarassingly parallel structure of the energy decomposition.  In |PSIfour|, one can perform the CIM procedure in parallel with mpi4py.  A CIM computation can be run on N nodes by ``mpirun -n N psi4 input.dat``.  Note that threading within the underlying correlated calculations is independent of the MPI parallelism.  The command ``mpirun -n 8 psi4 input.dat`` with ``num_threads 8`` set in input.dat will spawn 8 mpi ranks, and each rank will use 8 OpenMP threads within the correlated calculation.
