@@ -132,6 +132,16 @@ void STRE::print(FILE *fp, GeomType geom, int off) const {
   fflush(fp);
 }
 
+// function to return string of coordinate definition
+std::string STRE::get_definition_string(int off) const {
+  ostringstream iss(ostringstream::out); // create stream; allow output to it
+  if (inverse_stre)
+    iss << "1/R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  else
+    iss << "R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  return iss.str();
+}
+
 void STRE::print_intco_dat(FILE *fp, int off) const {
   if (hbond) {
     if (s_frozen)

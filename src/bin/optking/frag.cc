@@ -120,6 +120,12 @@ void FRAG::print_intcos(FILE *fp, int atom_offset) {
   fflush(fp);
 }
 
+// fetch string definition of intco
+std::string FRAG::get_intco_definition(int coord_index, int atom_offset) {
+  fprintf(outfile,"coord_index: %d; atom_offset: %d\n", coord_index, atom_offset);
+  return intcos.at(coord_index)->get_definition_string(atom_offset);
+}
+
 void FRAG::print_intco_dat(FILE *fp, int atom_offset) {
   //fprintf(fp,"\t---Fragment %d Intrafragment Coordinates---\n", id+1);
   for (int i=0; i<intcos.size(); ++i)

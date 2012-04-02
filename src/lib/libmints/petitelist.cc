@@ -330,6 +330,42 @@ int **compute_atom_map(const boost::shared_ptr<Molecule> &molecule)
     return compute_atom_map(molecule.get());
 }
 
+// RAK, 4-2012, return true if all atoms correctly map onto other atoms 
+bool valid_atom_map(const Molecule* molecule)
+{
+    const Molecule& mol = *molecule;
+    double np[3];
+    SymmetryOperation so;
+    CharacterTable ct = mol.point_group()->char_table();
+
+    // loop over all centers
+    for (int i=0; i < mol.natom(); i++) {
+        Vector3 ac(mol.xyz(i));
+
+        // For each operation in the pointgroup, transform the coordinates of
+        // center "i" and see which atom it maps into
+        for (int g=0; g < ct.order(); g++) {
+            so = ct.symm_operation(g);
+
+            for (int ii=0; ii < 3; ii++) {
+                np[ii] = 0;
+                for (int jj=0; jj < 3; jj++)
+                    np[ii] += so(ii,jj) * ac[jj];
+            }
+
+            if (mol.atom_at_position1(np, 0.05) < 0)
+              return false;
+        }
+    }
+    return true;
+}
+
+bool valid_atom_map(const boost::shared_ptr<Molecule> &molecule)
+{
+    return valid_atom_map(molecule.get());
+}
+//
+
 void delete_atom_map(int **atom_map, const Molecule* molecule)
 {
     if (atom_map) {

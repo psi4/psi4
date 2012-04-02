@@ -183,6 +183,9 @@ class MOLECULE {
 #endif
   }
 
+  // print definition of an internal coordinate from global index 
+  std::string get_intco_definition_from_global_index(int coord_index) const;
+
 #if defined (OPTKING_PACKAGE_QCHEM)
   void update_efp_values(void);
 #endif

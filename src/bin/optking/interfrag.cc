@@ -8,12 +8,15 @@
 #include "print.h"
 #include "v3d.h" // for H_guess
 
+#include <sstream>
+
 #define EXTERN
 #include "globals.h"
 
 namespace opt {
 
 using namespace v3d;
+using namespace std;
 
 // constructor for given weight linear combination reference points
 INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
@@ -630,6 +633,25 @@ void INTERFRAG::print_intco_dat(FILE *fp, int off_A, int off_B) const {
   fflush(fp);
 }
 
+// TODO - fix this up later
+std::string INTERFRAG::get_intco_definition(int coord_index, int off_A, int off_B) const {
+  ostringstream iss;
+  for (int i=0; i<ndA; ++i) {
+    iss << "A" << i+1;
+    for (int j=0; j<A->g_natom(); ++j)
+      if (weightA[i][j] != 0.0)
+        iss << j+1+off_A;
+    iss << "\n";
+  }
+  for (int i=0; i<ndB; ++i) {
+    iss << "B" << i+1;
+    for (int j=0; j<B->g_natom(); ++j)
+      if (weightB[i][j] != 0.0)
+        iss << j+1+off_B;
+    iss << "\n";
+  }
+  return iss.str();
+}
 
 // Make the initial Hessian guess for interfragment coordinates
 double ** INTERFRAG::H_guess(void) {
