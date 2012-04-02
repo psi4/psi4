@@ -11,27 +11,25 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <libmints/mints.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
 #define EXTERN
 #include "globals.h"
 
+using namespace std;
+
 namespace psi { namespace ccdensity {
 #include <physconst.h>
 
-#define IOFF_MAX 32641
-#define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
-
 void oscillator_strength(struct TD_Params *S)
 {
-  int nmo, nso, nao, noei, stat, i, I, h, j, nirreps, *ioff;
-  int *order, *order_A, *order_B, *doccpi, natom, *clsdpi, *openpi, *orbspi;
+  int nmo, nso, i, I, h, j, nirreps;
+  int *order, *order_A, *order_B, *doccpi, *clsdpi, *openpi, *orbspi;
   double **scf_pitzer, **scf_pitzer_A, **scf_pitzer_B;
-  double **scf_qt, **scf_qt_A, **scf_qt_B, **X, **usotao;
-  double *zvals, **geom;
+  double **scf_qt, **scf_qt_A, **scf_qt_B, **X;
   double *mu_x_ints, *mu_y_ints, *mu_z_ints;
-  double **MUX_AO, **MUY_AO, **MUZ_AO;
   double **MUX_MO, **MUY_MO, **MUZ_MO;
   double **MUX_SO, **MUY_SO, **MUZ_SO;
   double **MUX_MO_A, **MUY_MO_A, **MUZ_MO_A;
@@ -51,16 +49,11 @@ void oscillator_strength(struct TD_Params *S)
   }
 
   nso = chkpt_rd_nso();
-  nao = chkpt_rd_nao();
   nmo = chkpt_rd_nmo();
-  usotao = chkpt_rd_usotao();
   clsdpi = chkpt_rd_clsdpi();
   openpi = chkpt_rd_openpi();
   orbspi = chkpt_rd_orbspi();
   nirreps = chkpt_rd_nirreps();
-  natom = chkpt_rd_natom();
-  zvals = chkpt_rd_zvals();
-  geom = chkpt_rd_geom();
   chkpt_close();
 
   lt_x = lt_y = lt_z = 0.0;
@@ -68,10 +61,6 @@ void oscillator_strength(struct TD_Params *S)
   ds_x = ds_y = ds_z = 0.0;
   f_x = f_y = f_z = 0.0;
   f = 0;
-
-  ioff = init_int_array(IOFF_MAX);
-  ioff[0] = 0;
-  for(i=1; i < IOFF_MAX; i++) ioff[i] = ioff[i-1] + i;
 
   doccpi = init_int_array(moinfo.nirreps);
   for(h=0; h < moinfo.nirreps; h++) 
@@ -118,64 +107,13 @@ void oscillator_strength(struct TD_Params *S)
   }
   free(doccpi);
 
-  /*** Read in dipole moment integrals in the AO basis ***/
-  noei = nao * (nao + 1)/2;
-
-  mu_x_ints = init_array(noei);
-  stat = iwl_rdone(PSIF_OEI,PSIF_AO_MX,mu_x_ints,noei,0,0,outfile);
-  mu_y_ints = init_array(noei);
-  stat = iwl_rdone(PSIF_OEI,PSIF_AO_MY,mu_y_ints,noei,0,0,outfile);
-  mu_z_ints = init_array(noei);
-  stat = iwl_rdone(PSIF_OEI,PSIF_AO_MZ,mu_z_ints,noei,0,0,outfile);
-
-  MUX_AO = block_matrix(nao,nao);
-  MUY_AO = block_matrix(nao,nao);
-  MUZ_AO = block_matrix(nao,nao);
-
-  for(i=0; i < nao; i++)
-    for(j=0; j < nao; j++) {
-      MUX_AO[i][j] = mu_x_ints[INDEX(i,j)];
-      MUY_AO[i][j] = mu_y_ints[INDEX(i,j)];
-      MUZ_AO[i][j] = mu_z_ints[INDEX(i,j)];
-    }
-
-/*   fprintf(outfile, "MUX_AOs\n"); */
-/*   print_mat(MUX_AO, nao, nao, outfile); */
-/*   fprintf(outfile, "MUY_AOs\n"); */
-/*   print_mat(MUY_AO, nao, nao, outfile); */
-/*   fprintf(outfile, "MUZ_AOs\n"); */
-/*   print_mat(MUZ_AO, nao, nao, outfile); */
-
-  MUX_SO = block_matrix(nso,nso);
-  MUY_SO = block_matrix(nso,nso);
-  MUZ_SO = block_matrix(nso,nso);
-
-  /*** Transform the AO dipole integrals to the SO basis ***/
-  X = block_matrix(nso,nao); /* just a temporary matrix */
-
-  C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(MUX_AO[0][0]),nao,
-	  0,&(X[0][0]),nao);
-  C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(MUX_SO[0][0]),nso);
-
-  C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(MUY_AO[0][0]),nao,
-	  0,&(X[0][0]),nao);
-  C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(MUY_SO[0][0]),nso);
-
-  C_DGEMM('n','n',nso,nao,nao,1,&(usotao[0][0]),nao,&(MUZ_AO[0][0]),nao,
-	  0,&(X[0][0]),nao);
-  C_DGEMM('n','t',nso,nso,nao,1,&(X[0][0]),nao,&(usotao[0][0]),nao,
-	  0,&(MUZ_SO[0][0]),nso);
-
-  free(mu_x_ints); free(mu_y_ints); free(mu_z_ints);
-  free_block(X);
-  free_block(usotao);
-  free_block(MUX_AO);
-  free_block(MUY_AO);
-  free_block(MUZ_AO);
-
   /*** Transform the SO dipole integrals to the MO basis ***/
+
+  MintsHelper mints(Process::environment.options, 0);
+  vector<SharedMatrix> dipole = mints.so_dipole();
+  MUX_SO = dipole[0]->to_block_matrix();
+  MUY_SO = dipole[1]->to_block_matrix();
+  MUZ_SO = dipole[2]->to_block_matrix();
 
   X = block_matrix(nmo,nso); /* just a temporary matrix */
 
@@ -249,13 +187,6 @@ void oscillator_strength(struct TD_Params *S)
   free_block(MUX_SO);
   free_block(MUY_SO);
   free_block(MUZ_SO);
-
-/*   fprintf(outfile, "MUX_MOs\n"); */
-/*   print_mat(MUX_MO, nmo, nmo, outfile); */
-/*   fprintf(outfile, "MUY_MOs\n"); */
-/*   print_mat(MUY_MO, nmo, nmo, outfile); */
-/*   fprintf(outfile, "MUZ_MOs\n"); */
-/*   print_mat(MUZ_MO, nmo, nmo, outfile); */
 
   fprintf(outfile,"\n\tOscillator Strength for %d%3s\n",S->root+1,
           moinfo.labels[S->irrep]);

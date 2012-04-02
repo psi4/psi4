@@ -16,7 +16,7 @@ set globals {
     reference rhf
     basis aug-cc-pvdz
     guess core
-    states_per_irrep [2]
+    roots_per_irrep [2]
 }
 
 energy('adc')
