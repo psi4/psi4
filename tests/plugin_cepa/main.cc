@@ -33,7 +33,7 @@ read_options(std::string name, Options &options)
       /*- number of threads for triples, not set by default -*/
       options.add_int("NUM_THREADS", 1);
       /*- generate density-fitted integrals so we can skip
-          transqt2() and OutOfCoreSort(). default false */
+          transqt2() and OutOfCoreSort(). default false -*/
       options.add_bool("DF_INTEGRALS",false);
       /*- SCS MP2, default true -*/
       options.add_bool("SCS_MP2", true);

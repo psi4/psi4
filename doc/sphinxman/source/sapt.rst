@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:sapt`:
 .. index:: SAPT
 
@@ -147,7 +149,6 @@ should cite the following publications: [Hohenstein:2010:184111]_ and
 Basic SAPT0 Keywords
 ~~~~~~~~~~~~~~~~~~~~
 
-.. index:: SAPT_LEVEL
 .. include:: autodir_options_c/sapt__sapt_level.rst
 .. include:: autodir_options_c/sapt__basis.rst
 .. include:: autodir_options_c/sapt__df_basis_sapt.rst
@@ -306,9 +307,9 @@ input::
     energy('sapt2+3')
 
 To reiterate some of the options mentioned above: the
-:term:`NAT_ORBS` option will compute MP2 natural orbitals and use
+|sapt__nat_orbs| option will compute MP2 natural orbitals and use
 them in the evaluation of the triples correction to dispersion, and the
-:term:`FREEZE_CORE` option will freeze the core throughout the SAPT
+|sapt__freeze_core| option will freeze the core throughout the SAPT
 computation. This SAPT2+3/aug-cc-pVDZ computation produces the following
 results::
 

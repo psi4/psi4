@@ -30,19 +30,19 @@ void get_td_params(Options& options)
     params.prop_root -= 1;
     params.nstates = 1;
   }
-  else if(options["STATES_PER_IRREP"].has_changed()) {
-    i = options["STATES_PER_IRREP"].size();
+  else if(options["ROOTS_PER_IRREP"].has_changed()) {
+    i = options["ROOTS_PER_IRREP"].size();
     if(i != moinfo.nirreps) {
       fprintf(outfile,"Dim. of states_per_irrep vector must be %d\n",
               moinfo.nirreps) ;
       throw PsiException("ccdensity: error", __FILE__, __LINE__);
     }
     for(i=0;i<moinfo.nirreps;++i) {
-      params.nstates += options["STATES_PER_IRREP"][i].to_integer();
+      params.nstates += options["ROOTS_PER_IRREP"][i].to_integer();
     }
   }
   else {
-    fprintf(outfile,"\nUse STATES_PER_IRREP or PROP_SYM and PROP_ROOT\n");
+    fprintf(outfile,"\nUse ROOTS_PER_IRREP or PROP_SYM and PROP_ROOT\n");
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
@@ -91,9 +91,9 @@ void get_td_params(Options& options)
     sprintf(td_params[l].R2BB_lbl,"Rijab %d %d",td_params[0].irrep, k);
     sprintf(td_params[l].R2AB_lbl,"RIjAb %d %d",td_params[0].irrep, k);
   }
-  else if(options["STATES_PER_IRREP"].has_changed()) {
+  else if(options["ROOTS_PER_IRREP"].has_changed()) {
     for(i=0;i<moinfo.nirreps;++i) {
-      j = options["STATES_PER_IRREP"][i].to_integer();
+      j = options["ROOTS_PER_IRREP"][i].to_integer();
       for (k=0;k<j;++k) {
         td_params[l].irrep = i^moinfo.sym;
         td_params[l].root = k;

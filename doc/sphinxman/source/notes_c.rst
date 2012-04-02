@@ -7,9 +7,9 @@ Notes on Options
    described in :ref:`sec:jobControl`, not as arguments to a Python function
    (like ``energy()``).
 
-.. note:: All Psi4 keyword names and values are insensitive to case, both
+.. note:: All |PSIfour| keyword names and values are insensitive to case, both
    those that are placed in ``set`` blocks and as Python function arguments.
-   The few exceptions are documented for the :py:func:`driver.database` function,
+   The few exceptions are documented for the :py:func:`~driver.database` function,
    where case structure must match the database file.
 
 .. _`op_c_bool`:

@@ -5,6 +5,8 @@
     * INCLUDE UNITS!
     * ALPHABETIZE!
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`apdx:psivariables_alpha`:
 
 PSI Variables by Alpha

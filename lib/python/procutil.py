@@ -88,3 +88,13 @@ def format_kwargs_for_input(filename, lmode=1, **kwargs):
     if lmode == 2:
         kwargs['mode'] = 'sow'
         del kwargs['linkage']
+
+
+def drop_duplicates(seq):
+    """Function that given an array *seq*, returns an array without any duplicate
+    entries. There is no guarantee of which duplicate entry is dropped.
+
+    """
+    noDupes = []
+    [noDupes.append(i) for i in seq if not noDupes.count(i)]
+    return noDupes

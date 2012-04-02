@@ -1,11 +1,12 @@
 
 .. _`sec:contributing`:
 
-===========================================
-Contributions: Intro to Programming in PSI4
-===========================================
+================================================
+Contributions: Intro to Programming in |PSIfour|
+================================================
 
 .. toctree::
-   bestPractices_py
+   plugins
+   bestpractices_py
    documentation
 

@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:documentation`:
 
 Documentation
@@ -78,14 +80,15 @@ this covers:
 * C++ Keywords: :source:`src/bin/psi4/read_options.cc` 
 * Sample Inputs: input.dat files in :source:`samples`
 * PSI Variables: ``Process::environment.globals`` lines and comments in the C++ code
+* Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories.
 
-Running ``make clean`` will clear out all auto-generated files.
-Running ``make distclean`` additionally clears out the built documentation.
-Run one of these before check-in to avoid adding non-source files
-to the repository. Building all the documentation takes a couple minutes.
-For editing and rebuilding (without changing read_options.cc), this can
-be shortened by commenting out the ``document_*`` scripts in target ``index.rst``
-of the :source:`doc/sphinxman/Makefile`.
+Running ``make clean`` will clear out all auto-generated files.  Running
+``make distclean`` additionally clears out the built documentation.  Run
+one of these before check-in to avoid adding non-source files to the
+repository. Building all the documentation takes about five minutes.  For
+editing and rebuilding (without changing read_options.cc), this can be
+shortened by commenting out the ``document_*`` script lines in target
+``index.rst`` of the :source:`doc/sphinxman/Makefile`.
 
 reStructuredText
 ^^^^^^^^^^^^^^^^
