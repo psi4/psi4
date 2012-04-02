@@ -91,6 +91,7 @@ def energy(name, **kwargs):
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
     :PSI variables: 
+
     .. hlist:: 
        :columns: 1 
      
@@ -619,6 +620,7 @@ def optimize(name, **kwargs):
     :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
 
     :PSI variables: 
+
     .. hlist:: 
        :columns: 1 
      

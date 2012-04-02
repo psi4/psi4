@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:plugins`:
 
 Plugins: Adding New Functionality to |PSIfour|

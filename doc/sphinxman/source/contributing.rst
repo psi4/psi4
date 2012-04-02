@@ -1,9 +1,9 @@
 
 .. _`sec:contributing`:
 
-===========================================
-Contributions: Intro to Programming in PSI4
-===========================================
+================================================
+Contributions: Intro to Programming in |PSIfour|
+================================================
 
 .. toctree::
    plugins

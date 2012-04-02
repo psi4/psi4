@@ -70,6 +70,7 @@ def run_mp2_5(name, **kwargs):
     .. math:: E_{total}^{\\text{MP2.5}} = E_{total,\; \\text{SCF}} \; + E_{corl,\; \\text{MP2}} + E_{corl, \; \\text{MP3}}
 
     :PSI variables: 
+
     .. hlist:: 
        :columns: 1 
      

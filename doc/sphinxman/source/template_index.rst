@@ -41,10 +41,10 @@
    appendices
 
 * Indices
+
  - :ref:`genindex`
  - :ref:`modindex`
  - :ref:`search`
-
 
 .. #####  HTML-ALL STOP
 .. #####  HTML-USER STOP

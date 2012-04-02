@@ -432,6 +432,7 @@ def cp(name, **kwargs):
     :returns: (*float*) Counterpoise-corrected interaction energy in kcal/mol
 
     :PSI variables:
+
     .. hlist::
        :columns: 1
     
@@ -636,6 +637,7 @@ def database(name, db_name, **kwargs):
     :returns: (*float*) Mean absolute deviation of the database in kcal/mol
 
     :PSI variables:
+
     .. hlist::
        :columns: 1
     
@@ -1387,6 +1389,7 @@ def complete_basis_set(name, **kwargs):
     :returns: (*float*) -- Total electronic energy in Hartrees
 
     :PSI variables:
+
     .. hlist::
        :columns: 1
     
