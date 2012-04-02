@@ -127,6 +127,12 @@ cc45:         RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 cc46:         EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
 
 
+cc47:         EOM-CCSD/cc-pVDZ on H2O2 with two excited states in each irrep
+
+
+cc48:         reproduces dipole moments in J.F. Stanton's "biorthogonal" JCP paper
+
+
 cc49:         EOM-CC3(UHF) on CH radical with user-specified basis and properties for particular root
 
 
