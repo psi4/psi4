@@ -70,7 +70,13 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->sr_type_   = XFunctional::LSDA;
         fun = static_cast<Functional*>(x);
     } else if (alias == "wPBE_X") {
-        fun = new wPBEXFunctional(); 
+        wPBEXFunctional* x = new wPBEXFunctional();
+        x->set_hjs(true);
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "wHSE_X") {
+        wPBEXFunctional* x = new wPBEXFunctional();
+        x->set_hjs(false);
+        fun = static_cast<Functional*>(x);
     } else if (alias == "LYP_C") {
         fun = new LYP_CFunctional();
     } else if (alias == "FT97B_X") {

@@ -345,6 +345,12 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
                 double a = omega_ / (2.0 * k);
                 double a_k = - omega_ / (2.0 * k * k); 
 
+                if (a < 1.0E-10) {
+                    Fk = 1.0;
+                    Fk_k = 0.0;
+                    break;
+                }
+
                 // Easy part
                 double F1k = 0.0;
                 double F1k_a = 0.0;
@@ -400,6 +406,8 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
             }
         }
     
+        //printf("xfun: %11.3E %11.3E %24.16E %24.16E %24.16E\n", rho, 1.0 / (2.0 * _k0_) * s, Fs * Fk, Fk_k * k_rho, Fs_s);
+        
         // => Assembly <= //
         v[Q] += A * E * Fs * Fw * Fk;
         if (deriv >= 1) {

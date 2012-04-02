@@ -11,7 +11,7 @@ factory.cc            : Provides abstracted factory routines for functionals
 Functional Types:
 
 xfunctional.h/.cc      : Generic exchange-type functionals
-wpbex_functional.h/.cc : SR-wPBE functional (exact exchange hole integral)
+wpbex_functional.h/.cc : SR-wPBE functional (HJS model)
 *_Xfunctional.h/.cc    : MATLAB-generated exchange-type functionals
 *_Cfunctional.h/.cc    : MATLAB-generated correlation-type functionals
  
