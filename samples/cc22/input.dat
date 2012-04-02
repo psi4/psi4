@@ -14,7 +14,7 @@ molecule ch2 {
 set {
   reference rohf
   basis DZ
-  states_per_irrep [1, 0, 0, 1]
+  roots_per_irrep [1, 0, 0, 1]
 }
 
 energy('eom-ccsd')

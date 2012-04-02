@@ -1,8 +1,9 @@
-.. _`sec:plugin_libcim`:
-.. index:: plugin; plugin_libcim
+
+Theory, Usage, and Notes
+------------------------
 
 Cluster-in-molecule local correlation calculations
-=============
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. codeauthor:: A. Eugene DePrince
 .. sectionauthor:: A. Eugene DePrince
@@ -61,7 +62,7 @@ cluster of 8 water molecules. ::
 
 Note that we have included the path to the plugin directory (here, /Users/deprince/psi4/tests/)
 and imported the plugin.  These commands are necesarry to call the CIM procedure via the 
-``energy`` function.  Note also that we have specified a df basis even though this is not
+:py:func:`~driver.energy` function.  Note also that we have specified a df basis even though this is not
 a df computation.  The construction of the virtual orbitals in this CIM implementation uses
 scaled opposite-spin MP2 natural orbitals, the construction of which require df technology.
 Ideally, one should select a df basis that corresponds to the full basis, but, when no
@@ -70,121 +71,44 @@ Publications from the use of the CIM code should cite my non-existent paper: [De
 
 Basic CIM Keywords
 ~~~~~~~~~~~~~~~~~~
-:term:`BASIS`
-"""""""""""""
 
-      Primary basis set, describes the molecular orbitals
+.. include:: /autodir_options_c/mints__basis.rst
+.. include:: /autodir_options_c/scf__df_basis_scf.rst
+.. include:: /autodir_options_c/globals__freeze_core.rst
+.. include:: /autodir_plugins/plugin_libcim__cim_domain_type.rst
 
-      * **Type**: string
-      * **Possible Values**: :ref:`basis string <apdx:basisElement>`
-      * **Default**: No Default
+*CIM_SE_TOLERANCE*
+""""""""""""""""""
 
-:term:`DF_BASIS_SCF`
-""""""""""""""""""""
-
-      Auxilliary basis set, used to appriximate MP2 natural orbitals which are 
-      used to define the virtual space for each cluster
-
-      * **Type**: string
-      * **Possible Values**: :ref:`basis string <apdx:basisElement>`
-      * **Default**: No Default
-
-:term:`FREEZE_CORE`
-"""""""""""""""""""
-
-      The scope of core orbitals to freeze in occupied orbital localization and 
-      determination of occupied domains for the CIM procedure. 
-      Recommended true for all CIM computations
-
-      * **Type**: string
-      * **Possible Values**: FALSE, TRUE, SMALL, LARGE
-      * **Default**: FALSE
-
-:term:`CIM_DOMAIN_TYPE`
-"""""""""""""""""""""""
-
-      CIM central domain type (dual- or single-environment CIM).  Recommeneded SECIM for all CIM computations.
-
-      * **Type**: string
-      * **Possible Values**: SECIM, DECIM
-      * **Default**: SECIM
-
-:term:`CIM_SE_TOLERANCE`
-""""""""""""""""""""""""
-
-      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be in i's cluster.  Only applies if CIM_DOMAIN_TYPE is SECIM
+      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be in i's cluster. Only applies if |plugin_libcim__cim_domain_type| is ``SECIM``.
 
       * **Type**: double
       * **Default**: 0.001
 
-:term:`CIM_DE_TOLERANCE1`
-"""""""""""""""""""""""""
+*CIM_DE_TOLERANCE1*
+"""""""""""""""""""
 
-      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be included in the MO domain of LMO, i.
-      Only applies if CIM_DOMAIN_TYPE is DECIM
+      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be included in the MO domain of LMO, i. Only applies if |plugin_libcim__cim_domain_type| is ``DECIM``.
 
       * **Type**: double
       * **Default**: 0.01
 
-:term:`CIM_DE_TOLERANCE2`
-"""""""""""""""""""""""""
+*CIM_DE_TOLERANCE2*
+"""""""""""""""""""
 
-      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be included in the environmental domain of LMO, i.
-      Only applies if CIM_DOMAIN_TYPE is DECIM
+      For a given occupied LMO, i, the minimum absolute value of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to be included in the environmental domain of LMO, i. Only applies if |plugin_libcim__cim_domain_type| is ``DECIM``.
 
       * **Type**: double
       * **Default**: 0.05
 
-:term:`OCC_TOLERANCE`
-"""""""""""""""""""""
-
-      Minimum occupation (eigenvalues of the MP2 OPDM) below which virtual natural orbitals are discarded for for a given cluster
-
-      * **Type**: double
-      * **Default**: 5.0e-5
-
+.. include:: /autodir_plugins/plugin_ccsd_serial__occ_tolerance.rst
 
 Advanced CIM Keywords
 ~~~~~~~~~~~~~~~~~~~~~
 
-:term:`DENOMINATOR_DELTA`
-"""""""""""""""""""""""""
-
-      Maximum error allowed (Max error norm in Delta tensor) in the approximate energy denominators employed in evaluating the scaled opposite-spin MP2 OPDM used in defining the virtual orbitals for each CIM cluster.  The default may be more conservative than is necessary in practice.
-
-      * **Type**: double
-      * **Default**: 1.0e-6
-
-:term:`BOYS_CONVERGENCE`
-""""""""""""""""""""""""
-
-      Convergence threshold for the localization procedure
-
-      * **Type**: double
-      * **Default**:  1.0e-6
-
-:term:`BOYS_MAXITER`
-""""""""""""""""""""
-
-      Maximum number of iterations to converge the orbital localization procedure
-
-      * **Type**: integer
-      * **Default**: 100
-
-:term:`CIM_INITIALIZE`
-""""""""""""""""""""""
-
-      Should the CIM procedure return after the occupied domains are determined?  This parameter is used internally by the python driver if the calculation is going to be run in parallel.  Changing this won't have any effect on the procedure
-
-      * **Type**: bool
-      * **Default**: False
-
-:term:`CIM_CLUSTER_NUM`
-"""""""""""""""""""""""
-
-      For which cluster number should |PSIfour| evaluate the correlation energy?  This parameter is used internally by the python driver if the calculation is going to be run in parallel.  Changing this won't have any effect on the procedure
-
-      * **Type**: integer
-      * **Default**: 0
-
+.. include:: /autodir_plugins/plugin_libcim__denominator_delta.rst
+.. include:: /autodir_plugins/plugin_libcim__boys_convergence.rst
+.. include:: /autodir_plugins/plugin_libcim__boys_maxiter.rst
+.. include:: /autodir_plugins/plugin_libcim__cim_initialize.rst
+.. include:: /autodir_plugins/plugin_libcim__cim_cluster_num.rst
 

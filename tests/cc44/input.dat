@@ -13,9 +13,8 @@ molecule h2o {
 memory 2 mb
 
 set {
-  wfn eom_ccsd
   basis "aug-cc-pVTZ"
-  states_per_irrep [1, 0, 0, 1]
+  roots_per_irrep [1, 0, 0, 1]
   cachelevel 0
   scf_type out_of_core
 }

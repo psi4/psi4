@@ -15,4 +15,4 @@ set {
     omega = [0.05, 0.1, au]
 }
 
-response('ccsd')
+property('ccsd', properties=['polarizability'])

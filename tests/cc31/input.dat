@@ -17,11 +17,10 @@ noreorient
 }
 
 set {
-  property rotation
   omega [633, 355, nm]
   gauge both
   freeze_core true
   basis STO-3G
 }
 
-response('ccsd')
+property('ccsd',properties=['rotation'])

@@ -91,6 +91,7 @@ void create_new_plugin(std::string name, const std::string& templ)
     std::string filePython   = psiDataDirWithPlugin + "/pymodule.py.template";
     std::string filePyinit   = psiDataDirWithPlugin + "/__init__.py.template";
     std::string fileInput2   = psiDataDirWithPlugin + "/inputalt.dat.template";
+    std::string fileDoc      = psiDataDirWithPlugin + "/doc.rst.template";
 
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPlugin);
@@ -185,6 +186,20 @@ void create_new_plugin(std::string name, const std::string& templ)
     fclose(fp);
     std::string input2 = file6.str();
 
+    // Load in doc.rst.template
+    fp = fopen(fileDoc.c_str(), "r");
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open doc.rst template.\n");
+        exit(1);
+    }
+    // Stupid way to read in entire file.
+    std::stringstream file7;
+    while(fgets(line, sizeof(line), fp)) {
+        file7 << line;
+    }
+    fclose(fp);
+    std::string doc = file7.str();
+
     // Search and replace tags
 
     std::string format_top_srcdir(PSI_TOP_SRCDIR);
@@ -200,6 +215,7 @@ void create_new_plugin(std::string name, const std::string& templ)
     python   = xpressive::regex_replace(python,   match_format, format_top_srcdir);
     pyinit   = xpressive::regex_replace(pyinit,   match_format, format_top_srcdir);
     input2   = xpressive::regex_replace(input2,   match_format, format_top_srcdir);
+    doc      = xpressive::regex_replace(doc,      match_format, format_top_srcdir);
 
     match_format = boost::xpressive::as_xpr("@top_objdir@");
     makefile = xpressive::regex_replace(makefile, match_format, format_top_objdir);
@@ -208,6 +224,7 @@ void create_new_plugin(std::string name, const std::string& templ)
     python   = xpressive::regex_replace(python,   match_format, format_top_objdir);
     pyinit   = xpressive::regex_replace(pyinit,   match_format, format_top_objdir);
     input2   = xpressive::regex_replace(input2,   match_format, format_top_objdir);
+    doc      = xpressive::regex_replace(doc,      match_format, format_top_objdir);
 
     match_format = boost::xpressive::as_xpr("@plugin@");
     makefile = xpressive::regex_replace(makefile, match_format, format_plugin);
@@ -216,6 +233,7 @@ void create_new_plugin(std::string name, const std::string& templ)
     python   = xpressive::regex_replace(python,   match_format, format_plugin);
     pyinit   = xpressive::regex_replace(pyinit,   match_format, format_plugin);
     input2   = xpressive::regex_replace(input2,   match_format, format_plugin);
+    doc      = xpressive::regex_replace(doc,      match_format, format_plugin);
 
     match_format = boost::xpressive::as_xpr("@Plugin@");
     makefile = xpressive::regex_replace(makefile, match_format, Name);
@@ -224,6 +242,7 @@ void create_new_plugin(std::string name, const std::string& templ)
     python   = xpressive::regex_replace(python,   match_format, Name);
     pyinit   = xpressive::regex_replace(pyinit,   match_format, Name);
     input2   = xpressive::regex_replace(input2,   match_format, Name);
+    doc      = xpressive::regex_replace(doc,      match_format, Name);
 
     match_format = boost::xpressive::as_xpr("@PLUGIN@");
     makefile = xpressive::regex_replace(makefile, match_format, format_PLUGIN);
@@ -232,6 +251,7 @@ void create_new_plugin(std::string name, const std::string& templ)
     python   = xpressive::regex_replace(python,   match_format, format_PLUGIN);
     pyinit   = xpressive::regex_replace(pyinit,   match_format, format_PLUGIN);
     input2   = xpressive::regex_replace(input2,   match_format, format_PLUGIN);
+    doc      = xpressive::regex_replace(doc,      match_format, format_PLUGIN);
 
     // Make a directory with the name plugin_name
     if (!boost::filesystem::create_directory(plugin_name)) {
@@ -293,10 +313,19 @@ void create_new_plugin(std::string name, const std::string& templ)
     fputs(input2.c_str(), fp);
     fclose(fp);
 
+    fp = fopen((plugin_name + "/doc.rst").c_str(), "w");
+    if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
+        printf("Unable to create new doc.rst.\n");
+        exit(1);
+    }
+    fputs(doc.c_str(), fp);
+    fclose(fp);
+
     printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),  template_name.c_str());
     printf("\tcreated: Makefile\n\tcreated: input.dat\n\tcreated: %s.cc\n"
            "\tcreated: __init__.py\n\tcreated: pymodule.py\n"
-           "\tcreated: inputalt.dat\n", plugin_name.c_str());
+           "\tcreated: inputalt.dat\n\tcreated: doc.rst\n", plugin_name.c_str());
 }
 
 }

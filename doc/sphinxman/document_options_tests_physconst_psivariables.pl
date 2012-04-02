@@ -102,11 +102,13 @@ sub print_hash
  my $label_string = $_[3];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
  print OUT "{\n \\footnotesize\n";
+ my $ttsout = "source/autodoc_abbr_options_c.rst";
  my $tsout = "source/autodoc_glossary_options_c.rst";
  my $sout = "source/autodoc_options_c_bymodule.rst";
  if ($print_description) { 
-    my $sout = "source/autodoc_options_c_bymodule.rst";
+    open(TTSOUT,">$ttsout") or die "\nI can't write to $ttsout\n";
     open(TSOUT,">$tsout") or die "\nI can't write to $tsout\n";
+    print TSOUT "\n.. include:: autodoc_abbr_options_c.rst\n\n";
     print TSOUT "\n.. _`apdx:options_c_alpha`:\n\n";
     print TSOUT "Keywords by Alpha\n=================\n\n";
     print TSOUT ".. glossary::\n   :sorted:\n\n";
@@ -115,6 +117,7 @@ sub print_hash
     print SOUT "Keywords by Module\n==================\n\n.. toctree::\n   :maxdepth: 1\n\n";
  }
  else { 
+    open(TTSOUT,">>$ttsout") or die "\nI can't write to $ttsout\n";
     open(TSOUT,">>$tsout") or die "\nI can't write to $tsout\n";
     open(SOUT,">/dev/null");
  }
@@ -174,17 +177,20 @@ sub print_hash
              $DashedKeyword =~ s/\\_/-/g;
              my $UnderscoredKeyword = $Keyword;
              $UnderscoredKeyword =~ s/\\_/_/g;
-             my $Keydivider = "\"" x (8+length($UnderscoredKeyword));
+             my $Keydivider = "\"" x (14+length($Module)+2*length($UnderscoredKeyword));
              my $keywordfilename = lc($Module) . "__" . lc($UnderscoredKeyword);
              my $fullkeywordfilename = "source/autodir_options_c/" . $keywordfilename . ".rst";
              print SSOUT ".. include:: $keywordfilename.rst\n";
              open(SSSOUT,">$fullkeywordfilename") or die "\nI can't write to $fullkeywordfilename\n";
-             printf SSSOUT ":term:`%s`\n%s\n\n", uc($UnderscoredKeyword), $Keydivider;
-             printf SSSOUT "      %s\n\n", $KeyHash{"SphComment"};
+             printf SSSOUT ":term:`%s <%s (%s)>`\n%s\n\n", uc($UnderscoredKeyword), uc($UnderscoredKeyword), uc($Module), $Keydivider;
+             my $SphCommentSubstit = $KeyHash{"SphComment"};
+             $SphCommentSubstit = substitute_comment($SphCommentSubstit);
+             printf SSSOUT "      %s\n\n", $SphCommentSubstit;
+             printf TTSOUT ".. |%s__%s| replace:: :term:`%s <%s (%s)>`\n", lc($Module), lc($UnderscoredKeyword), uc($UnderscoredKeyword), uc($UnderscoredKeyword), uc($Module);
              if ($print_description) {
-                printf TSOUT "   %s\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+                printf TSOUT "   %s (%s)\n      :ref:`apdx:%s` |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), uc($Module), $KeyHash{"SphComment"};
              } else {
-                printf TSOUT "   %s\n      :ref:`apdx:%s` **(Expert)** |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), $KeyHash{"SphComment"};
+                printf TSOUT "   %s (%s)\n      :ref:`apdx:%s` **(Expert)** |w---w| %s\n\n", uc($UnderscoredKeyword), uc($Module), uc($Module), $KeyHash{"SphComment"};
              }
              if(($KeyHash{"Type"} eq "bool") || ($KeyHash{"Type"} eq "boolean")) {
                 printf SSSOUT "      * **Type**: :ref:`boolean <op_c_boolean>`\n";
@@ -228,6 +234,8 @@ sub print_hash
  }  # module
  print SOUT "\n";
  close SOUT;
+ print TTSOUT "\n";
+ close TTSOUT;
  print TSOUT "\n";
  close TSOUT;
  print OUT "}\n";
@@ -260,6 +268,24 @@ sub get_description
  $String =~ s/ +/ /g;
  return $String;
 }
+
+
+# including the options abbr substitutions file in every SSSOUT option file slows
+#   compilation by a factor of ten. so, back-translate |%s__%s| into :term:`%s`
+sub substitute_comment
+{
+    my $Line = shift;
+    while (1) {
+        (my $before, my $pattern_module, my $pattern_keyword, my $after) = 
+          $Line =~ m/^(.*?)[\s\(]\|(\w+)__(\w+)\|[\s\).,](.*?)$/;
+        if ($pattern_module) {
+            $Line = $before . " :term:`" . uc($pattern_keyword) . " <" . 
+              uc($pattern_keyword) . " (" . uc($pattern_module) . ")>` " . $after;
+        } else { last; }
+    }
+    return $Line
+}
+
 
 sub determine_comment
 {

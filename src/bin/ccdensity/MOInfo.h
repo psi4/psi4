@@ -8,6 +8,7 @@ namespace psi { namespace ccdensity {
 struct MOInfo {
     int nirreps;        /* no. of irreducible representations */
     int nmo;            /* no. of molecular orbitals */
+    int nso;            /* no. of symmetry orbitals */
     int nactive;        /* no. of active orbitals */
     int iopen;          /* 0=closed shell; >0=open shell */
     int *orbspi;        /* no. of MOs per irrep */
@@ -70,6 +71,8 @@ struct MOInfo {
   double **rtd;         /* <n|O|0> Right transition density */ 
   double **rtd_a;       /* <n|O|0> Right transition alpha density */
   double **rtd_b;       /* <n|O|0> Right transition beta density */
+  int *pitzer2qt;    /* Pitzer to QT re-ordering array */
+  double **scf_qt;      /* SCF orbitals (QT ordering of MOs) */
   double ***L;
   double ***nabla;
   double ***dip;
