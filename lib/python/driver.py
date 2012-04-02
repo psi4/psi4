@@ -98,14 +98,14 @@ def energy(name, **kwargs):
 
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
-    :PSI variables: 
+    :PSI variables:
 
-    .. hlist:: 
-       :columns: 1 
-     
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
-       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>` 
-       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>` 
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
     .. _`table:energy_gen`:
 
@@ -620,6 +620,11 @@ def property(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
+
     try:
         return procedures['property'][lowername](lowername, **kwargs)
     except KeyError:
@@ -633,12 +638,12 @@ def optimize(name, **kwargs):
 
     :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
 
-    :PSI variables: 
+    :PSI variables:
 
-    .. hlist:: 
-       :columns: 1 
-     
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
 
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
@@ -718,7 +723,7 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_local_option('OPTKING','FULL_HESS_EVERY')
+    full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
     n = 1
@@ -768,7 +773,7 @@ def optimize(name, **kwargs):
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
-              PsiMod.opt_clean()
+                PsiMod.opt_clean()
             PsiMod.clean()
 
             # S/R: Clean up opt input file

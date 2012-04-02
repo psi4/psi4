@@ -435,7 +435,7 @@ def cp(name, **kwargs):
 
     .. hlist::
        :columns: 1
-    
+
        * :psivar:`CP-CORRECTED 2-BODY INTERACTION ENERGY <CP-CORRECTED2-BODYINTERACTIONENERGY>`
        * :psivar:`UNCP-CORRECTED 2-BODY INTERACTION ENERGY <UNCP-CORRECTED2-BODYINTERACTIONENERGY>`
 
@@ -640,7 +640,7 @@ def database(name, db_name, **kwargs):
 
     .. hlist::
        :columns: 1
-    
+
        * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
        * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
        * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
@@ -699,7 +699,7 @@ def database(name, db_name, **kwargs):
 
         Indicates whether correction for deformation energy is
         employed in computing interaction energies.  Option available
-        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes 
+        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes
         with non-frozen monomers, e.g., HBC6.
 
     :type symm: :ref:`boolean <op_py_boolean>`
@@ -1329,16 +1329,6 @@ def database(name, db_name, **kwargs):
     return finalenergy
 
 
-def drop_duplicates(seq):
-    """Function that given an array *seq*, returns an array without any duplicate
-    entries. There is no guarantee of which duplicate entry is dropped.
-
-    """
-    noDupes = []
-    [noDupes.append(i) for i in seq if not noDupes.count(i)]
-    return noDupes
-
-
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
     """Function that prints the header for the changable-width results tables in db().
     *tbl_maxrgt* is the number of reagent columns the table must plan for. *tbl_delimit*
@@ -1392,7 +1382,7 @@ def complete_basis_set(name, **kwargs):
 
     .. hlist::
        :columns: 1
-    
+
        * :psivar:`CBS TOTAL ENERGY <CBSTOTALENERGY>`
        * :psivar:`CBS REFERENCE ENERGY <CBSREFERENCEENERGY>`
        * :psivar:`CBS CORRELATION ENERGY <CBSCORRELATIONENERGY>`
