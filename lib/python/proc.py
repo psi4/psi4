@@ -315,7 +315,7 @@ def run_scf_property(name, **kwargs):
 
 def run_cc_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    all CC property calculation.
+    all CC property calculations.
 
     """
     oneel_properties = [ 'dipole', 'quadrupole', ]
@@ -344,29 +344,28 @@ def run_cc_property(name, **kwargs):
           excited.append(prop)
         else:
           invalid.append(prop)
-      print "properties = %s\n" % properties
-      print "one = %s\n" % one
-      print "two = %s\n" % two
-      print "response = %s\n" % response
-      print "excited = %s\n" % excited
-      print "invalid = %s\n" % invalid
     else:
-      print >>sys.stderr, 'Properties keyword required for property() function.'
+      print "The \"properties\" keyword is required with the property() function."
       exit(1)
 
     n_one = len(one)
     n_two = len(two)
     n_response = len(response)
     n_excited = len(excited)
+    n_invalid = len(invalid)
 
-    if not n_one:
-      print "No one-electron properties requested."
-    if not n_two:
-      print "No two-electron properties requested."
-    if not n_response:
-      print "No response properties requested."
+    if (n_invalid > 0):
+      print "The following properties are not currently supported: %s" % invalid
 
-    if (len(one) > 0 or len(two) > 0) and (len(response) > 0):
+    if (n_excited > 0 and (name.lower() != 'eom-ccsd' and name.lower() != 'eom-cc2')):
+      print "Excited state CC properties require EOM-CC2 or EOM-CCSD."
+      exit(1)
+
+    if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
+      print "Cannot compute response properties for excited states."
+      exit(1)
+
+    if (n_one > 0 or n_two > 0) and (n_response > 0):
       print "Computing both density- and response-based properties."
 
     if (name.lower() == 'ccsd'):
@@ -377,18 +376,52 @@ def run_cc_property(name, **kwargs):
       PsiMod.set_global_option('WFN', 'CC2')
       run_ccenergy('cc2', **kwargs)
       PsiMod.set_global_option('WFN', 'CC2')
+    elif (name.lower() == 'eom-ccsd'):
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+      run_ccenergy('eom-ccsd', **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    elif (name.lower() == 'eom-cc2'):
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
+      run_ccenergy('eom-cc2', **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
 
+    # Need cchbar for everything
     PsiMod.cchbar()
-    PsiMod.cclambda()
 
-#    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
-#    PsiMod.ccresponse()
+    # Need ccdensity at this point only for density-based props
+    if ((n_one > 0 or n_two > 0) and not n_excited):
+      PsiMod.set_global_option('DERTYPE', 'NONE')
+      PsiMod.set_global_option('ONEPDM', 'TRUE')
+      PsiMod.cclambda()
+      PsiMod.ccdensity()
+
+    # Need ccresponse only for response-type props
+    if (n_response > 0):
+      PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+      PsiMod.cclambda()
+      for prop in response:
+        PsiMod.set_global_option('PROPERTY',prop)
+        PsiMod.ccresponse()
+
+    # Excited-state transition properties
+    if (n_excited > 0):
+      if (name.lower() == 'eom-ccsd'):
+        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+      elif (name.lower() == 'eom-cc2'):
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
+      else:
+        print "Unknown excited-state CC wave function."
+        exit(1)
+      PsiMod.set_global_option('DERTYPE', 'NONE')
+      PsiMod.set_global_option('ONEPDM', 'TRUE')
+      PsiMod.cceom()
+      PsiMod.cclambda()
+      PsiMod.ccdensity()
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
-
 
 def run_eom_cc(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -444,11 +477,6 @@ def run_eom_cc_gradient(name, **kwargs):
     PsiMod.revoke_global_option_changed('WFN')
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
-
-def run_eomcc_property(name, **kwargs):
-
-    run_eom_cc(name, **kwargs)
-
 
 def run_adc(name, **kwargs):
     """Function encoding sequence of PSI module calls for

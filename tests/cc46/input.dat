@@ -13,17 +13,7 @@ molecule h2o2 {
 set {
   basis cc-pVDZ
   freeze_core true
-  states_per_irrep [2, 2]
-  prop_all true
+  roots_per_irrep [2, 2]
 }
 
-property('ccsd', properties=['test','polarizability','dipole','polarizability'])
-
-#run_eom_cc('eom-cc2')
-#
-#PsiMod.set_global_option('WFN', 'EOM_CC2')
-#PsiMod.set_global_option('DERTYPE', 'NONE')
-#PsiMod.set_global_option('ONEPDM', 'TRUE')
-#
-#PsiMod.cclambda()
-#PsiMod.ccdensity()
+property('eom-cc2', properties=['oscillator_strength'])

@@ -37,7 +37,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 
 # definitions that default tester knows about
 # should match lib/python/driver.py
-@PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "response");
+@PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "property");
 @PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2", "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "cc2", "ccsd", "ccsd(t)", "detci", "eom_ccsd", "eom-ccsd", "eom_cc2", "eom-cc2", "eom_cc3", "eom-cc3", "bccd", "bccd_t");
 @PSITEST_GRADIENTS = ("scf", "ccsd", "ccsd(t)", "mp2", "eom_ccsd", "eom-ccsd");
 @PSITEST_RESPONSE = ("ccsd", "cc2");
@@ -93,7 +93,7 @@ sub do_tests
     if ($jobtype eq "energy" || 
         $jobtype eq "gradient" || 
         $jobtype eq "hessian" || 
-        $jobtype eq "response") {
+        $jobtype eq "property") {
       
       $fail |= compare_nuc();
       $fail |= compare_scf_energy();  # We always have SCF energies?
@@ -131,11 +131,18 @@ sub do_tests
           if ($wfn eq "SCF+D")  { $fail |= compare_scf_d_energy(); last SWITCH2; }
       }
 
-     if ($jobtype eq "response") {
+     if ($jobtype eq "property") {
        if ($wfn eq "CCSD" || $wfn eq "ccsd" || 
            $wfn eq "CC2" || $wfn eq "cc2") {
           $fail |= compare_cclambda_overlap($wfn);
           $fail |= compare_cc_response($wfn);
+       }
+       elsif ($wfn eq "EOM_CCSD" || $wfn eq "eom_ccsd" || 
+              $wfn eq "EOM-CCSD" || $wfn eq "eom-ccsd" ||
+              $wfn eq "EOM_CC2" || $wfn eq "eom_cc2" || 
+              $wfn eq "EOM-CC2" || $wfn eq "eom-cc2") {
+          $fail |= compare_cclambda_overlap($wfn);
+          $fail |= compare_eomcc_oeprop($wfn);
        }
      }
       
@@ -2988,8 +2995,8 @@ sub get_calctype_string
       @data = split(/\'/, $line);
       $wfn = $data[1];
     }
-    elsif ($line =~ m/response\s*\(/) {
-      $jobtype = "response";
+    elsif ($line =~ m/property\s*\(/) {
+      $jobtype = "property";
       @data = split(/\'/, $line);
       $wfn = $data[1];
     }

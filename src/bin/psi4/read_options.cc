@@ -1340,9 +1340,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("XI_CONNECT",false);
     /*- The number of electronic states to computed, per irreducible
     representation -*/
-    options.add("STATES_PER_IRREP", new ArrayType());
-    /*- Do compute all relaxed excited states? -*/
-    options.add_bool("PROP_ALL",false);
+    options.add("ROOTS_PER_IRREP", new ArrayType());
+    /*- Compute non-relaxed properties for all excited states. -*/
+    options.add_bool("PROP_ALL",true);
     /*- The symmetry of states -*/
     options.add_int("PROP_SYM", 1);
     /*- -*/
@@ -1392,9 +1392,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("LOCAL_PAIRDEF","");
     /*- -*/
-    options.add("STATES_PER_IRREP", new ArrayType());
-    /*- Do ? -*/
-    options.add_bool("PROP_ALL",false);
+    options.add("ROOTS_PER_IRREP", new ArrayType());
+    /*- Compute unrelaxed properties for all excited states. -*/
+    options.add_bool("PROP_ALL",true);
     /*- -*/
     options.add_int("PROP_SYM",1);
     /*- -*/
@@ -1449,7 +1449,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The cutoff norm of residual vector in SEM step. -*/
     options.add_double("NORM_TOLERANCE", 1e-6);
     /*- The poles per irrep vector -*/
-    options.add("STATES_PER_IRREP", new ArrayType());
+    options.add("ROOTS_PER_IRREP", new ArrayType());
     /*- Do use the partial renormalization scheme for the ground state wavefunction? -*/
     options.add_bool("PR", false);
     /*- Number of components of transition amplitudes printed -*/
@@ -1510,7 +1510,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of excited states per irreducible representation for EOM-CC
     and CC-LR calculations. Irreps denote the final state symmetry, not the
     symmetry of the transtion. -*/
-    options.add("STATES_PER_IRREP", new ArrayType());
+    options.add("ROOTS_PER_IRREP", new ArrayType());
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 80);
     /*- Symmetry of the state to compute properties. Defaults to last irrep
@@ -1872,7 +1872,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("R_CONVERGENCE", 1e-7);
     /*- The number of electronic states to computed, per irreducible
     representation-*/
-    options.add("STATES_PER_IRREP", new ArrayType());
+    options.add("ROOTS_PER_IRREP", new ArrayType());
     /*- -*/
     options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
     /*- Do ? -*/

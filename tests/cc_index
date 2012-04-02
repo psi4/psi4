@@ -120,11 +120,13 @@ quantities.
 
 cc45: RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
-cc46:
+cc46: RHF-EOM-CC2/cc-pVDZ rotational strengths of the lowest four
+transitions of H2O2.
 
-cc47:
+cc47: RHF-EOM-CCSD/cc-pVDZ rotational strengths of the lowest four
+transitions of H2O2.
 
-cc48:
+cc48: RHF-EOM-CCSD expectation value dipole moments for multiple states.  (Not quite working.)
 
 cc49: UHF-CC3-LR 3-2A1 excitation energy of CH radical.  This corresponds to
 the ^2Sigma+ state in full C-infinity-v symmetry and should compare to results
