@@ -233,6 +233,19 @@ void BEND::print(FILE *fp, GeomType geom, int off) const {
   fflush(fp);
 }
 
+// function to return string of coordinate definition
+std::string BEND::get_definition_string(int off) const { 
+  ostringstream iss(ostringstream::out); // create stream; allow output to it
+
+  if (linear_bend)
+    iss << "L(";
+  else
+    iss << "B(";
+
+  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
+  return iss.str();
+}
+
 void BEND::print_disp(FILE *fp, const double q_old, const double f_q,
     const double dq, const double q_new, int atom_offset) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it

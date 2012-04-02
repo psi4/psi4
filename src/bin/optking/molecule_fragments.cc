@@ -161,8 +161,11 @@ void MOLECULE::fragmentize(void) {
   
         FRAG * one_frag = new FRAG(frag_natom[ifrag], Z_frag, geom_frag);
         one_frag->set_grad(grad_frag);
-        fragments.push_back(one_frag);
         free_matrix(grad_frag);
+
+        // update connectivity and add to list
+        one_frag->update_connectivity_by_distances();
+        fragments.push_back(one_frag);
   
       }
   
@@ -232,7 +235,8 @@ void MOLECULE::add_interfragment(void) {
       }
       ndA = ndB = 1;
 
-      fprintf(outfile,"\tClosest atoms between fragments is A %d, B %d\n", A1, B1);
+      fprintf(outfile,"\tNearest atoms on two fragments are %d and %d.\n",
+        g_atom_offset(frag_i)+A1+1, g_atom_offset(frag_i+1)+B1+1);
 
       // A2 is bonded to A1, but A2-A1-B1 must not be collinear
       for (int iA=0; iA < nA; ++iA) {

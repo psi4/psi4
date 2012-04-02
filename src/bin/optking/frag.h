@@ -61,6 +61,7 @@ class FRAG {
   void print_geom_grad(FILE *fp, const int id, bool print_mass = false);
   void print_intcos(FILE *fp, int atom_offset=0);
   void print_intco_dat(FILE *fp, int atom_offset=0);
+  std::string get_intco_definition(int coord_index, int atom_offset=0);
 
   void update_connectivity_by_distances(void);
   void update_connectivity_by_bonds(void);

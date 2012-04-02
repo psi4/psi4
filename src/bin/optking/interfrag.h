@@ -134,6 +134,9 @@ class INTERFRAG {
   // print coordinate definitions
   void print_intco_dat(FILE *fp, int atom_offset_A=0, int atom_offset_B=0) const;
 
+  // return string of intco definition
+  std::string get_intco_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0) const;
+
   // get number of atoms in the two fragments
   int g_natom(void) const { return (A->g_natom() + B->g_natom()); }
   int g_natom_A(void) const { return (A->g_natom()); }

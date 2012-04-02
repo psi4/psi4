@@ -65,9 +65,9 @@ void MOLECULE::forces(void) {
   array_scm(f_x, -1, Ncart); // switch gradient -> forces
 
   // u f_x
-  double *u = g_u_vector();
-  for (int i=0; i<Ncart; ++i)
-    f_x[i] *= u[i];
+  //double *u = g_u_vector();
+  //for (int i=0; i<Ncart; ++i)
+    //f_x[i] *= u[i];
 
   // B (u f_x)
   B = compute_B();
@@ -84,7 +84,7 @@ void MOLECULE::forces(void) {
   for (int i=0; i<Nintco; ++i)
     for (int k=0; k<Ncart; ++k)
       for (int j=0; j<Nintco; ++j)
-        G[i][j] += B[i][k] * u[k] * B[j][k];
+        G[i][j] += B[i][k] * /* u[k] * */ B[j][k];
   free_matrix(B);
 
   G_inv = symm_matrix_inv(G, Nintco, 1);
@@ -614,6 +614,58 @@ double ** MOLECULE::compute_constraints(void) {
   }
   fflush(outfile);
   return C;
+}
+
+// Fetches the string definition of an internal coordinate from global index
+std::string MOLECULE::get_intco_definition_from_global_index(int index) const{
+  std::string s;
+  int f_for_index, f;
+  int Nintra = g_nintco_intrafragment();
+  int Ninter = g_nintco_interfragment();
+  int Nefp = 0;
+#if defined (OPTKING_PACKAGE_QCHEM)
+  Nefp = g_nintco_efp_fragment();
+#endif
+
+  if ( index < 0 || index >= (Nintra + Ninter + Nefp) ) {
+    fprintf(outfile, "get_intco_definition(): index %d out of range", index);
+    throw(INTCO_EXCEPT("get_intco_definition(): index out of range"));
+  }
+
+  // coordinate is an intrafragment coordinate
+  if (index < Nintra) {
+
+    // go to last fragment or first that isn't past the desired index
+    for (f=0; f<fragments.size(); ++f)
+      if (index < g_intco_offset(f))
+        break;
+    --f;
+
+    s = fragments[f]->get_intco_definition(index - g_intco_offset(f), g_atom_offset(f));
+    return s;
+  }
+
+  // coordinate is an interfragment coordinate
+  if (index < Nintra + Ninter) {
+
+    for (f=0; f<interfragments.size(); ++f)
+      if (index < g_interfragment_intco_offset(f))
+        break;
+    --f;
+
+    s = interfragments[f]->get_intco_definition(index - g_interfragment_intco_offset(f));
+    return s;
+  }
+
+#if defined (OPTKING_PACKAGE_QCHEM)
+  for (f=0; f<efp_fragments.size(); ++f)
+    if (index < g_efp_fragment_intco_offset(f))
+      break;
+  --f;
+
+  s = efp_fragments[f]->get_intco_definition(index - Nintra - Nefp);
+#endif
+  return s;
 }
 
 #if defined (OPTKING_PACKAGE_QCHEM)
