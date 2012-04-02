@@ -69,3 +69,8 @@ Bibliography
 
 .. [Piecuch:1999:6103]
 
+.. [Handy:1980]
+
+.. [Olsen:1988]
+
+

@@ -1,3 +1,6 @@
+
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:introduction`:
 
 ============
@@ -51,7 +54,7 @@ appropriate references for the underlying theory):
 .. rubric:: DCFT 
 
 * "Density Cumulant Functional Theory: First Implementation and
-  Benchmark Results for the {DCFT-06} Model," A. C. Simmonett,
+  Benchmark Results for the DCFT-06 Model," A. C. Simmonett,
   J. J. Wilke, H. F. Schaefer, and W. Kutzelnigg, *J. Chem. Phys.*
   **133**, 174122 (2010).
 

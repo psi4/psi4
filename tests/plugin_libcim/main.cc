@@ -18,9 +18,10 @@ extern "C" int
 read_options(std::string name, Options &options)
 {
   if (name == "PLUGIN_LIBCIM"|| options.read_globals()) {
-     /*- Convergence for the localization procedure-*/
+     /*- Convergence for the localization procedure -*/
      options.add_double("BOYS_CONVERGENCE", 1.0e-6);
-     /*- Maximum number of localization iterations iterations -*/
+     /*- Maximum number of iterations to converge the orbital localization
+     procedure -*/
      options.add_int("BOYS_MAXITER", 100);
      /*- Desired number of threads -*/
      options.add_int("NUM_THREADS", 1);
@@ -30,16 +31,25 @@ read_options(std::string name, Options &options)
      options.add_double("THRESH2", 0.05);
      /*- cim threshold 3 -*/
      options.add_double("THRESH3", 5e-5);
-     /*- initialize only? -*/
+     /*- Should the CIM procedure return after the occupied domains are
+     determined?  This parameter is used internally by the python driver
+     if the calculation is going to be run in parallel.  Changing this
+     won't have any effect on the procedure. -*/
      options.add_bool("CIM_INITIALIZE", false);
-     /*- cim cluster number to operate on -*/
+     /*- For which cluster number should the correlation energy be
+     evaluated? This parameter is used internally by the python driver if
+     the calculation is going to be run in parallel.  Changing this won't
+     have any effect on the procedure. -*/
      options.add_int("CIM_CLUSTER_NUM", 0);
-     /*- cim central domain type: single or dual environment -*/
-     options.add_str("CIM_DOMAIN_TYPE", "SECIM");
-    /*- Maximum error allowed (Max error norm in Delta tensor)
-    in the approximate energy denominators employed for most of the
-    $E@@{disp}^{(20)}$ and $E@@{exch-disp}^{(20)}$ evaluation. -*/
-    options.add_double("DENOMINATOR_DELTA", 1.0E-6);
+     /*- CIM central domain type (dual- or single-environment CIM)
+     Recommeneded SECIM for all CIM computations. -*/
+     options.add_str("CIM_DOMAIN_TYPE", "SECIM", "SECIM DECIM");
+     /*- Maximum error allowed (Max error norm in Delta tensor) in the
+     approximate energy denominators employed in evaluating the scaled
+     opposite-spin MP2 OPDM used in defining the virtual orbitals for each
+     CIM cluster.  The default may be more conservative than is necessary
+     in practice. -*/
+     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
   }
   return true;
 }

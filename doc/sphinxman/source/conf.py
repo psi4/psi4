@@ -93,7 +93,11 @@ exclude_patterns = ['template_index.rst',          'template_appendices.rst',
                     'autodoc_index_htmluser.rst',  'autodoc_appendices_htmluser.rst', 
                     'autodoc_index_htmlprog.rst',  'autodoc_appendices_htmlprog.rst', 
                     'autodoc_index_latexuser.rst', 'autodoc_appendices_latexuser.rst', 
-                    'autodoc_index_latexprog.rst', 'autodoc_appendices_latexprog.rst']
+                    'autodoc_index_latexprog.rst', 'autodoc_appendices_latexprog.rst',
+                    'abbr_accents.rst',
+                    'autodoc_abbr_options_c.rst',
+                    'autodoc_abbr_options_plugins.rst']
+
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -275,23 +279,18 @@ texinfo_documents = [
 
 # Abbreviations
 rst_epilog = """
-.. |PSIfour| replace:: PSI4
-.. |psirc| replace:: ``~/.psi4rc``
+.. |PSIfour| replace:: PSI5
+.. |psirc| replace:: ``~/.psi5rc``
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
 .. |kcalpermol| replace:: kcal mol\ :sup:`-1`
 .. |Angstrom| replace:: |AA|\ ngstr\ |o_dots|\ m
-.. |AA| unicode:: U+00C5
-.. |aa| unicode:: U+00E5
 .. |--| unicode:: U+02013 .. en dash
    :trim:
 .. |---| unicode:: U+02014 .. em dash
    :trim:
 .. |w---w| unicode:: U+02014 .. em dash
-.. |o_dots| unicode:: U+00F6
-.. |o_slash| unicode:: U+00F8
-.. |a_grave| unicode:: U+00E0
-.. |a_acute| unicode:: U+00E1
+.. include:: /abbr_accents.rst
 """
 
 # Logo at top of page
@@ -302,7 +301,7 @@ rst_prolog = """
 """
 
 # This option, from sphinx.ext.extlinks, allows linking to source on trac with :source:`lib/python/driver/py`
-extlinks = {'source': ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/'),
+extlinks = {'source': ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi5/'),
             'srcsample': ('http://sirius.chem.vt.edu/trac/browser/samples/%s/input.dat', ''),
             'srcbasis': ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', '') }
 

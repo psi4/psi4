@@ -1,4 +1,4 @@
-# cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
+#! cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
 
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
