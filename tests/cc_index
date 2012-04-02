@@ -19,8 +19,6 @@ cc5a: RHF-CCSD(T)/cc-pVDZ planar (C2v) C4NH4 single-point energy
 
 cc6: RHF-CCSD(T)/cc-pVDZ planar (C2v) C4NH4 single-point energy (fzc, AO-basis <ab|cd>)
 
-cc7:
-
 cc8: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 <ab|cd>)
 
@@ -59,7 +57,8 @@ cc18: RHF-CCSD-LR/cc-pVDZ static polarizabilities of HOF molecule.
 
 cc19: RHF-CCSD-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
 
-cc21:
+cc21: ROHF-EOM-CCSD/DZ analytic gradient lowest 2A1 excited state of H2O+ 
+(B1 excitation)
 
 cc22: ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in 3B1 CH2.
 
