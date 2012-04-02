@@ -18,23 +18,41 @@ extern "C" int
 read_options(std::string name, Options &options)
 {
   if (name == "PLUGIN_LIBCIM"|| options.read_globals()) {
-     /*- Convergence for the localization procedure -*/
-     options.add_double("BOYS_CONVERGENCE", 1.0e-6);
-     /*- Maximum number of iterations to converge the orbital localization
-     procedure -*/
-     options.add_int("BOYS_MAXITER", 100);
-     /*- Desired number of threads -*/
-     options.add_int("NUM_THREADS", 1);
-     /*- decim tolerance 1 -*/
+     /*- CIM central domain type (dual- or single-environment CIM)
+     Recommended SECIM for all CIM computations. -*/
+     options.add_str("CIM_DOMAIN_TYPE", "SECIM", "SECIM DECIM");
+     /*- For a given occupied LMO, i, the minimum absolute value 
+     of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to 
+     be included in the MO domain of LMO, i. Only applies if 
+     CIM_DOMAIN_TYPE is DECIM -*/
      options.add_double("CIM_DE_TOLERANCE1", 0.01);
-     /*- decim tolerance 2 -*/
+     /*- For a given occupied LMO, i, the minimum absolute value 
+     of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to 
+     be included in the environmental domain of LMO, i. Only 
+     applies if CIM_DOMAIN_TYPE is DECIM -*/
      options.add_double("CIM_DE_TOLERANCE2", 0.05);
-     /*- secim tolerance -*/
+     /*- For a given occupied LMO, i, the minimum absolute value 
+     of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to 
+     be in i’s cluster. Only applies if CIM_DOMAIN_TYPE is SECIM -*/
      options.add_double("CIM_SE_TOLERANCE", 0.001);
      /*- Minimum occupation (eigenvalues of the MP2 OPDM) 
-         below which virtual natural orbitals are discarded 
-         for for a given cluster -*/
+     below which virtual natural orbitals are discarded 
+     for for a given cluster -*/
      options.add_double("OCC_TOLERANCE", 5e-5);
+     /*- Maximum error allowed (Max error norm in Delta tensor) in the
+     approximate energy denominators employed in evaluating the scaled
+     opposite-spin MP2 OPDM used in defining the virtual orbitals for each
+     CIM cluster.  The default may be more conservative than is necessary
+     in practice. -*/
+     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
+     /*- Convergence for the localization procedure -*/
+     options.add_double("BOYS_CONVERGENCE", 1.0e-6);
+     /*- Maximum number of Boys iterations -*/
+     options.add_int("BOYS_MAXITER", 100);
+     /*- The correlated method to be used in the CIM procedure. This parameter 
+     is used internally by the python driver. Changing its value  won’t have 
+     any effect on the procedure -*/
+     options.add_str("CIM_CORRELATED_METHOD", "CCSD(T)");
      /*- Should the CIM procedure return after the occupied domains are
      determined?  This parameter is used internally by the python driver
      if the calculation is going to be run in parallel.  Changing this
@@ -45,19 +63,6 @@ read_options(std::string name, Options &options)
      the calculation is going to be run in parallel.  Changing this won't
      have any effect on the procedure. -*/
      options.add_int("CIM_CLUSTER_NUM", 0);
-     /*- CIM central domain type (dual- or single-environment CIM)
-     Recommeneded SECIM for all CIM computations. -*/
-     options.add_str("CIM_DOMAIN_TYPE", "SECIM", "SECIM DECIM");
-     /*- Maximum error allowed (Max error norm in Delta tensor) in the
-     approximate energy denominators employed in evaluating the scaled
-     opposite-spin MP2 OPDM used in defining the virtual orbitals for each
-     CIM cluster.  The default may be more conservative than is necessary
-     in practice. -*/
-     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
-    /*- The correlated to be used in the CIM procedure. This parameter 
-        is used internally by the python driver. Changing its value 
-        won’t have any effect on the procedure -*/
-    options.add_str("CIM_CORRELATED_METHOD", "CCSD(T)");
   }
   return true;
 }
@@ -94,6 +99,7 @@ plugin_libcim(Options &options)
   int nvir = cim->nmopi()[0]-cim->doccpi()[0];
   int aocc = nocc-cim->frzcpi()[0];
   int avir = nvir-cim->frzvpi()[0];
+
   // build 3-index tensors (in lmo basis)
   boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   boost::shared_ptr<BasisSet> auxilliary = BasisSet::construct(parser, cim->molecule(), "DF_BASIS_MP2");
@@ -199,13 +205,6 @@ plugin_libcim(Options &options)
 
       return Success;
   }
-  /*double escf    = Process::environment.globals["SCF TOTAL ENERGY"];
-  fprintf(outfile,"\n");
-  fprintf(outfile,"        CIM correlation energy: %20.12lf\n",ecim);
-  fprintf(outfile,"      * CIM total energy:       %20.12lf\n",ecim+escf);
-  fprintf(outfile,"\n");
-  fflush(outfile);*/
-
   return  Success;
 } // end plugin_libcim
 
