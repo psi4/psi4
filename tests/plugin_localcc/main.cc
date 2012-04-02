@@ -60,6 +60,8 @@ plugin_localcc(Options &options)
 { 
   //boost::shared_ptr<psi::CIM>  wfn =  Process::environment.reference_wavefunction();
   boost::shared_ptr<psi::CIM> wfn(new CIM());
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  wfn->copy(ref);
   RunCoupledCluster(options,wfn);
   return  Success;
 } // end plugin_localcc
