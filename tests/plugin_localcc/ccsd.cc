@@ -108,8 +108,8 @@ void CoupledCluster::Initialize(Options &options){
 
   // memory is from process::environment, but can override that
   memory = Process::environment.get_memory();
-  if (options["CCMEMORY"].has_changed()){
-     memory  = options.get_int("CCMEMORY");
+  if (options["MEMORY"].has_changed()){
+     memory  = options.get_int("MEMORY");
      memory *= (long int)1024*1024;
   }
 
