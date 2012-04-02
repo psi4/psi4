@@ -34,6 +34,8 @@ void get_params( Options& options)
     throw PsiException("ccdensity: error", __FILE__, __LINE__);
   }
 
+  params.onepdm = options.get_bool("ONEPDM");
+
   params.calc_xi = options.get_bool("XI");
   if(params.calc_xi) {
     params.ground = 0;

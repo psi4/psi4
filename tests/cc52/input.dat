@@ -19,4 +19,4 @@ set {
   basis cc-pVDZ
 }
 
-response('ccsd')
+property('ccsd',properties=['roa'])
