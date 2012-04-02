@@ -64,9 +64,6 @@ cluster of 8 water molecules. ::
 
 Note that we have included the path to the plugin directory (here, /Users/deprince/psi4/tests/) and imported the plugin. These commands are necesarry to call the CIM procedure via the :py:func:`~driver.energy`. Publications from the use of the CIM code should cite my non-existent paper: [DePrince!].
 
-Basic CIM Keywords
-~~~~~~~~~~~~~~~~~~
-
 CIM
 ^^^^^^^^^^^^^^^^
 
@@ -85,10 +82,13 @@ Basic CIM Keywords
 ~~~~~~~~~~~~~~~~~~
 
 .. include:: /autodir_options_c/mints__basis.rst
-.. include:: /autodir_options_c/scf__df_basis_scf.rst
+.. include:: /autodir_options_c/dfmp2__df_basis_mp2.rst
 .. include:: /autodir_options_c/globals__freeze_core.rst
 .. include:: /autodir_plugins/plugin_libcim__cim_domain_type.rst
-.. include:: /autodir_plugins/plugin_ccsd_serial__occ_tolerance.rst
+.. include:: /autodir_plugins/plugin_libcim__cim_se_tolerance.rst
+.. include:: /autodir_plugins/plugin_libcim__cim_de_tolerance1.rst
+.. include:: /autodir_plugins/plugin_libcim__cim_de_tolerance2.rst
+.. include:: /autodir_plugins/plugin_libcim__occ_tolerance.rst
 
 Advanced CIM Keywords
 ~~~~~~~~~~~~~~~~~~~~~
@@ -102,4 +102,4 @@ Advanced CIM Keywords
 Running CIM in parallel
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-One desirable feature of the CIM framework is the embarassingly parallel structure of the energy decomposition.  In |PSIfour|, one can perform the CIM procedure in parallel with mpi4py.  A CIM computation can be run on N nodes by ``mpirun -n N psi4 input.dat``.  Note that threading within the underlying correlated calculations is independent of the MPI parallelism.  The command ``mpirun -n 8 psi4 input.dat`` with ``num_threads 8`` set in input.dat will spawn 8 mpi ranks, and each rank will use 8 OpenMP threads within the correlated calculation.
+One desirable feature of the CIM framework is the embarassingly parallel structure of the energy decomposition.  In |PSIfour|, one can perform the CIM procedure in parallel (with mpi4py) on N nodes by ``mpirun -n N psi4 input.dat``.  Note that threading within the underlying correlated calculations is independent of the MPI parallelism.  The command ``mpirun -n 8 psi4 input.dat`` with :term:`num_threads` set to 8 in input.dat will spawn 8 mpi ranks, and each rank will use 8 OpenMP threads within the correlated calculation.
