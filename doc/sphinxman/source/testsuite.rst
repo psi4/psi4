@@ -4,7 +4,7 @@
 Test Suite and Sample Inputs
 ============================
 
-PSI4 is distributed with an extensive test suite, which can be found in
+|PSIfour| is distributed with an extensive test suite, which can be found in
 :source:`tests`. After building the source code, these can automatically be
 run by running ``make tests`` in the complilation directory. Sample input
 files can be found in the the :source:`samples` subdirectory of the top-level Psi

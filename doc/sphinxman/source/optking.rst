@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. index::
    single: geometry optimization
    see: optimization; geometry optimization
@@ -24,16 +26,16 @@ is similar to the "model Hessian plus RF method" described and tested by Bakken 
 Helgaker [Bakken:2002:9160]_. (However, for separated
 fragments, we have chosen not to employ by default their "extra-redundant"
 coordinates defined by their "auxiliary interfragment" bonds.  These can be
-included via the option :term:`ADD_AUXILIARY_BONDS`).
+included via the option |optking__add_auxiliary_bonds|).
 
 The internal coordinates are generated automatically based on an assumed bond
 connectivity.  The connectivity is determined by testing if the interatomic
 distance is less than the sum of atomic radii times the value of
-:term:`COVALENT_CONNECT`.  If the user finds that some
+|optking__covalent_connect|. If the user finds that some
 connectivity is lacking by default, then this value may be increased.
 Otherwise, the internal coordinate definitions may be modified.  If one
 desires to see or modify the internal coordinates being used, then one can set
-:term:`INTCOS_GENERATE_EXIT` to true.  The internal coordinate
+|optking__intcos_generate_exit| to true.  The internal coordinate
 definitions are provided in the file named "intco.dat".  See the :ref:`sec:optkingExamples`
 section for more detail.
 
@@ -42,7 +44,7 @@ coordinates which connect distinct molecular fragments.  Thus, several keywords
 relate to "interfragment modes", though many of these capabilities are
 still under development.  Presently by default, separate fragments are bonded by
 nearest atoms, and the whole system is treated as if it were part of one
-molecule.  However, with the option :term:`FRAG_MODE`, fragments
+molecule.  However, with the option |optking__frag_mode|, fragments
 may instead be related by a unique set of interfragment coordinates defined by
 reference points within each fragment.  The reference points can be atomic
 positions (current default), linear combinations of
@@ -118,13 +120,13 @@ internal coordinates.  Otherwise, several empirical Hessians are available,
 including those of Schlegel [Schlegel:1984:333]_ and Fischer and Almlof
 [Fischer:1992:9770]_.
 Either of these or a simple diagonal Hessian may be selected using the 
-:term:`INTRAFRAG_HESS` keyword.
+|optking__intrafrag_hess| keyword.
 
 All the common Hessian update schemes are available.  For formulas, see
 Schlegel [Schlegel:1987:AIMQC]_ and Bofill [Bofill:1994:1]_.
 
 The Hessian may be computed during an optimization using the 
-:term:`FULL_HESS_EVERY` keyword.
+|optking__full_hess_every| keyword.
 
 .. index:: 
    pair: geometry optimization; transition state
@@ -188,7 +190,7 @@ Transition States, Reaction Paths, and Constrained Optimizations
   two distance coordinates (bonds) and one bend coordinate.  This file can be modified, and if present,
   is used in subsequent optimizations.  Since the multiple-fragment coordinates are still under
   development, they are not documented here.  However, if desired, one can change the value
-  of :term:`FRAG_MODE`, generate the internal coordinates, and see how multiple
+  of |optking__frag_mode|, generate the internal coordinates, and see how multiple
   fragment systems are defined.
   
   Coordinates may be frozen or fixed by adding an asterisk after the letter of the coordinate.
@@ -207,14 +209,14 @@ Convergence Criteria
 
 Optking monitors five quantities to evaluate the progress of a geometry 
 optimization. These are (with their keywords) the change in energy 
-:term:`MAX_ENERGY_G_CONVERGENCE`), the maximum element of 
-the gradient (:term:`MAX_FORCE_G_CONVERGENCE`), the root-mean-square 
-of the gradient (:term:`RMS_FORCE_G_CONVERGENCE`), the maximum element
-of displacement (:term:`MAX_DISP_G_CONVERGENCE`), and the 
-root-mean-square of displacement (:term:`RMS_DISP_G_CONVERGENCE`), 
+(|optking__max_energy_g_convergence|), the maximum element of 
+the gradient (|optking__max_force_g_convergence|), the root-mean-square 
+of the gradient (|optking__rms_force_g_convergence|), the maximum element
+of displacement (|optking__max_disp_g_convergence|), and the 
+root-mean-square of displacement (|optking__rms_disp_g_convergence|), 
 all in internal coordinates and atomic units. Usually, these options will not 
 be set directly. Primary control for geometry convergence lies with the keyword 
-:term:`G_CONVERGENCE` which sets the aforementioned in accordance 
+|optking__g_convergence| which sets the aforementioned in accordance 
 with Table :ref:`Geometry Convergence <table:optkingconv>`.
 
 |
@@ -225,7 +227,7 @@ with Table :ref:`Geometry Convergence <table:optkingconv>`.
 .. table:: Summary of sets of geometry optimization criteria available in |PSIfour|
 
     +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
-    | :term:`G_CONVERGENCE`       | Max Energy                 | Max Force                  | RMS Force                  | Max Disp                   | RMS Disp                   |
+    | |optking__g_convergence|    | Max Energy                 | Max Force                  | RMS Force                  | Max Disp                   | RMS Disp                   |
     +=============================+============================+============================+============================+============================+============================+
     | NWCHEM_LOOSE [#fd]_         |                            | :math:`4.5 \times 10^{-3}` | :math:`3.0 \times 10^{-3}` | :math:`5.4 \times 10^{-3}` | :math:`3.6 \times 10^{-3}` |
     +-----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+----------------------------+
@@ -259,10 +261,10 @@ with Table :ref:`Geometry Convergence <table:optkingconv>`.
          than **RMS Force** criterion.
 
 For ultimate control, specifying a value for any of the five monitored options activates that
-criterium and overwrites/appends it to the criteria set by :term:`G_CONVERGENCE`.
+criterium and overwrites/appends it to the criteria set by |optking__g_convergence|.
 Note that this revokes the special convergence arrangements detailed in notes [#fe]_ and [#ff]_ 
 and instead requires all active criteria to be fulfilled to 
-achieve convergence. To avoid this revokation, turn on keyword :term:`FLEXIBLE_G_CONVERGENCE`.
+achieve convergence. To avoid this revokation, turn on keyword |optking__flexible_g_convergence|.
 
 .. index::
    pair: geometry optimization; output

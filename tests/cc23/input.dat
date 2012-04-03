@@ -13,7 +13,7 @@ molecule h2o {
 set {
   reference rohf
   basis DZ
-  states_per_irrep [0, 0, 1, 0]
+  roots_per_irrep [0, 0, 1, 0]
 }
 
 gradient('eom-ccsd')

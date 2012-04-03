@@ -16,8 +16,9 @@ namespace psi{
 CIM::CIM():
   Wavefunction(Process::environment.options, _default_psio_lib_)
 {
+  islocal = false;
 
-  fflush(outfile);
+  /*fflush(outfile);
   fprintf(outfile,"\n\n");
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile, "        *                                                     *\n");
@@ -29,7 +30,7 @@ CIM::CIM():
   fflush(outfile);
 
   options_ = Process::environment.options;
-  BuildClusters();
+  BuildClusters();*/
 }
 CIM::~CIM()
 {}
@@ -38,6 +39,7 @@ double CIM::compute_energy(){
 }
 
 void CIM::BuildClusters(){
+  islocal = true;
   /*
    * grab reference and parameters
    */
