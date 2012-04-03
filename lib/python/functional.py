@@ -82,7 +82,7 @@ def build_b3_x_functional(name):
     # These should be set by build_base, but prove that you know what's up
     fun.set_gga(True)
     fun.set_meta(False)
-    fun.set_alpha(1.0)
+    fun.set_alpha(0.8)
     fun.set_omega(0.0)
 
     # Custom parameters
@@ -184,7 +184,7 @@ def build_b97_x_functional(name):
 def build_vwn5_c_functional(name):
 
     # Call this first
-    fun = PsiMod.Functional.build_base('VWN_C')
+    fun = PsiMod.Functional.build_base('VWN5_C')
 
     # => User-Customization <= #
 
@@ -208,7 +208,7 @@ def build_vwn5_c_functional(name):
     fun.set_parameter('EcF_2', -0.32500)
     fun.set_parameter('EcF_3', 7.06042)
     fun.set_parameter('EcF_4', 18.0578)
-    fun.set_parameter('Ac_2', -0.00465840)
+    fun.set_parameter('Ac_2', -0.00475840)
     fun.set_parameter('Ac_3', 1.13107)
     fun.set_parameter('Ac_4', 13.0045) 
 
@@ -216,15 +216,15 @@ def build_vwn5_c_functional(name):
 
     return fun
 
-def build_vwn_c_functional(name):
+def build_vwn5rpa_c_functional(name):
 
     # Call this first
-    fun = PsiMod.Functional.build_base('VWN_C')
+    fun = PsiMod.Functional.build_base('VWN5_C')
 
     # => User-Customization <= #
 
     # No spaces, keep it short and according to convention
-    fun.set_name('VWN_C')
+    fun.set_name('VWN5RPA_C')
     # Tab in, trailing newlines 
     fun.set_description('    VWN5 (RPA) LSDA Correlation\n')
     # Tab in, trailing newlines 
@@ -246,6 +246,70 @@ def build_vwn_c_functional(name):
     fun.set_parameter('Ac_2', -0.228344)
     fun.set_parameter('Ac_3', 1.06835)
     fun.set_parameter('Ac_4', 11.4813) 
+
+    # => End User-Customization <= #
+
+    return fun
+
+def build_vwn3_c_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('VWN3_C')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('VWN3_C')
+    # Tab in, trailing newlines 
+    fun.set_description('    VWN3 LSDA Correlation\n')
+    # Tab in, trailing newlines 
+    fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(False)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('EcP_2', -0.10498)
+    fun.set_parameter('EcP_3', 3.72744)
+    fun.set_parameter('EcP_4', 12.9352)
+    fun.set_parameter('EcF_2', -0.32500)
+    fun.set_parameter('EcF_3', 7.06042)
+    fun.set_parameter('EcF_4', 18.0578)
+
+    # => End User-Customization <= #
+
+    return fun
+
+def build_vwn3rpa_c_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('VWN3_C')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('VWN3RPA_C')
+    # Tab in, trailing newlines 
+    fun.set_description('    VWN3 (RPA) LSDA Correlation\n')
+    # Tab in, trailing newlines 
+    fun.set_citation('    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n')
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(False)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('EcP_2', -0.409286)
+    fun.set_parameter('EcP_3', 13.0720)
+    fun.set_parameter('EcP_4', 42.7198)
+    fun.set_parameter('EcF_2', -0.743294)
+    fun.set_parameter('EcF_3', 20.1231)
+    fun.set_parameter('EcF_4', 101.578)
 
     # => End User-Customization <= #
 
@@ -425,14 +489,18 @@ functionals = {
         'lyp_c'       : build_primitive_functional,
         'pz81_c'      : build_primitive_functional,
         'p86_c'       : build_primitive_functional,
-        'vwn_c'       : build_vwn_c_functional,
+        'vwn5rpa_c'   : build_vwn5rpa_c_functional,
         'vwn5_c'      : build_vwn5_c_functional,
+        'vwn3rpa_c'   : build_vwn3rpa_c_functional,
+        'vwn3_c'      : build_vwn3_c_functional,
         'pw91_c'      : build_primitive_functional,
         'pw92_c'      : build_primitive_functional,
         'pbe_c'       : build_primitive_functional,
         'ft97_c'      : build_primitive_functional,
         'b972_c'      : build_primitive_functional,
         'b974_c'      : build_primitive_functional,
+        'vwn3_c'        : build_primitive_functional,
+        'vwn5_c'        : build_primitive_functional,
     }
 
 def build_functional(alias):
@@ -552,45 +620,13 @@ def build_svwn_superfunctional(name, npoints, deriv):
     # No spaces, keep it short and according to convention
     sup.set_name('SVWN')
     # Tab in, trailing newlines 
-    sup.set_description('    SVWN LSDA Functional\n')
+    sup.set_description('    SVWN3 (RPA) LSDA Functional\n')
     # Tab in, trailing newlines 
     sup.set_citation('    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('S_X'))
-    sup.add_c_functional(build_functional('VWN_C'))
-
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.0)
-    sup.set_c_alpha(0.0)
-
-    # => End User-Customization <= #
-
-    # Call this last
-    sup.allocate()
-    return sup 
-
-def build_svwn5_superfunctional(name, npoints, deriv):
-
-    # Call this first
-    sup = PsiMod.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
-
-    # => User-Customization <= #
-
-    # No spaces, keep it short and according to convention
-    sup.set_name('SVWN5')
-    # Tab in, trailing newlines 
-    sup.set_description('    SVWN5 LSDA Functional\n')
-    # Tab in, trailing newlines 
-    sup.set_citation('    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n')
-
-    # Add member functionals
-    sup.add_x_functional(build_functional('S_X'))
-    sup.add_c_functional(build_functional('VWN5_C'))
+    sup.add_c_functional(build_functional('VWN3RPA_C'))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
@@ -789,13 +825,15 @@ def build_b3lyp_superfunctional(name, npoints, deriv):
     sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n')
 
     # Add member functionals
-    sup.add_x_functional(build_functional('B3_X'))
+    b3 = build_functional('B3_X')
+    b3.set_alpha(1.0)
+    sup.add_x_functional(b3)
     lyp = build_functional('LYP_C')
     lyp.set_alpha(0.81)
-    vwn = build_functional('VWN_C')
+    vwn = build_functional('VWN3RPA_C')
     vwn.set_alpha(0.19)
-    sup.add_c_functional(lyp)
     sup.add_c_functional(vwn)
+    sup.add_c_functional(lyp)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
@@ -829,7 +867,7 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
     sup.add_x_functional(build_functional('B3_X'))
     lyp = build_functional('LYP_C')
     lyp.set_alpha(0.81)
-    vwn = build_functional('VWN5_C')
+    vwn = build_functional('VWN5RPA_C')
     vwn.set_alpha(0.19)
     sup.add_c_functional(lyp)
     sup.add_c_functional(vwn)
@@ -877,7 +915,7 @@ def build_b970_superfunctional(name, npoints, deriv):
 
     C.set_parameter('ccab0', 0.9454)
     C.set_parameter('ccab1', 0.7471)
-    C.set_parameter('ccab2',-4.5691)
+    C.set_parameter('ccab2',-4.5961)
 
     C.set_parameter('ccaa0', 0.1737)
     C.set_parameter('ccaa1', 2.3487)
@@ -920,7 +958,7 @@ def build_b971_superfunctional(name, npoints, deriv):
     X.set_alpha(1.0/0.79)
 
     X.set_parameter('B97_gamma', 0.004)
-    X.set_parameter('B97_a0', 0.789519)
+    X.set_parameter('B97_a0', 0.789518)
     X.set_parameter('B97_a1', 0.573805)
     X.set_parameter('B97_a2', 0.660975)
 
@@ -1085,11 +1123,11 @@ def build_hcth_superfunctional(name, npoints, deriv):
     X.set_alpha(1.0)
 
     X.set_parameter('B97_gamma', 0.004)
-    X.set_parameter('B97_a0',0.729974)
-    X.set_parameter('B97_a1',3.35287)
-    X.set_parameter('B97_a2',-11.5430) 
-    X.set_parameter('B97_a3',8.08564)
-    X.set_parameter('B97_a4',-4.47857)
+    X.set_parameter('B97_a0',1.09320)
+    X.set_parameter('B97_a1',-0.744056) 
+    X.set_parameter('B97_a2',5.59920) 
+    X.set_parameter('B97_a3',-6.78549) 
+    X.set_parameter('B97_a4',4.49357)
 
     C = build_functional('B974_C')
     C.set_name('HCTH_C')
@@ -1371,39 +1409,7 @@ def build_wsvwn_superfunctional(name, npoints, deriv):
 
     # Add member functionals
     sup.add_x_functional(build_functional('wS_X'))
-    sup.add_c_functional(build_functional('VWN_C'))
-
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.3)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.0)
-    sup.set_c_alpha(0.0)
-
-    # => End User-Customization <= #
-
-    # Call this last
-    sup.allocate()
-    return sup 
-
-def build_wsvwn5_superfunctional(name, npoints, deriv):
-
-    # Call this first
-    sup = PsiMod.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
-
-    # => User-Customization <= #
-
-    # No spaces, keep it short and according to convention
-    sup.set_name('wSVWN5')
-    # Tab in, trailing newlines 
-    sup.set_description('    LSDA SR-XC Functional\n')
-    # Tab in, trailing newlines 
-    sup.set_citation('    Adamson et. al., J. Comput. Chem., 20(9), 921-927, 1999\n')
-
-    # Add member functionals
-    sup.add_x_functional(build_functional('wS_X'))
-    sup.add_c_functional(build_functional('VWN5_C'))
+    sup.add_c_functional(build_functional('VWN3RPA_C'))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.3)
@@ -1664,16 +1670,17 @@ superfunctionals = {
         'pw91_c'    : build_primitive_superfunctional,
         'pw92_c'    : build_primitive_superfunctional,
         'pbe_c'     : build_primitive_superfunctional,
-        #'ft97_c'    : build_primitive_superfunctional,
-        'vwn_c'     : build_primitive_superfunctional,
+        'ft97_c'    : build_primitive_superfunctional,
+        'vwn5rpa_c' : build_primitive_superfunctional,
         'vwn5_c'    : build_primitive_superfunctional,
+        'vwn3rpa_c' : build_primitive_superfunctional,
+        'vwn3_c'    : build_primitive_superfunctional,
         'svwn'      : build_svwn_superfunctional,
-        'svwn5'     : build_svwn5_superfunctional,
         'blyp'      : build_blyp_superfunctional,
         'bp86'      : build_bp86_superfunctional,
         'pw91'      : build_pw91_superfunctional,
         'pbe'       : build_pbe_superfunctional,
-        #'ft97'      : build_ft97_superfunctional,
+        'ft97'      : build_ft97_superfunctional,
         'b3lyp'     : build_b3lyp_superfunctional,
         'b3lyp5'    : build_b3lyp5_superfunctional,
         'pbe0'      : build_pbe0_superfunctional,
@@ -1691,12 +1698,13 @@ superfunctionals = {
         'b3lyp-d'   : build_b3lypd_superfunctional,
         'b3lyp5-d'  : build_b3lyp5d_superfunctional,
         'wsvwn'     : build_wsvwn_superfunctional,
-        'wsvwn5'    : build_wsvwn5_superfunctional,
         'wpbe'      : build_wpbe_superfunctional,
         'wpbe0'     : build_wpbe0_superfunctional,
-        #'wblyp'     : build_wblyp_superfunctional,
+        'wblyp'     : build_wblyp_superfunctional,
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,
+        'vwn3_c'   : build_primitive_superfunctional,
+        'vwn5_c'   : build_primitive_superfunctional,
     }
 
 def build_superfunctional(alias, npoints, deriv):
