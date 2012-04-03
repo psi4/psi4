@@ -499,8 +499,6 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b972_c'      : build_primitive_functional,
         'b974_c'      : build_primitive_functional,
-        'vwn3_c'        : build_primitive_functional,
-        'vwn5_c'        : build_primitive_functional,
     }
 
 def build_functional(alias):
@@ -864,7 +862,9 @@ def build_b3lyp5_superfunctional(name, npoints, deriv):
     sup.set_citation('    P.J. Stephens et. al., J. Phys. Chem., 98, 11623-11627, 1994\n')
 
     # Add member functionals
-    sup.add_x_functional(build_functional('B3_X'))
+    b3 = build_functional('B3_X')
+    b3.set_alpha(1.0)
+    sup.add_x_functional(b3)
     lyp = build_functional('LYP_C')
     lyp.set_alpha(0.81)
     vwn = build_functional('VWN5RPA_C')
@@ -1703,8 +1703,6 @@ superfunctionals = {
         'wblyp'     : build_wblyp_superfunctional,
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,
-        'vwn3_c'   : build_primitive_superfunctional,
-        'vwn5_c'   : build_primitive_superfunctional,
     }
 
 def build_superfunctional(alias, npoints, deriv):

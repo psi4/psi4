@@ -2,6 +2,7 @@
 #include <psi4-dec.h>
 #include "functional.h"
 #include "xfunctional.h"
+#include "cfunctional.h"
 #include "wpbex_functional.h"
 #include "LYP_Cfunctional.h"
 #include "FT97B_Xfunctional.h"
@@ -57,6 +58,8 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->gga_type_  = XFunctional::PBE;
         x->meta_type_ = XFunctional::Becke;
         x->sr_type_   = XFunctional::SR_None;
+        x->gga_ = true; 
+        x->meta_ = true; 
         fun = static_cast<Functional*>(x);
     } else if (alias == "wS_X") {
         XFunctional* x = new XFunctional();
@@ -78,6 +81,21 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
     } else if (alias == "wHSE_X") {
         wPBEXFunctional* x = new wPBEXFunctional();
         x->set_hjs(false);
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "B_C") {
+        CFunctional* x = new CFunctional();
+        x->lsda_type_  = CFunctional::PW92;
+        x->gga_type_  = CFunctional::B97;
+        x->meta_type_ = CFunctional::Meta_None;
+        x->gga_ = true; 
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "M_C") {
+        CFunctional* x = new CFunctional();
+        x->lsda_type_  = CFunctional::PW92;
+        x->gga_type_  = CFunctional::B97;
+        x->meta_type_ = CFunctional::B95;
+        x->gga_ = true; 
+        x->meta_ = true; 
         fun = static_cast<Functional*>(x);
     } else if (alias == "LYP_C") {
         fun = new LYP_CFunctional();
