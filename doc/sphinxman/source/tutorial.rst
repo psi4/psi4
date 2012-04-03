@@ -1,3 +1,6 @@
+
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:tutorial`:
 
 ====================
@@ -7,7 +10,7 @@ A |PSIfour| Tutorial
 Basic Input File Structure
 ==========================
 
-PSI4 reads input from a text file, which can be prepared in any standard
+|PSIfour| reads input from a text file, which can be prepared in any standard
 text editor.  The default input file name is ``input.dat`` and the
 default output file name is ``output.dat``.  So that you can give your
 files meaningful names, these defaults can be changed by specifying
@@ -90,10 +93,10 @@ Geometry Optimization and Vibrational Frequency Analysis
 ========================================================
 
 The above examples were simple single-point energy computations
-(as specified by the :py:func:`driver.energy()` function).  Of course there are other
+(as specified by the :py:func:`~driver.energy` function).  Of course there are other
 kinds of computations to perform, such as geometry optimizations and
 vibrational frequency computations.  These can be specified by replacing
-:py:func:`driver.energy` with :py:func:`driver.optimize` or :py:func:`driver.frequency`, respectively.
+:py:func:`~driver.energy` with :py:func:`~driver.optimize` or :py:func:`~driver.frequency`, respectively.
 
 Here's an example of optimizing the H\ :sub:`2`\ O molecule using Hartree--Fock with
 a cc-pVDZ basis set (located in
@@ -123,7 +126,7 @@ not). ::
 To get harmonic vibrational frequencies, *first we must set up an input
 using the OPTIMIZED GEOMETRY*.  We can easily get the optimized geometry
 from the previous computation.  Looking at the output from running the
-previous example, we see that the OH bond length is about 0.9463 |AA| ngstroms,
+previous example, we see that the OH bond length is about 0.9463 |AA|\ ngstroms,
 and the bond angle is about 104.575 degrees.  It's good to give this many
 digits (or more) to make sure there's not significant roundoff error in the
 geometry when running a frequency computation.  So, our frequency
@@ -373,7 +376,7 @@ to the ``R`` value extracted from the ``Rvals`` array.  The next line,
 CCSD(T) energy and places it in the ``ecp`` dictionary with ``R`` as
 the index.  Note we didn't need to specify ghost atoms, and we didn't need
 to call the monomer and dimer computations separately.  The built-in
-Psithon function :py:func:`wrappers.cp` does it all for us, automatically.
+Psithon function :py:func:`~wrappers.cp` does it all for us, automatically.
 
 And that's it!  The only remaining part of the example input is a little table
 of the different R values and the CP-corrected CCSD(T) energies, converted from

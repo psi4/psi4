@@ -18,6 +18,7 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('../../../lib/python/'))
 sys.path.insert(0, os.path.abspath('../../../lib/databases/'))
+sys.path.insert(0, os.path.abspath('../../../tests/'))
 sys.path.insert(0, os.path.abspath('.'))
 
 import psi4_sptheme as psp
@@ -33,8 +34,8 @@ needs_sphinx = '1.1'
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 # 'psi4_sptheme.ext.autodoc_sections',
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode', 'psi4_sptheme.ext.index_styling', 'sphinx.ext.extlinks']
-#, 'SphinxReport.ext.only_directives'] #'matplotlib.sphinxext.only_directives']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.pngmath', 'sphinx.ext.viewcode', 
+    'sphinx.ext.extlinks', 'psi4_sptheme.ext.index_styling', 'psi4_sptheme.ext.psidomain']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -87,10 +88,16 @@ release = get_gitversion()
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 #exclude_patterns = []
-exclude_patterns = ['template_index.rst', 'autodoc_appendices_html.rst', 
-   'autodoc_appendices_latexprog.rst', 'autodoc_appendices_latexuser.rst', 
-   'autodoc_index_html.rst', 'autodoc_index_latexprog.rst', 
-   'autodoc_index_latexuser.rst', 'template_appendices.rst']
+exclude_patterns = ['template_index.rst',          'template_appendices.rst',
+                    'autodoc_index_html.rst',      'autodoc_appendices_html.rst', 
+                    'autodoc_index_htmluser.rst',  'autodoc_appendices_htmluser.rst', 
+                    'autodoc_index_htmlprog.rst',  'autodoc_appendices_htmlprog.rst', 
+                    'autodoc_index_latexuser.rst', 'autodoc_appendices_latexuser.rst', 
+                    'autodoc_index_latexprog.rst', 'autodoc_appendices_latexprog.rst',
+                    'abbr_accents.rst',
+                    'autodoc_abbr_options_c.rst',
+                    'autodoc_abbr_options_plugins.rst']
+
 
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
@@ -160,7 +167,7 @@ html_last_updated_fmt = '%b %d, %Y'
 html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
-#html_sidebars = {}
+#html_sidebars = {'**': ['localtoc.html', 'relations.html', 'sourcelink.html', 'searchbox.html']}
 
 # Additional templates that should be rendered to pages, maps page names to
 # template names.
@@ -277,24 +284,18 @@ rst_epilog = """
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
 .. |kcalpermol| replace:: kcal mol\ :sup:`-1`
-.. |AA| unicode:: U+00C5
-   :rtrim:
-.. |aa| unicode:: U+00E5
-   :rtrim:
+.. |Angstrom| replace:: |AA|\ ngstr\ |o_dots|\ m
 .. |--| unicode:: U+02013 .. en dash
    :trim:
 .. |---| unicode:: U+02014 .. em dash
    :trim:
 .. |w---w| unicode:: U+02014 .. em dash
-.. |o_dots| unicode:: U+00F6
-   :rtrim:
-.. |o_slash| unicode:: U+00F8
-   :rtrim:
+.. include:: /abbr_accents.rst
 """
 
 # Logo at top of page
 rst_prolog = """
-.. image:: /PSI4_banner.png
+.. image:: /psi4banner.png
    :width: 100 %
    :alt: PSI4 Project Logo
 """

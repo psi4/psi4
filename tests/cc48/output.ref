@@ -1,0 +1,2214 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-beta1 Driver
+
+               Git: Rev d13abdba4a93b09d497f3529c6ae090883c9512a
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011) (doi: 10.1002/wcms.93)
+
+                         Additional Contributions by
+    A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! reproduces dipole moments in J.F. Stanton's "biorthogonal" JCP paper
+
+memory 250 mb
+
+molecule h2o {
+  0 1
+  H
+  O 1 0.957
+  H 2 0.957 1 104.5
+}
+
+set {
+  wfn eom_ccsd
+  roots_per_irrep [2, 2, 2, 2]
+  basis Sadlej-pVTZ
+  freeze_core true
+}
+
+basis {
+[Sadlej-pVTZ]
+spherical
+****
+H 0
+S 4 1.00
+        33.8650140000           0.0060680000
+         5.0947880000           0.0453160000
+         1.1587860000           0.2028460000
+         0.3258400000           0.5037090000
+S 1 1.00
+         0.1027410000           1.0000000000
+S 1 1.00
+         0.0324000000           1.0000000000
+P 2 1.00
+         1.1588000000           0.1884400000
+         0.3258000000           0.8824200000
+P 2 1.00
+         0.1027000000           0.1178000000
+         0.0324000000           0.0042000000
+****
+C 0
+S 5 1.00
+      5240.6353000000           0.0009370000
+       782.2048000000           0.0072280000
+       178.3508300000           0.0363440000
+        50.8159420000           0.1306000000
+        16.8235620000           0.3189310000
+S 2 1.00
+         6.1757760000           0.4387420000
+         2.4180490000           0.2149740000
+S 1 1.00
+         0.5119000000           1.0000000000
+S 1 1.00
+         0.1565900000           1.0000000000
+S 1 1.00
+         0.0479000000           1.0000000000
+P 4 1.00
+        18.8418000000           0.0138870000
+         4.1592400000           0.0862790000
+         1.2067100000           0.2887440000
+         0.3855400000           0.4994110000
+P 1 1.00
+         0.1219400000           1.0000000000
+P 1 1.00
+         0.0385680000           1.0000000000
+D 2 1.00
+         1.2067000000           0.2628500000
+         0.3855000000           0.8043000000
+D 2 1.00
+         0.1219000000           0.6535000000
+         0.0386000000           0.8636000000
+****
+O 0
+S 5 1.00
+     10662.2850000000           0.0007990000
+      1599.7097000000           0.0061530000
+       364.7252600000           0.0311570000
+       103.6517900000           0.1155960000
+        33.9058050000           0.3015520000
+S 2 1.00
+        12.2874690000           0.4448700000
+         4.7568050000           0.2431720000
+S 1 1.00
+         1.0042710000           1.0000000000
+S 1 1.00
+         0.3006860000           1.0000000000
+S 1 1.00
+         0.0900300000           1.0000000000
+P 4 1.00
+        34.8564630000           0.0156480000
+         7.8431310000           0.0981970000
+         2.3062490000           0.3077680000
+         0.7231640000           0.4924700000
+P 1 1.00
+         0.2148820000           1.0000000000
+P 1 1.00
+         0.0638500000           1.0000000000
+D 2 1.00
+         2.3062000000           0.2027000000
+         0.7232000000           0.5791000000
+D 2 1.00
+         0.2149000000           0.7854500000
+         0.0639000000           0.5338700000
+****
+}
+
+property('eom-ccsd',properties=['oscillator_strength'])
+--------------------------------------------------------------------------
+
+  Memory set to 250.000 MiB by Python script.
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:42 2012
+
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    250 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           H         -0.000000000000     0.756689922073    -0.520321915113
+           O          0.000000000000     0.000000000000     0.065570021880
+           H          0.000000000000    -0.756689922073    -0.520321915113
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.196933678131732
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Fractional occupation disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis <==
+
+  Basis Set: SADLEJ-PVTZ
+    Number of shells: 20
+    Number of basis function: 42
+    Number of Cartesian functions: 44
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 6.2247151109E-04.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.34997560280998
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        19      19       3       3       3       0
+     A2         4       4       0       0       0       0
+     B1         7       7       1       1       1       0
+     B2        12      12       1       1       1       0
+   -------------------------------------------------------
+    Total      42      42       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              20
+      Number of SO shells:              15
+      Number of primitives:             40
+      Number of atomic orbitals:        44
+      Number of basis functions:        42
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  19    4    7   12 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 100670 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -69.31757808372190   -1.09676e+01   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -67.14960143996984    2.16798e+00   2.05859e+00 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -74.56126912695404   -7.41167e+00   2.06759e+00 DIIS
+   @RHF iter   4:   -75.82793163771035   -1.26666e+00   4.09819e-02 DIIS
+   @RHF iter   5:   -76.05014049558538   -2.22209e-01   1.63302e-02 DIIS
+   @RHF iter   6:   -76.05277986010866   -2.63936e-03   6.36457e-03 DIIS
+   @RHF iter   7:   -76.05291630953110   -1.36449e-04   5.50917e-04 DIIS
+   @RHF iter   8:   -76.05293906791201   -2.27584e-05   1.70981e-04 DIIS
+   @RHF iter   9:   -76.05293962456213   -5.56650e-07   4.54924e-05 DIIS
+   @RHF iter  10:   -76.05293964557443   -2.10123e-08   1.06915e-05 DIIS
+   @RHF iter  11:   -76.05293964605889   -4.84462e-10   9.34059e-07 DIIS
+   @RHF iter  12:   -76.05293964607603   -1.71383e-11   1.87074e-07 DIIS
+   @RHF iter  13:   -76.05293964607648   -4.54747e-13   2.74522e-08 DIIS
+   @RHF iter  14:   -76.05293964607645    2.84217e-14   1.63920e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.567467     2A1    -1.353268     1B2    -0.719779  
+	   3A1    -0.586252     1B1    -0.510149  
+
+	Virtual:                                                              
+
+	   4A1     0.040362     2B2     0.058622     5A1     0.138000  
+	   2B1     0.172904     3B2     0.212893     6A1     0.217567  
+	   4B2     0.245504     7A1     0.281004     1A2     0.295290  
+	   3B1     0.325840     8A1     0.387484     5B2     0.403968  
+	   9A1     0.476736     6B2     0.525800    10A1     0.599301  
+	   4B1     0.658439     7B2     0.693233     2A2     0.753762  
+	  11A1     0.836620    12A1     0.897964     8B2     0.958237  
+	   3A2     1.130184     5B1     1.175210    13A1     1.219363  
+	   6B1     1.260026     9B2     1.416680    14A1     1.488639  
+	  10B2     1.711484    15A1     1.997968    11B2     2.015136  
+	  16A1     2.124432     7B1     2.781480     4A2     2.867365  
+	  17A1     2.935101    18A1     3.348617    12B2     3.738822  
+	  19A1    43.777005  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.05293964607645
+
+  ==> Properties <==
+
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.9753
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.1950
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.7802     Total:     0.7802
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -1.9832     Total:     1.9832
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:42 2012
+Module time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.36 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:42 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	EOM_CCSD
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	250.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 42
+	Number of MOs        = 42
+	Number of active MOs = 41
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   19	    1	    2	    0	    16	    0
+	 A2	   4	    0	    0	    0	    4	    0
+	 B1	   7	    0	    1	    0	    6	    0
+	 B2	   12	    0	    1	    0	    11	    0
+
+	Nuclear Rep. energy (chkpt) =      9.19693367813173
+	SCF energy          (chkpt) =    -76.05293964607645
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.316619475672326
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:42 2012
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.44 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:42 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	EOM_CCSD
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	250.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 42
+	Number of active MOs = 41
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   19	    1	    2	    0	    16	    0
+	 A2	   4	    0	    0	    0	    4	    0
+	 B1	   7	    0	    1	    0	    6	    0
+	 B2	   12	    0	    1	    0	    11	    0
+
+	Nuclear Rep. energy (chkpt) =      9.19693367813173
+	SCF energy          (chkpt) =    -76.05293964607645
+
+	Size of irrep 0 of <ab|cd> integrals:      0.184 (MW) /      1.472 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.068 (MW) /      0.541 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.078 (MW) /      0.627 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.160 (MW) /      1.280 (MB)
+	Total:                                     0.490 (MW) /      3.920 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.021 (MW) /      0.168 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.006 (MW) /      0.052 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.009 (MW) /      0.072 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.017 (MW) /      0.134 (MB)
+	Total:                                     0.053 (MW) /      0.426 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.003 (MW) /      0.021 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.001 (MW) /      0.004 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.001 (MW) /      0.009 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.002 (MW) /      0.013 (MB)
+	Total:                                     0.006 (MW) /      0.047 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	One-electron energy          =    -41.52761130209172
+	Two-electron (AA) energy     =      6.84088689701766
+	Two-electron (BB) energy     =      6.84088689701766
+	Two-electron (AB) energy     =     10.75347055653819
+	Two-electron energy          =     17.59435745355585
+	Frozen-core energy (transqt) =    -61.31661947567233
+	Reference energy             =    -76.05293964607647
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:42 2012
+Module time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:42 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.196933678131732
+	SCF energy          (chkpt)   =  -76.052939646076453
+	Reference energy    (file100) =  -76.052939646076467
+
+	Input parameters:
+	-----------------
+	Wave function   =   EOM_CCSD
+	Reference wfn   =     RHF
+	Memory (Mbytes) =     250.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.213351938998489    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.216053274075062    3.927e-02    0.010473    0.021942    0.021942
+     2        -0.220342953683034    1.309e-02    0.010542    0.022372    0.022372
+     3        -0.221700840573761    5.711e-03    0.012356    0.026736    0.026736
+     4        -0.221647114012051    1.117e-03    0.012618    0.027509    0.027509
+     5        -0.221649066258802    3.817e-04    0.012701    0.027792    0.027792
+     6        -0.221653814686827    1.099e-04    0.012731    0.027899    0.027899
+     7        -0.221651762799827    3.222e-05    0.012735    0.027919    0.027919
+     8        -0.221651271530008    9.508e-06    0.012737    0.027925    0.027925
+     9        -0.221651364209599    3.004e-06    0.012737    0.027927    0.027927
+    10        -0.221651254617758    1.034e-06    0.012737    0.027927    0.027927
+    11        -0.221651259063782    3.709e-07    0.012737    0.027926    0.027926
+    12        -0.221651252978119    1.441e-07    0.012737    0.027926    0.027926
+    13        -0.221651255227396    4.162e-08    0.012737    0.027926    0.027926
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2  20         0.0227651799
+	          2  21        -0.0144470048
+	          1   1        -0.0119899833
+	          1   4         0.0074460965
+	          1   5         0.0067895924
+	          3  34         0.0064591244
+	          3  35        -0.0053741742
+	          2  23         0.0051413307
+	          1   0         0.0049479677
+	          1   3        -0.0046451677
+
+	Largest TIjAb Amplitudes:
+	  2   2  23  23        -0.0373026236
+	  3   3  30  30        -0.0211945166
+	  2   2  20  23        -0.0188824945
+	  2   2  23  20        -0.0188824945
+	  1   1  10  10        -0.0176402710
+	  2   3  23  30        -0.0172151336
+	  3   2  30  23        -0.0172151336
+	  3   3  31  31        -0.0169347306
+	  1   2  10  23         0.0165268800
+	  2   1  23  10         0.0165268800
+
+	SCF energy       (chkpt)              =  -76.052939646076453
+	Reference energy (file100)            =  -76.052939646076467
+
+	Opposite-spin MP2 correlation energy  =   -0.158282584503575
+	Same-spin MP2 correlation energy      =   -0.055069354494913
+	MP2 correlation energy                =   -0.213351938998489
+      * MP2 total energy                      =  -76.266291585074953
+
+	Opposite-spin CCSD correlation energy =   -0.172840749741530
+	Same-spin CCSD correlation energy     =   -0.048810505474891
+	CCSD correlation energy               =   -0.221651255227396
+      * CCSD total energy                     =  -76.274590901303867
+
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:43 2012
+Module time:
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.91 seconds =       0.02 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:43 2012
+
+
+			**************************
+			*                        *
+			*         CCHBAR         *
+			*                        *
+			**************************
+
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:43 2012
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.96 seconds =       0.02 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:43 2012
+
+
+	**********************************************************
+	*  CCEOM: An Equation of Motion Coupled Cluster Program  *
+	**********************************************************
+
+	Nuclear Rep. energy (chkpt)   =    9.196933678131732
+	SCF energy          (chkpt)   =  -76.052939646076453
+	Reference energy    (file100) =  -76.052939646076467
+	CCSD energy         (file100) =   -0.221651255227396
+
+	Input parameters:
+	-----------------
+	Reference wfn   =     RHF
+	Reference EOM wfn=     RHF
+	Memory (Mbytes) =  250.0
+	ABCD            =     NEW
+	Cache Level     =    2
+	Cache Type      =     LRU
+	Num. of threads =     1
+	Local CC        =     No
+
+
+	CCEOM parameters:
+	-----------------
+	States sought per irrep     = A1 2, A2 2, B1 2, B2 2,
+	Max. number of iterations   =    80
+	Vectors stored per root     =    12
+	Print HbarSS iterations?    =     0
+	Excitation range for HBarSS =     2
+	Eigenvalue tolerance        = 1.0e-08
+	Eigenvalue toleranceSS      = 1.0e-06
+	Residual vector tolerance   = 1.0e-06
+	Residual vector toleranceSS = 1.0e-06
+	Complex tolerance           = 1.0e-12
+	Root for properties         =     2
+	Sym of state for properties =     B2
+	Guess vectors taken from    = SINGLES
+	Restart EOM CC3             = NO
+	Collapse with last vector   = YES
+
+
+Symmetry of ground state: A1
+Symmetry of excited state: A1
+Symmetry of right eigenvector: A1
+Seeking states with multiplicity of 1
+Obtaining initial guess from singles-singles block of Hbar...Done.
+
+Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4809582711   4.81e-01    4.60e-01      N
+                     2   0.5339597844   5.34e-01    4.52e-01      N
+Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3649450690  -1.16e-01    8.28e-02      N
+                     2   0.4184161633  -1.16e-01    7.45e-02      N
+Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3613742971  -3.57e-03    2.78e-02      N
+                     2   0.4153529583  -3.06e-03    2.22e-02      N
+Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610916763  -2.83e-04    1.03e-02      N
+                     2   0.4152425947  -1.10e-04    9.21e-03      N
+Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610299971  -6.17e-05    3.96e-03      N
+                     2   0.4151992126  -4.34e-05    5.82e-03      N
+Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610051150  -2.49e-05    2.10e-03      N
+                     2   0.4151245143  -7.47e-05    4.28e-03      N
+Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3609991926  -5.92e-06    9.39e-04      N
+                     2   0.4151112539  -1.33e-05    2.24e-03      N
+Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610030634   3.87e-06    3.68e-04      N
+                     2   0.4151153285   4.07e-06    1.16e-03      N
+Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610024261  -6.37e-07    1.40e-04      N
+                     2   0.4151094135  -5.91e-06    6.95e-04      N
+Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610021295  -2.97e-07    5.09e-05      N
+                     2   0.4151095647   1.51e-07    3.45e-04      N
+Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610021917   6.21e-08    1.83e-05      N
+                     2   0.4151104779   9.13e-07    1.53e-04      N
+Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610022278   3.62e-08    7.52e-06      N
+                     2   0.4151102617  -2.16e-07    6.40e-05      N
+Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610022278   2.38e-14    7.52e-06      N
+                     2   0.4151102617  -1.28e-15    6.40e-05      N
+Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610022303   2.47e-09    4.00e-06      N
+                     2   0.4151101748  -8.69e-08    3.41e-05      N
+Iter=15   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610022378   7.54e-09    1.64e-06      N
+                     2   0.4151100906  -8.42e-08    1.63e-05      N
+Iter=16   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610022383   4.17e-10    5.59e-07      Y
+                     2   0.4151101514   6.09e-08    6.28e-06      N
+Iter=17   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610022372  -1.09e-09    3.42e-07      Y
+                     2   0.4151101440  -7.38e-09    2.20e-06      N
+Iter=18   L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3610022373   1.53e-10    3.19e-07      Y
+                     2   0.4151101504   6.35e-09    8.39e-07      Y
+Collapsing to only 2 vector(s).
+
+Procedure converged for 2 root(s).
+EOM CCSD R0 for root 0 =  -0.00310174762
+EOM CCSD R0 for root 1 =  -0.02955683303
+
+Final Energetic Summary for Converged Roots of Irrep A1
+                     Excitation Energy              Total Energy
+                (eV)     (cm^-1)     (au)             (au)
+EOM State 1      9.823    79230.8   0.3610022373   -75.913588663977
+
+Largest components of excited wave function #1:
+ RIA (libdpd indices) : (cscf notation)
+         1 >   0      :       3a1 >    4a1 :    0.6098694185
+         1 >   2      :       3a1 >    6a1 :    0.2550706022
+         0 >   0      :       1b1 >    2b1 :   -0.1196928701
+         1 >   1      :       3a1 >    5a1 :   -0.0726164941
+         1 >   5      :       3a1 >    9a1 :    0.0691327326
+ RIjAb (libdpd indices)     : (cscf notation)
+        1   1 >   0   5     :    3a1    3a1 >    4a1    9a1 :   -0.0409761560
+        1   1 >   5   0     :    3a1    3a1 >    9a1    4a1 :   -0.0409761560
+        1   1 >   0   1     :    3a1    3a1 >    4a1    5a1 :    0.0403064220
+        1   1 >   1   0     :    3a1    3a1 >    5a1    4a1 :    0.0403064220
+        1   0 >   0   3     :    3a1    1b1 >    4a1    5b1 :   -0.0360697184
+EOM State 2     11.296    91106.1   0.4151101504   -75.859480750917
+
+Largest components of excited wave function #2:
+ RIA (libdpd indices) : (cscf notation)
+         0 >   0      :       1b1 >    2b1 :    0.6482312478
+         1 >   0      :       3a1 >    4a1 :    0.1268535668
+         0 >   1      :       1b1 >    3b1 :   -0.1041858636
+         1 >   1      :       3a1 >    5a1 :    0.1036412538
+         1 >   4      :       3a1 >    8a1 :   -0.0389930917
+ RIjAb (libdpd indices)     : (cscf notation)
+        0   0 >   0   0     :    1b1    1b1 >    2b1    2b1 :   -0.1096961485
+        0   0 >   0   3     :    1b1    1b1 >    2b1    5b1 :   -0.0494666877
+        0   0 >   3   0     :    1b1    1b1 >    5b1    2b1 :   -0.0494666877
+        0   0 >   0   1     :    1b1    1b1 >    2b1    3b1 :    0.0360882474
+        0   0 >   1   0     :    1b1    1b1 >    3b1    2b1 :    0.0360882474
+
+Symmetry of excited state: A2
+Symmetry of right eigenvector: A2
+Seeking states with multiplicity of 1
+Obtaining initial guess from singles-singles block of Hbar...Done.
+
+Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4564764678   4.56e-01    4.64e-01      N
+                     2   0.5531517336   5.53e-01    4.73e-01      N
+Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3395011825  -1.17e-01    7.20e-02      N
+                     2   0.4350492130  -1.18e-01    7.80e-02      N
+Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3366688617  -2.83e-03    2.25e-02      N
+                     2   0.4319920545  -3.06e-03    2.58e-02      N
+Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3365273425  -1.42e-04    7.78e-03      N
+                     2   0.4317522031  -2.40e-04    9.80e-03      N
+Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364822429  -4.51e-05    3.35e-03      N
+                     2   0.4316865561  -6.56e-05    5.99e-03      N
+Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364617410  -2.05e-05    1.75e-03      N
+                     2   0.4315994352  -8.71e-05    6.85e-03      N
+Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364564224  -5.32e-06    5.57e-04      N
+                     2   0.4315544908  -4.49e-05    3.51e-03      N
+Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364572308   8.08e-07    1.80e-04      N
+                     2   0.4315511749  -3.32e-06    1.62e-03      N
+Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364569835  -2.47e-07    6.08e-05      N
+                     2   0.4315488180  -2.36e-06    7.38e-04      N
+Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364569764  -7.11e-09    1.69e-05      N
+                     2   0.4315497477   9.30e-07    2.38e-04      N
+Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364570074   3.10e-08    4.93e-06      N
+                     2   0.4315505554   8.08e-07    7.15e-05      N
+Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364570130   5.62e-09    1.47e-06      N
+                     2   0.4315504238  -1.32e-07    2.51e-05      N
+Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364570130  -2.96e-14    1.47e-06      N
+                     2   0.4315504238  -4.83e-15    2.51e-05      N
+Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364570155   2.51e-09    3.83e-07      Y
+                     2   0.4315503696  -5.42e-08    7.61e-06      N
+Iter=15   L=7     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364570149  -5.91e-10    3.54e-07      Y
+                     2   0.4315503949   2.53e-08    2.26e-06      N
+Iter=16   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3364570149   3.56e-11    3.54e-07      Y
+                     2   0.4315503914  -3.48e-09    7.25e-07      Y
+Collapsing to only 2 vector(s).
+
+Procedure converged for 2 root(s).
+EOM CCSD R0 for root 0 =   0.00000000000
+EOM CCSD R0 for root 1 =   0.00000000000
+
+Final Energetic Summary for Converged Roots of Irrep A2
+                     Excitation Energy              Total Energy
+                (eV)     (cm^-1)     (au)             (au)
+EOM State 3      9.155    73843.8   0.3364570149   -75.938133886379
+
+Largest components of excited wave function #3:
+ RIA (libdpd indices) : (cscf notation)
+         0 >   0      :       1b1 >    2b2 :   -0.5934116880
+         0 >   1      :       1b1 >    3b2 :    0.2579805338
+         0 >   2      :       1b1 >    4b2 :   -0.1981001482
+         0 >   4      :       1b1 >    6b2 :   -0.1054556039
+         0 >   6      :       1b1 >    8b2 :   -0.0263671047
+ RIjAb (libdpd indices)     : (cscf notation)
+        0   0 >   0   0     :    1b1    1b1 >    2b1    2b2 :    0.0488095969
+        0   0 >   0   0     :    1b1    1b1 >    2b2    2b1 :    0.0488095969
+        0   0 >   3   0     :    1b1    1b1 >    5b1    2b2 :    0.0456377957
+        0   0 >   0   3     :    1b1    1b1 >    2b2    5b1 :    0.0456377957
+        0   0 >   0   4     :    1b1    1b2 >    2b2    6b2 :    0.0357011035
+EOM State 4     11.743    94714.3   0.4315503914   -75.843040509914
+
+Largest components of excited wave function #4:
+ RIA (libdpd indices) : (cscf notation)
+         0 >   2      :       1b1 >    4b2 :    0.6029324930
+         0 >   0      :       1b1 >    2b2 :   -0.2578027258
+         0 >   4      :       1b1 >    6b2 :    0.1353564778
+         0 >   5      :       1b1 >    7b2 :    0.1150377488
+         0 >   1      :       1b1 >    3b2 :   -0.0686975344
+ RIjAb (libdpd indices)     : (cscf notation)
+        0   0 >   0   2     :    1b1    1b1 >    2b1    4b2 :   -0.0457367862
+        0   0 >   2   0     :    1b1    1b1 >    4b2    2b1 :   -0.0457367862
+        0   0 >   3   2     :    1b1    1b1 >    5b1    4b2 :   -0.0435998817
+        0   0 >   2   3     :    1b1    1b1 >    4b2    5b1 :   -0.0435998817
+        0   0 >   2   4     :    1b1    1b2 >    4b2    6b2 :   -0.0359084318
+
+Symmetry of excited state: B1
+Symmetry of right eigenvector: B1
+Seeking states with multiplicity of 1
+Obtaining initial guess from singles-singles block of Hbar...Done.
+
+Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.3942791985   3.94e-01    4.71e-01      N
+                     2   0.5040767654   5.04e-01    4.51e-01      N
+Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2750985990  -1.19e-01    7.75e-02      N
+                     2   0.3903991703  -1.14e-01    6.67e-02      N
+Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2720669118  -3.03e-03    2.37e-02      N
+                     2   0.3879880303  -2.41e-03    1.99e-02      N
+Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719540974  -1.13e-04    7.47e-03      N
+                     2   0.3879041367  -8.39e-05    8.47e-03      N
+Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719485906  -5.51e-06    2.06e-03      N
+                     2   0.3878382858  -6.59e-05    5.41e-03      N
+Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719427874  -5.80e-06    6.75e-04      N
+                     2   0.3877538811  -8.44e-05    4.69e-03      N
+Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719417235  -1.06e-06    3.50e-04      N
+                     2   0.3877369443  -1.69e-05    2.75e-03      N
+Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719414152  -3.08e-07    1.35e-04      N
+                     2   0.3877389668   2.02e-06    1.84e-03      N
+Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408944  -5.21e-07    4.14e-05      N
+                     2   0.3877317594  -7.21e-06    9.05e-04      N
+Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408434  -5.11e-08    1.26e-05      N
+                     2   0.3877367908   5.03e-06    5.44e-04      N
+Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408806   3.72e-08    3.75e-06      N
+                     2   0.3877357180  -1.07e-06    3.43e-04      N
+Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408777  -2.89e-09    1.18e-06      N
+                     2   0.3877337145  -2.00e-06    1.26e-04      N
+Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408777  -3.71e-14    1.18e-06      N
+                     2   0.3877337145   2.72e-15    1.26e-04      N
+Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408753  -2.39e-09    4.07e-07      Y
+                     2   0.3877338319   1.17e-07    4.13e-05      N
+Iter=15   L=7     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408761   7.45e-10    3.39e-07      Y
+                     2   0.3877337796  -5.23e-08    1.65e-05      N
+Iter=16   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408749  -1.16e-09    3.20e-07      Y
+                     2   0.3877339252   1.46e-07    8.36e-06      N
+Iter=17   L=9     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408759   1.02e-09    3.15e-07      Y
+                     2   0.3877338533  -7.20e-08    3.91e-06      N
+Iter=18   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408756  -3.11e-10    3.14e-07      Y
+                     2   0.3877338664   1.31e-08    1.62e-06      N
+Iter=19   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.2719408757   3.51e-11    3.14e-07      Y
+                     2   0.3877338666   2.05e-10    9.34e-07      Y
+Collapsing to only 2 vector(s).
+
+Procedure converged for 2 root(s).
+EOM CCSD R0 for root 0 =   0.00000000000
+EOM CCSD R0 for root 1 =   0.00000000000
+
+Final Energetic Summary for Converged Roots of Irrep B1
+                     Excitation Energy              Total Energy
+                (eV)     (cm^-1)     (au)             (au)
+EOM State 5      7.400    59684.1   0.2719408757   -76.002650025644
+
+Largest components of excited wave function #5:
+ RIA (libdpd indices) : (cscf notation)
+         0 >   0      :       1b1 >    4a1 :   -0.6131750586
+         0 >   2      :       1b1 >    6a1 :   -0.2603270487
+         0 >   1      :       1b1 >    5a1 :    0.1150292287
+         0 >   5      :       1b1 >    9a1 :   -0.0884590131
+         0 >   4      :       1b1 >    8a1 :    0.0439082248
+ RIjAb (libdpd indices)     : (cscf notation)
+        0   0 >   0   0     :    1b1    1b1 >    4a1    2b1 :    0.0511982194
+        0   0 >   0   0     :    1b1    1b1 >    2b1    4a1 :    0.0511982194
+        0   0 >   0   3     :    1b1    1b1 >    4a1    5b1 :    0.0471722286
+        0   0 >   3   0     :    1b1    1b1 >    5b1    4a1 :    0.0471722286
+        0   0 >   0   4     :    1b1    1b2 >    4a1    6b2 :    0.0365775676
+EOM State 6     10.551    85097.7   0.3877338666   -75.886857034739
+
+Largest components of excited wave function #6:
+ RIA (libdpd indices) : (cscf notation)
+         0 >   1      :       1b1 >    5a1 :    0.6529977536
+         0 >   0      :       1b1 >    4a1 :    0.1254075592
+         0 >   5      :       1b1 >    9a1 :   -0.1032398978
+         0 >   4      :       1b1 >    8a1 :   -0.1005527896
+         0 >   3      :       1b1 >    7a1 :    0.0794903756
+ RIjAb (libdpd indices)     : (cscf notation)
+        0   0 >   1   0     :    1b1    1b1 >    5a1    2b1 :   -0.0542251651
+        0   0 >   0   1     :    1b1    1b1 >    2b1    5a1 :   -0.0542251651
+        0   0 >   1   3     :    1b1    1b1 >    5a1    5b1 :   -0.0493082899
+        0   0 >   3   1     :    1b1    1b1 >    5b1    5a1 :   -0.0493082899
+        0   0 >   1   4     :    1b1    1b2 >    5a1    6b2 :   -0.0359777541
+
+Symmetry of excited state: B2
+Symmetry of right eigenvector: B2
+Seeking states with multiplicity of 1
+Obtaining initial guess from singles-singles block of Hbar...Done.
+
+Iter=1    L=2     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.5419328862   5.42e-01    4.50e-01      N
+                     2   0.6074599185   6.07e-01    4.29e-01      N
+Iter=2    L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4288646968  -1.13e-01    7.85e-02      N
+                     2   0.5114115954  -9.60e-02    6.57e-02      N
+Iter=3    L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4254707014  -3.39e-03    2.70e-02      N
+                     2   0.5095819548  -1.83e-03    1.83e-02      N
+Iter=4    L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4251886327  -2.82e-04    9.72e-03      N
+                     2   0.5094631191  -1.19e-04    8.89e-03      N
+Iter=5    L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4251308824  -5.78e-05    3.28e-03      N
+                     2   0.5093386137  -1.25e-04    1.10e-02      N
+Iter=6    L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250981853  -3.27e-05    1.76e-03      N
+                     2   0.5089063765  -4.32e-04    2.37e-02      N
+Iter=7    L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250923871  -5.80e-06    9.56e-04      N
+                     2   0.5073815116  -1.52e-03    4.05e-02      N
+Iter=8    L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250957581   3.37e-06    3.91e-04      N
+                     2   0.5051185772  -2.26e-03    3.98e-02      N
+Iter=9    L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250958930   1.35e-07    1.48e-04      N
+                     2   0.5026812133  -2.44e-03    3.76e-02      N
+Iter=10   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250953577  -5.35e-07    5.60e-05      N
+                     2   0.5012293095  -1.45e-03    2.92e-02      N
+Iter=11   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956335   2.76e-07    2.46e-05      N
+                     2   0.4997568350  -1.47e-03    2.99e-02      N
+Iter=12   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956952   6.16e-08    8.86e-06      N
+                     2   0.4988127677  -9.44e-04    1.82e-02      N
+Iter=13   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956952  -2.44e-15    8.86e-06      N
+                     2   0.4988127677  -1.11e-16    1.82e-02      N
+Iter=14   L=6     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956739  -2.13e-08    3.25e-06      N
+                     2   0.4986060396  -2.07e-04    6.83e-03      N
+Iter=15   L=8     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956658  -8.14e-09    1.17e-06      N
+                     2   0.4985691709  -3.69e-05    2.71e-03      N
+Iter=16   L=10    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956667   8.73e-10    4.07e-07      Y
+                     2   0.4985638084  -5.36e-06    1.06e-03      N
+Iter=17   L=11    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956691   2.42e-09    2.83e-07      Y
+                     2   0.4985613505  -2.46e-06    3.47e-04      N
+Iter=18   L=12    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956677  -1.35e-09    2.61e-07      Y
+                     2   0.4985618889   5.38e-07    1.40e-04      N
+Iter=19   L=13    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956668  -9.25e-10    2.68e-07      Y
+                     2   0.4985614260  -4.63e-07    8.07e-05      N
+Iter=20   L=14    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956676   8.22e-10    2.70e-07      Y
+                     2   0.4985615269   1.01e-07    8.56e-05      N
+Iter=21   L=15    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956669  -7.23e-10    2.48e-07      Y
+                     2   0.4985613407  -1.86e-07    6.96e-05      N
+Iter=22   L=16    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956667  -1.75e-10    2.41e-07      Y
+                     2   0.4985613857   4.51e-08    5.16e-05      N
+Iter=23   L=17    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956670   3.11e-10    2.42e-07      Y
+                     2   0.4985612928  -9.29e-08    4.86e-05      N
+Iter=24   L=18    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956667  -3.44e-10    2.44e-07      Y
+                     2   0.4985610791  -2.14e-07    4.58e-05      N
+Iter=25   L=19    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956671   4.26e-10    2.47e-07      Y
+                     2   0.4985611201   4.09e-08    3.44e-05      N
+Iter=26   L=20    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956664  -6.81e-10    2.36e-07      Y
+                     2   0.4985609477  -1.72e-07    2.64e-05      N
+Iter=27   L=21    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956670   5.73e-10    2.25e-07      Y
+                     2   0.4985609936   4.60e-08    1.64e-05      N
+Iter=28   L=22    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956669  -1.11e-10    2.21e-07      Y
+                     2   0.4985609517  -4.19e-08    8.38e-06      N
+Iter=29   L=23    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956669   3.02e-11    2.21e-07      Y
+                     2   0.4985609552   3.43e-09    3.73e-06      N
+Iter=30   L=24    Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956669   6.62e-12    2.21e-07      Y
+                     2   0.4985609490  -6.16e-09    1.55e-06      N
+Iter=31   L=4     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956665  -4.06e-10    2.44e-07      Y
+                     2   0.4985609490  -2.11e-15    1.55e-06      N
+Iter=32   L=5     Root    EOM Energy     Delta E   Res. Norm    Conv?
+                     1   0.4250956666   8.64e-11    2.46e-07      Y
+                     2   0.4985609483  -6.46e-10    5.42e-07      Y
+Collapsing to only 2 vector(s).
+
+Procedure converged for 2 root(s).
+Energy written to chkpt:Etot  -75.7760299530
+States per irrep written to chkpt.
+EOM CCSD R0 for root 0 =   0.00000000000
+EOM CCSD R0 for root 1 =   0.00000000000
+
+Final Energetic Summary for Converged Roots of Irrep B2
+                     Excitation Energy              Total Energy
+                (eV)     (cm^-1)     (au)             (au)
+EOM State 7     11.567    93297.7   0.4250956666   -75.849495234687
+
+Largest components of excited wave function #7:
+ RIA (libdpd indices) : (cscf notation)
+         1 >   0      :       3a1 >    2b2 :   -0.6063176046
+         1 >   1      :       3a1 >    3b2 :    0.2587073734
+         1 >   2      :       3a1 >    4b2 :   -0.1574871521
+         1 >   4      :       3a1 >    6b2 :   -0.0895068612
+         0 >   0      :       1b1 >    1a2 :   -0.0424700141
+ RIjAb (libdpd indices)     : (cscf notation)
+        1   1 >   5   0     :    3a1    3a1 >    9a1    2b2 :    0.0396788154
+        1   1 >   0   5     :    3a1    3a1 >    2b2    9a1 :    0.0396788154
+        1   0 >   0   0     :    3a1    1b1 >    2b2    2b1 :    0.0381902835
+        0   1 >   0   0     :    1b1    3a1 >    2b1    2b2 :    0.0381902835
+        1   1 >   1   0     :    3a1    3a1 >    5a1    2b2 :   -0.0371334543
+EOM State 8     13.567   109421.5   0.4985609483   -75.776029952963
+
+Largest components of excited wave function #8:
+ RIA (libdpd indices) : (cscf notation)
+         0 >   0      :       1b1 >    1a2 :   -0.6617073105
+         1 >   2      :       3a1 >    4b2 :   -0.1140296991
+         1 >   0      :       3a1 >    2b2 :    0.0861755001
+         0 >   1      :       1b1 >    2a2 :   -0.0510017222
+         0 >   0      :       1b2 >    4a1 :   -0.0419409990
+ RIjAb (libdpd indices)     : (cscf notation)
+        0   0 >   0   0     :    1b1    1b1 >    1a2    2b1 :    0.0585451478
+        0   0 >   0   0     :    1b1    1b1 >    2b1    1a2 :    0.0585451478
+        0   0 >   0   3     :    1b1    1b1 >    1a2    5b1 :    0.0562267378
+        0   0 >   3   0     :    1b1    1b1 >    5b1    1a2 :    0.0562267378
+        0   0 >   0   4     :    1b1    1b2 >    1a2    6b2 :    0.0400246617
+
+	Putting into environment energy for root of R irrep 4 and root 2.
+	Putting into environment CURRENT ENERGY:              -75.7760299530
+
+	Total # of sigma evaluations: 136
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:46 2012
+Module time:
+	user time   =       2.18 seconds =       0.04 minutes
+	system time =       1.03 seconds =       0.02 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       3.14 seconds =       0.05 minutes
+	system time =       1.44 seconds =       0.02 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:46 2012
+
+
+			**************************
+			*        CCLAMBDA        *
+			**************************
+
+
+	Nuclear Rep. energy (chkpt)   =    9.196933678131732
+	Reference           (chkpt)   = 0
+	SCF energy          (chkpt)   =  -76.052939646076453
+	Reference energy    (CC_INFO) =  -76.052939646076467
+	CCSD energy         (CC_INFO) =   -0.221651255227396
+	Total CCSD energy   (CC_INFO) =  -76.274590901303867
+
+	Input parameters:
+	-----------------
+	Maxiter       =      50
+	Convergence   = 1.0e-07
+	Restart       =     No
+	Cache Level   =     2
+	Model III     =     No
+	DIIS          =     Yes
+	AO Basis      =     No
+	ABCD            =     NEW
+	Local CC        =     No
+	Paramaters for left-handed eigenvectors:
+	    Irr   Root  Ground-State?    EOM energy        R0
+	  1   0     0        Yes       0.0000000000   1.0000000000
+	  2   0     1         No       0.3610022373  -0.0031017476
+	  3   0     2         No       0.4151101504  -0.0295568330
+	  4   1     1         No       0.3364570149   0.0000000000
+	  5   1     2         No       0.4315503914   0.0000000000
+	  6   2     1         No       0.2719408757   0.0000000000
+	  7   2     2         No       0.3877338666   0.0000000000
+	  8   3     1         No       0.4250956666   0.0000000000
+	  9   3     2         No       0.4985609483   0.0000000000
+	Labels for eigenvector 1:
+	LIA 0 -1, Lia 0 -1, LIJAB 0 -1, Lijab 0 -1, LIjAb 0 -1, 2LIjAb - LIjbA 0 -1
+	Labels for eigenvector 2:
+	LIA 0 0, Lia 0 0, LIJAB 0 0, Lijab 0 0, LIjAb 0 0, 2LIjAb - LIjbA 0 0
+	Labels for eigenvector 3:
+	LIA 0 1, Lia 0 1, LIJAB 0 1, Lijab 0 1, LIjAb 0 1, 2LIjAb - LIjbA 0 1
+	Labels for eigenvector 4:
+	LIA 1 0, Lia 1 0, LIJAB 1 0, Lijab 1 0, LIjAb 1 0, 2LIjAb - LIjbA 1 0
+	Labels for eigenvector 5:
+	LIA 1 1, Lia 1 1, LIJAB 1 1, Lijab 1 1, LIjAb 1 1, 2LIjAb - LIjbA 1 1
+	Labels for eigenvector 6:
+	LIA 2 0, Lia 2 0, LIJAB 2 0, Lijab 2 0, LIjAb 2 0, 2LIjAb - LIjbA 2 0
+	Labels for eigenvector 7:
+	LIA 2 1, Lia 2 1, LIJAB 2 1, Lijab 2 1, LIjAb 2 1, 2LIjAb - LIjbA 2 1
+	Labels for eigenvector 8:
+	LIA 3 0, Lia 3 0, LIJAB 3 0, Lijab 3 0, LIjAb 3 0, 2LIjAb - LIjbA 3 0
+	Labels for eigenvector 9:
+	LIA 3 1, Lia 3 1, LIJAB 3 1, Lijab 3 1, LIjAb 3 1, 2LIjAb - LIjbA 3 1
+	Deleting old CC_LAMBDA data.
+	Symmetry of left-hand state: A1
+	Symmetry of left-hand eigenvector: A1
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0        -0.221765112776064    0.000e+00
+	   1        -0.218383889278465    2.009e-02
+	   2        -0.217583719789703    3.197e-03
+	   3        -0.217477477563680    1.534e-03
+	   4        -0.217422263936832    4.596e-04
+	   5        -0.217425827499483    9.758e-05
+	   6        -0.217427980140180    2.712e-05
+	   7        -0.217427845545196    6.701e-06
+	   8        -0.217427776903125    1.742e-06
+	   9        -0.217427775658898    4.106e-07
+	  10        -0.217427777394765    9.661e-08
+
+	Largest LIA Amplitudes:
+	          2  20         0.0145518926
+	          2  21        -0.0091632394
+	          1   1        -0.0064742200
+	          3  34         0.0062376916
+	          3  35        -0.0045660580
+	          0  11        -0.0041272900
+	          1   4         0.0040151409
+	          1  10         0.0039444381
+	          1  11        -0.0030684115
+	          1   5         0.0028216409
+
+	Largest LIjAb Amplitudes:
+	  2   2  23  23        -0.0369419004
+	  3   3  30  30        -0.0207570480
+	  2   2  20  23        -0.0184400212
+	  2   2  23  20        -0.0184400212
+	  1   1  10  10        -0.0174220912
+	  2   3  23  30        -0.0169791724
+	  3   2  30  23        -0.0169791724
+	  3   3  31  31        -0.0164372833
+	  1   2  10  23         0.0163699429
+	  2   1  23  10         0.0163699429
+
+	Iterations converged.
+
+	Overlap <L|e^T> =        0.93455067605
+	Symmetry of left-hand state: A1
+	Symmetry of left-hand eigenvector: A1
+	Initial overlap of initial guess <L|R> =    0.9999741333
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0        -0.001148296698326    9.661e-08
+	   1        -0.001423933854216    5.221e-02
+	   2        -0.001301176254580    1.779e-02
+	   3        -0.001359235806917    2.481e-03
+	   4        -0.001348859998460    1.669e-03
+	   5        -0.001356344955127    8.641e-04
+	   6        -0.001352696107166    4.685e-04
+	   7        -0.001353856398122    1.916e-04
+	   8        -0.001354600544212    6.387e-05
+	   9        -0.001355215511174    2.766e-05
+	  10        -0.001355478101769    1.183e-05
+	  11        -0.001355599959887    6.348e-06
+	  12        -0.001355659150510    3.116e-06
+	  13        -0.001355676405954    1.497e-06
+	  14        -0.001355695852199    7.645e-07
+	  15        -0.001355710144056    3.963e-07
+	  16        -0.001355717528270    1.963e-07
+	  17        -0.001355718365193    9.179e-08
+
+	Initial  <L|R>  =        0.9756715130
+	Normalizing L...
+	L0 * R0 =       -0.0000000000
+	L1 * R1 =        0.9330684596
+	L2 * R2 =        0.0669315404
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =   -0.001389523366387
+
+	Largest LIA Amplitudes:
+	          1   0         0.6058228948
+	          1   2         0.2523180167
+	          2  20        -0.1167100667
+	          1   1        -0.0731697892
+	          1   5         0.0684267047
+	          1   4        -0.0575973801
+	          2  21         0.0376270708
+	          1   6         0.0342786315
+	          1   3        -0.0271343758
+	          0   0        -0.0229993886
+
+	Largest LIjAb Amplitudes:
+	  1   1   0   5        -0.0447362118
+	  1   1   5   0        -0.0447362118
+	  1   2   0  23        -0.0441249833
+	  2   1  23   0        -0.0441249833
+	  1   3   0  30        -0.0430177766
+	  3   1  30   0        -0.0430177766
+	  1   1   0   1         0.0413087342
+	  1   1   1   0         0.0413087342
+	  1   2   0  20        -0.0370194159
+	  2   1  20   0        -0.0370194159
+
+	Iterations converged.
+
+	Symmetry of left-hand state: A1
+	Symmetry of left-hand eigenvector: A1
+	Initial overlap of initial guess <L|R> =    0.9979462825
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0        -0.006705435064866    9.179e-08
+	   1        -0.014503914924536    5.783e-02
+	   2        -0.013447108597980    1.955e-02
+	   3        -0.013608631564446    2.686e-03
+	   4        -0.013597534308722    1.297e-03
+	   5        -0.013593266669350    5.211e-04
+	   6        -0.013585887571818    3.269e-04
+	   7        -0.013580970259825    2.056e-04
+	   8        -0.013580230976877    1.080e-04
+	   9        -0.013579675428205    4.084e-05
+	  10        -0.013579707966004    1.399e-05
+	  11        -0.013579668514782    6.140e-06
+	  12        -0.013579690396256    3.570e-06
+	  13        -0.013579666333237    2.363e-06
+	  14        -0.013579659704225    1.362e-06
+	  15        -0.013579652246883    6.344e-07
+	  16        -0.013579653383494    3.622e-07
+	  17        -0.013579651642262    2.299e-07
+	  18        -0.013579648195982    1.478e-07
+	  19        -0.013579646211974    8.287e-08
+
+	Initial  <L|R>  =        0.9725662169
+	Normalizing L...
+	L0 * R0 =       -0.0000000000
+	L1 * R1 =        0.9319528706
+	L2 * R2 =        0.0680471294
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =   -0.013962695779944
+
+	Largest LIA Amplitudes:
+	          2  20         0.6421154614
+	          1   0         0.1286392255
+	          1   1         0.1060359133
+	          2  21        -0.1030836827
+	          1   4        -0.0407200292
+	          3  27         0.0395259923
+	          3  28        -0.0372602916
+	          1   5        -0.0366007469
+	          3  30        -0.0362088847
+	          3  26        -0.0325041390
+
+	Largest LIjAb Amplitudes:
+	  2   2  20  20        -0.1075805765
+	  2   2  20  23        -0.0546958683
+	  2   2  23  20        -0.0546958683
+	  2   3  20  30        -0.0425394802
+	  3   2  30  20        -0.0425394802
+	  1   2   5  20        -0.0372059975
+	  2   1  20   5        -0.0372059975
+	  2   2  20  21         0.0360384331
+	  2   2  21  20         0.0360384331
+	  2   2  20  22        -0.0345218921
+
+	Iterations converged.
+
+	Symmetry of left-hand state: A2
+	Symmetry of left-hand eigenvector: A2
+	Initial overlap of initial guess <L|R> =    1.0000000000
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0         1.000000000000000    8.287e-08
+	   1         0.961970263500173    5.907e-02
+	   2         0.971584219995539    2.224e-02
+	   3         0.971788423988534    2.501e-03
+	   4         0.972159832050950    1.520e-03
+	   5         0.972400384263572    7.330e-04
+	   6         0.972521990739453    4.091e-04
+	   7         0.972577727660321    1.831e-04
+	   8         0.972595838247615    8.302e-05
+	   9         0.972600312190290    2.441e-05
+	  10         0.972602236698275    7.331e-06
+	  11         0.972602102386330    1.651e-06
+	  12         0.972602307792355    5.103e-07
+	  13         0.972602237782341    2.018e-07
+	  14         0.972602254073824    9.124e-08
+
+	Initial  <L|R>  =        0.9714981088
+	Normalizing L...
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9333265395
+	L2 * R2 =        0.0666734605
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =    1.001136538792526
+
+	Largest LIA Amplitudes:
+	          2  20        -0.5888179821
+	          2  21         0.2557106019
+	          2  22        -0.1958130637
+	          2  24        -0.1037674452
+	          2   0        -0.0252911393
+	          2  25        -0.0227107831
+	          2  26         0.0118246849
+	          2   0         0.0102083324
+	          0   0         0.0066578459
+	          2  27        -0.0046860763
+
+	Largest LIjAb Amplitudes:
+	  2   2  23  26         0.0520533886
+	  2   2  26  23         0.0520533886
+	  2   2  20  26         0.0484127920
+	  2   2  26  20         0.0484127920
+	  2   3  26  30         0.0437961662
+	  3   2  30  26         0.0437961662
+	  1   2   5  26         0.0381097054
+	  2   1  26   5         0.0381097054
+	  2   3  26  27        -0.0318835273
+	  3   2  27  26        -0.0318835273
+
+	Iterations converged.
+
+	Symmetry of left-hand state: A2
+	Symmetry of left-hand eigenvector: A2
+	Initial overlap of initial guess <L|R> =    1.0000000000
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0         1.000000000000000    9.124e-08
+	   1         0.966285823598284    5.430e-02
+	   2         0.975093398225112    2.196e-02
+	   3         0.975334403129807    3.238e-03
+	   4         0.975854625674031    1.830e-03
+	   5         0.976225070316562    8.796e-04
+	   6         0.976374141907266    3.581e-04
+	   7         0.976415091538769    1.338e-04
+	   8         0.976423817036327    7.082e-05
+	   9         0.976431188305016    5.923e-05
+	  10         0.976445867307676    4.740e-05
+	  11         0.976460160392339    2.813e-05
+	  12         0.976465629613448    8.376e-06
+	  13         0.976464919660535    2.800e-06
+	  14         0.976465901563156    1.627e-06
+	  15         0.976465719066756    7.252e-07
+	  16         0.976465792988277    3.532e-07
+	  17         0.976465768033972    1.728e-07
+	  18         0.976465762764136    7.604e-08
+
+	Initial  <L|R>  =        0.9754030289
+	Normalizing L...
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9331575553
+	L2 * R2 =        0.0668424447
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =    1.001089533104032
+
+	Largest LIA Amplitudes:
+	          2  22         0.5979957879
+	          2  20        -0.2567458548
+	          2  24         0.1338910650
+	          2  25         0.1139273017
+	          2  21        -0.0684216364
+	          2  23         0.0456137292
+	          2   0         0.0376724743
+	          2  27         0.0104155735
+	          2  26        -0.0080749003
+	          3  26        -0.0063478681
+
+	Largest LIjAb Amplitudes:
+	  2   2  23  28        -0.0491720046
+	  2   2  28  23        -0.0491720046
+	  2   2  20  28        -0.0450620801
+	  2   2  28  20        -0.0450620801
+	  2   3  28  30        -0.0431578615
+	  3   2  30  28        -0.0431578615
+	  1   2   5  28        -0.0372043665
+	  2   1  28   5        -0.0372043665
+	  2   3  28  28        -0.0333119561
+	  3   2  28  28        -0.0333119561
+
+	Iterations converged.
+
+	Symmetry of left-hand state: B1
+	Symmetry of left-hand eigenvector: B1
+	Initial overlap of initial guess <L|R> =    1.0000000000
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0         1.000000000000000    7.604e-08
+	   1         0.968315737861223    5.242e-02
+	   2         0.975526355096094    1.790e-02
+	   3         0.975918603389024    2.642e-03
+	   4         0.976451976992654    1.728e-03
+	   5         0.976810050082790    8.423e-04
+	   6         0.977000629657145    4.458e-04
+	   7         0.977064322260146    1.638e-04
+	   8         0.977074875799531    6.025e-05
+	   9         0.977077134747399    2.009e-05
+	  10         0.977078139703894    8.720e-06
+	  11         0.977077637917060    3.570e-06
+	  12         0.977078077710236    1.470e-06
+	  13         0.977077904706806    6.188e-07
+	  14         0.977077965540995    2.103e-07
+	  15         0.977077958316038    8.841e-08
+
+	Initial  <L|R>  =        0.9759674392
+	Normalizing L...
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9325999818
+	L2 * R2 =        0.0674000182
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =    1.001137864899250
+
+	Largest LIA Amplitudes:
+	          2  20        -0.6084966037
+	          2  22        -0.2578495989
+	          2  21         0.1144768179
+	          2  25        -0.0872999896
+	          2  24         0.0429402083
+	          2  23         0.0344090634
+	          2   0        -0.0324141043
+	          2   0        -0.0217866636
+	          2  26        -0.0128481462
+	          2  29        -0.0083641930
+
+	Largest LIjAb Amplitudes:
+	  2   2   0  23         0.0533205850
+	  2   2  23   0         0.0533205850
+	  2   2   0  20         0.0501991291
+	  2   2  20   0         0.0501991291
+	  2   3   0  30         0.0447834324
+	  3   2  30   0         0.0447834324
+	  1   2   5   0         0.0386326710
+	  2   1   0   5         0.0386326710
+	  1   2   1   0        -0.0317047738
+	  2   1   0   1        -0.0317047738
+
+	Iterations converged.
+
+	Symmetry of left-hand state: B1
+	Symmetry of left-hand eigenvector: B1
+	Initial overlap of initial guess <L|R> =    1.0000000000
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0         1.000000000000000    8.841e-08
+	   1         0.963914420183823    5.649e-02
+	   2         0.972439810755477    1.938e-02
+	   3         0.972720451583150    2.455e-03
+	   4         0.973099256341749    1.422e-03
+	   5         0.973296812438614    6.211e-04
+	   6         0.973390013695616    3.338e-04
+	   7         0.973432173116596    1.585e-04
+	   8         0.973442628250962    9.241e-05
+	   9         0.973450376935693    6.929e-05
+	  10         0.973458645192434    4.964e-05
+	  11         0.973462185834195    3.221e-05
+	  12         0.973466165441652    2.040e-05
+	  13         0.973465245223170    1.094e-05
+	  14         0.973466393940683    5.899e-06
+	  15         0.973465852251827    3.291e-06
+	  16         0.973466109740271    2.249e-06
+	  17         0.973466139990351    9.895e-07
+	  18         0.973466120757556    4.486e-07
+	  19         0.973466134972894    1.708e-07
+	  20         0.973466131513458    8.889e-08
+
+	Initial  <L|R>  =        0.9723315657
+	Normalizing L...
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9351764402
+	L2 * R2 =        0.0648235598
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =    1.001166850797517
+
+	Largest LIA Amplitudes:
+	          2  21         0.6477695972
+	          2  20         0.1246510502
+	          2  25        -0.1024773703
+	          2  24        -0.1000227370
+	          2  23         0.0773904833
+	          2   0         0.0256268894
+	          2  22         0.0181748978
+	          2  27        -0.0160998248
+	          2  26        -0.0159452286
+	          2  28         0.0143090593
+
+	Largest LIjAb Amplitudes:
+	  2   2   1  23        -0.0559021307
+	  2   2  23   1        -0.0559021307
+	  2   2   1  20        -0.0533637455
+	  2   2  20   1        -0.0533637455
+	  2   3   1  30        -0.0446245785
+	  3   2  30   1        -0.0446245785
+	  1   2   5   1        -0.0417085862
+	  2   1   1   5        -0.0417085862
+	  1   2   1   1         0.0377172706
+	  2   1   1   1         0.0377172706
+
+	Iterations converged.
+
+	Symmetry of left-hand state: B2
+	Symmetry of left-hand eigenvector: B2
+	Initial overlap of initial guess <L|R> =    1.0000000000
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0         1.000000000000000    8.889e-08
+	   1         0.961150804338915    6.007e-02
+	   2         0.971115306791046    2.387e-02
+	   3         0.971431531125539    2.403e-03
+	   4         0.971860163596384    1.739e-03
+	   5         0.972270648280195    9.994e-04
+	   6         0.972563576492597    6.059e-04
+	   7         0.972707740443349    2.770e-04
+	   8         0.972748781493953    1.158e-04
+	   9         0.972766219666394    5.718e-05
+	  10         0.972770551903369    3.182e-05
+	  11         0.972773245238760    2.036e-05
+	  12         0.972774649861988    9.439e-06
+	  13         0.972774627189992    3.715e-06
+	  14         0.972774895431240    1.705e-06
+	  15         0.972774973449992    1.220e-06
+	  16         0.972775157437298    7.947e-07
+	  17         0.972775210071906    3.579e-07
+	  18         0.972775217433847    1.507e-07
+	  19         0.972775206145212    7.717e-08
+
+	Initial  <L|R>  =        0.9717459090
+	Normalizing L...
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9340214375
+	L2 * R2 =        0.0659785625
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =    1.001059224579238
+
+	Largest LIA Amplitudes:
+	          1   0        -0.6015289740
+	          1   1         0.2561684489
+	          1   2        -0.1564800279
+	          1   4        -0.0881956149
+	          2  20        -0.0415526662
+	          1   6        -0.0230552801
+	          0   0         0.0189400742
+	          2  21        -0.0110863856
+	          1   8         0.0106188933
+	          1   7         0.0095202835
+
+	Largest LIjAb Amplitudes:
+	  1   2  26  23         0.0443479796
+	  2   1  23  26         0.0443479796
+	  1   1   5  26         0.0440100679
+	  1   1  26   5         0.0440100679
+	  1   3  26  30         0.0433584351
+	  3   1  30  26         0.0433584351
+	  1   2  26  20         0.0407597574
+	  2   1  20  26         0.0407597574
+	  1   1   1  26        -0.0383750499
+	  1   1  26   1        -0.0383750499
+
+	Iterations converged.
+
+	Symmetry of left-hand state: B2
+	Symmetry of left-hand eigenvector: B2
+	Initial overlap of initial guess <L|R> =    1.0000000000
+	Checking overlap of initial guess <L|R> =    1.0000000000
+
+	          Solving Lambda Equations
+	          ------------------------
+	Iter     PseudoEnergy or Norm         RMS  
+	----     ---------------------     --------
+	   0         1.000000000000000    7.717e-08
+	   1         0.965071062731158    5.745e-02
+	   2         0.972433879232179    1.697e-02
+	   3         0.972567938079070    2.413e-03
+	   4         0.972826677284826    1.418e-03
+	   5         0.972961538515954    9.160e-04
+	   6         0.973015553581837    8.001e-04
+	   7         0.973075994548214    7.274e-04
+	   8         0.973163983269434    6.161e-04
+	   9         0.973234404331985    4.253e-04
+	  10         0.973283618487427    3.254e-04
+	  11         0.973324869766593    2.895e-04
+	  12         0.973380916298000    2.535e-04
+	  13         0.973452935106059    2.010e-04
+	  14         0.973514438156447    1.381e-04
+	  15         0.973535931963680    9.487e-05
+	  16         0.973549536624353    6.028e-05
+	  17         0.973552119099892    4.596e-05
+	  18         0.973553589138629    2.972e-05
+	  19         0.973553952420974    2.217e-05
+	  20         0.973556283158020    1.651e-05
+	  21         0.973557571768886    1.007e-05
+	  22         0.973558263509284    6.214e-06
+	  23         0.973559024863057    5.105e-06
+	  24         0.973560107209768    4.512e-06
+	  25         0.973561158311534    3.683e-06
+	  26         0.973562401257925    3.091e-06
+	  27         0.973563739020441    2.651e-06
+	  28         0.973564854026371    1.777e-06
+	  29         0.973564985800316    1.069e-06
+	  30         0.973565033868394    7.037e-07
+	  31         0.973565055306001    4.276e-07
+	  32         0.973565049695875    1.819e-07
+	  33         0.973565050829059    6.046e-08
+
+	Initial  <L|R>  =        0.9716996088
+	Normalizing L...
+	L0 * R0 =        0.0000000000
+	L1 * R1 =        0.9283563580
+	L2 * R2 =        0.0716436420
+	 <L|R>  =        1.0000000000
+	Pseudoenergy or Norm of normalized L =    1.001919772367513
+
+	Largest LIA Amplitudes:
+	          2  20        -0.6524804639
+	          1   2        -0.1171540054
+	          1   0         0.0865899440
+	          3  26        -0.0619134586
+	          2  21        -0.0503089484
+	          3  28        -0.0453508061
+	          2  22         0.0378187741
+	          1   4        -0.0350505595
+	          1   5        -0.0329522908
+	          3  31        -0.0148482574
+
+	Largest LIjAb Amplitudes:
+	  2   2  16  23         0.0628420790
+	  2   2  23  16         0.0628420790
+	  2   2  16  20         0.0579627498
+	  2   2  20  16         0.0579627498
+	  2   3  16  30         0.0489110134
+	  3   2  30  16         0.0489110134
+	  1   2   5  16         0.0416446410
+	  2   1  16   5         0.0416446410
+	  2   2  16  22         0.0364156796
+	  2   2  22  16         0.0364156796
+
+	Iterations converged.
+
+	<L|R> overlap matrix with ROHF quantities (-99 => 0 by symmetry)
+
+                 1            2            3            4            5            6            7            8            9
+
+    1    1.0000000   -0.0000000    0.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    2    0.0000000    1.0000000    0.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    3    0.0000000    0.0000000    1.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    4  -99.0000000  -99.0000000  -99.0000000    1.0000000    0.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    5  -99.0000000  -99.0000000  -99.0000000    0.0000000    1.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    6  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000    1.0000000    0.0000000  -99.0000000  -99.0000000
+    7  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000   -0.0000000    1.0000000  -99.0000000  -99.0000000
+    8  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000    1.0000000   -0.0000000
+    9  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000   -0.0000000    1.0000000
+
+
+	<L|R> overlap matrix with RHF quantities (-99 => 0 by symmetry)
+
+                 1            2            3            4            5            6            7            8            9
+
+    1    1.0000000    0.0000000    0.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    2    0.0000000    1.0000000    0.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    3    0.0000000   -0.0000000    1.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    4  -99.0000000  -99.0000000  -99.0000000    1.0000000    0.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    5  -99.0000000  -99.0000000  -99.0000000    0.0000000    1.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000
+    6  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000    1.0000000   -0.0000000  -99.0000000  -99.0000000
+    7  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000   -0.0000000    1.0000000  -99.0000000  -99.0000000
+    8  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000    1.0000000    0.0000000
+    9  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000  -99.0000000    0.0000000    1.0000000
+
+
+
+	Projections for excited state, irrep A1, root 0:
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0000170243
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9392786530
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0607043227
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0606872984
+
+	Projections for excited state, irrep A1, root 1:
+	<0|Le^(-T)|0><0|Re^T|0>  =    0.0012043884
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9379823492
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0608132624
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0596088741
+
+	Projections for excited state, irrep A1, root 0:
+	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9391125362
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0608874638
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0608874638
+
+	Projections for excited state, irrep A1, root 1:
+	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9386288696
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0613711304
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0613711304
+
+	Projections for excited state, irrep A1, root 0:
+	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9382319761
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0617680239
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0617680239
+
+	Projections for excited state, irrep A1, root 1:
+	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9406978983
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0593021017
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0593021017
+
+	Projections for excited state, irrep A1, root 0:
+	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9405049163
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0594950837
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0594950837
+
+	Projections for excited state, irrep A1, root 1:
+	<0|Le^(-T)|0><0|Re^T|0>  =   -0.0000000000
+	<0|Le^(-T)|S><S|Re^T|0>  =    0.9346385729
+	<0|Le^(-T)|D><D|Re^T|0>  =    0.0653614271
+	Sum of above             =    1.0000000000
+	Approx. excitation level =    1.0653614271
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:50 2012
+Module time:
+	user time   =       2.03 seconds =       0.03 minutes
+	system time =       1.29 seconds =       0.02 minutes
+	total time  =          4 seconds =       0.07 minutes
+Total time:
+	user time   =       5.17 seconds =       0.09 minutes
+	system time =       2.73 seconds =       0.05 minutes
+	total time  =          8 seconds =       0.13 minutes
+
+*** tstart() called on arrakis-2.local
+*** at Sun Apr  1 23:18:50 2012
+
+
+			**************************
+			*                        *
+			*        CCDENSITY       *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function    = EOM_CCSD
+	Reference wfn    =   RHF
+	Dertype          = 0
+	Tolerance        = 1.0e-14
+	Cache Level      = 2
+	AO Basis         = No
+	OPDM Only        = Yes
+	Relax OPDM       = No
+	Compute Xi       = No
+	Use Zeta         = No
+	Xi connected     = No
+
+	Nuclear Rep. energy (chkpt)   =    9.196933678131732
+	SCF energy          (chkpt)   =  -76.052939646076453
+	Reference energy    (file100) =  -76.052939646076467
+	CCSD energy         (CC_INFO) =   -0.221651255227396
+	Total CCSD energy   (CC_INFO) =  -76.274590901303867
+	Number of States = 9
+
+	Ground?  State     EOM Energy       R0
+	  Yes     0 A1    0.0000000000   1.00000000
+	   No     1 A1    0.3610022373  -0.00310175
+	   No     2 A1    0.4151101504  -0.02955683
+	   No     1 A2    0.3364570149   0.00000000
+	   No     2 A2    0.4315503914   0.00000000
+	   No     1 B1    0.2719408757   0.00000000
+	   No     2 B1    0.3877338666   0.00000000
+	   No     1 B2    0.4250956666   0.00000000
+	   No     2 B2    0.4985609483   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 1 A1
+	                              X    	       Y    	       Z
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.62325411
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.65637508
+	Dipole Strength          0.40908847 
+	Oscillator Strength      0.09845457 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 1 A1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.62325411
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.65637508
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 1 A1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.22987875
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.23301866
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 2 A1
+	                              X    	       Y    	       Z
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.09333246
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.10156376
+	Dipole Strength          0.00947919 
+	Oscillator Strength      0.00262327 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 2 A1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.09333246
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.10156376
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 2 A1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.04352226
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.04123809
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 1 A2
+	                              X    	       Y    	       Z
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.00000000
+	Dipole Strength          0.00000000 
+	Oscillator Strength      0.00000000 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 1 A2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.02212002
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.02475061
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 1 A2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	  0.00000000 	 -0.02212002
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	 -0.02475061
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 2 A2
+	                              X    	       Y    	       Z
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_e|0>               0.00000000 	  0.00000000 	  0.00000000
+	Dipole Strength          0.00000000 
+	Oscillator Strength      0.00000000 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 2 A2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.10263545
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.10055735
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 2 A2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	  0.00000000 	  0.10263545
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00000000 	  0.10055735
+	<n|mu_e|0>*              0.00000000 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 1 B1
+	                              X    	       Y    	       Z
+	<0|mu_e|n>               0.53249475 	  0.00000000 	  0.00000000
+	<n|mu_e|0>               0.56607699 	  0.00000000 	  0.00000000
+	Dipole Strength          0.30143302 
+	Oscillator Strength      0.05464797 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 1 B1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.53249475 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	 -0.04449690 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	 -0.04354199 	  0.00000000
+	<n|mu_e|0>*              0.56607699 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 1 B1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.15446305 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	 -0.04449690 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	 -0.04354199 	  0.00000000
+	<n|mu_e|0>*              0.15404627 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 2 B1
+	                              X    	       Y    	       Z
+	<0|mu_e|n>              -0.16673188 	  0.00000000 	  0.00000000
+	<n|mu_e|0>              -0.17511407 	  0.00000000 	  0.00000000
+	Dipole Strength          0.02919710 
+	Oscillator Strength      0.00754714 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 2 B1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>              -0.16673188 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	  0.01123960 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00949198 	  0.00000000
+	<n|mu_e|0>*             -0.17511407 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 2 B1
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>              -0.06071429 	  0.00000000 	  0.00000000
+	<n|mu_m|0>               0.00000000 	  0.01123960 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*              0.00000000 	  0.00949198 	  0.00000000
+	<n|mu_e|0>*             -0.06383228 	  0.00000000 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 1 B2
+	                              X    	       Y    	       Z
+	<0|mu_e|n>               0.00000000 	  0.24622660 	  0.00000000
+	<n|mu_e|0>               0.00000000 	  0.26018465 	  0.00000000
+	Dipole Strength          0.06406438 
+	Oscillator Strength      0.01815566 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 1 B2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.24622660 	  0.00000000
+	<n|mu_m|0>              -0.03024394 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*             -0.03107925 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	  0.26018465 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 1 B2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	  0.09819492 	  0.00000000
+	<n|mu_m|0>              -0.03024394 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*             -0.03107925 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	  0.10307171 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Oscillator Strength for 2 B2
+	                              X    	       Y    	       Z
+	<0|mu_e|n>               0.00000000 	 -0.43952126 	  0.00000000
+	<n|mu_e|0>               0.00000000 	 -0.43191711 	  0.00000000
+	Dipole Strength          0.18983675 
+	Oscillator Strength      0.06309679 
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+
+	Length-Gauge Rotational Strength for 2 B2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	 -0.43952126 	  0.00000000
+	<n|mu_m|0>              -0.02049209 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*             -0.01994602 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	 -0.43191711 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	Velocity-Gauge Rotational Strength for 2 B2
+	                              X    	       Y    	       Z
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_e|n>               0.00000000 	 -0.22271202 	  0.00000000
+	<n|mu_m|0>              -0.02049209 	  0.00000000 	  0.00000000
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for H read from /tmp/sadlej-pvtz.gbs
+  Basis set SADLEJ-PVTZ for O read from /tmp/sadlej-pvtz.gbs
+	<0|mu_m|n>*             -0.01994602 	  0.00000000 	  0.00000000
+	<n|mu_e|0>*              0.00000000 	 -0.20743529 	  0.00000000
+
+	Rotational Strength (au)                  0.00000000
+	Rotational Strength (10^-40 esu^2 cm^2)   0.00000000
+
+	                   Excitation Energy          OS       RS        RS
+	State   (eV)    (cm^-1)    (nm)     (au)              (l,au)   (v,au)
+	 1 A1   9.823   79230.8   126.2   0.361002   0.0985   0.0000   0.0000
+	 2 A1  11.296   91106.1   109.8   0.415110   0.0026   0.0000   0.0000
+	 1 A2   9.155   73843.8   135.4   0.336457   0.0000   0.0000   0.0000
+	 2 A2  11.743   94714.3   105.6   0.431550   0.0000   0.0000   0.0000
+	 1 B1   7.400   59684.1   167.5   0.271941   0.0546   0.0000   0.0000
+	 2 B1  10.551   85097.7   117.5   0.387734   0.0075   0.0000   0.0000
+	 1 B2  11.567   93297.7   107.2   0.425096   0.0182   0.0000   0.0000
+	 2 B2  13.567  109421.5    91.4   0.498561   0.0631   0.0000   0.0000
+
+
+*** tstop() called on arrakis-2.local at Sun Apr  1 23:18:51 2012
+Module time:
+	user time   =       0.86 seconds =       0.01 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       6.03 seconds =       0.10 minutes
+	system time =       2.91 seconds =       0.05 minutes
+	total time  =          9 seconds =       0.15 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

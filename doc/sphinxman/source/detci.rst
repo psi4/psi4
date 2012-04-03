@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:ci`:
 .. index:: CI
 
@@ -42,7 +44,7 @@ Coupled-cluster singles and doubles (CCSD) is another size-extensive
 alternative; it is only slightly more costly computationally than CISD,
 but it typically provides significantly more accurate results.
 
-The CI code in |PSIfour| is described in detail in Reference
+The CI code in |PSIfour| is described in detail in 
 [Sherrill:1999:CI]_.  For the reasons stated above, the CI code in
 |PSIfour| is not optimized for CISD computations.  Instead, emphasis
 has been placed on developing a very efficient program to handle more
@@ -54,8 +56,8 @@ configuration interaction (RAS CI) wavefunctions as described by Olsen,
 Roos, Jorgensen, and Aa. Jensen [Olsen:1988]_.  Excitation-class
 selected multi-reference CI wavefunctions, such as second-order CI,
 can be formulated as RAS CI's.  A RAS CI selects determinants for the
-model space as those which have no more than $n$ holes in the lowest set
-of orbitals (called RAS I) and no more than $m$ electrons in the highest
+model space as those which have no more than :math:`n` holes in the lowest set
+of orbitals (called RAS I) and no more than :math:`m` electrons in the highest
 set of orbitals (called RAS III).  An intermediate set of orbitals, if
 present (RAS II), has no restrictions placed upon it.  All determinants
 satisfying these rules are included in the CI.
@@ -79,29 +81,29 @@ important keywords.  Additional information is available in the complete
 list of keywords for DETCI provided in Appendix :ref:`apdx:detci`.
 
 The division of the molecular orbitals into various subspaces such as
-RAS spaces, or frozen vs. active orbitals, etc., needs to be clear not
-only to \PSIdetci\ , but also at least to the transformation program
+RAS spaces, or frozen *vs.* active orbitals, *etc.*, needs to be clear not
+only to detci, but also at least to the transformation program
 (and in the case of MCSCF, to other programs as well).  Thus, orbital
-subspace keywords such as :term:`RAS1`,
-:term:`RAS2`, :term:`RAS3`, :term:`FROZEN_DOCC`, :term:`FROZEN_UOCC`,
-:term:`ACTIVE`, etc., should be set
+subspace keywords such as |detci__ras1|,
+|detci__ras2|, |detci__ras3|, |globals__frozen_docc|, |globals__frozen_uocc|,
+|detci__active|, etc., should be set
 in the global section of input so they may also be read by other modules.
 
 For single-reference CI computations, the easiest way to invoke a CI
 computation with DETCI is simply to call ``energy()``, ``optimize()``, etc., 
-with the common name for that CI wavefunction, like ``energy(cisd)`` 
+with the common name for that CI wavefunction, like ``energy('cisd')`` 
 for a CISD single-point energy.  The Python driver
 recognizes ``cisd``, ``cisdt``, and ``cisdtq``.  Higher order
 single-refernce CI wavefunctions, like those including singles through
 6-fold excitations, can be invoked using numbers, like ``ci6``.  A full
 CI can be specifed by ``fci``.  More complicated CI computations, like
 RASCI, can be performed by setting the appropriate keywords and calling the
-module generically like ``energy(detci)``.  The latter approach
+module generically like ``energy('detci')``.  The latter approach
 will also work for any of the previously-mentioned CI wavefunctions for
 which the driver has built-in shortcuts, so long as the relevant options
-(especially :term:`EX_LEVEL`) are set appropriately.  Some
+(especially |detci__ex_level|) are set appropriately.  Some
 examples of single-refence CI, RASCI, and full CI computations are provided
-in ``psi4/samples/``.
+in :source:`samples`.
 
 .. index:: CI; basic-keywords
 
@@ -124,7 +126,7 @@ Basic DETCI Keywords
 .. include:: autodir_options_c/detci__mpn.rst
 
 For larger computations, additional keywords may be required, as
-described in the DETCI sections of the Appendix :ref:`apdx:detci`.
+described in the DETCI section of the Appendix :ref:`apdx:detci`.
 
 .. index:: 
    pair: CI; arbitrary-order perturbation theory
@@ -133,7 +135,7 @@ Arbitrary Order Perturbation Theory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The DETCI module is capable of computing energies for arbitrary
-order M\ |o_slash| ller--Plesset perturbation theory (MPn, for closed-shell
+order M\ |o_slash|\ ller--Plesset perturbation theory (MPn, for closed-shell
 systems with an RHF reference) and for Z-averaged perturbation theory
 (ZAPTn, open-shell systems with an ROHF reference).  However, please
 note that these computations are essentially doing high-order CI (up to
@@ -141,20 +143,20 @@ full CI) computations to obtain these results, and hence they will only
 be possible for very small systems (generally a dozen electrons or less).
 
 The simplest way to run high-order perturbation theory computations is to
-call, e.g., ``energy(mp10)`` to invoke an MP10 computation or
-``energy(zapt25)`` to invoke a ZAPT25 computation.  This will
+call, *e.g.*, ``energy('mp10')`` to invoke a MP10 computation or
+``energy('zapt25')`` to invoke a ZAPT25 computation.  This will
 automatically set several additional user options to their appropriate
 values.  The program uses the Wigner (2n+1) rule to obtain higher-order
 energies from lower-order wavefunctions.
 
 For the interested reader, the additional user options that are
 automatically set up by the calls above are as follows.  A call like
-``energy(mp10)`` sets :term:`MPN` to TRUE.
+``energy('mp10')`` sets |detci__mpn| to TRUE.
 The program uses the Wigner (2n+1) rule by default
-(:term:`MPN_WIGNER` = TRUE)
+(|detci__mpn_wigner| = TRUE)
 and figures out what order of wavefunction is
 necessary to reach the desired order in the energy.  The program then
-sets :term:`MAX_NUM_VECS` to the required order in the
+sets |detci__max_num_vecs| to the required order in the
 wavefunction.
 By default, the requested n-th order energy is saved as the current
 energy to the process environment.   ZAPTN works essentially the same
@@ -167,8 +169,8 @@ Arbitrary Order Coupled-Cluster Theory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *This DETCI-based version of this feature is not yet released.  However,
-the current version of the code does include an interface to 
-Kallay's MRCC code.*
+the current version of the code does include an interface to*
+:ref:`Kallay's MRCC <sec:mrcc>` *code.*
 
 The DETCI module is also capable of computing arbitrary-order
 coupled-cluster energies, using an approach similar to that of Hirata
@@ -179,17 +181,17 @@ for doing this in DETCI is inefficient compared to optimized
 lower-order coupled-cluster codes and should not be used for CCSD,
 where the CCENERGY module is much more efficient.  For higher-order
 CC (like CCSDT and beyond), the code is also not as efficient as the
-MRCC code by K{\'a}llay, to which |PSIfour| can interface (see Section
+MRCC code by K\ |a_acute|\ llay, to which |PSIfour| can interface (see Section
 :ref:`sec:mrcc`); however, it may allow certain truncations of the model
 space that might not be available presently in MRCC.  For very small
 systems, the code can be useful for testing of, for example, CCSDTQ or
 its active-space CCSDtq analog [Piecuch:1999:6103]_.
 
 To perform arbitrary-order coupled-cluster, set the DETCI
-option :term:`CC` to TRUE, and set
-:term:`CC_EX_LEVEL` (note: not :term:`EX_LEVEL`)
+option |detci__cc| to TRUE, and set
+|detci__cc_ex_level| (note: not |detci__ex_level|)
 to the desired coupled-cluster excitation level, and invoke 
-``energy(detci)``.  Various other DETCI options have a similar
+``energy('detci')``.  Various other DETCI options have a similar
 option for coupled-cluster, usually named beginning with CC.  The full
 list of options is given in Appendix :ref:`apdx:detci`.
 

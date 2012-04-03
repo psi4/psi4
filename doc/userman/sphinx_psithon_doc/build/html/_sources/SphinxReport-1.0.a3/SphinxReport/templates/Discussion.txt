@@ -1,5 +1,0 @@
-.. _Discussion:
-
-============
- Discussion
-============

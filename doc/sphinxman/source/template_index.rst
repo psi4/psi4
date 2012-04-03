@@ -16,10 +16,11 @@
 .. #####  HTML-PROG STOP
    introduction
    tutorial
-   methods
+   external
    psithoninput
-   psithonfunc
    basissets
+   methods
+   psithonfunc
    interfacing
    customizing
 .. #####  LATEX-USER STOP
@@ -28,6 +29,7 @@
 .. #####  HTML-PROG START
    contributing
    programming
+   autodoc_available_plugins
    autodoc_driver
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP
@@ -39,6 +41,7 @@
    appendices
 
 * Indices
+
  - :ref:`genindex`
  - :ref:`modindex`
  - :ref:`search`

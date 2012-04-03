@@ -17,6 +17,7 @@ from molutil import *
 from text import *
 from collections import defaultdict
 from procutil import *
+# never import aliases into this file
 
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.
@@ -433,8 +434,11 @@ def cp(name, **kwargs):
 
     :PSI variables:
 
-    .. envvar:: CP-CORRECTED 2-BODY INTERACTION ENERGY
-        UNCP-CORRECTED 2-BODY INTERACTION ENERGY
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CP-CORRECTED 2-BODY INTERACTION ENERGY <CP-CORRECTED2-BODYINTERACTIONENERGY>`
+       * :psivar:`UNCP-CORRECTED 2-BODY INTERACTION ENERGY <UNCP-CORRECTED2-BODYINTERACTIONENERGY>`
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -635,9 +639,12 @@ def database(name, db_name, **kwargs):
 
     :PSI variables:
 
-    .. envvar:: db_name DATABASE MEAN SIGNED DEVIATION
-        db_name DATABASE MEAN ABSOLUTE DEVIATION
-        db_name DATABASE ROOT-MEAN-SQUARE DEVIATION
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`db_name DATABASE MEAN SIGNED DEVIATION <db_nameDATABASEMEANSIGNEDDEVIATION>`
+       * :psivar:`db_name DATABASE MEAN ABSOLUTE DEVIATION <db_nameDATABASEMEANABSOLUTEDEVIATION>`
+       * :psivar:`db_name DATABASE ROOT-MEAN-SQUARE DEVIATION <db_nameDATABASEROOT-MEAN-SQUARESIGNEDDEVIATION>`
 
     .. note:: It is very easy to make a database from a collection of xyz files
         using the script :source:`lib/scripts/ixyz2database.pl`.
@@ -693,7 +700,7 @@ def database(name, db_name, **kwargs):
 
         Indicates whether correction for deformation energy is
         employed in computing interaction energies.  Option available
-        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes 
+        (See :ref:`sec:availableDatabases`) only for databases of bimolecular complexes
         with non-frozen monomers, e.g., HBC6.
 
     :type symm: :ref:`boolean <op_py_boolean>`
@@ -1323,16 +1330,6 @@ def database(name, db_name, **kwargs):
     return finalenergy
 
 
-def drop_duplicates(seq):
-    """Function that given an array *seq*, returns an array without any duplicate
-    entries. There is no guarantee of which duplicate entry is dropped.
-
-    """
-    noDupes = []
-    [noDupes.append(i) for i in seq if not noDupes.count(i)]
-    return noDupes
-
-
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
     """Function that prints the header for the changable-width results tables in db().
     *tbl_maxrgt* is the number of reagent columns the table must plan for. *tbl_delimit*
@@ -1384,12 +1381,15 @@ def complete_basis_set(name, **kwargs):
 
     :PSI variables:
 
-    .. envvar:: CBS TOTAL ENERGY
-        CBS REFERENCE ENERGY
-        CBS CORRELATION ENERGY
-        CURRENT ENERGY
-        CURRENT REFERENCE ENERGY
-        CURRENT CORRELATION ENERGY
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CBS TOTAL ENERGY <CBSTOTALENERGY>`
+       * :psivar:`CBS REFERENCE ENERGY <CBSREFERENCEENERGY>`
+       * :psivar:`CBS CORRELATION ENERGY <CBSCORRELATIONENERGY>`
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -1982,7 +1982,7 @@ def reconstitute_bracketed_basis(needarray):
 
 def highest_1(**largs):
     """Scheme for total or correlation energies with a single basis or the highest
-    zeta-level among an array of bases. Used by :py:func:`wrappers.complete_basis_set`.
+    zeta-level among an array of bases. Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^X
 
@@ -2029,7 +2029,7 @@ def highest_1(**largs):
 # Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for correlation energies with two adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{corl}^X = E_{corl}^{\infty} + \\beta X^{-3}
 
@@ -2077,7 +2077,7 @@ def corl_xtpl_helgaker_2(**largs):
 
 def scf_xtpl_helgaker_3(**largs):
     """Extrapolation scheme for reference energies with three adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}
 
@@ -2132,7 +2132,7 @@ def scf_xtpl_helgaker_3(**largs):
 
 def scf_xtpl_helgaker_2(**largs):
     """Extrapolation scheme for reference energies with two adjacent zeta-level bases.
-    Used by :py:func:`wrappers.complete_basis_set`.
+    Used by :py:func:`~wrappers.complete_basis_set`.
 
     .. math:: E_{total}^X = E_{total}^{\infty} + \\beta e^{-\\alpha X}, \\alpha = 1.63
 

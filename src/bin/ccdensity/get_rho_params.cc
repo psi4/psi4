@@ -35,11 +35,11 @@ void get_rho_params(Options& options)
       states_per_irrep = chkpt_rd_statespi();
     }
     else {
-      states_per_irrep = options.get_int_array("STATES_PER_IRREP");
+      states_per_irrep = options.get_int_array("ROOTS_PER_IRREP");
     }
     chkpt_close();
 
-    prop_all = 0;
+    prop_all = 1;
     prop_all = options.get_bool("PROP_ALL");
     /* can also be turned on by command-line (at least for now) */
     if (params.prop_all) prop_all = 1;
@@ -96,7 +96,7 @@ void get_rho_params(Options& options)
       params.nstates = 1;
       for(i=0; i<moinfo.nirreps; i++) {
 //        cnt = 0;
-//        ip_data("STATES_PER_IRREP","%d",&cnt, 1, i);
+//        ip_data("ROOTS_PER_IRREP","%d",&cnt, 1, i);
         params.nstates += states_per_irrep[i];
       }
       rho_params = (struct RHO_Params *) malloc(params.nstates * sizeof(struct RHO_Params));
@@ -109,7 +109,7 @@ void get_rho_params(Options& options)
 
       cnt = 0;
       for(i=0; i<moinfo.nirreps; i++) { /* loop over irrep of R */
-//        ip_data("STATES_PER_IRREP","%d",&j, 1, i);
+//        ip_data("ROOTS_PER_IRREP","%d",&j, 1, i);
 //        for (k=0; k<j; ++k) {
         for (k=0; k<states_per_irrep[i]; ++k) {
           ++cnt;
