@@ -62,15 +62,16 @@ namespace psi {
     namespace transqt    { PsiReturnType transqt(Options &);  }
     namespace transqt2   { PsiReturnType transqt2(Options &); }
     namespace ccsort     { PsiReturnType ccsort(Options&);    }
-    namespace lmp2       { PsiReturnType lmp2(Options&);      }
+//    namespace lmp2       { PsiReturnType lmp2(Options&);      }
     namespace cctriples  { PsiReturnType cctriples(Options&); }
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse { PsiReturnType ccresponse(Options&); }
+    namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
+    namespace stable     { PsiReturnType stability(Options&); }
+    namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
     namespace mrcc       {
         PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
@@ -140,6 +141,12 @@ void py_psi_prepare_options_for_module(std::string const & name)
     Process::environment.options.validate_options();
 }
 
+int py_psi_stability()
+{
+    py_psi_prepare_options_for_module("STABILITY");
+    return stable::stability(Process::environment.options);
+}
+
 int py_psi_optking()
 {
     py_psi_prepare_options_for_module("OPTKING");
@@ -185,7 +192,7 @@ double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
         return 0.0;
 }
 
-double py_psi_lmp2()
+/*double py_psi_lmp2()
 {
     py_psi_prepare_options_for_module("LMP2");
     if (lmp2::lmp2(Process::environment.options) == Success) {
@@ -194,6 +201,7 @@ double py_psi_lmp2()
     else
         return 0.0;
 }
+*/
 
 double py_psi_mcscf()
 {
@@ -1008,7 +1016,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("libfock", py_psi_libfock, "docstring");
     def("dfmp2", py_psi_dfmp2, "docstring");
     def("dfcc", py_psi_dfcc, "docstring");
-    def("lmp2", py_psi_lmp2, "docstring");
+//    def("lmp2", py_psi_lmp2, "docstring");
     def("mp2", py_psi_mp2, "docstring");
     def("mcscf", py_psi_mcscf, "docstring");
     def("mrcc_generate_input", py_psi_mrcc_generate_input, "docstring");
@@ -1024,6 +1032,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("fd_freq_1", py_psi_fd_freq_1, "docstring");
     def("fd_hessian_0", py_psi_fd_hessian_0, "docstring");
     def("sapt", py_psi_sapt, "docstring");
+    def("stability", py_psi_stability, "docstring");
     def("psimrcc", py_psi_psimrcc, "docstring");
     def("optking", py_psi_optking, "docstring");
     def("transqt", py_psi_transqt, "docstring");

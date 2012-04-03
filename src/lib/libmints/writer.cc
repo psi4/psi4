@@ -153,12 +153,9 @@ void MoldenWriter::write(const std::string &filename)
     };
 
     int nirrep = Ca_ao_mo->nirrep();
-    int *countpi = new int[nirrep];
-    int *zeropi = new int[nirrep];
-    int *ncartpi = new int[nirrep];
-
-    memset(countpi, 0, sizeof(int) * nirrep);
-    memset(zeropi, 0, sizeof(int) * nirrep);
+    Dimension countpi(nirrep);
+    Dimension zeropi(nirrep);
+    Dimension ncartpi(nirrep);
 
     for(int i = 0; i < basisset.nshell(); i++) {
         int am = basisset.shell(i).am();
@@ -187,9 +184,6 @@ void MoldenWriter::write(const std::string &filename)
         for (int h=0; h<nirrep; ++h)
             countpi[h] += ncart;
     }
-    delete[] countpi;
-    delete[] zeropi;
-    delete[] ncartpi;
 
     if (basisset.has_puream()) {
         // Tell Molden to use spherical.  5d implies 5d and 7f.

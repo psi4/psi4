@@ -88,6 +88,11 @@ Vector::~Vector()
     release();
 }
 
+SharedVector Vector::create(const std::string &name, const Dimension &dim)
+{
+    return SharedVector(new Vector(name, dim));
+}
+
 void Vector::init(int nirreps, int *dimpi)
 {
     dimpi_.init("", nirreps);

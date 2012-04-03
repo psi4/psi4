@@ -90,7 +90,7 @@ DCFTSolver::compute_energy()
                 update_lambda_from_residual();
                 if(lambda_convergence_ < diis_start_thresh_){
                     //Store the DIIS vectors
-                    dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb, J;
+                    dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
                     dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                                   ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
                     dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
