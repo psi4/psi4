@@ -17,6 +17,7 @@ from molutil import *
 from text import *
 from collections import defaultdict
 from procutil import *
+# never import aliases into this file
 
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.

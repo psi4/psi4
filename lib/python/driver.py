@@ -9,6 +9,7 @@ import input
 from proc import *
 from text import *
 from procutil import *
+# never import wrappers or aliases into this file
 
 
 # Procedure lookup tables
