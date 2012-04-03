@@ -29,6 +29,36 @@ protected:
     Meta_Type meta_type_;
     
     // => Specialized Parameters <= //
+
+    // PW92 Parameters
+    double _c0_;
+    double _two13_;
+    double _d2fz0_;
+
+    double _c0a_;
+    double _a1a_;
+    double _b1a_;
+    double _b2a_;
+    double _b3a_;
+    double _b4a_;
+
+    double _c0p_;
+    double _a1p_;
+    double _b1p_;
+    double _b2p_;
+    double _b3p_;
+    double _b4p_;
+   
+    double _c0f_;
+    double _a1f_;
+    double _b1f_;
+    double _b2f_;
+    double _b3f_;
+    double _b4f_;
+
+    void G1(double r, double* G, double* Gr);
+    void G2(double r, double* G, double* Gr);
+    void G3(double r, double* G, double* Gr);
    
     // B97
     double _B97_ss_gamma_;
