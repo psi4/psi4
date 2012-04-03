@@ -114,8 +114,8 @@ IntegralTransform::presort_so_tei()
     bucketOffset[0] = init_int_array(nirreps_);
     int **bucketRowDim = (int **) malloc(sizeof(int *));
     bucketRowDim[0] = init_int_array(nirreps_);
-    int **bucketSize = (int **) malloc(sizeof(int *));
-    bucketSize[0] = init_int_array(nirreps_);
+    long int **bucketSize = (long int **) malloc(sizeof(long int *));
+    bucketSize[0] = init_long_int_array(nirreps_);
 
     /* Figure out how many passes we need and where each p,q goes */
     int nBuckets = 1;
@@ -142,9 +142,9 @@ IntegralTransform::presort_so_tei()
                 bucketRowDim[nBuckets-1] = init_int_array(nirreps_);
                 bucketRowDim[nBuckets-1][h] = 1;
 
-                bucketSize = (int **) realloc((void *) bucketSize,
-                                                nBuckets * sizeof(int *));
-                bucketSize[nBuckets-1] = init_int_array(nirreps_);
+                bucketSize = (long int **) realloc((void *) bucketSize,
+                                                nBuckets * sizeof(long int *));
+                bucketSize[nBuckets-1] = init_long_int_array(nirreps_);
                 bucketSize[nBuckets-1][h] = rowLength;
             }
             int p = I.params->roworb[h][row][0];

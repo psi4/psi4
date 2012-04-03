@@ -82,6 +82,7 @@ protected:
     void compute_lagrangian_OV();
     void compute_lagrangian_VO();
     void iterate_orbital_response();
+    void orbital_response_guess();
     void compute_orbital_response_intermediates();
     void update_orbital_response();
     double compute_response_coupling();

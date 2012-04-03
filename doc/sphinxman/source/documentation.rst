@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:documentation`:
 
 Documentation
@@ -55,12 +57,16 @@ the target audience. To this end, one can navigate to :source:`doc/sphinxman`
 and build the following targets.::
 
     >>> make html
+    >>> make html-user
+    >>> make html-prog
     >>> make latexpdf-user 
     >>> make latexpdf-prog
 
 This will build the following files, respectively. ::
 
     build/html/index.html
+    build/html-user/index.html
+    build/html-prog/index.html
     build/latex-prog/psi4_userman.pdf
     build/latex-prog/psi4_progman.pdf
     
@@ -73,11 +79,16 @@ this covers:
 * Basis Sets: \*.gbs files in :source:`lib/basis`
 * C++ Keywords: :source:`src/bin/psi4/read_options.cc` 
 * Sample Inputs: input.dat files in :source:`samples`
+* PSI Variables: ``Process::environment.globals`` lines and comments in the C++ code
+* Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories.
 
-Running ``make clean`` will clear out all auto-generated files.
-Running ``make distclean`` additionally clears out the built documentation.
-Run one of these before check-in to avoid adding non-source files
-to the repository.
+Running ``make clean`` will clear out all auto-generated files.  Running
+``make distclean`` additionally clears out the built documentation.  Run
+one of these before check-in to avoid adding non-source files to the
+repository. Building all the documentation takes about five minutes.  For
+editing and rebuilding (without changing read_options.cc), this can be
+shortened by commenting out the ``document_*`` script lines in target
+``index.rst`` of the :source:`doc/sphinxman/Makefile`.
 
 reStructuredText
 ^^^^^^^^^^^^^^^^
@@ -92,7 +103,7 @@ few resources on Sphinx formatting.
 * `Another reStructuredText <http://people.ee.ethz.ch/~creller/web/tricks/reST.html>`_
 * `A third reStructuredText and Sphinx <http://openalea.gforge.inria.fr/doc/openalea/doc/_build/html/source/sphinx/rest_syntax.html>`_
 * `LaTeX that Sphinx can handle <ftp://ftp.ams.org/ams/doc/amsmath/short-math-guide.pdf>`_
-* `Sphinx <http://sphinx.pocoo.org/contents.html>`_
+* `Sphinx Docs <http://sphinx.pocoo.org/contents.html>`_
 
 Math in the Codebase
 ^^^^^^^^^^^^^^^^^^^^

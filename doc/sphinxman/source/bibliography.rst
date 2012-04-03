@@ -43,3 +43,34 @@ Bibliography
 
 .. [Olsen:2000:7140]
 
+.. [Peng:1996:49]
+   Peng, Ayala, Schlegel, and Frisch,
+   *J. Comput. Chem.* **17**, 49 (1996). 
+
+.. [Bakken:2002:9160]
+   Bakken and Helgaker,
+   *J. Chem. Phys.*, **117**, 9160 (2002).
+
+.. [Schlegel:1984:333]
+   Schlegel,
+   *Theor. Chim. Acta*, **66**, 333 (1984).
+
+.. [Fischer:1992:9770]
+   Fischer and Almlof,
+   *J. Phys. Chem.*, **96**, 9770 (1992).
+
+.. [Schlegel:1987:AIMQC]
+   Schlegel,
+   *Ab Initio Methods in Quantum Chemistry*, (1987).
+
+.. [Bofill:1994:1]
+   Bofill,
+   *J. Comp. Chem.*, **15**, 1-11 (1994).
+
+.. [Piecuch:1999:6103]
+
+.. [Handy:1980]
+
+.. [Olsen:1988]
+
+

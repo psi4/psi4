@@ -14,9 +14,8 @@ molecule h2o2 {
 set {
   basis "cc-pVDZ"
   freeze_core true
-  property rotation
   gauge both
   omega [589, 355, nm]
 }
 
-response('cc2')
+property('cc2',properties=['rotation'])

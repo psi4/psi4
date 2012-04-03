@@ -169,8 +169,7 @@ void CIM::SECIM(){
       }
   }
   // threshold for environmental orbitals
-  thresh1 = options_.get_double("THRESH1");
-  //thresh1 = sqrt(thresh1);
+  thresh1 = options_.get_double("CIM_SE_TOLERANCE");
   for (int i=0; i<natom; i++){
       if (skip[i]) continue;
       for (int j=0; j<ndoccact; j++){

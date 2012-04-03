@@ -1,11 +1,13 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:sowreap`:
 
 Embarrassing Parallelism
 ========================
 
 Many of the tasks automated by Python wrappers consist of a number of
-independent psi4 calculations and are thus suited to an embarrassingly
+independent |PSIfour| calculations and are thus suited to an embarrassingly
 parallel mode of operation. In Psithon, these have been dubbed sow/reap
 procedures and have the following general structure.
 
