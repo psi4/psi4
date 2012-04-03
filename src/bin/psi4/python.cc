@@ -67,10 +67,11 @@ namespace psi {
     namespace cchbar     { PsiReturnType cchbar(Options&);    }
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
-    namespace ccresponse { PsiReturnType ccresponse(Options&); }
+    namespace ccresponse { PsiReturnType ccresponse(Options&);}
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
+    namespace stable     { PsiReturnType stability(Options&); }
+    namespace omp2wave   { PsiReturnType omp2wave(Options&);  }
     namespace adc        { PsiReturnType adc(Options&);       }
     namespace mrcc       {
         PsiReturnType mrcc_generate_input(Options&, const boost::python::dict&);
@@ -138,6 +139,12 @@ void py_psi_prepare_options_for_module(std::string const & name)
     }
     // Now we've read in the defaults, make sure that user-specified options are recognized by the current module
     Process::environment.options.validate_options();
+}
+
+int py_psi_stability()
+{
+    py_psi_prepare_options_for_module("STABILITY");
+    return stable::stability(Process::environment.options);
 }
 
 int py_psi_optking()
@@ -1025,6 +1032,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("fd_freq_1", py_psi_fd_freq_1, "docstring");
     def("fd_hessian_0", py_psi_fd_hessian_0, "docstring");
     def("sapt", py_psi_sapt, "docstring");
+    def("stability", py_psi_stability, "docstring");
     def("psimrcc", py_psi_psimrcc, "docstring");
     def("optking", py_psi_optking, "docstring");
     def("transqt", py_psi_transqt, "docstring");
