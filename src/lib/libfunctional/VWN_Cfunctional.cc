@@ -10,7 +10,7 @@ namespace psi {
 VWN_CFunctional::VWN_CFunctional()
 {
     name_ = "VWN_C";
-    description_ = "    VWN5 Correlation Functional\n";
+    description_ = "    VWN5 LSDA Correlation Functional\n";
     citation_ = "    S.H. Vosko, L. Wilk, and M. Nusair, Can. J. Phys., 58, 1200-1211, 1980\n";
     alpha_ = 1.0;
     omega_ = 0.0;

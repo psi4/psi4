@@ -140,8 +140,8 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
 D1::D1(double s6) : Dispersion()
 {
     name_ = "-D1";
-    description_ = "Grimme's -D1 Dispersion Correction";
-    citation_ = "Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473";
+    description_ = "    Grimme's -D1 Dispersion Correction\n";
+    citation_ = "    Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473\n";
 
     d_ = 23.0;
     RvdW_ = RvdW_D1_;
@@ -909,8 +909,8 @@ SharedMatrix D1::compute_hessian(boost::shared_ptr<Molecule> mol)
 D2::D2(double s6) : Dispersion()
 {
     name_ = "-D2";
-    description_ = "Grimme's -D2 Dispersion Correction";
-    citation_ = "Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799";
+    description_ = "    Grimme's -D2 Dispersion Correction\n";
+    citation_ = "    Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799\n";
 
     d_ = 20.0;
     RvdW_ = RvdW_D2_;
