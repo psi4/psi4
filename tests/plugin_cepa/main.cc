@@ -1,12 +1,13 @@
 #include <libplugin/plugin.h>
 
 #include "cepa.h" 
+#include "../plugin_libcim/cim.h"
 
 INIT_PLUGIN
 
 // gpu ccsd class
 namespace psi{
-  void RunCoupledPair(Options &options);
+  void RunCoupledPair(Options &options,boost::shared_ptr<psi::CIM> wfn);
 };
 
 namespace psi{ namespace plugin_cepa{
@@ -59,7 +60,10 @@ read_options(std::string name, Options &options)
 extern "C" PsiReturnType
 plugin_cepa(Options &options)
 {  
-  RunCoupledPair(options);
+  boost::shared_ptr<psi::CIM> wfn(new CIM());
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  wfn ->copy(ref);
+  RunCoupledPair(options,wfn);
   return  Success;
 } // end plugin_cepa
 

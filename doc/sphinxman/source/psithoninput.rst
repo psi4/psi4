@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:psithonInput`:
 
 ==================================
@@ -16,7 +18,7 @@ samples subdirectory of the top-level |PSIfour| source directory, and should
 serve as useful examples.
 
 .. index:: physical constants
-.. _`sec:psirc`:
+.. _`sec:physicalConstants`:
 
 Physical Constants
 ==================
@@ -287,7 +289,7 @@ Symmetry
 
 For efficiency, |PSIfour| can utilize the largest Abelian subgroup of the full
 point group of the molecule.  Concomitantly a number of quantities, such as
-:term:`SOCC` and :term:`DOCC`, are arrays whose entries pertain to irreducible
+|globals__socc| and |globals__docc|, are arrays whose entries pertain to irreducible
 representations (irreps) of the molecular point group.  Ordering of irreps
 follows the convention used in Cotton's :title:`Chemical Applications of Group
 Theory`, as detailed in Table :ref:`Irreps <table:irrepOrdering>`.  We refer to this
@@ -319,7 +321,7 @@ convention as "Cotton Ordering" hereafter.
 
 For example, water (:math:`C_{2v}` symmetry) has 3 doubly occupied :math:`A_1`
 orbitals, as well as 1 each of :math:`B_1` and :math:`B_2` symmetry; the
-corresponding :term:`DOCC` array is therefore::
+corresponding |globals__docc| array is therefore::
 
     DOCC = [3, 0, 1, 1]
 
@@ -567,91 +569,6 @@ to |PSIfour|::
 One convenient way to override the |PSIfour| default memory is to place a memory
 command in the |psirc| file, as detailed in Sec. :ref:`sec:psirc`.
 
-.. index:: parallel operation, threading
-.. _`sec:threading`:
-
-Threading
-=========
-
-Most new modules in |PSIfour| are designed to run efficiently on SMP architectures
-via application of several thread models. The de facto standard for |PSIfour|
-involves using threaded BLAS/LAPACK (particularly Intel's excellent MKL package)
-for most tensor-like operations, OpenMP for more general operations, and Boost
-Threads for some special-case operations. Note: Using OpenMP alone is a really
-bad idea. The developers make little to no effort to explicitly parallelize
-operations which are already easily threaded by MKL or other threaded BLAS. Less
-than 20% of the threaded code in |PSIfour| uses OpenMP, the rest is handled by
-parallel DGEMM and other library routines. From this point forward, it is
-assumed that you have compiled PSI4 with OpenMP and MKL (Note that it is
-possible to use g++ or another compiler and yet still link against MKL).
-
-Control of threading in |PSIfour| can be accomplished at a variety of levels,
-ranging from global environment variables to direct control of thread count in
-the input file, to even directives specific to each model. This hierarchy is
-explained below. Note that each deeper level trumps all previous levels.
-
-.. rubric:: (1) OpenMP/MKL Environment Variables
-
-The easiest/least visible way to thread |PSIfour| is to set the standard OpenMP/MKL
-environment variables :envvar:`OMP_NUM_THREADS` and :envvar:`MKL_NUM_THREADS`. 
-For instance, in tcsh::
-
-    setenv OMP_NUM_THREADS 4
-    setenv MKL_NUM_THREADS 4
-
-|PSIfour| then detects these value via the API routines in ``<omp.h>`` and
-``<mkl.h>``, and runs all applicable code with 4 threads. These environment
-variables are typically defined in a ``.tcshrc`` or ``.bashrc``.
-
-.. rubric:: (2) The -n Command Line Flag
-
-To change the number of threads at runtime, the :option:`psi4 -n` flag may be used. An
-example is::
-
-    psi4 -i input.dat -o output.dat -n 4
-
-which will run on four threads.
-
-.. rubric:: (3) Setting Thread Numbers in an Input
-
-For more explicit control, the Process::environment class in |PSIfour| can
-override the number of threads set by environment variables. This functionality
-is accessed via the :py:func:`~util.set_num_threads` Psithon function, which controls
-both MKL and OpenMP thread numbers. The number of threads may be changed
-multiple times in a |PSIfour| input file. An example input for this feature is::
-
-    # A bit small-ish, but you get the idea
-    molecule h2o {
-    0 1
-    O
-    H 1 1.0
-    H 1 1.0 2 90.0
-    }
-    
-    set scf {
-    basis cc-pvdz
-    scf_type df
-    }
-
-    # Run from 1 to 4 threads, for instance, to record timings
-    for nthread in range(1,5):
-        set_num_threads(nthread)
-        energy('scf')
-
-.. rubric:: (4) Method-Specific Control
-
-Even more control is possible in certain circumstances. For instance, the
-threaded generation of AO density-fitted integrals involves a memory requirement
-proportional to the number of threads. This requirement may exceed the total
-memory of a small-memory node if all threads are involved in the generation of
-these integrals. For general DF algorithms, the user may specify::
-
-    set MODULE_NAME df_ints_num_threads n
-
-to explicitly control the number of threads used for integral formation. Setting
-this variable to 0 (the default) uses the number of threads specified by the
-:py:func:`~util.set_num_threads` Psithon method or the default environmental variables.
-
 .. _`sec:psiVariables`:
 
 Return Values and PSI Variables
@@ -754,7 +671,7 @@ with the ``set`` keyword.
 Tables of Results
 =================
 
-The results of computations can be compactly tabulated with the :py:func:`~text.Table()` Psithon
+The results of computations can be compactly tabulated with the :py:func:`~text.Table` Psithon
 function. For example, in the following potential energy surface scan for water ::
 
     molecule h2o {

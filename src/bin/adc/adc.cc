@@ -75,14 +75,14 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
     sem_max_  = options_.get_int("SEM_MAXITER");
     num_amps_ = options_.get_int("NUM_AMPS_PRINT");
 
-  if(options_["STATES_PER_IRREP"].size() > 0){
-        int i = options_["STATES_PER_IRREP"].size();
+  if(options_["ROOTS_PER_IRREP"].size() > 0){
+        int i = options_["ROOTS_PER_IRREP"].size();
         
         if(i != nirrep_){
             fprintf(outfile, "dim of states_per_irrep vector must be %d\n", nirrep_);
-            throw PsiException("adc input comparison error STATES_PER_IRREP and nirrep_", __FILE__, __LINE__);
+            throw PsiException("adc input comparison error ROOTS_PER_IRREP and nirrep_", __FILE__, __LINE__);
         }
-        rpi_ = options_.get_int_array("STATES_PER_IRREP");
+        rpi_ = options_.get_int_array("ROOTS_PER_IRREP");
     }
     else {
         rpi_ = new int [nirrep_];
@@ -123,7 +123,7 @@ ADC::ADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
         fprintf(outfile, "Debagging mode...\n");
         fprintf(outfile, "\tNMO   = %3d, NXS = %3d\n", nmo_, nxs_);
         fprintf(outfile, "\tNOPEN = %3d\n", nopen_);
-        fprintf(outfile, "\tSTATES_PER_IRREP = [");
+        fprintf(outfile, "\tROOTS_PER_IRREP = [");
         for(int i = 0;i < nirrep_;i++) fprintf(outfile, "%3d", rpi_[i]);
         fprintf(outfile, " ]\n");
     }
