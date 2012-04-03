@@ -38,6 +38,8 @@ public:
     void init_helper(boost::shared_ptr<Wavefunction> wavefunction = boost::shared_ptr<Wavefunction>());
     /// Constructor, just lines references up
     MintsHelper(Options&, int print = 1);
+    /// Constructor, uses a molecule and basis set
+    MintsHelper(boost::shared_ptr<Molecule>, boost::shared_ptr<BasisSet>);
     /// Constructor, uses globals
     MintsHelper();
     /// Constructor, using wavefunction

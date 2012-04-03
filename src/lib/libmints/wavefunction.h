@@ -2,9 +2,9 @@
 #define _psi_src_lib_libmints_wavefunction_h
 
 #include <stddef.h>
+#include <vector>
 
 #include "typedefs.h"
-#include "dimension.h"
 #include <libparallel/parallel.h>
 
 #define MAX_IOFF 30000
@@ -19,14 +19,17 @@ extern double bc[MAX_BC][MAX_BC];
 #define MAX_FAC 100
 extern double fac[MAX_FAC];
 
-#define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
-#define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
+#if !defined( INDEX2 )
+#   define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
+#endif
 
-#include <vector>
+#if !defined( INDEX4 )
+#   define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
+#endif
 
-#ifndef PyObject_HEAD
-struct _object;
-typedef _object PyObject;
+#if !defined( PyObject_HEAD )
+    struct _object;
+    typedef _object PyObject;
 #endif
 
 namespace psi {
@@ -41,6 +44,7 @@ class Options;
 class SOBasisSet;
 class PSIO;
 class Chkpt;
+class OrbitalSpace;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -200,8 +204,8 @@ public:
     void init_with_chkpt();
 
     /// Is this a restricted wavefunction?
-    virtual bool same_a_b_orbs() const = 0;
-    virtual bool same_a_b_dens() const = 0;
+    virtual bool same_a_b_orbs() const { return true;  }
+    virtual bool same_a_b_dens() const { return false; }
 
     /// Returns the molecule object that pertains to this wavefunction.
     boost::shared_ptr<Molecule> molecule() const;
@@ -307,6 +311,27 @@ public:
     * @return the matrix in Pitzer order in the desired basis
     **/
     SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+     * @brief Creates an OrbitalSpace object containing information about the request alpha orbital space.
+     * @param id unique name for the orbital space
+     * @param basis the symmetry basis to use
+     *  AO, SO
+     * @param subset the subset of orbitals to return
+     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+     * @return
+     */
+    OrbitalSpace alpha_orbital_space(const std::string& id, const std::string& basis = "SO", const std::string& subset = "ALL");
+    /**
+     * @brief Creates an OrbitalSpace object containing information about the request beta orbital space.
+     * @param id unique name for the orbital space
+     * @param basis the symmetry basis to use
+     *  AO, SO
+     * @param subset the subset of orbitals to return
+     *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+     * @return
+     */
+    OrbitalSpace beta_orbital_space(const std::string& id, const std::string& basis = "SO", const std::string& subset = "ALL");
 
     /**
     * Return the Da matrix in the desired basis

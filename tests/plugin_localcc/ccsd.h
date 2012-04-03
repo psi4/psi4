@@ -22,6 +22,7 @@
 #define PSIF_R2    262
 #define PSIF_TEMP  263
 #define PSIF_T2    264
+#define PSIF_ABCI4 265 // for local triples
 
 // psi headers
 #include"psi4-dec.h"
@@ -167,7 +168,6 @@ class CoupledCluster{
       * the energy is evaluated after that step.
       */
     double CheckEnergy();
-    double CIMEnergy();
 
     /**
       * the N^6 CC diagrams.

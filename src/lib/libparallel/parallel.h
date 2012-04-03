@@ -206,8 +206,8 @@ namespace psi {
 
 
 #ifdef HAVE_MADNESS
-        virtual SharedLock get_spinlock() { };
-        virtual SharedMutex get_mutex() { };
+        virtual SharedLock get_spinlock() { return SharedLock(); }
+        virtual SharedMutex get_mutex() { return SharedMutex(); }
         virtual SharedMadWorld get_madworld() = 0;
 #endif
     };

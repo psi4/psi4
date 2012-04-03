@@ -962,7 +962,7 @@ timer_off("INIT GUESS");
           // Put this list in environment for testing - I don't like it much because it mixes all
           // the irreps together
           /*- strings so that variable-name psi variables get parsed in docs -*/
-          /*- Process::environment.globals["CC ROOT $N$ TOTAL ENERGY"] -*/
+          /*- Process::environment.globals["CC ROOT n TOTAL ENERGY"] -*/
 
           std::stringstream s;
           s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";

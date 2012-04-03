@@ -1,7 +1,7 @@
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
-response properties, and vibrational frequency calculations.
+properties, and vibrational frequency calculations.
 
 """
 import PsiMod
@@ -9,6 +9,7 @@ import input
 from proc import *
 from text import *
 from procutil import *
+# never import wrappers or aliases into this file
 
 
 # Procedure lookup tables
@@ -43,6 +44,9 @@ procedures = {
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,
+            'eom_ccsd'      : run_eom_cc,
+            'eom_cc2'       : run_eom_cc,
+            'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
@@ -59,7 +63,11 @@ procedures = {
             'tda'           : run_libfock,
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
-            'psimrcc_scf'  : run_psimrcc_scf
+            'psimrcc_scf'   : run_psimrcc_scf,
+            'b3lyp'         : run_dft,  # temporary
+            #'b3lyp-d1'      : run_dft,  # temporary
+            'b3lyp-d2'      : run_dft,  # temporary
+            'b3lyp-d'       : run_dft,  # temporary
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -67,16 +75,22 @@ procedures = {
             'ccsd'          : run_cc_gradient,
             'ccsd(t)'       : run_cc_gradient,
             'mp2'           : run_mp2_gradient,
-            'eom-ccsd'      : run_eom_cc_gradient
+            'eom-ccsd'      : run_eom_cc_gradient,
+            'dcft'          : run_dcft_gradient
             # Upon adding a method to this list, add it to the docstring in optimize() below
         },
         'hessian' : {
             # Upon adding a method to this list, add it to the docstring in frequency() below
         },
-        'response' : {
-            'cc2'  : run_cc_response,
-            'ccsd' : run_cc_response
-            # Upon adding a method to this list, add it to the docstring in response() below
+        'property' : {
+            'scf'  : run_scf_property,
+            'cc2'  : run_cc_property,
+            'ccsd' : run_cc_property,
+            'eom-cc2'  : run_cc_property,
+            'eom-ccsd' : run_cc_property,
+            'eom_cc2'  : run_cc_property,
+            'eom_ccsd' : run_cc_property
+            # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
 
@@ -87,14 +101,19 @@ def energy(name, **kwargs):
 
     :PSI variables:
 
-    .. envvar:: CURRENT ENERGY
-        CURRENT REFERENCE ENERGY
-        CURRENT CORRELATION ENERGY
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
+
+    .. _`table:energy_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
-    | scf                     | Hartree--Fock (HF) or density functional theory (DFT) :download:`manual <userman.pdf>`|
+    | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -144,9 +163,9 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccenergy                | **expert** full control over ccenergy module                                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mp *n*                  | *n* th-order Moller--Plesset perturbation theory                                      |
+    | mp\ *n*                 | *n*\ th-order Moller--Plesset perturbation theory                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | zapt *n*                | *n* th-order z-averaged perturbation theory (ZAPT)                                    |
+    | zapt\ *n*               | *n*\ th-order z-averaged perturbation theory (ZAPT)                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
     | cisd                    | configuration interaction (CI) singles and doubles (CISD)                             |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -154,7 +173,7 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | cisdtq                  | CI singles, doubles, triples, and quadruples (CISDTQ)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | ci *n*                  | *n* th-order CI                                                                       |
+    | ci\ *n*                 | *n*\ th-order CI                                                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
     | fci                     | full configuration interaction (FCI)                                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -181,6 +200,17 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------+
 
+    .. _`table:energy_dft`:
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                          |
+    +=========================+=======================================================================================+
+    | b3lyp                   | Becke 3-parameter exchange with Lee-Yang-Parr correlation functional (B3LYP)          |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | b3lyp-d                 | B3LYP with Grimme's -D2 dispersion correction                                         |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
+    .. _`table:energy_mrcc`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method in Kallay's MRCC program                                                 |
@@ -252,7 +282,12 @@ def energy(name, **kwargs):
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
-    :type bypass_scf: bool
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
+    :type bypass_scf: :ref:`boolean <op_py_boolean>`
     :param bypass_scf: ``'on'`` || |dl| ``'off'`` |dr|
 
         Indicates whether, for *name* values built atop of scf calculations,
@@ -538,8 +573,8 @@ def gradient(name, **kwargs):
         return energies[-1]
 
 
-def response(name, **kwargs):
-    """Function to compute linear response properties.
+def property(name, **kwargs):
+    """Function to compute various properties.
 
     :returns: (*float*) Total electronic energy in Hartrees.
 
@@ -552,9 +587,15 @@ def response(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
+    | scf                     | Self-consistent field method(s)                                                       |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cc2                     | 2nd-order approximate CCSD                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-ccsd                | equation-of-motion coupled cluster singles and doubles (EOM-CCSD)                     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     :type name: string
@@ -565,8 +606,8 @@ def response(name, **kwargs):
 
     :examples:
 
-    >>> # [1] CCSD-LR properties calculation
-    >>> response('ccsd')
+    >>> # [1] Multipole moment and response Property calculations
+    >>> property('ccsd')
 
     """
     lowername = name.lower()
@@ -580,10 +621,15 @@ def response(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
+
     try:
-        return procedures['response'][lowername](lowername, **kwargs)
+        return procedures['property'][lowername](lowername, **kwargs)
     except KeyError:
-        raise ValidationError('Response method %s not available.' % (lowername))
+        raise ValidationError('Property method %s not available.' % (lowername))
 
 
 def optimize(name, **kwargs):
@@ -594,7 +640,11 @@ def optimize(name, **kwargs):
     :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
 
     :PSI variables:
-    .. envvar:: CURRENT ENERGY
+
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
 
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
@@ -604,10 +654,14 @@ def optimize(name, **kwargs):
 
        - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
 
+    .. _`table:grad_gen`:
+
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
     | scf                     | Hartree--Fock (HF) or density functional theory (DFT)                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mp2                     | 2nd-order Moller-Plesset perturbation theory (MP2)                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -625,13 +679,13 @@ def optimize(name, **kwargs):
         to be applied to the database. May be any valid argument to
         :py:func:`driver.energy`.
 
-    :type func: function
+    :type func: :ref:`function <op_py_function>`
     :param func: |dl| ``gradient`` |dr| || ``energy`` || ``cbs``
 
         Indicates the type of calculation to be performed on the molecule.
         The default dertype accesses``'gradient'`` or ``'energy'``, while
         ``'cbs'`` performs a multistage finite difference calculation.
-        If a nested series of python functions is intended (see `Function Intercalls`_),
+        If a nested series of python functions is intended (see :ref:`sec:intercalls`),
         use keyword ``opt_func`` instead of ``func``.
 
     :type mode: string
@@ -644,11 +698,16 @@ def optimize(name, **kwargs):
         (``'sow'``/``'reap'``).  For the latter, run an initial job with
         ``'sow'`` and follow instructions in its output file.
 
-    :type dertype: dertype
+    :type dertype: :ref:`dertype <op_py_dertype>`
     :param dertype: ``'gradient'`` || ``'energy'``
 
         Indicates whether analytic (if available) or finite difference
         optimization is to be performed.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 
@@ -665,7 +724,7 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_option('FULL_HESS_EVERY')
+    full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
     n = 1
@@ -693,25 +752,29 @@ def optimize(name, **kwargs):
                 if(PsiMod.me() == 0):
                     shutil.copy(restartfile, get_psifile(1))
 
+        # print 'full_hess_every', full_hess_every
+        # print 'steps_since_last_hessian', steps_since_last_hessian
         # compute Hessian as requested; frequency wipes out gradient so stash it
-        if ((full_hess_every > -1) and (n == 0)) or (steps_since_last_hessian == full_hess_every):
+        if ((full_hess_every > -1) and (n == 1)) or (steps_since_last_hessian + 1 == full_hess_every):
             G = PsiMod.get_gradient()
             PsiMod.IOManager.shared_object().set_specific_retention(1, True)
             PsiMod.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(name, **kwargs)
+            frequencies(name, irrep=1, **kwargs) # only need symmetric ones
             steps_since_last_hessian = 0
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)
         else:
             PsiMod.set_global_option('CART_HESS_READ', False)
+            steps_since_last_hessian += 1
 
-        steps_since_last_hessian += 1
-
+        # print 'cart_hess_read', PsiMod.get_global_option('CART_HESS_READ')
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print 'Optimizer: Optimization complete!'
             PsiMod.get_active_molecule().print_in_input_format()
-            PsiMod.opt_clean()
+            # Check if user wants to see the intcos; if so, don't delete them.
+            if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
+                PsiMod.opt_clean()
             PsiMod.clean()
 
             # S/R: Clean up opt input file
@@ -815,9 +878,9 @@ def frequency(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - RAK, why are you adding OPTKING options as GLOBALS? And shouldn't they be Py-side not C-side options?
-
        - Make frequency look analogous to gradient, especially in matching derivative levels. Make dertype actually a dertype type.
+
+    .. _`table:freq_gen`:
 
     :type name: string
     :param name: ``'scf'`` || ``'df-mp2'`` || ``'ci5'`` || etc.
@@ -825,7 +888,7 @@ def frequency(name, **kwargs):
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
-    :type dertype: dertype
+    :type dertype: :ref:`dertype <op_py_dertype>`
     :param dertype: |dl| ``'hessian'`` |dr| || ``'gradient'`` || ``'energy'``
 
         Indicates whether analytic (if available- they're not), finite
@@ -835,10 +898,15 @@ def frequency(name, **kwargs):
     :type irrep: int or string
     :param irrep: |dl| ``-1`` |dr| || ``1`` || ``'b2'`` || ``'App'`` || etc.
 
-        Indicates which symmetry block (Cotton ordering) of vibrational
+        Indicates which symmetry block (:ref:`Cotton <table:irrepOrdering>` ordering) of vibrational
         frequencies to be computed. ``1``, ``'1'``, or ``'a1'`` represents
         :math:`a_1`, requesting only the totally symmetric modes.
         ``-1`` indicates a full frequency calculation.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
 
     :examples:
 

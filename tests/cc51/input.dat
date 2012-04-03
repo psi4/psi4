@@ -1,4 +1,4 @@
-#! EOM-CC3/cc-pVTZ on H$@@2$O
+#! EOM-CC3/cc-pVTZ on H2O
 
 memory 250 mb
 
@@ -12,9 +12,8 @@ molecule h2o {
 }
 
 set {
-  wfn eom_cc3
   basis "cc-pVTZ"
-  states_per_irrep [0, 0, 1, 0]
+  roots_per_irrep [0, 0, 1, 0]
 }
 
 energy('eom-cc3')

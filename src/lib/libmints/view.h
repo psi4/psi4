@@ -70,7 +70,7 @@ public:
      *  @param rows How many rows per irrep
      *  @param cols How many cols per irrep
      */
-    View(SharedMatrix matrix, int *rows, int *cols);
+    View(SharedMatrix matrix, const Dimension& rows, const Dimension& cols);
     /** Constructor, user provides a Matrix to view and desired row count
      *  @param matrix Matrix we want to view, View obtains nirrep from it
      *  @param rows How many rows per irrep
@@ -78,7 +78,9 @@ public:
      *  @param row_offsets Row offset per irrep
      *  @param col_offsets Column offset per irrep
      */
-    View(SharedMatrix matrix, int *rows, int *cols, int *row_offsets, int *col_offsets);
+    View(SharedMatrix matrix,
+         const Dimension& rows, const Dimension& cols,
+         const Dimension& row_offsets, const Dimension& col_offsets);
 
     /** Operator () overload. Creates a new Matrix that only contains the view.
      *  @return New Matrix containing the view.

@@ -112,6 +112,7 @@ public:
             }
         }
         dims_ = dims;
+        ndims_ = dims_.size();
 
         // Compute the number of elements (size) in the process group
         unsigned int size = 1;

@@ -1,4 +1,4 @@
-#! Mk-MRCCSD single point. $^3 \Sigma ^-$O$@@2$ state described using
+#! Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using
 #! the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 memory 250 mb
@@ -10,7 +10,9 @@ refmkccsd = -150.108419685404  #TEST
 molecule o2 {
   0 3
   O
-  O 1 1.19865141
+  O 1 2.265122720724
+
+  units au
 }
 
 set {

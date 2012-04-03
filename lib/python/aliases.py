@@ -24,9 +24,9 @@ from procutil import *
 
 def sherrillgroup_gold_standard(name='mp2', **kwargs):
     """Function to call the quantum chemical method known as 'Gold Standard'
-    in the Sherrill group. Uses :py:func:`wrappers.complete_basis_set` to evaluateo
+    in the Sherrill group. Uses :py:func:`~wrappers.complete_basis_set` to evaluateo
     the following expression. Two-point extrapolation of the correlation energy
-    performed according to :py:func:`wrappers.corl_xtpl_helgaker_2`.
+    performed according to :py:func:`~wrappers.corl_xtpl_helgaker_2`.
 
     .. math:: E_{total}^{\\text{Au\_std}} = E_{total,\; \\text{SCF}}^{\\text{aug-cc-pVQZ}} \; + E_{corl,\; \\text{MP2}}^{\\text{aug-cc-pV[TQ]Z}} \; + \delta_{\\text{MP2}}^{\\text{CCSD(T)}}\\big\\vert_{\\text{aug-cc-pVTZ}}
 
@@ -66,6 +66,16 @@ def sherrillgroup_gold_standard(name='mp2', **kwargs):
 def run_mp2_5(name, **kwargs):
     """Function that computes MP2.5 energy from results of a DETCI
     MP3 calculation.
+
+    .. math:: E_{total}^{\\text{MP2.5}} = E_{total,\; \\text{SCF}} \; + E_{corl,\; \\text{MP2}} + E_{corl, \; \\text{MP3}}
+
+    :PSI variables: 
+
+    .. hlist:: 
+       :columns: 1 
+     
+       * :psivar:`MP2.5 TOTAL ENERGY <MP2.5TOTALENERGY>` 
+       * :psivar:`MP2.5 CORRELATION ENERGY <MP2.5CORRELATIONENERGY>` 
 
     >>> energy('mp2.5')
 
@@ -109,30 +119,10 @@ def run_mp2_5(name, **kwargs):
     return e_mp25
 
 
-def run_plugin_ccsd_serial(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls so that
-    Eugene DePrince's ccsd_serial plugin can be called via :py:func:`driver.energy`.
-
-    >>> energy('plugin_ccsd_serial')
-
-    """
-    lowername = name.lower()
-    kwargs = kwargs_lower(kwargs)
-
-    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
-    PsiMod.plugin_load("%s" % (plugfile))
-    PsiMod.set_global_option('WFN', 'CCSD')
-    run_scf("scf", **kwargs)
-    PsiMod.transqt2()
-    PsiMod.plugin("plugin_ccsd_serial.so")
-
-    return PsiMod.get_variable("CURRENT ENERGY")
-
-
 # A direct translation of a plugin input file into a function call. Function calls are the only
 #     way to call plugins in sow/reap mode for db(), opt(), etc. This isn't best practices
-#     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated
-#     procedure where different options are set for different qc steps.
+#     but is an example of what to do for a more complicated procedure where different options 
+#     are set for different qc steps.
 def run_plugin_omega(name, **kwargs):
     """Function encoding sequence of PSI module and plugin calls, as well
     as typical options, to access Rob Parrish's omega plugin.
@@ -163,48 +153,8 @@ def run_plugin_omega(name, **kwargs):
 
     return PsiMod.get_variable('SCF TOTAL ENERGY')
 
-def run_cim(name, **kwargs):
-   """Eugene's CIM driven by Python"""
-
-   lowername = name.lower()
-   kwargs = kwargs_lower(kwargs)
-
-   plugfile1 = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_localcc/plugin_localcc.so"
-   PsiMod.plugin_load("%s" % (plugfile1))
-
-   plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_libcim/plugin_libcim.so"
-   PsiMod.plugin_load("%s" % (plugfile))
-
-   # some options aren't set right...
-   PsiMod.set_global_option('compute_triples', False)
-   PsiMod.set_global_option('r_convergence', 1e-7)
-   PsiMod.set_global_option('maxiter', 100)
-
-   energy('scf', **kwargs)
-   PsiMod.set_global_option('cim_initialize', True)
-   PsiMod.plugin("plugin_libcim.so")
-
-   cluster_energies = []
-   built_energy = 0.0
-   escf = PsiMod.get_variable('SCF TOTAL ENERGY')
-   PsiMod.set_global_option('cim_initialize', False)
-   cim_n = 0
-   while cim_n < PsiMod.get_variable('CIM CLUSTERS'):
-       PsiMod.set_global_option('CIM_CLUSTER_NUM', cim_n)
-       PsiMod.plugin("plugin_libcim.so")
-       cluster_energies.append(PsiMod.get_variable('CURRENT CLUSTER CORRELATION ENERGY'))
-       built_energy += PsiMod.get_variable('CURRENT CLUSTER CORRELATION ENERGY')
-       #print built_energy, cluster_energies
-       #print built_energy, cluster_energies[cim_n], built_energy + escf
-       cim_n += 1
-
-   PsiMod.set_variable('CURRENT ENERGY', built_energy+escf)
-   PsiMod.set_variable('TOTAL CIM CORRELATION ENERGY', built_energy)
-   return built_energy
-
 
 # Integration with driver routines
 procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
-procedures['energy']['plugin_ccsd_serial'] = run_plugin_ccsd_serial
 procedures['energy']['plugin_omega'] = run_plugin_omega

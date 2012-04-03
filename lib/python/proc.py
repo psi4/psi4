@@ -13,6 +13,8 @@ import input
 import physconst
 from molutil import *
 from text import *
+from procutil import *
+# never import driver, wrappers, or aliases into this file
 
 
 def run_dcft(name, **kwargs):
@@ -22,6 +24,15 @@ def run_dcft(name, **kwargs):
     """
     PsiMod.scf()
     return PsiMod.dcft()
+
+
+def run_dcft_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    DCFT gradient calculation.
+
+    """
+    run_dcft(name, **kwargs)
+    PsiMod.deriv()
 
 
 def run_scf(name, **kwargs):
@@ -213,6 +224,8 @@ def run_ccenergy(name, **kwargs):
         PsiMod.set_global_option('WFN', 'CC2')
     elif (name.lower() == 'cc3'):
         PsiMod.set_global_option('WFN', 'CC3')
+    elif (name.lower() == 'eom-cc2'):
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
     elif (name.lower() == 'eom-ccsd'):
         PsiMod.set_global_option('WFN', 'EOM_CCSD')
     # Call a plain energy('ccenergy') and have full control over options,
@@ -297,12 +310,65 @@ def run_bccd_t(name, **kwargs):
     return PsiMod.cctriples()
 
 
-def run_cc_response(name, **kwargs):
+def run_scf_property(name, **kwargs):
+
+    run_scf(name, **kwargs)
+
+
+def run_cc_property(name, **kwargs):
     """Function encoding sequence of PSI module calls for
-    a CC2 and CCSD calculation.
+    all CC property calculations.
 
     """
-    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+    oneel_properties = ['dipole', 'quadrupole']
+    twoel_properties = []
+    response_properties = ['polarizability', 'rotation', 'roa']
+    excited_properties = ['oscillator_strength', 'rotational_strength']
+
+    one = []
+    two = []
+    response = []
+    excited = []
+    invalid = []
+
+    if 'properties' in kwargs:
+        properties = kwargs.pop('properties')
+        properties = drop_duplicates(properties)
+
+        for prop in properties:
+            if prop in oneel_properties:
+                one.append(prop)
+            elif prop in twoel_properties:
+                two.append(prop)
+            elif prop in response_properties:
+                response.append(prop)
+            elif prop in excited_properties:
+                excited.append(prop)
+            else:
+                invalid.append(prop)
+    else:
+        print "The \"properties\" keyword is required with the property() function."
+        exit(1)
+
+    n_one = len(one)
+    n_two = len(two)
+    n_response = len(response)
+    n_excited = len(excited)
+    n_invalid = len(invalid)
+
+    if (n_invalid > 0):
+        print "The following properties are not currently supported: %s" % invalid
+
+    if (n_excited > 0 and (name.lower() != 'eom-ccsd' and name.lower() != 'eom-cc2')):
+        print "Excited state CC properties require EOM-CC2 or EOM-CCSD."
+        exit(1)
+
+    if ((name.lower() == 'eom-ccsd' or name.lower() == 'eom-cc2') and n_response > 0):
+        print "Cannot compute response properties for excited states."
+        exit(1)
+
+    if (n_one > 0 or n_two > 0) and (n_response > 0):
+        print "Computing both density- and response-based properties."
 
     if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
@@ -312,10 +378,47 @@ def run_cc_response(name, **kwargs):
         PsiMod.set_global_option('WFN', 'CC2')
         run_ccenergy('cc2', **kwargs)
         PsiMod.set_global_option('WFN', 'CC2')
+    elif (name.lower() == 'eom-ccsd'):
+        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+        run_ccenergy('eom-ccsd', **kwargs)
+        PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    elif (name.lower() == 'eom-cc2'):
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
+        run_ccenergy('eom-cc2', **kwargs)
+        PsiMod.set_global_option('WFN', 'EOM_CC2')
 
+    # Need cchbar for everything
     PsiMod.cchbar()
-    PsiMod.cclambda()
-    PsiMod.ccresponse()
+
+    # Need ccdensity at this point only for density-based props
+    if ((n_one > 0 or n_two > 0) and not n_excited):
+        PsiMod.set_global_option('DERTYPE', 'NONE')
+        PsiMod.set_global_option('ONEPDM', 'TRUE')
+        PsiMod.cclambda()
+        PsiMod.ccdensity()
+
+    # Need ccresponse only for response-type props
+    if (n_response > 0):
+        PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+        PsiMod.cclambda()
+        for prop in response:
+            PsiMod.set_global_option('PROPERTY', prop)
+            PsiMod.ccresponse()
+
+    # Excited-state transition properties
+    if (n_excited > 0):
+        if (name.lower() == 'eom-ccsd'):
+            PsiMod.set_global_option('WFN', 'EOM_CCSD')
+        elif (name.lower() == 'eom-cc2'):
+            PsiMod.set_global_option('WFN', 'EOM_CC2')
+        else:
+            print "Unknown excited-state CC wave function."
+            exit(1)
+        PsiMod.set_global_option('DERTYPE', 'NONE')
+        PsiMod.set_global_option('ONEPDM', 'TRUE')
+        PsiMod.cceom()
+        PsiMod.cclambda()
+        PsiMod.ccdensity()
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
@@ -396,6 +499,47 @@ def run_adc(name, **kwargs):
     PsiMod.scf()
 
     return PsiMod.adc()
+
+
+def run_dft(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-functional-theory calculation.
+
+    """
+    lowername = name.lower()
+
+    user_fctl = PsiMod.get_global_option('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_global_option('REFERENCE')
+
+    if lowername.startswith('b3lyp'):
+        if lowername.endswith('b3lyp'):
+            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP')
+        #elif lowername.endswith('-d1'):
+        #    PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D1')
+        elif lowername.endswith('-d2'):
+            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
+        elif lowername.endswith('-d'):
+            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
+        else:
+            raise ValidationError('Requested B3LYP variant \'%s\' is not available.' % (lowername))
+    else:
+        raise ValidationError('How did you even get here? Edit the procedures dictionary.')
+
+    if (user_ref == 'RHF'):
+        PsiMod.set_global_option('REFERENCE', 'RKS')
+    elif (user_ref == 'UHF'):
+        PsiMod.set_global_option('REFERENCE', 'UKS')
+    elif (user_ref == 'ROHF'):
+        raise ValidationError('RO reference for DFT is not available.')
+
+    returnvalue = scf_helper(name, **kwargs)
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
+    PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    PsiMod.set_global_option('REFERENCE', user_ref)
+    PsiMod.revoke_global_option_changed('REFERENCE')
+
+    return returnvalue
 
 
 def run_detci(name, **kwargs):
@@ -545,22 +689,25 @@ def run_dfcc(name, **kwargs):
     e_dfcc = PsiMod.dfcc()
     return e_dfcc
 
+
 def run_psimrcc(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
      using a reference from the MCSCF module
 
-    """  
+    """
     run_mcscf(name, **kwargs)
     return PsiMod.psimrcc()
+
 
 def run_psimrcc_scf(name, **kwargs):
     """Function encoding sequence of PSI module calls for a PSIMRCC computation
      using a reference from the SCF module
 
-    """ 
+    """
 
     run_scf(name, **kwargs)
     return PsiMod.psimrcc()
+
 
 def run_mp2c(name, **kwargs):
     """Function encoding sequence of PSI module calls for
@@ -977,3 +1124,10 @@ def run_mrcc(name, **kwargs):
     PsiMod.print_out(iface_contents)
 
     return e
+
+
+# General wrapper for property computations
+def run_property(name, **kwargs):
+
+    junk = 1
+    return junk

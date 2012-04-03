@@ -114,8 +114,8 @@ IntegralTransform::presort_so_tei()
     bucketOffset[0] = init_int_array(nirreps_);
     int **bucketRowDim = (int **) malloc(sizeof(int *));
     bucketRowDim[0] = init_int_array(nirreps_);
-    int **bucketSize = (int **) malloc(sizeof(int *));
-    bucketSize[0] = init_int_array(nirreps_);
+    long int **bucketSize = (long int **) malloc(sizeof(long int *));
+    bucketSize[0] = init_long_int_array(nirreps_);
 
     /* Figure out how many passes we need and where each p,q goes */
     int nBuckets = 1;
@@ -124,12 +124,11 @@ IntegralTransform::presort_so_tei()
     for(int h = 0; h < nirreps_; ++h){
         size_t rowLength = (size_t) I.params->coltot[h^(I.my_irrep)];
         for(int row=0; row < I.params->rowtot[h]; ++row) {
-            if((coreLeft - rowLength) >= 0){  // <-- This is always true (unsigned - unsigned >= 0)
+            if(coreLeft >= rowLength){
                 coreLeft -= rowLength;
                 bucketRowDim[nBuckets-1][h]++;
                 bucketSize[nBuckets-1][h] += rowLength;
-            }
-            else {
+            } else {
                 nBuckets++;
                 coreLeft = memoryd - rowLength;
                 /* Make room for another bucket */
@@ -143,9 +142,9 @@ IntegralTransform::presort_so_tei()
                 bucketRowDim[nBuckets-1] = init_int_array(nirreps_);
                 bucketRowDim[nBuckets-1][h] = 1;
 
-                bucketSize = (int **) realloc((void *) bucketSize,
-                                                nBuckets * sizeof(int *));
-                bucketSize[nBuckets-1] = init_int_array(nirreps_);
+                bucketSize = (long int **) realloc((void *) bucketSize,
+                                                nBuckets * sizeof(long int *));
+                bucketSize[nBuckets-1] = init_long_int_array(nirreps_);
                 bucketSize[nBuckets-1][h] = rowLength;
             }
             int p = I.params->roworb[h][row][0];
