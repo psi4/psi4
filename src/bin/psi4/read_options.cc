@@ -1409,11 +1409,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Root to get OPDM -*/
     options.add_int("FOLLOW_ROOT",1);
   }
-  if(name == "STABLE"|| options.read_globals()) {
+  if(name == "STABILITY"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
          by the user-*/
     /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF");
+    options.add_str("REFERENCE","RHF", "RHF UHF ROHF");
     /*- -*/
     options.add_int("CACHELEVEL",2);
     /*- Do follow the most negative eigenvalue of the Hessian towards a lower
