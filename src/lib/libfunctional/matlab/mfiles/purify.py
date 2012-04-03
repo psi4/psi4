@@ -102,7 +102,7 @@ for partial in partials:
     for k in range(len(lines) - 1):
         lines[k] = 'double ' + lines[k][2:];
    
-    lines[-1] = partial + '[Q] += scale * ' + lines[-1][7:]; 
+    lines[-1] = partial + '[Q] += scale * (' + lines[-1][7:-2] + ');\n'; 
 
     definition.append('// ' + partial + '\n') 
     definition.append('if (deriv >= %d) {\n' % (deriv))

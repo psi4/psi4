@@ -43,7 +43,7 @@ compare_values(E11,V11, 3, "RKS  0 1   B88 Energy") #TEST
 
 set dft_functional b3lyp
 V12 = energy('scf')
-#compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
+compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
 
 set dft_functional wB97
 set dft_omega 0.4
@@ -62,7 +62,7 @@ compare_values(E21,V21, 3, "UKS  0 1   B88 Energy") #TEST
 
 set dft_functional b3lyp
 V22 = energy('scf')
-#compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
+compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
 
 set dft_functional wB97
 set dft_omega 0.4
@@ -89,7 +89,7 @@ compare_values(E31,V31, 3, "UKS  1 2   B88 Energy") #TEST
 
 set dft_functional b3lyp
 V32 = energy('scf')
-#compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
+compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
 
 set dft_functional wB97
 set dft_omega 0.4
@@ -115,7 +115,7 @@ compare_values(E41,V41, 3, "UKS -1 2   B88 Energy") #TEST
 
 set dft_functional b3lyp
 V42 = energy('scf')
-#compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
+compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
 
 set dft_functional wB97
 set dft_omega 0.4

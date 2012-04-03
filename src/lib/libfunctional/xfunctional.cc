@@ -409,7 +409,7 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
         //printf("xfun: %11.3E %11.3E %24.16E %24.16E %24.16E\n", rho, 1.0 / (2.0 * _k0_) * s, Fs * Fk, Fk_k * k_rho, Fs_s);
         
         // => Assembly <= //
-        v[Q] += A * E * Fs * Fw * Fk;
+        v[Q] += A * E * Fs * Fw * Fk; 
         if (deriv >= 1) {
             v_rho[Q] += A * (Fs * Fw * Fk * (E_rho) +
                              E  * Fw * Fk * (Fs_s * s_rho) +
