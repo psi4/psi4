@@ -1,5 +1,4 @@
-#! ROHF-EOM-CCSD/DZ geometry optimization of the lowest 2A1 excited
-#! state of H2O+ (B1 excitation).
+#! ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}A@@1$ excited state of H2O+ (B1 excitation)
 
 memory 250 mb
 
@@ -14,7 +13,19 @@ molecule h2o {
 set {
   reference rohf
   basis DZ
-  states_per_irrep [1, 0, 0, 0]
+  roots_per_irrep [1, 0, 0, 0]
 }
 
-optimize('eom-ccsd')
+gradient('eom-ccsd')
+analytic_grad = PsiMod.get_gradient()
+
+gradient('eom-ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+
+set findif points 5
+
+gradient('eom-ccsd', dertype=0)
+findif_grad = PsiMod.get_gradient()
+
+
