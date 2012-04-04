@@ -1,5 +1,6 @@
 #include"psi4-dec.h"
 #include<libciomr/libciomr.h>
+#include<libmints/wavefunction.h>
 
 #include"ccsd.h"
 
@@ -8,14 +9,15 @@ using namespace boost;
 
 namespace psi{
   PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
+  PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
 }
 
 namespace psi{
 
-void RunCoupledCluster(Options &options){
+void RunCoupledCluster(Options &options,boost::shared_ptr<psi::Wavefunction>wfn){
 
-  boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster);
+  boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn));
   PsiReturnType status;
 
   tstart();
@@ -57,7 +59,10 @@ void RunCoupledCluster(Options &options){
 
      tstart();
      // triples
-     status = psi::triples(ccsd,options);
+     if (ccsd->wfn_->isCIM())
+        status = psi::local_triples(ccsd,options);
+     else
+        status = psi::triples(ccsd,options);
      if (status == Failure){
         throw PsiException( 
            "Whoops, the (T) correction died.",__FILE__,__LINE__);

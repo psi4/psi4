@@ -1,8 +1,6 @@
 #ifndef CEPA_H
 #define CEPA_H
 
-#include "../plugin_libcim/cim.h"
-
 // output files
 #define PSIF_IJAK  251
 #define PSIF_IJAK2 252
@@ -33,9 +31,9 @@ class CoupledPair{
     /*
      * wavefunction.  pass explicitly so we can pass weird ones like cim.
      */
-    boost::shared_ptr<psi::CIM> wfn_;
+    boost::shared_ptr<psi::Wavefunction> wfn_;
 
-    CoupledPair(boost::shared_ptr<psi::CIM> wfn);
+    CoupledPair(boost::shared_ptr<psi::Wavefunction> wfn);
     ~CoupledPair();
 
     /**
