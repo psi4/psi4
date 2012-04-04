@@ -2,6 +2,8 @@
     \ingroup STABLE
     \brief Enter brief description of file here 
 */
+#include "psi4-dec.h"
+#include "libmints/mints.h"
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
@@ -26,98 +28,85 @@ void get_moinfo(void)
 {
   int i, j, h, p, q, errcod, nactive, nirreps, nfzc, nfzv;
 
-  chkpt_init(PSIO_OPEN_OLD);
-  moinfo.nirreps = chkpt_rd_nirreps();
-  moinfo.nmo = chkpt_rd_nmo();
-  moinfo.nso = chkpt_rd_nso();
-  moinfo.labels = chkpt_rd_irr_labs();
-  moinfo.orbspi = chkpt_rd_orbspi();
-  moinfo.clsdpi = chkpt_rd_clsdpi();
-  moinfo.openpi = chkpt_rd_openpi();
-  chkpt_close();
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+  moinfo.nirreps = wfn->nirrep();
+  moinfo.nmo = wfn->nmo();
+  moinfo.nso = wfn->nso();
+  moinfo.labels = wfn->molecule()->irrep_labels();
+  moinfo.orbspi = wfn->nmopi();
+  moinfo.clsdpi = wfn->doccpi();
+  moinfo.openpi = wfn->soccpi();
 
   nirreps = moinfo.nirreps;
 
-  psio_read_entry(CC_INFO, "Reference Wavefunction", (char *) &(params.ref), 
-		  sizeof(int));
 
   /* Get frozen and active orbital lookups from CC_INFO */
-  moinfo.frdocc = init_int_array(nirreps);
-  moinfo.fruocc = init_int_array(nirreps);
-  psio_read_entry(CC_INFO, "Frozen Core Orbs Per Irrep",
-		  (char *) moinfo.frdocc, sizeof(int)*nirreps);
-  psio_read_entry(CC_INFO, "Frozen Virt Orbs Per Irrep",
-		  (char *) moinfo.fruocc, sizeof(int)*nirreps);
-
-  nfzc = nfzv = 0;
-  for(h=0; h < nirreps; h++) {
-    nfzc += moinfo.frdocc[h];
-    nfzv += moinfo.fruocc[h];
-  }
+  nfzc = wfn->frzcpi().sum();
+  nfzv = wfn->frzvpi().sum();
   if(nfzc || nfzv) {
     fprintf(outfile, "\n\tStability analysis incorrect for frozen orbital calculations.\n");
     exit(PSI_RETURN_FAILURE);
   }
-  
+  moinfo.frdocc = init_int_array(nirreps);
+  moinfo.fruocc = init_int_array(nirreps);
   psio_read_entry(CC_INFO, "No. of Active Orbitals", (char *) &(nactive),
 		  sizeof(int)); 
 
   if(params.ref == 2) { /** UHF **/
-
-    moinfo.aoccpi = init_int_array(nirreps);
-    moinfo.boccpi = init_int_array(nirreps);
-    moinfo.avirtpi = init_int_array(nirreps);
-    moinfo.bvirtpi = init_int_array(nirreps);
-
-    psio_read_entry(CC_INFO, "Active Alpha Occ Orbs Per Irrep",
-		    (char *) moinfo.aoccpi, sizeof(int)*moinfo.nirreps);
-    psio_read_entry(CC_INFO, "Active Beta Occ Orbs Per Irrep",
-		    (char *) moinfo.boccpi, sizeof(int)*moinfo.nirreps);
-    psio_read_entry(CC_INFO, "Active Alpha Virt Orbs Per Irrep",
-		    (char *) moinfo.avirtpi, sizeof(int)*moinfo.nirreps);
-    psio_read_entry(CC_INFO, "Active Beta Virt Orbs Per Irrep",
-		    (char *) moinfo.bvirtpi, sizeof(int)*moinfo.nirreps);
-
-    moinfo.aocc_sym = init_int_array(nactive);
-    moinfo.bocc_sym = init_int_array(nactive);
-    moinfo.avir_sym = init_int_array(nactive);
-    moinfo.bvir_sym = init_int_array(nactive);
-
-    psio_read_entry(CC_INFO, "Active Alpha Occ Orb Symmetry",
-		    (char *) moinfo.aocc_sym, sizeof(int)*nactive);
-    psio_read_entry(CC_INFO, "Active Beta Occ Orb Symmetry",
-		    (char *) moinfo.bocc_sym, sizeof(int)*nactive);
-    psio_read_entry(CC_INFO, "Active Alpha Virt Orb Symmetry",
-		    (char *) moinfo.avir_sym, sizeof(int)*nactive);
-    psio_read_entry(CC_INFO, "Active Beta Virt Orb Symmetry",
-		    (char *) moinfo.bvir_sym, sizeof(int)*nactive);
-
-    moinfo.aocc_off = init_int_array(moinfo.nirreps);
-    moinfo.bocc_off = init_int_array(moinfo.nirreps);
-    moinfo.avir_off = init_int_array(moinfo.nirreps);
-    moinfo.bvir_off = init_int_array(moinfo.nirreps);
-    psio_read_entry(CC_INFO, "Active Alpha Occ Orb Offsets",
-		    (char *) moinfo.aocc_off, sizeof(int)*moinfo.nirreps);
-    psio_read_entry(CC_INFO, "Active Beta Occ Orb Offsets",
-		    (char *) moinfo.bocc_off, sizeof(int)*moinfo.nirreps);
-    psio_read_entry(CC_INFO, "Active Alpha Virt Orb Offsets",
-		    (char *) moinfo.avir_off, sizeof(int)*moinfo.nirreps);
-    psio_read_entry(CC_INFO, "Active Beta Virt Orb Offsets",
-		    (char *) moinfo.bvir_off, sizeof(int)*moinfo.nirreps);
-
-    moinfo.qt_aocc = init_int_array(nactive);
-    moinfo.qt_bocc = init_int_array(nactive);
-    moinfo.qt_avir = init_int_array(nactive);
-    moinfo.qt_bvir = init_int_array(nactive);
-
-    psio_read_entry(CC_INFO, "CC->QT Alpha Active Occ Order",
-		    (char *) moinfo.qt_aocc, sizeof(int)*nactive);
-    psio_read_entry(CC_INFO, "CC->QT Beta Active Occ Order",
-		    (char *) moinfo.qt_bocc, sizeof(int)*nactive);
-    psio_read_entry(CC_INFO, "CC->QT Alpha Active Virt Order",
-		    (char *) moinfo.qt_avir, sizeof(int)*nactive);
-    psio_read_entry(CC_INFO, "CC->QT Beta Active Virt Order",
-		    (char *) moinfo.qt_bvir, sizeof(int)*nactive);
+     moinfo.aoccpi = init_int_array(nirreps);
+     moinfo.boccpi = init_int_array(nirreps);
+     moinfo.avirtpi = init_int_array(nirreps);
+     moinfo.bvirtpi = init_int_array(nirreps);
+ 
+     psio_read_entry(CC_INFO, "Active Alpha Occ Orbs Per Irrep",
+                     (char *) moinfo.aoccpi, sizeof(int)*moinfo.nirreps);
+     psio_read_entry(CC_INFO, "Active Beta Occ Orbs Per Irrep",
+                     (char *) moinfo.boccpi, sizeof(int)*moinfo.nirreps);
+     psio_read_entry(CC_INFO, "Active Alpha Virt Orbs Per Irrep",
+                     (char *) moinfo.avirtpi, sizeof(int)*moinfo.nirreps);
+     psio_read_entry(CC_INFO, "Active Beta Virt Orbs Per Irrep",
+                     (char *) moinfo.bvirtpi, sizeof(int)*moinfo.nirreps);
+ 
+     moinfo.aocc_sym = init_int_array(nactive);
+     moinfo.bocc_sym = init_int_array(nactive);
+     moinfo.avir_sym = init_int_array(nactive);
+     moinfo.bvir_sym = init_int_array(nactive);
+ 
+     psio_read_entry(CC_INFO, "Active Alpha Occ Orb Symmetry",
+                     (char *) moinfo.aocc_sym, sizeof(int)*nactive);
+     psio_read_entry(CC_INFO, "Active Beta Occ Orb Symmetry",
+                     (char *) moinfo.bocc_sym, sizeof(int)*nactive);
+     psio_read_entry(CC_INFO, "Active Alpha Virt Orb Symmetry",
+                     (char *) moinfo.avir_sym, sizeof(int)*nactive);
+     psio_read_entry(CC_INFO, "Active Beta Virt Orb Symmetry",
+                     (char *) moinfo.bvir_sym, sizeof(int)*nactive);
+ 
+     moinfo.aocc_off = init_int_array(moinfo.nirreps);
+     moinfo.bocc_off = init_int_array(moinfo.nirreps);
+     moinfo.avir_off = init_int_array(moinfo.nirreps);
+     moinfo.bvir_off = init_int_array(moinfo.nirreps);
+     psio_read_entry(CC_INFO, "Active Alpha Occ Orb Offsets",
+                     (char *) moinfo.aocc_off, sizeof(int)*moinfo.nirreps);
+     psio_read_entry(CC_INFO, "Active Beta Occ Orb Offsets",
+                     (char *) moinfo.bocc_off, sizeof(int)*moinfo.nirreps);
+     psio_read_entry(CC_INFO, "Active Alpha Virt Orb Offsets",
+                     (char *) moinfo.avir_off, sizeof(int)*moinfo.nirreps);
+     psio_read_entry(CC_INFO, "Active Beta Virt Orb Offsets",
+                     (char *) moinfo.bvir_off, sizeof(int)*moinfo.nirreps);
+ 
+     moinfo.qt_aocc = init_int_array(nactive);
+     moinfo.qt_bocc = init_int_array(nactive);
+     moinfo.qt_avir = init_int_array(nactive);
+     moinfo.qt_bvir = init_int_array(nactive);
+ 
+     psio_read_entry(CC_INFO, "CC->QT Alpha Active Occ Order",
+                     (char *) moinfo.qt_aocc, sizeof(int)*nactive);
+     psio_read_entry(CC_INFO, "CC->QT Beta Active Occ Order",
+                     (char *) moinfo.qt_bocc, sizeof(int)*nactive);
+     psio_read_entry(CC_INFO, "CC->QT Alpha Active Virt Order",
+                     (char *) moinfo.qt_avir, sizeof(int)*nactive);
+     psio_read_entry(CC_INFO, "CC->QT Beta Active Virt Order",
+                     (char *) moinfo.qt_bvir, sizeof(int)*nactive);
 
 
   }
@@ -197,15 +186,12 @@ void cleanup(void)
 {
   int i;
 
-  free(moinfo.orbspi);
-  free(moinfo.clsdpi);
-  free(moinfo.openpi);
   free(moinfo.uoccpi);
   free(moinfo.fruocc);
   free(moinfo.frdocc);
   for(i=0; i < moinfo.nirreps; i++)
-    free(moinfo.labels[i]);
-  free(moinfo.labels);
+      delete moinfo.labels[i];
+  delete [] moinfo.labels;
 
   if(params.ref == 2) {
     free(moinfo.aoccpi);

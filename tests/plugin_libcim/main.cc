@@ -24,16 +24,17 @@ read_options(std::string name, Options &options)
      /*- For a given occupied LMO, i, the minimum absolute value 
      of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to 
      be included in the MO domain of LMO, i. Only applies if 
-     CIM_DOMAIN_TYPE is DECIM -*/
+     :term:`CIM_DOMAIN_TYPE <CIM_DOMAIN_TYPE (PLUGIN_LIBCIM)>` = DECIM -*/
      options.add_double("CIM_DE_TOLERANCE1", 0.01);
      /*- For a given occupied LMO, i, the minimum absolute value 
      of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to 
-     be included in the environmental domain of LMO, i. Only 
-     applies if CIM_DOMAIN_TYPE is DECIM -*/
+     be included in the environmental domain of LMO, i. Only applies if
+     :term:`CIM_DOMAIN_TYPE <CIM_DOMAIN_TYPE (PLUGIN_LIBCIM)>` = DECIM -*/
      options.add_double("CIM_DE_TOLERANCE2", 0.05);
      /*- For a given occupied LMO, i, the minimum absolute value 
      of the Fock matrix element, :math:`F_{ij}`, for occupied LMO, j, to 
-     be in i’s cluster. Only applies if CIM_DOMAIN_TYPE is SECIM -*/
+     belong to the domain of LMO i. Only applies if 
+     :term:`CIM_DOMAIN_TYPE <CIM_DOMAIN_TYPE (PLUGIN_LIBCIM)>` = SECIM -*/
      options.add_double("CIM_SE_TOLERANCE", 0.001);
      /*- Minimum occupation (eigenvalues of the MP2 OPDM) 
      below which virtual natural orbitals are discarded 

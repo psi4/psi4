@@ -122,7 +122,7 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
 * **inputalt.dat** |w---w| Sample input file for the plugin (new style).
   Since the ``__init__.py`` file makes the plugin directory look like a
   Python module, the plugin can be treated as such in an input file. The
-  location of the plugin directory mush be included in :envvar:`PYTHONPATH`,
+  location of the plugin directory must be included in :envvar:`PYTHONPATH`,
   either externally in the calling shell or defined in the input file. Then,
   the plugin can be loaded as ``import myplugin`` and executed as
   ``energy('myplugin')``. Any other Python functions are also available from

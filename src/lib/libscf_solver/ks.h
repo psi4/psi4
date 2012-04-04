@@ -31,10 +31,10 @@ namespace scf{
 class KS {
 
 protected:
-    /// Superfunctional object
-    boost::shared_ptr<functional::SuperFunctional> functional_;
     /// KS Potential (the heart of the algorithm)
     boost::shared_ptr<VBase> potential_;
+    /// Pointer to potential's functional
+    boost::shared_ptr<SuperFunctional> functional_;
     /// primary basis set (might get fancy later)
     boost::shared_ptr<BasisSet> basisset_;
     /// primary so basis set
@@ -74,6 +74,7 @@ protected:
     virtual void form_G();
     virtual double compute_E();
     virtual void integrals();
+    virtual void finalize();
 
     void common_init();
 public:
@@ -98,6 +99,7 @@ protected:
     virtual void form_G();
     virtual double compute_E();
     virtual void integrals();
+    virtual void finalize();
 
     void common_init();
 public:
