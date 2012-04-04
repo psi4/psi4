@@ -56,10 +56,8 @@ protected:
     double _b3f_;
     double _b4f_;
 
-    void G1(double r, double* G, double* Gr);
-    void G2(double r, double* G, double* Gr);
-    void G3(double r, double* G, double* Gr);
-   
+    void PW92_C(double rho, double z, double* PW92, double* PW92_rho, double* PW92_z);
+    
     // B97
     double _B97_ss_gamma_;
     std::vector<double> _B97_ss_a_;
