@@ -141,6 +141,7 @@ OptReturnType optking(void) {
       if (Opt_params.add_auxiliary_bonds)
         mol1->add_intrafragment_auxiliary_bonds();
       mol1->add_interfragment();
+      mol1->freeze_interfragment_asymm(); // remove problematic ones?
     }
 
     // print out internal coordinates for future steps
