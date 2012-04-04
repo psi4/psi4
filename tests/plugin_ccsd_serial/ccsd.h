@@ -21,6 +21,7 @@
 #define PSIF_R2    262
 #define PSIF_TEMP  263
 #define PSIF_T2    264
+#define PSIF_ABCI4 265
 
 // psi headers
 #include"psi4-dec.h"
@@ -57,7 +58,12 @@ namespace psi{
 
 class CoupledCluster{
   public:
-    CoupledCluster();
+    /*
+     * wavefunction.  pass explicitly so we can pass weird ones like cim.
+     */
+    boost::shared_ptr<psi::Wavefunction> wfn_;
+
+    CoupledCluster(boost::shared_ptr<psi::Wavefunction> wfn);
     ~CoupledCluster();
 
     /**
@@ -235,6 +241,7 @@ class CoupledCluster{
       *  SCS-CCSD function and variables
       */
     void SCS_CCSD();
+    void Local_SCS_CCSD();
     double eccsd_os,eccsd_ss,eccsd_os_fac,eccsd_ss_fac;
 
 };
