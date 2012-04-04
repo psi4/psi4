@@ -6,7 +6,7 @@
    single: DF-MP2
    pair: MP2; density-fitting
 
-Density-Fitted Second-Order M\ |o_dots|\ ller-Plesset Perturbation Theory
+Density-Fitted Second-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
 =========================================================================
 
 .. codeauthor:: Robert M. Parrish
@@ -15,7 +15,7 @@ Density-Fitted Second-Order M\ |o_dots|\ ller-Plesset Perturbation Theory
 Introduction
 ------------
 
-Second-order M\ |o_dots|\ ller-Plesset Perturbation Theory (MP2) occupies a unique role
+Second-order M\ |o_slash|\ ller-Plesset Perturbation Theory (MP2) occupies a unique role
 in quantum chemistry due to its small-prefactor :math:`{\cal O}(N^5)` treatment of
 dynamic electron correlation. This unusually cheap
 *ab initio* treatment of electron correlation may be made even more
@@ -47,7 +47,7 @@ An example utilization of the code is::
    set scf_type df
    set freeze_core True
    
-   energy('dfmp2')
+   energy('df-mp2')
 
 The ``energy('df-mp2')`` call to :py:func:`~driver.energy` executes 
 the predefined DF-MP2 procedure, first calling
@@ -88,7 +88,7 @@ The theory, breakdown of results, and common keywords used in DF-MP2 are present
 Theory
 ______
 
-M\ |o_dots|\ ller-Plesset Theory (MPn) or Many-Body Perturbation Theory
+M\ |o_slash|\ ller-Plesset Theory (MPn) or Many-Body Perturbation Theory
 (MBPT) through second order has the spin-orbital formula:
 
 .. math:: E_{\mathrm{total}}^{(2)} = E_{\mathrm{Reference}} - 
@@ -173,7 +173,7 @@ documented in the Appendix :ref:`apdx:dfmp2`). Some basic recommendations are in
   [two for UHF-MP2 and ROHF-MBPT(2)], so more memory will reduce seek times.
   If you notice DFMP2 using more memory than allowed, it is possible that
   the threaded three-index ERI computers are using too much overhead memory.
-  Set the |DFMP2__df_ints_num_threads| to a smaller number to prevent this
+  Set the |dfmp2__DF_ints_num_threads| to a smaller number to prevent this
   in this section (does not affect threaded efficiency in the rest of the
   code).
 
