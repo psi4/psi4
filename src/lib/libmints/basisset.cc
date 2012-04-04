@@ -239,6 +239,7 @@ boost::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
 
     // Setup all the parameters needed for a zero basis set
     new_basis->shell_center_.push_back(0);
+    new_basis->function_center_.push_back(0);
     new_basis->max_nprimitive_ = 1;
     new_basis->max_am_ = 0;
 
@@ -456,6 +457,7 @@ void BasisSet::refresh()
     shell_first_basis_function_.clear(); shell_first_basis_function_.resize(nshell(), 0);
     shell_first_ao_.clear();             shell_first_ao_.resize(nshell(), 0);
     shell_center_.clear();               shell_center_.resize(nshell(), 0);
+    function_center_.clear();            
     center_to_nshell_.clear();           center_to_nshell_.resize(molecule_->natom(), 0);
     center_to_shell_.clear();            center_to_shell_.resize(molecule_->natom(), 0);
     center_to_shell_[0] = 0;
@@ -477,6 +479,10 @@ void BasisSet::refresh()
         nprimitive_ += shells_[i].nprimitive();
         nao_        += shells_[i].ncartesian();
         nbf_        += shells_[i].nfunction();
+
+        for (int m = 0; m < shells_[i].nfunction(); m++) {
+            function_center_.push_back(shells_[i].ncenter());
+        }
 
         if (max_am_ < shells_[i].am())
             max_am_ = shells_[i].am();

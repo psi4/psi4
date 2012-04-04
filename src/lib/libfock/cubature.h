@@ -242,7 +242,9 @@ public:
     /// Maximum number of funtions in a block 
     int max_functions() const { return max_functions_; }
     /// Print a trace of this molecular quadrature
-    virtual void print(FILE* out = outfile, int print = 2); 
+    virtual void print(FILE* out = outfile, int print = 2) const; 
+    /// Print a complete trace of this molecular quadrature (debugging)
+    virtual void print_full(FILE* out = outfile, int print = 2); 
  
     /// The x points. You do not own this 
     double* x() const { return x_; }

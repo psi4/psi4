@@ -279,8 +279,8 @@ texinfo_documents = [
 
 # Abbreviations
 rst_epilog = """
-.. |PSIfour| replace:: PSI5
-.. |psirc| replace:: ``~/.psi5rc``
+.. |PSIfour| replace:: PSI4
+.. |psirc| replace:: ``~/.psi4rc``
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
 .. |kcalpermol| replace:: kcal mol\ :sup:`-1`
@@ -301,7 +301,7 @@ rst_prolog = """
 """
 
 # This option, from sphinx.ext.extlinks, allows linking to source on trac with :source:`lib/python/driver/py`
-extlinks = {'source': ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi5/'),
+extlinks = {'source': ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/'),
             'srcsample': ('http://sirius.chem.vt.edu/trac/browser/samples/%s/input.dat', ''),
             'srcbasis': ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', '') }
 
