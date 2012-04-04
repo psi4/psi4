@@ -8,6 +8,7 @@
 #include <string.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
+#include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -29,10 +30,12 @@ void get_moinfo(void)
 {
   int i, j, h, errcod;
   int nactive;
+  double **scf_pitzer;
 
   chkpt_init(PSIO_OPEN_OLD);
   moinfo.nirreps = chkpt_rd_nirreps();
   moinfo.nmo = chkpt_rd_nmo();
+  moinfo.nso = chkpt_rd_nso();
   moinfo.iopen = chkpt_rd_iopen();
   moinfo.labels = chkpt_rd_irr_labs();
   moinfo.enuc = chkpt_rd_enuc();
@@ -40,6 +43,7 @@ void get_moinfo(void)
   moinfo.orbspi = chkpt_rd_orbspi();
   moinfo.clsdpi = chkpt_rd_clsdpi();
   moinfo.openpi = chkpt_rd_openpi();
+  scf_pitzer = chkpt_rd_scf();
   chkpt_close();
 
   moinfo.sym = 0;
@@ -126,6 +130,11 @@ void get_moinfo(void)
 		    (char *) moinfo.bvir_off, sizeof(int)*moinfo.nirreps);
   }
 
+  /* Compute spatial-orbital reordering arrays */
+  moinfo.pitzer2qt = init_int_array(moinfo.nmo);
+  reorder_qt(moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
+             moinfo.pitzer2qt, moinfo.orbspi, moinfo.nirreps);
+
   /* Adjust clsdpi array for frozen orbitals */
   for(i=0; i < moinfo.nirreps; i++)
     moinfo.clsdpi[i] -= moinfo.frdocc[i];
@@ -160,6 +169,15 @@ void get_moinfo(void)
 		    (char *) moinfo.cc_occ, sizeof(int)*nactive);
     psio_read_entry(CC_INFO, "QT->CC Active Virt Order",
 		    (char *) moinfo.cc_vir, sizeof(int)*nactive);
+
+    /* Sort SCF MOs to QT order */
+    moinfo.scf_qt = block_matrix(moinfo.nmo, moinfo.nmo);
+    int I;
+    for(i=0; i < moinfo.nmo; i++) {
+      I = moinfo.pitzer2qt[i];  /* Pitzer --> QT */
+      for(j=0; j < moinfo.nmo; j++) moinfo.scf_qt[j][I] = scf_pitzer[j][i];
+    }
+    free_block(scf_pitzer);
   }
   else if(params.ref == 2) { /** UHF **/
 
@@ -258,6 +276,8 @@ void cleanup(void)
     free(moinfo.qt_vir);
     free(moinfo.cc_occ);
     free(moinfo.cc_vir);
+    free(moinfo.pitzer2qt);
+    free_block(moinfo.scf_qt);
   }
   else if(params.ref == 2) { /** UHF **/
     free(moinfo.aocc_sym);

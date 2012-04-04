@@ -19,6 +19,7 @@
 #include "Params.h"
 #include "MOInfo.h"
 #include "globals.h"
+#include "liboptions/liboptions.h"
 
 namespace psi { namespace stable {
 
@@ -26,10 +27,10 @@ namespace psi { namespace stable {
 #define IOFF_MAX 32641
 
 /* Function prototypes */
-void init_io(int argc, char *argv[]);
+void init_io();
 void init_ioff(void);
 void get_moinfo(void);
-void get_params(void);
+void get_params(Options &options);
 void cleanup(void);
 void exit_io(void);
 void build_A_RHF(void);
@@ -44,14 +45,14 @@ void print_evals(double **evals, int *rank);
 
 
 
-int stable(int argc, char *argv[])
+PsiReturnType stability(Options & options)
 {
   int **cachelist, *cachefiles;
 
-  init_io(argc, argv);
+  init_io();
   init_ioff();
+  get_params(options);
   get_moinfo();
-  get_params();
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
 
@@ -121,7 +122,7 @@ int stable(int argc, char *argv[])
 
 
 
-void init_io(int argc, char *argv[])
+void init_io()
 {
   int i;
 

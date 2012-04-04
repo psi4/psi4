@@ -61,6 +61,8 @@ class BasisSet
     std::vector<int> shell_first_ao_;
     //! Shell number to atomic center.
     std::vector<int> shell_center_;
+    //! Function number to atomic center.
+    std::vector<int> function_center_;
 
     //! Map function number to shell
     std::vector<int> function_to_shell_;
@@ -159,6 +161,11 @@ public:
 
     /** Given a function number what shell does it correspond to. */
     int function_to_shell(int i) const { return function_to_shell_[i]; }
+    /** Given a function what is its atomic center
+     *  @param i Function number
+     *  @return The atomic center for the i'th function.
+     */
+    int function_to_center(int i) const { return function_center_[i]; }
 
     /** Given a Cartesian function (AO) number what shell does it correspond to. */
     int ao_to_shell(int i) const { return ao_to_shell_[i]; }
@@ -303,6 +310,8 @@ BasisSet operator +(const BasisSet& a, const BasisSet& b) {
         return BasisSet();
     }
     BasisSet temp;
+
+    temp.name_ = a.name_ + " + " + b.name_;
     temp.molecule_ = a.molecule();
 
     // Copy a's shells to temp

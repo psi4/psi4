@@ -8,7 +8,6 @@ PSITARGET = $(top_objdir)/lib/libPSI_functional.a
 
 TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 DEPENDINCLUDE = $(notdir $(wildcard $(srcdir)/*.h))
-
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
 include ../MakeRules
@@ -21,31 +20,4 @@ install_inc:: $(DEPENDINCLUDE)
 ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)
 endif
-
-wB97_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wB97X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wB97f_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wB97Xf_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBg_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBg_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBf_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wBf_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEg_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEg_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEf_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wPBEf_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
-wS_X_functional.o:
-	$(CXX) $(CXXDBG) -O0 $(PYTHON_INCLUDE) $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
 

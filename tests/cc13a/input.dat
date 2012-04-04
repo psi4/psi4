@@ -1,4 +1,4 @@
-#! UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+#! UHF-CCSD(T)/cc-pVDZ $^{3}B@@1$ CH2 geometry optimization via analytic gradients
 
 memory 250 mb
 

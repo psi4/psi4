@@ -1,4 +1,4 @@
-#! EOM-CC2/cc-pVDZ on H$@@2$O$@@2$ with two excited states in each irrep
+#! EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
 
 memory 250 mb
 
@@ -11,11 +11,9 @@ molecule h2o2 {
 }
 
 set {
-  wfn eom_cc2
-  basis "cc-pVDZ"
+  basis cc-pVDZ
   freeze_core true
-  states_per_irrep [2, 2]
-  properties true
+  roots_per_irrep [2, 2]
 }
 
-energy('eom-cc2')
+property('eom-cc2', properties=['oscillator_strength'])

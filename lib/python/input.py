@@ -645,6 +645,7 @@ def process_input(raw_input, print_level=1):
     imports += 'from util import *\n'
     imports += 'from qmmm import *\n'
     imports += 'from frac import *\n'
+    imports += 'from functional import *\n'
     imports += 'from pubchem import *\n'
     imports += 'import pickle\n'
     imports += 'psi4_io = PsiMod.IOManager.shared_object()\n'

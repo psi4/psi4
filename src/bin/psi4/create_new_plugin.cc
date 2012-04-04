@@ -88,6 +88,10 @@ void create_new_plugin(std::string name, const std::string& templ)
     std::string fileMakefile = psiDataDirWithPlugin + "/Makefile.template";
     std::string fileInput    = psiDataDirWithPlugin + "/input.dat.template";
     std::string fileSource   = psiDataDirWithPlugin + "/" + template_name + ".cc.template";
+    std::string filePython   = psiDataDirWithPlugin + "/pymodule.py.template";
+    std::string filePyinit   = psiDataDirWithPlugin + "/__init__.py.template";
+    std::string fileInput2   = psiDataDirWithPlugin + "/inputalt.dat.template";
+    std::string fileDoc      = psiDataDirWithPlugin + "/doc.rst.template";
 
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPlugin);
@@ -118,7 +122,6 @@ void create_new_plugin(std::string name, const std::string& templ)
         printf("create_new_plugin: Unable to open input.dat template.\n");
         exit(1);
     }
-
     // Stupid way to read in entire file.
     std::stringstream file2;
     while(fgets(line, sizeof(line), fp)) {
@@ -133,7 +136,6 @@ void create_new_plugin(std::string name, const std::string& templ)
         printf("create_new_plugin: Unable to open %s.cc template.\n", template_name.c_str());
         exit(1);
     }
-
     // Stupid way to read in entire file.
     std::stringstream file3;
     while(fgets(line, sizeof(line), fp)) {
@@ -141,6 +143,62 @@ void create_new_plugin(std::string name, const std::string& templ)
     }
     fclose(fp);
     std::string source = file3.str();
+
+    // Load in pymodule.py.template
+    fp = fopen(filePython.c_str(), "r");
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open pymodule.py template.\n");
+        exit(1);
+    }
+    // Stupid way to read in entire file.
+    std::stringstream file4;
+    while(fgets(line, sizeof(line), fp)) {
+        file4 << line;
+    }
+    fclose(fp);
+    std::string python = file4.str();
+
+    // Load in __init__.py.template
+    fp = fopen(filePyinit.c_str(), "r");
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open __init__.py template.\n");
+        exit(1);
+    }
+    // Stupid way to read in entire file.
+    std::stringstream file5;
+    while(fgets(line, sizeof(line), fp)) {
+        file5 << line;
+    }
+    fclose(fp);
+    std::string pyinit = file5.str();
+
+    // Load in inputalt.dat.template
+    fp = fopen(fileInput2.c_str(), "r");
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open inputalt.dat template.\n");
+        exit(1);
+    }
+    // Stupid way to read in entire file.
+    std::stringstream file6;
+    while(fgets(line, sizeof(line), fp)) {
+        file6 << line;
+    }
+    fclose(fp);
+    std::string input2 = file6.str();
+
+    // Load in doc.rst.template
+    fp = fopen(fileDoc.c_str(), "r");
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open doc.rst template.\n");
+        exit(1);
+    }
+    // Stupid way to read in entire file.
+    std::stringstream file7;
+    while(fgets(line, sizeof(line), fp)) {
+        file7 << line;
+    }
+    fclose(fp);
+    std::string doc = file7.str();
 
     // Search and replace tags
 
@@ -154,26 +212,46 @@ void create_new_plugin(std::string name, const std::string& templ)
     makefile = xpressive::regex_replace(makefile, match_format, format_top_srcdir);
     input    = xpressive::regex_replace(input,    match_format, format_top_srcdir);
     source   = xpressive::regex_replace(source,   match_format, format_top_srcdir);
+    python   = xpressive::regex_replace(python,   match_format, format_top_srcdir);
+    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_top_srcdir);
+    input2   = xpressive::regex_replace(input2,   match_format, format_top_srcdir);
+    doc      = xpressive::regex_replace(doc,      match_format, format_top_srcdir);
 
     match_format = boost::xpressive::as_xpr("@top_objdir@");
     makefile = xpressive::regex_replace(makefile, match_format, format_top_objdir);
     input    = xpressive::regex_replace(input,    match_format, format_top_objdir);
     source   = xpressive::regex_replace(source,   match_format, format_top_objdir);
+    python   = xpressive::regex_replace(python,   match_format, format_top_objdir);
+    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_top_objdir);
+    input2   = xpressive::regex_replace(input2,   match_format, format_top_objdir);
+    doc      = xpressive::regex_replace(doc,      match_format, format_top_objdir);
 
     match_format = boost::xpressive::as_xpr("@plugin@");
     makefile = xpressive::regex_replace(makefile, match_format, format_plugin);
     input    = xpressive::regex_replace(input,    match_format, format_plugin);
     source   = xpressive::regex_replace(source,   match_format, format_plugin);
+    python   = xpressive::regex_replace(python,   match_format, format_plugin);
+    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_plugin);
+    input2   = xpressive::regex_replace(input2,   match_format, format_plugin);
+    doc      = xpressive::regex_replace(doc,      match_format, format_plugin);
 
     match_format = boost::xpressive::as_xpr("@Plugin@");
     makefile = xpressive::regex_replace(makefile, match_format, Name);
     input    = xpressive::regex_replace(input,    match_format, Name);
     source   = xpressive::regex_replace(source,   match_format, Name);
+    python   = xpressive::regex_replace(python,   match_format, Name);
+    pyinit   = xpressive::regex_replace(pyinit,   match_format, Name);
+    input2   = xpressive::regex_replace(input2,   match_format, Name);
+    doc      = xpressive::regex_replace(doc,      match_format, Name);
 
     match_format = boost::xpressive::as_xpr("@PLUGIN@");
     makefile = xpressive::regex_replace(makefile, match_format, format_PLUGIN);
     input    = xpressive::regex_replace(input,    match_format, format_PLUGIN);
     source   = xpressive::regex_replace(source,   match_format, format_PLUGIN);
+    python   = xpressive::regex_replace(python,   match_format, format_PLUGIN);
+    pyinit   = xpressive::regex_replace(pyinit,   match_format, format_PLUGIN);
+    input2   = xpressive::regex_replace(input2,   match_format, format_PLUGIN);
+    doc      = xpressive::regex_replace(doc,      match_format, format_PLUGIN);
 
     // Make a directory with the name plugin_name
     if (!boost::filesystem::create_directory(plugin_name)) {
@@ -208,8 +286,46 @@ void create_new_plugin(std::string name, const std::string& templ)
     fputs(source.c_str(), fp);
     fclose(fp);
 
+    fp = fopen((plugin_name + "/pymodule.py").c_str(), "w");
+    if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
+        printf("Unable to create new pymodule.py.\n");
+        exit(1);
+    }
+    fputs(python.c_str(), fp);
+    fclose(fp);
+
+    fp = fopen((plugin_name + "/__init__.py").c_str(), "w");
+    if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
+        printf("Unable to create new __init__.py.\n");
+        exit(1);
+    }
+    fputs(pyinit.c_str(), fp);
+    fclose(fp);
+
+    fp = fopen((plugin_name + "/inputalt.dat").c_str(), "w");
+    if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
+        printf("Unable to create new inputalt.dat.\n");
+        exit(1);
+    }
+    fputs(input2.c_str(), fp);
+    fclose(fp);
+
+    fp = fopen((plugin_name + "/doc.rst").c_str(), "w");
+    if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
+        printf("Unable to create new doc.rst.\n");
+        exit(1);
+    }
+    fputs(doc.c_str(), fp);
+    fclose(fp);
+
     printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),  template_name.c_str());
-    printf("\tcreated: Makefile\n\tcreated: input.dat\n\tcreated: %s.cc\n", plugin_name.c_str());
+    printf("\tcreated: Makefile\n\tcreated: input.dat\n\tcreated: %s.cc\n"
+           "\tcreated: __init__.py\n\tcreated: pymodule.py\n"
+           "\tcreated: inputalt.dat\n\tcreated: doc.rst\n", plugin_name.c_str());
 }
 
 }

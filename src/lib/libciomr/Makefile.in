@@ -21,6 +21,7 @@ flin.cc \
 init_array.cc \
 init_matrix.cc \
 int_array.cc \
+long_int_array.cc \
 lubksb.cc \
 ludcmp.cc \
 mmult.cc \

@@ -74,18 +74,13 @@ View::View(int nirrep, int *rows, int *cols, int *row_offsets, int *col_offsets)
     }
 }
 
-View::View(SharedMatrix matrix, int *rows, int *cols)
+View::View(SharedMatrix matrix, const Dimension& rows, const Dimension& cols)
     : matrix_(matrix), nirrep_(0),
       row_offset_per_irrep_(0), col_offset_per_irrep_(0),
       rows_per_irrep_(0), cols_per_irrep_(0)
 
 {
     nirrep_ = matrix_->nirrep();
-
-    if (rows == 0)
-        throw InputException("Array of row sizes is 0.", "rows", 0, __FILE__, __LINE__);
-    if (cols == 0)
-        throw InputException("Array of column sizes is 0.", "cols", 0, __FILE__, __LINE__);
 
     rows_per_irrep_ = new int[nirrep_];
     cols_per_irrep_ = new int[nirrep_];
@@ -100,22 +95,13 @@ View::View(SharedMatrix matrix, int *rows, int *cols)
     }
 }
 
-View::View(SharedMatrix matrix, int *rows, int *cols, int *row_offsets, int *col_offsets)
+View::View(SharedMatrix matrix, const Dimension& rows, const Dimension& cols, const Dimension& row_offsets, const Dimension& col_offsets)
     : matrix_(matrix), nirrep_(0),
       row_offset_per_irrep_(0), col_offset_per_irrep_(0),
       rows_per_irrep_(0), cols_per_irrep_(0)
 
 {
     nirrep_ = matrix_->nirrep();
-
-    if (rows == 0)
-        throw InputException("Array of row sizes is 0.", "rows", 0, __FILE__, __LINE__);
-    if (cols == 0)
-        throw InputException("Array of column sizes is 0.", "cols", 0, __FILE__, __LINE__);
-    if (row_offsets == 0)
-        throw InputException("Array of row offsets is 0.", "row_offsets", 0, __FILE__, __LINE__);
-    if (col_offsets == 0)
-        throw InputException("Array of column offsets is 0.", "col_offsets", 0, __FILE__, __LINE__);
 
     rows_per_irrep_ = new int[nirrep_];
     cols_per_irrep_ = new int[nirrep_];

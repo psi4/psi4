@@ -1,0 +1,1 @@
+../configure --prefix=/theoryfs2/ds/parrish/psi4-ff/install-gcc-O0 --with-opt='-O0' --with-max-am-eri=5 --with-debug=yes --with-plugins

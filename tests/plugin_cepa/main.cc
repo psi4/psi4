@@ -1,12 +1,13 @@
 #include <libplugin/plugin.h>
 
 #include "cepa.h" 
+#include "../plugin_libcim/cim.h"
 
 INIT_PLUGIN
 
 // gpu ccsd class
 namespace psi{
-  void RunCoupledPair(Options &options);
+  void RunCoupledPair(Options &options,boost::shared_ptr<psi::CIM> wfn);
 };
 
 namespace psi{ namespace plugin_cepa{
@@ -33,7 +34,7 @@ read_options(std::string name, Options &options)
       /*- number of threads for triples, not set by default -*/
       options.add_int("NUM_THREADS", 1);
       /*- generate density-fitted integrals so we can skip
-          transqt2() and OutOfCoreSort(). default false */
+          transqt2() and OutOfCoreSort(). default false -*/
       options.add_bool("DF_INTEGRALS",false);
       /*- SCS MP2, default true -*/
       options.add_bool("SCS_MP2", true);
@@ -59,7 +60,10 @@ read_options(std::string name, Options &options)
 extern "C" PsiReturnType
 plugin_cepa(Options &options)
 {  
-  RunCoupledPair(options);
+  boost::shared_ptr<psi::CIM> wfn(new CIM());
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  wfn ->copy(ref);
+  RunCoupledPair(options,wfn);
   return  Success;
 } // end plugin_cepa
 
