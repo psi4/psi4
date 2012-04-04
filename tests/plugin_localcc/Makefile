@@ -39,7 +39,7 @@ PSITARGET = $(shell basename `pwd`).so
 #PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib 
 PSIINCLUDE = -I$(psi_top_objdir)/boost/boost_1_48_0 -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE) -DCUDA
-PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin /Users/deprince/psi4/tests/plugin_libcim/plugin_libcim.so
+PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
 
 CXXSRC = $(notdir $(wildcard *.cc))
 CUDASRC = $(notdir $(wildcard *.cu))

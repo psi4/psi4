@@ -1,12 +1,11 @@
 #include<libplugin/plugin.h>
 
 #include "ccsd.h" 
-#include "../plugin_libcim/cim.h"
 
 INIT_PLUGIN
 
 namespace psi{
-  void RunCoupledCluster(Options &options,boost::shared_ptr<psi::CIM> wfn);
+  void RunCoupledCluster(Options &options,boost::shared_ptr<psi::Wavefunction> wfn);
 };
 
 namespace psi{ namespace plugin_localcc{
@@ -53,11 +52,8 @@ read_options(std::string name, Options &options)
 extern "C" PsiReturnType
 plugin_localcc(Options &options)
 { 
-  //boost::shared_ptr<psi::CIM>  wfn =  Process::environment.reference_wavefunction();
-  boost::shared_ptr<psi::CIM> wfn(new CIM());
   boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
-  wfn->copy(ref);
-  RunCoupledCluster(options,wfn);
+  RunCoupledCluster(options,ref);
   return  Success;
 } // end plugin_localcc
 

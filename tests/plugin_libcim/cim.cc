@@ -40,6 +40,7 @@ double CIM::compute_energy(){
 
 void CIM::BuildClusters(){
   islocal = true;
+  isCIM_ = true;
   /*
    * grab reference and parameters
    */

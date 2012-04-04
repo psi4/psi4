@@ -2,7 +2,6 @@
 #include<libciomr/libciomr.h>
 
 #include"ccsd.h"
-#include"../plugin_libcim/cim.h"
 
 using namespace psi;
 using namespace boost;
@@ -14,7 +13,7 @@ namespace psi{
 
 namespace psi{
 
-void RunCoupledCluster(Options &options,boost::shared_ptr<psi::CIM> wfn){
+void RunCoupledCluster(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
 
   boost::shared_ptr<CoupledCluster> ccsd(new CoupledCluster(wfn));
   PsiReturnType status;
@@ -76,5 +75,4 @@ void RunCoupledCluster(Options &options,boost::shared_ptr<psi::CIM> wfn){
 }
 
 }
-
 

@@ -4,7 +4,6 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
-#include"../plugin_libcim/cim.h"
 
 // output files
 #define PSIF_IJAK  250
@@ -62,9 +61,9 @@ class CoupledCluster{
     /*
      * wavefunction.  pass explicitly so we can pass weird ones like cim.
      */
-    boost::shared_ptr<psi::CIM> wfn_;
+    boost::shared_ptr<psi::Wavefunction> wfn_;
 
-    CoupledCluster(boost::shared_ptr<psi::CIM> wfn);
+    CoupledCluster(boost::shared_ptr<psi::Wavefunction> wfn);
     ~CoupledCluster();
 
     /**

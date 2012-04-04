@@ -40,7 +40,7 @@ long int Position(long int i,long int j){
 
 namespace psi{
 
-CoupledCluster::CoupledCluster(boost::shared_ptr<psi::CIM> wfn)
+CoupledCluster::CoupledCluster(boost::shared_ptr<psi::Wavefunction> wfn)
 {
   wfn_ = wfn;
 }
@@ -934,7 +934,8 @@ void CoupledCluster::SCS_CCSD(){
   psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_KLCD,1);
 
-  double**Rii = wfn_->Rii->pointer();
+  SharedMatrix Rii = wfn_->CIMTransformationMatrix();
+  double**Rii_pointer = Rii->pointer();
   // transform E2klcd back from quasi-canonical basis
   for (i=0; i<o; i++){
       for (a=0; a<v; a++){
@@ -942,7 +943,7 @@ void CoupledCluster::SCS_CCSD(){
               for (b=0; b<v; b++){
                   double dum = 0.0;
                   for (int ip=0; ip<o; ip++){
-                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii[ip][i];
+                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii_pointer[ip][i];
                   }
                   integrals[i*o*v*v+a*o*v+j*v+b] = dum;
               }
@@ -972,7 +973,7 @@ void CoupledCluster::SCS_CCSD(){
               for (j=0; j<o; j++){
                   double dum = 0.0;
                   for (int ip=0; ip<o; ip++){
-                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii[ip][i];
+                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii_pointer[ip][i];
                   }
                   tempt[a*o*o*v+b*o*o+i*o+j] = dum;
               }
@@ -990,7 +991,8 @@ void CoupledCluster::SCS_CCSD(){
   }
 
 
-
+  SharedVector factor = wfn_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
   for (a=o; a<rs; a++){
       for (b=o; b<rs; b++){
           for (i=0; i<o; i++){
@@ -998,8 +1000,8 @@ void CoupledCluster::SCS_CCSD(){
 
                   iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
                   jaib = iajb + (i-j)*v*(1-v*o);
-                  osenergy += integrals[iajb]*(tempt[ijab])*wfn_->centralfac[i];
-                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*wfn_->centralfac[i];
+                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*factor_pointer[i];
                           
                   ijab++;
               }
@@ -1068,7 +1070,6 @@ double CoupledCluster::CheckEnergy(){
      psio->close(PSIF_T2,1);
      tb = tempv;
   }
-  double**Rii = wfn_->Rii->pointer();
   for (a=o; a<rs; a++){
       for (b=o; b<rs; b++){
           for (i=0; i<o; i++){
