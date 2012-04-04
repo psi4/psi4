@@ -951,6 +951,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
     /*- The blocking scheme for DFT. -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
+    /*- Testing of XC gradient !expert -*/
+    options.add_bool("XC_GRADIENT", false);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed
@@ -1408,11 +1410,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Root to get OPDM -*/
     options.add_int("FOLLOW_ROOT",1);
   }
-  if(name == "STABLE"|| options.read_globals()) {
+  if(name == "STABILITY"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
          by the user-*/
     /*- Reference wavefunction type -*/
-    options.add_str("REFERENCE","RHF");
+    options.add_str("REFERENCE","RHF", "RHF UHF ROHF");
     /*- -*/
     options.add_int("CACHELEVEL",2);
     /*- Do follow the most negative eigenvalue of the Hessian towards a lower
@@ -2180,6 +2182,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTRAFRAG_STEP_LIMIT_MIN", 0.001);
       /*- Upper bound for dynamic trust radius [au] -*/
       options.add_double("INTRAFRAG_STEP_LIMIT_MAX", 1.0);
+      /*- Maximum step size in bohr or radian along an interfragment coordinate -*/
+      options.add_double("INTERFRAG_STEP_LIMIT", 0.4);
       /*- Set number of consecutive backward steps allowed in optimization -*/
       options.add_int("CONSECUTIVE_BACKSTEPS", 0);
 

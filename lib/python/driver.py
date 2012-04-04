@@ -773,7 +773,7 @@ def optimize(name, **kwargs):
             G = PsiMod.get_gradient()
             PsiMod.IOManager.shared_object().set_specific_retention(1, True)
             PsiMod.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(name, irrep=1, **kwargs) # only need symmetric ones
+            frequencies(name, **kwargs)
             steps_since_last_hessian = 0
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)

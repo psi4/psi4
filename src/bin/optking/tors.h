@@ -38,6 +38,7 @@ class TORS : public SIMPLE {
     void print_disp(FILE *fp, const double old_q, const double f_q, 
       const double dq, const double new_q, int atom_offset=0) const;
     bool operator==(const SIMPLE & s2) const;
+    std::string get_definition_string(int atom_offset=0) const;
 
     void fix_tors_near_180(GeomType geom);
 
