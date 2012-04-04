@@ -322,16 +322,16 @@ void HF::integrals()
         if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
 
             // Need a temporary functional
-            boost::shared_ptr<psi::functional::SuperFunctional> functional = 
-                psi::functional::SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),1,1);
+            boost::shared_ptr<SuperFunctional> functional = 
+                SuperFunctional::build(options_.get_str("DFT_FUNCTIONAL"),1,1);
             
             // K matrices
-            jk_->set_do_K(functional->isHybrid());
+            jk_->set_do_K(functional->is_x_hybrid());
             // wK matrices 
-            jk_->set_do_wK(functional->isRangeCorrected());
+            jk_->set_do_wK(functional->is_x_lrc());
             // w Value
-            if (functional->isRangeCorrected()) {
-                double omega = functional->getOmega();
+            if (functional->is_x_lrc()) {
+                double omega = functional->x_omega();
                 if (options_["DFT_OMEGA"].has_changed()) {
                     omega = options_.get_double("DFT_OMEGA"); 
                 }

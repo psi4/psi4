@@ -1563,7 +1563,25 @@ void MolecularGrid::applyStratmannWeights()
 {
     throw FeatureNotImplemented("psi::MolecularGrid","applyStratmannWeights", __FILE__, __LINE__);
 }
-void MolecularGrid::print(FILE* out, int print)
+void MolecularGrid::print(FILE* out, int print) const
+{
+    fprintf(out,"   => Molecular Quadrature <=\n\n");
+
+    boost::shared_ptr<AtomicGrid> atom = atoms_[0];
+    boost::shared_ptr<SphericalGrid> sphere = atom->spherical()[0];
+    boost::shared_ptr<RadialGrid> radial = atom->radial(); 
+
+    fprintf(out,"    Spherical Scheme = %14s\n" ,sphere->scheme().c_str());
+    fprintf(out,"    Radial Scheme    = %14s\n" ,radial->scheme().c_str());
+    fprintf(out,"    Atomic Scheme    = %14s\n", scheme_.c_str());
+    fprintf(out,"\n");
+
+    fprintf(out,"    Spherical Points = %14d\n", sphere->npoints());
+    fprintf(out,"    Radial Points    = %14d\n", radial->npoints()); 
+    fprintf(out,"    Total Points     = %14d\n", npoints_);
+    fprintf(out,"\n");
+}
+void MolecularGrid::print_full(FILE* out, int print)
 {
     fprintf(out, "   => Molecular Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d\n\n", npoints_);

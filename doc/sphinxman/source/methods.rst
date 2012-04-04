@@ -18,6 +18,7 @@ A complete list of standard keywords is provided in Appendix
    notes_c
    dfmp2
    detci
+   adc
    sapt
    optking
 

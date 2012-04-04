@@ -3317,11 +3317,11 @@ void PSJK::build_QR()
     // R (Collocation)
     R_ = SharedMatrix(new Matrix("R", nbf, npoints));
     double** Rp = R_->pointer();
-    boost::shared_ptr<PointFunctions> points(new PointFunctions(primary_, max_points, max_functions));
+    boost::shared_ptr<BasisFunctions> points(new BasisFunctions(primary_, max_points, max_functions));
     const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid->blocks();
     int offset = 0;
     for (int index = 0; index < blocks.size(); index++) {
-        points->computePoints(blocks[index]);
+        points->compute_functions(blocks[index]);
         SharedMatrix phi = points->basis_value("PHI");
         double** phip = phi->pointer();
         const std::vector<int>& funmap = blocks[index]->functions_local_to_global();
