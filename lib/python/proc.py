@@ -641,7 +641,7 @@ def run_dfmp2(name, **kwargs):
     e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
     if (name.upper() == 'SCS-DFMP2'):
         return e_scs_dfmp2
-    elif (name.upper() == 'DFMP2'):
+    elif (name.upper() == 'DF-MP2'):
         return e_dfmp2
 
 
@@ -793,6 +793,10 @@ def run_sapt(name, **kwargs):
     """
 
     molecule = PsiMod.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(True)
+    molecule.update_geometry()
 
     sapt_basis = 'dimer'
     if 'sapt_basis' in kwargs:
@@ -870,6 +874,10 @@ def run_sapt(name, **kwargs):
     banner(name.upper())
     PsiMod.print_out('\n')
     e_sapt = PsiMod.sapt()
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
+
     return e_sapt
 
 
@@ -879,7 +887,11 @@ def run_sapt_ct(name, **kwargs):
 
     """
     molecule = PsiMod.get_active_molecule()
+    user_pg = molecule.schoenflies_symbol()
+    molecule.reset_point_group('c1')
+    molecule.fix_orientation(True)
     molecule.update_geometry()
+
     monomerA = molecule.extract_subsets(1, 2)
     monomerA.set_name('monomerA')
     monomerB = molecule.extract_subsets(2, 1)
@@ -986,6 +998,9 @@ def run_sapt_ct(name, **kwargs):
     PsiMod.print_out(line2)
     PsiMod.print_out(line3)
     PsiMod.set_variable('SAPT CT ENERGY', CT)
+
+    molecule.reset_point_group(user_pg)
+    molecule.update_geometry()
 
     return e_sapt
 

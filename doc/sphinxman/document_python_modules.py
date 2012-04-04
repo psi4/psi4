@@ -33,7 +33,7 @@ for pyfile in glob.glob('../../lib/python/*.py'):
         fdriver.write('   :undoc-members:\n')
     
         if basename == 'driver':
-            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq\n')
+            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property\n')
         elif basename == 'wrappers':
             fdriver.write('   :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction,\n')
             fdriver.write('       db, database, cbs, complete_basis_set, highest_1, scf_xtpl_helgaker_3,\n')
@@ -59,7 +59,9 @@ for pyfile in glob.glob('../../lib/databases/*.py'):
 
         pts('database', basename)
     
-        fdriver.write('.. automodule:: %s\n' % (basename))
+        fdriver.write(':srcdb:`%s`\n%s\n\n' % (basename, '"' * (9 + len(basename))))
+        fdriver.write('.. automodule:: %s\n\n' % (basename))
+        fdriver.write('----\n')
 
     fdriver.write('\n')
 fdriver.close()
@@ -325,7 +327,6 @@ for pydir in glob.glob('../../tests/plugin_*'):
     div = '=' * len(dirname)
 
     if dirname not in []:
-    #if dirname == 'plugin_python':
 
         pts('plugin', dirname)
         fdriver.write('   autodir_plugins/module__%s' % (dirname))
@@ -333,8 +334,10 @@ for pydir in glob.glob('../../tests/plugin_*'):
         fmodule = open('source/autodir_plugins/module__'+dirname+'.rst', 'w')
         fmodule.write('\n.. _`sec:%s`:\n' % (dirname.lower()))
         fmodule.write('.. index:: plugin; %s\n\n' % (dirname.lower()))
-        fmodule.write(dirname.lower() + '\n')
-        fmodule.write(div + '\n\n')
+        fmodule.write(':srcplugin:`' + dirname.lower() + '`\n')
+        fmodule.write(div + '=============' + '\n\n')
+        #fmodule.write(dirname.lower() + '\n')
+        #fmodule.write(div + '\n\n')
         #fmodule.write('.. toctree::\n   :hidden:\n   :glob:\n\n   %s__*\n\n' % (dirname.lower()))
         fmodule.write('.. toctree::\n   :hidden:\n\n   /autodir_plugins/glossary__%s\n\n' % (dirname.lower()))
         fglossary = open('source/autodir_plugins/glossary__'+dirname+'.rst', 'w')
