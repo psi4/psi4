@@ -127,6 +127,7 @@ public:
         Options& options);
     virtual ~RV();
 
+    boost::shared_ptr<RKSFunctions> properties() const { return properties_; }
     virtual void initialize();
     virtual void finalize();
 
@@ -148,6 +149,7 @@ public:
         Options& options);
     virtual ~UV();
 
+    boost::shared_ptr<UKSFunctions> properties() const { return properties_; }
     virtual void initialize();
     virtual void finalize();
 

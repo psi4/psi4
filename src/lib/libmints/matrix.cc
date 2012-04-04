@@ -1984,49 +1984,166 @@ void Matrix::power(double alpha, double cutoff)
     }
 }
 
-void Matrix::exp()
+void Matrix::expm(int m, bool scale)
 {
     if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::exp: Matrix is non-totally symmetric.");
+        throw PSIEXCEPTION("Matrix::expm: Matrix is non-totally symmetric.");
     }
 
-    for (int h=0; h<nirrep_; ++h) {
+    // Build the Pade Table
+    std::vector<double> fact;
+    fact.push_back(1.0);
+    for (int i = 1; i <= 2*m; i++) {
+        fact.push_back(fact[i-1] * i); 
+    }    
+    std::vector<double> alpha;
+    for (int k = 0; k <= m; k++) {
+        alpha.push_back((fact[2*m-k] * fact[m])/(fact[2*m] * fact[k] * fact[m-k]));
+    }
+
+    // Form the exponential
+    for (int h = 0; h < nirrep_; ++h) {
         if (rowspi_[h] == 0) continue;
-
+    
         int n = rowspi_[h];
-        double** A = matrix_[h];
+        double** A = matrix_[h];        
 
-        double** A1 = Matrix::matrix(n,n);
-        double** A2 = Matrix::matrix(n,n);
-        double* a  = new double[n];
+        double L, S;
+        if (scale) {
+            // Trace reduction
+            L = 0.0;
+            for (int i = 0; i < n; i++) {
+                L += A[i][i];
+            }
+            L /= (double) n;
+            for (int i = 0; i < n; i++) {
+                A[i][i] -= L;
+            }
 
-        memcpy(static_cast<void*>(A1[0]), static_cast<void*>(A[0]), sizeof(double)*n*n);
+            // Scaling
+            double norm = 0.0;
+            for (int i = 0; i < n; i++) {
+                double row = 0.0;
+                for (int j = 0; j < n; j++) {
+                    row += fabs(A[i][j]);
+                }
+                norm = (norm > row ? norm : row);
+            }
+            double mag = log(norm) / log(2.0);
+            mag = (mag < 0.0 ? 0.0 : mag);
+            mag = (mag > 4.0 ? 4.0 : mag);
+            int S = (int)(mag);
+            C_DSCAL(n*(unsigned long int) n, pow(2.0, -S), A[0], 1);
+        }
+ 
+        double** T = Matrix::matrix(n,n);
+        double** U = Matrix::matrix(n,n);
+        double** X = Matrix::matrix(n,n);
+        double** Y = Matrix::matrix(n,n);
 
-        // Eigendecomposition
-        double lwork;
-        int stat = C_DSYEV('V','U',n,A1[0],n,a,&lwork,-1);
-        double* work = new double[(int)lwork];
-        stat = C_DSYEV('V','U',n,A1[0],n,a,work,(int)lwork);
-        delete[] work;
+        // Zero-th Order
+        for (int i = 0; i < n; i++) {
+            X[i][i] = 1.0;
+        }    
 
-        if (stat)
-            throw PSIEXCEPTION("Matrix::exp: C_DSYEV failed");
+        // Build X and Y as polynomials in A
+        ::memcpy((void*) T[0], (void*) A[0], sizeof(double) * n * n);
+        for (int Q = 1; Q <= m; Q++) {
 
-        memcpy(static_cast<void*>(A2[0]), static_cast<void*>(A1[0]), sizeof(double)*n*n);
+            if ((Q % 2) == 1)
+                C_DAXPY(n * (unsigned long int) n,  alpha[Q], T[0], 1, Y[0], 1);
+            else 
+                C_DAXPY(n * (unsigned long int) n,  alpha[Q], T[0], 1, X[0], 1);
 
-        for (int i=0; i<n; i++) {
+            if (Q == m) break;
 
-            a[i] = ::exp(a[i]);
+            // T *= A
+            C_DGEMM('N','N',n,n,n,1.0,T[0],n,A[0],n,0.0,U[0],n);
+            double** t = T;
+            T = U;
+            U = t;
+        }
+        
+        // Build N and D as polynomials in A (avoids cancelation)
+        double** N = T;
+        double** D = U;
 
-            C_DSCAL(n, a[i], A2[i], 1);
+        ::memcpy((void*) N[0], (void*) X[0], sizeof(double) * n * n);
+        ::memcpy((void*) D[0], (void*) X[0], sizeof(double) * n * n);
+        C_DAXPY(n * (unsigned long int) n, -1.0, Y[0], 1, N[0], 1);
+        C_DAXPY(n * (unsigned long int) n,  1.0, Y[0], 1, D[0], 1);
+
+        //fprintf(outfile,"  ## N ##\n\n");
+        //print_mat(N,n,n,outfile); 
+        //fprintf(outfile,"  ## D ##\n\n");
+        //print_mat(D,n,n,outfile); 
+
+        // Solve exp(A) = N / D = D^{1} N = D \ N
+        int* ipiv = new int[n];        
+
+        // LU = D
+        int info1 = C_DGETRF(n,n,D[0],n,ipiv);
+        if (info1) 
+            throw PSIEXCEPTION("Matrix::expm: LU factorization of D failed");
+
+        // Transpose N before solvation (FORTRAN)
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                double temp = N[j][i];
+                N[j][i] = N[i][j];
+                N[i][j] = temp;
+            }
         }
 
-        C_DGEMM('T','N',n,n,n,1.0,A2[0],n,A1[0],n,0.0,A[0],n);
+        //fprintf(outfile,"  ## LU ##\n\n");
+        //print_mat(D,n,n,outfile); 
+        //fprintf(outfile,"  ## S(0) ##\n\n");
+        //print_mat(N,n,n,outfile); 
 
-        delete[] a;
-        Matrix::free(A1);
-        Matrix::free(A2);
+        // D \ N
+        int info2 = C_DGETRS('N',n,n,D[0],n,ipiv,N[0],n);
+        if (info2) 
+            throw PSIEXCEPTION("Matrix::expm: LU solution of D failed");
 
+        delete[] ipiv;
+    
+        //fprintf(outfile,"  ## S ##\n\n");
+        //print_mat(N,n,n,outfile); 
+
+        if (scale) {
+
+            // Copy result back to A, transposing as you go (back to C++)
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    X[i][j] = N[j][i];
+                }
+            }
+
+            // Inverse scale
+            for (int i = 0; i < S; i++) {
+                C_DGEMM('N','N',n,n,n,1.0,X[0],n,X[0],n,0.0,Y[0],n);
+                double** t = X;
+                X = Y;
+                Y = t; 
+            }
+            ::memcpy((void*) A[0], (void*) X[0], sizeof(double) * n * n);
+
+            // Inverse trace shift
+            C_DSCAL(n * (unsigned long int) n, exp(L), A[0], 1);
+
+        } else {        
+            // Copy result back to A, transposing as you go (back to C++)
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    A[i][j] = N[j][i];
+                }
+            }
+        }
+
+        Matrix::free(X);
+        Matrix::free(Y);
+        Matrix::free(T);
+        Matrix::free(U);
     }
 }
 
