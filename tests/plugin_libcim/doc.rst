@@ -62,7 +62,7 @@ cluster of 8 water molecules. ::
 	}
 	energy('cim-ccsd(t)')
 
-Note that we have included the path to the plugin directory (here, /Users/deprince/psi4/tests/) and imported the plugin. These commands are necesarry to call the CIM procedure via the :py:func:`~driver.energy`. Publications from the use of the CIM code should cite my non-existent paper: [DePrince!].
+Note that we have included the path to the plugin directory (here, /Users/deprince/psi4/tests/) and imported the plugin. These commands are necesarry to call the CIM procedure via :py:func:`~driver.energy`. Publications from the use of the CIM code should cite my non-existent paper: [DePrince!].
 
 CIM
 ^^^^^^^^^^^^^^^^
@@ -71,12 +71,23 @@ In principle, the CIM framework can be
 applied to any post-Hartree-Fock method. Current capabilities include
 CCSD, CCSD(T), and a family of coupled-pair methods:
 
-* cim-ccsd, coupled cluster with single and double excitations (CCSD)
-* cim-ccsd(t), CCSD with perturbative triples
-* cim-cepa(n), coupled electron pair approximation (CEPA), variant n
-* cim-acpf, averaged coupled pair functional (ACPF)
-* cim-aqcc, averaged quadratic coupled cluster (AQCC)
-* cim-cisd, configuration interaction with single and double excitations (CISD)
+    .. _`table:cim_calls`:
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method                                                                          |
+    +=========================+=======================================================================================+
+    | cim-ccsd                | coupled-cluster with single and double excitations (CCSD)                             |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cim-ccsd(t)             | CCSD with perturbative triples                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cim-cepa(n)             | coupled electron pair approximation, variant n                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cim-acpf                | averaged coupled-pair functional                                                      |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cim-aqcc                | averaged quadratic coupled-cluster                                                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | cim-cisd                | configuration interaction with single and double excitations                          |
+    +-------------------------+---------------------------------------------------------------------------------------+
 
 Basic CIM Keywords
 ~~~~~~~~~~~~~~~~~~
@@ -102,4 +113,4 @@ Advanced CIM Keywords
 Running CIM in parallel
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-One desirable feature of the CIM framework is the embarassingly parallel structure of the energy decomposition.  In |PSIfour|, one can perform the CIM procedure in parallel (with mpi4py) on N nodes by ``mpirun -n N psi4 input.dat``.  Note that threading within the underlying correlated calculations is independent of the MPI parallelism.  The command ``mpirun -n 8 psi4 input.dat`` with :term:`num_threads` set to 8 in input.dat will spawn 8 mpi ranks, and each rank will use 8 OpenMP threads within the correlated calculation.
+One desirable feature of the CIM framework is the embarassingly parallel structure of the energy decomposition.  In |PSIfour|, one can perform the CIM procedure in parallel (with mpi4py) on N nodes by ``mpirun -n N psi4 input.dat``.  Note that threading within the underlying correlated calculations is independent of the MPI parallelism.  The command ``mpirun -n 8 psi4 input.dat`` with :term:`num_threads <num_threads (PLUGIN_CCSD_SERIAL)>` set to 8 in input.dat will spawn 8 mpi ranks, and each rank will use 8 OpenMP threads within the correlated calculation.
