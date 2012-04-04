@@ -486,6 +486,7 @@ functionals = {
         'wpbe_x'      : build_wpbe_x_functional,
         'wb88_x'      : build_wb88_x_functional,
         'ft97b_x'     : build_primitive_functional,
+        'm_x'         : build_primitive_functional,
         'lyp_c'       : build_primitive_functional,
         'pz81_c'      : build_primitive_functional,
         'p86_c'       : build_primitive_functional,
@@ -499,6 +500,9 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b972_c'      : build_primitive_functional,
         'b974_c'      : build_primitive_functional,
+        'p_c'         : build_primitive_functional,
+        'b_c'         : build_primitive_functional,
+        'm_c'         : build_primitive_functional,
     }
 
 def build_functional(alias):
@@ -974,6 +978,60 @@ def build_b971_superfunctional(name, npoints, deriv):
     C.set_parameter('ccaa0', 0.0820011)
     C.set_parameter('ccaa1', 2.71681)
     C.set_parameter('ccaa2',-2.87103)
+
+    sup.add_x_functional(X)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.21)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
+def build_b971q_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('B97-1 (def2)')
+    # Tab in, trailing newlines 
+    sup.set_description('    B97-1 Hybrid-GGA Exchange-Correlation Functional\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    F.A. Hamprecht et. al., J. Chem. Phys., 109(15), 6264-6271, 1998\n')
+
+    # Add member functionals
+    X = build_functional('B97_X')
+    X.set_name('B97-1_X')
+    X.set_alpha(1.0/0.79)
+
+    X.set_parameter('B97_gamma', 0.004)
+    X.set_parameter('B97_a0', 0.789518)
+    X.set_parameter('B97_a1', 0.573805)
+    X.set_parameter('B97_a2', 0.660975)
+
+    C = build_functional('B_C')
+    C.set_name('B97-1_C')
+
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 0.955689)
+    C.set_parameter('B97_os_a1', 0.788552)
+    C.set_parameter('B97_os_a2',-5.47869)
+
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 0.0820011)
+    C.set_parameter('B97_ss_a1', 2.71681)
+    C.set_parameter('B97_ss_a2',-2.87103)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1615,6 +1673,80 @@ def build_wb97x_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup 
 
+def build_m05_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('M05')
+    # Tab in, trailing newlines 
+    sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n') 
+    # Tab in, trailing newlines 
+    sup.set_citation('    Zhao et. al., J. Chem. Phys., 123, 161103, 2005\n') 
+
+    # Add member functionals
+    X = build_functional('M_X')
+    X.set_name('M05_X')
+    X.set_alpha(1.0)
+
+    # LSDA Exchange type is Slater, no parameters
+
+    # GGA Exchange type is PBE, no parameters
+
+    # Meta Exchange type is insane mess of w power series expansion 
+    X.set_parameter('Meta_a0' , 1.0)
+    X.set_parameter('Meta_a1' , 0.08151)
+    X.set_parameter('Meta_a2' ,-0.43956)  
+    X.set_parameter('Meta_a3' ,-3.22422)
+    X.set_parameter('Meta_a4' , 2.01819)
+    X.set_parameter('Meta_a5' , 8.79431) 
+    X.set_parameter('Meta_a6' ,-0.00295) # Loss of sig-figs asshole! 
+    X.set_parameter('Meta_a7' , 9.82029) 
+    X.set_parameter('Meta_a8' ,-4.82351)  
+    X.set_parameter('Meta_a9' ,-48.17574) # This doesn't mean anything! 
+    X.set_parameter('Meta_a10', 3.64802)
+    X.set_parameter('Meta_a11', 34.02248)
+
+    C = build_functional('M_C')
+    C.set_name('M05_C')
+
+    # LSDA Correlation type is PW92, no parameters
+
+    # GGA Correlation type is B97
+    C.set_parameter('B97_os_gamma', 0.0031)
+    C.set_parameter('B97_os_a0', 1.0)
+    C.set_parameter('B97_os_a1', 3.77344)
+    C.set_parameter('B97_os_a2',-26.04463)
+    C.set_parameter('B97_os_a3', 30.69913)
+    C.set_parameter('B97_os_a4',-9.22695)  
+
+    C.set_parameter('B97_ss_gamma', 0.06)
+    C.set_parameter('B97_ss_a0', 1.0)
+    C.set_parameter('B97_ss_a1', 3.78569)
+    C.set_parameter('B97_ss_a2',-14.15261)
+    C.set_parameter('B97_ss_a3',-7.46589)
+    C.set_parameter('B97_ss_a4', 17.94491)
+
+    sup.add_x_functional(X)
+    #sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.28)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
 def build_primitive_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -1675,6 +1807,7 @@ superfunctionals = {
         'vwn5_c'    : build_primitive_superfunctional,
         'vwn3rpa_c' : build_primitive_superfunctional,
         'vwn3_c'    : build_primitive_superfunctional,
+        'p_c'       : build_primitive_superfunctional,
         'svwn'      : build_svwn_superfunctional,
         'blyp'      : build_blyp_superfunctional,
         'bp86'      : build_bp86_superfunctional,
@@ -1686,6 +1819,7 @@ superfunctionals = {
         'pbe0'      : build_pbe0_superfunctional,
         'b97-0'     : build_b970_superfunctional,
         'b97-1'     : build_b971_superfunctional,
+        'b97-1q'    : build_b971q_superfunctional,
         'b97-2'     : build_b972_superfunctional,
         'hcth'      : build_hcth_superfunctional,
         'hcth120'   : build_hcth120_superfunctional,
@@ -1703,6 +1837,7 @@ superfunctionals = {
         'wblyp'     : build_wblyp_superfunctional,
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,
+        'm05'       : build_m05_superfunctional,
     }
 
 def build_superfunctional(alias, npoints, deriv):

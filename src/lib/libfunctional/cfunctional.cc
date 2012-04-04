@@ -145,6 +145,7 @@ void CFunctional::compute_ss_functional(const std::map<std::string,SharedVector>
         double rho13 = pow(rho, 1.0/3.0);
         double rho43 = rho * rho13;
         double rho73 = rho * rho43;
+        double rho83 = rho73 * rho13;
 
         // => LDA Part <= //
         
@@ -153,42 +154,33 @@ void CFunctional::compute_ss_functional(const std::map<std::string,SharedVector>
         if (lsda_type_ == LSDA_None) {
             throw PSIEXCEPTION("WTF");
         } else if (lsda_type_ == PW92) {
-            
-            double r = _c0_ * pow(rho, -1.0/3.0);
-            double r_rho = -1.0/3.0 * _c0_ * pow(rho, -4.0/3.0);
-            
-            double EcP;
-            double EcP_r;
-            G2(r, &EcP, &EcP_r);
-           
-            E = rho * EcP;
-            E_rho = EcP_r * r_rho; 
+            double E_z;
+            PW92_C(rho, 1.0, &E, &E_rho, &E_z);    
         }
 
         // => GGA Part <= //
-        double s, s_rho, s_gamma;
+        double s2, s2_rho, s2_gamma;
         if (gga_) {
-            s = sqrt(gamma) / rho43;
-            s_rho = - 4.0 / 3.0 * sqrt(gamma) / rho73;
-            s_gamma = 1.0 / 2.0 * pow(gamma,-1.0/2.0) / rho43; 
+            s2 = gamma / rho83;
+            s2_rho = - 8.0 / 3.0 * gamma / (rho83 * rho);
+            s2_gamma = 1.0 / rho83; 
         } else {
-            s = 0.0;
-            s_rho = 0.0;
-            s_gamma = 0.0;
+            s2 = 0.0;
+            s2_rho = 0.0;
+            s2_gamma = 0.0;
         }
 
-        double Fs;
-        double Fs_s;
+        double Fs2;
+        double Fs2_s2;
         if (gga_type_ == GGA_None) {
-            Fs = 1.0;
-            Fs_s = 0.0;
+            Fs2 = 1.0;
+            Fs2_s2 = 0.0;
         } else if (gga_type_ == B97) {
-            Fs = 0.0;
-            Fs_s = 0.0;
-            double s2 = s * s;
+            Fs2 = 0.0;
+            Fs2_s2 = 0.0;
             double gs2 = 1.0 + _B97_ss_gamma_ * s2; 
             double g = _B97_ss_gamma_ * s2 / gs2; 
-            double g_s = 2.0 * _B97_ss_gamma_ * s / (gs2 * gs2);
+            double g_s2 = _B97_ss_gamma_ / (gs2 * gs2);
 
             double buf = 1.0; 
             double buf2 = 0.0; 
@@ -196,8 +188,8 @@ void CFunctional::compute_ss_functional(const std::map<std::string,SharedVector>
             int size = _B97_ss_a_.size();
             for (int A = 0; A < size; A++) {
                 double a = _B97_ss_a_[A];
-                Fs += a * buf;
-                Fs_s += A * a * buf2 * g_s; 
+                Fs2 += a * buf;
+                Fs2_s2 += A * a * buf2 * g_s2; 
                 buf2 = buf;
                 buf *= g;                  
             }
@@ -218,17 +210,17 @@ void CFunctional::compute_ss_functional(const std::map<std::string,SharedVector>
         }
  
         // => Assembly <= //
-        v[Q] += A * E * Fs * D; 
+        v[Q] += A * E * Fs2 * D; 
         if (deriv >= 1) {
-            v_rho[Q] += A * (Fs * D  * (E_rho) +
-                             E  * D  * (Fs_s * s_rho) +
-                             E  * Fs * (D_rho));
+            v_rho[Q] += A * (Fs2 * D   * (E_rho) +
+                             E   * D   * (Fs2_s2 * s2_rho) +
+                             E   * Fs2 * (D_rho));
             if (gga_) {
-                v_gamma[Q] += A * (E  * D  * (Fs_s * s_gamma) +
-                                   E  * Fs * (D_gamma));
+                v_gamma[Q] += A * (E  * D   * (Fs2_s2 * s2_gamma) +
+                                   E  * Fs2 * (D_gamma));
             }
             if (meta_) {
-                v_tau[Q] += A * (E * Fs * D_tau);
+                v_tau[Q] += A * (E * Fs2 * D_tau);
             }
         }
     }
@@ -312,102 +304,45 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
             throw PSIEXCEPTION("WTF");
         } else if (lsda_type_ == PW92) {
 
+            double rho = rho_a + rho_b;
+            double rho_rho_a = 1.0;
+            double rho_rho_b = 1.0;
+
             double z = (rho_a - rho_b) / (rho_a + rho_b);
-
-            double f = (pow(1.0 + z, 4.0/3.0) + (1.0 - z, 4.0/3.0) - 2.0) / (2.0 * (_two13_ - 1.0));    
-
-            double r = _c0_ * pow(rho_a + rho_b, -1.0/3.0);
-            
-            double EcP;
-            double EcP_r;
-
-            double EcF;
-            double EcF_r;
-
-            double Ac;
-            double Ac_r;
-
-            G1(r, &Ac , &Ac_r );
-            G2(r, &EcP, &EcP_r);
-            G3(r, &EcF, &EcF_r);
-
-            double Q = EcP + Ac * f * (1.0 - z * z * z * z) / _d2fz0_ + (EcF - EcP) * f * z * z * z * z;
-
-            double ra = _c0_ * pow(rho_a, -1.0/3.0);
-            double rb = _c0_ * pow(rho_b, -1.0/3.0);
-            
-            double EcPa;
-            double EcPa_ra;
-
-            double EcPb;
-            double EcPb_rb;
-
-            G2(ra, &EcPa, &EcPa_ra);
-            G2(rb, &EcPb, &EcPb_rb);
-
-            double Ea = rho_a * EcPa;
-            double Eb = rho_b * EcPb;
-
-            E = (rho_a + rho_b) * Q - Ea - Eb;
-
-            double E_Ea = -1.0;
-            double E_Eb = -1.0;
-
-            double Ea_EcPa = rho_a;
-            double Eb_EcPb = rho_b;
-
-            double E_EcPa = Ea_EcPa * E_Ea; 
-            double E_EcPb = Eb_EcPb * E_Eb; 
-
-            double E_ra = EcPa_ra * E_EcPa; 
-            double E_rb = EcPb_rb * E_EcPb; 
-
-            double E_Q = (rho_a + rho_b);
-
-            double Q_EcF = f * z * z * z * z;
-
-            double E_EcF = Q_EcF * E_Q;
-
-            double Q_EcP = 1.0 - f * z * z * z * z;
-
-            double E_EcP = Q_EcP * E_Q;
-
-            double Q_Ac = f * (1.0 - z * z * z * z) / _d2fz0_;
-
-            double E_Ac = Q_Ac * E_Q;
-
-            double E_r = EcP_r * E_EcP + EcF_r * E_EcF + Ac_r * E_Ac;
-
-            double Q_f = Ac * (1.0 - z * z * z * z) / _d2fz0_ + (EcF - EcP) * z * z * z * z;
-
-            double E_f = Q_f * E_Q;
-
-            double Q_z = -4.0 * Ac * f * z * z * z / _d2fz0_ + 4.0 * (EcF - EcP) * f * z * z * z; 
-            double f_z = (4.0/3.0 * pow(1.0 + z, 1.0/3.0) + 4.0/3.0 * pow(1.0 - z, 1.0/3.0)) / (2.0 * (_two13_ - 1.0));
-
-            double E_z = Q_z * E_Q + f_z * Q_f;
-
-            double r_rho_a = -1.0/3.0 * _c0_ * pow(rho_a + rho_b, -4.0/3.0);
-            double r_rho_b = r_rho_a;
-
-            double ra_rho_a = -1.0/3.0 * _c0_ * pow(rho_a, -4.0/3.0);
-            double rb_rho_b = -1.0/3.0 * _c0_ * pow(rho_b, -4.0/3.0);
-
             double z_rho_a =  2.0 * rho_b / ((rho_a + rho_b) * (rho_a + rho_b));
             double z_rho_b = -2.0 * rho_a / ((rho_a + rho_b) * (rho_a + rho_b));
 
-            E_rho_a = r_rho_a * E_r + z_rho_a * E_z + ra_rho_a * E_ra;
-            E_rho_b = r_rho_b * E_r + z_rho_b * E_z + rb_rho_b * E_rb;
+            double Eab;
+            double Eab_rho; 
+            double Eab_z; 
+
+            PW92_C(rho, z, &Eab, &Eab_rho, &Eab_z);
+
+            double Ea;
+            double Ea_rho_a; 
+            double Ea_z; 
+
+            PW92_C(rho_a, 1.0, &Ea, &Ea_rho_a, &Ea_z);
+
+            double Eb;
+            double Eb_rho_b; 
+            double Eb_z; 
+
+            PW92_C(rho_b, 1.0, &Eb, &Eb_rho_b, &Eb_z);
+
+            E = Eab - Ea - Eb;
+            E_rho_a = Eab_rho * rho_rho_a + Eab_z * z_rho_a - Ea_rho_a;
+            E_rho_b = Eab_rho * rho_rho_b + Eab_z * z_rho_b - Eb_rho_b;
         }
 
         // => GGA Part <= //
         double s2, s2_rho_a, s2_gamma_aa, s2_rho_b, s2_gamma_bb;
         if (gga_) {
-            s2 = gamma_aa / rho_a83 + gamma_bb / rho_b83;
-            s2_rho_a = -8.0/3.0 * gamma_aa / (rho_a83 * rho_a); 
-            s2_rho_b = -8.0/3.0 * gamma_bb / (rho_b83 * rho_b); 
-            s2_gamma_aa = 1.0 / rho_a83; 
-            s2_gamma_bb = 1.0 / rho_b83; 
+            s2 = 1.0/2.0 * gamma_aa / rho_a83 + 1.0/2.0 * gamma_bb / rho_b83;
+            s2_rho_a = -4.0/3.0 * gamma_aa / (rho_a83 * rho_a); 
+            s2_rho_b = -4.0/3.0 * gamma_bb / (rho_b83 * rho_b); 
+            s2_gamma_aa = 1.0/2.0 / rho_a83; 
+            s2_gamma_bb = 1.0/2.0 / rho_b83; 
         } else {
             s2 = 0.0;
             s2_rho_a = 0.0;
@@ -456,88 +391,111 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
     }
 
 }
-void CFunctional::G1(double r, double *G, double *G_r)
+void CFunctional::PW92_C(double rho, double z, double* PW92, double* PW92_rho, double* PW92_z)
 {
-    double r12 = sqrt(r);
-    double r32 = r * r12;
-    double r2  = r * r;
+    //  > r < //
     
-    double A1 = _c0a_;    
-    double a1 = _a1a_;
-    double b1 = _b1a_;
-    double b2 = _b2a_;
-    double b3 = _b3a_;
-    double b4 = _b4a_;
-
-    double D = 2.0 * A1 * (b1 * r12 + b2 * r + b3 * r32 + b4 * r2);
-    double D_r = 2.0 * A1 * (1.0/2.0 * b1 / r12 + b2 + 3.0/2.0 * b3 * r12 + 2.0 * b4 * r);
+    double r = _c0_*1.0/pow(rho,1.0/3.0);
     
-    double Q = 1.0 + 1.0 / D;
-    double R = log(Q); 
-    double L = -2.0 * A1 * (1.0 + a1 * r);
-
-    // Minus: GOTCHA
-    *G = - L * R; 
-
-    double L_r = -2.0 * A1 * a1; 
-    double R_r = - 1.0 / (Q * D * D) * D_r;
-
-    // Minus: GOTCHA
-    *G_r = - (L_r * R + L * R_r);
-}
-void CFunctional::G2(double r, double *G, double *G_r)
-{
-    double r12 = sqrt(r);
-    double r32 = r * r12;
-    double r2  = r * r;
+    //  > Ac < //
     
-    double A1 = _c0p_;    
-    double a1 = _a1p_;
-    double b1 = _b1p_;
-    double b2 = _b2p_;
-    double b3 = _b3p_;
-    double b4 = _b4p_;
-
-    double D = 2.0 * A1 * (b1 * r12 + b2 * r + b3 * r32 + b4 * r2);
-    double D_r = 2.0 * A1 * (1.0/2.0 * b1 / r12 + b2 + 3.0/2.0 * b3 * r12 + 2.0 * b4 * r);
+    double Ac = _c0a_*log((1.0/2.0)/(_c0a_*(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r)))+1.0)*(_a1a_*r+1.0)*-2.0;
     
-    double Q = 1.0 + 1.0 / D;
-    double R = log(Q); 
-    double L = -2.0 * A1 * (1.0 + a1 * r);
-
-    *G = L * R; 
-
-    double L_r = -2.0 * A1 * a1; 
-    double R_r = - 1.0 / (Q * D * D) * D_r;
-
-    *G_r = (L_r * R + L * R_r);
-}
-void CFunctional::G3(double r, double *G, double *G_r)
-{
-    double r12 = sqrt(r);
-    double r32 = r * r12;
-    double r2  = r * r;
+    //  > EcP < //
     
-    double A1 = _c0f_;    
-    double a1 = _a1f_;
-    double b1 = _b1f_;
-    double b2 = _b2f_;
-    double b3 = _b3f_;
-    double b4 = _b4f_;
-
-    double D = 2.0 * A1 * (b1 * r12 + b2 * r + b3 * r32 + b4 * r2);
-    double D_r = 2.0 * A1 * (1.0/2.0 * b1 / r12 + b2 + 3.0/2.0 * b3 * r12 + 2.0 * b4 * r);
+    double EcP = _c0p_*log((1.0/2.0)/(_c0p_*(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r)))+1.0)*(_a1p_*r+1.0)*-2.0;
     
-    double Q = 1.0 + 1.0 / D;
-    double R = log(Q); 
-    double L = -2.0 * A1 * (1.0 + a1 * r);
-
-    *G = L * R; 
-
-    double L_r = -2.0 * A1 * a1; 
-    double R_r = - 1.0 / (Q * D * D) * D_r;
-
-    *G_r = (L_r * R + L * R_r);
+    //  > EcF < //
+    
+    double EcF = _c0f_*log((1.0/2.0)/(_c0f_*(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r)))+1.0)*(_a1f_*r+1.0)*-2.0;
+    
+    //  > f < //
+    
+    double f = (pow(z+1.0,4.0/3.0)+pow(-z+1.0,4.0/3.0)-2.0)/(_two13_*2.0-2.0);
+    
+    //  > E < //
+    
+    double E = rho*(EcP+f*(z*z*z*z)*(EcF-EcP)+(Ac*f*(z*z*z*z-1.0))/_d2fz0_);
+    
+    //  > PW92 < //
+    
+    *PW92 = E;
+    
+    //  > r_rho < //
+    
+    double r_rho = _c0_*1.0/pow(rho,4.0/3.0)*(-1.0/3.0);
+    
+    //  > Ac_r < //
+    
+    double Ac_r = _a1a_*_c0a_*log((1.0/2.0)/(_c0a_*(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r)))+1.0)*-2.0+((_a1a_*r+1.0)*(_b2a_+_b4a_*r*2.0+_b1a_*1.0/sqrt(r)*(1.0/2.0)+_b3a_*sqrt(r)*(3.0/2.0))*1.0/pow(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r),2.0))/((1.0/2.0)/(_c0a_*(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r)))+1.0);
+    
+    //  > EcP_r < //
+    
+    double EcP_r = _a1p_*_c0p_*log((1.0/2.0)/(_c0p_*(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r)))+1.0)*-2.0+((_a1p_*r+1.0)*(_b2p_+_b4p_*r*2.0+_b1p_*1.0/sqrt(r)*(1.0/2.0)+_b3p_*sqrt(r)*(3.0/2.0))*1.0/pow(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r),2.0))/((1.0/2.0)/(_c0p_*(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r)))+1.0);
+    
+    //  > EcF_r < //
+    
+    double EcF_r = _a1f_*_c0f_*log((1.0/2.0)/(_c0f_*(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r)))+1.0)*-2.0+((_a1f_*r+1.0)*(_b2f_+_b4f_*r*2.0+_b1f_*1.0/sqrt(r)*(1.0/2.0)+_b3f_*sqrt(r)*(3.0/2.0))*1.0/pow(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r),2.0))/((1.0/2.0)/(_c0f_*(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r)))+1.0);
+    
+    //  > f_z < //
+    
+    double f_z = (pow(z+1.0,1.0/3.0)*(4.0/3.0)-pow(-z+1.0,1.0/3.0)*(4.0/3.0))/(_two13_*2.0-2.0);
+    
+    //  > E_rho < //
+    
+    double E_rho = EcP+f*(z*z*z*z)*(EcF-EcP)+(Ac*f*(z*z*z*z-1.0))/_d2fz0_;
+    
+    //  > E_z < //
+    
+    double E_z = rho*(f*(z*z*z)*(EcF-EcP)*4.0+(Ac*f*(z*z*z)*4.0)/_d2fz0_);
+    
+    //  > E_Ac < //
+    
+    double E_Ac = (f*rho*(z*z*z*z-1.0))/_d2fz0_;
+    
+    //  > E_EcP < //
+    
+    double E_EcP = -rho*(f*(z*z*z*z)-1.0);
+    
+    //  > E_EcF < //
+    
+    double E_EcF = f*rho*(z*z*z*z);
+    
+    //  > E_f < //
+    
+    double E_f = rho*((z*z*z*z)*(EcF-EcP)+(Ac*(z*z*z*z-1.0))/_d2fz0_);
+    
+    //  > PW92_E < //
+    
+    double PW92_E = 1.0;
+    
+    //  > PW92_f < //
+    
+    double PW92_f = E_f*PW92_E;
+    
+    //  > PW92_EcF < //
+    
+    double PW92_EcF = E_EcF*PW92_E;
+    
+    //  > PW92_EcP < //
+    
+    double PW92_EcP = E_EcP*PW92_E;
+    
+    //  > PW92_Ac < //
+    
+    double PW92_Ac = E_Ac*PW92_E;
+    
+    //  > PW92_r < //
+    
+    double PW92_r = Ac_r*PW92_Ac+EcF_r*PW92_EcF+EcP_r*PW92_EcP;
+    
+    //  > PW92_rho < //
+    
+    *PW92_rho = PW92_r*r_rho+E_rho*PW92_E;
+    
+    //  > PW92_z < //
+    
+    *PW92_z = PW92_f*f_z+E_z*PW92_E;
 }
 
 }
