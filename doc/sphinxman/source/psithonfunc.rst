@@ -19,6 +19,7 @@ extent |PSIfour|\ 's functionality.
 
    notes_py
    energy
+   prop
    cp
    opt
    freq

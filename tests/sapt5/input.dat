@@ -14,8 +14,6 @@ molecule water_dimer {
      H   1.680398  -0.373741  -0.758561
      H   1.680398  -0.373741   0.758561
      units angstrom
-     no_reorient
-     symmetry c1
 }
 
 set globals {

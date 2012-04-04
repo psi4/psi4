@@ -1,6 +1,4 @@
 """
-**NHTBH**
-
 | Database (Truhlar) of non-hydrogen-transfer barrier height reactions.
 | Geometries and Reaction energies from Truhlar and coworkers at site http://t1.chem.umn.edu/misc/database_group/database_therm_bh/non_H.htm.
 
@@ -12,8 +10,6 @@
 
   - ``'small'``
   - ``'large'``
-
-----
 
 """
 import re

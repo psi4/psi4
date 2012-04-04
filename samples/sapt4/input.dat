@@ -22,8 +22,6 @@ molecule formamide_dimer {
      H   0.387244   1.207782   0.000000
      H   3.117061   0.013701   0.000000
      units angstrom
-     no_reorient
-     symmetry c1
 }
 
 set globals {
