@@ -60,6 +60,8 @@ void set_params(void)
     Opt_params.intrafragment_step_limit_min = options.get_double("INTRAFRAG_STEP_LIMIT_MIN");
     Opt_params.intrafragment_step_limit_max = options.get_double("INTRAFRAG_STEP_LIMIT_MAX");
 
+    Opt_params.interfragment_step_limit = options.get_double("INTERFRAG_STEP_LIMIT");
+
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
 // Which RFO root to follow; internally 0 (externally 1) indicates minimum; {integer}
@@ -301,6 +303,10 @@ void set_params(void)
   i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_STEP_LIMIT);
   Opt_params.intrafragment_step_limit = i / 10.0;
 
+// max = i / 10  (default 4)
+  i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_STEP_LIMIT);
+  Opt_params.interfragment_step_limit = i / 10.0;
+
 // follow root   (default 0)
   Opt_params.rfo_follow_root = rem_read(REM_GEOM_OPT2_RFO_FOLLOW_ROOT);
 
@@ -528,6 +534,8 @@ void print_params(void) {
   fprintf(outfile, "freeze_intrafragment   = %18s\n", "false");
 
   fprintf(outfile, "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
+
+  fprintf(outfile, "interfragment_step_limit=%18.2e\n", Opt_params.interfragment_step_limit);
 
   if (Opt_params.H_update_limit)
     fprintf(outfile, "H_update_limit         = %18s\n", "true");

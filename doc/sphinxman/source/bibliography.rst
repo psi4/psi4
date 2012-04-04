@@ -6,29 +6,35 @@ Bibliography
 
 .. [Jeziorski:1994:1887]
    B. Jeziorski, R. Moszynski, and K. Szalewicz,
-   *Chem. Rev.*, **94**, 1887 (1994).
+   *Chem. Rev.* **94**, 1887 (1994).
 
 .. [Hohenstein:2012:WIREs]
+   E. G. Hohenstein and C. D. Sherrill,
+   *WIREs Comput. Mol. Sci.* **2**, 304-326 (2012).
 
 .. [Hohenstein:2010:184111]
    E. G. Hohenstein and C. D. Sherrill,
-   *J. Chem. Phys.*, **132**, 184111 (2010).
+   *J. Chem. Phys.* **132**, 184111 (2010).
 
 .. [Hohenstein:2011:174107]
    E. G. Hohenstein, R. M. Parrish, C. D. Sherrill, J. M. Turney, and H. F.
-   Schaefer, *J. Chem. Phys.*, **135**, 174107 (2011).
+   Schaefer, *J. Chem. Phys.* **135**, 174107 (2011).
 
 .. [Hohenstein:2010:014101]
    E. G. Hohenstein and C. D. Sherrill,
-   *J. Chem. Phys.*, **133**, 014101 (2010).
+   *J. Chem. Phys.* **133**, 014101 (2010).
 
 .. [Hohenstein:2010:104107]
    E. G. Hohenstein and C. D. Sherrill,
-   *J. Chem. Phys.*, **133**, 104107 (2010).
+   *J. Chem. Phys.* **133**, 104107 (2010).
 
 .. [Misquitta:2009:201]
+   A. J. Stone and A. J. Misquitta,
+   *Chem. Phys. Lett.* **473**, 201 (2009).
 
 .. [Papajak:2011:10]
+   E. Papajak and D. G. Truhlar,
+   *J. Chem. Theory Comput.* **7**, 10-18 (2011).
 
 .. [Cohen:GreenBook:2008]
 
@@ -36,12 +42,16 @@ Bibliography
 
 .. [Sherrill:1999:CI]
    C. D. Sherrill and H. F. Schaefer,
-   *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots| wdin
+   *Advances in Quantum Chemistry*, Vol. 34, edited by P.-O. L\ |o_dots|\ wdin
    (Academic Press, New York, 1999), pages 143-269.
 
 .. [Hirata:2000:216]
+   S. Hirata and R. J. Bartlett,
+   *Chem. Phys. Lett.* **321**, 216 (2000).
 
 .. [Olsen:2000:7140]
+   J. Olsen,
+   *J. Chem. Phys.* **113**, 7140 (2000).
 
 .. [Peng:1996:49]
    Peng, Ayala, Schlegel, and Frisch,
@@ -49,15 +59,15 @@ Bibliography
 
 .. [Bakken:2002:9160]
    Bakken and Helgaker,
-   *J. Chem. Phys.*, **117**, 9160 (2002).
+   *J. Chem. Phys.* **117**, 9160 (2002).
 
 .. [Schlegel:1984:333]
    Schlegel,
-   *Theor. Chim. Acta*, **66**, 333 (1984).
+   *Theor. Chim. Acta* **66**, 333 (1984).
 
 .. [Fischer:1992:9770]
    Fischer and Almlof,
-   *J. Phys. Chem.*, **96**, 9770 (1992).
+   *J. Phys. Chem.* **96**, 9770 (1992).
 
 .. [Schlegel:1987:AIMQC]
    Schlegel,
@@ -65,12 +75,33 @@ Bibliography
 
 .. [Bofill:1994:1]
    Bofill,
-   *J. Comp. Chem.*, **15**, 1-11 (1994).
+   *J. Comp. Chem.* **15**, 1-11 (1994).
 
 .. [Piecuch:1999:6103]
+   P. Piecuch, S. A. Kicharski, and R. J. Bartlett,
+   *J. Chem. Phys.* **110**, 6103 (1999).
 
 .. [Handy:1980]
+   N. C. Handy,
+   *Chem. Phys. Lett.* **74**, 280 (1980).
 
 .. [Olsen:1988]
+   J. Olsen, B. O. Roos, P. J\ |o_slash|\ rgensen, and H. J. Aa. Jensen,
+   *J. Chem. Phys.* **89** 2185 (1988).
 
+.. [Schirmer:1982]
+   J. Schirmer,
+   *Phys. Rev. A* **26**, 2395 (1982).
+
+.. [Trofimov:2006] 
+   A. B. Trofimov, I. L, Krivdina, J. Weller, and J. Schirmer, 
+   *Chem. Phys.* **329**, 1 (2006).
+
+.. [Haettig:2002]
+   C. H\ |a_dots|\ aettig and K. Hald, 
+   *Phys. Chem. Chem. Phys.* **4**, 2111 (2002).
+
+.. [Saitow:2012]
+   M. Saitow and Y. Mochizuki,
+   *Chem. Phys. Lett.* **X**, XX (2012).
 

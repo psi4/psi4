@@ -61,6 +61,11 @@ class EFP_FRAG : public FRAG {
 // values will be calculated as total Delta(q) from the start of the optimization
   void print_intcos(FILE *fp);
 
+/* Add function to return a string definition of EFP fragment, if needed
+  // return string of intco definition
+  std::string get_intco_definition(int coord_index, int atom_offset_A=0, int atom_offset_B=0);
+*/
+
   double **H_guess(void);
 
   // Tell QChem to update rotation matrix and com for EFP fragment

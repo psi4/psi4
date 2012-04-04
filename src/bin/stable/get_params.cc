@@ -7,6 +7,8 @@
 #include <cstring>
 #include <cmath>
 #include <libciomr/libciomr.h>
+#include "liboptions/liboptions.h"
+#include "psi4-dec.h"
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -15,14 +17,14 @@
 
 namespace psi { namespace stable {
 
-void get_params()
+void get_params(Options &options)
 {
   int tol, ref;
   std::string junk;
 
   params.print_lvl = options.get_int("PRINT");
 
-  // TODO find memory from driver
+  params.memory = Process::environment.get_memory();
   params.cachelev = options.get_int("CACHELEVEL"); 
   params.cachelev = 0;
 
@@ -35,7 +37,7 @@ void get_params()
     printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
     throw PsiException("stable error", __FILE__, __LINE__);
   }
-
+  params.ref = ref;
   /* Make sure the value of ref matches that from CC_INFO */
   if(params.ref != ref) {
     fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and " 

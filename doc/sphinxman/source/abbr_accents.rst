@@ -27,4 +27,5 @@
 .. |u_acute|      unicode:: U+00FA
 .. |u_circumflex| unicode:: U+00FB
 .. |u_dots|       unicode:: U+00FC
+.. |sigma|        unicode:: U+03C3
 

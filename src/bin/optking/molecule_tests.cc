@@ -46,6 +46,9 @@ void MOLECULE::test_B(void) {
   B_fd = init_matrix(Nintco, 3*Natom);
   coord = g_geom_2D(); // in au
 
+  // account for changes in sign of dihedral
+  fix_tors_near_180();
+
   try {
 
   for (int atom=0; atom<Natom; ++atom) {
@@ -95,6 +98,10 @@ void MOLECULE::test_B(void) {
 
   fprintf(outfile,"\t\tMaximum difference is %.1e for internal coordinate %d.\n",
     max_error, max_error_intco+1);
+  string coord_def = get_intco_definition_from_global_index(max_error_intco);
+fprintf(outfile,"a, \n");
+  fprintf(outfile,"\t\tThis coordinate is %s\n", coord_def.c_str() );
+fprintf(outfile,"b, \n");
   if (max_error > MAX_ERROR) {
     fprintf(outfile, "\t\tB-matrix could be in error.  However, numerical test will fail for ");
     fprintf(outfile, "linear bond angles.  This is OK.\n");
