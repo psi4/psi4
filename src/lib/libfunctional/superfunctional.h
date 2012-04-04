@@ -7,6 +7,7 @@
 
 namespace psi {
 
+class Options;
 class Functional;
 class Dispersion;
 
@@ -73,6 +74,7 @@ public:
     SuperFunctional();
     virtual ~SuperFunctional(); 
 
+    static boost::shared_ptr<SuperFunctional> current(Options& options, int max_points = -1, int deriv = 1);
     static boost::shared_ptr<SuperFunctional> build(const std::string& alias, int max_points = 5000, int deriv = 1); 
     static boost::shared_ptr<SuperFunctional> blank();
 
@@ -97,6 +99,9 @@ public:
 
     std::vector<boost::shared_ptr<Functional> >& x_functionals() { return x_functionals_; }
     std::vector<boost::shared_ptr<Functional> >& c_functionals() { return c_functionals_; }
+
+    boost::shared_ptr<Functional> x_functional(const std::string& name);
+    boost::shared_ptr<Functional> c_functional(const std::string& name);
     void add_x_functional(boost::shared_ptr<Functional> fun);
     void add_c_functional(boost::shared_ptr<Functional> fun);
 
