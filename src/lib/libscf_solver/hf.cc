@@ -309,7 +309,7 @@ void HF::integrals()
         eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
 
-    // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
+    // TODO: Relax the if statement. 
     if (scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
@@ -323,20 +323,14 @@ void HF::integrals()
 
             // Need a temporary functional
             boost::shared_ptr<SuperFunctional> functional = 
-                SuperFunctional::build(options_.get_str("DFT_FUNCTIONAL"),1,1);
+                SuperFunctional::current(options_);
             
             // K matrices
             jk_->set_do_K(functional->is_x_hybrid());
             // wK matrices 
             jk_->set_do_wK(functional->is_x_lrc());
             // w Value
-            if (functional->is_x_lrc()) {
-                double omega = functional->x_omega();
-                if (options_["DFT_OMEGA"].has_changed()) {
-                    omega = options_.get_double("DFT_OMEGA"); 
-                }
-                jk_->set_omega(omega); 
-            }   
+            jk_->set_omega(functional->x_omega());
         }
 
         // Initialize
