@@ -2,6 +2,7 @@
 #include <libpsio/psio.hpp>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
+#include <libdiis/diismanager.h>
 #include "dcft.h"
 #include "defines.h"
 
@@ -2362,9 +2363,26 @@ DCFTSolver::iterate_cumulant_response()
     // Update cumulant reponse from the change in C intermediate
     cumulant_response_guess();
 
-    // iteratively solve for cumulant reponse
+    // Set up DIIS extrapolation
+    dpdbuf4 Zaa, Zab, Zbb;
+    dpd_buf4_init(&Zaa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+    dpd_buf4_init(&Zab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+    dpd_buf4_init(&Zbb, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+    DIISManager ZDiisManager(maxdiis_, "DCFT DIIS Z",DIISManager::LargestError,DIISManager::InCore);
+    ZDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Zaa,
+                                          DIISEntry::DPDBuf4, &Zab,
+                                          DIISEntry::DPDBuf4, &Zbb);
+    ZDiisManager.set_vector_size(3, DIISEntry::DPDBuf4, &Zaa,
+                                    DIISEntry::DPDBuf4, &Zab,
+                                    DIISEntry::DPDBuf4, &Zbb);
+    dpd_buf4_close(&Zaa);
+    dpd_buf4_close(&Zab);
+    dpd_buf4_close(&Zbb);
 
-    // Parameters are hard-coded for now. Let the user control them in the future
+    // Iteratively solve for cumulant reponse
     double rms = 0.0;
     bool converged = false;
 
@@ -2375,6 +2393,7 @@ DCFTSolver::iterate_cumulant_response()
     int cycle = 0;
     do {
         cycle++;
+        std::string diisString;
 
         // Build perturbed tau and delta tau
         build_perturbed_tau();
@@ -2388,11 +2407,44 @@ DCFTSolver::iterate_cumulant_response()
         // Update the cumulant response
         update_cumulant_response();
 
+        // Here's where DIIS kicks in
+        if(lambda_convergence_ < diis_start_thresh_){
+            //Store the DIIS vectors
+            dpdbuf4 Raa, Rab, Rbb;
+            dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                          ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
+            dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                          ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+            dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                          ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
+            dpd_buf4_init(&Zaa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                          ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+            dpd_buf4_init(&Zab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                          ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+            dpd_buf4_init(&Zbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                          ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+
+            if(ZDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Zaa, &Zab, &Zbb)){
+                diisString += "S";
+            }
+            // Extrapolate cumulant response
+            if(ZDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0){
+                diisString += "/E";
+                ZDiisManager.extrapolate(3, &Zaa, &Zab, &Zbb);
+            }
+            dpd_buf4_close(&Raa);
+            dpd_buf4_close(&Rab);
+            dpd_buf4_close(&Rbb);
+            dpd_buf4_close(&Zaa);
+            dpd_buf4_close(&Zab);
+            dpd_buf4_close(&Zbb);
+        }
+
         // Check the convergence
         converged = (fabs(rms) < fabs(lambda_threshold_));
 
         // Print iterative trace
-        fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
+        fprintf(outfile, "  %4d %11.3E  %-3s \n", cycle, rms, diisString.c_str());
 
         // Termination condition
         if (converged || cycle >= maxiter_) break;

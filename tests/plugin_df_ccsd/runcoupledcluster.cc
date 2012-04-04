@@ -44,7 +44,7 @@ void RunCoupledCluster(Options &options){
      free(ccsd->tempt);
      free(ccsd->tempv);
 
-     if (options.get_bool("TRIPLES_USE_NOS")){
+     if (options.get_bool("NAT_ORBS")){
         // mp2 natural orbitals:
         tstart();
         status = psi::MP2NaturalOrbitals(ccsd,options);

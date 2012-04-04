@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. _`sec:bestPractices_py`:
 
 Best Practices for Python Functions

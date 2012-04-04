@@ -10,9 +10,8 @@ molecule h2o {
 }
 
 set {
-  wfn eom_cc2
   basis "cc-pVDZ"
-  states_per_irrep [2, 2, 2, 2]
+  roots_per_irrep [2, 2, 2, 2]
 }
 
 energy('eom-cc2')

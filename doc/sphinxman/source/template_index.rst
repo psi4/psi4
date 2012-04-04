@@ -29,6 +29,7 @@
 .. #####  HTML-PROG START
    contributing
    programming
+   autodoc_available_plugins
    autodoc_driver
 .. #####  LATEX-PROG STOP
 .. #####  HTML-PROG STOP
@@ -40,10 +41,10 @@
    appendices
 
 * Indices
+
  - :ref:`genindex`
  - :ref:`modindex`
  - :ref:`search`
-
 
 .. #####  HTML-ALL STOP
 .. #####  HTML-USER STOP

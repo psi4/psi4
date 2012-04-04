@@ -1,8 +1,8 @@
-# cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
+#! cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
 
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
-sys.path.insert(0, '/home/deprince/psi4/tests')
+sys.path.insert(0, '/Users/deprince/psi4/tests')
 import plugin_cepa
 
 molecule h2o {

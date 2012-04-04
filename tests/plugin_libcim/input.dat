@@ -2,7 +2,7 @@
 
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
-sys.path.insert(0, '/home/deprince/psi4/tests')
+sys.path.insert(0, '/Users/deprince/psi4/tests')
 import plugin_libcim
 
 molecule h2o {
@@ -32,17 +32,15 @@ molecule h2o {
  H       2.3141902547        0.4021201957        2.8456440982
  H      -0.4189882778        1.2779824493        3.4361058526
 units bohr
-symmetry c1
 }
 
 memory 2000 mb
 set {
   basis 6-31g
-  df_basis_scf cc-pvdz
   freeze_core true
   guess sad
   scf_type pk
 }
-energy('cim-ccsd(t)')
+energy('cim-cisd')
 
 clean()

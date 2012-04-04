@@ -56,6 +56,9 @@ void projections(struct L_Params *pL_params) {
   }
 
   for (i=1; i<params.nstates;++i) {
+    psio_close(CC_TMP, 0);
+    psio_open(CC_TMP, PSIO_OPEN_NEW);
+
     IRR = pL_params[i].irrep;
     R0 = pL_params[i].R0;
     root = pL_params[i].root;

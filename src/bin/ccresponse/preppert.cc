@@ -38,7 +38,7 @@ void preppert()
   cartcomp[2] = strdup("Z");
   char lbl[32];
  
-  MintsHelper mints;
+  MintsHelper mints(Process::environment.options, 0);
   vector<SharedMatrix> dipole = mints.so_dipole();
   vector<SharedMatrix> nabla = mints.so_nabla();
   vector<SharedMatrix> angmom = mints.so_angular_momentum();

@@ -18,11 +18,6 @@ read_options(std::string name, Options &options)
      options.add_double("BOYS_CONVERGENCE", 1.0e-6);
      /*- Maximum number of localization iterations iterations -*/
      options.add_int("BOYS_MAXITER", 100);
-     /*- Memory in mb.  Use this to override global option, 
-         which is limited to <16gb because of dpd in transqt2 -*/
-     options.add_int("CCMEMORY", 256);
-     /*- Wavefunction type !expert -*/
-     options.add_str("WFN", "CCSD");
      /*- Convergence for the CC amplitudes-*/
      options.add_double("R_CONVERGENCE", 1.0e-7);
      /*- Maximum number of CC iterations -*/
@@ -31,7 +26,7 @@ read_options(std::string name, Options &options)
      options.add_int("DIIS_MAX_VECS", 8);
      /*- For GPU code, cap the amount of memory registerred with the GPU -*/
      options.add_int("MAX_MAPPED_MEMORY", 1000);
-     /*- Compute triples contribution? */
+     /*- Compute triples contribution? -*/
      options.add_bool("COMPUTE_TRIPLES", true);
      /*- Use MP2 NOs to truncate virtual space for (T)? -*/
      options.add_bool("TRIPLES_USE_NOS", false);
@@ -60,6 +55,8 @@ plugin_localcc(Options &options)
 { 
   //boost::shared_ptr<psi::CIM>  wfn =  Process::environment.reference_wavefunction();
   boost::shared_ptr<psi::CIM> wfn(new CIM());
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  wfn->copy(ref);
   RunCoupledCluster(options,wfn);
   return  Success;
 } // end plugin_localcc

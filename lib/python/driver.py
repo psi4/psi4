@@ -1,7 +1,7 @@
 """Module with a *procedures* dictionary specifying available quantum
 chemical methods and functions driving the main quantum chemical
 functionality, namely single-point energies, geometry optimizations,
-response properties, and vibrational frequency calculations.
+properties, and vibrational frequency calculations.
 
 """
 import PsiMod
@@ -43,6 +43,9 @@ procedures = {
             'eom-ccsd'      : run_eom_cc,
             'eom-cc2'       : run_eom_cc,
             'eom-cc3'       : run_eom_cc,
+            'eom_ccsd'      : run_eom_cc,
+            'eom_cc2'       : run_eom_cc,
+            'eom_cc3'       : run_eom_cc,
             'detci'         : run_detci,  # full control over detci
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
@@ -78,10 +81,15 @@ procedures = {
         'hessian' : {
             # Upon adding a method to this list, add it to the docstring in frequency() below
         },
-        'response' : {
-            'cc2'  : run_cc_response,
-            'ccsd' : run_cc_response
-            # Upon adding a method to this list, add it to the docstring in response() below
+        'property' : {
+            'scf'  : run_scf_property,
+            'cc2'  : run_cc_property,
+            'ccsd' : run_cc_property,
+            'eom-cc2'  : run_cc_property,
+            'eom-ccsd' : run_cc_property,
+            'eom_cc2'  : run_cc_property,
+            'eom_ccsd' : run_cc_property
+            # Upon adding a method to this list, add it to the docstring in property() below
         }}
 
 
@@ -90,13 +98,14 @@ def energy(name, **kwargs):
 
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
-    :PSI variables: 
-    .. hlist:: 
-       :columns: 1 
-     
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
-       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>` 
-       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>` 
+    :PSI variables:
+
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
+       * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
+       * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
     .. _`table:energy_gen`:
 
@@ -563,8 +572,8 @@ def gradient(name, **kwargs):
         return energies[-1]
 
 
-def response(name, **kwargs):
-    """Function to compute linear response properties.
+def property(name, **kwargs):
+    """Function to compute various properties.
 
     :returns: (*float*) Total electronic energy in Hartrees.
 
@@ -577,9 +586,15 @@ def response(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
     +=========================+=======================================================================================+
+    | scf                     | Self-consistent field method(s)                                                       |
+    +-------------------------+---------------------------------------------------------------------------------------+
     | cc2                     | 2nd-order approximate CCSD                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | ccsd                    | coupled cluster singles and doubles (CCSD)                                            |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-cc2                 | 2nd-order approximate EOM-CCSD                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | eom-ccsd                | equation-of-motion coupled cluster singles and doubles (EOM-CCSD)                     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     :type name: string
@@ -590,8 +605,8 @@ def response(name, **kwargs):
 
     :examples:
 
-    >>> # [1] CCSD-LR properties calculation
-    >>> response('ccsd')
+    >>> # [1] Multipole moment and response Property calculations
+    >>> property('ccsd')
 
     """
     lowername = name.lower()
@@ -605,10 +620,15 @@ def response(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option('BASIS', PsiMod.get_global_option('BASIS'))
 
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
+
     try:
-        return procedures['response'][lowername](lowername, **kwargs)
+        return procedures['property'][lowername](lowername, **kwargs)
     except KeyError:
-        raise ValidationError('Response method %s not available.' % (lowername))
+        raise ValidationError('Property method %s not available.' % (lowername))
 
 
 def optimize(name, **kwargs):
@@ -618,11 +638,12 @@ def optimize(name, **kwargs):
 
     :returns: (*float*) Total electronic energy of optimized structure in Hartrees.
 
-    :PSI variables: 
-    .. hlist:: 
-       :columns: 1 
-     
-       * :psivar:`CURRENT ENERGY <CURRENTENERGY>` 
+    :PSI variables:
+
+    .. hlist::
+       :columns: 1
+
+       * :psivar:`CURRENT ENERGY <CURRENTENERGY>`
 
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
@@ -702,7 +723,7 @@ def optimize(name, **kwargs):
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
 
-    full_hess_every = PsiMod.get_local_option('OPTKING','FULL_HESS_EVERY')
+    full_hess_every = PsiMod.get_local_option('OPTKING', 'FULL_HESS_EVERY')
     steps_since_last_hessian = 0
 
     n = 1
@@ -737,7 +758,7 @@ def optimize(name, **kwargs):
             G = PsiMod.get_gradient()
             PsiMod.IOManager.shared_object().set_specific_retention(1, True)
             PsiMod.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(name, **kwargs)
+            frequencies(name, irrep=1, **kwargs) # only need symmetric ones
             steps_since_last_hessian = 0
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)
@@ -752,7 +773,7 @@ def optimize(name, **kwargs):
             PsiMod.get_active_molecule().print_in_input_format()
             # Check if user wants to see the intcos; if so, don't delete them.
             if (PsiMod.get_option('INTCOS_GENERATE_EXIT') == False):
-              PsiMod.opt_clean()
+                PsiMod.opt_clean()
             PsiMod.clean()
 
             # S/R: Clean up opt input file

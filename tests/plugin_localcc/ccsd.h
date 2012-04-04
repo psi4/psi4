@@ -168,7 +168,6 @@ class CoupledCluster{
       * the energy is evaluated after that step.
       */
     double CheckEnergy();
-    double CIMEnergy();
 
     /**
       * the N^6 CC diagrams.
