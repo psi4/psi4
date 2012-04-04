@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. index:: basis set; available by family
 .. _`sec:basisBuiltIn`:
 
@@ -12,7 +14,7 @@ and of Gaussian94 format (for ease of export from `EMSL <https://bse.pnl.gov/bse
 Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported,
 but their mixtures are not, neither within a basis set (*e.g.*, 6D/7F) nor within a calculation
 (*e.g.*, cartesian for the orbital basis and spherical for the fitting basis).
-For built-in basis sets, the correct ``spherical``/``cartesian`` value for :term:`PUREAM`
+For built-in basis sets, the correct ``spherical``/``cartesian`` value for |globals__puream|
 is set internally from the orbital basis.
 
 * :ref:`Specifying basis sets <sec:jobControl>`
@@ -46,7 +48,7 @@ such as encountered in SCF theory and the electrostatics/exchange terms of SAPT.
 RI sets are appropriate for fitting :math:`(ov|`\ -type products, such as encountered in
 MP2 and most SAPT terms.  Citations for basis sets can be found in their
 definition files at :source:`lib/basis` in the source.  For basis set availability by
-element and the default value for keyword :term:`PUREAM`, consult
+element and the default value for keyword |globals__puream|, consult
 Appendix :ref:`apdx:basisElement`.
 
 |

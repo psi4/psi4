@@ -9,3 +9,6 @@ class Molecule:
 def sldkfjksl():
     return 4.4
 
+def plugin_load(sofile):
+    return 4.4
+

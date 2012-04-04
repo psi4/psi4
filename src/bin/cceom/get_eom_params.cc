@@ -22,14 +22,14 @@ void get_eom_params(Options &options)
   // Number of excited states per irrep
   chkpt_init(PSIO_OPEN_OLD);
   if (chkpt_rd_override_occ()) eom_params.states_per_irrep = chkpt_rd_statespi();
-  else if (options["STATES_PER_IRREP"].has_changed()) {
-    if(options["STATES_PER_IRREP"].size() != moinfo.nirreps) 
-      throw PsiException("STATES_PER_IRREP is wrong size. Should be number of irreps.", __FILE__, __LINE__);
+  else if (options["ROOTS_PER_IRREP"].has_changed()) {
+    if(options["ROOTS_PER_IRREP"].size() != moinfo.nirreps) 
+      throw PsiException("ROOTS_PER_IRREP is wrong size. Should be number of irreps.", __FILE__, __LINE__);
     eom_params.states_per_irrep = new int[moinfo.nirreps];
     for (int h=0; h < moinfo.nirreps; ++h)
-      eom_params.states_per_irrep[h] = options["STATES_PER_IRREP"][h].to_integer();
+      eom_params.states_per_irrep[h] = options["ROOTS_PER_IRREP"][h].to_integer();
   }
-  else throw PsiException("Must provide states_per_irrep vector in input.", __FILE__, __LINE__);
+  else throw PsiException("Must provide roots_per_irrep vector in input.", __FILE__, __LINE__);
   chkpt_close();
 
   // Number of guess vectors per irrep

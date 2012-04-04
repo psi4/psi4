@@ -46,6 +46,9 @@ cc19:         CCSD/cc-pVDZ dipole polarizability at two frequencies
 cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 
 
+cc21:         ROHF-EOM-CCSD/DZ geometry optimization of the lowest 2A1 excited state of H2O+ (B1 excitation).
+
+
 cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.
 
 
@@ -125,6 +128,12 @@ cc45:         RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
 
 
 cc46:         EOM-CC2/cc-pVDZ on H2O2 with two excited states in each irrep
+
+
+cc47:         EOM-CCSD/cc-pVDZ on H2O2 with two excited states in each irrep
+
+
+cc48:         reproduces dipole moments in J.F. Stanton's "biorthogonal" JCP paper
 
 
 cc49:         EOM-CC3(UHF) on CH radical with user-specified basis and properties for particular root
@@ -320,6 +329,9 @@ opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
 
 
 opt5:         6-31G** UHF CH2 3B1 optimization
+
+
+plugin_cepa:  cc-pvdz H2O Test CISD, AQCC, ACPF Energy/Properties
 
 
 plugin_df_ccsd:  Test DF-CCSD(T) energy for H2O/aug-cc-pVDZ

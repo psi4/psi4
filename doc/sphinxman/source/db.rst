@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. index::
    triple: setting; keywords; database()
    see: db(); database()
@@ -95,6 +97,14 @@ and may be found in the database file. The database Python files are very
 readable and should be consulted for more particular questions.
 
 ----
+
+.. comment This toctree directive only here to suppress warning at build time.
+   include line below is doing the work.
+
+.. toctree::
+   :hidden:
+
+   autodoc_available_databases
 
 .. include:: autodoc_available_databases.rst
 

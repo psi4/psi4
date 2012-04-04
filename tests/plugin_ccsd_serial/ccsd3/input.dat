@@ -2,7 +2,7 @@
 
 # PYTHONPATH must include directory above plugin directory.
 #     Define either externally or here, then import plugin.
-sys.path.insert(0, '/home/deprince/psi4/tests')
+sys.path.insert(0, '/Users/deprince/psi4/tests')
 import plugin_ccsd_serial
 
 molecule dimer {
@@ -22,7 +22,7 @@ set {
   r_convergence 1e-7
   basis aug-cc-pvdz
   freeze_core true
-  triples_use_nos true
+  nat_orbs true
 }
 
 activate(dimer)

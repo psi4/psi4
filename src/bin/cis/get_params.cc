@@ -43,17 +43,17 @@ void get_params(Options & options)
 
   params.convergence = options.get_double("R_CONVERGENCE"); //default 7 ==> 1e-7
 
-  if (options["STATES_PER_IRREP"].size() > 0) {
-    i = options["STATES_PER_IRREP"].size();
+  if (options["ROOTS_PER_IRREP"].size() > 0) {
+    i = options["ROOTS_PER_IRREP"].size();
     if (i != moinfo.nirreps) {
       fprintf(outfile,"Dim. of states_per_irrep vector must be %d\n", moinfo.nirreps);
-      throw PsiException("cis input comparison error STATES_PER_IRREP and moinfo.nirreps", __FILE__, __LINE__);
+      throw PsiException("cis input comparison error ROOTS_PER_IRREP and moinfo.nirreps", __FILE__, __LINE__);
     }
     // possibly replace the following
     //for (i=0; i<moinfo.irreps; ++i)
-    //  params.rpi[i] = options["STATES_PER_IRREP"][i].to_integer();
+    //  params.rpi[i] = options["ROOTS_PER_IRREP"][i].to_integer();
     // with the following line
-    params.rpi = options.get_int_array("STATES_PER_IRREP");
+    params.rpi = options.get_int_array("ROOTS_PER_IRREP");
   }
   else {
     params.rpi = init_int_array(moinfo.nirreps);
@@ -64,15 +64,15 @@ void get_params(Options & options)
 
 /* start pre- porting
   params.rpi = (int *) malloc(moinfo.nirreps * sizeof(int));
-  if (ip_exist("STATES_PER_IRREP",0)) {  
-    ip_count("STATES_PER_IRREP", &i, 0);
+  if (ip_exist("ROOTS_PER_IRREP",0)) {  
+    ip_count("ROOTS_PER_IRREP", &i, 0);
     if (i != moinfo.nirreps) {
       fprintf(outfile,"Dim. of states_per_irrep vector must be %d\n", 
         moinfo.nirreps) ;
-      throw PsiException("cis input comparison error STATES_PER_IRREP and moinfo.nirreps", __FILE__, __LINE__);
+      throw PsiException("cis input comparison error ROOTS_PER_IRREP and moinfo.nirreps", __FILE__, __LINE__);
     }
     for (i=0;i<moinfo.nirreps;++i)
-      errcod = ip_data("STATES_PER_IRREP","%d",&(params.rpi[i]),1,i);
+      errcod = ip_data("ROOTS_PER_IRREP","%d",&(params.rpi[i]),1,i);
   }
   else { 
     params.rpi = init_int_array(moinfo.nirreps);
@@ -82,7 +82,7 @@ void get_params(Options & options)
   } 
 end pre-porting */
 
-  /* Test STATES_PER_IRREP vector for correct dimensions */
+  /* Test ROOTS_PER_IRREP vector for correct dimensions */
   for(h=0; h < moinfo.nirreps; h++) {
     max_dim = 0;
     for(i=0; i < moinfo.nirreps; i++) {

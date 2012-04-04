@@ -1,4 +1,6 @@
 
+.. include:: autodoc_abbr_options_c.rst
+
 .. index::
    triple: setting; keywords; cp()
    see: counterpoise_correct(); cp()
