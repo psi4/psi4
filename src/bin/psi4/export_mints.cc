@@ -146,7 +146,6 @@ void export_mints()
             def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize, "docstring").
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
-            def("exp", &Matrix::exp, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
             def("get", matrix_get2(&Matrix::get), "docstring").
             def("set", matrix_set3(&Matrix::set), "docstring").
