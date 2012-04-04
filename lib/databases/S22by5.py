@@ -1,6 +1,4 @@
 """
-**S22by5**
-
 | Database (Hobza) of interaction energies for dissociation curves of bimolecular complexes.
 | Geometries and reference interaction energies from Grafova et al. JCTC 6 2365 (2010).
 | Note that the S22by5-N-1.0 members are essentially the same geometries as S22-N (there's trivial round-off error) but the reference interaction energies for S22by5 are of lower quality than those of S22.
@@ -17,8 +15,6 @@
   - ``'mol1'`` five-point (0.9, 1.0, 1.2, 1.5, 2.0) :math:`\\times R_{eq}` dissociation curve for molecule 1
   - ...
   - ``'mol22'`` five-point (0.9, 1.0, 1.2, 1.5, 2.0) :math:`\\times R_{eq}` dissociation curve for molecule 22
-
-----
 
 """
 import re

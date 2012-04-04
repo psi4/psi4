@@ -46,7 +46,7 @@ cc19:         CCSD/cc-pVDZ dipole polarizability at two frequencies
 cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 
 
-cc21:         ROHF-EOM-CCSD/DZ geometry optimization of the lowest 2A1 excited state of H2O+ (B1 excitation).
+cc21:         ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}A@@1$ excited state of H2O+ (B1 excitation)
 
 
 cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.

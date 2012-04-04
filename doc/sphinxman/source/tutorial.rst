@@ -222,8 +222,9 @@ to a different coordinate system (this is important for SAPT to make
 sure the same coordinate frame is used for the computations of the two
 monomers and for the dimer).  The next keyword tells |PSIfour| to run
 in C1 point-group symmetry (i.e., without using symmetry), even if a
-higher symmetry is detected.  SAPT computations need to be run with
-symmetry turned off in this way.
+higher symmetry is detected.  SAPT computations know to turn off
+symmetry and fix orientation even without the user specifying these 
+molecule keywords.
 
 Here's the second half of the input::
 

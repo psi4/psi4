@@ -28,8 +28,6 @@ molecule benzene_methane {
      H     0.0000000    0.0000000    1.9966697
      H     0.4324413   -0.9273380    3.4463772
      units angstrom
-     no_reorient
-     symmetry c1
 }
 
 set globals {

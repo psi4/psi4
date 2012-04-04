@@ -1,6 +1,4 @@
 """
-**NBC10**
-
 | Database (Sherrill) of interaction energies for dissociation curves of dispersion-bound bimolecular complexes.
 | Geometries and Reference interaction energies from the following articles:
 |   Benzene Dimers from Sherrill et al. JPCA 113 10146 (2009).
@@ -35,8 +33,6 @@
   - ``'PyPy_T3'`` dissociation curve for pyridine dimer, t-shaped
   - ``'BzBz_PD32'`` dissociation curve for benzene dimer, parallel displaced by 3.2A
   - ``'BzBz_PD36'`` dissociation curve for benzene dimer, parallel displaced by 3.6A
-
-----
 
 """
 import re

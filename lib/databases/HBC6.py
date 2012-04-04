@@ -1,6 +1,4 @@
 """
-**HBC6**
-
 | Database (Sherrill) of interaction energies for dissociation curves of doubly hydrogen-bonded bimolecular complexes.
 | Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).
 | Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
@@ -20,8 +18,6 @@
   - ``'small'``
   - ``'large'``
   - ``'equilibrium'``
-
-----
 
 """
 import re
