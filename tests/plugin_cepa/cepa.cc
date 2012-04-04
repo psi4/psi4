@@ -326,7 +326,7 @@ PsiReturnType CoupledPair::CEPAIterations(Options&options){
   // is this a cim-cepa computation?
   if (wfn_->isCIM()){
      Local_SCS_CEPA();
-     ecepa = ecepa_os + ecepa_ss;
+     ecepa = ecepa_os/ecepa_os_fac + ecepa_ss/ecepa_ss_fac;
   }
   else{
      SCS_CEPA();

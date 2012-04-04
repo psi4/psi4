@@ -116,8 +116,6 @@ plugin_libcim(Options &options)
 
   cim->localClmo  = SharedMatrix (new Matrix("Local Clmo",cim->nso,cim->nmo));
   cim->localFock  = SharedMatrix (new Matrix("Local Fock",cim->nmo,cim->nmo));
-  cim->Rii        = SharedMatrix (new Matrix("Rii",cim->ndoccact,cim->ndoccact));
-  cim->centralfac = (double*)malloc(cim->ndoccact*sizeof(double));
   double ecim = 0.0;
 
   int clusternum = -1;
