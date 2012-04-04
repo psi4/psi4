@@ -7,7 +7,6 @@
 #include <libparallel/serialize.h>
 #include <libparallel/parallel.h>
 #include <boost/tuple/tuple.hpp>
-#include "dimension.h"
 #include "typedefs.h"
 #include <exception.h>
 
@@ -188,14 +187,14 @@ public:
     void init(const Dimension& rowspi, const Dimension& colspi, const std::string& name = "", int symmetry = 0);
 
     /// Creates an exact copy of the matrix and returns it.
-    Matrix* clone() const;
+    SharedMatrix clone() const;
 
     /**
      * Convenient creation function return SharedMatrix
      */
     static SharedMatrix create(const std::string& name,
-                                            const Dimension& rows,
-                                            const Dimension& cols);
+                               const Dimension& rows,
+                               const Dimension& cols);
 
     /**
      * @{
@@ -261,6 +260,14 @@ public:
      * @param filename Name of the file to read in.
      */
     void load(const std::string& filename);
+
+    /**
+      * Loads a matrix from an ASCII file. The matrix data resembles MPQC matrix printing
+      * with additional size data.
+      *
+      * @param filename Name of the file to read in.
+      */
+    void load_mpqc(const std::string& filename);
 
     /**
      * @{
@@ -568,7 +575,7 @@ public:
     /// Returns the trace of this
     double trace();
     /// Creates a new matrix which is the transpose of this
-    Matrix *transpose();
+    SharedMatrix transpose();
 
     /// In place transposition
     void transpose_this();
@@ -751,6 +758,13 @@ public:
     void svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V);
     /// @}
 
+    /// @{
+    /// General SVD, such that A = USV. U, S, and V must be allocated by the caller.
+    /// all M columns of U and all N rows of V**T are returned in the arrays U and VT;
+    /// This assumes totally symmetric quantities.
+    void svd_a(SharedMatrix& U, SharedVector& S, SharedMatrix& V);
+    /// @}
+
     ///@{
     /// Matrices/Vectors U (m x k), S (k), V (k x n) to feed to Matrix::svd
     boost::tuple<SharedMatrix,SharedVector,SharedMatrix> svd_temps();
@@ -766,7 +780,7 @@ public:
      *  @param delta, the relative condition to maintain
      *  @return X, a SharedMatrix with m x m' dimension (m' < m if conditioning occurred)
      */
-    SharedMatrix canonical_orthogonalization(double delta = 0.0);
+    SharedMatrix canonical_orthogonalization(double delta = 0.0, SharedMatrix eigvec = SharedMatrix());
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
@@ -834,8 +848,9 @@ public:
     *   \param alpha  The power to raise the matrix to
     *   \param cutoff The smallest absolute value of a condition number to allow to
     *   contribute in the formation of a negative power of A
+    *   \returns a Dimension object with the remaining sizes. Can be used in a View.
     */
-    void power(double alpha, double cutoff = 1.0E-12);
+    Dimension power(double alpha, double cutoff = 1.0E-12);
 
     /*!
     * Computes the approximate 

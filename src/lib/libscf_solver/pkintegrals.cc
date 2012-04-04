@@ -345,7 +345,7 @@ void PKIntegrals::setup_arrays(bool build_k)
     // Compute the number of pairs in PK
     pk_size_ = INDEX2(pk_pairs_-1, pk_pairs_-1) + 1;
 
-    size_t memory_needed = pk_size_;
+    size_t memory_needed = pk_size_ * sizeof(double);
     if(build_k) memory_needed *= 2;
 
     // Allocate memory for the PJ and PK matrices (using a vector)
@@ -366,17 +366,17 @@ void PKIntegrals::setup_arrays(bool build_k)
             if(print_ > 2){
                 fprintf(outfile,
                         "  Allocated %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
-                        (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+                        (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * sizeof(double) / 1048576.0);
                 fprintf(outfile,
                         "  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
-                        (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+                        (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * sizeof(double) / 1048576.0);
             }
         }
     } else {
         fprintf(outfile, "  Need %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
-                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * sizeof(double) / 1048576.0);
         fprintf(outfile, "  Need %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
-                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * sizeof(double) / 1048576.0);
         // Have the code automatically switch to out_of_core.
         throw PSIEXCEPTION("Not enough memory for PK matrix, try scf_type = out_of_core instead");
         // TODO just write an out of core code instead. Shouldn't be too hard.

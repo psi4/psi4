@@ -94,9 +94,9 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
         molecule_->print();
 
     // Read in the basis set
-    if(wavefunction)
+    if (wavefunction && !basisset_)
         basisset_ = wavefunction->basisset();
-    else {
+    else if (!basisset_){
         boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
         basisset_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
     }
@@ -106,7 +106,7 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
         basisset_->print_detail();
 
     // Create integral factory
-    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_));
 
     // Get the SO basis object.
     sobasis_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
@@ -120,6 +120,12 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 }
 
 MintsHelper::MintsHelper(Options & options, int print): options_(options), print_(print)
+{
+    init_helper();
+}
+
+MintsHelper::MintsHelper(boost::shared_ptr<Molecule> mol, boost::shared_ptr<BasisSet> bas)
+    : options_(Process::environment.options), molecule_(mol), basisset_(bas)
 {
     init_helper();
 }

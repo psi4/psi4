@@ -22,11 +22,15 @@ class CIM : public Wavefunction{
     void BuildClusters();
     double *epsSave;
     double **Fock;
-    int nirreps,nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact;
+    int nirreps,nso,nmo,ndocc,nvirt,nfzc,nfzv,ndoccact,maxndomains;
     // local variables:
     int nvirt_,nfzc_,ndoccact_,nfzv_;
     double thresh1,thresh2,thresh3;
     Options options_;
+
+    // bool indicating whether or not the correlated calculation using
+    // CIM as a wavefunction is local
+    bool islocal;
 
     // boys localization
     boost::shared_ptr<Boys> boys;

@@ -250,6 +250,14 @@ void TORS::print(FILE *fp, GeomType geom, int off) const {
   fflush(fp);
 }
 
+// function to return string of coordinate definition
+std::string TORS::get_definition_string(int off) const {
+  ostringstream iss(ostringstream::out); // create stream; allow output to it
+  iss << "D(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ","
+    << s_atom[3]+1+off << ")" << std::flush;
+  return iss.str();
+}
+
 void TORS::print_disp(FILE *fp, const double q_old, const double f_q,
     const double dq, const double q_new, int atom_offset) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it

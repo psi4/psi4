@@ -12,7 +12,7 @@ molecule h2o {
 
 set {
   basis DZ
-  states_per_irrep [0, 0, 0, 1]
+  roots_per_irrep [0, 0, 0, 1]
 }
 
 gradient('eom-ccsd')

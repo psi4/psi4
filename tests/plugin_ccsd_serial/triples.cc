@@ -36,8 +36,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
      nthreads = options.get_int("NUM_THREADS");
 
   long int memory = Process::environment.get_memory();
-  if (options["CCMEMORY"].has_changed()){
-     memory  = options.get_int("CCMEMORY");
+  if (options["MEMORY"].has_changed()){
+     memory  = options.get_int("MEMORY");
      memory *= (long int)1024*1024;
   }
   memory -= 8L*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v);

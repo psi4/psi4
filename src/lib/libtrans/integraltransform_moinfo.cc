@@ -12,13 +12,21 @@
 using namespace boost;
 using namespace psi;
 
-void IntegralTransform::common_moinfo_initialize()
+void IntegralTransform::common_initialize()
 {
+    aaIntName_ = "";
+    abIntName_ = "";
+    bbIntName_ = "";
+
+    keepHtInts_ = 0;
+
     nTriSo_  = nso_ * (nso_ + 1) / 2;
     nTriMo_  = nmo_ * (nmo_ + 1) / 2;
     sosym_   = init_int_array(nso_);
     mosym_   = init_int_array(nmo_);
     zeros_   = init_int_array(nirreps_);
+    
+    write_dpd_so_tpdm_ = false;
 
     int count = 0;
     for(int h = 0; h < nirreps_; ++h){

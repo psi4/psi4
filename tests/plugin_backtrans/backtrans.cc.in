@@ -55,6 +55,7 @@ plugin_backtrans(Options &options)
                            IntegralTransform::None,
                            false);
     dpd_set_default(ints.get_dpd_id());
+    ints.set_write_dpd_so_tpdm(true);
     ints.set_print(print);
     ints.set_keep_dpd_so_ints(1);
     ints.set_keep_iwl_so_ints(1);
@@ -176,7 +177,7 @@ plugin_backtrans(Options &options)
         Matrix aMoOei("Alpha MO OEI", nIrreps, orbspi, orbspi);
         IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_A_OEI, temp, nTriMo, 0, 0, outfile);
         aMoOei.set(temp);
-        Matrix bMoOei("Alpha MO OEI", nIrreps, orbspi, orbspi);
+        Matrix bMoOei("Beta MO OEI", nIrreps, orbspi, orbspi);
         IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_B_OEI, temp, nTriMo, 0, 0, outfile);
         bMoOei.set(temp);
       

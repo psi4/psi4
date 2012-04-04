@@ -59,6 +59,8 @@ struct OPT_PARAMS {
   double intrafragment_step_limit_min;
   double intrafragment_step_limit_max;
 
+  double interfragment_step_limit;
+
   // whether to limit changes in Hessian due to update
   bool H_update_limit;
   // changes in H are limited to H_update_limit_scale * the previous value

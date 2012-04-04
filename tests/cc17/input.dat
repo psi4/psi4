@@ -14,7 +14,7 @@ molecule ch2 {
 set {
   reference uhf
   basis cc-pVDZ
-  states_per_irrep [2, 2, 2, 2]
+  roots_per_irrep [2, 2, 2, 2]
 }
 
 energy('eom-ccsd')

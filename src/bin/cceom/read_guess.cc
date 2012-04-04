@@ -16,7 +16,7 @@
 namespace psi { namespace cceom {
 
 /* counts the number of states and Cs for each irrep based on the orbital numbers given
- * in input -- overrides the "states_per_irrep" keyword */
+ * in input -- overrides the "roots_per_irrep" keyword */
 
 void read_guess_init(void)
 {
@@ -93,14 +93,14 @@ void read_guess_init(void)
     }
   }
 
-  fprintf(outfile,"EOM_GUESS_VECTORS implies states_per_irrep: \n\t");
+  fprintf(outfile,"EOM_GUESS_VECTORS implies roots_per_irrep: \n\t");
   for (i=0;i<moinfo.nirreps;++i)
     fprintf(outfile,"%s %d, ",moinfo.irr_labs[i], eom_params.states_per_irrep[i]);
   fprintf(outfile,"\n");
   fprintf(outfile,"and Rs_per_irrep: \n\t");
   for (i=0;i<moinfo.nirreps;++i)
     fprintf(outfile,"%s %d, ",moinfo.irr_labs[i], eom_params.cs_per_irrep[i]);
-  fprintf(outfile,"These numbers should match those given by the states_per_irrep keyword\n");
+  fprintf(outfile,"These numbers should match those given by the roots_per_irrep keyword\n");
   fprintf(outfile,"\n\n");
   fflush(outfile);
   return;
