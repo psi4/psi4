@@ -290,6 +290,15 @@ void INTERFRAG::freeze(bool *D_freeze) {
   }
 }
 
+// freeze coordinate i; index is among the coordinates that are 'on'
+void INTERFRAG::freeze(int index_to_freeze) {
+  if (index_to_freeze<0 || index_to_freeze>g_nintco()) {
+    fprintf(outfile,"INTERFRAG::freeze() : Invalid index %d\n", index_to_freeze);
+    return;
+  }
+  inter_frag->intcos[index_to_freeze]->freeze();
+}
+
 // is coordinate J frozen?  J runs over only active coordinates.
 bool INTERFRAG::is_frozen(int J) { 
   if (J < 0 || J >= g_nintco())

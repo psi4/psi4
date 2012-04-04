@@ -100,6 +100,9 @@ class INTERFRAG {
   // freeze coordinate i if D_freeze[i]; index runs 0->6 as does D_on
   void freeze(bool *D_freeze);
 
+  // freeze coordinate i; index is among 'on' (well-defined) coordinates
+  void freeze(int i);
+
   // is coordinate J frozen?  J runs over only active coordinates.
   bool is_frozen(int J);
 

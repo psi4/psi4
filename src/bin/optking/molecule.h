@@ -366,6 +366,9 @@ printf("adding %d auxiliary bonds\n", n);
 
   void add_efp_fragments(void);
 
+  // freeze interfragment modes that break symmetry
+  void freeze_interfragment_asymm(void);
+
 };
 
 }

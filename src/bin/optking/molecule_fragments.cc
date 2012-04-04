@@ -18,6 +18,10 @@
 #define EXTERN
 #include "globals.h"
 
+#if defined(OPTKING_PACKAGE_PSI)
+#include <libmints/molecule.h>
+#endif
+
 namespace opt {
 
 using namespace v3d;
@@ -382,6 +386,57 @@ void MOLECULE::add_interfragment(void) {
   }
 
   fflush(outfile);
+}
+
+// Check to see if displacement along any of the interfragment modes breakes
+// the symmetry of the molecule.  If so, freeze it.  This is a hack for now.
+// will it work?  RAK 3-2012
+void MOLECULE::freeze_interfragment_asymm(void) {
+  double **coord_orig = g_geom_2D();
+  double disp_size = 0.1;
+
+  fprintf(outfile,"Checking interfragment coordinates for ones that break symmetry.\n");
+  fflush(outfile);
+
+  for (int I=0; I<interfragments.size(); ++I) {
+    double **B = interfragments[I]->compute_B(); // ->g_nintco() X (3*atom A)+3(natom_B)
+
+    int iA = interfragments[I]->g_A_index();
+    int iB = interfragments[I]->g_B_index();
+    int nA = interfragments[I]->g_natom_A();
+    int nB = interfragments[I]->g_natom_B();
+
+    for (int i=0; i<interfragments[I]->g_nintco(); ++i) {
+      bool symmetric_intco = true;
+
+      double **coord = matrix_return_copy(coord_orig, g_natom(), 3);
+
+      for (int j=0; j<3*nA; ++j)
+        coord[g_interfragment_intco_offset(I)+i][3*g_atom_offset(iA)+j] += disp_size * B[i][j];
+
+      for (int j=0; j<3*nB; ++j)
+        coord[g_interfragment_intco_offset(I)+i][3*g_atom_offset(iB)+j] += disp_size * B[i][3*nA+j];
+
+#if defined(OPTKING_PACKAGE_PSI)
+      psi::Process::environment.molecule()->set_geometry(coord);
+      symmetric_intco = psi::Process::environment.molecule()->valid_atom_map();
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // not implemented yet
+#endif
+      if (!symmetric_intco) {
+        fprintf(outfile,"Interfragment coordinate %d, %d breaks symmetry - freezing.\n", I+1, i+1);
+        interfragments[i]->freeze(i);
+      }
+      free(coord);
+    }
+    free_matrix(B);
+  }
+
+#if defined(OPTKING_PACKAGE_PSI)
+      psi::Process::environment.molecule()->set_geometry(coord_orig);
+#endif
+
+  return;
 }
 
 } // namespace opt

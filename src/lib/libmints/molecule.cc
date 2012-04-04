@@ -2441,6 +2441,34 @@ void Molecule::set_orientation_fixed(bool _fix) {
     }
 }
 
+// RAK, 4-2012, return true if all atoms correctly map onto other atoms 
+bool Molecule::valid_atom_map(void) const {
+    double np[3];
+    SymmetryOperation so;
+    CharacterTable ct = point_group()->char_table();
+
+    // loop over all centers
+    for (int i=0; i < natom(); i++) {
+        Vector3 ac(xyz(i));
+
+        // For each operation in the pointgroup, transform the coordinates of
+        // center "i" and see which atom it maps into
+        for (int g=0; g < ct.order(); g++) {
+            so = ct.symm_operation(g);
+
+            for (int ii=0; ii < 3; ii++) {
+                np[ii] = 0;
+                for (int jj=0; jj < 3; jj++)
+                    np[ii] += so(ii,jj) * ac[jj];
+            }
+
+            if (atom_at_position1(np, 0.05) < 0)
+              return false;
+        }
+    }
+    return true;
+}
+
 /* we may not need this capability
 void Molecule::set_com_fixed(bool _fix) {
 

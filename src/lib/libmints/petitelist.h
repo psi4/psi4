@@ -43,17 +43,6 @@ int **compute_atom_map(const Molecule* mol);
 /// @}
 
 /*! @{
- *  Determines if the current cartesian geometry is consistent with
- *  the current point group.
- *
- *  \param mol Molecule for which to examine atom mapping.
- *  \returns Boolean indicating whether geometry fits pointgroup.
- */
-bool valid_atom_map(const boost::shared_ptr<Molecule> &mol);
-bool valid_atom_map(const Molecule* mol);
-/// @}
-
-/*! @{
  * Frees atom mapping for created for a molecule by compute_atom_map.
  *
  *  \param atom_map Map to free.
