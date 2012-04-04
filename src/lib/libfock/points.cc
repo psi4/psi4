@@ -171,19 +171,19 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         // \nabla x
         C_DGEMM('N','N',npoints,na,nlocal,1.0,phixp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
+            tauap[P] = 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla y
         C_DGEMM('N','N',npoints,na,nlocal,1.0,phiyp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
+            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla z
         C_DGEMM('N','N',npoints,na,nlocal,1.0,phizp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
+            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
         }
     }
 }
@@ -391,7 +391,49 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
+        
+        // => build KE density <= //
+        double** phixp = basis_values_["PHI_X"]->pointer();
+        double** phiyp = basis_values_["PHI_Y"]->pointer();
+        double** phizp = basis_values_["PHI_Z"]->pointer();
+        double* tauap = point_values_["TAU_A"]->pointer();
+        double* taubp = point_values_["TAU_B"]->pointer();
 
+        ::memset((void*) tauap, '\0', sizeof(double) * npoints);
+        ::memset((void*) taubp, '\0', sizeof(double) * npoints);
+
+        double** phi[3];
+        phi[0] = phixp;
+        phi[1] = phiyp;
+        phi[2] = phizp;
+
+        double* tau[2];
+        tau[0] = tauap;
+        tau[1] = taubp;
+
+        double** D[2];
+        D[0] = Da2p;
+        D[1] = Db2p;
+        
+        double** T[2];
+        T[0] = Tap;
+        T[1] = Tbp;
+
+        for (int x = 0; x < 3; x++) {
+            for (int t = 0; t < 2; t++) {
+                double** phic = phi[x];
+                double** Dc = D[t];
+                double** Tc = T[t];
+                double*  tauc = tau[t];
+
+                C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phic[0],nglobal,Dc[0],nglobal,0.0,Tc[0],nglobal);
+                for (int P = 0; P < npoints; P++) {
+                    tauc[P] += C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
+                }
+            }
+        }
+
+        /**
         // => Build local C matrix <= //
         int na = Caocc_AO_->colspi()[0];
         int nb = Cbocc_AO_->colspi()[0];
@@ -408,7 +450,7 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
             ::memcpy(static_cast<void*>(Cb2p[mlocal]), static_cast<void*>(Cbp[mglobal]), nb * sizeof(double));
         }
 
-        // => Build KE density A(N^2) <= //
+        // => build ke density a(n^2) <= //
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
         double** phizp = basis_values_["PHI_Z"]->pointer();
@@ -419,39 +461,40 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         // \nabla x
         C_DGEMM('N','N',npoints,na,nlocal,1.0,phixp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
+            tauap[P] = 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla y
         C_DGEMM('N','N',npoints,na,nlocal,1.0,phiyp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
+            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla z
         C_DGEMM('N','N',npoints,na,nlocal,1.0,phizp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
+            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // Beta
         // \nabla x
         C_DGEMM('N','N',npoints,nb,nlocal,1.0,phixp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            taubp[P] = C_DDOT(nb,TCp[P],1,TCp[P],1);
+            taubp[P] = 0.5 * C_DDOT(nb,TCp[P],1,TCp[P],1);
         }
 
         // \nabla y
         C_DGEMM('N','N',npoints,nb,nlocal,1.0,phiyp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
+            taubp[P] += 0.5 * C_DDOT(nb,TCp[P],1,TCp[P],1);
         }
 
         // \nabla z
-        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phizp[0],nglobal,Cb2p[0],nb,0.0,Tbp[0],nc);
+        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phizp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
+            taubp[P] += 0.5 * C_DDOT(nb,TCp[P],1,TCp[P],1);
         }
+        **/
     }
 }
 void UKSFunctions::print(FILE* out, int print) const
