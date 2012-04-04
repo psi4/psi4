@@ -23,7 +23,7 @@ set {
 # This is a table that uses just the default parameters
 table = Table(rows=("Basis"), cols=("E(DF-SCF)", "E(DF-MP2)"))
 
-# This is the same table, but with more explic control of column widths
+# This is the same table, but with more explicit control of column widths
 longtable = Table(rows=("Basis"), cols=("E(DF-SCF)", "E(DF-MP2)"),
                   row_label_width=10,
                   row_label_precision=4,
@@ -38,7 +38,7 @@ for basisset in basissets:
     set df_basis_scf $jkbasis
     ribasis = basisset + "-ri"
     set df_basis_mp2 $ribasis
-    edfmp2 = energy('dfmp2')
+    edfmp2 = energy('df-mp2')
     edfscf = get_variable('SCF TOTAL ENERGY')
     # Store the computed values in the tables
     table[basisset]     = [edfscf, edfmp2]

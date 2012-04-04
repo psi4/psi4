@@ -16,6 +16,8 @@ void export_functional()
         def("blank", &SuperFunctional::blank, "docstring").
         staticmethod("blank").
         def("allocate", &SuperFunctional::allocate, "docstring").
+        def("x_functional", &SuperFunctional::x_functional, "docstring").
+        def("c_functional", &SuperFunctional::c_functional, "docstring").
         def("add_x_functional", &SuperFunctional::add_x_functional, "docstring").
         def("add_c_functional", &SuperFunctional::add_c_functional, "docstring").
         def("test_functional", &SuperFunctional::test_functional, "docstring").

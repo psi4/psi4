@@ -2,7 +2,6 @@
 #include<libciomr/libciomr.h>
 
 #include"cepa.h"
-#include"../plugin_libcim/cim.h"
 
 using namespace psi;
 using namespace boost;
@@ -13,7 +12,7 @@ namespace psi{
 
 namespace psi{
 
-void RunCoupledPair(Options &options,boost::shared_ptr<psi::CIM> wfn){
+void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn){
 
   boost::shared_ptr<CoupledPair> cepa(new CoupledPair(wfn));
   PsiReturnType status;

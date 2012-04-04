@@ -1,9 +1,10 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/python.hpp>
 #include <boost/python/object.hpp>
+#include <liboptions/liboptions.h>
+#include <liboptions/python.h>
 #include <psi4-dec.h>
 #include "superfunctional.h"
-#include "functional.h"
 
 #define PY_TRY(ptr, command)  \
      if(!(ptr = command)){    \
@@ -14,6 +15,37 @@
 using namespace boost::python;
 
 namespace psi {
+
+boost::shared_ptr<SuperFunctional> SuperFunctional::current(Options& options, int npoints, int deriv)
+{
+    if (npoints == -1) {
+        npoints = options.get_int("DFT_BLOCK_MAX_POINTS");
+    }
+
+    boost::shared_ptr<SuperFunctional> super;
+    if (options.get_str("DFT_FUNCTIONAL") == "GEN" || options.get_str("DFT_FUNCTIONAL") == "") {
+        boost::python::object pySuper = dynamic_cast<PythonDataType*>(options["DFT_CUSTOM_FUNCTIONAL"].get())->to_python();
+        super = boost::python::extract<boost::shared_ptr<SuperFunctional> >(pySuper);
+        if (!super) {
+            throw PSIEXCEPTION("Custom Functional requested, but nothing provided in DFT_CUSTOM_FUNCTIONAL");
+        }
+    } else {
+        super = SuperFunctional::build(options.get_str("DFT_FUNCTIONAL"), npoints, deriv);
+        if (options["DFT_OMEGA"].has_changed() && super->is_x_lrc()) {
+            super->set_x_omega(options.get_double("DFT_OMEGA"));
+        }
+        if (options["DFT_ALPHA"].has_changed()) {
+            super->set_x_alpha(options.get_double("DFT_ALPHA"));
+        }
+    }
+
+    if (npoints != super->max_points())
+        super->set_max_points(npoints);
+    if (deriv != super->deriv())
+        super->set_deriv(deriv);
+
+    return super;
+}
 
 boost::shared_ptr<SuperFunctional> SuperFunctional::build(const std::string& alias, int max_points, int deriv)
 {
