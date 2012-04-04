@@ -1,14 +1,10 @@
 """
-**G2**
-
 | Database of thermodynamic reactions.
 | WIP
 
 - **cp**  ``'off'``
 
 - **rlxd** ``'off'``
-
-----
 
 """
 import re

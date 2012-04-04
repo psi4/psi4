@@ -303,7 +303,9 @@ rst_prolog = """
 # This option, from sphinx.ext.extlinks, allows linking to source on trac with :source:`lib/python/driver/py`
 extlinks = {'source': ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/'),
             'srcsample': ('http://sirius.chem.vt.edu/trac/browser/samples/%s/input.dat', ''),
-            'srcbasis': ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', '') }
+            'srcbasis': ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', ''),
+            'srcplugin': ('http://sirius.chem.vt.edu/trac/browser/tests/%s', ''),
+            'srcdb': ('http://sirius.chem.vt.edu/trac/browser/lib/databases/%s.py', '') }
 
 # corrects baseline for inline math + other custom stuff for inline math, such as non-default math fonts etc.
 pngmath_latex_preamble=r'\usepackage[active]{preview}'

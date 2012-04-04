@@ -67,11 +67,11 @@ void SuperFunctional::print(FILE* out, int level) const
         }
         fprintf(out,"\n");
     }    
-    if (x_alpha_) {
-        fprintf(out, "    %6.4f %5s \n", x_alpha_, "HF");
-    }
     if (x_omega_) {
         fprintf(out, "    %6.4f %5s [\\omega = %6.4f]\n", (1.0 - x_alpha_), "HF,LR", x_omega_);
+    }
+    if (x_alpha_) {
+        fprintf(out, "    %6.4f %5s \n", x_alpha_, "HF");
     }
     fprintf(out, "\n");
      
@@ -84,11 +84,11 @@ void SuperFunctional::print(FILE* out, int level) const
         }
         fprintf(out,"\n");
     }    
-    if (c_alpha_) {
-        fprintf(out, "    %6.4f %5s \n", c_alpha_, "MP2");
-    }
     if (c_omega_) {
         fprintf(out, "    %6.4f %5s [\\omega = %6.4f]\n", (1.0 - c_alpha_), "MP2,LR", c_omega_);
+    }
+    if (c_alpha_) {
+        fprintf(out, "    %6.4f %5s \n", c_alpha_, "MP2");
     }
     fprintf(out, "\n");
 
@@ -112,6 +112,22 @@ void SuperFunctional::add_x_functional(boost::shared_ptr<Functional> fun)
 void SuperFunctional::add_c_functional(boost::shared_ptr<Functional> fun) 
 {
     c_functionals_.push_back(fun);
+}
+boost::shared_ptr<Functional> SuperFunctional::c_functional(const std::string& name)
+{
+    for (int Q = 0; Q < c_functionals_.size(); Q++) {
+        if (name == c_functionals_[Q]->name())
+            return c_functionals_[Q];
+    }
+    throw PSIEXCEPTION("Functional not found within SuperFunctional");
+}
+boost::shared_ptr<Functional> SuperFunctional::x_functional(const std::string& name)
+{
+    for (int Q = 0; Q < x_functionals_.size(); Q++) {
+        if (name == x_functionals_[Q]->name())
+            return x_functionals_[Q];
+    }
+    throw PSIEXCEPTION("Functional not found within SuperFunctional");
 }
 bool SuperFunctional::is_gga() const 
 {

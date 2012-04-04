@@ -833,14 +833,12 @@ def database(name, db_name, **kwargs):
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
-    symmetry_override = 0
     if re.match(r'^sapt', lowername):
         try:
             database.ACTV_SA
         except AttributeError:
             raise ValidationError('Database %s not suitable for non-supramolecular calculation.' % (db_name))
         else:
-            symmetry_override = 1
             ACTV = database.ACTV_SA
     #   Force open-shell if needed
     openshell_override = 0
@@ -860,6 +858,7 @@ def database(name, db_name, **kwargs):
     if 'symm' in kwargs:
         db_symm = kwargs['symm']
 
+    symmetry_override = 0
     if input.no.match(str(db_symm)):
         symmetry_override = 1
     elif input.yes.match(str(db_symm)):

@@ -5,7 +5,7 @@
 INIT_PLUGIN
 
 namespace psi{
-  void RunCoupledCluster(Options &options);
+  void RunCoupledCluster(Options &options,boost::shared_ptr<psi::Wavefunction>wfn);
 };
 
 namespace psi{ namespace plugin_ccsd_serial{
@@ -48,7 +48,8 @@ read_options(std::string name, Options &options)
 extern "C" PsiReturnType
 plugin_ccsd_serial(Options &options)
 {  
-  RunCoupledCluster(options);
+  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  RunCoupledCluster(options,ref);
   return  Success;
 } // end plugin_ccsd
 

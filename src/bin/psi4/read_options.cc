@@ -919,10 +919,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
-    /*- The DFT combined functional name (for now). -*/
+    /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a 
+        custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
     options.add_str("DFT_FUNCTIONAL", "");
+    /*- An ExternalPotential (built by Python or NULL/None) -*/
+    options.add("DFT_CUSTOM_FUNCTIONAL", new PythonDataType());
     /*- The DFT Range-separation parameter -*/
     options.add_double("DFT_OMEGA", 0.0);
+    /*- The DFT Exact-exchange parameter -*/
+    options.add_double("DFT_ALPHA", 0.0);
     /*- The DFT grid specification, such as SG1. -*/
     options.add_str("DFT_GRID_NAME","","SG1");
     /*- Maximum order of spherical grids. -*/
