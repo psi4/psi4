@@ -9,8 +9,8 @@
 INIT_PLUGIN
 
 namespace psi{
-  void RunCoupledCluster(Options &options,boost::shared_ptr<psi::CIM> wfn);
-  void RunCoupledPair(Options &options,boost::shared_ptr<psi::CIM> wfn);
+  void RunCoupledCluster(Options &options,boost::shared_ptr<psi::Wavefunction> wfn);
+  void RunCoupledPair(Options &options,boost::shared_ptr<psi::Wavefunction> wfn);
 };
 
 namespace psi{ namespace plugin_libcim{
@@ -112,9 +112,11 @@ plugin_libcim(Options &options)
   /*
    *  loop over each cluster, {I}
    */
-  cim->localClmo = SharedMatrix (new Matrix("Local Clmo",cim->nso,cim->nmo));
-  cim->localFock = SharedMatrix (new Matrix("Local Fock",cim->nmo,cim->nmo));
-  cim->Rii       = SharedMatrix (new Matrix("Rii",cim->ndoccact,cim->ndoccact));
+  cim->CIMSet(true,cim->ndoccact);
+
+  cim->localClmo  = SharedMatrix (new Matrix("Local Clmo",cim->nso,cim->nmo));
+  cim->localFock  = SharedMatrix (new Matrix("Local Fock",cim->nmo,cim->nmo));
+  cim->Rii        = SharedMatrix (new Matrix("Rii",cim->ndoccact,cim->ndoccact));
   cim->centralfac = (double*)malloc(cim->ndoccact*sizeof(double));
   double ecim = 0.0;
 
@@ -170,7 +172,8 @@ plugin_libcim(Options &options)
        * run correled calculation in cluster, {I}
        */
       if (options.get_str("CIM_CORRELATED_METHOD") == "CCSD" || options.get_str("CIM_CORRELATED_METHOD") == "CCSD(T)"){
-         RunCoupledCluster(options,cim);
+         boost::shared_ptr<Wavefunction> wfn = (boost::shared_ptr<psi::Wavefunction>)cim;
+         RunCoupledCluster(options,wfn);
          double dum = Process::environment.globals["CCSD CORRELATION ENERGY"];
          Process::environment.globals["CURRENT CLUSTER CCSD CORRELATION ENERGY"] = dum;
          
@@ -187,7 +190,8 @@ plugin_libcim(Options &options)
          fflush(outfile);
       }
       else if (options.get_str("CIM_CORRELATED_METHOD") == "CEPA"){
-         RunCoupledPair(options,cim);
+         boost::shared_ptr<Wavefunction> wfn = (boost::shared_ptr<psi::Wavefunction>)cim;
+         RunCoupledPair(options,wfn);
          double dum = Process::environment.globals["CURRENT CORRELATION ENERGY"];
          Process::environment.globals["CURRENT CLUSTER CEPA CORRELATION ENERGY"] = dum;
          

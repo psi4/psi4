@@ -1,4 +1,5 @@
 #include"ccsd.h"
+#include<libmints/wavefunction.h>
 #include"blas.h"
 #ifdef _OPENMP
    #include<omp.h>
@@ -23,13 +24,19 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   int o = ccsd->ndoccact;
   int v = ccsd->nvirt_no;
 
-  double **tempRii = ccsd->wfn_->Rii->pointer();
+  // CIM QLMO->LMO transformation matrix
+  SharedMatrix tempRii = ccsd->wfn_->CIMTransformationMatrix();
+  double**tempRii_pointer = tempRii->pointer();
   double *Rii = (double*)malloc(o*o*sizeof(double));
   for (int i=0; i<o; i++){
       for (int j=0; j<o; j++){
-          Rii[i*o+j] = tempRii[i][j];
+          Rii[i*o+j] = tempRii_pointer[i][j];
       }
   }
+  // CIM orbital factors:
+  SharedVector factor = ccsd->wfn_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
+
   double *t1 = ccsd->t1;
   double *F  = ccsd->eps;
   double *E2ijak,**E2abci;
@@ -422,7 +429,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                      //dum         += Z2[thread][ijk] * Z3[thread][ijk];
                  }
              }
-             tripval += dum * ccsd->wfn_->centralfac[i];
+             tripval += dum * factor_pointer[i];
          }
          etrip[thread] += 3.0*tripval*abcfac;
 
@@ -468,7 +475,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                      //dum         += E2abci[thread][ijk] * Z3[thread][ijk];
                  }
              }
-             tripval += dum * ccsd->wfn_->centralfac[i];
+             tripval += dum * factor_pointer[i];
          }
          etrip[thread] += tripval*abcfac;
 
@@ -514,7 +521,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                      //dum         += E2abci[thread][ijk] * Z4[thread][ijk];
                  }
              }
-             tripval += dum * ccsd->wfn_->centralfac[i];
+             tripval += dum * factor_pointer[i];
          }
          etrip[thread] += tripval*abcfac;
 //heyheyhey

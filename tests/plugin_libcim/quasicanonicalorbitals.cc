@@ -173,6 +173,12 @@ void CIM::QuasiCanonicalOrbitals(int cluster){
           Rii_pointer[i][j] = mat[i*nact+j];
       }
   }
+  Rii_pointer = QLMO_to_LMO_->pointer();
+  for (int i=0; i<nact; i++){
+      for (int j=0; j<nact; j++){
+          Rii_pointer[i][j] = mat[i*nact+j];
+      }
+  }
 
   // replace eps from wavefunction:
   double*eps = epsilon_a()->pointer();
@@ -230,9 +236,12 @@ void CIM::QuasiCanonicalOrbitals(int cluster){
   free(temp1);
 
   // factor for scaling contribution from each central orbital
+  double * pointer = CIM_orbital_factors_->pointer();
   for (int i=0; i<nact; i++){
       if (ntimes[i]==0) centralfac[i] = 0.0;
       else              centralfac[i] = 1.0/ntimes[i];
+      if (ntimes[i]==0) pointer[i] = 0.0;
+      else              pointer[i] = 1.0/ntimes[i];
   }
   free(ntimes);
 }
