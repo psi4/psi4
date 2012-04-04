@@ -75,11 +75,11 @@ void RKSFunctions::allocate()
 void RKSFunctions::set_pointers(SharedMatrix D_AO, SharedMatrix Cocc_AO)
 {
     D_AO_ = D_AO;
-    Cocc_AO_ = Cocc_AO_;
+    Cocc_AO_ = Cocc_AO;
     build_temps();
 }
 void RKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
-                                  SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
+                                SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
 {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
@@ -169,19 +169,19 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         double* tauap = point_values_["TAU_A"]->pointer();
 
         // \nabla x
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
+        C_DGEMM('N','N',npoints,na,nlocal,1.0,phixp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
             tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla y
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
+        C_DGEMM('N','N',npoints,na,nlocal,1.0,phiyp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
             tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla z
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
+        C_DGEMM('N','N',npoints,na,nlocal,1.0,phizp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
             tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }
@@ -291,12 +291,12 @@ void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO)
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
 void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
-                                  SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
+                                SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
 {
     Da_AO_ = Da_AO;
-    Caocc_AO_ = Caocc_AO_;
+    Caocc_AO_ = Caocc_AO;
     Db_AO_ = Db_AO;
-    Cbocc_AO_ = Cbocc_AO_;
+    Cbocc_AO_ = Cbocc_AO;
     build_temps();
 }
 void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
@@ -417,38 +417,38 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 
         // Alpha
         // \nabla x
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
+        C_DGEMM('N','N',npoints,na,nlocal,1.0,phixp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
             tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla y
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
+        C_DGEMM('N','N',npoints,na,nlocal,1.0,phiyp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
             tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // \nabla z
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
+        C_DGEMM('N','N',npoints,na,nlocal,1.0,phizp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
             tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }
 
         // Beta
         // \nabla x
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phixp[0],nlocal,Cb2p[0],nb,0.0,TCp[0],nc);
+        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phixp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
             taubp[P] = C_DDOT(nb,TCp[P],1,TCp[P],1);
         }
 
         // \nabla y
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phiyp[0],nlocal,Cb2p[0],nb,0.0,TCp[0],nc);
+        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phiyp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
             taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
         }
 
         // \nabla z
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phizp[0],nlocal,Cb2p[0],nb,0.0,Tbp[0],nc);
+        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phizp[0],nglobal,Cb2p[0],nb,0.0,Tbp[0],nc);
         for (int P = 0; P < npoints; P++) {
             taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
         }
