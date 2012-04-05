@@ -1831,8 +1831,8 @@ void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double 
         y_[1][1][1] += pp * y_[0][1][0];
         z_[1][1][1] += pp * z_[0][1][0];
         x_[1][1][1] += pp * x_[0][0][1];
-        x_[1][1][1] += pp * y_[0][0][1];
-        x_[1][1][1] += pp * z_[0][0][1];
+        y_[1][1][1] += pp * y_[0][0][1];
+        z_[1][1][1] += pp * z_[0][0][1];
 
         // Begin - Bring everything together
         for (a=1; a<amA; ++a) {
