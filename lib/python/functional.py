@@ -114,6 +114,36 @@ def build_pbe_x_functional(name):
     fun.set_omega(0.0)
 
     # Custom parameters
+    fun.set_parameter('PBE_kp', 0.804)
+    fun.set_parameter('PBE_mu', 0.2195149727645171)
+
+    # => End User-Customization <= #
+
+    return fun
+
+def build_pbesol_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('PBE_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('PBEsol_X')
+    # Tab in, trailing newlines 
+    fun.set_description('    PBEsol GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines 
+    fun.set_citation('    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n')
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 0.804)
+    fun.set_parameter('PBE_mu', 10.0/81.0) 
 
     # => End User-Customization <= #
 
@@ -353,7 +383,7 @@ def build_wpbe_x_functional(name):
     # Tab in, trailing newlines 
     fun.set_description('    PBE Short-Range GGA Exchange (HJS Formalism)\n')
     # Tab in, trailing newlines 
-    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
     
     # These should be set by build_base, but prove that you know what's up
     fun.set_gga(True)
@@ -392,7 +422,7 @@ def build_wpbe_x_functional(name):
 
     return fun
 
-def build_wb88_x_functional(name):
+def build_wpbesol_x_functional(name):
 
     # Call this first
     fun = PsiMod.Functional.build_base('wPBE_X')
@@ -400,11 +430,11 @@ def build_wb88_x_functional(name):
     # => User-Customization <= #
 
     # No spaces, keep it short and according to convention
-    fun.set_name('wB88X')
+    fun.set_name('wPBEsol_X')
     # Tab in, trailing newlines 
-    fun.set_description('    B88 Short-Range GGA Exchange (HJS Formalism)\n')
+    fun.set_description('    PBEsol Short-Range GGA Exchange (HJS Formalism)\n')
     # Tab in, trailing newlines 
-    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
     
     # These should be set by build_base, but prove that you know what's up
     fun.set_gga(True)
@@ -421,23 +451,74 @@ def build_wb88_x_functional(name):
 
     fun.set_parameter('Ha0', 0.0000000)
     fun.set_parameter('Ha1', 0.0000000)
-    fun.set_parameter('Ha2', 0.00968615)
-    fun.set_parameter('Ha3',-0.0242498)
-    fun.set_parameter('Ha4', 0.0259009)
-    fun.set_parameter('Ha5',-0.0136606) 
-    fun.set_parameter('Ha6', 0.00309606)
-    fun.set_parameter('Ha7', -7.32583E-5)
+    fun.set_parameter('Ha2', 0.0047333)
+    fun.set_parameter('Ha3', 0.0403304)
+    fun.set_parameter('Ha4',-0.0574615)
+    fun.set_parameter('Ha5', 0.0435395)
+    fun.set_parameter('Ha6',-0.0216251)
+    fun.set_parameter('Ha7', 0.0063721)
 
-    fun.set_parameter('Hb0', 1.0000000)
-    fun.set_parameter('Hb1',-2.5035600)
-    fun.set_parameter('Hb2', 2.796560)
-    fun.set_parameter('Hb3',-1.794010)
-    fun.set_parameter('Hb4', 0.7148880)
-    fun.set_parameter('Hb5',-0.1659240) 
-    fun.set_parameter('Hb6', 0.0118379) 
-    fun.set_parameter('Hb7', 0.0037806) 
-    fun.set_parameter('Hb8',-1.57905E-4)
-    fun.set_parameter('Hb9', 1.45323E-6)
+    fun.set_parameter('Hb0', 1.00000)
+    fun.set_parameter('Hb1', 8.52056)
+    fun.set_parameter('Hb2',-13.9885)
+    fun.set_parameter('Hb3', 9.28583)
+    fun.set_parameter('Hb4',-3.27287)
+    fun.set_parameter('Hb5', 0.843499)
+    fun.set_parameter('Hb6',-0.235543)
+    fun.set_parameter('Hb7', 0.0847074)
+    fun.set_parameter('Hb8',-0.0171561)
+    fun.set_parameter('Hb9', 0.0050552)
+
+    # => End User-Customization <= #
+
+    return fun
+
+def build_wb88_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('wB88_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('wB88_X')
+    # Tab in, trailing newlines 
+    fun.set_description('    B88 Short-Range GGA Exchange (HJS Formalism)\n')
+    # Tab in, trailing newlines 
+    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.3)
+
+    # Custom parameters
+    fun.set_parameter('A', 0.7572110)
+    fun.set_parameter('B',-0.1063640)
+    fun.set_parameter('C',-0.1186490)
+    fun.set_parameter('D', 0.6096500)
+    fun.set_parameter('E',-0.0477963)
+
+    fun.set_parameter('Ha0', 0.0000000)
+    fun.set_parameter('Ha1', 0.0000000)
+    fun.set_parameter('Ha2', 0.0253933)
+    fun.set_parameter('Ha3',-0.0673075)
+    fun.set_parameter('Ha4', 0.0891476)
+    fun.set_parameter('Ha5',-0.0454168)
+    fun.set_parameter('Ha6',-0.0076581)
+    fun.set_parameter('Ha7', 0.0142506)
+
+    fun.set_parameter('Hb0', 1.00000)
+    fun.set_parameter('Hb1',-2.65060)
+    fun.set_parameter('Hb2', 3.91108)
+    fun.set_parameter('Hb3',-3.31509)
+    fun.set_parameter('Hb4', 1.54485)
+    fun.set_parameter('Hb5',-0.198386)
+    fun.set_parameter('Hb6',-0.136112)
+    fun.set_parameter('Hb7', 0.0647862)
+    fun.set_parameter('Hb8', 0.0159586)
+    fun.set_parameter('Hb9',-2.45066E-4)
 
     # => End User-Customization <= #
 
@@ -479,11 +560,13 @@ functionals = {
         'b88_x'       : build_b88_x_functional,
         'b3_x'        : build_b3_x_functional,
         'pbe_x'       : build_pbe_x_functional,
+        'pbesol_x'    : build_pbesol_x_functional,
         'pw91_x'      : build_pw91_x_functional,
         'b97_x'       : build_b97_x_functional,
         'ws_x'        : build_ws_x_functional,
         'wb97_x'      : build_primitive_functional,
         'wpbe_x'      : build_wpbe_x_functional,
+        'wpbesol_x'   : build_wpbesol_x_functional,
         'wb88_x'      : build_wb88_x_functional,
         'ft97b_x'     : build_primitive_functional,
         'm_x'         : build_primitive_functional,
@@ -562,10 +645,41 @@ def build_wpbe_x_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    PBE Short-Range GGA Exchange (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wPBE_X'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.3)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
+def build_wpbesol_x_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBEsol_X')
+    # Tab in, trailing newlines 
+    sup.set_description('    PBEsol Short-Range GGA Exchange (HJS Model)\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('wPBEsol_X'))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.3)
@@ -593,7 +707,7 @@ def build_wb88_x_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    B88 Short-Range GGA Exchange (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wB88_X'))
@@ -1495,7 +1609,7 @@ def build_wpbe_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    PBE SR-XC Functional (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wPBE_X'))
@@ -1517,6 +1631,48 @@ def build_wpbe0_superfunctional(name, npoints, deriv):
 
     sup = build_wpbe_superfunctional(name, npoints, deriv)
     sup.set_name('wPBE0')
+    sup.set_description('    PBE0 SR-XC Functional (HJS Model)\n')
+    sup.set_x_omega(0.3)
+    sup.set_x_alpha(0.25)
+    return sup;
+
+def build_wpbesol_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBEsol')
+    # Tab in, trailing newlines 
+    sup.set_description('    PBEsol SR-XC Functional (HJS Model)\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('wPBEsol_X'))
+    sup.add_c_functional(build_functional('PBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.4)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
+def build_wpbesol0_superfunctional(name, npoints, deriv):
+
+    sup = build_wpbesol_superfunctional(name, npoints, deriv)
+    sup.set_name('wPBEsol0')
+    sup.set_description('    PBEsol0 SR-XC Functional (HJS Model)\n')
     sup.set_x_omega(0.3)
     sup.set_x_alpha(0.25)
     return sup;
@@ -1535,7 +1691,7 @@ def build_wblyp_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    BLYP SR-XC Functional (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wB88_X'))
@@ -1791,9 +1947,11 @@ superfunctionals = {
         'b88_x'     : build_primitive_superfunctional,
         'b3_x'      : build_primitive_superfunctional,
         'pbe_x'     : build_primitive_superfunctional,
+        'pbesol_x'  : build_primitive_superfunctional,
         'pw91_x'    : build_primitive_superfunctional,
         'ws_x'      : build_ws_x_superfunctional,
         'wpbe_x'    : build_wpbe_x_superfunctional,
+        'wpbesol_x' : build_wpbesol_x_superfunctional,
         'wb88_x'    : build_wb88_x_superfunctional,
         'lyp_c'     : build_primitive_superfunctional,
         'ft97b_x'   : build_primitive_superfunctional,
@@ -1834,6 +1992,8 @@ superfunctionals = {
         'wsvwn'     : build_wsvwn_superfunctional,
         'wpbe'      : build_wpbe_superfunctional,
         'wpbe0'     : build_wpbe0_superfunctional,
+        'wpbesol'   : build_wpbesol_superfunctional,
+        'wpbesol0'  : build_wpbesol0_superfunctional,
         'wblyp'     : build_wblyp_superfunctional,
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,

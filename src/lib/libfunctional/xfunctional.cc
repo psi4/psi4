@@ -63,6 +63,10 @@ void XFunctional::set_parameter(const std::string& key, double val)
         _PW91_a6_ = val;
     } else if (key == "B97_gamma") {
         _B97_gamma_ = val;
+    } else if (key == "PBE_kp") {
+        _PBE_kp_ = val;
+    } else if (key == "PBE_mu") {
+        _PBE_mu_ = val;
     } else if (key.substr(0,5) == "B97_a") {
         // B97_a0, B97_a1, etc
         int index = atoi(key.substr(5).c_str());
