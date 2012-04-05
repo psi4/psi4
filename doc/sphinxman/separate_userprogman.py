@@ -4,6 +4,10 @@ import sys
 import os
 import glob
 
+DriverPath = ''
+if (len(sys.argv) == 2):
+   DriverPath = sys.argv[1] + '/'
+
 
 def separate_documents():
 
@@ -41,7 +45,7 @@ def separate_documents():
 
 
 # Partition template_index.rst to form index.rst
-ftemplate = open('source/template_index.rst', 'r')
+ftemplate = open(DriverPath + 'source/template_index.rst', 'r')
 fhtmlall = open('source/autodoc_index_html.rst', 'w')
 fhtmluser = open('source/autodoc_index_htmluser.rst', 'w')
 fhtmlprog = open('source/autodoc_index_htmlprog.rst', 'w')
@@ -51,7 +55,7 @@ flatexprog = open('source/autodoc_index_latexprog.rst', 'w')
 separate_documents()
 
 # Partition template_appendices.rst to form appendices.rst
-ftemplate = open('source/template_appendices.rst', 'r')
+ftemplate = open(DriverPath + 'source/template_appendices.rst', 'r')
 fhtmlall = open('source/autodoc_appendices_html.rst', 'w')
 fhtmluser = open('source/autodoc_appendices_htmluser.rst', 'w')
 fhtmlprog = open('source/autodoc_appendices_htmlprog.rst', 'w')
