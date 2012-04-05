@@ -76,11 +76,11 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         fun = static_cast<Functional*>(x);
     } else if (alias == "wPBE_X") {
         wPBEXFunctional* x = new wPBEXFunctional();
-        x->set_hjs(true);
+        x->set_B88(false);
         fun = static_cast<Functional*>(x);
-    } else if (alias == "wHSE_X") {
+    } else if (alias == "wB88_X") {
         wPBEXFunctional* x = new wPBEXFunctional();
-        x->set_hjs(false);
+        x->set_B88(true);
         fun = static_cast<Functional*>(x);
     } else if (alias == "P_C") {
         CFunctional* x = new CFunctional();
