@@ -5,8 +5,14 @@ import os
 import glob
 import re
 
+DriverPath = ''
+if (len(sys.argv) == 2):
+   DriverPath = sys.argv[1] + '/'
+
+
 def pts(category, pyfile):
     print 'Auto-documenting %s file %s' % (category, pyfile)
+
 
 # Objective #1
 # Main driver modules in psi4/lib/python
@@ -17,7 +23,7 @@ fdriver.write('=============\n')
 fdriver.write('Python Driver\n')
 fdriver.write('=============\n\n')
 
-for pyfile in glob.glob('../../lib/python/*.py'):
+for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
@@ -50,7 +56,7 @@ fdriver.close()
 fdriver = open('source/autodoc_available_databases.rst', 'w')
 fdriver.write('\n\n')
 
-for pyfile in glob.glob('../../lib/databases/*.py'):
+for pyfile in glob.glob(DriverPath + '../../lib/databases/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
@@ -322,7 +328,7 @@ fdriver.write('.. toctree::\n   :maxdepth: 1\n\n')
 fabbr = open('source/autodoc_abbr_options_plugins.rst', 'w')
 
 # from each plugin directory ...
-for pydir in glob.glob('../../tests/plugin_*'):
+for pydir in glob.glob(DriverPath + '../../tests/plugin_*'):
     dirname = os.path.split(pydir)[1]
     div = '=' * len(dirname)
 
