@@ -16,15 +16,13 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../../../lib/python/'))
-sys.path.insert(0, os.path.abspath('../../../lib/databases/'))
-sys.path.insert(0, os.path.abspath('../../../tests/'))
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/python/'))
+sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/databases/'))
+sys.path.insert(0, os.path.abspath('@top_srcdir@/tests/'))
+sys.path.insert(0, os.path.abspath('@srcdir@'))
 
 import psi4_sptheme as psp
 
-# very bad practice- hardwiring object dir so can get at gitversion.h
-objdir = 'objdir'
 
 # -- General configuration -----------------------------------------------------
 
@@ -54,7 +52,7 @@ project = u'PSI4'
 copyright = u'2012, Psi4 Project'
 
 def get_gitversion():
-    file = '../../../' + objdir + '/src/bin/psi4/gitversion.h'
+    file = '@top_objdir@/src/bin/psi4/gitversion.h'
 
     try: 
         f = open(file)

@@ -86,14 +86,14 @@ banner('opt(arbitraryorder())')
 optimize('mp3')
 compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 5, 'opt(mp3())')
 
-molecule h2o {
-     O
-     H 1 1.0
-     H 1 1.0 2 104.5
-}
+#molecule h2o {
+#     O
+#     H 1 1.0
+#     H 1 1.0 2 104.5
+#}
 
-set basis sto-3g
+#set basis sto-3g
 
-energy('b3lyp-d')
-compare_values(-75.319769478, get_variable('CURRENT ENERGY'), 7, 'B3LYP-D2 sp')
+#energy('b3lyp-d')
+#compare_values(-75.319769478, get_variable('CURRENT ENERGY'), 7, 'B3LYP-D2 sp')
 

@@ -1,8 +1,8 @@
  
-.PHONY:	default all install clean realclean installation progman userman
+.PHONY:	default all install clean realclean installation progman userman sphinxman
 
 subdirs = \
-installation progman userman
+installation progman userman sphinxman
 
 DOXYGEN = @DOXYGEN@
 ifneq ($(DOXYGEN),NO)
