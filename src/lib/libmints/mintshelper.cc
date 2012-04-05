@@ -118,16 +118,46 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
     factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory());
     factory_->init_with(dimension, dimension);
 }
+void MintsHelper::init_helper_2(boost::shared_ptr<BasisSet> basis)
+{
+    basisset_ = basis;
+    molecule_ = basis->molecule();
+    psio_ = boost::shared_ptr<PSIO>(new PSIO());
+
+    // Make sure molecule is valid.
+    molecule_->update_geometry();
+
+    // Print the molecule.
+    if (print_)
+        molecule_->print();
+
+    // Print the basis set
+    if (print_)
+        basisset_->print_detail();
+
+    // Create integral factory
+    integral_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_));
+
+    // Get the SO basis object.
+    sobasis_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral_));
+
+    // Obtain dimensions from the sobasis
+    const Dimension dimension = sobasis_->dimension();
+
+    // Create a matrix factory and initialize it
+    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory());
+    factory_->init_with(dimension, dimension);
+}
 
 MintsHelper::MintsHelper(Options & options, int print): options_(options), print_(print)
 {
     init_helper();
 }
 
-MintsHelper::MintsHelper(boost::shared_ptr<Molecule> mol, boost::shared_ptr<BasisSet> bas)
-    : options_(Process::environment.options), molecule_(mol), basisset_(bas)
+MintsHelper::MintsHelper(boost::shared_ptr<BasisSet> basis)
+    : options_(Process::environment.options), print_(1) 
 {
-    init_helper();
+    init_helper_2(basis);
 }
 
 MintsHelper::MintsHelper() : options_(Process::environment.options), print_(1)

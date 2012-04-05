@@ -930,6 +930,8 @@ AC_CONFIG_FILES([
           doc/macros.tex doc/progman/svn/svn.eps
           doc/installation/Makefile
           doc/progman/Makefile doc/userman/Makefile
+          doc/sphinxman/Makefile
+          doc/sphinxman/source/conf.py
           doc/userman/prsty.bst
           doc/doxygen/Makefile
           doc/doxygen/doxygen.cfg
@@ -1127,6 +1129,10 @@ AC_CONFIG_FILES([
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
           tests/psimrcc-sp1/Makefile
+          tests/psimrcc-ccsd_t-1/Makefile
+          tests/psimrcc-ccsd_t-2/Makefile
+          tests/psimrcc-ccsd_t-3/Makefile
+          tests/psimrcc-ccsd_t-4/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile
