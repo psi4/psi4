@@ -1757,8 +1757,8 @@ void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double 
 
             for (b=1; b<=amB; ++b) {
                 x_[0][c+1][b] = GC[0] * x_[0][c][b];
-                y_[0][c+1][b] = GC[0] * y_[0][c][b];
-                z_[0][c+1][b] = GC[0] * z_[0][c][b];
+                y_[0][c+1][b] = GC[1] * y_[0][c][b];
+                z_[0][c+1][b] = GC[2] * z_[0][c][b];
                 x_[0][c+1][b] += c * pp * x_[0][c-1][b];
                 y_[0][c+1][b] += c * pp * y_[0][c-1][b];
                 z_[0][c+1][b] += c * pp * z_[0][c-1][b];
