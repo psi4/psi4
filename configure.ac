@@ -930,6 +930,8 @@ AC_CONFIG_FILES([
           doc/macros.tex doc/progman/svn/svn.eps
           doc/installation/Makefile
           doc/progman/Makefile doc/userman/Makefile
+          doc/sphinxman/Makefile
+          doc/sphinxman/source/conf.py
           doc/userman/prsty.bst
           doc/doxygen/Makefile
           doc/doxygen/doxygen.cfg
