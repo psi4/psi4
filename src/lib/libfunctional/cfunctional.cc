@@ -199,14 +199,14 @@ void CFunctional::compute_ss_functional(const std::map<std::string,SharedVector>
         double D, D_rho, D_gamma, D_tau;
         if (meta_type_ == Meta_None) {
             D = 1.0;
-            D_gamma = 0.0;
             D_rho = 0.0;
+            D_gamma = 0.0;
             D_tau = 0.0;
         } else if (meta_type_ == B95) {
-            D = 1.0 - gamma / (8.0 * tau * rho);
-            D_gamma = - 1.0 / (8.0 * tau * rho * rho);
-            D_rho = gamma / (8.0 * tau * rho * rho);
-            D_tau = gamma / (8.0 * tau * tau * rho);
+            D = 1.0 - gamma / (4.0 * tau * rho);
+            D_rho = gamma / (4.0 * tau * rho * rho);
+            D_gamma = - 1.0 / (4.0 * tau * rho);
+            D_tau = gamma / (4.0 * tau * tau * rho);
         }
  
         // => Assembly <= //

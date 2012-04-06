@@ -1889,7 +1889,7 @@ def build_m05_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_ss_a4', 17.94491)
 
     sup.add_x_functional(X)
-    #sup.add_c_functional(C)
+    sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)

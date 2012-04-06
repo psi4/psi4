@@ -254,14 +254,12 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
         // w
         double w, w_rho, w_gamma, w_tau;
         if (meta_) {
-            double tau_LSDA = _C0_ * rho53;
-            double t = (tau < meta_cutoff_ ? 0.0 : tau_LSDA / tau);
-            double dw_dt = 2.0 / ((t+1.0)*(t+1.0)); 
-
-            w = (t-1.0)/(t+1.0);
-            w_rho = 5.0 / 3.0 * _C0_ * rho23 / tau * dw_dt;
+            double tauLSDA = _C0_ * rho53;
+            double denom = tauLSDA + tau;
+            w = (tauLSDA - tau) / (denom);
+            w_rho = 10.0/3.0 * _C0_ * rho23 * tau / (denom * denom);
             w_gamma = 0.0;
-            w_tau = - tau_LSDA / (tau * tau) * dw_dt;
+            w_tau = -2.0 * tauLSDA / (denom * denom);        
         } else {
             w = 0.0;
             w_rho = 0.0;

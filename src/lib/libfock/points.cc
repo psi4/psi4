@@ -151,6 +151,27 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
 
+        double** phixp = basis_values_["PHI_X"]->pointer();
+        double** phiyp = basis_values_["PHI_Y"]->pointer();
+        double** phizp = basis_values_["PHI_Z"]->pointer();
+        double* taup = point_values_["TAU_A"]->pointer();
+
+        ::memset((void*) taup, '\0', sizeof(double) * npoints);
+
+        double** phi[3];
+        phi[0] = phixp;
+        phi[1] = phiyp;
+        phi[2] = phizp;
+
+        for (int x = 0; x < 3; x++) {
+            double** phic = phi[x];
+            C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phic[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+            for (int P = 0; P < npoints; P++) {
+                taup[P] += C_DDOT(nlocal, phic[P], 1, Tp[P], 1);
+            }
+        }
+
+        /**
         // => Build local C matrix <= //
         int na = Cocc_AO_->colspi()[0];
         double** Cp = Cocc_AO_->pointer();
@@ -185,6 +206,7 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
         for (int P = 0; P < npoints; P++) {
             tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
         }
+        **/
     }
 }
 void RKSFunctions::print(FILE* out, int print) const
@@ -425,10 +447,9 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
                 double** Dc = D[t];
                 double** Tc = T[t];
                 double*  tauc = tau[t];
-
                 C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phic[0],nglobal,Dc[0],nglobal,0.0,Tc[0],nglobal);
                 for (int P = 0; P < npoints; P++) {
-                    tauc[P] += 0.5 * C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
+                    tauc[P] += C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
                 }
             }
         }
