@@ -581,9 +581,6 @@ functionals = {
         'pw92_c'      : build_primitive_functional,
         'pbe_c'       : build_primitive_functional,
         'ft97_c'      : build_primitive_functional,
-        'b972_c'      : build_primitive_functional,
-        'b974_c'      : build_primitive_functional,
-        'p_c'         : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
     }
@@ -1028,16 +1025,18 @@ def build_b970_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1', 0.5073)
     X.set_parameter('B97_a2', 0.7481)
 
-    C = build_functional('B972_C')
+    C = build_functional('B_C')
     C.set_name('B97-0_C')
 
-    C.set_parameter('ccab0', 0.9454)
-    C.set_parameter('ccab1', 0.7471)
-    C.set_parameter('ccab2',-4.5961)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 0.9454)
+    C.set_parameter('B97_os_a1', 0.7471)
+    C.set_parameter('B97_os_a2',-4.5961)
 
-    C.set_parameter('ccaa0', 0.1737)
-    C.set_parameter('ccaa1', 2.3487)
-    C.set_parameter('ccaa2',-2.4868)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 0.1737)
+    C.set_parameter('B97_ss_a1', 2.3487)
+    C.set_parameter('B97_ss_a2',-2.4868)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1065,60 +1064,6 @@ def build_b971_superfunctional(name, npoints, deriv):
 
     # No spaces, keep it short and according to convention
     sup.set_name('B97-1')
-    # Tab in, trailing newlines 
-    sup.set_description('    B97-1 Hybrid-GGA Exchange-Correlation Functional\n')
-    # Tab in, trailing newlines 
-    sup.set_citation('    F.A. Hamprecht et. al., J. Chem. Phys., 109(15), 6264-6271, 1998\n')
-
-    # Add member functionals
-    X = build_functional('B97_X')
-    X.set_name('B97-1_X')
-    X.set_alpha(1.0/0.79)
-
-    X.set_parameter('B97_gamma', 0.004)
-    X.set_parameter('B97_a0', 0.789518)
-    X.set_parameter('B97_a1', 0.573805)
-    X.set_parameter('B97_a2', 0.660975)
-
-    C = build_functional('B972_C')
-    C.set_name('B97-1_C')
-
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0', 0.955689)
-    C.set_parameter('ccab1', 0.788552)
-    C.set_parameter('ccab2',-5.47869)
-
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0', 0.0820011)
-    C.set_parameter('ccaa1', 2.71681)
-    C.set_parameter('ccaa2',-2.87103)
-
-    sup.add_x_functional(X)
-    sup.add_c_functional(C)
-
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.21)
-    sup.set_c_alpha(0.0)
-
-    # => End User-Customization <= #
-
-    # Call this last
-    sup.allocate()
-    return sup 
-
-def build_b971q_superfunctional(name, npoints, deriv):
-
-    # Call this first
-    sup = PsiMod.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
-
-    # => User-Customization <= #
-
-    # No spaces, keep it short and according to convention
-    sup.set_name('B97-1 (def2)')
     # Tab in, trailing newlines 
     sup.set_description('    B97-1 Hybrid-GGA Exchange-Correlation Functional\n')
     # Tab in, trailing newlines 
@@ -1188,18 +1133,18 @@ def build_b972_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1', 0.047840)
     X.set_parameter('B97_a2', 1.761250)
 
-    C = build_functional('B972_C')
+    C = build_functional('B_C')
     C.set_name('B97-2_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0', 0.999849)
-    C.set_parameter('ccab1', 1.40626)
-    C.set_parameter('ccab2',-7.44060)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 0.999849)
+    C.set_parameter('B97_os_a1', 1.40626)
+    C.set_parameter('B97_os_a2',-7.44060)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0', 0.585808)
-    C.set_parameter('ccaa1',-0.691682)
-    C.set_parameter('ccaa2', 0.394796)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 0.585808)
+    C.set_parameter('B97_ss_a1',-0.691682)
+    C.set_parameter('B97_ss_a2', 0.394796)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1242,18 +1187,18 @@ def build_b97d_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1',-0.52127)
     X.set_parameter('B97_a2', 3.25429)
 
-    C = build_functional('B972_C')
+    C = build_functional('B_C')
     C.set_name('B97-D_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0', 0.69041)
-    C.set_parameter('ccab1', 6.30270)
-    C.set_parameter('ccab2',-14.9712)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 0.69041)
+    C.set_parameter('B97_os_a1', 6.30270)
+    C.set_parameter('B97_os_a2',-14.9712)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0', 0.22340)
-    C.set_parameter('ccaa1',-1.56208)
-    C.set_parameter('ccaa2', 3.25429)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 0.22340)
+    C.set_parameter('B97_ss_a1',-1.56208)
+    C.set_parameter('B97_ss_a2', 3.25429)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1301,22 +1246,22 @@ def build_hcth_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-6.78549) 
     X.set_parameter('B97_a4',4.49357)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.729974)
-    C.set_parameter('ccab1',3.35287)
-    C.set_parameter('ccab2',-11.5430) 
-    C.set_parameter('ccab3',8.08564)
-    C.set_parameter('ccab4',-4.47857)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.729974)
+    C.set_parameter('B97_os_a1',3.35287)
+    C.set_parameter('B97_os_a2',-11.5430) 
+    C.set_parameter('B97_os_a3',8.08564)
+    C.set_parameter('B97_os_a4',-4.47857)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',0.222601)
-    C.set_parameter('ccaa1',-0.0338622) 
-    C.set_parameter('ccaa2',-0.0125170) 
-    C.set_parameter('ccaa3',-0.802496) 
-    C.set_parameter('ccaa4',1.55396)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',0.222601)
+    C.set_parameter('B97_ss_a1',-0.0338622) 
+    C.set_parameter('B97_ss_a2',-0.0125170) 
+    C.set_parameter('B97_ss_a3',-0.802496) 
+    C.set_parameter('B97_ss_a4',1.55396)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1361,22 +1306,22 @@ def build_hcth120_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-4.10746) 
     X.set_parameter('B97_a4',1.17173)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH120_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.514730) 
-    C.set_parameter('ccab1',6.92982)
-    C.set_parameter('ccab2',-24.7073) 
-    C.set_parameter('ccab3',23.1098)
-    C.set_parameter('ccab4',-11.3234)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.514730) 
+    C.set_parameter('B97_os_a1',6.92982)
+    C.set_parameter('B97_os_a2',-24.7073) 
+    C.set_parameter('B97_os_a3',23.1098)
+    C.set_parameter('B97_os_a4',-11.3234)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',0.489508)
-    C.set_parameter('ccaa1',-0.260699) 
-    C.set_parameter('ccaa2',0.432917) 
-    C.set_parameter('ccaa3',-1.99247) 
-    C.set_parameter('ccaa4',2.48531)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',0.489508)
+    C.set_parameter('B97_ss_a1',-0.260699) 
+    C.set_parameter('B97_ss_a2',0.432917) 
+    C.set_parameter('B97_ss_a3',-1.99247) 
+    C.set_parameter('B97_ss_a4',2.48531)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1421,22 +1366,22 @@ def build_hcth147_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-5.86760) 
     X.set_parameter('B97_a4',3.04544)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH147_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.542352) 
-    C.set_parameter('ccab1',7.01464)
-    C.set_parameter('ccab2',-28.3822) 
-    C.set_parameter('ccab3',35.0329)
-    C.set_parameter('ccab4',-20.4284)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.542352) 
+    C.set_parameter('B97_os_a1',7.01464)
+    C.set_parameter('B97_os_a2',-28.3822) 
+    C.set_parameter('B97_os_a3',35.0329)
+    C.set_parameter('B97_os_a4',-20.4284)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',0.562576)
-    C.set_parameter('ccaa1',0.0171436) 
-    C.set_parameter('ccaa2',-1.30636) 
-    C.set_parameter('ccaa3',1.05747)
-    C.set_parameter('ccaa4',0.885429)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',0.562576)
+    C.set_parameter('B97_ss_a1',0.0171436) 
+    C.set_parameter('B97_ss_a2',-1.30636) 
+    C.set_parameter('B97_ss_a3',1.05747)
+    C.set_parameter('B97_ss_a4',0.885429)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1481,22 +1426,22 @@ def build_hcth407_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-2.62901) 
     X.set_parameter('B97_a4',2.28855)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH407_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.589076) 
-    C.set_parameter('ccab1',4.42374) 
-    C.set_parameter('ccab2',-19.2218) 
-    C.set_parameter('ccab3',42.5721) 
-    C.set_parameter('ccab4',-42.0052)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.589076) 
+    C.set_parameter('B97_os_a1',4.42374) 
+    C.set_parameter('B97_os_a2',-19.2218) 
+    C.set_parameter('B97_os_a3',42.5721) 
+    C.set_parameter('B97_os_a4',-42.0052)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',1.18777)
-    C.set_parameter('ccaa1',-2.40292)  
-    C.set_parameter('ccaa2',5.61741)
-    C.set_parameter('ccaa3',-9.17923) 
-    C.set_parameter('ccaa4',6.24798)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',1.18777)
+    C.set_parameter('B97_ss_a1',-2.40292)  
+    C.set_parameter('B97_ss_a2',5.61741)
+    C.set_parameter('B97_ss_a3',-9.17923) 
+    C.set_parameter('B97_ss_a4',6.24798)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1737,22 +1682,22 @@ def build_wb97_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',1.20900E1)
     X.set_parameter('B97_a4',-5.71642E0)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('wB97_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',1.0) 
-    C.set_parameter('ccab1',3.99051E0) 
-    C.set_parameter('ccab2',-1.70066E1)  
-    C.set_parameter('ccab3',1.07292E0)  
-    C.set_parameter('ccab4',8.88211E0)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',1.0) 
+    C.set_parameter('B97_os_a1',3.99051E0) 
+    C.set_parameter('B97_os_a2',-1.70066E1)  
+    C.set_parameter('B97_os_a3',1.07292E0)  
+    C.set_parameter('B97_os_a4',8.88211E0)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',1.0)
-    C.set_parameter('ccaa1',-2.55352E0) 
-    C.set_parameter('ccaa2', 1.18926E1) 
-    C.set_parameter('ccaa3',-2.69452E1)  
-    C.set_parameter('ccaa4',1.70927E1)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',1.0)
+    C.set_parameter('B97_ss_a1',-2.55352E0) 
+    C.set_parameter('B97_ss_a2', 1.18926E1) 
+    C.set_parameter('B97_ss_a3',-2.69452E1)  
+    C.set_parameter('B97_ss_a4',1.70927E1)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1797,22 +1742,22 @@ def build_wb97x_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-5.70635E0)  
     X.set_parameter('B97_a4',1.32794E1)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('wB97X_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',1.0)   
-    C.set_parameter('ccab1',2.37031E0)
-    C.set_parameter('ccab2',-1.13995E1)  
-    C.set_parameter('ccab3',6.58405E0)
-    C.set_parameter('ccab4',-3.78132E0)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',1.0)   
+    C.set_parameter('B97_os_a1',2.37031E0)
+    C.set_parameter('B97_os_a2',-1.13995E1)  
+    C.set_parameter('B97_os_a3',6.58405E0)
+    C.set_parameter('B97_os_a4',-3.78132E0)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',1.0) 
-    C.set_parameter('ccaa1',-4.33879E0)  
-    C.set_parameter('ccaa2',1.82308E1)
-    C.set_parameter('ccaa3',-3.17430E1)  
-    C.set_parameter('ccaa4',1.72901E1)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',1.0) 
+    C.set_parameter('B97_ss_a1',-4.33879E0)  
+    C.set_parameter('B97_ss_a2',1.82308E1)
+    C.set_parameter('B97_ss_a3',-3.17430E1)  
+    C.set_parameter('B97_ss_a4',1.72901E1)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1965,7 +1910,6 @@ superfunctionals = {
         'vwn5_c'    : build_primitive_superfunctional,
         'vwn3rpa_c' : build_primitive_superfunctional,
         'vwn3_c'    : build_primitive_superfunctional,
-        'p_c'       : build_primitive_superfunctional,
         'svwn'      : build_svwn_superfunctional,
         'blyp'      : build_blyp_superfunctional,
         'bp86'      : build_bp86_superfunctional,
@@ -1977,7 +1921,6 @@ superfunctionals = {
         'pbe0'      : build_pbe0_superfunctional,
         'b97-0'     : build_b970_superfunctional,
         'b97-1'     : build_b971_superfunctional,
-        'b97-1q'    : build_b971q_superfunctional,
         'b97-2'     : build_b972_superfunctional,
         'hcth'      : build_hcth_superfunctional,
         'hcth120'   : build_hcth120_superfunctional,
