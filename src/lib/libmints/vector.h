@@ -200,6 +200,9 @@ public:
     /// Vector dot product
     double dot(Vector* X);
 
+    /// Vector norm
+    double norm();
+
     /// Scale the elements of the vector
     void scale(const double& sc);
 
