@@ -293,7 +293,7 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
         double rho_b13 = pow(rho_b, 1.0/3.0);
         double rho_b43 = rho_b * rho_b13;
         double rho_b73 = rho_b * rho_b43;
-        double rho_b83 = rho_b73 * rho_a13;
+        double rho_b83 = rho_b73 * rho_b13;
 
         // => LDA Part <= //
         
