@@ -114,6 +114,36 @@ def build_pbe_x_functional(name):
     fun.set_omega(0.0)
 
     # Custom parameters
+    fun.set_parameter('PBE_kp', 0.804)
+    fun.set_parameter('PBE_mu', 0.2195149727645171)
+
+    # => End User-Customization <= #
+
+    return fun
+
+def build_pbesol_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('PBE_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('PBEsol_X')
+    # Tab in, trailing newlines 
+    fun.set_description('    PBEsol GGA Exchange Hole (Parameter Free)\n')
+    # Tab in, trailing newlines 
+    fun.set_citation('    J.P. Perdew et. al., Phys. Rev. Lett., 77(18), 3865-3868, 1996\n')
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.0)
+
+    # Custom parameters
+    fun.set_parameter('PBE_kp', 0.804)
+    fun.set_parameter('PBE_mu', 10.0/81.0) 
 
     # => End User-Customization <= #
 
@@ -353,7 +383,7 @@ def build_wpbe_x_functional(name):
     # Tab in, trailing newlines 
     fun.set_description('    PBE Short-Range GGA Exchange (HJS Formalism)\n')
     # Tab in, trailing newlines 
-    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
     
     # These should be set by build_base, but prove that you know what's up
     fun.set_gga(True)
@@ -392,7 +422,7 @@ def build_wpbe_x_functional(name):
 
     return fun
 
-def build_wb88_x_functional(name):
+def build_wpbesol_x_functional(name):
 
     # Call this first
     fun = PsiMod.Functional.build_base('wPBE_X')
@@ -400,11 +430,11 @@ def build_wb88_x_functional(name):
     # => User-Customization <= #
 
     # No spaces, keep it short and according to convention
-    fun.set_name('wB88X')
+    fun.set_name('wPBEsol_X')
     # Tab in, trailing newlines 
-    fun.set_description('    B88 Short-Range GGA Exchange (HJS Formalism)\n')
+    fun.set_description('    PBEsol Short-Range GGA Exchange (HJS Formalism)\n')
     # Tab in, trailing newlines 
-    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
     
     # These should be set by build_base, but prove that you know what's up
     fun.set_gga(True)
@@ -421,23 +451,74 @@ def build_wb88_x_functional(name):
 
     fun.set_parameter('Ha0', 0.0000000)
     fun.set_parameter('Ha1', 0.0000000)
-    fun.set_parameter('Ha2', 0.00968615)
-    fun.set_parameter('Ha3',-0.0242498)
-    fun.set_parameter('Ha4', 0.0259009)
-    fun.set_parameter('Ha5',-0.0136606) 
-    fun.set_parameter('Ha6', 0.00309606)
-    fun.set_parameter('Ha7', -7.32583E-5)
+    fun.set_parameter('Ha2', 0.0047333)
+    fun.set_parameter('Ha3', 0.0403304)
+    fun.set_parameter('Ha4',-0.0574615)
+    fun.set_parameter('Ha5', 0.0435395)
+    fun.set_parameter('Ha6',-0.0216251)
+    fun.set_parameter('Ha7', 0.0063721)
 
-    fun.set_parameter('Hb0', 1.0000000)
-    fun.set_parameter('Hb1',-2.5035600)
-    fun.set_parameter('Hb2', 2.796560)
-    fun.set_parameter('Hb3',-1.794010)
-    fun.set_parameter('Hb4', 0.7148880)
-    fun.set_parameter('Hb5',-0.1659240) 
-    fun.set_parameter('Hb6', 0.0118379) 
-    fun.set_parameter('Hb7', 0.0037806) 
-    fun.set_parameter('Hb8',-1.57905E-4)
-    fun.set_parameter('Hb9', 1.45323E-6)
+    fun.set_parameter('Hb0', 1.00000)
+    fun.set_parameter('Hb1', 8.52056)
+    fun.set_parameter('Hb2',-13.9885)
+    fun.set_parameter('Hb3', 9.28583)
+    fun.set_parameter('Hb4',-3.27287)
+    fun.set_parameter('Hb5', 0.843499)
+    fun.set_parameter('Hb6',-0.235543)
+    fun.set_parameter('Hb7', 0.0847074)
+    fun.set_parameter('Hb8',-0.0171561)
+    fun.set_parameter('Hb9', 0.0050552)
+
+    # => End User-Customization <= #
+
+    return fun
+
+def build_wb88_x_functional(name):
+
+    # Call this first
+    fun = PsiMod.Functional.build_base('wB88_X')
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    fun.set_name('wB88_X')
+    # Tab in, trailing newlines 
+    fun.set_description('    B88 Short-Range GGA Exchange (HJS Formalism)\n')
+    # Tab in, trailing newlines 
+    fun.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+    
+    # These should be set by build_base, but prove that you know what's up
+    fun.set_gga(True)
+    fun.set_meta(False)
+    fun.set_alpha(1.0)
+    fun.set_omega(0.3)
+
+    # Custom parameters
+    fun.set_parameter('A', 0.7572110)
+    fun.set_parameter('B',-0.1063640)
+    fun.set_parameter('C',-0.1186490)
+    fun.set_parameter('D', 0.6096500)
+    fun.set_parameter('E',-0.0477963)
+
+    fun.set_parameter('Ha0', 0.0000000)
+    fun.set_parameter('Ha1', 0.0000000)
+    fun.set_parameter('Ha2', 0.0253933)
+    fun.set_parameter('Ha3',-0.0673075)
+    fun.set_parameter('Ha4', 0.0891476)
+    fun.set_parameter('Ha5',-0.0454168)
+    fun.set_parameter('Ha6',-0.0076581)
+    fun.set_parameter('Ha7', 0.0142506)
+
+    fun.set_parameter('Hb0', 1.00000)
+    fun.set_parameter('Hb1',-2.65060)
+    fun.set_parameter('Hb2', 3.91108)
+    fun.set_parameter('Hb3',-3.31509)
+    fun.set_parameter('Hb4', 1.54485)
+    fun.set_parameter('Hb5',-0.198386)
+    fun.set_parameter('Hb6',-0.136112)
+    fun.set_parameter('Hb7', 0.0647862)
+    fun.set_parameter('Hb8', 0.0159586)
+    fun.set_parameter('Hb9',-2.45066E-4)
 
     # => End User-Customization <= #
 
@@ -479,11 +560,13 @@ functionals = {
         'b88_x'       : build_b88_x_functional,
         'b3_x'        : build_b3_x_functional,
         'pbe_x'       : build_pbe_x_functional,
+        'pbesol_x'    : build_pbesol_x_functional,
         'pw91_x'      : build_pw91_x_functional,
         'b97_x'       : build_b97_x_functional,
         'ws_x'        : build_ws_x_functional,
         'wb97_x'      : build_primitive_functional,
         'wpbe_x'      : build_wpbe_x_functional,
+        'wpbesol_x'   : build_wpbesol_x_functional,
         'wb88_x'      : build_wb88_x_functional,
         'ft97b_x'     : build_primitive_functional,
         'm_x'         : build_primitive_functional,
@@ -498,9 +581,6 @@ functionals = {
         'pw92_c'      : build_primitive_functional,
         'pbe_c'       : build_primitive_functional,
         'ft97_c'      : build_primitive_functional,
-        'b972_c'      : build_primitive_functional,
-        'b974_c'      : build_primitive_functional,
-        'p_c'         : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
     }
@@ -562,10 +642,41 @@ def build_wpbe_x_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    PBE Short-Range GGA Exchange (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wPBE_X'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.3)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
+def build_wpbesol_x_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBEsol_X')
+    # Tab in, trailing newlines 
+    sup.set_description('    PBEsol Short-Range GGA Exchange (HJS Model)\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('wPBEsol_X'))
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.3)
@@ -593,7 +704,7 @@ def build_wb88_x_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    B88 Short-Range GGA Exchange (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wB88_X'))
@@ -914,16 +1025,18 @@ def build_b970_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1', 0.5073)
     X.set_parameter('B97_a2', 0.7481)
 
-    C = build_functional('B972_C')
+    C = build_functional('B_C')
     C.set_name('B97-0_C')
 
-    C.set_parameter('ccab0', 0.9454)
-    C.set_parameter('ccab1', 0.7471)
-    C.set_parameter('ccab2',-4.5961)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 0.9454)
+    C.set_parameter('B97_os_a1', 0.7471)
+    C.set_parameter('B97_os_a2',-4.5961)
 
-    C.set_parameter('ccaa0', 0.1737)
-    C.set_parameter('ccaa1', 2.3487)
-    C.set_parameter('ccaa2',-2.4868)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 0.1737)
+    C.set_parameter('B97_ss_a1', 2.3487)
+    C.set_parameter('B97_ss_a2',-2.4868)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -951,60 +1064,6 @@ def build_b971_superfunctional(name, npoints, deriv):
 
     # No spaces, keep it short and according to convention
     sup.set_name('B97-1')
-    # Tab in, trailing newlines 
-    sup.set_description('    B97-1 Hybrid-GGA Exchange-Correlation Functional\n')
-    # Tab in, trailing newlines 
-    sup.set_citation('    F.A. Hamprecht et. al., J. Chem. Phys., 109(15), 6264-6271, 1998\n')
-
-    # Add member functionals
-    X = build_functional('B97_X')
-    X.set_name('B97-1_X')
-    X.set_alpha(1.0/0.79)
-
-    X.set_parameter('B97_gamma', 0.004)
-    X.set_parameter('B97_a0', 0.789518)
-    X.set_parameter('B97_a1', 0.573805)
-    X.set_parameter('B97_a2', 0.660975)
-
-    C = build_functional('B972_C')
-    C.set_name('B97-1_C')
-
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0', 0.955689)
-    C.set_parameter('ccab1', 0.788552)
-    C.set_parameter('ccab2',-5.47869)
-
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0', 0.0820011)
-    C.set_parameter('ccaa1', 2.71681)
-    C.set_parameter('ccaa2',-2.87103)
-
-    sup.add_x_functional(X)
-    sup.add_c_functional(C)
-
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.21)
-    sup.set_c_alpha(0.0)
-
-    # => End User-Customization <= #
-
-    # Call this last
-    sup.allocate()
-    return sup 
-
-def build_b971q_superfunctional(name, npoints, deriv):
-
-    # Call this first
-    sup = PsiMod.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
-
-    # => User-Customization <= #
-
-    # No spaces, keep it short and according to convention
-    sup.set_name('B97-1 (def2)')
     # Tab in, trailing newlines 
     sup.set_description('    B97-1 Hybrid-GGA Exchange-Correlation Functional\n')
     # Tab in, trailing newlines 
@@ -1074,18 +1133,18 @@ def build_b972_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1', 0.047840)
     X.set_parameter('B97_a2', 1.761250)
 
-    C = build_functional('B972_C')
+    C = build_functional('B_C')
     C.set_name('B97-2_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0', 0.999849)
-    C.set_parameter('ccab1', 1.40626)
-    C.set_parameter('ccab2',-7.44060)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 0.999849)
+    C.set_parameter('B97_os_a1', 1.40626)
+    C.set_parameter('B97_os_a2',-7.44060)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0', 0.585808)
-    C.set_parameter('ccaa1',-0.691682)
-    C.set_parameter('ccaa2', 0.394796)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 0.585808)
+    C.set_parameter('B97_ss_a1',-0.691682)
+    C.set_parameter('B97_ss_a2', 0.394796)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1128,18 +1187,18 @@ def build_b97d_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a1',-0.52127)
     X.set_parameter('B97_a2', 3.25429)
 
-    C = build_functional('B972_C')
+    C = build_functional('B_C')
     C.set_name('B97-D_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0', 0.69041)
-    C.set_parameter('ccab1', 6.30270)
-    C.set_parameter('ccab2',-14.9712)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 0.69041)
+    C.set_parameter('B97_os_a1', 6.30270)
+    C.set_parameter('B97_os_a2',-14.9712)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0', 0.22340)
-    C.set_parameter('ccaa1',-1.56208)
-    C.set_parameter('ccaa2', 3.25429)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 0.22340)
+    C.set_parameter('B97_ss_a1',-1.56208)
+    C.set_parameter('B97_ss_a2', 3.25429)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1187,22 +1246,22 @@ def build_hcth_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-6.78549) 
     X.set_parameter('B97_a4',4.49357)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.729974)
-    C.set_parameter('ccab1',3.35287)
-    C.set_parameter('ccab2',-11.5430) 
-    C.set_parameter('ccab3',8.08564)
-    C.set_parameter('ccab4',-4.47857)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.729974)
+    C.set_parameter('B97_os_a1',3.35287)
+    C.set_parameter('B97_os_a2',-11.5430) 
+    C.set_parameter('B97_os_a3',8.08564)
+    C.set_parameter('B97_os_a4',-4.47857)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',0.222601)
-    C.set_parameter('ccaa1',-0.0338622) 
-    C.set_parameter('ccaa2',-0.0125170) 
-    C.set_parameter('ccaa3',-0.802496) 
-    C.set_parameter('ccaa4',1.55396)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',0.222601)
+    C.set_parameter('B97_ss_a1',-0.0338622) 
+    C.set_parameter('B97_ss_a2',-0.0125170) 
+    C.set_parameter('B97_ss_a3',-0.802496) 
+    C.set_parameter('B97_ss_a4',1.55396)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1247,22 +1306,22 @@ def build_hcth120_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-4.10746) 
     X.set_parameter('B97_a4',1.17173)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH120_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.514730) 
-    C.set_parameter('ccab1',6.92982)
-    C.set_parameter('ccab2',-24.7073) 
-    C.set_parameter('ccab3',23.1098)
-    C.set_parameter('ccab4',-11.3234)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.514730) 
+    C.set_parameter('B97_os_a1',6.92982)
+    C.set_parameter('B97_os_a2',-24.7073) 
+    C.set_parameter('B97_os_a3',23.1098)
+    C.set_parameter('B97_os_a4',-11.3234)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',0.489508)
-    C.set_parameter('ccaa1',-0.260699) 
-    C.set_parameter('ccaa2',0.432917) 
-    C.set_parameter('ccaa3',-1.99247) 
-    C.set_parameter('ccaa4',2.48531)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',0.489508)
+    C.set_parameter('B97_ss_a1',-0.260699) 
+    C.set_parameter('B97_ss_a2',0.432917) 
+    C.set_parameter('B97_ss_a3',-1.99247) 
+    C.set_parameter('B97_ss_a4',2.48531)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1307,22 +1366,22 @@ def build_hcth147_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-5.86760) 
     X.set_parameter('B97_a4',3.04544)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH147_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.542352) 
-    C.set_parameter('ccab1',7.01464)
-    C.set_parameter('ccab2',-28.3822) 
-    C.set_parameter('ccab3',35.0329)
-    C.set_parameter('ccab4',-20.4284)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.542352) 
+    C.set_parameter('B97_os_a1',7.01464)
+    C.set_parameter('B97_os_a2',-28.3822) 
+    C.set_parameter('B97_os_a3',35.0329)
+    C.set_parameter('B97_os_a4',-20.4284)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',0.562576)
-    C.set_parameter('ccaa1',0.0171436) 
-    C.set_parameter('ccaa2',-1.30636) 
-    C.set_parameter('ccaa3',1.05747)
-    C.set_parameter('ccaa4',0.885429)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',0.562576)
+    C.set_parameter('B97_ss_a1',0.0171436) 
+    C.set_parameter('B97_ss_a2',-1.30636) 
+    C.set_parameter('B97_ss_a3',1.05747)
+    C.set_parameter('B97_ss_a4',0.885429)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1367,22 +1426,22 @@ def build_hcth407_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-2.62901) 
     X.set_parameter('B97_a4',2.28855)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('HCTH407_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',0.589076) 
-    C.set_parameter('ccab1',4.42374) 
-    C.set_parameter('ccab2',-19.2218) 
-    C.set_parameter('ccab3',42.5721) 
-    C.set_parameter('ccab4',-42.0052)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',0.589076) 
+    C.set_parameter('B97_os_a1',4.42374) 
+    C.set_parameter('B97_os_a2',-19.2218) 
+    C.set_parameter('B97_os_a3',42.5721) 
+    C.set_parameter('B97_os_a4',-42.0052)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',1.18777)
-    C.set_parameter('ccaa1',-2.40292)  
-    C.set_parameter('ccaa2',5.61741)
-    C.set_parameter('ccaa3',-9.17923) 
-    C.set_parameter('ccaa4',6.24798)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',1.18777)
+    C.set_parameter('B97_ss_a1',-2.40292)  
+    C.set_parameter('B97_ss_a2',5.61741)
+    C.set_parameter('B97_ss_a3',-9.17923) 
+    C.set_parameter('B97_ss_a4',6.24798)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1495,7 +1554,7 @@ def build_wpbe_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    PBE SR-XC Functional (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wPBE_X'))
@@ -1517,6 +1576,48 @@ def build_wpbe0_superfunctional(name, npoints, deriv):
 
     sup = build_wpbe_superfunctional(name, npoints, deriv)
     sup.set_name('wPBE0')
+    sup.set_description('    PBE0 SR-XC Functional (HJS Model)\n')
+    sup.set_x_omega(0.3)
+    sup.set_x_alpha(0.25)
+    return sup;
+
+def build_wpbesol_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wPBEsol')
+    # Tab in, trailing newlines 
+    sup.set_description('    PBEsol SR-XC Functional (HJS Model)\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
+
+    # Add member functionals
+    sup.add_x_functional(build_functional('wPBEsol_X'))
+    sup.add_c_functional(build_functional('PBE_C'))
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.4)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.0)
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup 
+
+def build_wpbesol0_superfunctional(name, npoints, deriv):
+
+    sup = build_wpbesol_superfunctional(name, npoints, deriv)
+    sup.set_name('wPBEsol0')
+    sup.set_description('    PBEsol0 SR-XC Functional (HJS Model)\n')
     sup.set_x_omega(0.3)
     sup.set_x_alpha(0.25)
     return sup;
@@ -1535,7 +1636,7 @@ def build_wblyp_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines 
     sup.set_description('    BLYP SR-XC Functional (HJS Model)\n')
     # Tab in, trailing newlines 
-    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n')
+    sup.set_citation('    Henderson et. al., J. Chem. Phys., 128, 194105, 2008\n    Weintraub, Henderson, and Scuseria, J. Chem. Theory. Comput., 5, 754 (2009)\n')
 
     # Add member functionals
     sup.add_x_functional(build_functional('wB88_X'))
@@ -1581,22 +1682,22 @@ def build_wb97_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',1.20900E1)
     X.set_parameter('B97_a4',-5.71642E0)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('wB97_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',1.0) 
-    C.set_parameter('ccab1',3.99051E0) 
-    C.set_parameter('ccab2',-1.70066E1)  
-    C.set_parameter('ccab3',1.07292E0)  
-    C.set_parameter('ccab4',8.88211E0)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',1.0) 
+    C.set_parameter('B97_os_a1',3.99051E0) 
+    C.set_parameter('B97_os_a2',-1.70066E1)  
+    C.set_parameter('B97_os_a3',1.07292E0)  
+    C.set_parameter('B97_os_a4',8.88211E0)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',1.0)
-    C.set_parameter('ccaa1',-2.55352E0) 
-    C.set_parameter('ccaa2', 1.18926E1) 
-    C.set_parameter('ccaa3',-2.69452E1)  
-    C.set_parameter('ccaa4',1.70927E1)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',1.0)
+    C.set_parameter('B97_ss_a1',-2.55352E0) 
+    C.set_parameter('B97_ss_a2', 1.18926E1) 
+    C.set_parameter('B97_ss_a3',-2.69452E1)  
+    C.set_parameter('B97_ss_a4',1.70927E1)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1641,22 +1742,22 @@ def build_wb97x_superfunctional(name, npoints, deriv):
     X.set_parameter('B97_a3',-5.70635E0)  
     X.set_parameter('B97_a4',1.32794E1)
 
-    C = build_functional('B974_C')
+    C = build_functional('B_C')
     C.set_name('wB97X_C')
 
-    C.set_parameter('gcab', 0.006)
-    C.set_parameter('ccab0',1.0)   
-    C.set_parameter('ccab1',2.37031E0)
-    C.set_parameter('ccab2',-1.13995E1)  
-    C.set_parameter('ccab3',6.58405E0)
-    C.set_parameter('ccab4',-3.78132E0)
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0',1.0)   
+    C.set_parameter('B97_os_a1',2.37031E0)
+    C.set_parameter('B97_os_a2',-1.13995E1)  
+    C.set_parameter('B97_os_a3',6.58405E0)
+    C.set_parameter('B97_os_a4',-3.78132E0)
 
-    C.set_parameter('gcaa', 0.2)
-    C.set_parameter('ccaa0',1.0) 
-    C.set_parameter('ccaa1',-4.33879E0)  
-    C.set_parameter('ccaa2',1.82308E1)
-    C.set_parameter('ccaa3',-3.17430E1)  
-    C.set_parameter('ccaa4',1.72901E1)
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0',1.0) 
+    C.set_parameter('B97_ss_a1',-4.33879E0)  
+    C.set_parameter('B97_ss_a2',1.82308E1)
+    C.set_parameter('B97_ss_a3',-3.17430E1)  
+    C.set_parameter('B97_ss_a4',1.72901E1)
 
     sup.add_x_functional(X)
     sup.add_c_functional(C)
@@ -1733,7 +1834,7 @@ def build_m05_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_ss_a4', 17.94491)
 
     sup.add_x_functional(X)
-    #sup.add_c_functional(C)
+    sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
@@ -1791,9 +1892,11 @@ superfunctionals = {
         'b88_x'     : build_primitive_superfunctional,
         'b3_x'      : build_primitive_superfunctional,
         'pbe_x'     : build_primitive_superfunctional,
+        'pbesol_x'  : build_primitive_superfunctional,
         'pw91_x'    : build_primitive_superfunctional,
         'ws_x'      : build_ws_x_superfunctional,
         'wpbe_x'    : build_wpbe_x_superfunctional,
+        'wpbesol_x' : build_wpbesol_x_superfunctional,
         'wb88_x'    : build_wb88_x_superfunctional,
         'lyp_c'     : build_primitive_superfunctional,
         'ft97b_x'   : build_primitive_superfunctional,
@@ -1807,7 +1910,6 @@ superfunctionals = {
         'vwn5_c'    : build_primitive_superfunctional,
         'vwn3rpa_c' : build_primitive_superfunctional,
         'vwn3_c'    : build_primitive_superfunctional,
-        'p_c'       : build_primitive_superfunctional,
         'svwn'      : build_svwn_superfunctional,
         'blyp'      : build_blyp_superfunctional,
         'bp86'      : build_bp86_superfunctional,
@@ -1819,7 +1921,6 @@ superfunctionals = {
         'pbe0'      : build_pbe0_superfunctional,
         'b97-0'     : build_b970_superfunctional,
         'b97-1'     : build_b971_superfunctional,
-        'b97-1q'    : build_b971q_superfunctional,
         'b97-2'     : build_b972_superfunctional,
         'hcth'      : build_hcth_superfunctional,
         'hcth120'   : build_hcth120_superfunctional,
@@ -1834,6 +1935,8 @@ superfunctionals = {
         'wsvwn'     : build_wsvwn_superfunctional,
         'wpbe'      : build_wpbe_superfunctional,
         'wpbe0'     : build_wpbe0_superfunctional,
+        'wpbesol'   : build_wpbesol_superfunctional,
+        'wpbesol0'  : build_wpbesol0_superfunctional,
         'wblyp'     : build_wblyp_superfunctional,
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,
