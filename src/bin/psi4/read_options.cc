@@ -94,7 +94,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     self-consistent-field (MCSCF) and complete-active-space 
     self-consistent-field (CASSCF) computations, and arbitrary-order
     perturbation theory and arbitrary-order coupled-cluster
-    computations for small molecules -*/
+    computations for small molecules. -*/
 
     /*- SUBSECTION General Options -*/
 
@@ -732,7 +732,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory 
-      computations -*/
+      computations. -*/
 
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEVEL", 2);
@@ -784,7 +784,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 
-      whenever disk-based molecular integrals are required -*/
+      whenever disk-based molecular integrals are required. -*/
 
       /*- Primary basis set -*/
       options.add_str("BASIS","");
@@ -919,10 +919,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- SUBSECTION DFT -*/
 
-    /*- The DFT combined functional name (for now). -*/
+    /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a 
+        custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
     options.add_str("DFT_FUNCTIONAL", "");
+    /*- An ExternalPotential (built by Python or NULL/None) -*/
+    options.add("DFT_CUSTOM_FUNCTIONAL", new PythonDataType());
     /*- The DFT Range-separation parameter -*/
     options.add_double("DFT_OMEGA", 0.0);
+    /*- The DFT Exact-exchange parameter -*/
+    options.add_double("DFT_ALPHA", 0.0);
     /*- The DFT grid specification, such as SG1. -*/
     options.add_str("DFT_GRID_NAME","","SG1");
     /*- Maximum order of spherical grids. -*/
@@ -1402,7 +1407,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ZETA",false);
   }
   if(name == "CLAG"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenver CI properties or gradients are requested. -*/
+     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenever CI properties or gradients are requested. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","NONE");
     /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
@@ -1412,7 +1417,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "STABILITY"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
-         by the user-*/
+         by the user. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF", "RHF UHF ROHF");
     /*- -*/
@@ -1638,7 +1643,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
   }
   if(name == "MCSCF"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF, and more general MCSCF computations. Called
+     /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF and more general MCSCF computations. Called
          as the starting point for multireference coupled cluster computations. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
@@ -1836,7 +1841,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DOMAIN_PRINT", 0);
   }
   if(name == "LMP2"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions -*/
+    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions. -*/
 
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "LMP2");
@@ -2350,7 +2355,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_READ",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\'{a}ly K\'{a}llay. -*/
+      /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
 
       /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC.
           If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then

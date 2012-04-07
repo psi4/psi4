@@ -1,6 +1,4 @@
 """
-**S22**
-
 | Database (Hobza) of interaction energies for bimolecular complexes.
 | Geometries from Jurecka et al. PCCP 8 1985 (2006).
 | Reference interaction energies from Marshall et al. JCP 135 194102 (2011).
@@ -22,8 +20,6 @@
   - ``'HB'`` hydrogen-bonded systems
   - ``'MX'`` mixed-influence systems
   - ``'DD'`` dispersion-dominated systems
-
-----
 
 """
 import input

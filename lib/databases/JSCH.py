@@ -1,6 +1,4 @@
 """
-**JSCH**
-
 | Database (Hobza) of interaction energies for nucelobase pairs.
 | Geometries and reference interaction energies from Jurecka et al. PCCP 8 1985 (2006).
 | Corrections implemented from footnote 92 of Burns et al., JCP 134 084107 (2011).
@@ -13,8 +11,6 @@
 
   - ``'small'``
   - ``'large'``
-
-----
 
 """
 import input

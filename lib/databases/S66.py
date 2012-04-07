@@ -1,6 +1,4 @@
 """
-**S66**
-
 | Database (Hobza) of interaction energies for bimolecular complexes.
 | Geometries and reference energies from Rezac et al. JCTC 7 2427 (2011).
 
@@ -15,8 +13,6 @@
   - ``'HB'`` hydrogen-bonded systems
   - ``'MX'`` mixed-influence systems
   - ``'DD'`` dispersion-dominated systems
-
-----
 
 """
 import re

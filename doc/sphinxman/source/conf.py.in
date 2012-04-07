@@ -16,15 +16,13 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../../../lib/python/'))
-sys.path.insert(0, os.path.abspath('../../../lib/databases/'))
-sys.path.insert(0, os.path.abspath('../../../tests/'))
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/python/'))
+sys.path.insert(0, os.path.abspath('@top_srcdir@/lib/databases/'))
+sys.path.insert(0, os.path.abspath('@top_srcdir@/tests/'))
+sys.path.insert(0, os.path.abspath('@srcdir@'))
 
 import psi4_sptheme as psp
 
-# very bad practice- hardwiring object dir so can get at gitversion.h
-objdir = 'objdir'
 
 # -- General configuration -----------------------------------------------------
 
@@ -54,7 +52,7 @@ project = u'PSI4'
 copyright = u'2012, Psi4 Project'
 
 def get_gitversion():
-    file = '../../../' + objdir + '/src/bin/psi4/gitversion.h'
+    file = '../../../src/bin/psi4/gitversion.h'
 
     try: 
         f = open(file)
@@ -62,7 +60,7 @@ def get_gitversion():
         return ''
     vers = f.readline().split()[2]
     f.close() 
-    print 'GIT_VERSION', vers[1:7]
+    #print 'GIT_VERSION', vers[1:7]
     return vers[1:7]
 
 # The version info for the project you're documenting, acts as replacement for
@@ -156,7 +154,7 @@ html_title = 'PSI4 [' + release + '] documentation'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+#html_static_path = ['_static']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
@@ -280,6 +278,7 @@ texinfo_documents = [
 # Abbreviations
 rst_epilog = """
 .. |PSIfour| replace:: PSI4
+.. |PSIfours| replace:: PSI4's
 .. |psirc| replace:: ``~/.psi4rc``
 .. |dl| replace:: :math:`\Rightarrow`
 .. |dr| replace:: :math:`\Leftarrow`
@@ -303,7 +302,9 @@ rst_prolog = """
 # This option, from sphinx.ext.extlinks, allows linking to source on trac with :source:`lib/python/driver/py`
 extlinks = {'source': ('http://sirius.chem.vt.edu/trac/browser/%s', 'psi4/'),
             'srcsample': ('http://sirius.chem.vt.edu/trac/browser/samples/%s/input.dat', ''),
-            'srcbasis': ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', '') }
+            'srcbasis': ('http://sirius.chem.vt.edu/trac/browser/lib/basis/%s.gbs', ''),
+            'srcplugin': ('http://sirius.chem.vt.edu/trac/browser/tests/%s', ''),
+            'srcdb': ('http://sirius.chem.vt.edu/trac/browser/lib/databases/%s.py', '') }
 
 # corrects baseline for inline math + other custom stuff for inline math, such as non-default math fonts etc.
 pngmath_latex_preamble=r'\usepackage[active]{preview}'

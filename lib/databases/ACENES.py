@@ -1,6 +1,4 @@
 """
-**ACENES**
-
 | Database of Ed and Rob's favorite linear acene dimers.
 | Geometries from nowhere special, and reference energies undefined.
 
@@ -15,8 +13,6 @@
   - ``'FIRST3'`` benzene, napthalene, and anthracene dimers
   - ``'FIRST5'`` benzene - pentacene dimers
   - ``'FIRST10'`` benzene - decacene dimers
-
-----
 
 """
 import re

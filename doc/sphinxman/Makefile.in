@@ -1,0 +1,208 @@
+# Makefile for Sphinx documentation
+
+# You can set these variables from the command line.
+SPHINXOPTS    =
+SPHINXBUILD   = sphinx-build
+PAPER         =
+BUILDDIR      = build
+SOURCEDIR     = source
+SRCSOURCEDIR  = @srcdir@/source
+
+# Internal variables.
+PAPEROPT_a4     = -D latex_paper_size=a4
+PAPEROPT_letter = -D latex_paper_size=letter
+ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) $(SOURCEDIR)
+
+.PHONY: help autodocclean clean realclean trigger html latexpdf-user latexpdf-prog html-user html-prog docs
+
+all: html
+
+help:
+	@echo "For PSI4 documentation, use one of"
+	@echo "  html                to make html complete manual (DEFAULT)"
+	@echo "  html-user           to make html user manual"
+	@echo "  html-prog           to make html programmer manual"
+	@echo "  latexpdf-user       to make LaTeX pdf user manual"
+	@echo "  latexpdf-prog       to make LaTeX pdf programmer manual"
+	@echo "  docs                to make all of the above"
+	@echo "Other Makefile targets"
+	@echo "  autodoc             to run documentation scripts to make all autodoc source reST files"
+	@echo "  writtendoc          to run copy/subst all permanent source reST files into objdir"
+	@echo "  autodocclean        to clean intermediate and autodoc files (undo make autodoc)"
+	@echo "  clean               to clean additionally all reST files (undo make autodoc; make writtendoc)"
+	@echo "  realclean           to clean additionally the build directory"
+
+
+#####  directory structure: creating and emptying  #####
+
+discard = \
+expert_keywords.tex keywords.tex physconst.tex psi4bases.tex \
+psi4bases.html tests_descriptions.tex variables_list.tex warnings.txt
+
+autodocclean:
+	-rm -rf $(SOURCEDIR)/autod*
+	-rm -rf $(discard)
+	-rm -rf *.pyc $(SOURCEDIR)/*.pyc
+
+clean: autodocclean
+	-rm -rf $(addprefix $(SOURCEDIR)/,$(MISCDOC))
+	-rm -rf $(addprefix $(SOURCEDIR)/,$(STATICDOC))
+	-rm -rf $(addprefix $(SOURCEDIR)/,index.rst appendices.rst)
+
+realclean: clean
+	-rm -rf $(BUILDDIR)
+
+subdirs := $(BUILDDIR) $(SOURCEDIR)/autodir_options_c $(SOURCEDIR)/autodir_plugins $(SOURCEDIR)/autodir_psivariables
+
+$(subdirs):
+	mkdir -p $(BUILDDIR)
+	mkdir -p $(SOURCEDIR)/autodir_options_c
+	mkdir -p $(SOURCEDIR)/autodir_plugins
+	mkdir -p $(SOURCEDIR)/autodir_psivariables
+
+trigger:
+	touch $(SRCSOURCEDIR)/template_index.rst
+	touch $(SRCSOURCEDIR)/template_appendices.rst
+
+#####  auto-doc dependencies and generation  #####
+
+# psivariable dependencies (all C++ code) not implemented
+autodepend1 = \
+@top_srcdir@/include/physconst.h \
+@top_srcdir@/src/bin/psi4/read_options.cc \
+@top_srcdir@/tests/*/input.dat \
+@srcdir@/document_options_tests_physconst_psivariables.pl
+
+# plugin C++ dependencies not implemented, using *.py as proxy
+autodepend2 = \
+@top_srcdir@/lib/databases/*.py \
+@top_srcdir@/lib/python/*.py \
+@top_srcdir@/tests/plugin_*/*.py \
+@srcdir@/document_python_modules.py
+
+autodepend3 = \
+@top_srcdir@/lib/basis/*.gbs \
+@srcdir@/document_bases.pl
+
+autodepend4 = \
+$(SRCSOURCEDIR)/template_index.rst \
+$(SRCSOURCEDIR)/template_appendices.rst \
+@srcdir@/separate_userprogman.py
+
+autotarget1 = \
+$(SOURCEDIR)/autodoc_abbr_options_c.rst \
+$(SOURCEDIR)/autodoc_glossary_options_c.rst \
+$(SOURCEDIR)/autodoc_options_c_bymodule.rst \
+$(SOURCEDIR)/autodoc_psivariables_bymodule.rst \
+$(SOURCEDIR)/autodoc_testsuite.rst \
+$(SOURCEDIR)/autodir_options_c/module__scf.rst \
+$(SOURCEDIR)/autodir_options_c/scf__scf_type.rst \
+$(SOURCEDIR)/autodir_psivariables/module__scf.rst
+
+autotarget2 = \
+$(SOURCEDIR)/autodoc_abbr_options_plugins.rst \
+$(SOURCEDIR)/autodoc_available_databases.rst \
+$(SOURCEDIR)/autodoc_available_plugins.rst \
+$(SOURCEDIR)/autodoc_driver.rst \
+$(SOURCEDIR)/autodir_plugins/glossary__plugin_aointegrals.rst \
+$(SOURCEDIR)/autodir_plugins/module__plugin_aointegrals.rst \
+$(SOURCEDIR)/autodir_plugins/plugin_aointegrals__print.rst
+
+autotarget3 = \
+$(SOURCEDIR)/autodoc_psi4bases.rst
+
+autotarget4 = \
+$(SOURCEDIR)/autodoc_index_html.rst      $(SOURCEDIR)/autodoc_appendices_html.rst \
+$(SOURCEDIR)/autodoc_index_htmluser.rst  $(SOURCEDIR)/autodoc_appendices_htmluser.rst \
+$(SOURCEDIR)/autodoc_index_htmlprog.rst  $(SOURCEDIR)/autodoc_appendices_htmlprog.rst \
+$(SOURCEDIR)/autodoc_index_latexuser.rst $(SOURCEDIR)/autodoc_appendices_latexuser.rst \
+$(SOURCEDIR)/autodoc_index_latexprog.rst $(SOURCEDIR)/autodoc_appendices_latexprog.rst
+
+$(autotarget1): %: $(autodepend1) | $(subdirs)
+	@srcdir@/document_options_tests_physconst_psivariables.pl @srcdir@
+
+$(autotarget2): %: $(autodepend2) | $(subdirs)
+	@srcdir@/document_python_modules.py @srcdir@
+
+$(autotarget3): %: $(autodepend3)
+	@srcdir@/document_bases.pl @srcdir@
+
+$(autotarget4): %: $(autodepend4)
+	@srcdir@/separate_userprogman.py @srcdir@
+
+autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4)
+
+
+#####  static docs  #####
+
+MISCDOC = \
+psi4banner.png man_PsiMod.txt PsiMod.py
+
+STATICDOC = \
+abbr_accents.rst adc.rst basissets.rst basissets_byelement.rst \
+bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst \
+cp.rst customizing.rst db.rst detci.rst dfmp2.rst documentation.rst \
+energy.rst external.rst freq.rst glossary_psivariables.rst intercalls.rst \
+interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
+opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
+psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
+quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst
+
+$(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
+	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)
+
+$(addprefix $(SOURCEDIR)/,$(STATICDOC)): %: @srcdir@/%
+	python apply_relpath.py $(@F)
+
+writtendoc: $(addprefix $(SOURCEDIR)/,$(MISCDOC) $(STATICDOC))
+
+
+#####  run Sphinx with html/latex builder with index/appendices contents variations  #####
+
+html: trigger autodoc writtendoc | $(subdirs)
+	cp -p $(SOURCEDIR)/autodoc_index_html.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_html.rst $(SOURCEDIR)/appendices.rst
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+html-user: trigger autodoc writtendoc | $(subdirs)
+	cp -p $(SOURCEDIR)/autodoc_index_htmluser.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_htmluser.rst $(SOURCEDIR)/appendices.rst
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-user
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html-user."
+
+html-prog: trigger autodoc writtendoc | $(subdirs)
+	cp -p $(SOURCEDIR)/autodoc_index_htmlprog.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_htmlprog.rst $(SOURCEDIR)/appendices.rst
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html-prog
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html-prog."
+
+latexpdf-user: trigger autodoc writtendoc | $(subdirs)
+	cp -p $(SOURCEDIR)/autodoc_index_latexuser.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_latexuser.rst $(SOURCEDIR)/appendices.rst
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex-user
+	@echo "USERMAN Running LaTeX files through pdflatex..."
+	$(MAKE) -C $(BUILDDIR)/latex-user all-pdf
+	@echo "USERMAN pdflatex finished; the PDF files are in $(BUILDDIR)/latex-user."
+	mv $(BUILDDIR)/latex-user/Psi4.pdf $(BUILDDIR)/latex-user/psi4_userman.pdf
+
+latexpdf-prog: trigger autodoc writtendoc | $(subdirs)
+	cp -p $(SOURCEDIR)/autodoc_index_latexprog.rst $(SOURCEDIR)/index.rst
+	cp -p $(SOURCEDIR)/autodoc_appendices_latexprog.rst $(SOURCEDIR)/appendices.rst
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex-prog
+	@echo "PROGMAN Running LaTeX files through pdflatex..."
+	$(MAKE) -C $(BUILDDIR)/latex-prog all-pdf
+	@echo "PROGMAN pdflatex finished; the PDF files are in $(BUILDDIR)/latex-prog."
+	mv $(BUILDDIR)/latex-prog/Psi4.pdf $(BUILDDIR)/latex-prog/psi4_progman.pdf
+
+docs:
+	$(MAKE) html
+	$(MAKE) html-user
+	$(MAKE) html-prog
+	$(MAKE) latexpdf-user
+	$(MAKE) latexpdf-prog
+
+#####  End  #####

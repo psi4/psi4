@@ -11,24 +11,7 @@ using namespace psi;
 
 namespace psi{
 
-/*void libtransOutOfCoreSort(int nfzc,int nfzv,int norbs,ndoccact,int nvirt){
-    std::vector<shared_ptr<MOSpace> > spaces;
-    spaces.push_back(MOSpace::occ);
-    spaces.push_back(MOSpace::vir);
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
-    IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted,
-               IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
-    ints.set_dpd_id(0);
-    ints.set_keep_iwl_so_ints(true);
-    ints.set_keep_dpd_so_ints(true);
-    ints.initialize();
-
-    ints.transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
-    libtransSortBlock
-    SortBlock(totalnijkl,o*o*o*o,integralbuffer,tmp,PSIF_IJKL,"E2ijkl",maxelem);
-}*/
-
-void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
+void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal){
   struct iwlbuf Buf; 
   // initialize buffer
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
@@ -36,20 +19,20 @@ void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
   fprintf(outfile,"\n        Begin CC integral sort\n\n");
 
   //sort
-  Sort(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt);
+  Sort(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,islocal);
 
   iwl_buf_close(&Buf,1);
 }
 /**
   * out-of-core integral sort.  requires 2o^2v^2 doubles +o^2v^2 ULIs storage
   */
-void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt){
+void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal){
 
   double val;
   ULI o = ndoccact;
   ULI v = nvirt;
   ULI fstact = nfzc;
-  ULI lstact = norbs-nfzc;
+  ULI lstact = norbs-nfzv;
 
   ULI lastbuf;
   Label *lblptr;
@@ -163,6 +146,15 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       q = (ULI) lblptr[idx++];
       r = (ULI) lblptr[idx++];
       s = (ULI) lblptr[idx++];
+
+      if (islocal){
+         if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+         if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+         p -= fstact;
+         q -= fstact;
+         r -= fstact;
+         s -= fstact;
+      }
 
       pq   = Position(p,q);
       rs   = Position(r,s);
@@ -292,6 +284,15 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
           q = (ULI) lblptr[idx++];
           r = (ULI) lblptr[idx++];
           s = (ULI) lblptr[idx++];
+
+          if (islocal){
+             if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
+             if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
+             p -= fstact;
+             q -= fstact;
+             r -= fstact;
+             s -= fstact;
+          }
 
           pq   = Position(p,q);
           rs   = Position(r,s);
@@ -544,21 +545,36 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
   lastbin = o*v*v*v - (nbins-1)*binsize;
   psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
   psio->open(PSIF_ABCI2,PSIO_OPEN_OLD);
+  if (islocal){
+     psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
+  }
+
   abci2_addr = PSIO_ZERO;
   abci3_addr = PSIO_ZERO;
   abci5_addr = PSIO_ZERO;
+  psio_address abci4_addr = PSIO_ZERO;
   for (ULI i=0; i<nbins-1; i++){
       psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
       psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
+      // this is for the local triples
+      if (islocal){
+         psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],binsize*sizeof(double),abci4_addr,&abci4_addr);
+      }
       F_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
       psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci2_addr,&abci2_addr);
   }
   psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr,&abci3_addr);
   psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr,&abci5_addr);
+  if (islocal){
+     psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],lastbin*sizeof(double),abci4_addr,&abci4_addr);
+  }
   F_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
   psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci2_addr,&abci2_addr);
   psio->close(PSIF_ABCI2,1);
   psio->close(PSIF_ABCI3,1);
+  if (islocal){
+     psio->close(PSIF_ABCI4,1);
+  }
 
   /**
     *  Combine ABCD1 and ABCD2 integrals
@@ -901,7 +917,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -937,7 +953,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   c = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -973,7 +989,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1009,7 +1025,7 @@ void abcd2_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1051,7 +1067,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1087,7 +1103,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   d = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1123,7 +1139,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
@@ -1159,7 +1175,7 @@ void abcd1_terms(double val,ULI pq,ULI rs,ULI p,ULI q,ULI r,ULI s,ULI o,ULI v,UL
   b = s-o;
   ind1 = Position(a,b);
   ind2 = Position(c,d);
-  if (b<=a && d<=c){
+  if ((b<=a && d<=c) || (a<=b && c<=d)){
      ind3 = ind1*v*(v+1)/2+ind2;
      flag=1;
      for (index=0; index<nvals; index++){
