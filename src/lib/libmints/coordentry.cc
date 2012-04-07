@@ -199,7 +199,15 @@ ZMatrixEntry::set_coordinates(double x, double y, double z)
     if(ato_ != 0){
         if(!ato_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
-        aval_->set(180.0*a(coordinates_, rto_->compute(), ato_->compute())/M_PI);
+        double aval = a(coordinates_, rto_->compute(), ato_->compute());
+        // Noise creeps in for linear molecules. Force linearity, if it is close enough.
+        if (fabs(aval - M_PI) < 1.0e-5)
+            if (aval > 0.0)
+                aval = M_PI;
+            else
+                aval = -M_PI;
+        double val = 180.0*aval/M_PI;
+        aval_->set(val);
     }
     if(dto_ != 0){
         if(!dto_->is_computed())
@@ -308,8 +316,9 @@ const Vector3& ZMatrixEntry::compute()
             eY = eX.perp_unit(eCB);
             eX = eY.perp_unit(eCB);
         }
-        for(int xyz = 0; xyz < 3; ++xyz)
+        for(int xyz = 0; xyz < 3; ++xyz) {
            coordinates_[xyz] = B[xyz] + r * (eY[xyz] * sinABC - eCB[xyz] * cosABC );
+        }
     }else{
         /*
          * The fourth, or subsequent, atom
