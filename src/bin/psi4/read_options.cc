@@ -2247,6 +2247,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
       /*- Do freeze all fragments rigid? -*/
       options.add_bool("FREEZE_INTRAFRAG", false);
+      /*- Do freeze all interfragment modes? -*/
+      options.add_bool("FREEZE_INTERFRAG", false);
       /*- When interfragment coordinates are present, use as reference points either
       principal axes or fixed linear combinations of atoms. -*/
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
@@ -2276,7 +2278,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
       options.add_bool("TEST_DERIVATIVE_B", false);
-
+      /*- Keep internal coordinate definition file. -*/
+      options.add_bool("KEEP_INTCOS", false);
   }
   if(name == "FINDIF"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements
