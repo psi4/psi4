@@ -22,7 +22,7 @@
 .. |o_circumflex| unicode:: U+00F4
 .. |o_tilde|      unicode:: U+00F5
 .. |o_dots|       unicode:: U+00F6
-.. |o_slash|      unicode:: U+00F8 .. as in Moller
+.. |o_slash|      unicode:: U+00F8 .. as in M\ |o_slash|\ ller
 .. |u_grave|      unicode:: U+00F9
 .. |u_acute|      unicode:: U+00FA
 .. |u_circumflex| unicode:: U+00FB

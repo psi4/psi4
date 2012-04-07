@@ -6,9 +6,9 @@ psi4_io.set_specific_retention(32,False)
 
 memory 250 mb
 
-refnuc  = 0.587974721111111                           #TEST 
-refscf  = [ -1.11639203481542, -1.11872757066568 ]    #TEST
-refmp2  = [ -1.14416515440344, -1.15119403817218 ]    #TEST
+refnuc  = 0.587974676211111                           #TEST
+refscf  = [ -1.1163920251650830, -1.118727560574628 ] #TEST
+refmp2  = [ -1.1441651453612438, -1.151194028513022 ] #TEST
 
 molecule h2 {
    0 1
@@ -26,7 +26,7 @@ set {
 # This is a table that uses just the default parameters
 table = Table(rows=("Basis"), cols=("E(DF-SCF)", "E(DF-MP2)"))
 
-# This is the same table, but with more explic control of column widths
+# This is the same table, but with more explicit control of column widths
 longtable = Table(rows=("Basis"), cols=("E(DF-SCF)", "E(DF-MP2)"),
                   row_label_width=10,
                   row_label_precision=4,
@@ -42,7 +42,7 @@ for basisset in basissets:
     set df_basis_scf $jkbasis
     ribasis = basisset + "-ri"
     set df_basis_mp2 $ribasis
-    edfmp2 = energy('dfmp2')
+    edfmp2 = energy('df-mp2')
     edfscf = get_variable('SCF TOTAL ENERGY')
     compare_values(edfscf, refscf[count], 10, basisset + " DF-SCF Energy")            #TEST
     compare_values(edfmp2, refmp2[count], 10, basisset + " DF-MP2 Energy")            #TEST

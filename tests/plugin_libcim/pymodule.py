@@ -69,11 +69,11 @@ def run_plugin_libcim(name, **kwargs):
 
     # the options that are not unique to the plugins are not set 
     # properly when i load more than one plugin.  set them here
-    if (!PsiMod.has_option_changed('r_convergence')):
+    if PsiMod.has_option_changed('r_convergence') == False:
        PsiMod.set_global_option('r_convergence', 1e-7)
-    if (!PsiMod.has_option_changed('maxiter')):
+    if PsiMod.has_option_changed('maxiter') == False:
        PsiMod.set_global_option('maxiter', 100)
-    if (!PsiMod.has_option_changed('occ_tolerance')):
+    if PsiMod.has_option_changed('occ_tolerance') == False:
        PsiMod.set_global_option('occ_tolerance', 5e-5)
 
     # if df basis not set, pick one. there is no easy way to guarantee 

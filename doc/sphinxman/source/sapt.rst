@@ -103,11 +103,13 @@ available SAPT computations (normally, you would pick one of these methods). ::
 	energy('sapt2+3')
 
 The SAPT module uses the standard |PSIfour| partitioning of the dimer
-into monomers. Additionally, the ``no_reorient`` flag must be included
-and the use of spatial symmetry disabled by setting the molecule option 
-``symmetry c1``. A final note is that the SAPT module is only 
-capable of performing SAPT comuptations for interactions between closed-shell 
-singlets. 
+into monomers. SAPT does not use spatial symmetry and needs the geometry
+of the system to remain fixed throughout monomer and dimer calculations.
+These requirements are imposed whenever a SAPT calculation is requested
+but can also be set explicitly with the ``no_reorient`` and ``symmetry
+c1`` molecule keywords, as in the example above. A final note is that the
+SAPT module is only capable of performing SAPT computations for
+interactions between closed-shell singlets.
 
 The example input shown above would not be used in practice.
 To exploit the efficiency of the density-fitted SAPT implementation in
@@ -288,8 +290,6 @@ input::
          H   1.680398  -0.373741  -0.758561
          H   1.680398  -0.373741   0.758561
          units angstrom
-         no_reorient
-         symmetry c1
     }
     
     set globals {
