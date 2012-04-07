@@ -1824,15 +1824,19 @@ void ObaraSaikaThreeCenterRecursion::compute(double GA[3], double GB[3], double 
     // End - Upward recursion in a for all b and c = 0
 
     if (amA && amB && amC) {
-        x_[1][1][1] = GA[0] * x_[0][1][1];
-        y_[1][1][1] = GA[1] * y_[0][1][1];
-        z_[1][1][1] = GA[2] * z_[0][1][1];
-        x_[1][1][1] += pp * x_[0][1][0];
-        y_[1][1][1] += pp * y_[0][1][0];
-        z_[1][1][1] += pp * z_[0][1][0];
-        x_[1][1][1] += pp * x_[0][0][1];
-        y_[1][1][1] += pp * y_[0][0][1];
-        z_[1][1][1] += pp * z_[0][0][1];
+        for (b=1; b<=amB; ++b) {
+            for (c=1; c<=amC; ++c) {
+                x_[1][c][b] = GA[0] * x_[0][c][b];
+                y_[1][c][b] = GA[1] * y_[0][c][b];
+                z_[1][c][b] = GA[2] * z_[0][c][b];
+                x_[1][c][b] += b * pp * x_[0][c][b-1];
+                y_[1][c][b] += b * pp * y_[0][c][b-1];
+                z_[1][c][b] += b * pp * z_[0][c][b-1];
+                x_[1][c][b] += c * pp * x_[0][c-1][b];
+                y_[1][c][b] += c * pp * y_[0][c-1][b];
+                z_[1][c][b] += c * pp * z_[0][c-1][b];
+            }
+        }
 
         // Begin - Bring everything together
         for (a=1; a<amA; ++a) {
