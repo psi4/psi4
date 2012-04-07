@@ -3,9 +3,9 @@
 
 .. _`sec:config`:
 
-==================================================
-Configuration: Preparing |PSIfour|\ 's Environment
-==================================================
+===============================================
+Configuration: Preparing |PSIfours| Environment
+===============================================
 
 .. index:: scratch files, psirc
 .. _`sec:psirc`:
@@ -247,7 +247,7 @@ Command-line arguments to |PSIfour| can be accessed through :option:`psi4 --help
 Environment Variables
 =====================
 
-These environment variables will influence |PSIfour|\ 's behavior.
+These environment variables will influence |PSIfours| behavior.
 
 .. envvar:: OMP_NUM_THREADS
 
