@@ -147,7 +147,8 @@ class FRAG {
 
   int find(const SIMPLE *one) const;
 
-  void displace(double *dq, bool print_disp = false, int atom_offset=0);
+  // displace fragment by dq ; forces and offset are provided for printing
+  void displace(double *dq, double *fq, int atom_offset=0);
 
   double ** g_geom_pointer(void) { return geom; };           // returns pointer
   double ** g_geom(void) const;                              // returns a copy

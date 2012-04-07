@@ -395,7 +395,7 @@ void MOLECULE::freeze_interfragment_asymm(void) {
   double **coord_orig = g_geom_2D();
   double disp_size = 0.1;
 
-  fprintf(outfile,"Checking interfragment coordinates for ones that break symmetry.\n");
+  fprintf(outfile,"\tChecking interfragment coordinates for ones that break symmetry.\n");
   fflush(outfile);
 
   for (int I=0; I<interfragments.size(); ++I) {
@@ -411,11 +411,14 @@ void MOLECULE::freeze_interfragment_asymm(void) {
 
       double **coord = matrix_return_copy(coord_orig, g_natom(), 3);
 
-      for (int j=0; j<3*nA; ++j)
-        coord[g_interfragment_intco_offset(I)+i][3*g_atom_offset(iA)+j] += disp_size * B[i][j];
+      for (int atom_a=0; atom_a<nA; ++atom_a)
+        for (int xyz=0; xyz<3; ++xyz)
+          coord[g_atom_offset(iA)+atom_a][xyz] += disp_size * B[i][3*atom_a+xyz];
 
-      for (int j=0; j<3*nB; ++j)
-        coord[g_interfragment_intco_offset(I)+i][3*g_atom_offset(iB)+j] += disp_size * B[i][3*nA+j];
+      for (int atom_b=0; atom_b<nB; ++atom_b)
+        for (int xyz=0; xyz<3; ++xyz)
+          coord[g_atom_offset(iB)+atom_b][xyz] += disp_size * B[i][3*atom_b+xyz];
+
 
 #if defined(OPTKING_PACKAGE_PSI)
       psi::Process::environment.molecule()->set_geometry(coord);
@@ -423,9 +426,12 @@ void MOLECULE::freeze_interfragment_asymm(void) {
 #elif defined(OPTKING_PACKAGE_QCHEM)
   // not implemented yet
 #endif
-      if (!symmetric_intco) {
-        fprintf(outfile,"Interfragment coordinate %d, %d breaks symmetry - freezing.\n", I+1, i+1);
-        interfragments[i]->freeze(i);
+      if (symmetric_intco)
+        fprintf(outfile,"\tInterfragment coordinate %d, %d is symmetric.\n", I+1, i+1);
+      else {
+        fprintf(outfile,"\tInterfragment coordinate %d, %d breaks symmetry - freezing.\n", I+1, i+1);
+        fflush(outfile);
+        interfragments[I]->freeze(i);
       }
       free(coord);
     }

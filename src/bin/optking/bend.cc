@@ -217,13 +217,7 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
 
 void BEND::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-
-  if (linear_bend)
-    iss << "L(";
-  else
-    iss << "B(";
-
-  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
+  iss << get_definition_string(off);
 
   double val = value(geom);
   if (!s_frozen)
