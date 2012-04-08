@@ -102,8 +102,10 @@ void set_params(void)
     else if (s == "FISCHER_LIKE") Opt_params.interfragment_H = OPT_PARAMS::FISCHER_LIKE;
 
 // Whether to freeze all fragments rigid
-//  Opt_params.freeze_intrafragment = false;
     Opt_params.freeze_intrafragment = options.get_bool("FREEZE_INTRAFRAG");
+
+// Whether to freeze all interfragment modes
+    Opt_params.freeze_interfragment = options.get_bool("FREEZE_INTERFRAG");
 
 // Add auxiliary bonds for non-bonded (but nearby) atoms.
     Opt_params.add_auxiliary_bonds = options.get_bool("ADD_AUXILIARY_BONDS");
@@ -283,6 +285,13 @@ void set_params(void)
 //IRC stepsize
   Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
 
+  // keep internal coordinate definitions file after optimization
+  Opt_params.keep_intcos = options.get_bool("KEEP_INTCOS");
+
+  // if we are running only to generate them, then we assume we'll keep them
+  if (Opt_params.generate_intcos_only && !options["KEEP_INTCOS"].has_changed())
+    Opt_params.keep_intcos = true;
+
 // consecutive number of backsteps allowed before giving up
   Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
 
@@ -342,6 +351,9 @@ void set_params(void)
 
 // Whether to freeze all fragments rigid (default 0);
   Opt_params.freeze_intrafragment = rem_read(REM_GEOM_OPT2_FREEZE_INTRAFRAGMENT);
+
+// Whether to freeze all interfragment modes:
+  Opt_params.freeze_interfragment = rem_read(REM_GEOM_OPT2_FREEZE_INTERFRAGMENT);
 
 // write final step ; default (false);
   Opt_params.write_final_step_geometry = rem_read(REM_GEOM_OPT2_WRITE_FINAL_STEP_GEOMETRY);

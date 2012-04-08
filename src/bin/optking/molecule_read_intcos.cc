@@ -295,9 +295,17 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
       INTERFRAG * one_IF = new INTERFRAG(fragments[first_frag], fragments[second_frag],
       first_frag, second_frag, weightA, weightB, ndA, ndB);
 
+      // freeze coordinates, need to convert to the index of active coordinates
+      int if_index = 0;
+      for (int i=0; i<6; ++i) {
+        if (D_on[i]) {
+          if (D_frozen[i])
+            one_IF->freeze(if_index++);
+        }
+      }
+
       interfragments.push_back(one_IF);
 
-      interfragments.back()->freeze(D_frozen);
     } // end of if vline[0] == 'I'
     else {
       error << "Unknown initial character on line " << line_num << ".\n";

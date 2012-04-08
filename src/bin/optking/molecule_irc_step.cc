@@ -364,16 +364,16 @@ free_matrix(G_inv);
         fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
         continue;
       }
-      fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+      fragments[f]->displace(&(dq[g_intco_offset(f)]), &(f_q[g_intco_offset(f)]), g_atom_offset(f));
     }
     // Do displacements for interfragment coordinates.
-    double *q_target;
     for (int I=0; I<interfragments.size(); ++I) {
-      q_target = interfragments[I]->intco_values();
-      for (int i=0; i<interfragments[I]->g_nintco(); ++i)
-        q_target[i] += dq[g_interfragment_intco_offset(I) + i];
-       interfragments[I]->orient_fragment(q_target);
-      free_array(q_target);
+      if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+        fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+        continue;
+      }
+      interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
+                                         &(f_q[g_interfragment_intco_offset(I)]) );
     }
 
     // Compute norm, unit vector, gradient and Hessian in the step direction
@@ -619,16 +619,16 @@ print_array(outfile, g_m, Nintco);
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(f_q[g_intco_offset(f)]), g_atom_offset(f));
   }
   // Do displacements for interfragment coordinates.
-  double *q_target;
   for (int I=0; I<interfragments.size(); ++I) {
-    q_target = interfragments[I]->intco_values();
-    for (int i=0; i<interfragments[I]->g_nintco(); ++i)
-      q_target[i] += dq[g_interfragment_intco_offset(I) + i];
-     interfragments[I]->orient_fragment(q_target);
-    free_array(q_target);
+    if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      continue;
+    }
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
+                                       &(f_q[g_interfragment_intco_offset(I)]) );
   }
 
 
