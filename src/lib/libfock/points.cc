@@ -150,7 +150,6 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
-
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
         double** phizp = basis_values_["PHI_Z"]->pointer();
@@ -170,43 +169,6 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
                 taup[P] += C_DDOT(nlocal, phic[P], 1, Tp[P], 1);
             }
         }
-
-        /**
-        // => Build local C matrix <= //
-        int na = Cocc_AO_->colspi()[0];
-        double** Cp = Cocc_AO_->pointer();
-        double** C2p = C_local_->pointer();
-        double** TCp = meta_temp_->pointer();
-
-        for (int mlocal = 0; mlocal < nlocal; mlocal++) {
-            int mglobal = function_map[mlocal];
-            ::memcpy(static_cast<void*>(C2p[mlocal]), static_cast<void*>(Cp[mglobal]), na * sizeof(double));
-        }
-
-        // => Build KE density A(N^2) <= //
-        double** phixp = basis_values_["PHI_X"]->pointer();
-        double** phiyp = basis_values_["PHI_Y"]->pointer();
-        double** phizp = basis_values_["PHI_Z"]->pointer();
-        double* tauap = point_values_["TAU_A"]->pointer();
-
-        // \nabla x
-        C_DGEMM('N','N',npoints,na,nlocal,1.0,phixp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] = 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
-
-        // \nabla y
-        C_DGEMM('N','N',npoints,na,nlocal,1.0,phiyp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
-
-        // \nabla z
-        C_DGEMM('N','N',npoints,na,nlocal,1.0,phizp[0],nglobal,C2p[0],na,0.0,TCp[0],na);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
-        **/
     }
 }
 void RKSFunctions::print(FILE* out, int print) const
@@ -413,8 +375,6 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
-        
-        // => build KE density <= //
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
         double** phizp = basis_values_["PHI_Z"]->pointer();
@@ -453,69 +413,6 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
                 }
             }
         }
-
-        /**
-        // => Build local C matrix <= //
-        int na = Caocc_AO_->colspi()[0];
-        int nb = Cbocc_AO_->colspi()[0];
-        int nc = (na > nb ? na : nb);
-        double** Cap = Caocc_AO_->pointer();
-        double** Cbp = Cbocc_AO_->pointer();
-        double** Ca2p = Ca_local_->pointer();
-        double** Cb2p = Cb_local_->pointer();
-        double** TCp  = meta_temp_->pointer();
-
-        for (int mlocal = 0; mlocal < nlocal; mlocal++) {
-            int mglobal = function_map[mlocal];
-            ::memcpy(static_cast<void*>(Ca2p[mlocal]), static_cast<void*>(Cap[mglobal]), na * sizeof(double));
-            ::memcpy(static_cast<void*>(Cb2p[mlocal]), static_cast<void*>(Cbp[mglobal]), nb * sizeof(double));
-        }
-
-        // => build ke density a(n^2) <= //
-        double** phixp = basis_values_["PHI_X"]->pointer();
-        double** phiyp = basis_values_["PHI_Y"]->pointer();
-        double** phizp = basis_values_["PHI_Z"]->pointer();
-        double* tauap = point_values_["TAU_A"]->pointer();
-        double* taubp = point_values_["TAU_B"]->pointer();
-
-        // Alpha
-        // \nabla x
-        C_DGEMM('N','N',npoints,na,nlocal,1.0,phixp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] = 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
-
-        // \nabla y
-        C_DGEMM('N','N',npoints,na,nlocal,1.0,phiyp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
-
-        // \nabla z
-        C_DGEMM('N','N',npoints,na,nlocal,1.0,phizp[0],nglobal,Ca2p[0],na,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += 0.5 * C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
-
-        // Beta
-        // \nabla x
-        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phixp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            taubp[P] = 0.5 * C_DDOT(nb,TCp[P],1,TCp[P],1);
-        }
-
-        // \nabla y
-        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phiyp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            taubp[P] += 0.5 * C_DDOT(nb,TCp[P],1,TCp[P],1);
-        }
-
-        // \nabla z
-        C_DGEMM('N','N',npoints,nb,nlocal,1.0,phizp[0],nglobal,Cb2p[0],nb,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            taubp[P] += 0.5 * C_DDOT(nb,TCp[P],1,TCp[P],1);
-        }
-        **/
     }
 }
 void UKSFunctions::print(FILE* out, int print) const

@@ -513,26 +513,19 @@ void RV::compute_V()
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
             double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
             
-            // \nabla x
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phix[P], 1, Tp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
+            double** phi[3];
+            phi[0] = phix;
+            phi[1] = phiy;
+            phi[2] = phiz;
 
-            // \nabla y
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiy[P], 1, Tp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
-
-            // \nabla z
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiz[P], 1, Tp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
+            for (int i = 0; i < 3; i++) {
+                double** phiw = phi[i];
+                for (int P = 0; P < npoints; P++) {
+                    ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
+                    C_DAXPY(nlocal,v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1); 
+                }        
+                C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
+            }            
             timer_off("Meta");
         }       
  
@@ -955,50 +948,33 @@ void UV::compute_V()
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
             double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
             double *restrict v_tau_b = vals["V_TAU_B"]->pointer(); 
+
+            double** phi[3];
+            phi[0] = phix;
+            phi[1] = phiy;
+            phi[2] = phiz;
+
+            double* v_tau[3];
+            v_tau[0] = v_tau_a;
+            v_tau[1] = v_tau_b;
+
+            double** V_val[3];
+            V_val[0] = Va2p; 
+            V_val[1] = Vb2p;
            
-            // Alpha 
-            // \nabla x
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phix[P], 1, Tap[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
+            for (int s = 0; s < 2; s++) {
+                double** V2p = V_val[s];
+                double*  v_taup = v_tau[s];
+                for (int i = 0; i < 3; i++) {
+                    double** phiw = phi[i];
+                    for (int P = 0; P < npoints; P++) {
+                        ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
+                        C_DAXPY(nlocal,v_taup[P] * w[P], phiw[P], 1, Tap[P], 1); 
+                    }        
+                    C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tap[0],max_functions,1.0,V2p[0],max_functions);
+                }            
+            }
 
-            // \nabla y
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiy[P], 1, Tap[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
-
-            // \nabla z
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiz[P], 1, Tap[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
-           
-            // Beta 
-            // \nabla x
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_b[P] * w[P], phix[P], 1, Tbp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
-
-            // \nabla y
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_b[P] * w[P], phiy[P], 1, Tbp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
-
-            // \nabla z
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_b[P] * w[P], phiz[P], 1, Tbp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
             timer_off("Meta");
         }       
  
