@@ -1579,6 +1579,9 @@ void MolecularGrid::print(FILE* out, int print) const
     fprintf(out,"    Spherical Points = %14d\n", sphere->npoints());
     fprintf(out,"    Radial Points    = %14d\n", radial->npoints()); 
     fprintf(out,"    Total Points     = %14d\n", npoints_);
+    fprintf(out,"    Total Blocks     = %14d\n", blocks_.size());
+    fprintf(out,"    Max Points       = %14d\n", max_points_);
+    fprintf(out,"    Max Functions    = %14d\n", max_functions_);
     fprintf(out,"\n");
 }
 void MolecularGrid::print_full(FILE* out, int print)
