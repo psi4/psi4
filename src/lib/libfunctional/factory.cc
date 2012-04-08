@@ -58,15 +58,6 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->gga_ = true; 
         x->meta_ = true; 
         fun = static_cast<Functional*>(x);
-    } else if (alias == "M2_X") {
-        XFunctional* x = new XFunctional();
-        x->gga_type_  = XFunctional::PBE;
-        x->meta_type_ = XFunctional::Becke;
-        x->sr_type_   = XFunctional::SR_None;
-        x->gga_ = true; 
-        x->meta_ = true; 
-        x->Truhlar_version_ = true;
-        fun = static_cast<Functional*>(x);
     } else if (alias == "wS_X") {
         XFunctional* x = new XFunctional();
         x->gga_type_  = XFunctional::GGA_None;
@@ -108,15 +99,6 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         x->meta_type_ = CFunctional::B95;
         x->gga_ = true; 
         x->meta_ = true; 
-        fun = static_cast<Functional*>(x);
-    } else if (alias == "M2_C") {
-        CFunctional* x = new CFunctional();
-        x->lsda_type_  = CFunctional::PW92;
-        x->gga_type_  = CFunctional::B97;
-        x->meta_type_ = CFunctional::B95;
-        x->gga_ = true; 
-        x->meta_ = true; 
-        x->Truhlar_version_ = true;
         fun = static_cast<Functional*>(x);
     } else if (alias == "LYP_C") {
         fun = new LYP_CFunctional();

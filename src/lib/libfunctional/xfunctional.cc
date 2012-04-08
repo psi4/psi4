@@ -40,8 +40,6 @@ void XFunctional::common_init()
     _PW91_a6_ = 0.004 / (16.0 * _k0_ * _k0_ * _k0_ * _k0_);
 
     _B97_gamma_ = 0.004;
-
-    Truhlar_version_ = false;
 }
 void XFunctional::set_parameter(const std::string& key, double val) 
 {
@@ -410,155 +408,25 @@ void XFunctional::compute_sigma_functional(const std::map<std::string,SharedVect
             }
         }
     
-        //printf("xfun: %11.3E %11.3E %24.16E %24.16E %24.16E\n", rho, 1.0 / (2.0 * _k0_) * s, Fs * Fk, Fk_k * k_rho, Fs_s);
-        
         // => Assembly <= //
-        if (!Truhlar_version_) {
-            v[Q] += A * E * Fs * Fw * Fk; 
-            if (deriv >= 1) {
-                v_rho[Q] += A * (Fs * Fw * Fk * (E_rho) +
-                                 E  * Fw * Fk * (Fs_s * s_rho) +
-                                 E  * Fs * Fk * (Fw_w * w_rho) + 
-                                 E  * Fs * Fw * (Fk_k * k_rho));
-                if (gga_) {
-                    v_gamma[Q] += A * (E  * Fw * Fk * (Fs_s * s_gamma) +
-                                       E  * Fs * Fk * (Fw_w * w_gamma) + 
-                                       E  * Fs * Fw * (Fk_k * k_gamma));
-                }
-                if (meta_) {
-                    v_tau[Q] += A * (E  * Fw * Fk * (Fs_s * s_tau) +
-                                     E  * Fs * Fk * (Fw_w * w_tau) + 
-                                     E  * Fs * Fw * (Fk_k * k_tau));
-                }
+        v[Q] += A * E * Fs * Fw * Fk; 
+        if (deriv >= 1) {
+            v_rho[Q] += A * (Fs * Fw * Fk * (E_rho) +
+                             E  * Fw * Fk * (Fs_s * s_rho) +
+                             E  * Fs * Fk * (Fw_w * w_rho) + 
+                             E  * Fs * Fw * (Fk_k * k_rho));
+            if (gga_) {
+                v_gamma[Q] += A * (E  * Fw * Fk * (Fs_s * s_gamma) +
+                                   E  * Fs * Fk * (Fw_w * w_gamma) + 
+                                   E  * Fs * Fw * (Fk_k * k_gamma));
             }
-        } else {
-            double M05;
-            double M05_rho;
-            double M05_gamma;
-            double M05_tau;
-            M05x(rho,gamma,tau,&M05,&M05_rho,&M05_gamma,&M05_tau);
-            v[Q] += M05;
-            v_rho[Q] += M05_rho;
-            v_gamma[Q] += M05_gamma;
-            v_tau[Q] += M05_tau;
+            if (meta_) {
+                v_tau[Q] += A * (E  * Fw * Fk * (Fs_s * s_tau) +
+                                 E  * Fs * Fk * (Fw_w * w_tau) + 
+                                 E  * Fs * Fw * (Fk_k * k_tau));
+            }
         }
     }
-}
-void XFunctional::M05x(double rho, double gamma, double tau, double* F, double * F_rho, double* F_gamma, double* F_tau)
-{
-    double pi;    
-
-    double  at1, at2, at3, at4, at5, at6, at7, at8, at9;
-    double  at, at10, at11, C1, C2, fL, fNL, at0;
-    double  rrho, rho43, rho13, rhoo, rho53;
-    double  Gamma2, Gamma;
-    double  TauUEG, Tsig, Wsig, W1, W2, W3, W4, W5, W6;
-    double  W7, W8, W9, W10, W11, Fsig;
-    double  tauu,DTol;
-    double  F83, F23, F53, F1o3;
-    double  F1o4, F2o3, F3o2, F4o3, F4o9, F3o5;
-    double  One, Two, Three, Four, Five, Six, Seven, Eight;
-    double  Nine, F10, F11;
-    double  Ax,  x, x2, En, Ed, E, dE, dEn, dEd;
-    double  dFdW, dWdT, dTdR, dTdTau, dGGAdR, dFdR;
-    double  dFdTau, dGGAdG;
-    double  fac;
-    double tauN;
-
-    pi = M_PI;
-    F1o3 = 1.0/3.0;
-    F1o4 = 1.0/4.0;
-    F2o3 = 2.0/3.0;
-    F3o2 = 3.0/2.0;
-    F4o3 = 4.0/3.0;
-    F4o9 = 4.0/9.0;
-    F3o5 = 3.0/5.0;
-    F83 = 8.0/3.0;
-    F53 = 5.0/3.0;
-    F23 = 2.0/3.0;
-    One = 1.0;
-    Two = 2.0;
-    Three = 3.0;
-    Four = 4.0;
-    Five = 5.0;
-    Six = 6.0;
-    Seven = 7.0;
-    Eight = 8.0;
-    Nine = 9.0;
-    F10 = 10.0;
-    F11 = 11.0;
-
-    DTol=1.0E-8;
-    
-    fac = 0.72E0;
-    at0=    1.0E0*fac;
-    at1=    0.08151E0*fac;
-    at2=    -0.43956E0*fac;
-    at3=    -3.22422E0*fac;
-    at4=    2.01819E0*fac;
-    at5=    8.79431E0*fac;
-    at6=    -0.00295E0*fac;
-    at7=    9.82029E0*fac;
-    at8=    -4.82351E0*fac;
-    at9=    -48.17574E0*fac;
-    at10=   3.64802E0*fac;
-    at11=   34.02248E0*fac;
-
-    C1     = 3.36116E-03;
-    C2     = 4.49267E-03;
-    
-    Ax = -F3o2*pow(F4o3*M_PI,-F1o3);
-
-    if (rho < DTol || tau < DTol) {
-        *F = 0.0;
-        *F_rho = 0.0;
-        *F_tau = 0.0;
-        *F_gamma = 0.0;
-        return;
-    }
-
-    rhoo = rho; 
-    rho43 = pow(rhoo,F4o3);
-    rrho = 1.0E0/rhoo;       
-    rho13 = rho43*rrho;
-    rho53 = pow(rhoo,F53);
-
-    tauN = tau;
-    tauu = tauN;
-    TauUEG=F3o5*(pow(Six*pi*pi,F2o3))*rho53;
-    Tsig =TauUEG/tauN;
-    Wsig =(Tsig-One)/(Tsig+One);
-    Fsig=(at0 + Wsig*(at1 + Wsig*(at2 + Wsig*(at3 + Wsig*(
-          at4 + Wsig*(at5 + Wsig*(at6 + Wsig*(at7 + Wsig*(
-          at8 + Wsig*(at9 + Wsig*(at10+Wsig*at11)))))))))));
-
-    Gamma2 = gamma; 
-    Gamma = sqrt(Gamma2);
-    x = Gamma/rho43;
-    x2 = x*x;
-    En = C1*x2;
-    Ed = One + C2*x2;
-    E  = -En/Ed;
-    *F=(Ax+E)*Fsig*rho43;
-
-    dEn   = Two*C1*x;
-    dEd   = Two*C2*x;
-    dE    = -(dEn*Ed-En*dEd)/(Ed*Ed);
-    dFdW=( at1 + Wsig*(Two  *at2 + Wsig*(Three*at3 + Wsig*(
-              Four *at4 + Wsig*(Five *at5 + Wsig*(Six  *at6 + Wsig*(
-              Seven*at7 + Wsig*(Eight*at8 + Wsig*(Nine *at9 + Wsig*(
-              F10  *at10+ Wsig*F11*at11))))))))));
-    dWdT = Two/(pow(One + Tsig,2.0));
-    dTdR = pow(Six*M_PI*M_PI,F2o3)*pow(rhoo,F2o3)/tauu;
-    dTdTau = -TauUEG/(tauu*tauu);
-    dGGAdR = F4o3*rho13*(Ax+(E-x*dE));
-    dFdR = dFdW*dWdT*dTdR;
-    dFdTau=dFdW*dWdT*dTdTau;
-    dGGAdG =(dE/(Two*Gamma));
-
-    *F_rho = dGGAdR*Fsig + (Ax+E)*rho43*dFdR;
-    *F_gamma = dGGAdG*Fsig; 
-    *F_tau = rho43*(Ax+E)*dFdTau;
 }
 
 }
