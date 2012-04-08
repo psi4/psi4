@@ -583,8 +583,6 @@ functionals = {
         'ft97_c'      : build_primitive_functional,
         'b_c'         : build_primitive_functional,
         'm_c'         : build_primitive_functional,
-        'm2_x'        : build_primitive_functional,
-        'm2_c'        : build_primitive_functional,
     }
 
 def build_functional(alias):
@@ -1776,80 +1774,6 @@ def build_wb97x_superfunctional(name, npoints, deriv):
     sup.allocate()
     return sup 
 
-def build_m052_superfunctional(name, npoints, deriv):
-
-    # Call this first
-    sup = PsiMod.SuperFunctional.blank()
-    sup.set_max_points(npoints)
-    sup.set_deriv(deriv)
-
-    # => User-Customization <= #
-
-    # No spaces, keep it short and according to convention
-    sup.set_name('M052')
-    # Tab in, trailing newlines 
-    sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n') 
-    # Tab in, trailing newlines 
-    sup.set_citation('    Zhao et. al., J. Chem. Phys., 123, 161103, 2005\n') 
-
-    # Add member functionals
-    X = build_functional('M2_X')
-    X.set_name('M052_X')
-    X.set_alpha(1.0)
-
-    # LSDA Exchange type is Slater, no parameters
-
-    # GGA Exchange type is PBE, no parameters
-
-    # Meta Exchange type is insane mess of w power series expansion 
-    X.set_parameter('Meta_a0' , 1.0)
-    X.set_parameter('Meta_a1' , 0.08151)
-    X.set_parameter('Meta_a2' ,-0.43956)  
-    X.set_parameter('Meta_a3' ,-3.22422)
-    X.set_parameter('Meta_a4' , 2.01819)
-    X.set_parameter('Meta_a5' , 8.79431) 
-    X.set_parameter('Meta_a6' ,-0.00295) # Loss of sig-figs asshole! 
-    X.set_parameter('Meta_a7' , 9.82029) 
-    X.set_parameter('Meta_a8' ,-4.82351)  
-    X.set_parameter('Meta_a9' ,-48.17574) # This doesn't mean anything! 
-    X.set_parameter('Meta_a10', 3.64802)
-    X.set_parameter('Meta_a11', 34.02248)
-
-    C = build_functional('M2_C')
-    C.set_name('M052_C')
-
-    # LSDA Correlation type is PW92, no parameters
-
-    # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031)
-    C.set_parameter('B97_os_a0', 1.0)
-    C.set_parameter('B97_os_a1', 3.78569)
-    C.set_parameter('B97_os_a2',-14.15261)
-    C.set_parameter('B97_os_a3',-7.46589)
-    C.set_parameter('B97_os_a4', 17.94491)
-
-    C.set_parameter('B97_ss_gamma', 0.06)
-    C.set_parameter('B97_ss_a0', 1.0)
-    C.set_parameter('B97_ss_a1', 3.77344)
-    C.set_parameter('B97_ss_a2',-26.04463)
-    C.set_parameter('B97_ss_a3', 30.69913)
-    C.set_parameter('B97_ss_a4',-9.22695)  
-
-    sup.add_x_functional(X)
-    sup.add_c_functional(C)
-
-    # Set GKS up after adding functionals
-    sup.set_x_omega(0.0)
-    sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.28)
-    sup.set_c_alpha(0.0)
-
-    # => End User-Customization <= #
-
-    # Call this last
-    sup.allocate()
-    return sup 
-
 def build_m05_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -1873,8 +1797,16 @@ def build_m05_superfunctional(name, npoints, deriv):
 
     # LSDA Exchange type is Slater, no parameters
 
-    # GGA Exchange type is PBE, no parameters
-
+    # GGA Exchange type is PBE, special parameters because Truhlar is lazy
+    C1 = 3.36116E-3; # Should be reported/implemented to more digits
+    C2 = 4.49267E-3; # Should be reported/implemented to more digits
+    K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
+    k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
+    kp = C1 / (C2 * K0); 
+    mu = 4.0 * k0 * k0 * kp * C2;
+    X.set_parameter('PBE_kp', kp); # Different effective kp   
+    X.set_parameter('PBE_mu', mu); # Different effective mu  
+ 
     # Meta Exchange type is insane mess of w power series expansion 
     X.set_parameter('Meta_a0' , 1.0)
     X.set_parameter('Meta_a1' , 0.08151)
@@ -1882,10 +1814,10 @@ def build_m05_superfunctional(name, npoints, deriv):
     X.set_parameter('Meta_a3' ,-3.22422)
     X.set_parameter('Meta_a4' , 2.01819)
     X.set_parameter('Meta_a5' , 8.79431) 
-    X.set_parameter('Meta_a6' ,-0.00295) # Loss of sig-figs asshole! 
+    X.set_parameter('Meta_a6' ,-0.00295) 
     X.set_parameter('Meta_a7' , 9.82029) 
     X.set_parameter('Meta_a8' ,-4.82351)  
-    X.set_parameter('Meta_a9' ,-48.17574) # This doesn't mean anything! 
+    X.set_parameter('Meta_a9' ,-48.17574) 
     X.set_parameter('Meta_a10', 3.64802)
     X.set_parameter('Meta_a11', 34.02248)
 
@@ -1895,7 +1827,7 @@ def build_m05_superfunctional(name, npoints, deriv):
     # LSDA Correlation type is PW92, no parameters
 
     # GGA Correlation type is B97
-    C.set_parameter('B97_os_gamma', 0.0031 * 2.0) # Truhlar is an idiot. \chi_ab = 1/2 \chi_a + 1/2 \chi_b. As it has been for two decades. 
+    C.set_parameter('B97_os_gamma', 0.0031 * 2.0) # This makes me mad. Truhlar is too lazy to report the B97 gradient expansion formula, but then does not use the canonical definition.
     C.set_parameter('B97_os_a0', 1.0)
     C.set_parameter('B97_os_a1', 3.78569)
     C.set_parameter('B97_os_a2',-14.15261)
@@ -1909,13 +1841,16 @@ def build_m05_superfunctional(name, npoints, deriv):
     C.set_parameter('B97_ss_a3', 30.69913)
     C.set_parameter('B97_ss_a4',-9.22695)  
 
+    # Meta Correlation type is Becke metric, no parameters
+
+    # Add the functionals in
     sup.add_x_functional(X)
     sup.add_c_functional(C)
 
     # Set GKS up after adding functionals
     sup.set_x_omega(0.0)
     sup.set_c_omega(0.0)
-    sup.set_x_alpha(0.28)
+    sup.set_x_alpha(0.28) # Hartree-Fock exact exchange
     sup.set_c_alpha(0.0)
 
     # => End User-Customization <= #
@@ -2017,7 +1952,6 @@ superfunctionals = {
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,
         'm05'       : build_m05_superfunctional,
-        'm052'      : build_m052_superfunctional,
     }
 
 def build_superfunctional(alias, npoints, deriv):

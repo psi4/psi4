@@ -954,11 +954,11 @@ void UV::compute_V()
             phi[1] = phiy;
             phi[2] = phiz;
 
-            double* v_tau[3];
+            double* v_tau[2];
             v_tau[0] = v_tau_a;
             v_tau[1] = v_tau_b;
 
-            double** V_val[3];
+            double** V_val[2];
             V_val[0] = Va2p; 
             V_val[1] = Vb2p;
            

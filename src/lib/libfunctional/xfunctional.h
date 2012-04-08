@@ -63,9 +63,6 @@ protected:
     
     std::vector<double> _Meta_a_;
 
-    bool Truhlar_version_;
-    void M05x(double,double,double,double*,double*,double*,double*);
-
     // > SR < //
 
     // Set defaults up internally 
