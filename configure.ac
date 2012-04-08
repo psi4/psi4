@@ -932,6 +932,7 @@ AC_CONFIG_FILES([
           doc/progman/Makefile doc/userman/Makefile
           doc/sphinxman/Makefile
           doc/sphinxman/source/conf.py
+          doc/sphinxman/apply_relpath.py
           doc/userman/prsty.bst
           doc/doxygen/Makefile
           doc/doxygen/doxygen.cfg
