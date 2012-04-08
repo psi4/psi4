@@ -49,6 +49,8 @@ void CFunctional::common_init()
  
     _B97_ss_gamma_ = 0.0380;
     _B97_os_gamma_ = 0.0031;
+
+    Truhlar_version_ = false;
 }
 void CFunctional::set_parameter(const std::string& key, double val) 
 {
@@ -78,8 +80,10 @@ void CFunctional::set_parameter(const std::string& key, double val)
 }
 void CFunctional::compute_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha)
 {
-    compute_ss_functional(in,out,npoints,deriv,alpha,true);
-    compute_ss_functional(in,out,npoints,deriv,alpha,false);
+    if (!Truhlar_version_) {
+        compute_ss_functional(in,out,npoints,deriv,alpha,true);
+        compute_ss_functional(in,out,npoints,deriv,alpha,false);
+    }
     compute_os_functional(in,out,npoints,deriv,alpha);
 }
 void CFunctional::compute_ss_functional(const std::map<std::string,SharedVector>& in, const std::map<std::string,SharedVector>& out, int npoints, int deriv, double alpha, bool spin)
@@ -240,12 +244,18 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
     double* rho_bp = NULL;
     double* gamma_aap = NULL;
     double* gamma_bbp = NULL;
+    double* tau_ap = NULL;
+    double* tau_bp = NULL;
 
     rho_ap = in.find("RHO_A")->second->pointer();
     rho_bp = in.find("RHO_B")->second->pointer();
     if (gga_) {
         gamma_aap = in.find("GAMMA_AA")->second->pointer();
         gamma_bbp = in.find("GAMMA_BB")->second->pointer();
+    }
+    if (meta_) {
+        tau_ap = in.find("TAU_A")->second->pointer();
+        tau_bp = in.find("TAU_B")->second->pointer();
     }
 
     // => Output variables <= //
@@ -255,6 +265,8 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
     double* v_rho_b = NULL;
     double* v_gamma_aa = NULL;
     double* v_gamma_bb = NULL;
+    double* v_tau_a = NULL;
+    double* v_tau_b = NULL;
     
     v = out.find("V")->second->pointer();
     if (deriv >= 1) {
@@ -263,6 +275,10 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
         if (gga_) {
             v_gamma_aa = out.find("V_GAMMA_AA")->second->pointer();
             v_gamma_bb = out.find("V_GAMMA_BB")->second->pointer();
+        }
+        if (meta_) {
+            v_tau_a = out.find("V_TAU_A")->second->pointer();
+            v_tau_b = out.find("V_TAU_B")->second->pointer();
         }
     }
      
@@ -274,6 +290,8 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
         double rho_b;
         double gamma_aa;
         double gamma_bb;
+        double tau_a;
+        double tau_b;
 
         rho_a = rho_ap[Q];
         rho_b = rho_bp[Q];
@@ -283,6 +301,10 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
         if (gga_) {
             gamma_aa = gamma_aap[Q];
             gamma_bb = gamma_bbp[Q];
+        }
+        if (meta_) {
+            tau_a = tau_ap[Q];
+            tau_b = tau_bp[Q];
         }
 
         // => Powers of rho <= //
@@ -377,16 +399,36 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
         }
 
         // => Assembly <= //
-        v[Q] += A * E * Fs2; 
-        if (deriv >= 1) {
-            v_rho_a[Q] += A * (Fs2 * E_rho_a +
-                               E  * Fs2_s2 * s2_rho_a);
-            v_rho_b[Q] += A * (Fs2 * E_rho_b +
-                               E  * Fs2_s2 * s2_rho_b);
-            if (gga_) {
-                v_gamma_aa[Q] += A * (E  * Fs2_s2 * s2_gamma_aa);
-                v_gamma_bb[Q] += A * (E  * Fs2_s2 * s2_gamma_bb);
+        if(!Truhlar_version_) {
+            v[Q] += A * E * Fs2; 
+            if (deriv >= 1) {
+                v_rho_a[Q] += A * (Fs2 * E_rho_a +
+                                   E  * Fs2_s2 * s2_rho_a);
+                v_rho_b[Q] += A * (Fs2 * E_rho_b +
+                                   E  * Fs2_s2 * s2_rho_b);
+                if (gga_) {
+                    v_gamma_aa[Q] += A * (E  * Fs2_s2 * s2_gamma_aa);
+                    v_gamma_bb[Q] += A * (E  * Fs2_s2 * s2_gamma_bb);
+                }
             }
+        } else {
+            double M;
+            double M_rho_a;
+            double M_rho_b;
+            double M_gamma_a;
+            double M_gamma_b;
+            double M_tau_a;
+            double M_tau_b;
+
+            M05c(rho_a,rho_b,gamma_aa,gamma_bb,tau_a,tau_b, &M, &M_rho_a, &M_rho_b, &M_gamma_a, &M_gamma_b, &M_tau_a, &M_tau_b);
+            
+            v[Q] += M;
+            v_rho_a[Q] += M_rho_a;
+            v_rho_b[Q] += M_rho_b;
+            v_gamma_aa[Q] += M_gamma_a;
+            v_gamma_bb[Q] += M_gamma_b;
+            v_tau_a[Q] += M_tau_a;
+            v_tau_b[Q] += M_tau_b;
         }
     }
 
@@ -496,6 +538,259 @@ void CFunctional::PW92_C(double rho, double z, double* PW92, double* PW92_rho, d
     //  > PW92_z < //
     
     *PW92_z = PW92_f*f_z+E_z*PW92_E;
+}
+void CFunctional::PW92_V(double r, double z, double* PW92, double* PW92_r, double* PW92_z)
+{
+    //  > Ac < //
+    
+    double Ac = _c0a_*log((1.0/2.0)/(_c0a_*(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r)))+1.0)*(_a1a_*r+1.0)*-2.0;
+    
+    //  > EcP < //
+    
+    double EcP = _c0p_*log((1.0/2.0)/(_c0p_*(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r)))+1.0)*(_a1p_*r+1.0)*-2.0;
+    
+    //  > EcF < //
+    
+    double EcF = _c0f_*log((1.0/2.0)/(_c0f_*(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r)))+1.0)*(_a1f_*r+1.0)*-2.0;
+    
+    //  > f < //
+    
+    double f = (pow(z+1.0,4.0/3.0)+pow(-z+1.0,4.0/3.0)-2.0)/(_two13_*2.0-2.0);
+    
+    //  > E < //
+    
+    double E = (EcP+f*(z*z*z*z)*(EcF-EcP)+(Ac*f*(z*z*z*z-1.0))/_d2fz0_);
+    
+    //  > PW92 < //
+    
+    *PW92 = E;
+    
+    //  > Ac_r < //
+    
+    double Ac_r = _a1a_*_c0a_*log((1.0/2.0)/(_c0a_*(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r)))+1.0)*-2.0+((_a1a_*r+1.0)*(_b2a_+_b4a_*r*2.0+_b1a_*1.0/sqrt(r)*(1.0/2.0)+_b3a_*sqrt(r)*(3.0/2.0))*1.0/pow(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r),2.0))/((1.0/2.0)/(_c0a_*(_b2a_*r+_b1a_*sqrt(r)+_b3a_*pow(r,3.0/2.0)+_b4a_*(r*r)))+1.0);
+    
+    //  > EcP_r < //
+    
+    double EcP_r = _a1p_*_c0p_*log((1.0/2.0)/(_c0p_*(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r)))+1.0)*-2.0+((_a1p_*r+1.0)*(_b2p_+_b4p_*r*2.0+_b1p_*1.0/sqrt(r)*(1.0/2.0)+_b3p_*sqrt(r)*(3.0/2.0))*1.0/pow(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r),2.0))/((1.0/2.0)/(_c0p_*(_b2p_*r+_b1p_*sqrt(r)+_b3p_*pow(r,3.0/2.0)+_b4p_*(r*r)))+1.0);
+    
+    //  > EcF_r < //
+    
+    double EcF_r = _a1f_*_c0f_*log((1.0/2.0)/(_c0f_*(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r)))+1.0)*-2.0+((_a1f_*r+1.0)*(_b2f_+_b4f_*r*2.0+_b1f_*1.0/sqrt(r)*(1.0/2.0)+_b3f_*sqrt(r)*(3.0/2.0))*1.0/pow(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r),2.0))/((1.0/2.0)/(_c0f_*(_b2f_*r+_b1f_*sqrt(r)+_b3f_*pow(r,3.0/2.0)+_b4f_*(r*r)))+1.0);
+    
+    //  > f_z < //
+    
+    double f_z = (pow(z+1.0,1.0/3.0)*(4.0/3.0)-pow(-z+1.0,1.0/3.0)*(4.0/3.0))/(_two13_*2.0-2.0);
+    
+    
+    //  > E_z < //
+    
+    double E_z = (f*(z*z*z)*(EcF-EcP)*4.0+(Ac*f*(z*z*z)*4.0)/_d2fz0_);
+    
+    //  > E_Ac < //
+    
+    double E_Ac = (f*(z*z*z*z-1.0))/_d2fz0_;
+    
+    //  > E_EcP < //
+    
+    double E_EcP = -(f*(z*z*z*z)-1.0);
+    
+    //  > E_EcF < //
+    
+    double E_EcF = f*(z*z*z*z);
+    
+    //  > E_f < //
+    
+    double E_f = ((z*z*z*z)*(EcF-EcP)+(Ac*(z*z*z*z-1.0))/_d2fz0_);
+    
+    //  > PW92_E < //
+    
+    double PW92_E = 1.0;
+    
+    //  > PW92_f < //
+    
+    double PW92_f = E_f*PW92_E;
+    
+    //  > PW92_EcF < //
+    
+    double PW92_EcF = E_EcF*PW92_E;
+    
+    //  > PW92_EcP < //
+    
+    double PW92_EcP = E_EcP*PW92_E;
+    
+    //  > PW92_Ac < //
+    
+    double PW92_Ac = E_Ac*PW92_E;
+    
+    //  > PW92_r < //
+    
+    *PW92_r = Ac_r*PW92_Ac+EcF_r*PW92_EcF+EcP_r*PW92_EcP;
+    
+    //  > PW92_z < //
+    
+    *PW92_z = PW92_f*f_z+E_z*PW92_E;
+}
+
+void CFunctional::M05c(double RA, double RB, double GA, double GB, double TA, double TB, double* F, double* F_rho_a, double* F_rho_b, double* F_gamma_aa, double* F_gamma_bb, double* F_tau_a, double* F_tau_b)
+{
+      double Pi, F6, F43, Pi34, F13, RS,RSP,Zeta,dZdA,dZdB,PotLC,dLdS,dLdZ, P, EUEG,Denom, DenPA, DenPB, DenGA, DenGB;
+      double PA,GAA,TauA,FA,FPA,FGA,FTA,EUA,EUEGA,ChiA,EUPA,ChiAP,ChiAG;
+      double PB,GBB,TauB,FB,FPB,FGB,FTB,EUB,EUEGB,ChiB,EUPB,ChiBP,ChiBG;
+      double sopp0, sopp1,sopp2, sopp3, sopp4, COpp;
+      double U, W, dUdChiA,dUdChiB,dUdPA,dUdPB,dUdGA,dUdGB, dWdU,dWdPA,dWdPB, dWdGA,dWdGB,EUEGPA,EUEGPB;
+      double DTol,F1, F2, F3, F4;
+
+      F1 = 1.0;
+      F2 = 2.0;
+      F3 = 3.0;
+      F4 = 4.0;
+
+      COpp = 0.0031E0;
+      sopp0= 1.00000E0;
+      sopp1= 3.78569E0;
+      sopp2= -14.15261E0;
+      sopp3= -7.46589E0;
+      sopp4= 17.94491E0;
+
+      DTol =  1.0E-8;
+      Pi = F4*atan(F1);
+      F6=6.0E0;
+      F43 = F4 / F3;
+      Pi34 = F3 / (F4*Pi);
+      F13 = F1 / F3;
+
+      *F = 0.0;
+      *F_rho_a = 0.0;
+      *F_gamma_aa = 0.0;
+      *F_tau_a = 0.0;
+      *F_rho_b = 0.0;
+      *F_gamma_bb = 0.0;
+      *F_tau_b = 0.0;
+
+      PA = RA;
+      TauA = TA;
+      GAA = GA; 
+      if (RA > DTol && TA > DTol) {
+            m05css(DTol,PA,GAA,TauA,&FA,&FPA,&FGA,&FTA,&EUA,&ChiA,&EUPA,&ChiAP,&ChiAG);
+            *F += FA;
+            *F_rho_a += FPA;
+            *F_gamma_aa += FGA;
+            *F_tau_a += FTA;
+      }
+      PB = RB;
+      TauB = TB;
+      GBB = GB; 
+      if (RB > DTol && TB > DTol) {
+            m05css(DTol,PB,GBB,TauB,&FB,&FPB,&FGB,&FTB,&EUB,&ChiB,&EUPB,&ChiBP,&ChiBG);
+            *F += FB;
+            *F_rho_b += FPB;
+            *F_gamma_bb += FGB;
+            *F_tau_b += FTB;
+      }
+      if (RA > DTol && RB > DTol) {
+          P = PA + PB;
+          RS = pow(Pi34/P , F13); 
+          RSP = -RS/(F3*P);
+          Zeta = (PA-PB)/P;
+          dZdA = (F1-Zeta)/P;
+          dZdB = (-F1-Zeta)/P;
+          PW92_V(RS,Zeta,&PotLC,&dLdS,&dLdZ);
+          EUEG = P*PotLC - EUA - EUB;
+          U = COpp*(ChiA+ChiB)/(F1 + COpp*(ChiA+ChiB));
+          W = sopp0+U*(sopp1+U*(sopp2+U*(sopp3+U*sopp4)));
+          *F += EUEG*W;
+          dUdChiA =COpp/pow(F1 + COpp*(ChiA+ChiB),2.0);
+          dUdChiB =COpp/pow(F1 + COpp*(ChiA+ChiB),2.0);
+          dUdPA= dUdChiA*ChiAP;
+          dUdPB= dUdChiB*ChiBP;
+          dUdGA= dUdChiA*ChiAG;
+          dUdGB= dUdChiB*ChiBG;
+          dWdU =sopp1+U*(F2*sopp2+U*(F3*sopp3+U*F4*sopp4));
+          dWdPA= dWdU*dUdPA;
+          dWdPB= dWdU*dUdPB;
+          dWdGA= dWdU*dUdGA;
+          dWdGB= dWdU*dUdGB;
+          EUEGPA = PotLC + P*dLdS*RSP + P*dLdZ*dZdA - EUPA;
+          EUEGPB = PotLC + P*dLdS*RSP + P*dLdZ*dZdB - EUPB;
+          *F_rho_a += EUEGPA*W + EUEG*dWdPA; 
+          *F_gamma_aa += EUEG*dWdGA; 
+          *F_rho_b += EUEGPB*W + EUEG*dWdPB;
+          *F_gamma_bb += EUEG*dWdGB;
+      }
+} 
+
+
+void CFunctional::m05css(double DTol,double PX,double GX,double TX,double* F,double* FP,double* FG,double* FT,double* EUEG,double* Chi,double* EUEGP, double* ChiP,double* ChiG)
+{
+      double Pt25, F1, F2, F3, F4, F5, F6, F8, F11;
+      double sss0,sss1, sss2, sss3, sss4, Css;
+      double Pi, Pi34, F13, F23, F43, F53, F83, F113;
+      double RS, FDUEG, D, Fscc, RSP, dFsccP, dFsccG;
+      double E, W, U, dFsccT, dUdChi, dWdU, dWdP, dWdG; 
+      double PotLC,dLdS,dLdZ;
+ 
+      Pt25 = 0.25E0;
+      F1 = 1.0E0;
+      F2 = 2.0E0;
+      F3 = 3.0E0;
+      F4 = 4.0E0;
+      F5 = 5.0E0;
+      F6 = 6.0E0;
+      F8 = 8.0E0;
+      F11 =11.0E0;
+
+      Css = 0.06E0;
+      sss0=  1.00000E0;
+      sss1=  3.77344E0;
+      sss2=  -26.04463E0;
+      sss3=  30.69913E0;
+      sss4=  -9.22695E0;
+      
+      if ((PX <= DTol)) {
+        *EUEG = 0.0;
+        *Chi = 0.0;
+        *EUEGP = 0.0;
+        *ChiP = 0.0;
+        *ChiG = 0.0;
+        *F  = 0.0;
+        *FP = 0.0;
+        *FG = 0.0;
+        *FT = 0.0;
+        return;
+      }      
+        Pi = F4*atan(F1);
+        Pi34 = F3 / (F4*Pi);
+        F13 = F1 / F3;
+        F23 = F2 / F3;
+        F43 = F2 * F23;
+        F53 = F5 / F3;
+        F83 = F8 / F3;
+        F113 = F11 / F3;
+        FDUEG = (F3/F5)*pow(F6*Pi*Pi,F23);
+        RS = pow(Pi34/PX, F13);
+        PW92_V(RS,F1,&PotLC,&dLdS,&dLdZ);
+        *EUEG = PX*PotLC;
+        D = TX - Pt25*GX/PX;
+        *Chi = GX/pow(PX,F83);
+        U = Css* *Chi/(F1 + Css* *Chi);
+        W = sss0+U*(sss1+U*(sss2+U*(sss3+U*sss4)));
+        Fscc=D/TX;
+        E = Fscc*W* *EUEG;
+        *F = E;
+        RSP = -RS/(F3*PX);
+        *ChiG = F1/pow(PX,F83);
+        *ChiP = -F83* *Chi/PX;
+        dFsccP=Pt25*GX/(TX*PX*PX);
+        dFsccG=-Pt25/(TX*PX);
+        dFsccT=Pt25*GX/(PX*TX*TX);
+        dUdChi=Css/pow((F1+Css* *Chi),2.0);
+        dWdU=sss1+U*(F2*sss2+U*(F3*sss3+U*F4*sss4));
+        dWdP=dWdU*dUdChi* *ChiP;
+        dWdG=dWdU*dUdChi* *ChiG;
+        *EUEGP = PotLC + PX*dLdS*RSP;
+        *FP = (dFsccP*W* *EUEG  + Fscc*dWdP* *EUEG + Fscc*W* *EUEGP);
+        *FG = (dFsccG*W* *EUEG + Fscc*dWdG* *EUEG);
+        *FT = (dFsccT*W* *EUEG);
 }
 
 }

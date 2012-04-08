@@ -57,6 +57,11 @@ protected:
     double _b4f_;
 
     void PW92_C(double rho, double z, double* PW92, double* PW92_rho, double* PW92_z);
+
+    bool Truhlar_version_;
+    void m05css(double DTol,double PX,double GX,double TX,double* F,double* FP,double* FG,double* FT,double* EUEG,double* Chi,double* EUEGP, double* ChiP,double* ChiG);
+    void M05c(double RA, double RB, double GA, double GB, double TA, double TB, double* F, double* F_rho_a, double* F_rho_b, double* F_gamma_aa, double* F_gamma_bb, double* F_tau_a, double* F_tau_b);
+    void PW92_V(double rs, double z, double* PW92, double* PW92_rs, double* PW92_z);
     
     // B97
     double _B97_ss_gamma_;
