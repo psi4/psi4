@@ -389,14 +389,13 @@ void RV::print_header() const
 }
 void RV::compute_V()
 {
-    if ((D_AO_.size() != 1) || (V_AO_.size() != 1) || (C_AO_.size() != 1))
-        throw PSIEXCEPTION("V: RKS should have only one D/C/V Matrix"); 
+    if ((D_AO_.size() != 1) || (V_AO_.size() != 1))
+        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix"); 
 
     // Setup the pointers
     SharedMatrix D_AO = D_AO_[0];
-    SharedMatrix C_AO = C_AO_[0];
     SharedMatrix V_AO = V_AO_[0];
-    properties_->set_pointers(D_AO,C_AO);
+    properties_->set_pointers(D_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -566,8 +565,8 @@ SharedMatrix RV::compute_gradient()
     compute_D();
     USO2AO();
 
-    if ((D_AO_.size() != 1) && (C_AO_.size() != 1))
-        throw PSIEXCEPTION("V: RKS should have only one D/C/V Matrix"); 
+    if ((D_AO_.size() != 1))
+        throw PSIEXCEPTION("V: RKS should have only one D Matrix"); 
 
     // Build the target gradient Matrix
     int natom = primary_->molecule()->natom();
@@ -580,8 +579,7 @@ SharedMatrix RV::compute_gradient()
 
     // Setup the pointers
     SharedMatrix D_AO = D_AO_[0];
-    SharedMatrix C_AO = C_AO_[0];
-    properties_->set_pointers(D_AO,C_AO);
+    properties_->set_pointers(D_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -794,17 +792,15 @@ void UV::print_header() const
 }
 void UV::compute_V()
 {
-    if ((D_AO_.size() != 2) || (V_AO_.size() != 2) || (C_AO_.size() != 2))
-        throw PSIEXCEPTION("V: UKS should have two D/C/V Matrices"); 
+    if ((D_AO_.size() != 2) || (V_AO_.size() != 2))
+        throw PSIEXCEPTION("V: UKS should have two D/V Matrices"); 
 
     // Setup the pointers
     SharedMatrix Da_AO = D_AO_[0];
-    SharedMatrix Ca_AO = C_AO_[0];
     SharedMatrix Va_AO = V_AO_[0];
     SharedMatrix Db_AO = D_AO_[1];
-    SharedMatrix Cb_AO = C_AO_[1];
     SharedMatrix Vb_AO = V_AO_[1];
-    properties_->set_pointers(Da_AO,Ca_AO,Db_AO,Cb_AO);
+    properties_->set_pointers(Da_AO,Db_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -1018,8 +1014,8 @@ SharedMatrix UV::compute_gradient()
     compute_D();
     USO2AO();
 
-    if ((D_AO_.size() != 2) && (C_AO_.size() != 2))
-        throw PSIEXCEPTION("V: UKS should have two D/C/V Matrices"); 
+    if ((D_AO_.size() != 2))
+        throw PSIEXCEPTION("V: UKS should have two D Matrices"); 
 
     // Build the target gradient Matrix
     int natom = primary_->molecule()->natom();
@@ -1032,10 +1028,8 @@ SharedMatrix UV::compute_gradient()
 
     // Setup the pointers
     SharedMatrix Da_AO = D_AO_[0];
-    SharedMatrix Ca_AO = C_AO_[0];
     SharedMatrix Db_AO = D_AO_[1];
-    SharedMatrix Cb_AO = C_AO_[1];
-    properties_->set_pointers(Da_AO,Ca_AO, Db_AO, Cb_AO);
+    properties_->set_pointers(Da_AO, Db_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
