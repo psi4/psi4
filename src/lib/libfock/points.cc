@@ -27,22 +27,10 @@ std::vector<SharedMatrix> RKSFunctions::D_scratch()
     vec.push_back(D_local_);
     return vec;
 }
-std::vector<SharedMatrix> RKSFunctions::C_scratch()
-{
-    std::vector<SharedMatrix> vec;
-    vec.push_back(C_local_);
-    return vec;
-}
 void RKSFunctions::build_temps()
 {
     temp_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
     D_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
-
-    if (ansatz_ >= 2) {
-        int nocc = Cocc_AO_->colspi()[0];
-        C_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,nocc));
-        meta_temp_ = SharedMatrix(new Matrix("Meta Temp", max_points_,nocc));
-    }
 }
 void RKSFunctions::allocate()
 {
@@ -72,14 +60,12 @@ void RKSFunctions::allocate()
         point_values_["TAU_B"] = point_values_["TAU_A"];
     }
 }
-void RKSFunctions::set_pointers(SharedMatrix D_AO, SharedMatrix Cocc_AO)
+void RKSFunctions::set_pointers(SharedMatrix D_AO)
 {
     D_AO_ = D_AO;
-    Cocc_AO_ = Cocc_AO;
     build_temps();
 }
-void RKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
-                                SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
+void RKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
 {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
@@ -219,28 +205,12 @@ std::vector<SharedMatrix> UKSFunctions::D_scratch()
     vec.push_back(Db_local_);
     return vec;
 }
-std::vector<SharedMatrix> UKSFunctions::C_scratch()
-{
-    std::vector<SharedMatrix> vec;
-    vec.push_back(Ca_local_);
-    vec.push_back(Cb_local_);
-    return vec;
-}
 void UKSFunctions::build_temps()
 {
     tempa_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
     Da_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
     tempb_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
     Db_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
-
-    if (ansatz_ >= 2) {
-        int nocca = Caocc_AO_->colspi()[0];
-        int noccb = Cbocc_AO_->colspi()[0];
-        int nocc  = (nocca > noccb ? nocca : noccb);
-        Ca_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,nocca));
-        Cb_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,noccb));
-        meta_temp_ = SharedMatrix(new Matrix("Meta Temp", max_points_,nocc));
-    }
 }
 void UKSFunctions::allocate()
 {
@@ -270,17 +240,14 @@ void UKSFunctions::allocate()
         point_values_["TAU_B"] = boost::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
     }
 }
-void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO)
+void UKSFunctions::set_pointers(SharedMatrix Da_AO)
 {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
-void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
-                                SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
+void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
 {
     Da_AO_ = Da_AO;
-    Caocc_AO_ = Caocc_AO;
     Db_AO_ = Db_AO;
-    Cbocc_AO_ = Cbocc_AO;
     build_temps();
 }
 void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
