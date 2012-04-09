@@ -78,6 +78,11 @@ class CoupledCluster{
     bool t2_on_disk;
 
     /**
+      * Flag for low-memory triples
+      */
+    bool isLowMemory;
+
+    /**
       * Define CCSD Tasks.  most diagrams are designated as
       * independent tasks.  some will be tiled out as 
       * separate tasks either so we can do them with limited
