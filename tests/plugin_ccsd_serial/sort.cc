@@ -11,7 +11,7 @@ using namespace psi;
 
 namespace psi{
 
-void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal){
+void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options){
   struct iwlbuf Buf; 
   // initialize buffer
   iwl_buf_init(&Buf,PSIF_MO_TEI,0.0,1,1);
@@ -19,14 +19,14 @@ void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool isloc
   fprintf(outfile,"\n        Begin CC integral sort\n\n");
 
   //sort
-  Sort(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,islocal);
+  Sort(&Buf,nfzc,nfzv,norbs,ndoccact,nvirt,islocal,options);
 
   iwl_buf_close(&Buf,1);
 }
 /**
   * out-of-core integral sort.  requires 2o^2v^2 doubles +o^2v^2 ULIs storage
   */
-void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal){
+void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options){
 
   double val;
   ULI o = ndoccact;
@@ -545,7 +545,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
   lastbin = o*v*v*v - (nbins-1)*binsize;
   psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
   psio->open(PSIF_ABCI2,PSIO_OPEN_OLD);
-  if (islocal){
+  if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
      psio->open(PSIF_ABCI4,PSIO_OPEN_NEW);
   }
 
@@ -557,7 +557,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
       psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
       psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
       // this is for the local triples
-      if (islocal){
+      if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
          psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],binsize*sizeof(double),abci4_addr,&abci4_addr);
       }
       F_DAXPY(binsize,-2.0,tmp,1,tmp2,1);
@@ -565,14 +565,14 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
   }
   psio->read(PSIF_ABCI3,"E2abci3",(char*)&tmp[0],lastbin*sizeof(double),abci3_addr,&abci3_addr);
   psio->read(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci5_addr,&abci5_addr);
-  if (islocal){
+  if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
      psio->write(PSIF_ABCI4,"E2abci4",(char*)&tmp2[0],lastbin*sizeof(double),abci4_addr,&abci4_addr);
   }
   F_DAXPY(lastbin,-2.0,tmp,1,tmp2,1);
   psio->write(PSIF_ABCI2,"E2abci2",(char*)&tmp2[0],lastbin*sizeof(double),abci2_addr,&abci2_addr);
   psio->close(PSIF_ABCI2,1);
   psio->close(PSIF_ABCI3,1);
-  if (islocal){
+  if (islocal || options.get_bool("TRIPLES_LOW_MEMORY")){
      psio->close(PSIF_ABCI4,1);
   }
 

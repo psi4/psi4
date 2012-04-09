@@ -9,6 +9,7 @@ using namespace boost;
 
 namespace psi{
   PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
+  PsiReturnType lowmemory_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
 }
@@ -59,10 +60,16 @@ void RunCoupledCluster(Options &options,boost::shared_ptr<psi::Wavefunction>wfn)
 
      tstart();
      // triples
-     if (ccsd->wfn_->isCIM())
+     if (ccsd->wfn_->isCIM()){
         status = psi::local_triples(ccsd,options);
-     else
-        status = psi::triples(ccsd,options);
+     }
+     else{
+        if (ccsd->isLowMemory){
+           status = psi::lowmemory_triples(ccsd,options);
+        }else{
+           status = psi::triples(ccsd,options);
+        }
+     }
      if (status == Failure){
         throw PsiException( 
            "Whoops, the (T) correction died.",__FILE__,__LINE__);

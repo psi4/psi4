@@ -193,7 +193,7 @@ double RKS::compute_E()
     }
 
     double dashD_E = 0.0;
-    boost::shared_ptr<Dispersion> disp;
+    boost::shared_ptr<Dispersion> disp = functional_->dispersion();
     if (disp) {
         dashD_E = disp->compute_energy(HF::molecule_);
     }
@@ -205,6 +205,12 @@ double RKS::compute_E()
     Etotal += exchange_E;
     Etotal += XC_E; 
     Etotal += dashD_E;
+
+    energies_["Nuclear"] = nuclearrep_;
+    energies_["One-Electron"] = one_electron_E;
+    energies_["Two-Electron"] = coulomb_E + exchange_E;
+    energies_["XC"] = XC_E;
+    energies_["-D"] = dashD_E;
 
     if (debug_) {
         fprintf(outfile, "   => Energetics <=\n\n");
@@ -389,7 +395,7 @@ double UKS::compute_E()
     }
 
     double dashD_E = 0.0;
-    boost::shared_ptr<Dispersion> disp;
+    boost::shared_ptr<Dispersion> disp = functional_->dispersion();
     if (disp) {
         dashD_E = disp->compute_energy(HF::molecule_);
     }
@@ -401,6 +407,12 @@ double UKS::compute_E()
     Etotal += 0.5 * exchange_E;
     Etotal += XC_E; 
     Etotal += dashD_E;
+
+    energies_["Nuclear"] = nuclearrep_;
+    energies_["One-Electron"] = one_electron_E;
+    energies_["Two-Electron"] = 0.5 * (coulomb_E + exchange_E);
+    energies_["XC"] = XC_E;
+    energies_["-D"] = dashD_E;
 
     if (debug_) {
         fprintf(outfile, "   => Energetics <=\n\n");

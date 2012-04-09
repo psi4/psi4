@@ -733,9 +733,45 @@ SharedMatrix RV::compute_gradient()
         
         // => Meta Contribution <= //
         if (functional_->is_meta()) {
-            throw PSIEXCEPTION("RV: Meta Gradients not implemented");
-        }
+            double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
+            double** phi_xy = properties_->basis_value("PHI_XY")->pointer();
+            double** phi_xz = properties_->basis_value("PHI_XZ")->pointer();
+            double** phi_yy = properties_->basis_value("PHI_YY")->pointer();
+            double** phi_yz = properties_->basis_value("PHI_YZ")->pointer();
+            double** phi_zz = properties_->basis_value("PHI_ZZ")->pointer();
+            double* v_tau_a = vals["V_TAU_A"]->pointer();
 
+            double** phi_i[3];
+            phi_i[0] = phi_x;
+            phi_i[1] = phi_y;
+            phi_i[2] = phi_z;
+
+            double** phi_ij[3][3];
+            phi_ij[0][0] = phi_xx;
+            phi_ij[0][1] = phi_xy;
+            phi_ij[0][2] = phi_xz;
+            phi_ij[1][0] = phi_xy;
+            phi_ij[1][1] = phi_yy;
+            phi_ij[1][2] = phi_yz;
+            phi_ij[2][0] = phi_xz;
+            phi_ij[2][1] = phi_yz;
+            phi_ij[2][2] = phi_xz;
+
+            for (int i = 0; i < 3; i++) {
+                double*** phi_j = phi_ij[i];
+                C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_i[i][0],max_functions,Dp[0],max_functions,0.0,Up[0],max_functions);
+                for (int P = 0; P < npoints; P++) {
+                    ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
+                    C_DAXPY(nlocal, -2.0 * w[P] * (v_tau_a[P]), Up[P], 1, Tp[P], 1);
+                }
+                for (int ml = 0; ml < nlocal; ml++) {
+                    int A = primary_->function_to_center(function_map[ml]);
+                    Gp[A][0] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[0][0][ml],max_functions);
+                    Gp[A][1] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[1][0][ml],max_functions);
+                    Gp[A][2] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[2][0][ml],max_functions);
+                }          
+            }
+        }
     } 
    
     quad_values_["FUNCTIONAL"] = functionalq;
@@ -1229,7 +1265,57 @@ SharedMatrix UV::compute_gradient()
         
         // => Meta Contribution <= //
         if (functional_->is_meta()) {
-            throw PSIEXCEPTION("RV: Meta Gradients not implemented");
+            double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
+            double** phi_xy = properties_->basis_value("PHI_XY")->pointer();
+            double** phi_xz = properties_->basis_value("PHI_XZ")->pointer();
+            double** phi_yy = properties_->basis_value("PHI_YY")->pointer();
+            double** phi_yz = properties_->basis_value("PHI_YZ")->pointer();
+            double** phi_zz = properties_->basis_value("PHI_ZZ")->pointer();
+            double* v_tau_a = vals["V_TAU_A"]->pointer();
+            double* v_tau_b = vals["V_TAU_B"]->pointer();
+
+            double** phi_i[3];
+            phi_i[0] = phi_x;
+            phi_i[1] = phi_y;
+            phi_i[2] = phi_z;
+
+            double** phi_ij[3][3];
+            phi_ij[0][0] = phi_xx;
+            phi_ij[0][1] = phi_xy;
+            phi_ij[0][2] = phi_xz;
+            phi_ij[1][0] = phi_xy;
+            phi_ij[1][1] = phi_yy;
+            phi_ij[1][2] = phi_yz;
+            phi_ij[2][0] = phi_xz;
+            phi_ij[2][1] = phi_yz;
+            phi_ij[2][2] = phi_xz;
+
+            double** Ds[2];
+            Ds[0] = Dap;
+            Ds[1] = Dap;
+
+            double* v_tau_s[2];
+            v_tau_s[0] = v_tau_a;
+            v_tau_s[1] = v_tau_b;
+
+            for (int s = 0; s < 2; s++) {
+                double** Dp = Ds[s]; 
+                double* v_tau = v_tau_s[s];
+                for (int i = 0; i < 3; i++) {
+                    double*** phi_j = phi_ij[i];
+                    C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_i[i][0],max_functions,Dap[0],max_functions,0.0,Uap[0],max_functions);
+                    for (int P = 0; P < npoints; P++) {
+                        ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
+                        C_DAXPY(nlocal, -2.0 * w[P] * (v_tau[P]), Uap[P], 1, Tap[P], 1);
+                    }
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        int A = primary_->function_to_center(function_map[ml]);
+                        Gp[A][0] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[0][0][ml],max_functions);
+                        Gp[A][1] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[1][0][ml],max_functions);
+                        Gp[A][2] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[2][0][ml],max_functions);
+                    }          
+                }
+            }
         }
 
     } 
