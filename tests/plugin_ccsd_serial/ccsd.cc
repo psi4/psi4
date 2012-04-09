@@ -26,7 +26,7 @@ using namespace psi;
 using namespace boost;
 
 namespace psi{
-  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal);
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options);
 };
 
 // position in a symmetric packed matrix
@@ -110,6 +110,35 @@ void CoupledCluster::Initialize(Options &options){
      memory  = options.get_int("MEMORY");
      memory *= (long int)1024*1024;
   }
+  // check if the triples need to be lowmemory
+  isLowMemory = false;
+
+  nthreads = 1;
+  #ifdef _OPENMP
+      nthreads = omp_get_max_threads();
+  #endif
+  if (options["NUM_THREADS"].has_changed())
+     nthreads = options.get_int("NUM_THREADS");
+
+  long int o=ndoccact;
+  long int v=nvirt;
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  available memory =                        %9.2lf mb\n",memory/1024./1024.);
+  fprintf(outfile,"  minimum memory requirements for CCSD =    %9.2lf mb\n",
+         8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
+  if (options.get_bool("COMPUTE_TRIPLES")){
+     double tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v);
+     if (tempmem > memory || options.get_bool("TRIPLES_LOW_MEMORY")){
+        isLowMemory = true;
+        tempmem = 8.*(2L*o*o*v*v+o*o*o*v+o*v+5L*o*o*o);
+     }
+     fprintf(outfile,"  minimum memory requirements for CCSD(T) = %9.2lf mb\n",tempmem/1024./1024.);
+     //if (nthreads>1){
+     //   fprintf(outfile,"     --explicitly threading on %2i threads = %9.2lf mb\n",
+     //          nthreads,8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v));
+     //}
+  }
+  
 
   // SCS MP2 and CCSD
   emp2_os_fac = options.get_double("MP2_SCALE_OS");
@@ -156,7 +185,8 @@ void CoupledCluster::Initialize(Options &options){
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  OutOfCoreSort(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM());
+  // if isCIM() or low-memory, pass true to OutOfCoreSort
+  OutOfCoreSort(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM(),options);
 
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -449,26 +479,6 @@ void CoupledCluster::AllocateMemory(Options&options){
   long int i,o=ndoccact;
   long int v=nvirt;
   long int dim;
-
-  nthreads = 1;
-  #ifdef _OPENMP
-      nthreads = omp_get_max_threads();
-  #endif
-  if (options["NUM_THREADS"].has_changed())
-     nthreads = options.get_int("NUM_THREADS");
-
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  available memory =                        %9.2lf mb\n",memory/1024./1024.);
-  fprintf(outfile,"  minimum memory requirements for CCSD =    %9.2lf mb\n",
-         8./1024./1024.*(o*o*v*v+2.*(o*o*v*v+o*v)+2.*o*v+2.*v*v+o+v));
-  if (options.get_bool("COMPUTE_TRIPLES")){
-     fprintf(outfile,"  minimum memory requirements for CCSD(T) = %9.2lf mb\n",
-            8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*v*v*v));
-     if (nthreads>1){
-        fprintf(outfile,"     --explicitly threading on %2i threads = %9.2lf mb\n",
-               nthreads,8./1024/1024*(2L*o*o*v*v+o*o*o*v+o*v+3L*nthreads*v*v*v));
-     }
-  }
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();

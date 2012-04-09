@@ -31,6 +31,8 @@ def run_dcft_gradient(name, **kwargs):
     DCFT gradient calculation.
 
     """
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+
     run_dcft(name, **kwargs)
     PsiMod.deriv()
 

@@ -10,7 +10,7 @@ namespace psi{
     ULI ind;
     double val;
   };
-  void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal);
+  void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal,Options&options);
   int integral_comp(const void *a,const void *b);
 
 
