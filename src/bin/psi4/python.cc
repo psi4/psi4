@@ -1153,8 +1153,6 @@ void Python::run(FILE *input)
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");
             PyRun_SimpleString(s);
-            //s = strdup("help(PsiMod)");
-            //PyRun_SimpleString(s);
 
             // Process the input file
             PyObject *input;
