@@ -52,6 +52,7 @@ struct OPT_PARAMS {
   enum IRC_STOP {ASK, STOP, GO} IRC_stop;
 
   bool freeze_intrafragment; // freeze all fragments
+  bool freeze_interfragment; // freeze all interfragment modes
   bool add_auxiliary_bonds;
 
   // related to step taken
@@ -129,6 +130,7 @@ struct OPT_PARAMS {
   bool test_B; // whether to test B matrices
   bool test_derivative_B; // whether to test derivative B matrices
   double IRC_step_size;
+  bool keep_intcos; // don't delete intco.dat
 
 };
 

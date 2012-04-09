@@ -14,8 +14,10 @@
 
 namespace opt {
 
-// dq - displacements to be performed
-void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
+// dq - displacements in intrafragment internal coordinates to be performed
+// fq - internal coordinate forces (used for printing)
+// atom_offset - number within the molecule of first atom in this fragment (used for printing)
+void FRAG::displace(double *dq, double *fq, int atom_offset) {
   int i,j;
   int Ncarts = 3 * natom;
   int Nints = intcos.size();
@@ -147,20 +149,15 @@ void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
     }
   }
 
-  if (print_disp) {
+  fprintf(outfile,"\n\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
+  fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
+  fprintf(outfile,  "\t Coordinate             Previous        Force       Change         New \n");
+  fprintf(outfile,  "\t ----------             --------       ------       ------       ------\n");
+  for (i=0; i<intcos.size(); ++i)
+    intcos.at(i)->print_disp(outfile, q_orig[i], fq[i], dq[i], new_q[i], atom_offset);
+  fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
 
-    double *f_q = p_Opt_data->g_forces_pointer(); // for printing
-
-    fprintf(outfile,"\n\t---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---\n");
-    fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
-    fprintf(outfile,  "\t Coordinate             Previous        Force       Change         New \n");
-    fprintf(outfile,  "\t ----------             --------       ------       ------       ------\n");
-    for (i=0; i<intcos.size(); ++i)
-      intcos.at(i)->print_disp(outfile, q_orig[i], f_q[i], dq[i], new_q[i], atom_offset);
-    fprintf(outfile,  "\t ----------------------------------------------------------------------\n");
-  }
   free_array(new_q);
-
   free_matrix(G);
   free_array(new_geom);
   free_array(first_geom);
