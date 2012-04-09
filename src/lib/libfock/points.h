@@ -97,16 +97,14 @@ public:
 
     virtual std::vector<SharedMatrix> scratch() = 0;
     virtual std::vector<SharedMatrix> D_scratch() = 0;
-    virtual std::vector<SharedMatrix> C_scratch() = 0;
 
     int ansatz() const { return ansatz_; }
 
     // => Setters <= //
 
     void set_ansatz(int ansatz) { ansatz_ = ansatz; deriv_ = ansatz; allocate(); } 
-    virtual void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO) = 0; 
-    virtual void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO,
-                      SharedMatrix Db_occ_AO, SharedMatrix Cb_occ_AO) = 0;
+    virtual void set_pointers(SharedMatrix Da_occ_AO) = 0; 
+    virtual void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO) = 0;
 
 }; 
 
@@ -117,19 +115,13 @@ protected:
     
     /// Density matrix, AO
     SharedMatrix D_AO_;
-    /// Occupied C matrix, AO
-    SharedMatrix Cocc_AO_;
 
     // => Temps <= //
 
     /// Buffer for half-transform
     SharedMatrix temp_;
-    /// Buffer for KE density
-    SharedMatrix meta_temp_;
     /// Local D matrix
     SharedMatrix D_local_;
-    /// Local Cocc matrix
-    SharedMatrix C_local_;
 
     /// Build temporary work arrays
     void build_temps();
@@ -140,15 +132,13 @@ public:
     RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~RKSFunctions();
 
-    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO); 
-    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO,
-                      SharedMatrix Db_occ_AO, SharedMatrix Cb_occ_AO);
+    void set_pointers(SharedMatrix Da_occ_AO);
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
 
     void compute_points(boost::shared_ptr<BlockOPoints> block);
 
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
-    std::vector<SharedMatrix> C_scratch();
 
     void print(FILE* out = outfile, int print = 2) const;
 };
@@ -160,12 +150,8 @@ protected:
     
     /// Density matrix, AO
     SharedMatrix Da_AO_;
-    /// Occupied C matrix, AO
-    SharedMatrix Caocc_AO_;
     /// Density matrix, AO
     SharedMatrix Db_AO_;
-    /// Occupied C matrix, AO
-    SharedMatrix Cbocc_AO_;
 
     // => Temps <= //
     
@@ -173,16 +159,10 @@ protected:
     SharedMatrix tempa_;
     /// Buffer for half-transform
     SharedMatrix tempb_;
-    /// Buffer for KE density
-    SharedMatrix meta_temp_;
     /// Local D matrix
     SharedMatrix Da_local_;
-    /// Local Cocc matrix
-    SharedMatrix Ca_local_;
     /// Local D matrix
     SharedMatrix Db_local_;
-    /// Local Cocc matrix
-    SharedMatrix Cb_local_;
 
     /// Build temporary work arrays
     void build_temps();
@@ -193,16 +173,13 @@ public:
     UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~UKSFunctions();
 
-    /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change)
-    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO); 
-    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Ca_occ_AO,
-                      SharedMatrix Db_occ_AO, SharedMatrix Cb_occ_AO);
+    void set_pointers(SharedMatrix Da_occ_AO);
+    void set_pointers(SharedMatrix Da_occ_AO, SharedMatrix Db_occ_AO);
 
     void compute_points(boost::shared_ptr<BlockOPoints> block);
 
     std::vector<SharedMatrix> scratch();
     std::vector<SharedMatrix> D_scratch();
-    std::vector<SharedMatrix> C_scratch();
 
     void print(FILE* out = outfile, int print = 2) const;
 };

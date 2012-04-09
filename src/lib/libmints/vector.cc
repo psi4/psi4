@@ -277,6 +277,19 @@ double Vector::dot(Vector* X)
     return tmp;
 }
 
+double Vector::norm()
+{
+    double tmp = 0.0;
+
+    for (int h=0; h<nirrep_; ++h) {
+        for (int i=0; i<dimpi_[h]; ++i) {
+            tmp += vector_[h][i] * vector_[h][i];
+        }
+    }
+
+    return tmp;
+}
+
 template<class T>
 struct scale_vector {
     typedef T data_type;

@@ -113,7 +113,7 @@ void FRAG::print_geom(FILE *fp_geom) {
 
 
 void FRAG::print_intcos(FILE *fp, int atom_offset) {
-  fprintf(fp,"\t * Coordinate *           * BOHR/RAD *       * ANG/DEG *\n");
+  fprintf(fp,"\t - Coordinate -           - BOHR/RAD -       - ANG/DEG -\n");
   for (int i=0; i<intcos.size(); ++i)
     intcos.at(i)->print(fp,geom,atom_offset);
   fprintf(fp, "\n");

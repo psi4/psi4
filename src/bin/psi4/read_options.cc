@@ -94,7 +94,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     self-consistent-field (MCSCF) and complete-active-space 
     self-consistent-field (CASSCF) computations, and arbitrary-order
     perturbation theory and arbitrary-order coupled-cluster
-    computations for small molecules -*/
+    computations for small molecules. -*/
 
     /*- SUBSECTION General Options -*/
 
@@ -732,7 +732,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory 
-      computations -*/
+      computations. -*/
 
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEVEL", 2);
@@ -784,7 +784,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 
-      whenever disk-based molecular integrals are required -*/
+      whenever disk-based molecular integrals are required. -*/
 
       /*- Primary basis set -*/
       options.add_str("BASIS","");
@@ -1407,7 +1407,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("ZETA",false);
   }
   if(name == "CLAG"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenver CI properties or gradients are requested. -*/
+     /*- MODULEDESCRIPTION Solves for the CI Lagrangian. Called whenever CI properties or gradients are requested. -*/
     /*- Wavefunction type !expert -*/
     options.add_str("WFN","NONE");
     /*- Do write the OEI, TEI, OPDM, TPDM, and Lagrangian files in canonical form, Pitzer order? -*/
@@ -1417,7 +1417,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "STABILITY"|| options.read_globals()) {
      /*- MODULEDESCRIPTION Performs wavefunction stability analysis. Called when specifically requested
-         by the user-*/
+         by the user. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF", "RHF UHF ROHF");
     /*- -*/
@@ -1643,7 +1643,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
   }
   if(name == "MCSCF"|| options.read_globals()) {
-     /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF, and more general MCSCF computations. Called
+     /*- MODULEDESCRIPTION Performs RHF/UHF/ROHF/TCSCF and more general MCSCF computations. Called
          as the starting point for multireference coupled cluster computations. -*/
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
@@ -1841,7 +1841,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DOMAIN_PRINT", 0);
   }
   if(name == "LMP2"|| options.read_globals()) {
-    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions -*/
+    /*- MODULEDESCRIPTION Performs local MP2 computations for RHF reference functions. -*/
 
     /*- Wavefunction type !expert -*/
     options.add_str("WFN", "LMP2");
@@ -2252,6 +2252,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("FRAG_MODE", "SINGLE", "SINGLE MULTI");
       /*- Do freeze all fragments rigid? -*/
       options.add_bool("FREEZE_INTRAFRAG", false);
+      /*- Do freeze all interfragment modes? -*/
+      options.add_bool("FREEZE_INTERFRAG", false);
       /*- When interfragment coordinates are present, use as reference points either
       principal axes or fixed linear combinations of atoms. -*/
       options.add_str("INTERFRAG_MODE", "FIXED", "FIXED INTERFRAGMENT");
@@ -2281,7 +2283,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_B", false);
       /*- Do test derivative B matrix? -*/
       options.add_bool("TEST_DERIVATIVE_B", false);
-
+      /*- Keep internal coordinate definition file. -*/
+      options.add_bool("KEEP_INTCOS", false);
   }
   if(name == "FINDIF"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements
@@ -2352,7 +2355,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("MO_READ",false);
   }
   if (name == "MRCC"|| options.read_globals()) {
-      /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\'{a}ly K\'{a}llay. -*/
+      /*- MODULEDESCRIPTION Interface to MRCC program written by Mih\ |a_acute|\ ly K\ |a_acute|\ llay. -*/
 
       /*- Sets the OMP_NUM_THREADS environment variable before calling MRCC.
           If the environment variable :envvar:`OMP_NUM_THREADS` is set prior to calling PSI4 then
