@@ -26,7 +26,7 @@ using namespace psi;
 using namespace boost;
 
 namespace psi{
-  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt);
+  void OutOfCoreSort(int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,bool islocal);
 };
 
 // position in a symmetric packed matrix
@@ -39,8 +39,10 @@ long int Position(long int i,long int j){
 
 namespace psi{
 
-CoupledCluster::CoupledCluster()
-{}
+CoupledCluster::CoupledCluster(boost::shared_ptr<psi::Wavefunction>wfn)
+{
+  wfn_ = wfn;
+}
 CoupledCluster::~CoupledCluster()
 {}
 
@@ -68,17 +70,14 @@ void CoupledCluster::WriteBanner(){
 ================================================================*/
 void CoupledCluster::Initialize(Options &options){
  
-  // grab the reference wave function and its parameters
-  boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
-
-  if (ref.get() !=NULL){
+  if (wfn_.get() !=NULL){
      escf    = Process::environment.globals["SCF TOTAL ENERGY"];
-     nirreps = ref->nirrep();
-     sorbs   = ref->nsopi();
-     orbs    = ref->nmopi();
-     docc    = ref->doccpi();
-     fzc     = ref->frzcpi();
-     fzv     = ref->frzvpi();
+     nirreps = wfn_->nirrep();
+     sorbs   = wfn_->nsopi();
+     orbs    = wfn_->nmopi();
+     docc    = wfn_->doccpi();
+     fzc     = wfn_->frzcpi();
+     fzv     = wfn_->frzvpi();
   }
   if (nirreps>1){
      //throw PsiException("plugin_ccsd requires symmetry c1",__FILE__,__LINE__);
@@ -157,7 +156,7 @@ void CoupledCluster::Initialize(Options &options){
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
+  OutOfCoreSort(nfzc,nfzv,nfzc+nfzv+ndoccact+nvirt,ndoccact,nvirt,wfn_->isCIM());
 
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -172,13 +171,13 @@ void CoupledCluster::Initialize(Options &options){
   eps = (double*)malloc(nmo*sizeof(double));
   int count=0;
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = fzc[h]; norb<docc[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
   }
   for (int h=0; h<nirreps; h++){
-      eps_test = ref->epsilon_a();
+      eps_test = wfn_->epsilon_a();
       for (int norb = docc[h]; norb<orbs[h]-fzv[h]; norb++){
           eps[count++] = eps_test->get(h,norb);
       }
@@ -304,7 +303,13 @@ PsiReturnType CoupledCluster::CCSDIterations(Options&options){
      throw PsiException("  CCSD iterations did not converge.",__FILE__,__LINE__);
   }
 
-  SCS_CCSD();
+  if (wfn_->isCIM()){
+     Local_SCS_CCSD();
+     eccsd = eccsd_os + eccsd_ss;
+  }
+  else{
+     SCS_CCSD();
+  }
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
@@ -917,6 +922,97 @@ void CoupledCluster::UpdateT1(long int iter){
   F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
   F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
   F_DCOPY(o*v,w1,1,t1,1);
+}
+void CoupledCluster::Local_SCS_CCSD(){
+
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int iajb,jaib,ijab=0;
+  double ssenergy = 0.0;
+  double osenergy = 0.0;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&tempt[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+
+  SharedMatrix Rii = wfn_->CIMTransformationMatrix();
+  double**Rii_pointer = Rii->pointer();
+  // transform E2klcd back from quasi-canonical basis
+  for (i=0; i<o; i++){
+      for (a=0; a<v; a++){
+          for (j=0; j<o; j++){
+              for (b=0; b<v; b++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tempt[ip*o*v*v+a*o*v+j*v+b]*Rii_pointer[ip][i];
+                  }
+                  integrals[i*o*v*v+a*o*v+j*v+b] = dum;
+              }
+          }
+      }
+  }
+
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempv[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+     tb = tempv;
+  }
+  // transform t2 back from quasi-canonical basis
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  double dum = 0.0;
+                  for (int ip=0; ip<o; ip++){
+                      dum += tb[a*o*o*v+b*o*o+ip*o+j]*Rii_pointer[ip][i];
+                  }
+                  tempt[a*o*o*v+b*o*o+i*o+j] = dum;
+              }
+          }
+      }
+  }
+  for (a=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tb[a*o*o*v+b*o*o+i*o+j] -= t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+
+  SharedVector factor = wfn_->CIMOrbitalFactors();
+  double*factor_pointer = factor->pointer();
+  for (a=o; a<rs; a++){
+      for (b=o; b<rs; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  jaib = iajb + (i-j)*v*(1-v*o);
+                  osenergy += integrals[iajb]*(tempt[ijab])*factor_pointer[i];
+                  ssenergy += integrals[iajb]*(tempt[ijab]-tempt[(b-o)*o*o*v+(a-o)*o*o+i*o+j])*factor_pointer[i];
+                  ijab++;
+              }
+          }
+      }
+  }
+  eccsd_os = osenergy;
+  eccsd_ss = ssenergy;
+
+  psio.reset();
 }
 void CoupledCluster::SCS_CCSD(){
 

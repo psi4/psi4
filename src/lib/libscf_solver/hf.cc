@@ -309,7 +309,7 @@ void HF::integrals()
         eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
 
-    // TODO: Relax the if statement. Also, be more precise/elegant about RC-DFT
+    // TODO: Relax the if statement. 
     if (scf_type_ == "DF" || scf_type_ == "PS") {
         // Build the JK from options, symmetric type
         jk_ = JK::build_JK();
@@ -323,20 +323,14 @@ void HF::integrals()
 
             // Need a temporary functional
             boost::shared_ptr<SuperFunctional> functional = 
-                SuperFunctional::build(options_.get_str("DFT_FUNCTIONAL"),1,1);
+                SuperFunctional::current(options_);
             
             // K matrices
             jk_->set_do_K(functional->is_x_hybrid());
             // wK matrices 
             jk_->set_do_wK(functional->is_x_lrc());
             // w Value
-            if (functional->is_x_lrc()) {
-                double omega = functional->x_omega();
-                if (options_["DFT_OMEGA"].has_changed()) {
-                    omega = options_.get_double("DFT_OMEGA"); 
-                }
-                jk_->set_omega(omega); 
-            }   
+            jk_->set_omega(functional->x_omega());
         }
 
         // Initialize
@@ -1382,12 +1376,13 @@ double HF::compute_energy()
             print_orbitals();
 
         if (Communicator::world->me() == 0) {
-            fprintf(outfile, "\n  Energy converged.\n");
-            fprintf(outfile, "\n  @%s Final Energy: %20.14f",reference.c_str(), E_);
+            fprintf(outfile, "  Energy converged.\n\n");
+            fprintf(outfile, "  @%s Final Energy: %20.14f",reference.c_str(), E_);
             if (perturb_h_) {
                 fprintf(outfile, " with %f perturbation", lambda_);
             }
-            fprintf(outfile, "\n");
+            fprintf(outfile, "\n\n");
+            print_energies();
         }
 
         // Properties
@@ -1408,14 +1403,14 @@ double HF::compute_energy()
             }
 
             if (Communicator::world->me() == 0)
-                fprintf(outfile, "\n  ==> Properties <==\n\n");
+                fprintf(outfile, "  ==> Properties <==\n\n");
             oe->compute();
         }
 
         save_information();
     } else {
         if (Communicator::world->me() == 0) {
-            fprintf(outfile, "\n  Failed to converged.\n");
+            fprintf(outfile, "  Failed to converged.\n");
             fprintf(outfile, "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
         }
         E_ = 0.0;
@@ -1436,6 +1431,20 @@ double HF::compute_energy()
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
     return E_;
+}
+
+void HF::print_energies()
+{
+    fprintf(outfile, "   => Energetics <=\n\n");
+    fprintf(outfile, "    Nuclear Repulsion Energy =    %24.16f\n", energies_["Nuclear"]);
+    fprintf(outfile, "    One-Electron Energy =         %24.16f\n", energies_["One-Electron"]);
+    fprintf(outfile, "    Two-Electron Energy =         %24.16f\n", energies_["Two-Electron"]);
+    fprintf(outfile, "    DFT Functional Energy =       %24.16f\n", energies_["XC"]); 
+    fprintf(outfile, "    Empirical Dispersion Energy = %24.16f\n", energies_["-D"]);
+    fprintf(outfile, "    Total Energy =                %24.16f\n", energies_["Nuclear"] + energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
+    fprintf(outfile, "\n");
+    
+    // TODO Save the variables table. 
 }
 
 void HF::print_occupation()
@@ -1464,6 +1473,7 @@ void HF::print_occupation()
         }
 
         for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
+        fprintf(outfile,"\n");
     }
 }
 

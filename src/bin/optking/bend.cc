@@ -217,13 +217,7 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
 
 void BEND::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-
-  if (linear_bend)
-    iss << "L(";
-  else
-    iss << "B(";
-
-  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
+  iss << get_definition_string(off);
 
   double val = value(geom);
   if (!s_frozen)
@@ -231,6 +225,19 @@ void BEND::print(FILE *fp, GeomType geom, int off) const {
   else
     fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
   fflush(fp);
+}
+
+// function to return string of coordinate definition
+std::string BEND::get_definition_string(int off) const { 
+  ostringstream iss(ostringstream::out); // create stream; allow output to it
+
+  if (linear_bend)
+    iss << "L(";
+  else
+    iss << "B(";
+
+  iss << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ")" << flush ;
+  return iss.str();
 }
 
 void BEND::print_disp(FILE *fp, const double q_old, const double f_q,

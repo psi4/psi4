@@ -1,0 +1,48 @@
+#! Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described using
+#! the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
+
+memory 250 mb
+
+refnuc      =   68.712796104070 #TEST
+refscf      = -224.311492308024 #TEST
+refmkccsd_t = -224.660140784419 #TEST
+
+molecule ch2 {
+  0 1
+    O        -2.044380893268     0.426793459237     0.000000000000
+    O        -0.001248077996    -0.852806209845     0.000000000000
+    O         2.045628971264     0.426012750608     0.000000000000
+
+  units au
+}
+
+set {
+  basis DZ
+  e_convergence 15
+  d_convergence 13
+  r_convergence 10
+}
+
+set mcscf {
+  reference       twocon
+  # The socc and docc needn't be specified; in this case the code will converge correctly without
+  docc            [10,1]      # Doubly occupied MOs
+  socc            [ 0,2]      # Singly occupied MOs
+  maxiter         300
+  canonicalize_active_favg true
+}
+
+set psimrcc {
+  corr_wfn        ccsd_t       # Do Mk-MRCCSD(T) 
+  frozen_docc     [3,0]        # Frozen MOs
+  restricted_docc [7,1]        # Doubly occupied MOs
+  active          [0,2]        # Active MOs
+  frozen_uocc     [0,0]        # Frozen virtual MOs
+  corr_multp      1            # Select the Ms = 0 component
+  wfn_sym         A'           # Select the A1 state
+}
+
+energy('psimrcc')
+compare_values(refnuc, ch2.nuclear_repulsion_energy()     , 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY")  , 9, "SCF energy")               #TEST 
+compare_values(refmkccsd_t, get_variable("CURRENT ENERGY") , 8, "MkCCSD energy")            #TEST 

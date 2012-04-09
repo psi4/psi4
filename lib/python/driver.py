@@ -18,8 +18,8 @@ procedures = {
             'scf'           : run_scf,
             'mcscf'         : run_mcscf,
             'dcft'          : run_dcft,
-            'dfmp2'         : run_dfmp2,
-            'dfcc'          : run_dfcc,
+            'df-mp2'        : run_dfmp2,
+            'df-cc'         : run_dfcc,
             'mp2'           : run_mp2,
             'mp2-drpa'      : run_mp2drpa,
             'sapt0'         : run_sapt,
@@ -108,6 +108,33 @@ def energy(name, **kwargs):
        * :psivar:`CURRENT REFERENCE ENERGY <CURRENTREFERENCEENERGY>`
        * :psivar:`CURRENT CORRELATION ENERGY <CURRENTCORRELATIONENERGY>`
 
+    .. comment In this table immediately below, place methods that should only be called by 
+    .. comment developers at present. This table won't show up in the manual.
+    .. comment
+    .. comment    .. _`table:energy_devel`:
+    .. comment 
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | name                    | calls method                                                                          |
+    .. comment    +=========================+=======================================================================================+
+    .. comment    | df-cc                   | coupled cluster with density fitting                                                  |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | mp2c                    | coupled MP2 (MP2C)                                                                    |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | mp2-drpa                | random phase approximation?                                                           |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | cphf                    | coupled-perturbed Hartree-Fock?                                                       |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | cpks                    | coupled-perturbed Kohn-Sham?                                                          |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | cis                     | CI singles (CIS)                                                                      |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | tda                     | Tamm-Dankoff approximation (TDA)                                                      |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | tdhf                    | time-dependent HF (TDHF)                                                              |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+    .. comment    | tddft                   | time-dependent DFT (TDDFT)                                                            |
+    .. comment    +-------------------------+---------------------------------------------------------------------------------------+
+
     .. _`table:energy_gen`:
 
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -122,12 +149,6 @@ def energy(name, **kwargs):
     | dcft                    | density cumulant functional theory                                                    |
     +-------------------------+---------------------------------------------------------------------------------------+
     | mcscf                   | multiconfigurational self consistent field (SCF)                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | dfcc                    | coupled cluster with density fitting                                                  |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2c                    | coupled MP2 (MP2C)                                                                    |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | mp2-drpa                | random phase approximation?                                                           |
     +-------------------------+---------------------------------------------------------------------------------------+
     | sapt0                   | 0th-order symmetry adapted perturbation theory (SAPT)                                 |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -178,18 +199,6 @@ def energy(name, **kwargs):
     | fci                     | full configuration interaction (FCI)                                                  |
     +-------------------------+---------------------------------------------------------------------------------------+
     | detci                   | **expert** full control over detci module                                             |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cphf                    | coupled-perturbed Hartree-Fock?                                                       |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cpks                    | coupled-perturbed Kohn-Sham?                                                          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | cis                     | CI singles (CIS)                                                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | tda                     | Tamm-Dankoff approximation (TDA)                                                      |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | tdhf                    | time-dependent HF (TDHF)                                                              |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | tddft                   | time-dependent DFT (TDDFT)                                                            |
     +-------------------------+---------------------------------------------------------------------------------------+
     | adc                     | 2nd-order algebraic diagrammatic construction (ADC)                                   |
     +-------------------------+---------------------------------------------------------------------------------------+
@@ -576,6 +585,8 @@ def gradient(name, **kwargs):
 def property(name, **kwargs):
     """Function to compute various properties.
 
+    :aliases: prop()
+
     :returns: (*float*) Total electronic energy in Hartrees.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
@@ -630,6 +641,9 @@ def property(name, **kwargs):
         return procedures['property'][lowername](lowername, **kwargs)
     except KeyError:
         raise ValidationError('Property method %s not available.' % (lowername))
+
+##  Aliases  ##
+prop = property
 
 
 def optimize(name, **kwargs):
@@ -759,7 +773,7 @@ def optimize(name, **kwargs):
             G = PsiMod.get_gradient()
             PsiMod.IOManager.shared_object().set_specific_retention(1, True)
             PsiMod.IOManager.shared_object().set_specific_path(1, './')
-            frequencies(name, irrep=1, **kwargs) # only need symmetric ones
+            frequencies(name, **kwargs)
             steps_since_last_hessian = 0
             PsiMod.set_gradient(G)
             PsiMod.set_global_option('CART_HESS_READ', True)

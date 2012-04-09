@@ -241,13 +241,22 @@ double ** TORS::Dq2Dx2(GeomType geom) const {
 
 void TORS::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  iss << "D(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << "," << s_atom[3]+1+off << ")" << std::flush;
+  iss << get_definition_string(off);
+
   double val = value(geom);
   if (!s_frozen)
     fprintf(fp,"\t %-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
   else
     fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val/_pi*180.0);
   fflush(fp);
+}
+
+// function to return string of coordinate definition
+std::string TORS::get_definition_string(int off) const {
+  ostringstream iss(ostringstream::out); // create stream; allow output to it
+  iss << "D(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << "," << s_atom[2]+1+off << ","
+    << s_atom[3]+1+off << ")" << std::flush;
+  return iss.str();
 }
 
 void TORS::print_disp(FILE *fp, const double q_old, const double f_q,

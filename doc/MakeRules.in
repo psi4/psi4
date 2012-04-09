@@ -14,6 +14,10 @@
 
 default:: install
 
+# Make local sphinx dir
+%.rst : $(srcdir)/%.rst 
+	cp $(srcdir)/$< $<
+
 # Note that LaTeX should be run three times to resolve references
 # Don't do bibtex by default, only need it for userman right now
 # and some versions of bibtex will die if run on a document with no

@@ -426,7 +426,6 @@ print GPL_OUT "}\n\nreturn 1;\n";
 
 # python database file
 print SPY_OUT "\"\"\"\n";
-print SPY_OUT "**$set**\n\n";
 print SPY_OUT "| Database of <description of members and reference energy type>.\n";
 print SPY_OUT "| Geometries from <Reference>.\n";
 print SPY_OUT "| Reference interaction energies from <Reference>.\n\n";
@@ -441,7 +440,6 @@ print SPY_OUT "- **subset**\n\n";
 print SPY_OUT "  - ``'small'``\n";
 print SPY_OUT "  - ``'large'``\n";
 print SPY_OUT "  - ``'<subset>'`` <members_description>\n\n";
-print SPY_OUT "----\n\n";
 print SPY_OUT "\"\"\"\n";
 print SPY_OUT "import re\n";
 print SPY_OUT "import input\n";

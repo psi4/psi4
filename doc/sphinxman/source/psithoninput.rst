@@ -44,7 +44,7 @@ the user).
 The physical constants used within |PSIfour|, which are automatically
 made available within all |PSIfour| input files.
 
-.. literalinclude:: ../../../lib/python/physconst.py
+.. literalinclude:: @SFNX_INCLUDE@lib/python/physconst.py
    :lines: 3-
 
 The ``psi_`` prefix is to prevent clashes with user-defined variables in
@@ -616,8 +616,8 @@ with the input file command ``print_variables()``. Note that
 PSI variables accumulate over a |PSIfour| instance and are not cleared by
 ``clean()``. So if you run in a single input file a STO-3G FCI
 followed by a aug-cc-pVQZ SCF followed by a ``print_variables()``
-command, the last will include both {\tt SCF TOTAL ENERGY} and
-{\tt FCI TOTAL ENERGY}. Don't get excited that you got a high-quality calculation
+command, the last will include both :psivar:`SCF TOTAL ENERGY <SCFTOTALENERGY>` and
+:psivar:`FCI TOTAL ENERGY <FCITOTALENERGY>`. Don't get excited that you got a high-quality calculation
 cheaply. Refer to Appendix :ref:`apdx:psivariables_module` for a listing of the
 variables set by each module.
 

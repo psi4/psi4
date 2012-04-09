@@ -1,6 +1,4 @@
 """
-**CFLOW**
-
 | Database of extended conjugated bimolecular systems.
 | Geometries and Reference interaction energies from the following articles:
 |   Polyene geometries from Marshall et al. JCTC 6 3681 (2010).
@@ -38,8 +36,6 @@
   - ``'Grimme70'`` Grimme C70 @ buckycatcher at three orientations
   - ``'Paper'`` linear polyene dimers, equilibrium arene complexes, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
   - ``'cPaper'`` linear polyene dimers, arene complex curves, Pulay corannulene dimer curve, and Grimme corannulene dimer and C60 complexes
-
-----
 
 """
 import re

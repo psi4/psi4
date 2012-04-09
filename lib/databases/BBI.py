@@ -1,6 +1,4 @@
 """
-**BBI**
-
 | Database (Merz) of protein backbone-backbone interactions.
 | Geometries from Kenneth Merz Group, Univ. of Florida.
 | Reference interaction energies from Sherrill group, Georgia Tech.
@@ -8,8 +6,6 @@
 - **cp**  ``'off'`` || ``'on'``
 
 - **rlxd** ``'off'``
-
-----
 
 """
 import re

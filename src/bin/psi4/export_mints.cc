@@ -167,7 +167,6 @@ void export_mints()
             def("canonical_orthogonalization", &Matrix::canonical_orthogonalization, CanonicalOrthog()).
             def("invert", &Matrix::invert, "docstring").
             def("power", &Matrix::power, "docstring").
-            def("exp", &Matrix::exp, "docstring").
             def("get", matrix_get3(&Matrix::get), "docstring").
             def("get", matrix_get2(&Matrix::get), "docstring").
             def("set", matrix_set3(&Matrix::set), "docstring").
@@ -200,7 +199,7 @@ void export_mints()
             def("matrix", &CdSalcList::matrix, "docstring");
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
-            def(init<boost::shared_ptr<Molecule>, boost::shared_ptr<BasisSet> >()).
+            def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("basisset", &MintsHelper::basisset, "docstring").

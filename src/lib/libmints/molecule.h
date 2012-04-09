@@ -534,6 +534,7 @@ public:
     void set_com_fixed(bool _fix = true);
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
+    bool valid_atom_map() const;
 
     /**
      * Updates the geometry, by (re)interpreting the string used to create the molecule, and the current values

@@ -8,12 +8,15 @@
 #include "print.h"
 #include "v3d.h" // for H_guess
 
+#include <sstream>
+
 #define EXTERN
 #include "globals.h"
 
 namespace opt {
 
 using namespace v3d;
+using namespace std;
 
 // constructor for given weight linear combination reference points
 INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
@@ -28,6 +31,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   ndA = ndA_in;
   ndB = ndB_in;
   principal_axes = false;
+  // inter_fragment->frozen is off default
 
   double **inter_geom = init_matrix(6,3); // some rows may be unused
 
@@ -53,6 +57,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   ndA = ndA_in;
   ndB = ndB_in;
   principal_axes = true; 
+  //frozen = false; inter_frag is not frozen by default
 
   double **inter_geom = init_matrix(6,3); // some rows may be unused
 
@@ -276,6 +281,7 @@ int INTERFRAG::g_nintco(void) const {
 }
 
 // freeze coordinate i if D_freeze[i]; index runs 0->6 as does D_on
+/*
 void INTERFRAG::freeze(bool *D_freeze) {
   int cnt = -1;
   for (int i=0; i<6; ++i) {
@@ -286,12 +292,31 @@ void INTERFRAG::freeze(bool *D_freeze) {
     }
   }
 }
+*/
+
+// freeze coordinate i; index is among the coordinates that are 'on'
+void INTERFRAG::freeze(int index_to_freeze) {
+  if (index_to_freeze<0 || index_to_freeze>g_nintco()) {
+    fprintf(outfile,"INTERFRAG::freeze() : Invalid index %d\n", index_to_freeze);
+    return;
+  }
+  inter_frag->intcos[index_to_freeze]->freeze();
+}
+
+void INTERFRAG::freeze(void) {
+  inter_frag->freeze();
+}
 
 // is coordinate J frozen?  J runs over only active coordinates.
 bool INTERFRAG::is_frozen(int J) { 
   if (J < 0 || J >= g_nintco())
     throw(INTCO_EXCEPT("INTERFRAG::is_frozen() index J runs only over active coordinates"));
   return inter_frag->intcos[J]->is_frozen();
+}
+
+// are all interfragment modes frozen?
+bool INTERFRAG::is_frozen(void) {
+  return inter_frag->is_frozen();
 }
 
 // compute and return coordinate values - using given fragment geometries
@@ -630,6 +655,25 @@ void INTERFRAG::print_intco_dat(FILE *fp, int off_A, int off_B) const {
   fflush(fp);
 }
 
+// TODO - fix this up later
+std::string INTERFRAG::get_intco_definition(int coord_index, int off_A, int off_B) const {
+  ostringstream iss;
+  for (int i=0; i<ndA; ++i) {
+    iss << "A" << i+1;
+    for (int j=0; j<A->g_natom(); ++j)
+      if (weightA[i][j] != 0.0)
+        iss << j+1+off_A;
+    iss << "\n";
+  }
+  for (int i=0; i<ndB; ++i) {
+    iss << "B" << i+1;
+    for (int j=0; j<B->g_natom(); ++j)
+      if (weightB[i][j] != 0.0)
+        iss << j+1+off_B;
+    iss << "\n";
+  }
+  return iss.str();
+}
 
 // Make the initial Hessian guess for interfragment coordinates
 double ** INTERFRAG::H_guess(void) {

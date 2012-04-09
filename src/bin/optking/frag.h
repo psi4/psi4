@@ -61,6 +61,7 @@ class FRAG {
   void print_geom_grad(FILE *fp, const int id, bool print_mass = false);
   void print_intcos(FILE *fp, int atom_offset=0);
   void print_intco_dat(FILE *fp, int atom_offset=0);
+  std::string get_intco_definition(int coord_index, int atom_offset=0);
 
   void update_connectivity_by_distances(void);
   void update_connectivity_by_bonds(void);
@@ -146,7 +147,8 @@ class FRAG {
 
   int find(const SIMPLE *one) const;
 
-  void displace(double *dq, bool print_disp = false, int atom_offset=0);
+  // displace fragment by dq ; forces and offset are provided for printing
+  void displace(double *dq, double *fq, int atom_offset=0);
 
   double ** g_geom_pointer(void) { return geom; };           // returns pointer
   double ** g_geom(void) const;                              // returns a copy

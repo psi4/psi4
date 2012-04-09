@@ -119,10 +119,7 @@ double ** STRE::Dq2Dx2(GeomType geom) const {
 // print stretch and value
 void STRE::print(FILE *fp, GeomType geom, int off) const {
   ostringstream iss(ostringstream::out); // create stream; allow output to it
-  if (inverse_stre)
-    iss << "1/R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
-  else
-    iss << "R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  iss << get_definition_string(off);
 
   double val = value(geom);
   if (!s_frozen)
@@ -130,6 +127,16 @@ void STRE::print(FILE *fp, GeomType geom, int off) const {
   else
     fprintf(fp,"\t*%-15s  =  %15.6lf\t%15.6lf\n", iss.str().c_str(), val, val*_bohr2angstroms);
   fflush(fp);
+}
+
+// function to return string of coordinate definition
+std::string STRE::get_definition_string(int off) const {
+  ostringstream iss(ostringstream::out); // create stream; allow output to it
+  if (inverse_stre)
+    iss << "1/R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  else
+    iss << "R(" << s_atom[0]+1+off << "," << s_atom[1]+1+off << ")" << std::flush ;
+  return iss.str();
 }
 
 void STRE::print_intco_dat(FILE *fp, int off) const {
