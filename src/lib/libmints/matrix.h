@@ -852,12 +852,14 @@ public:
     */
     Dimension power(double alpha, double cutoff = 1.0E-12);
 
-    /*! Computes the exponential of a real symmetric matrix
-    *   A using eigendecoposition. This operation is uniquely defined
-    *   for all symmetric matrices (in fact all matrices, by DSYEV will
-    *   be used here)
+    /*!
+    * Computes the approximate 
+    * exponential of a general real square matrix via Pade 
+    * symmetric Pade approximation (orthonormality guaranteed)
+    * (defaults to a 2 x 2 Pade table, with no
+    * scaling or balancing)
     */
-    void exp();
+    void expm(int n = 2, bool scale = false);
 
     /// Swap rows i and j
     void swap_rows(int h, int i, int j);

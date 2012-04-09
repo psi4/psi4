@@ -7,6 +7,8 @@
 #include "vector3.h"
 #include <boost/shared_ptr.hpp>
 
+#define CLEANUP_THRESH 1.0E-14
+
 namespace psi {
 
 class Vector3;
@@ -111,7 +113,11 @@ protected:
     static double r(const Vector3 &a1, const Vector3 &a2) { return a1.distance(a2); }
     /// Computes the angle (in rad.) between three sets of coordinates.
     static double a(const Vector3 &a1, const Vector3 &a2, const Vector3 &a3)
-        { Vector3 eBA(a2-a1), eBC(a2-a3); eBA.normalize(); eBC.normalize(); return acos(eBA.dot(eBC)); }
+        { Vector3 eBA(a2-a1), eBC(a2-a3); eBA.normalize(); eBC.normalize();
+          double costheta = eBA.dot(eBC);
+          if(costheta > 1.0 - CLEANUP_THRESH)  costheta = 1.0;
+          if(costheta < CLEANUP_THRESH - 1.0)  costheta = -1.0;
+          return acos(costheta); }
     /// Computes the dihedral (in rad.) between four sets of coordinates.
     static double d(const Vector3 &a1, const Vector3 &a2, const Vector3 &a3, const Vector3 &a4)
         { Vector3 eBA(a2-a1), eDC(a4-a3), eCB(a3-a2);

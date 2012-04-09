@@ -21,6 +21,8 @@ read_options(std::string name, Options &options)
      options.add_int("DIIS_MAX_VECS", 8);
      /*- For GPU code, cap the amount of memory (mb) registerred with the GPU -*/
      options.add_int("MAX_MAPPED_MEMORY", 1000);
+     /*- Low memory options for triples contribution -*/
+     options.add_bool("TRIPLES_LOW_MEMORY",false);
      /*- Compute triples contribution? -*/
      options.add_bool("COMPUTE_TRIPLES", true);
      /*- Use MP2 NOs to truncate virtual space for (T)? -*/

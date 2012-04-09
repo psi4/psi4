@@ -441,7 +441,17 @@ double ROHF::compute_initial_E()
     return 0.5 * (compute_E() + nuclearrep_);
 }
 
-double ROHF::compute_E() {
+double ROHF::compute_E() 
+{
+    double one_electron_E = Da_->vector_dot(H_) + Db_->vector_dot(H_);;
+    double two_electron_E = 0.5 * (Da_->vector_dot(Fa_) + Db_->vector_dot(Fb_) - one_electron_E);   
+ 
+    energies_["Nuclear"] = nuclearrep_;
+    energies_["One-Electron"] = one_electron_E;
+    energies_["Two-Electron"] = two_electron_E; 
+    energies_["XC"] = 0.0;
+    energies_["-D"] = 0.0;
+
     double DH  = Da_->vector_dot(H_);
     DH += Db_->vector_dot(H_);
     double DFa = Da_->vector_dot(Fa_);
