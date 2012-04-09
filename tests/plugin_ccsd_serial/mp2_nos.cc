@@ -161,43 +161,49 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 
   // transform (ov|vv) integrals:
   psio_address addrread,addrwrite;
-  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
   addrread  = PSIO_ZERO;
   addrwrite = PSIO_ZERO;
 
-  for (int n=0; n<ntiles; n++){
-      psio->read(PSIF_ABCI,"E2abci",(char*)&amps2[0],tilesizes[n]*v*v*v*sizeof(double),addrread,&addrread);
-      // transform iabc -> iabC
-      F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*v,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
-      // sort iabC -> aiCb
-      for (int i=0; i<tilesizes[n]; i++){
-          for (int a=0; a<v; a++){
-              for (int b=0; b<v; b++){
-                  for (int c=0; c<nvirt_no; c++){
-                      amps2[a*tilesizes[n]*nvirt_no*v+i*v*nvirt_no+c*v+b] = 
-                      amps1[i*v*v*nvirt_no+a*v*nvirt_no+b*nvirt_no+c];
-                  }
-              }
-          }
-      }
-      // transform aiCb -> aiCB
-      F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*nvirt_no,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
-      // transform aiCB -> AiCB
-      F_DGEMM('n','n',tilesizes[n]*nvirt_no*nvirt_no,nvirt_no,v,1.0,amps1,tilesizes[n]*nvirt_no*nvirt_no,Dab,v,0.0,amps2,tilesizes[n]*nvirt_no*nvirt_no);
-      // sort AiCB -> iABC
-      for (int i=0; i<tilesizes[n]; i++){
-          for (int a=0; a<nvirt_no; a++){
-              for (int b=0; b<nvirt_no; b++){
-                  for (int c=0; c<nvirt_no; c++){
-                      amps1[i*nvirt_no*nvirt_no*nvirt_no+a*nvirt_no*nvirt_no+b*nvirt_no+c] =
-                      amps2[a*tilesizes[n]*nvirt_no*nvirt_no+i*nvirt_no*nvirt_no+c*nvirt_no+b];
-                  }
-              }
-          }
-      }
-      psio->write(PSIF_ABCI,"E2abci",(char*)&amps1[0],tilesizes[n]*nvirt_no*nvirt_no*nvirt_no*sizeof(double),addrwrite,&addrwrite);
+  if (ccsd->isLowMemory){
+     // TODO:
+     throw PsiException("MP2 natural orbitals aren't ready for \"triples_low_memory true\" yet.",__FILE__,__LINE__);
+
+  }else{
+     psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
+     for (int n=0; n<ntiles; n++){
+         psio->read(PSIF_ABCI,"E2abci",(char*)&amps2[0],tilesizes[n]*v*v*v*sizeof(double),addrread,&addrread);
+         // transform iabc -> iabC
+         F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*v,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+         // sort iabC -> aiCb
+         for (int i=0; i<tilesizes[n]; i++){
+             for (int a=0; a<v; a++){
+                 for (int b=0; b<v; b++){
+                     for (int c=0; c<nvirt_no; c++){
+                         amps2[a*tilesizes[n]*nvirt_no*v+i*v*nvirt_no+c*v+b] = 
+                         amps1[i*v*v*nvirt_no+a*v*nvirt_no+b*nvirt_no+c];
+                     }
+                 }
+             }
+         }
+         // transform aiCb -> aiCB
+         F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*nvirt_no,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+         // transform aiCB -> AiCB
+         F_DGEMM('n','n',tilesizes[n]*nvirt_no*nvirt_no,nvirt_no,v,1.0,amps1,tilesizes[n]*nvirt_no*nvirt_no,Dab,v,0.0,amps2,tilesizes[n]*nvirt_no*nvirt_no);
+         // sort AiCB -> iABC
+         for (int i=0; i<tilesizes[n]; i++){
+             for (int a=0; a<nvirt_no; a++){
+                 for (int b=0; b<nvirt_no; b++){
+                     for (int c=0; c<nvirt_no; c++){
+                         amps1[i*nvirt_no*nvirt_no*nvirt_no+a*nvirt_no*nvirt_no+b*nvirt_no+c] =
+                         amps2[a*tilesizes[n]*nvirt_no*nvirt_no+i*nvirt_no*nvirt_no+c*nvirt_no+b];
+                     }
+                 }
+             }
+         }
+         psio->write(PSIF_ABCI,"E2abci",(char*)&amps1[0],tilesizes[n]*nvirt_no*nvirt_no*nvirt_no*sizeof(double),addrwrite,&addrwrite);
+     }
+     psio->close(PSIF_ABCI,1);
   }
-  psio->close(PSIF_ABCI,1);
 
   // transform (oo|ov), (ov|vv), and (ov|ov)
 
