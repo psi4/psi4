@@ -184,31 +184,29 @@ ZMatrixEntry::~ZMatrixEntry()
 {
 }
 
+
 void
 ZMatrixEntry::set_coordinates(double x, double y, double z)
 {
-    coordinates_[0] = x;
-    coordinates_[1] = y;
-    coordinates_[2] = z;
+    coordinates_[0] = fabs(x) < CLEANUP_THRESH ? 0.0 : x;
+    coordinates_[1] = fabs(y) < CLEANUP_THRESH ? 0.0 : y;
+    coordinates_[2] = fabs(z) < CLEANUP_THRESH ? 0.0 : z;
 
     if(rto_ != 0){
         if(!rto_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
         rval_->set(r(coordinates_, rto_->compute()));
     }
+
     if(ato_ != 0){
         if(!ato_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
         double aval = a(coordinates_, rto_->compute(), ato_->compute());
         // Noise creeps in for linear molecules. Force linearity, if it is close enough.
-        if (fabs(aval - M_PI) < 1.0e-5)
-            if (aval > 0.0)
-                aval = M_PI;
-            else
-                aval = -M_PI;
         double val = 180.0*aval/M_PI;
         aval_->set(val);
     }
+
     if(dto_ != 0){
         if(!dto_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
@@ -350,6 +348,7 @@ const Vector3& ZMatrixEntry::compute()
         for(int xyz = 0; xyz < 3; ++xyz)
            coordinates_[xyz] = B[xyz] + r * (eX[xyz] * sinABC * cosABCD + eY[xyz] * sinABC * sinABCD - eCB[xyz] * cosABC );
     }
+
     computed_ = true;
     return coordinates_;
 }
