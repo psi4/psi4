@@ -46,9 +46,8 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   tilesizes[ntiles-1] = lasttile;
   
   long int dim = o*o*v*v;
-  if (tilesize*v*v*v>o*o*v*v) dim = tilesize*v*v*v;
-// heyheyhey
-dim = o*v*v*v;
+  if (tilesize*v*v*v>o*o*v*v && !ccsd->isLowMemory) dim = tilesize*v*v*v;
+
   double*amps1 = (double*)malloc(dim*sizeof(double));
   double*amps2 = (double*)malloc(dim*sizeof(double));
 
