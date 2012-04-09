@@ -394,7 +394,7 @@ DCFTSolver::compute_energy()
     mulliken_charges();
     check_n_representability();
 
-    if(options_.get_bool("COMPUTE_GRADIENT")) compute_gradient();
+    if(options_.get_str("DERTYPE") == "FIRST") compute_gradient();
 
     if(!options_.get_bool("MO_RELAX") && options_.get_bool("IGNORE_TAU")){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
