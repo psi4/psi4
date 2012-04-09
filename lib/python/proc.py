@@ -511,19 +511,7 @@ def run_dft(name, **kwargs):
     user_fctl = PsiMod.get_global_option('DFT_FUNCTIONAL')
     user_ref = PsiMod.get_global_option('REFERENCE')
 
-    if lowername.startswith('b3lyp'):
-        if lowername.endswith('b3lyp'):
-            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP')
-        #elif lowername.endswith('-d1'):
-        #    PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D1')
-        elif lowername.endswith('-d2'):
-            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
-        elif lowername.endswith('-d'):
-            PsiMod.set_global_option('DFT_FUNCTIONAL', 'B3LYP_D2')
-        else:
-            raise ValidationError('Requested B3LYP variant \'%s\' is not available.' % (lowername))
-    else:
-        raise ValidationError('How did you even get here? Edit the procedures dictionary.')
+    PsiMod.set_global_option('DFT_FUNCTIONAL', lowername)
 
     if (user_ref == 'RHF'):
         PsiMod.set_global_option('REFERENCE', 'RKS')

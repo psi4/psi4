@@ -9,6 +9,7 @@ import input
 from proc import *
 from text import *
 from procutil import *
+from functional import *
 # never import wrappers or aliases into this file
 
 
@@ -64,10 +65,6 @@ procedures = {
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
             'psimrcc_scf'   : run_psimrcc_scf,
-            'b3lyp'         : run_dft,  # temporary
-            #'b3lyp-d1'      : run_dft,  # temporary
-            'b3lyp-d2'      : run_dft,  # temporary
-            'b3lyp-d'       : run_dft,  # temporary
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -92,6 +89,10 @@ procedures = {
             'eom_ccsd' : run_cc_property
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
+
+# Integrate DFT with driver routines
+for super in superfunctional_list():
+    procedures['energy'][super.name().lower()] = run_dft
 
 
 def energy(name, **kwargs):
