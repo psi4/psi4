@@ -203,11 +203,6 @@ ZMatrixEntry::set_coordinates(double x, double y, double z)
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
         double aval = a(coordinates_, rto_->compute(), ato_->compute());
         // Noise creeps in for linear molecules. Force linearity, if it is close enough.
-        if (fabs(aval - M_PI) < 1.0e-5)
-            if (aval > 0.0)
-                aval = M_PI;
-            else
-                aval = -M_PI;
         double val = 180.0*aval/M_PI;
         aval_->set(val);
     }
