@@ -46,7 +46,7 @@ cc19:         CCSD/cc-pVDZ dipole polarizability at two frequencies
 cc2:          6-31G** H2O CCSD optimization by energies, with Z-Matrix input
 
 
-cc21:         ROHF-EOM-CCSD/DZ geometry optimization of the lowest 2A1 excited state of H2O+ (B1 excitation).
+cc21:         ROHF-EOM-CCSD/DZ analytic gradient lowest $^{2}A@@1$ excited state of H2O+ (B1 excitation)
 
 
 cc22:         ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in $^{3}B@@1$ CH2.
@@ -229,6 +229,12 @@ dft1:         DFT Functional Test
 dft2:         DFT Functional Test
 
 
+docs_dft:     This test is used to construct the documentation; it is not suitable for emulation by users.
+
+
+docs_psimod:  This test is used to construct the documentation; it is not suitable for emulation by users.
+
+
 fci-dipole:   6-31G H2O Test FCI Energy Point
 
 
@@ -356,6 +362,15 @@ props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation
 
 
 psimrcc-ccsd_t-1:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
+
+
+psimrcc-ccsd_t-2:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
+
+
+psimrcc-ccsd_t-3:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using the Ms = 0 component of the singlet.  Uses RHF singlet orbitals.
+
+
+psimrcc-ccsd_t-4:  Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
 
 
 psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.

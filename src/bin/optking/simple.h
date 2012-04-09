@@ -7,6 +7,7 @@
 #define _opt_simple_h_
 
 #include <cstdio>
+#include <string>
 #include "mem.h"
 
 namespace opt {
@@ -83,6 +84,9 @@ class SIMPLE {
 
     // for debugging, print s vectors to output file
     virtual void print_s(FILE *fp, GeomType geom) const = 0;
+
+    // function to return string of coordinate definition
+    virtual std::string get_definition_string(int atom_offset=0) const = 0;
 
     // each derived class should have an equality operator of this type that
     // first checks types with g_type() and then, if true, compares

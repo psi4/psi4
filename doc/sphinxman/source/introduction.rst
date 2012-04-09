@@ -46,6 +46,16 @@ Citing |PSIfour|
 The following citation should be used in any publication utilizing the
 |PSIfour| program package:
 
+.. rubric:: `PSI4 <http://dx.doi.org/10.1002/wcms.93>`_
+
+* "Psi4: an open-source *ab initio* electronic structure program,"
+  J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein, F.
+  Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke, M. L.
+  Abrams, N. J.  Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl, W. D.
+  Allen, H. F.  Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill, and T.
+  D. Crawford, *WIREs Comput. Mol. Sci.*, (2011) (doi: 10.1002/wcms.93)
+
+
 Depending on the particular modules used, the user may also wish to
 cite some of the following references for theoretical, algorithmic,
 or implementation contributions specific to |PSIfour| (in addition to
@@ -74,7 +84,7 @@ appropriate references for the underlying theory):
 
 * "The Configuration Interaction Method: Advances in Highly 
   Correlated Approaches," C. D. Sherrill and H. F. Schaefer, in
-  *Adv. Quantum Chem.*, vol. 34, P.-O. L{\"o}wdin, Ed.
+  *Adv. Quantum Chem.*, vol. 34, P.-O. L\ |o_dots|\ wdin, Ed.
   (Academic Press, New York, 1999), pp. 143-269.
 
 .. rubric:: CC

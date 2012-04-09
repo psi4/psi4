@@ -12,7 +12,7 @@
 User-Defined Basis Sets
 =======================
 
-There are three routes by which a basis set in G94 format can be introduced to |PSIfour|'s notice.
+There are three routes by which a basis set in G94 format can be introduced to |PSIfours| notice.
 
 
 .. rubric:: (1) Install new basis set file into |PSIfour| basis library.

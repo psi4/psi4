@@ -18,6 +18,10 @@
 #define EXTERN
 #include "globals.h"
 
+#if defined(OPTKING_PACKAGE_PSI)
+#include <libmints/molecule.h>
+#endif
+
 namespace opt {
 
 using namespace v3d;
@@ -161,8 +165,11 @@ void MOLECULE::fragmentize(void) {
   
         FRAG * one_frag = new FRAG(frag_natom[ifrag], Z_frag, geom_frag);
         one_frag->set_grad(grad_frag);
-        fragments.push_back(one_frag);
         free_matrix(grad_frag);
+
+        // update connectivity and add to list
+        one_frag->update_connectivity_by_distances();
+        fragments.push_back(one_frag);
   
       }
   
@@ -232,7 +239,8 @@ void MOLECULE::add_interfragment(void) {
       }
       ndA = ndB = 1;
 
-      fprintf(outfile,"\tClosest atoms between fragments is A %d, B %d\n", A1, B1);
+      fprintf(outfile,"\tNearest atoms on two fragments are %d and %d.\n",
+        g_atom_offset(frag_i)+A1+1, g_atom_offset(frag_i+1)+B1+1);
 
       // A2 is bonded to A1, but A2-A1-B1 must not be collinear
       for (int iA=0; iA < nA; ++iA) {
@@ -378,6 +386,63 @@ void MOLECULE::add_interfragment(void) {
   }
 
   fflush(outfile);
+}
+
+// Check to see if displacement along any of the interfragment modes breakes
+// the symmetry of the molecule.  If so, freeze it.  This is a hack for now.
+// will it work?  RAK 3-2012
+void MOLECULE::freeze_interfragment_asymm(void) {
+  double **coord_orig = g_geom_2D();
+  double disp_size = 0.1;
+
+  fprintf(outfile,"\tChecking interfragment coordinates for ones that break symmetry.\n");
+  fflush(outfile);
+
+  for (int I=0; I<interfragments.size(); ++I) {
+    double **B = interfragments[I]->compute_B(); // ->g_nintco() X (3*atom A)+3(natom_B)
+
+    int iA = interfragments[I]->g_A_index();
+    int iB = interfragments[I]->g_B_index();
+    int nA = interfragments[I]->g_natom_A();
+    int nB = interfragments[I]->g_natom_B();
+
+    for (int i=0; i<interfragments[I]->g_nintco(); ++i) {
+      bool symmetric_intco = true;
+
+      double **coord = matrix_return_copy(coord_orig, g_natom(), 3);
+
+      for (int atom_a=0; atom_a<nA; ++atom_a)
+        for (int xyz=0; xyz<3; ++xyz)
+          coord[g_atom_offset(iA)+atom_a][xyz] += disp_size * B[i][3*atom_a+xyz];
+
+      for (int atom_b=0; atom_b<nB; ++atom_b)
+        for (int xyz=0; xyz<3; ++xyz)
+          coord[g_atom_offset(iB)+atom_b][xyz] += disp_size * B[i][3*atom_b+xyz];
+
+
+#if defined(OPTKING_PACKAGE_PSI)
+      psi::Process::environment.molecule()->set_geometry(coord);
+      symmetric_intco = psi::Process::environment.molecule()->valid_atom_map();
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // not implemented yet
+#endif
+      if (symmetric_intco)
+        fprintf(outfile,"\tInterfragment coordinate %d, %d is symmetric.\n", I+1, i+1);
+      else {
+        fprintf(outfile,"\tInterfragment coordinate %d, %d breaks symmetry - freezing.\n", I+1, i+1);
+        fflush(outfile);
+        interfragments[I]->freeze(i);
+      }
+      free(coord);
+    }
+    free_matrix(B);
+  }
+
+#if defined(OPTKING_PACKAGE_PSI)
+      psi::Process::environment.molecule()->set_geometry(coord_orig);
+#endif
+
+  return;
 }
 
 } // namespace opt

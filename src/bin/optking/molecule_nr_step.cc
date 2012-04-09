@@ -29,7 +29,7 @@ void MOLECULE::nr_step(void) {
   int Nintco = g_nintco();
   double **H_inv;
 
-  double *f_q = p_Opt_data->g_forces_pointer();
+  double *fq = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
   double *dq = p_Opt_data->g_dq_pointer();
 
@@ -39,9 +39,9 @@ void MOLECULE::nr_step(void) {
   double nr_h;         // hessian in step direction
   double DE_projected; // projected energy change by quadratic approximation
 
-  // Hinv f_q = dq
+  // Hinv fq = dq
   H_inv = symm_matrix_inv(H, Nintco, 1);
-  opt_matrix_mult(H_inv, 0, &f_q, 1, &dq, 1, Nintco, Nintco, 1, 0);
+  opt_matrix_mult(H_inv, 0, &fq, 1, &dq, 1, Nintco, Nintco, 1, 0);
   free_matrix(H_inv);
 
   // Zero steps for frozen fragment
@@ -63,7 +63,7 @@ void MOLECULE::nr_step(void) {
   array_normalize(nr_u, Nintco);
   
   // get gradient and hessian in step direction
-  nr_g = -1 * array_dot(f_q, nr_u, Nintco); // gradient, not force
+  nr_g = -1 * array_dot(fq, nr_u, Nintco); // gradient, not force
 
   nr_h = 0;
   for (i=0; i<Nintco; ++i)
@@ -78,20 +78,17 @@ void MOLECULE::nr_step(void) {
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
   }
 
   // do displacements for interfragment coordinates
-  double *q_target;
   for (int I=0; I<interfragments.size(); ++I) {
-
-    q_target = interfragments[I]->intco_values();
-    for (i=0; i<interfragments[I]->g_nintco(); ++i)
-      q_target[i] += dq[g_interfragment_intco_offset(I) + i];
-
-    interfragments[I]->orient_fragment(q_target);
-
-    free_array(q_target);
+    if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      continue;
+    }
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
+                                        &(fq[g_interfragment_intco_offset(I)]) );
   }
 
 #if defined(OPTKING_PACKAGE_QCHEM)

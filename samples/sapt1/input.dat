@@ -19,8 +19,6 @@ molecule ethene_ethyne {
      H     0.000000     0.000000     0.627352
      H     0.000000     0.000000     3.963929
      units angstrom
-     no_reorient
-     symmetry c1
 }
 
 set globals {

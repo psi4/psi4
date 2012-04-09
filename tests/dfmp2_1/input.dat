@@ -34,7 +34,7 @@ set globals {
    d_convergence 11
 }
 
-e_cp = cp('dfmp2')
+e_cp = cp('df-mp2')
 
 compare_values(Enuc, formic_dim.nuclear_repulsion_energy(), 7, "Nuclear Repulsion Energy") #TEST
 compare_values(Ecp, e_cp, 5, "CP Corrected cc-pVDZ/cc-pVDZ-RI DFMP2")                      #TEST
