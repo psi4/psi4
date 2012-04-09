@@ -95,7 +95,7 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
 * **input.dat** |w---w| Sample input file for the plugin (old style).
   Modifications to a standard input file needed to run the plugin are (1)
   the line ``plugin_load("./myplugin.so")`` before any keyword setting to
-  load the plugin's options into |PSIfour|'s options data structure and (2)
+  load the plugin's options into |PSIfours| options data structure and (2)
   the final line ``plugin("./myplugin.so")`` to call the plugin code after
   any necessary preparatory modules (here, scf) have been run.
 
@@ -117,7 +117,7 @@ In addition to the main ``myplugin.cc`` file, a fresh plugin directory contains 
   the ``# Load C++ plugin`` section as modeled in
   :source:`tests/plugin_libcim/__init__.py`).
 
-  .. literalinclude:: ../../../lib/plugin/__init__.py.template
+  .. literalinclude:: @SFNX_INCLUDE@lib/plugin/__init__.py.template
 
 * **inputalt.dat** |w---w| Sample input file for the plugin (new style).
   Since the ``__init__.py`` file makes the plugin directory look like a

@@ -9,11 +9,8 @@
 #include "PZ81_Cfunctional.h"
 #include "P86_Cfunctional.h"
 #include "PW91_Cfunctional.h"
-#include "PW92_Cfunctional.h"
 #include "PBE_Cfunctional.h"
 #include "FT97_Cfunctional.h"
-#include "B972_Cfunctional.h"
-#include "B974_Cfunctional.h"
 #include "VWN3_Cfunctional.h"
 #include "VWN5_Cfunctional.h"
 
@@ -76,11 +73,17 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         fun = static_cast<Functional*>(x);
     } else if (alias == "wPBE_X") {
         wPBEXFunctional* x = new wPBEXFunctional();
-        x->set_hjs(true);
+        x->set_B88(false);
         fun = static_cast<Functional*>(x);
-    } else if (alias == "wHSE_X") {
+    } else if (alias == "wB88_X") {
         wPBEXFunctional* x = new wPBEXFunctional();
-        x->set_hjs(false);
+        x->set_B88(true);
+        fun = static_cast<Functional*>(x);
+    } else if (alias == "PW92_C") {
+        CFunctional* x = new CFunctional();
+        x->lsda_type_  = CFunctional::PW92;
+        x->gga_type_  = CFunctional::GGA_None;
+        x->meta_type_ = CFunctional::Meta_None;
         fun = static_cast<Functional*>(x);
     } else if (alias == "B_C") {
         CFunctional* x = new CFunctional();
@@ -107,16 +110,10 @@ boost::shared_ptr<Functional> Functional::build_base(const std::string& alias)
         fun = new P86_CFunctional();
     } else if (alias == "PW91_C") {
         fun = new PW91_CFunctional();
-    } else if (alias == "PW92_C") {
-        fun = new PW92_CFunctional();
     } else if (alias == "PBE_C") {
         fun = new PBE_CFunctional();
     } else if (alias == "FT97_C") {
         fun = new FT97_CFunctional();
-    } else if (alias == "B972_C") {
-        fun = new B972_CFunctional();
-    } else if (alias == "B974_C") {
-        fun = new B974_CFunctional();
     } else if (alias == "VWN3_C") {
         fun = new VWN3_CFunctional();
     } else if (alias == "VWN5_C") {

@@ -136,6 +136,7 @@ sub print_hash
         open(SSOUT,">$ssout") or die "\nI can't write to $ssout\n";
         printf SSOUT ".. _`apdx:%s`:\n\n", lc($Module);
         printf SSOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
+        if (exists $ModuleDescriptions{$Module}) { printf SSOUT "$ModuleDescriptions{$Module}\n\n"; }
         printf SSOUT ".. toctree::\n   :hidden:\n   :glob:\n\n   %s__*\n\n", lc($Module);
      }
      else { 
@@ -546,6 +547,7 @@ foreach my $Module (@PSIMODULES) {
        printf VVOUT ".. _`apdx:%s_psivar`:\n\n", lc($Module);
        my $Moddivider = "=" x length($Module);
        printf VVOUT "\n%s\n%s\n\n", uc($Module), $Moddivider;
+       if (exists $ModuleDescriptions{$Module}) { printf VVOUT "$ModuleDescriptions{$Module}\n\n"; }
        print VVOUT ".. hlist::\n   :columns: 1\n\n";
        foreach my $Var (sort keys %EnvHash) {
            printf TEXOUT '\\begin{tabular*}{\\textwidth}[tb]{p{1.0\\textwidth}}';

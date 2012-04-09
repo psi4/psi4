@@ -199,7 +199,7 @@ void export_mints()
             def("matrix", &CdSalcList::matrix, "docstring");
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper", "docstring").
-            def(init<boost::shared_ptr<Molecule>, boost::shared_ptr<BasisSet> >()).
+            def(init<boost::shared_ptr<BasisSet> >()).
             def("integrals", &MintsHelper::integrals, "docstring").
             def("one_electron_integrals", &MintsHelper::one_electron_integrals, "docstring").
             def("basisset", &MintsHelper::basisset, "docstring").

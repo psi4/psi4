@@ -12,7 +12,7 @@ clean molecule, basis, and option specification in the |PSIfour| input file.
 This documentation addresses the pure Python side- what functions allow
 the efficient compiled code to be run, what functions post-process and
 interact with that output, and how the ordinary (or ambitious) user can
-extent |PSIfour|\ 's functionality.
+extent |PSIfours| functionality.
 
 .. toctree::
    :maxdepth: 2

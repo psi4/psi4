@@ -34,7 +34,7 @@ namespace opt {
 //
 //  std::vector<STEP_DATA *> steps;
 //   Last step data unchanged:
-//    f_q
+//    fq
 //    geom
 //    energy
 //    unit_step
@@ -92,32 +92,31 @@ void MOLECULE::backstep(void) {
 
   fprintf(outfile, "\tNewly projected energy change : %20.10lf\n", DE_projected);
 
+  double *fq = p_Opt_data->g_last_forces_pointer();
+
   // do displacements for each fragment separately
   for (int f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
       fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
-    fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+    fragments[f]->displace(&(dq[g_intco_offset(f)]), &(fq[g_intco_offset(f)]), g_atom_offset(f));
   }
 
   // do displacements for interfragment coordinates
-  double *q_target;
   for (int I=0; I<interfragments.size(); ++I) {
-
-    q_target = interfragments[I]->intco_values();
-    for (int i=0; i<interfragments[I]->g_nintco(); ++i)
-      q_target[i] += dq[g_interfragment_intco_offset(I) + i];
-
-    interfragments[I]->orient_fragment(q_target);
-
-    free_array(q_target);
+    if (interfragments[I]->is_frozen() || Opt_params.freeze_interfragment) {
+      fprintf(outfile,"\tDisplacements for frozen interfragment %d skipped.\n", I+1);
+      continue;
+    }
+    interfragments[I]->orient_fragment( &(dq[g_interfragment_intco_offset(I)]),
+                                        &(fq[g_interfragment_intco_offset(I)]) );
   }
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   // fix rotation matrix for rotations in QCHEM EFP code
   for (int I=0; I<efp_fragments.size(); ++I)
-    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
+    efp_fragments[I]->displace( I, &(dq[g_efp_fragment_atom_offset(I)]) );
 #endif
 
   symmetrize_geom(); // now symmetrize the geometry for next step

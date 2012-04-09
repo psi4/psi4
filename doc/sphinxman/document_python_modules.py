@@ -5,8 +5,19 @@ import os
 import glob
 import re
 
+
+DriverPath = ''
+InsertPath = '/../../../'
+if (len(sys.argv) == 2):
+    DriverPath = sys.argv[1] + '/'
+    sys.path.insert(0, os.path.abspath(os.getcwd()))
+    import apply_relpath
+    IncludePath = apply_relpath.get_topsrcdir_asrelativepathto_objdirsfnxsource()[1]
+
+
 def pts(category, pyfile):
     print 'Auto-documenting %s file %s' % (category, pyfile)
+
 
 # Objective #1
 # Main driver modules in psi4/lib/python
@@ -17,7 +28,7 @@ fdriver.write('=============\n')
 fdriver.write('Python Driver\n')
 fdriver.write('=============\n\n')
 
-for pyfile in glob.glob('../../lib/python/*.py'):
+for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
@@ -33,13 +44,13 @@ for pyfile in glob.glob('../../lib/python/*.py'):
         fdriver.write('   :undoc-members:\n')
     
         if basename == 'driver':
-            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property\n')
+            fdriver.write('   :exclude-members: energy, optimize, opt, response, frequency, frequencies, freq, property, prop\n')
         elif basename == 'wrappers':
             fdriver.write('   :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction,\n')
             fdriver.write('       db, database, cbs, complete_basis_set, highest_1, scf_xtpl_helgaker_3,\n')
             fdriver.write('       scf_xtpl_helgaker_2, corl_xtpl_helgaker_2\n')
         elif basename == 'physconst':
-            fdriver.write('\n.. literalinclude:: ../../../lib/python/%s\n' % (filename))
+            fdriver.write('\n.. literalinclude:: %slib/python/%s\n' % (IncludePath, filename))
 
     fdriver.write('\n')
 fdriver.close()
@@ -50,7 +61,7 @@ fdriver.close()
 fdriver = open('source/autodoc_available_databases.rst', 'w')
 fdriver.write('\n\n')
 
-for pyfile in glob.glob('../../lib/databases/*.py'):
+for pyfile in glob.glob(DriverPath + '../../lib/databases/*.py'):
     filename = os.path.split(pyfile)[1]
     basename = os.path.splitext(filename)[0]
     div = '=' * len(basename)
@@ -322,7 +333,7 @@ fdriver.write('.. toctree::\n   :maxdepth: 1\n\n')
 fabbr = open('source/autodoc_abbr_options_plugins.rst', 'w')
 
 # from each plugin directory ...
-for pydir in glob.glob('../../tests/plugin_*'):
+for pydir in glob.glob(DriverPath + '../../tests/plugin_*'):
     dirname = os.path.split(pydir)[1]
     div = '=' * len(dirname)
 
@@ -348,7 +359,7 @@ for pydir in glob.glob('../../tests/plugin_*'):
         # ... include doc.rst file
         docfile = '%s/doc.rst' % (pydir)
         if os.path.isfile(docfile):
-            fmodule.write('.. include:: ../../%s\n\n' % (docfile))
+            fmodule.write('.. include:: %stests/%s/doc.rst\n\n' % (IncludePath, dirname))
 
         # ... include docstrings from any *.py files
         pyfiles = glob.glob(pydir + '/*.py')

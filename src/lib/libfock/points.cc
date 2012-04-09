@@ -27,22 +27,10 @@ std::vector<SharedMatrix> RKSFunctions::D_scratch()
     vec.push_back(D_local_);
     return vec;
 }
-std::vector<SharedMatrix> RKSFunctions::C_scratch()
-{
-    std::vector<SharedMatrix> vec;
-    vec.push_back(C_local_);
-    return vec;
-}
 void RKSFunctions::build_temps()
 {
     temp_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
     D_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
-
-    if (ansatz_ >= 2) {
-        int nocc = Cocc_AO_->colspi()[0];
-        C_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,nocc));
-        meta_temp_ = SharedMatrix(new Matrix("Meta Temp", max_points_,nocc));
-    }
 }
 void RKSFunctions::allocate()
 {
@@ -72,14 +60,12 @@ void RKSFunctions::allocate()
         point_values_["TAU_B"] = point_values_["TAU_A"];
     }
 }
-void RKSFunctions::set_pointers(SharedMatrix D_AO, SharedMatrix Cocc_AO)
+void RKSFunctions::set_pointers(SharedMatrix D_AO)
 {
     D_AO_ = D_AO;
-    Cocc_AO_ = Cocc_AO_;
     build_temps();
 }
-void RKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
-                                  SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
+void RKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
 {
     throw PSIEXCEPTION("RKSFunctions::unrestricted pointers are not appropriate. Read the source.");
 }
@@ -150,40 +136,24 @@ void RKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
-
-        // => Build local C matrix <= //
-        int na = Cocc_AO_->colspi()[0];
-        double** Cp = Cocc_AO_->pointer();
-        double** C2p = C_local_->pointer();
-        double** TCp = meta_temp_->pointer();
-
-        for (int mlocal = 0; mlocal < nlocal; mlocal++) {
-            int mglobal = function_map[mlocal];
-            ::memcpy(static_cast<void*>(C2p[mlocal]), static_cast<void*>(Cp[mglobal]), na * sizeof(double));
-        }
-
-        // => Build KE density A(N^2) <= //
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
         double** phizp = basis_values_["PHI_Z"]->pointer();
-        double* tauap = point_values_["TAU_A"]->pointer();
+        double* taup = point_values_["TAU_A"]->pointer();
 
-        // \nabla x
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
+        ::memset((void*) taup, '\0', sizeof(double) * npoints);
 
-        // \nabla y
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
+        double** phi[3];
+        phi[0] = phixp;
+        phi[1] = phiyp;
+        phi[2] = phizp;
 
-        // \nabla z
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
+        for (int x = 0; x < 3; x++) {
+            double** phic = phi[x];
+            C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phic[0],nglobal,D2p[0],nglobal,0.0,Tp[0],nglobal);
+            for (int P = 0; P < npoints; P++) {
+                taup[P] += C_DDOT(nlocal, phic[P], 1, Tp[P], 1);
+            }
         }
     }
 }
@@ -235,28 +205,12 @@ std::vector<SharedMatrix> UKSFunctions::D_scratch()
     vec.push_back(Db_local_);
     return vec;
 }
-std::vector<SharedMatrix> UKSFunctions::C_scratch()
-{
-    std::vector<SharedMatrix> vec;
-    vec.push_back(Ca_local_);
-    vec.push_back(Cb_local_);
-    return vec;
-}
 void UKSFunctions::build_temps()
 {
     tempa_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
     Da_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
     tempb_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
     Db_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
-
-    if (ansatz_ >= 2) {
-        int nocca = Caocc_AO_->colspi()[0];
-        int noccb = Cbocc_AO_->colspi()[0];
-        int nocc  = (nocca > noccb ? nocca : noccb);
-        Ca_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,nocca));
-        Cb_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,noccb));
-        meta_temp_ = SharedMatrix(new Matrix("Meta Temp", max_points_,nocc));
-    }
 }
 void UKSFunctions::allocate()
 {
@@ -286,17 +240,14 @@ void UKSFunctions::allocate()
         point_values_["TAU_B"] = boost::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
     }
 }
-void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO)
+void UKSFunctions::set_pointers(SharedMatrix Da_AO)
 {
     throw PSIEXCEPTION("UKSFunctions::restricted pointers are not appropriate. Read the source.");
 }
-void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
-                                  SharedMatrix Db_AO, SharedMatrix Cbocc_AO)
+void UKSFunctions::set_pointers(SharedMatrix Da_AO, SharedMatrix Db_AO)
 {
     Da_AO_ = Da_AO;
-    Caocc_AO_ = Caocc_AO_;
     Db_AO_ = Db_AO;
-    Cbocc_AO_ = Cbocc_AO_;
     build_temps();
 }
 void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
@@ -391,66 +342,43 @@ void UKSFunctions::compute_points(boost::shared_ptr<BlockOPoints> block)
 
     // => Build Meta quantities <= //
     if (ansatz_ >= 2) {
-
-        // => Build local C matrix <= //
-        int na = Caocc_AO_->colspi()[0];
-        int nb = Cbocc_AO_->colspi()[0];
-        int nc = (na > nb ? na : nb);
-        double** Cap = Caocc_AO_->pointer();
-        double** Cbp = Cbocc_AO_->pointer();
-        double** Ca2p = Ca_local_->pointer();
-        double** Cb2p = Cb_local_->pointer();
-        double** TCp  = meta_temp_->pointer();
-
-        for (int mlocal = 0; mlocal < nlocal; mlocal++) {
-            int mglobal = function_map[mlocal];
-            ::memcpy(static_cast<void*>(Ca2p[mlocal]), static_cast<void*>(Cap[mglobal]), na * sizeof(double));
-            ::memcpy(static_cast<void*>(Cb2p[mlocal]), static_cast<void*>(Cbp[mglobal]), nb * sizeof(double));
-        }
-
-        // => Build KE density A(N^2) <= //
         double** phixp = basis_values_["PHI_X"]->pointer();
         double** phiyp = basis_values_["PHI_Y"]->pointer();
         double** phizp = basis_values_["PHI_Z"]->pointer();
         double* tauap = point_values_["TAU_A"]->pointer();
         double* taubp = point_values_["TAU_B"]->pointer();
 
-        // Alpha
-        // \nabla x
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
+        ::memset((void*) tauap, '\0', sizeof(double) * npoints);
+        ::memset((void*) taubp, '\0', sizeof(double) * npoints);
 
-        // \nabla y
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
+        double** phi[3];
+        phi[0] = phixp;
+        phi[1] = phiyp;
+        phi[2] = phizp;
 
-        // \nabla z
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
-        }
+        double* tau[2];
+        tau[0] = tauap;
+        tau[1] = taubp;
 
-        // Beta
-        // \nabla x
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phixp[0],nlocal,Cb2p[0],nb,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            taubp[P] = C_DDOT(nb,TCp[P],1,TCp[P],1);
-        }
+        double** D[2];
+        D[0] = Da2p;
+        D[1] = Db2p;
+        
+        double** T[2];
+        T[0] = Tap;
+        T[1] = Tbp;
 
-        // \nabla y
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phiyp[0],nlocal,Cb2p[0],nb,0.0,TCp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
-        }
-
-        // \nabla z
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phizp[0],nlocal,Cb2p[0],nb,0.0,Tbp[0],nc);
-        for (int P = 0; P < npoints; P++) {
-            taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
+        for (int x = 0; x < 3; x++) {
+            for (int t = 0; t < 2; t++) {
+                double** phic = phi[x];
+                double** Dc = D[t];
+                double** Tc = T[t];
+                double*  tauc = tau[t];
+                C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phic[0],nglobal,Dc[0],nglobal,0.0,Tc[0],nglobal);
+                for (int P = 0; P < npoints; P++) {
+                    tauc[P] += C_DDOT(nlocal, phic[P], 1, Tc[P], 1);
+                }
+            }
         }
     }
 }
