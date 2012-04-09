@@ -1,10 +1,12 @@
-NAME
+Python Library Documentation: module PsiMod
+
+NNAAMMEE
     PsiMod
 
-FILE
+FFIILLEE
     (built-in)
 
-CLASSES
+CCLLAASSSSEESS
     Boost.Python.enum(__builtin__.int)
         DiagonalizeOrder
         PsiReturnType
@@ -16,6 +18,8 @@ CLASSES
         CdSalcList
         Checkpoint
         DFChargeFitter
+        Dimension
+        Dispersion
         Environment
         ExternalPotential
         FittingMetric
@@ -32,6 +36,7 @@ CLASSES
         MultipoleSymmetry
         NBOWriter
         OEProp
+        OrbitalSpace
         PetiteList
         PointGroup
         Process
@@ -41,12 +46,13 @@ CLASSES
         SymmetryOperation
         Vector
         Vector3
+        View
         Wavefunction
             HF
                 RHF(HF, Wavefunction)
         matrix_vector
     
-    class Arguments(Boost.Python.instance)
+    class AArrgguummeennttss(Boost.Python.instance)
      |  Method resolution order:
      |      Arguments
      |      Boost.Python.instance
@@ -54,34 +60,34 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __getitem__(...)
+     |  ____ggeettiitteemm____(...)
      |      __getitem__( (Arguments)arg1, (int)arg2) -> str :
      |          docstring
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 40
+     |  ____iinnssttaannccee__ssiizzee____ = 56
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class BasisSet(Boost.Python.instance)
+    class BBaassiissSSeett(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -91,68 +97,71 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____aadddd____(...)
+     |      __add__( (BasisSet)arg1, (BasisSet)arg2) -> object
      |  
-     |  max_am(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
+     |  
+     |  mmaaxx__aamm(...)
      |      max_am( (BasisSet)arg1) -> int :
      |          docstring
      |  
-     |  nao(...)
+     |  nnaaoo(...)
      |      nao( (BasisSet)arg1) -> int :
      |          docstring
      |  
-     |  nbf(...)
+     |  nnbbff(...)
      |      nbf( (BasisSet)arg1) -> int :
      |          docstring
      |  
-     |  nprimitive(...)
+     |  nnpprriimmiittiivvee(...)
      |      nprimitive( (BasisSet)arg1) -> int :
      |          docstring
      |  
-     |  nshell(...)
+     |  nnsshheellll(...)
      |      nshell( (BasisSet)arg1) -> int :
      |          docstring
      |  
-     |  print_detail_out(...)
+     |  pprriinntt__ddeettaaiill__oouutt(...)
      |      print_detail_out( (BasisSet)arg1) -> None :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (BasisSet)arg1) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  construct(...)
+     |  ccoonnssttrruucctt(...)
      |      construct( (BasisSetParser)arg1, (Molecule)arg2, (str)arg3) -> BasisSet :
      |          docstring
      |  
-     |  make_filename(...)
+     |  mmaakkee__ffiilleennaammee(...)
      |      make_filename( (str)arg1) -> str :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class BasisSetParser(Boost.Python.instance)
+    class BBaassiissSSeettPPaarrsseerr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -162,29 +171,29 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class CdSalcList(Boost.Python.instance)
+    class CCddSSaallccLLiisstt(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -194,37 +203,37 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  matrix(...)
+     |  mmaattrriixx(...)
      |      matrix( (CdSalcList)arg1) -> Matrix :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (CdSalcList)arg1) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Checkpoint(Boost.Python.instance)
+    class CChheecckkppooiinntt(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -234,73 +243,73 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1, (IO)arg2, (int)arg3) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  shared_object(...)
+     |  sshhaarreedd__oobbjjeecctt(...)
      |      shared_object() -> Checkpoint :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors defined here:
      |  
-     |  disp
+     |  ddiisspp
      |      docstring
      |  
-     |  e_t
+     |  ee__tt
      |      docstring
      |  
-     |  eccsd
+     |  eeccccssdd
      |      docstring
      |  
-     |  ecorr
+     |  eeccoorrrr
      |      docstring
      |  
-     |  efzc
+     |  eeffzzcc
      |      docstring
      |  
-     |  emp2
+     |  eemmpp22
      |      docstring
      |  
-     |  enuc
+     |  eennuucc
      |      docstring
      |  
-     |  eref
+     |  eerreeff
      |      docstring
      |  
-     |  escf
+     |  eessccff
      |      docstring
      |  
-     |  etot
+     |  eettoott
      |      docstring
      |  
-     |  label
+     |  llaabbeell
      |      docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class DFChargeFitter(Boost.Python.instance)
+    class DDFFCChhaarrggeeFFiitttteerr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -310,50 +319,50 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  d(...)
+     |  dd(...)
      |      d( (DFChargeFitter)arg1) -> Vector :
      |          docstring
      |  
-     |  fit(...)
+     |  ffiitt(...)
      |      fit( (DFChargeFitter)arg1) -> Vector :
      |          docstring
      |  
-     |  setAuxiliary(...)
+     |  sseettAAuuxxiilliiaarryy(...)
      |      setAuxiliary( (DFChargeFitter)arg1, (BasisSet)arg2) -> None :
      |          docstring
      |  
-     |  setD(...)
+     |  sseettDD(...)
      |      setD( (DFChargeFitter)arg1, (Matrix)arg2) -> None :
      |          docstring
      |  
-     |  setPrimary(...)
+     |  sseettPPrriimmaarryy(...)
      |      setPrimary( (DFChargeFitter)arg1, (BasisSet)arg2) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class DiagonalizeOrder(Boost.Python.enum)
+    class DDiiaaggoonnaalliizzeeOOrrddeerr(Boost.Python.enum)
      |  docstring
      |  
      |  Method resolution order:
@@ -364,168 +373,168 @@ CLASSES
      |  
      |  Data and other attributes defined here:
      |  
-     |  Ascending = PsiMod.DiagonalizeOrder.Ascending
+     |  AAsscceennddiinngg = PsiMod.DiagonalizeOrder.Ascending
      |  
-     |  Descending = PsiMod.DiagonalizeOrder.Descending
+     |  DDeesscceennddiinngg = PsiMod.DiagonalizeOrder.Descending
      |  
-     |  names = {'Ascending': PsiMod.DiagonalizeOrder.Ascending, 'Descending':...
+     |  nnaammeess = {'Ascending': PsiMod.DiagonalizeOrder.Ascending, 'Descending':...
      |  
-     |  values = {1: PsiMod.DiagonalizeOrder.Ascending, 3: PsiMod.DiagonalizeO...
+     |  vvaalluueess = {1: PsiMod.DiagonalizeOrder.Ascending, 3: PsiMod.DiagonalizeO...
      |  
      |  ----------------------------------------------------------------------
      |  Methods inherited from Boost.Python.enum:
      |  
-     |  __repr__(...)
+     |  ____rreepprr____(...)
      |      x.__repr__() <==> repr(x)
      |  
-     |  __str__(...)
+     |  ____ssttrr____(...)
      |      x.__str__() <==> str(x)
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.enum:
      |  
-     |  name
+     |  nnaammee
      |  
      |  ----------------------------------------------------------------------
      |  Methods inherited from __builtin__.int:
      |  
-     |  __abs__(...)
+     |  ____aabbss____(...)
      |      x.__abs__() <==> abs(x)
      |  
-     |  __add__(...)
+     |  ____aadddd____(...)
      |      x.__add__(y) <==> x+y
      |  
-     |  __and__(...)
+     |  ____aanndd____(...)
      |      x.__and__(y) <==> x&y
      |  
-     |  __cmp__(...)
+     |  ____ccmmpp____(...)
      |      x.__cmp__(y) <==> cmp(x,y)
      |  
-     |  __coerce__(...)
+     |  ____ccooeerrccee____(...)
      |      x.__coerce__(y) <==> coerce(x, y)
      |  
-     |  __div__(...)
+     |  ____ddiivv____(...)
      |      x.__div__(y) <==> x/y
      |  
-     |  __divmod__(...)
+     |  ____ddiivvmmoodd____(...)
      |      x.__divmod__(y) <==> divmod(x, y)
      |  
-     |  __float__(...)
+     |  ____ffllooaatt____(...)
      |      x.__float__() <==> float(x)
      |  
-     |  __floordiv__(...)
+     |  ____fflloooorrddiivv____(...)
      |      x.__floordiv__(y) <==> x//y
      |  
-     |  __format__(...)
+     |  ____ffoorrmmaatt____(...)
      |  
-     |  __getattribute__(...)
+     |  ____ggeettaattttrriibbuuttee____(...)
      |      x.__getattribute__('name') <==> x.name
      |  
-     |  __getnewargs__(...)
+     |  ____ggeettnneewwaarrggss____(...)
      |  
-     |  __hash__(...)
+     |  ____hhaasshh____(...)
      |      x.__hash__() <==> hash(x)
      |  
-     |  __hex__(...)
+     |  ____hheexx____(...)
      |      x.__hex__() <==> hex(x)
      |  
-     |  __index__(...)
+     |  ____iinnddeexx____(...)
      |      x[y:z] <==> x[y.__index__():z.__index__()]
      |  
-     |  __int__(...)
+     |  ____iinntt____(...)
      |      x.__int__() <==> int(x)
      |  
-     |  __invert__(...)
+     |  ____iinnvveerrtt____(...)
      |      x.__invert__() <==> ~x
      |  
-     |  __long__(...)
+     |  ____lloonngg____(...)
      |      x.__long__() <==> long(x)
      |  
-     |  __lshift__(...)
+     |  ____llsshhiifftt____(...)
      |      x.__lshift__(y) <==> x<<y
      |  
-     |  __mod__(...)
+     |  ____mmoodd____(...)
      |      x.__mod__(y) <==> x%y
      |  
-     |  __mul__(...)
+     |  ____mmuull____(...)
      |      x.__mul__(y) <==> x*y
      |  
-     |  __neg__(...)
+     |  ____nneegg____(...)
      |      x.__neg__() <==> -x
      |  
-     |  __nonzero__(...)
+     |  ____nnoonnzzeerroo____(...)
      |      x.__nonzero__() <==> x != 0
      |  
-     |  __oct__(...)
+     |  ____oocctt____(...)
      |      x.__oct__() <==> oct(x)
      |  
-     |  __or__(...)
+     |  ____oorr____(...)
      |      x.__or__(y) <==> x|y
      |  
-     |  __pos__(...)
+     |  ____ppooss____(...)
      |      x.__pos__() <==> +x
      |  
-     |  __pow__(...)
+     |  ____ppooww____(...)
      |      x.__pow__(y[, z]) <==> pow(x, y[, z])
      |  
-     |  __radd__(...)
+     |  ____rraadddd____(...)
      |      x.__radd__(y) <==> y+x
      |  
-     |  __rand__(...)
+     |  ____rraanndd____(...)
      |      x.__rand__(y) <==> y&x
      |  
-     |  __rdiv__(...)
+     |  ____rrddiivv____(...)
      |      x.__rdiv__(y) <==> y/x
      |  
-     |  __rdivmod__(...)
+     |  ____rrddiivvmmoodd____(...)
      |      x.__rdivmod__(y) <==> divmod(y, x)
      |  
-     |  __rfloordiv__(...)
+     |  ____rrfflloooorrddiivv____(...)
      |      x.__rfloordiv__(y) <==> y//x
      |  
-     |  __rlshift__(...)
+     |  ____rrllsshhiifftt____(...)
      |      x.__rlshift__(y) <==> y<<x
      |  
-     |  __rmod__(...)
+     |  ____rrmmoodd____(...)
      |      x.__rmod__(y) <==> y%x
      |  
-     |  __rmul__(...)
+     |  ____rrmmuull____(...)
      |      x.__rmul__(y) <==> y*x
      |  
-     |  __ror__(...)
+     |  ____rroorr____(...)
      |      x.__ror__(y) <==> y|x
      |  
-     |  __rpow__(...)
+     |  ____rrppooww____(...)
      |      y.__rpow__(x[, z]) <==> pow(x, y[, z])
      |  
-     |  __rrshift__(...)
+     |  ____rrrrsshhiifftt____(...)
      |      x.__rrshift__(y) <==> y>>x
      |  
-     |  __rshift__(...)
+     |  ____rrsshhiifftt____(...)
      |      x.__rshift__(y) <==> x>>y
      |  
-     |  __rsub__(...)
+     |  ____rrssuubb____(...)
      |      x.__rsub__(y) <==> y-x
      |  
-     |  __rtruediv__(...)
+     |  ____rrttrruueeddiivv____(...)
      |      x.__rtruediv__(y) <==> y/x
      |  
-     |  __rxor__(...)
+     |  ____rrxxoorr____(...)
      |      x.__rxor__(y) <==> y^x
      |  
-     |  __sub__(...)
+     |  ____ssuubb____(...)
      |      x.__sub__(y) <==> x-y
      |  
-     |  __truediv__(...)
+     |  ____ttrruueeddiivv____(...)
      |      x.__truediv__(y) <==> x/y
      |  
-     |  __trunc__(...)
+     |  ____ttrruunncc____(...)
      |      Truncating an Integral returns itself.
      |  
-     |  __xor__(...)
+     |  ____xxoorr____(...)
      |      x.__xor__(y) <==> x^y
      |  
-     |  bit_length(...)
+     |  bbiitt__lleennggtthh(...)
      |      int.bit_length() -> int
      |      
      |      Number of bits necessary to represent self in binary.
@@ -534,31 +543,171 @@ CLASSES
      |      >>> (37).bit_length()
      |      6
      |  
-     |  conjugate(...)
+     |  ccoonnjjuuggaattee(...)
      |      Returns self, the complex conjugate of any int.
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from __builtin__.int:
      |  
-     |  denominator
+     |  ddeennoommiinnaattoorr
      |      the denominator of a rational number in lowest terms
      |  
-     |  imag
+     |  iimmaagg
      |      the imaginary part of a complex number
      |  
-     |  numerator
+     |  nnuummeerraattoorr
      |      the numerator of a rational number in lowest terms
      |  
-     |  real
+     |  rreeaall
      |      the real part of a complex number
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from __builtin__.int:
      |  
-     |  __new__ = <built-in method __new__ of type object>
+     |  ____nneeww____ = <built-in method __new__ of type object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Environment(Boost.Python.instance)
+    class DDiimmeennssiioonn(Boost.Python.instance)
+     |  docstring
+     |  
+     |  Method resolution order:
+     |      Dimension
+     |      Boost.Python.instance
+     |      __builtin__.object
+     |  
+     |  Methods defined here:
+     |  
+     |  ____ggeettiitteemm____(...)
+     |      __getitem__( (Dimension)arg1, (int)arg2) -> int :
+     |          docstring
+     |  
+     |  ____iinniitt____(...)
+     |      __init__( (object)arg1) -> None
+     |      
+     |      __init__( (object)arg1, (int)arg2) -> None
+     |      
+     |      __init__( (object)arg1, (int)arg2, (str)arg3) -> None
+     |  
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
+     |  
+     |  ____sseettiitteemm____(...)
+     |      __setitem__( (Dimension)arg1, (int)arg2, (int)arg3) -> None :
+     |          docstring
+     |  
+     |  iinniitt(...)
+     |      init( (Dimension)arg1, (str)arg2, (int)arg3) -> None :
+     |          docstring
+     |  
+     |  nn(...)
+     |      n( (Dimension)arg1) -> int :
+     |          docstring
+     |  
+     |  nnaammee(...)
+     |      name( (Dimension)arg1) -> str :
+     |          docstring
+     |  
+     |  sseett__nnaammee(...)
+     |      set_name( (Dimension)arg1, (str)arg2) -> None :
+     |          docstring
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes defined here:
+     |  
+     |  ____iinnssttaannccee__ssiizzee____ = 40
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from Boost.Python.instance:
+     |  
+     |  ____ddiicctt____
+     |  
+     |  ____wweeaakkrreeff____
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from Boost.Python.instance:
+     |  
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
+     |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+    
+    class DDiissppeerrssiioonn(Boost.Python.instance)
+     |  docstring
+     |  
+     |  Method resolution order:
+     |      Dispersion
+     |      Boost.Python.instance
+     |      __builtin__.object
+     |  
+     |  Methods defined here:
+     |  
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
+     |  
+     |  cciittaattiioonn(...)
+     |      citation( (Dispersion)arg1) -> str :
+     |          docstring
+     |  
+     |  ddeessccrriippttiioonn(...)
+     |      description( (Dispersion)arg1) -> str :
+     |          docstring
+     |  
+     |  nnaammee(...)
+     |      name( (Dispersion)arg1) -> str :
+     |          docstring
+     |  
+     |  pprriinntt__eenneerrggyy(...)
+     |      print_energy( (Dispersion)arg1, (Molecule)arg2) -> str :
+     |          docstring
+     |  
+     |  pprriinntt__ggrraaddiieenntt(...)
+     |      print_gradient( (Dispersion)arg1, (Molecule)arg2) -> str :
+     |          docstring
+     |  
+     |  pprriinntt__hheessssiiaann(...)
+     |      print_hessian( (Dispersion)arg1, (Molecule)arg2) -> str :
+     |          docstring
+     |  
+     |  pprriinntt__oouutt(...)
+     |      print_out( (Dispersion)arg1) -> None :
+     |          docstring
+     |  
+     |  sseett__cciittaattiioonn(...)
+     |      set_citation( (Dispersion)arg1, (str)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__ddeessccrriippttiioonn(...)
+     |      set_description( (Dispersion)arg1, (str)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__nnaammee(...)
+     |      set_name( (Dispersion)arg1, (str)arg2) -> None :
+     |          docstring
+     |  
+     |  ----------------------------------------------------------------------
+     |  Static methods defined here:
+     |  
+     |  bbuuiilldd(...)
+     |      build( (str)arg1, (float)arg2, (float)arg3, (float)arg4, (float)arg5) -> Dispersion :
+     |          docstring
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes defined here:
+     |  
+     |  ____iinniitt____ = <built-in function __init__>
+     |      Raises an exception
+     |      This class cannot be instantiated from Python
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from Boost.Python.instance:
+     |  
+     |  ____ddiicctt____
+     |  
+     |  ____wweeaakkrreeff____
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from Boost.Python.instance:
+     |  
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
+     |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+    
+    class EEnnvviirroonnmmeenntt(Boost.Python.instance)
      |  Method resolution order:
      |      Environment
      |      Boost.Python.instance
@@ -566,34 +715,34 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __getitem__(...)
+     |  ____ggeettiitteemm____(...)
      |      __getitem__( (Environment)arg1, (str)arg2) -> str :
      |          docstring
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 352
+     |  ____iinnssttaannccee__ssiizzee____ = 352
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class ExternalPotential(Boost.Python.instance)
+    class EExxtteerrnnaallPPootteennttiiaall(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -603,54 +752,54 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  addBasis(...)
+     |  aaddddBBaassiiss(...)
      |      addBasis( (ExternalPotential)arg1, (BasisSet)arg2, (Vector)arg3) -> None :
      |          docstring
      |  
-     |  addCharge(...)
+     |  aaddddCChhaarrggee(...)
      |      addCharge( (ExternalPotential)arg1, (float)arg2, (float)arg3, (float)arg4, (float)arg5) -> None :
      |          docstring
      |  
-     |  clear(...)
+     |  cclleeaarr(...)
      |      clear( (ExternalPotential)arg1) -> None :
      |          docstring
      |  
-     |  computePotentialMatrix(...)
+     |  ccoommppuutteePPootteennttiiaallMMaattrriixx(...)
      |      computePotentialMatrix( (ExternalPotential)arg1, (BasisSet)arg2) -> Matrix :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (ExternalPotential)arg1) -> None :
      |          docstring
      |  
-     |  setName(...)
+     |  sseettNNaammee(...)
      |      setName( (ExternalPotential)arg1, (str)arg2) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class FittingMetric(Boost.Python.instance)
+    class FFiittttiinnggMMeettrriicc(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -660,74 +809,74 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  form_QR_inverse(...)
+     |  ffoorrmm__QQRR__iinnvveerrssee(...)
      |      form_QR_inverse( (FittingMetric)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  form_cholesky_inverse(...)
+     |  ffoorrmm__cchhoolleesskkyy__iinnvveerrssee(...)
      |      form_cholesky_inverse( (FittingMetric)arg1) -> None :
      |          docstring
      |  
-     |  form_eig_inverse(...)
+     |  ffoorrmm__eeiigg__iinnvveerrssee(...)
      |      form_eig_inverse( (FittingMetric)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  form_fitting_metric(...)
+     |  ffoorrmm__ffiittttiinngg__mmeettrriicc(...)
      |      form_fitting_metric( (FittingMetric)arg1) -> None :
      |          docstring
      |  
-     |  form_full_inverse(...)
+     |  ffoorrmm__ffuullll__iinnvveerrssee(...)
      |      form_full_inverse( (FittingMetric)arg1) -> None :
      |          docstring
      |  
-     |  get_algorithm(...)
+     |  ggeett__aallggoorriitthhmm(...)
      |      get_algorithm( (FittingMetric)arg1) -> str :
      |          docstring
      |  
-     |  get_metric(...)
+     |  ggeett__mmeettrriicc(...)
      |      get_metric( (FittingMetric)arg1) -> Matrix :
      |          docstring
      |  
-     |  get_pivots(...)
+     |  ggeett__ppiivvoottss(...)
      |      get_pivots( (FittingMetric)arg1) -> IntVector :
      |          docstring
      |  
-     |  get_reverse_pivots(...)
+     |  ggeett__rreevveerrssee__ppiivvoottss(...)
      |      get_reverse_pivots( (FittingMetric)arg1) -> IntVector :
      |          docstring
      |  
-     |  is_inverted(...)
+     |  iiss__iinnvveerrtteedd(...)
      |      is_inverted( (FittingMetric)arg1) -> bool :
      |          docstring
      |  
-     |  is_poisson(...)
+     |  iiss__ppooiissssoonn(...)
      |      is_poisson( (FittingMetric)arg1) -> bool :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Functional(Boost.Python.instance)
+    class FFuunnccttiioonnaall(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -737,124 +886,124 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  computeRKSFunctional(...)
-     |      computeRKSFunctional( (Functional)arg1, (object)arg2) -> None :
+     |  aallpphhaa(...)
+     |      alpha( (Functional)arg1) -> float :
      |          docstring
      |  
-     |  computeUKSFunctional(...)
-     |      computeUKSFunctional( (Functional)arg1, (object)arg2) -> None :
+     |  cciittaattiioonn(...)
+     |      citation( (Functional)arg1) -> str :
      |          docstring
      |  
-     |  get_citation(...)
-     |      get_citation( (Functional)arg1) -> str :
+     |  ddeessccrriippttiioonn(...)
+     |      description( (Functional)arg1) -> str :
      |          docstring
      |  
-     |  get_density_cutoff(...)
-     |      get_density_cutoff( (Functional)arg1) -> float :
-     |          docstring
-     |  
-     |  get_deriv(...)
-     |      get_deriv( (Functional)arg1) -> int :
-     |          docstring
-     |  
-     |  get_description(...)
-     |      get_description( (Functional)arg1) -> str :
-     |          docstring
-     |  
-     |  get_name(...)
-     |      get_name( (Functional)arg1) -> str :
-     |          docstring
-     |  
-     |  get_npoints(...)
-     |      get_npoints( (Functional)arg1) -> int :
-     |          docstring
-     |  
-     |  get_parameters(...)
-     |      get_parameters( (Functional)arg1) -> object :
-     |          docstring
-     |  
-     |  get_parameters_string(...)
-     |      get_parameters_string( (Functional)arg1) -> str :
-     |          docstring
-     |  
-     |  is_gga(...)
+     |  iiss__ggggaa(...)
      |      is_gga( (Functional)arg1) -> bool :
      |          docstring
      |  
-     |  is_meta(...)
+     |  iiss__llrrcc(...)
+     |      is_lrc( (Functional)arg1) -> bool :
+     |          docstring
+     |  
+     |  iiss__mmeettaa(...)
      |      is_meta( (Functional)arg1) -> bool :
      |          docstring
      |  
-     |  set_citation(...)
+     |  llssddaa__ccuuttooffff(...)
+     |      lsda_cutoff( (Functional)arg1) -> float :
+     |          docstring
+     |  
+     |  mmeettaa__ccuuttooffff(...)
+     |      meta_cutoff( (Functional)arg1) -> float :
+     |          docstring
+     |  
+     |  nnaammee(...)
+     |      name( (Functional)arg1) -> str :
+     |          docstring
+     |  
+     |  oommeeggaa(...)
+     |      omega( (Functional)arg1) -> float :
+     |          docstring
+     |  
+     |  pprriinntt__ddeettaaiill(...)
+     |      print_detail( (SuperFunctional)arg1, (int)arg2) -> None :
+     |          docstring
+     |  
+     |  pprriinntt__oouutt(...)
+     |      print_out( (Functional)arg1) -> None :
+     |          docstring
+     |  
+     |  sseett__aallpphhaa(...)
+     |      set_alpha( (Functional)arg1, (float)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__cciittaattiioonn(...)
      |      set_citation( (Functional)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_density_cutoff(...)
-     |      set_density_cutoff( (Functional)arg1, (float)arg2) -> None :
-     |          docstring
-     |  
-     |  set_deriv(...)
-     |      set_deriv( (Functional)arg1, (int)arg2) -> None :
-     |          docstring
-     |  
-     |  set_description(...)
+     |  sseett__ddeessccrriippttiioonn(...)
      |      set_description( (Functional)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_name(...)
+     |  sseett__ggggaa(...)
+     |      set_gga( (Functional)arg1, (bool)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__llssddaa__ccuuttooffff(...)
+     |      set_lsda_cutoff( (Functional)arg1, (float)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__mmeettaa(...)
+     |      set_meta( (Functional)arg1, (bool)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__mmeettaa__ccuuttooffff(...)
+     |      set_meta_cutoff( (Functional)arg1, (float)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__nnaammee(...)
      |      set_name( (Functional)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_npoints(...)
-     |      set_npoints( (Functional)arg1, (int)arg2) -> None :
+     |  sseett__oommeeggaa(...)
+     |      set_omega( (Functional)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  set_parameter(...)
+     |  sseett__ppaarraammeetteerr(...)
      |      set_parameter( (Functional)arg1, (str)arg2, (float)arg3) -> None :
-     |          docstring
-     |  
-     |  set_parameters(...)
-     |      set_parameters( (Functional)arg1, (object)arg2) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  available_functionals(...)
-     |      available_functionals() -> str :
-     |          docstring
-     |  
-     |  available_names(...)
-     |      available_names() -> object :
-     |          docstring
-     |  
-     |  create_functional(...)
-     |      create_functional( (str)arg1, (int)arg2, (int)arg3) -> Functional :
+     |  bbuuiilldd__bbaassee(...)
+     |      build_base( (str)arg1) -> Functional :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Gaussian94BasisSetParser(BasisSetParser)
+    class GGaauussssiiaann9944BBaassiissSSeettPPaarrsseerr(BasisSetParser)
      |  docstring
      |  
      |  Method resolution order:
@@ -865,30 +1014,30 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class GridProp(Boost.Python.instance)
+    class GGrriiddPPrroopp(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -898,90 +1047,90 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  add(...)
+     |  aadddd(...)
      |      add( (GridProp)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  add_alpha_mo(...)
+     |  aadddd__aallpphhaa__mmoo(...)
      |      add_alpha_mo( (GridProp)arg1, (int)arg2, (int)arg3) -> None :
      |          docstring
      |  
-     |  add_basis_fun(...)
+     |  aadddd__bbaassiiss__ffuunn(...)
      |      add_basis_fun( (GridProp)arg1, (int)arg2, (int)arg3) -> None :
      |          docstring
      |  
-     |  add_beta_mo(...)
+     |  aadddd__bbeettaa__mmoo(...)
      |      add_beta_mo( (GridProp)arg1, (int)arg2, (int)arg3) -> None :
      |          docstring
      |  
-     |  build_grid_overages(...)
+     |  bbuuiilldd__ggrriidd__oovveerraaggeess(...)
      |      build_grid_overages( (GridProp)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  compute(...)
+     |  ccoommppuuttee(...)
      |      compute( (GridProp)arg1) -> None :
      |          docstring
      |  
-     |  get_l(...)
+     |  ggeett__ll(...)
      |      get_l( (GridProp)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  get_n(...)
+     |  ggeett__nn(...)
      |      get_n( (GridProp)arg1, (int)arg2) -> int :
      |          docstring
      |  
-     |  get_o(...)
+     |  ggeett__oo(...)
      |      get_o( (GridProp)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  set_caxis(...)
+     |  sseett__ccaaxxiiss(...)
      |      set_caxis( (GridProp)arg1, (float)arg2, (float)arg3) -> None :
      |          docstring
      |  
-     |  set_filename(...)
+     |  sseett__ffiilleennaammee(...)
      |      set_filename( (GridProp)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_format(...)
+     |  sseett__ffoorrmmaatt(...)
      |      set_format( (GridProp)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_l(...)
+     |  sseett__ll(...)
      |      set_l( (GridProp)arg1, (float)arg2, (float)arg3, (float)arg4) -> None :
      |          docstring
      |  
-     |  set_n(...)
+     |  sseett__nn(...)
      |      set_n( (GridProp)arg1, (int)arg2, (int)arg3, (int)arg4) -> None :
      |          docstring
      |  
-     |  set_o(...)
+     |  sseett__oo(...)
      |      set_o( (GridProp)arg1, (float)arg2, (float)arg3, (float)arg4) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class HF(Wavefunction)
+    class HHFF(Wavefunction)
      |  docstring
      |  
      |  Method resolution order:
@@ -992,104 +1141,116 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Methods inherited from Wavefunction:
      |  
-     |  Ca(...)
+     |  CCaa(...)
      |      Ca( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Cb(...)
+     |  CCbb(...)
      |      Cb( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Da(...)
+     |  DDaa(...)
      |      Da( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Db(...)
+     |  DDbb(...)
      |      Db( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Fa(...)
+     |  FFaa(...)
      |      Fa( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Fb(...)
+     |  FFbb(...)
      |      Fb( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  add_postiteration_callback(...)
+     |  aadddd__ppoossttiitteerraattiioonn__ccaallllbbaacckk(...)
      |      add_postiteration_callback( (Wavefunction)arg1, (object)arg2) -> None :
      |          docstring
      |  
-     |  add_preiteration_callback(...)
+     |  aadddd__pprreeiitteerraattiioonn__ccaallllbbaacckk(...)
      |      add_preiteration_callback( (Wavefunction)arg1, (object)arg2) -> None :
      |          docstring
      |  
-     |  basisset(...)
+     |  aallpphhaa__oorrbbiittaall__ssppaaccee(...)
+     |      alpha_orbital_space( (Wavefunction)arg1, (str)arg2, (str)arg3, (str)arg4) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  bbaassiisssseett(...)
      |      basisset( (Wavefunction)arg1) -> BasisSet :
      |          docstring
      |  
-     |  energy(...)
+     |  bbeettaa__oorrbbiittaall__ssppaaccee(...)
+     |      beta_orbital_space( (Wavefunction)arg1, (str)arg2, (str)arg3, (str)arg4) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  eenneerrggyy(...)
      |      energy( (Wavefunction)arg1) -> float :
      |          docstring
      |  
-     |  epsilon_a(...)
+     |  eeppssiilloonn__aa(...)
      |      epsilon_a( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  epsilon_b(...)
+     |  eeppssiilloonn__bb(...)
      |      epsilon_b( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  frequencies(...)
+     |  ffrreeqquueenncciieess(...)
      |      frequencies( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  gradient(...)
+     |  ggrraaddiieenntt(...)
      |      gradient( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  nirrep(...)
+     |  mmoolleeccuullee(...)
+     |      molecule( (Wavefunction)arg1) -> Molecule :
+     |          docstring
+     |  
+     |  nniirrrreepp(...)
      |      nirrep( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  nmo(...)
+     |  nnmmoo(...)
      |      nmo( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  nso(...)
+     |  nnssoo(...)
      |      nso( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  sobasisset(...)
+     |  ssoobbaassiisssseett(...)
      |      sobasisset( (Wavefunction)arg1) -> SOBasisSet :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class IO(Boost.Python.instance)
+    class IIOO(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1099,80 +1260,80 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  close(...)
+     |  cclloossee(...)
      |      close( (IO)arg1, (int)arg2, (int)arg3) -> None :
      |          docstring
      |  
-     |  open(...)
+     |  ooppeenn(...)
      |      open( (IO)arg1, (int)arg2, (int)arg3) -> None :
      |          docstring
      |  
-     |  open_check(...)
+     |  ooppeenn__cchheecckk(...)
      |      open_check( (IO)arg1, (int)arg2) -> int :
      |          docstring
      |  
-     |  rehash(...)
+     |  rreehhaasshh(...)
      |      rehash( (IO)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  state(...)
+     |  ssttaattee(...)
      |      state( (IO)arg1) -> int :
      |          docstring
      |  
-     |  tocclean(...)
+     |  ttoocccclleeaann(...)
      |      tocclean( (IO)arg1, (int)arg2, (str)arg3) -> None :
      |          docstring
      |  
-     |  tocprint(...)
+     |  ttooccpprriinntt(...)
      |      tocprint( (IO)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  tocwrite(...)
+     |  ttooccwwrriittee(...)
      |      tocwrite( (IO)arg1, (int)arg2) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  change_file_namespace(...)
+     |  cchhaannggee__ffiillee__nnaammeessppaaccee(...)
      |      change_file_namespace( (int)arg1, (str)arg2, (str)arg3) -> None :
      |          docstring
      |  
-     |  get_default_namespace(...)
+     |  ggeett__ddeeffaauulltt__nnaammeessppaaccee(...)
      |      get_default_namespace() -> str :
      |          docstring
      |  
-     |  set_default_namespace(...)
+     |  sseett__ddeeffaauulltt__nnaammeessppaaccee(...)
      |      set_default_namespace( (str)arg1) -> None :
      |          docstring
      |  
-     |  shared_object(...)
+     |  sshhaarreedd__oobbjjeecctt(...)
      |      shared_object() -> IO
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class IOManager(Boost.Python.instance)
+    class IIOOMMaannaaggeerr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1182,77 +1343,77 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  crashclean(...)
+     |  ccrraasshhcclleeaann(...)
      |      crashclean( (IOManager)arg1) -> None :
      |          docstring
      |  
-     |  get_default_path(...)
+     |  ggeett__ddeeffaauulltt__ppaatthh(...)
      |      get_default_path( (IOManager)arg1) -> str :
      |          docstring
      |  
-     |  get_file_path(...)
+     |  ggeett__ffiillee__ppaatthh(...)
      |      get_file_path( (IOManager)arg1, (int)arg2) -> str :
      |          docstring
      |  
-     |  mark_file_for_retention(...)
+     |  mmaarrkk__ffiillee__ffoorr__rreetteennttiioonn(...)
      |      mark_file_for_retention( (IOManager)arg1, (str)arg2, (bool)arg3) -> None :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (IOManager)arg1) -> None :
      |          docstring
      |  
-     |  psiclean(...)
+     |  ppssiicclleeaann(...)
      |      psiclean( (IOManager)arg1) -> None :
      |          docstring
      |  
-     |  set_default_path(...)
+     |  sseett__ddeeffaauulltt__ppaatthh(...)
      |      set_default_path( (IOManager)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_specific_path(...)
+     |  sseett__ssppeecciiffiicc__ppaatthh(...)
      |      set_specific_path( (IOManager)arg1, (int)arg2, (str)arg3) -> None :
      |          docstring
      |  
-     |  set_specific_retention(...)
+     |  sseett__ssppeecciiffiicc__rreetteennttiioonn(...)
      |      set_specific_retention( (IOManager)arg1, (int)arg2, (bool)arg3) -> None :
      |          docstring
      |  
-     |  write_scratch_file(...)
+     |  wwrriittee__ssccrraattcchh__ffiillee(...)
      |      write_scratch_file( (IOManager)arg1, (str)arg2, (str)arg3) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  shared_object(...)
+     |  sshhaarreedd__oobbjjeecctt(...)
      |      shared_object() -> IOManager :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class IntVector(Boost.Python.instance)
+    class IInnttVVeeccttoorr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1262,52 +1423,52 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |      
      |      __init__( (object)arg1, (int)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  dim(...)
+     |  ddiimm(...)
      |      dim( (IntVector)arg1, (int)arg2) -> int :
      |          docstring
      |  
-     |  get(...)
+     |  ggeett(...)
      |      get( (IntVector)arg1, (int)arg2, (int)arg3) -> int :
      |          docstring
      |  
-     |  nirrep(...)
+     |  nniirrrreepp(...)
      |      nirrep( (IntVector)arg1) -> int :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (IntVector)arg1) -> None :
      |          docstring
      |  
-     |  set(...)
+     |  sseett(...)
      |      set( (IntVector)arg1, (int)arg2, (int)arg3, (int)arg4) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Matrix(Boost.Python.instance)
+    class MMaattrriixx(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1317,130 +1478,153 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __getitem__(...)
+     |  ____ggeettiitteemm____(...)
      |      __getitem__( (Matrix)arg1, (tuple)arg2) -> float :
      |          docstring
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |      
      |      __init__( (object)arg1, (int)arg2, (int)arg3) -> None
+     |      
+     |      __init__( (object)arg1, (str)arg2, (Dimension)arg3, (Dimension)arg4) -> None
+     |      
+     |      __init__( (object)arg1, (str)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  __setitem__(...)
+     |  ____sseettiitteemm____(...)
      |      __setitem__( (Matrix)arg1, (tuple)arg2, (float)arg3) -> None :
      |          docstring
      |  
-     |  accumulate_product(...)
+     |  aaccccuummuullaattee__pprroodduucctt(...)
      |      accumulate_product( (Matrix)arg1, (Matrix)arg2, (Matrix)arg3) -> None :
      |          docstring
      |  
-     |  add(...)
+     |  aadddd(...)
      |      add( (Matrix)arg1, (Matrix)arg2) -> None :
      |          docstring
      |  
-     |  back_transform(...)
+     |  bbaacckk__ttrraannssffoorrmm(...)
      |      back_transform( (Matrix)arg1, (Matrix)arg2, (Matrix)arg3) -> None :
      |          docstring
      |  
-     |  cholesky_factorize(...)
+     |  ccaannoonniiccaall__oorrtthhooggoonnaalliizzaattiioonn(...)
+     |      canonical_orthogonalization( (Matrix)arg1, (float)arg2 [, (Matrix)arg3]) -> Matrix
+     |  
+     |  cchhoolleesskkyy__ffaaccttoorriizzee(...)
      |      cholesky_factorize( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  cols(...)
+     |  cclloonnee(...)
+     |      clone( (Matrix)arg1) -> Matrix :
+     |          docstring
+     |  
+     |  ccoollddiimm(...)
+     |      coldim( (Matrix)arg1) -> Dimension :
+     |          docstring
+     |  
+     |  ccoollss(...)
      |      cols( (Matrix)arg1, (int)arg2) -> int :
      |          docstring
      |  
-     |  copy_lower_to_upper(...)
+     |  ccooppyy__lloowweerr__ttoo__uuppppeerr(...)
      |      copy_lower_to_upper( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  copy_upper_to_lower(...)
+     |  ccooppyy__uuppppeerr__ttoo__lloowweerr(...)
      |      copy_upper_to_lower( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  diagonalize(...)
+     |  ddiiaaggoonnaalliizzee(...)
      |      diagonalize( (Matrix)arg1, (Matrix)arg2, (Vector)arg3, (DiagonalizeOrder)arg4) -> None :
      |          docstring
      |  
-     |  exp(...)
+     |  eexxpp(...)
      |      exp( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  gemm(...)
+     |  ggeemmmm(...)
      |      gemm( (Matrix)arg1, (bool)arg2, (bool)arg3, (float)arg4, (Matrix)arg5, (Matrix)arg6, (float)arg7) -> None :
      |          docstring
      |  
-     |  get(...)
+     |  ggeett(...)
      |      get( (Matrix)arg1, (int)arg2, (int)arg3 [, (int)arg4]) -> float :
      |          docstring
      |  
-     |  identity(...)
+     |  iiddeennttiittyy(...)
      |      identity( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  invert(...)
+     |  iinnvveerrtt(...)
      |      invert( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  load(...)
+     |  llooaadd(...)
      |      load( (Matrix)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  name(...)
+     |  llooaadd__mmppqqcc(...)
+     |      load_mpqc( (Matrix)arg1, (str)arg2) -> None :
+     |          docstring
+     |  
+     |  nnaammee(...)
      |      name( (Matrix)arg1) -> str :
      |          docstring
      |  
-     |  nirrep(...)
+     |  nniirrrreepp(...)
      |      nirrep( (Matrix)arg1) -> int :
      |          docstring
      |  
-     |  partial_cholesky_factorize(...)
+     |  ppaarrttiiaall__cchhoolleesskkyy__ffaaccttoorriizzee(...)
      |      partial_cholesky_factorize( (Matrix)arg1, (float)arg2, (bool)arg3) -> Matrix :
      |          docstring
      |  
-     |  power(...)
-     |      power( (Matrix)arg1, (float)arg2, (float)arg3) -> None :
+     |  ppoowweerr(...)
+     |      power( (Matrix)arg1, (float)arg2, (float)arg3) -> Dimension :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  project_out(...)
+     |  pprroojjeecctt__oouutt(...)
      |      project_out( (Matrix)arg1, (Matrix)arg2) -> None :
      |          docstring
      |  
-     |  remove_symmetry(...)
+     |  rreemmoovvee__ssyymmmmeettrryy(...)
      |      remove_symmetry( (Matrix)arg1, (Matrix)arg2, (Matrix)arg3) -> None :
      |          docstring
      |  
-     |  rms(...)
+     |  rrmmss(...)
      |      rms( (Matrix)arg1) -> float :
      |          docstring
      |  
-     |  rows(...)
+     |  rroowwddiimm(...)
+     |      rowdim( (Matrix)arg1) -> Dimension :
+     |          docstring
+     |  
+     |  rroowwss(...)
      |      rows( (Matrix)arg1, (int)arg2) -> int :
      |          docstring
      |  
-     |  save(...)
+     |  ssaavvee(...)
      |      save( (Matrix)arg1, (str)arg2, (bool)arg3, (bool)arg4, (bool)arg5) -> None :
      |          docstring
      |  
-     |  scale(...)
+     |  ssccaallee(...)
      |      scale( (Matrix)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  scale_column(...)
+     |  ssccaallee__ccoolluummnn(...)
      |      scale_column( (Matrix)arg1, (int)arg2, (int)arg3, (float)arg4) -> None :
      |          docstring
      |  
-     |  scale_row(...)
+     |  ssccaallee__rrooww(...)
      |      scale_row( (Matrix)arg1, (int)arg2, (int)arg3, (float)arg4) -> None :
      |          docstring
      |  
-     |  set(...)
+     |  sseett(...)
      |      set( (Matrix)arg1, (int)arg2, (int)arg3, (float)arg4) -> None :
      |          docstring
      |      
@@ -1450,72 +1634,72 @@ CLASSES
      |      set( (Matrix)arg1, (list)arg2) -> None :
      |          docstring
      |  
-     |  set_name(...)
+     |  sseett__nnaammee(...)
      |      set_name( (Matrix)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  subtract(...)
+     |  ssuubbttrraacctt(...)
      |      subtract( (Matrix)arg1, (Matrix)arg2) -> None :
      |          docstring
      |  
-     |  sum_of_squares(...)
+     |  ssuumm__ooff__ssqquuaarreess(...)
      |      sum_of_squares( (Matrix)arg1) -> float :
      |          docstring
      |  
-     |  symmetry(...)
+     |  ssyymmmmeettrryy(...)
      |      symmetry( (Matrix)arg1) -> int :
      |          docstring
      |  
-     |  trace(...)
+     |  ttrraaccee(...)
      |      trace( (Matrix)arg1) -> float :
      |          docstring
      |  
-     |  transform(...)
+     |  ttrraannssffoorrmm(...)
      |      transform( (Matrix)arg1, (Matrix)arg2) -> None :
      |          docstring
      |      
      |      transform( (Matrix)arg1, (Matrix)arg2 [, (Matrix)arg3]) -> None :
      |          docstring
      |  
-     |  vector_dot(...)
+     |  vveeccttoorr__ddoott(...)
      |      vector_dot( (Matrix)arg1, (Matrix)arg2) -> float :
      |          docstring
      |  
-     |  zero(...)
+     |  zzeerroo(...)
      |      zero( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  zero_diagonal(...)
+     |  zzeerroo__ddiiaaggoonnaall(...)
      |      zero_diagonal( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  zero_lower(...)
+     |  zzeerroo__lloowweerr(...)
      |      zero_lower( (Matrix)arg1) -> None :
      |          docstring
      |  
-     |  zero_upper(...)
+     |  zzeerroo__uuppppeerr(...)
      |      zero_upper( (Matrix)arg1) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class MatrixFactory(Boost.Python.instance)
+    class MMaattrriixxFFaaccttoorryy(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1525,12 +1709,12 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  create_matrix(...)
+     |  ccrreeaattee__mmaattrriixx(...)
      |      create_matrix( (MatrixFactory)arg1) -> Matrix :
      |          docstring
      |      
@@ -1540,29 +1724,29 @@ CLASSES
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  shared_object(...)
+     |  sshhaarreedd__oobbjjeecctt(...)
      |      shared_object() -> MatrixFactory :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class MintsHelper(Boost.Python.instance)
+    class MMiinnttssHHeellppeerr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1572,125 +1756,127 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
+     |      
+     |      __init__( (object)arg1, (BasisSet)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  ao_angular_momentum(...)
+     |  aaoo__aanngguullaarr__mmoommeennttuumm(...)
      |      ao_angular_momentum( (MintsHelper)arg1) -> matrix_vector :
      |          docstring
      |  
-     |  ao_erf_eri(...)
+     |  aaoo__eerrff__eerrii(...)
      |      ao_erf_eri( (MintsHelper)arg1, (float)arg2) -> Matrix :
      |          docstring
      |  
-     |  ao_eri(...)
+     |  aaoo__eerrii(...)
      |      ao_eri( (MintsHelper)arg1) -> Matrix :
      |          docstring
      |  
-     |  ao_kinetic(...)
+     |  aaoo__kkiinneettiicc(...)
      |      ao_kinetic( (MintsHelper)arg1) -> Matrix :
      |          docstring
      |  
-     |  ao_nabla(...)
+     |  aaoo__nnaabbllaa(...)
      |      ao_nabla( (MintsHelper)arg1) -> matrix_vector :
      |          docstring
      |  
-     |  ao_overlap(...)
+     |  aaoo__oovveerrllaapp(...)
      |      ao_overlap( (MintsHelper)arg1) -> Matrix :
      |          docstring
      |  
-     |  ao_potential(...)
+     |  aaoo__ppootteennttiiaall(...)
      |      ao_potential( (MintsHelper)arg1) -> Matrix :
      |          docstring
      |  
-     |  basisset(...)
+     |  bbaassiisssseett(...)
      |      basisset( (MintsHelper)arg1) -> BasisSet :
      |          docstring
      |  
-     |  cdsalcs(...)
+     |  ccddssaallccss(...)
      |      cdsalcs( (MintsHelper)arg1, (int)arg2, (bool)arg3, (bool)arg4) -> CdSalcList :
      |          docstring
      |  
-     |  factory(...)
+     |  ffaaccttoorryy(...)
      |      factory( (MintsHelper)arg1) -> MatrixFactory :
      |          docstring
      |  
-     |  integrals(...)
+     |  iinntteeggrraallss(...)
      |      integrals( (MintsHelper)arg1) -> None :
      |          docstring
      |  
-     |  one_electron_integrals(...)
+     |  oonnee__eelleeccttrroonn__iinntteeggrraallss(...)
      |      one_electron_integrals( (MintsHelper)arg1) -> None :
      |          docstring
      |      
      |      one_electron_integrals( (MintsHelper)arg1) -> None :
      |          docstring
      |  
-     |  petite_list(...)
+     |  ppeettiittee__lliisstt(...)
      |      petite_list( (MintsHelper)arg1) -> PetiteList :
      |          docstring
      |  
-     |  play(...)
+     |  ppllaayy(...)
      |      play( (MintsHelper)arg1) -> None :
      |          docstring
      |  
-     |  so_angular_momentum(...)
+     |  ssoo__aanngguullaarr__mmoommeennttuumm(...)
      |      so_angular_momentum( (MintsHelper)arg1) -> matrix_vector :
      |          docstring
      |  
-     |  so_dipole(...)
+     |  ssoo__ddiippoollee(...)
      |      so_dipole( (MintsHelper)arg1) -> matrix_vector :
      |          docstring
      |  
-     |  so_kinetic(...)
+     |  ssoo__kkiinneettiicc(...)
      |      so_kinetic( (MintsHelper)arg1) -> Matrix :
      |          docstring
      |  
-     |  so_nabla(...)
+     |  ssoo__nnaabbllaa(...)
      |      so_nabla( (MintsHelper)arg1) -> matrix_vector :
      |          docstring
      |  
-     |  so_overlap(...)
+     |  ssoo__oovveerrllaapp(...)
      |      so_overlap( (MintsHelper)arg1) -> Matrix :
      |          docstring
      |  
-     |  so_potential(...)
+     |  ssoo__ppootteennttiiaall(...)
      |      so_potential( (MintsHelper)arg1) -> Matrix :
      |          docstring
      |  
-     |  so_quadrupole(...)
+     |  ssoo__qquuaaddrruuppoollee(...)
      |      so_quadrupole( (MintsHelper)arg1) -> matrix_vector :
      |          docstring
      |  
-     |  so_traceless_quadrupole(...)
+     |  ssoo__ttrraacceelleessss__qquuaaddrruuppoollee(...)
      |      so_traceless_quadrupole( (MintsHelper)arg1) -> matrix_vector :
      |          docstring
      |  
-     |  sobasisset(...)
+     |  ssoobbaassiisssseett(...)
      |      sobasisset( (MintsHelper)arg1) -> SOBasisSet :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class MoldenWriter(Boost.Python.instance)
+    class MMoollddeennWWrriitteerr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1700,29 +1886,29 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1, (Wavefunction)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  write(...)
+     |  wwrriittee(...)
      |      write( (MoldenWriter)arg1, (str)arg2) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Molecule(Boost.Python.instance)
+    class MMoolleeccuullee(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -1732,40 +1918,50 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  Z(...)
+     |  ZZ(...)
      |      Z( (Molecule)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  __init__(...)
+     |  ____ggeettaattttrr____ = new_get_attr(self, name)
+     |      Function to redefine get_attr method of molecule class.
+     |  
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  activate_all_fragments(...)
+     |  ____sseettaattttrr____ = new_set_attr(self, name, value)
+     |      Function to redefine set_attr method of molecule class.
+     |  
+     |  aaccttiivvaattee__aallll__ffrraaggmmeennttss(...)
      |      activate_all_fragments( (Molecule)arg1) -> None :
      |          docstring
      |  
-     |  add_atom(...)
+     |  aadddd__aattoomm(...)
      |      add_atom( (Molecule)arg1, (int)arg2, (float)arg3, (float)arg4, (float)arg5, (str)arg6, (float)arg7, (float)arg8, (int)arg9) -> None :
      |          docstring
      |  
-     |  atom_at_position(...)
+     |  aattoomm__aatt__ppoossiittiioonn(...)
      |      atom_at_position( (Molecule)arg1, (float)arg2, (float)arg3) -> int :
      |          docstring
      |  
-     |  center_of_mass(...)
+     |  cceenntteerr__ooff__mmaassss(...)
      |      center_of_mass( (Molecule)arg1) -> Vector3 :
      |          docstring
      |  
-     |  charge(...)
+     |  cchhaarrggee(...)
      |      charge( (Molecule)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  deactivate_all_fragments(...)
+     |  cclloonnee(...)
+     |      clone( (Molecule)arg1) -> Molecule :
+     |          docstring
+     |  
+     |  ddeeaaccttiivvaattee__aallll__ffrraaggmmeennttss(...)
      |      deactivate_all_fragments( (Molecule)arg1) -> None :
      |          docstring
      |  
-     |  extract_subsets(...)
+     |  eexxttrraacctt__ssuubbsseettss(...)
      |      extract_subsets( (Molecule)arg1, (list)arg2, (list)arg3) -> Molecule :
      |          docstring
      |      
@@ -1784,222 +1980,222 @@ CLASSES
      |      extract_subsets( (Molecule)arg1, (int)arg2) -> Molecule :
      |          docstring
      |  
-     |  find_point_group(...)
+     |  ffiinndd__ppooiinntt__ggrroouupp(...)
      |      find_point_group( (Molecule)arg1, (float)arg2) -> PointGroup :
      |          docstring
      |  
-     |  fix_orientation(...)
+     |  ffiixx__oorriieennttaattiioonn(...)
      |      fix_orientation( (Molecule)arg1, (bool)arg2) -> None :
      |          docstring
      |  
-     |  form_symmetry_information(...)
+     |  ffoorrmm__ssyymmmmeettrryy__iinnffoorrmmaattiioonn(...)
      |      form_symmetry_information( (Molecule)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  get_variable(...)
+     |  ggeett__vvaarriiaabbllee(...)
      |      get_variable( (Molecule)arg1, (str)arg2) -> float :
      |          docstring
      |  
-     |  init_with_checkpoint(...)
+     |  iinniitt__wwiitthh__cchheecckkppooiinntt(...)
      |      init_with_checkpoint( (Molecule)arg1, (Checkpoint)arg2) -> None :
      |          docstring
      |  
-     |  init_with_io(...)
+     |  iinniitt__wwiitthh__iioo(...)
      |      init_with_io( (Molecule)arg1, (IO)arg2) -> None :
      |          docstring
      |  
-     |  is_variable(...)
+     |  iiss__vvaarriiaabbllee(...)
      |      is_variable( (Molecule)arg1, (str)arg2) -> bool :
      |          docstring
      |  
-     |  label(...)
+     |  llaabbeell(...)
      |      label( (Molecule)arg1, (int)arg2) -> str :
      |          docstring
      |  
-     |  mass(...)
+     |  mmaassss(...)
      |      mass( (Molecule)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  molecular_charge(...)
+     |  mmoolleeccuullaarr__cchhaarrggee(...)
      |      molecular_charge( (Molecule)arg1) -> int :
      |          docstring
      |  
-     |  move_to_com(...)
+     |  mmoovvee__ttoo__ccoomm(...)
      |      move_to_com( (Molecule)arg1) -> None :
      |          docstring
      |  
-     |  multiplicity(...)
+     |  mmuullttiipplliicciittyy(...)
      |      multiplicity( (Molecule)arg1) -> int :
      |          docstring
      |  
-     |  name(...)
+     |  nnaammee(...)
      |      name( (Molecule)arg1) -> str :
      |          docstring
      |  
-     |  natom(...)
+     |  nnaattoomm(...)
      |      natom( (Molecule)arg1) -> int :
      |          docstring
      |  
-     |  nfragments(...)
+     |  nnffrraaggmmeennttss(...)
      |      nfragments( (Molecule)arg1) -> int :
      |          docstring
      |  
-     |  nuclear_repulsion_energy(...)
+     |  nnuucclleeaarr__rreeppuullssiioonn__eenneerrggyy(...)
      |      nuclear_repulsion_energy( (Molecule)arg1) -> float :
      |          docstring
      |  
-     |  point_group(...)
+     |  ppooiinntt__ggrroouupp(...)
      |      point_group( (Molecule)arg1) -> PointGroup :
      |          docstring
      |  
-     |  print_in_input_format(...)
+     |  pprriinntt__iinn__iinnppuutt__ffoorrmmaatt(...)
      |      print_in_input_format( (Molecule)arg1) -> None :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (Molecule)arg1) -> None :
      |          docstring
      |      
      |      print_out( (Molecule)arg1) -> None :
      |          docstring
      |  
-     |  print_out_in_bohr(...)
+     |  pprriinntt__oouutt__iinn__bboohhrr(...)
      |      print_out_in_bohr( (Molecule)arg1) -> None :
      |          docstring
      |  
-     |  reinterpret_coordentry(...)
+     |  rreeiinntteerrpprreett__ccoooorrddeennttrryy(...)
      |      reinterpret_coordentry( (Molecule)arg1, (bool)arg2) -> None :
      |          docstring
      |  
-     |  reset_point_group(...)
+     |  rreesseett__ppooiinntt__ggrroouupp(...)
      |      reset_point_group( (Molecule)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  save_string_xyz(...)
+     |  ssaavvee__ssttrriinngg__xxyyzz(...)
      |      save_string_xyz( (Molecule)arg1) -> str :
      |          docstring
      |  
-     |  save_to_checkpoint(...)
+     |  ssaavvee__ttoo__cchheecckkppooiinntt(...)
      |      save_to_checkpoint( (Molecule)arg1, (Checkpoint)arg2, (str)arg3) -> None :
      |          docstring
      |  
-     |  save_xyz(...)
+     |  ssaavvee__xxyyzz(...)
      |      save_xyz( (Molecule)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  schoenflies_symbol(...)
+     |  sscchhooeennfflliieess__ssyymmbbooll(...)
      |      schoenflies_symbol( (Molecule)arg1) -> str :
      |          docstring
      |  
-     |  set_active_fragment(...)
+     |  sseett__aaccttiivvee__ffrraaggmmeenntt(...)
      |      set_active_fragment( (Molecule)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  set_active_fragments(...)
+     |  sseett__aaccttiivvee__ffrraaggmmeennttss(...)
      |      set_active_fragments( (Molecule)arg1, (list)arg2) -> None :
      |          docstring
      |  
-     |  set_basis_all_atoms(...)
+     |  sseett__bbaassiiss__aallll__aattoommss(...)
      |      set_basis_all_atoms( (Molecule)arg1, (str)arg2, (str)arg3) -> None :
      |          docstring
      |  
-     |  set_basis_by_label(...)
+     |  sseett__bbaassiiss__bbyy__llaabbeell(...)
      |      set_basis_by_label( (Molecule)arg1, (str)arg2, (str)arg3, (str)arg4) -> None :
      |          docstring
      |  
-     |  set_basis_by_number(...)
+     |  sseett__bbaassiiss__bbyy__nnuummbbeerr(...)
      |      set_basis_by_number( (Molecule)arg1, (int)arg2, (str)arg3, (str)arg4) -> None :
      |          docstring
      |  
-     |  set_basis_by_symbol(...)
+     |  sseett__bbaassiiss__bbyy__ssyymmbbooll(...)
      |      set_basis_by_symbol( (Molecule)arg1, (str)arg2, (str)arg3, (str)arg4) -> None :
      |          docstring
      |  
-     |  set_geometry(...)
+     |  sseett__ggeeoommeettrryy(...)
      |      set_geometry( (Molecule)arg1, (Matrix)arg2) -> None :
      |          docstring
      |  
-     |  set_ghost_fragment(...)
+     |  sseett__gghhoosstt__ffrraaggmmeenntt(...)
      |      set_ghost_fragment( (Molecule)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  set_ghost_fragments(...)
+     |  sseett__gghhoosstt__ffrraaggmmeennttss(...)
      |      set_ghost_fragments( (Molecule)arg1, (list)arg2) -> None :
      |          docstring
      |  
-     |  set_molecular_charge(...)
+     |  sseett__mmoolleeccuullaarr__cchhaarrggee(...)
      |      set_molecular_charge( (Molecule)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  set_multiplicity(...)
+     |  sseett__mmuullttiipplliicciittyy(...)
      |      set_multiplicity( (Molecule)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  set_name(...)
+     |  sseett__nnaammee(...)
      |      set_name( (Molecule)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_point_group(...)
+     |  sseett__ppooiinntt__ggrroouupp(...)
      |      set_point_group( (Molecule)arg1, (PointGroup)arg2) -> None :
      |          docstring
      |  
-     |  set_variable(...)
+     |  sseett__vvaarriiaabbllee(...)
      |      set_variable( (Molecule)arg1, (str)arg2, (float)arg3) -> None :
      |          docstring
      |  
-     |  symbol(...)
+     |  ssyymmbbooll(...)
      |      symbol( (Molecule)arg1, (int)arg2) -> str :
      |          docstring
      |  
-     |  translate(...)
+     |  ttrraannssllaattee(...)
      |      translate( (Molecule)arg1, (Vector3)arg2) -> None :
      |          docstring
      |  
-     |  update_geometry(...)
+     |  uuppddaattee__ggeeoommeettrryy(...)
      |      update_geometry( (Molecule)arg1) -> None :
      |          docstring
      |      
      |      update_geometry( (Molecule)arg1) -> None :
      |          docstring
      |  
-     |  x(...)
+     |  xx(...)
      |      x( (Molecule)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  y(...)
+     |  yy(...)
      |      y( (Molecule)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  z(...)
+     |  zz(...)
      |      z( (Molecule)arg1, (int)arg2) -> float :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  create_molecule_from_string(...)
+     |  ccrreeaattee__mmoolleeccuullee__ffrroomm__ssttrriinngg(...)
      |      create_molecule_from_string( (str)arg1) -> Molecule :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class MultipoleSymmetry(Boost.Python.instance)
+    class MMuullttiippoolleeSSyymmmmeettrryy(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2009,29 +2205,29 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1, (int)arg2, (Molecule)arg3, (object)arg4, (MatrixFactory)arg5) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  create_matrices(...)
+     |  ccrreeaattee__mmaattrriicceess(...)
      |      create_matrices( (MultipoleSymmetry)arg1, (str)arg2) -> matrix_vector :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class NBOWriter(Boost.Python.instance)
+    class NNBBOOWWrriitteerr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2041,29 +2237,29 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1, (Wavefunction)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  write(...)
+     |  wwrriittee(...)
      |      write( (NBOWriter)arg1, (str)arg2) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class OEProp(Boost.Python.instance)
+    class OOEEPPrroopp(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2073,42 +2269,121 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  add(...)
+     |  aadddd(...)
      |      add( (OEProp)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  compute(...)
+     |  ccoommppuuttee(...)
      |      compute( (OEProp)arg1) -> None :
      |          docstring
      |  
-     |  set_title(...)
+     |  sseett__ttiittllee(...)
      |      set_title( (OEProp)arg1, (str)arg2) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class PetiteList(Boost.Python.instance)
+    class OOrrbbiittaallSSppaaccee(Boost.Python.instance)
+     |  docstring
+     |  
+     |  Method resolution order:
+     |      OrbitalSpace
+     |      Boost.Python.instance
+     |      __builtin__.object
+     |  
+     |  Methods defined here:
+     |  
+     |  CC(...)
+     |      C( (OrbitalSpace)arg1) -> Matrix :
+     |          docstring
+     |  
+     |  ____iinniitt____(...)
+     |      __init__( (object)arg1, (str)arg2, (str)arg3, (Matrix)arg4, (Vector)arg5, (BasisSet)arg6, (object)arg7) -> None
+     |      
+     |      __init__( (object)arg1, (str)arg2, (str)arg3, (Matrix)arg4, (BasisSet)arg5, (object)arg6) -> None
+     |      
+     |      __init__( (object)arg1, (str)arg2, (str)arg3, (Wavefunction)arg4) -> None
+     |  
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
+     |  
+     |  bbaassiisssseett(...)
+     |      basisset( (OrbitalSpace)arg1) -> BasisSet :
+     |          docstring
+     |  
+     |  ddiimm(...)
+     |      dim( (OrbitalSpace)arg1) -> Dimension :
+     |          docstring
+     |  
+     |  eevvaallss(...)
+     |      evals( (OrbitalSpace)arg1) -> Vector :
+     |          docstring
+     |  
+     |  iidd(...)
+     |      id( (OrbitalSpace)arg1) -> str :
+     |          docstring
+     |  
+     |  iinntteeggrraall(...)
+     |      integral( (OrbitalSpace)arg1) -> object :
+     |          docstring
+     |  
+     |  nnaammee(...)
+     |      name( (OrbitalSpace)arg1) -> str :
+     |          docstring
+     |  
+     |  nniirrrreepp(...)
+     |      nirrep( (OrbitalSpace)arg1) -> int :
+     |          docstring
+     |  
+     |  pprriinntt__oouutt(...)
+     |      print_out( (OrbitalSpace)arg1) -> None :
+     |          docstring
+     |  
+     |  ----------------------------------------------------------------------
+     |  Static methods defined here:
+     |  
+     |  bbuuiilldd__ccaabbss__ssppaaccee(...)
+     |      build_cabs_space( (OrbitalSpace)arg1, (OrbitalSpace)arg2, (float)arg3) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  bbuuiilldd__rrii__ssppaaccee(...)
+     |      build_ri_space( (BasisSet)arg1, (BasisSet)arg2, (float)arg3) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from Boost.Python.instance:
+     |  
+     |  ____ddiicctt____
+     |  
+     |  ____wweeaakkrreeff____
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from Boost.Python.instance:
+     |  
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
+     |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+    
+    class PPeettiitteeLLiisstt(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2118,41 +2393,41 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  aotoso(...)
+     |  aaoottoossoo(...)
      |      aotoso( (PetiteList)arg1) -> Matrix :
      |          docstring
      |  
-     |  print(...)
+     |  pprriinntt(...)
      |      print( (PetiteList)arg1, (object)arg2) -> None :
      |          docstring
      |  
-     |  sotoao(...)
+     |  ssoottooaaoo(...)
      |      sotoao( (PetiteList)arg1) -> Matrix :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class PointGroup(Boost.Python.instance)
+    class PPooiinnttGGrroouupp(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2162,36 +2437,36 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |      
      |      __init__( (object)arg1, (str)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  symbol(...)
+     |  ssyymmbbooll(...)
      |      symbol( (PointGroup)arg1) -> str :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Process(Boost.Python.instance)
+    class PPrroocceessss(Boost.Python.instance)
      |  Method resolution order:
      |      Process
      |      Boost.Python.instance
@@ -2199,35 +2474,35 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors defined here:
      |  
-     |  environment
+     |  eennvviirroonnmmeenntt
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 24
+     |  ____iinnssttaannccee__ssiizzee____ = 24
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class PseudoTrial(Boost.Python.instance)
+    class PPsseeuuddooTTrriiaall(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2237,50 +2512,50 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  getA(...)
+     |  ggeettAA(...)
      |      getA( (PseudoTrial)arg1) -> Matrix :
      |          docstring
      |  
-     |  getI(...)
+     |  ggeettII(...)
      |      getI( (PseudoTrial)arg1) -> Matrix :
      |          docstring
      |  
-     |  getIPS(...)
+     |  ggeettIIPPSS(...)
      |      getIPS( (PseudoTrial)arg1) -> Matrix :
      |          docstring
      |  
-     |  getQ(...)
+     |  ggeettQQ(...)
      |      getQ( (PseudoTrial)arg1) -> Matrix :
      |          docstring
      |  
-     |  getR(...)
+     |  ggeettRR(...)
      |      getR( (PseudoTrial)arg1) -> Matrix :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class PsiReturnType(Boost.Python.enum)
+    class PPssiiRReettuurrnnTTyyppee(Boost.Python.enum)
      |  docstring
      |  
      |  Method resolution order:
@@ -2291,172 +2566,172 @@ CLASSES
      |  
      |  Data and other attributes defined here:
      |  
-     |  Balk = PsiMod.PsiReturnType.Balk
+     |  BBaallkk = PsiMod.PsiReturnType.Balk
      |  
-     |  EndLoop = PsiMod.PsiReturnType.EndLoop
+     |  EEnnddLLoooopp = PsiMod.PsiReturnType.EndLoop
      |  
-     |  Failure = PsiMod.PsiReturnType.Failure
+     |  FFaaiilluurree = PsiMod.PsiReturnType.Failure
      |  
-     |  Success = PsiMod.PsiReturnType.Success
+     |  SSuucccceessss = PsiMod.PsiReturnType.Success
      |  
-     |  names = {'Balk': PsiMod.PsiReturnType.Balk, 'EndLoop': PsiMod.PsiRetur...
+     |  nnaammeess = {'Balk': PsiMod.PsiReturnType.Balk, 'EndLoop': PsiMod.PsiRetur...
      |  
-     |  values = {0: PsiMod.PsiReturnType.Success, 1: PsiMod.PsiReturnType.Fai...
+     |  vvaalluueess = {0: PsiMod.PsiReturnType.Success, 1: PsiMod.PsiReturnType.Fai...
      |  
      |  ----------------------------------------------------------------------
      |  Methods inherited from Boost.Python.enum:
      |  
-     |  __repr__(...)
+     |  ____rreepprr____(...)
      |      x.__repr__() <==> repr(x)
      |  
-     |  __str__(...)
+     |  ____ssttrr____(...)
      |      x.__str__() <==> str(x)
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.enum:
      |  
-     |  name
+     |  nnaammee
      |  
      |  ----------------------------------------------------------------------
      |  Methods inherited from __builtin__.int:
      |  
-     |  __abs__(...)
+     |  ____aabbss____(...)
      |      x.__abs__() <==> abs(x)
      |  
-     |  __add__(...)
+     |  ____aadddd____(...)
      |      x.__add__(y) <==> x+y
      |  
-     |  __and__(...)
+     |  ____aanndd____(...)
      |      x.__and__(y) <==> x&y
      |  
-     |  __cmp__(...)
+     |  ____ccmmpp____(...)
      |      x.__cmp__(y) <==> cmp(x,y)
      |  
-     |  __coerce__(...)
+     |  ____ccooeerrccee____(...)
      |      x.__coerce__(y) <==> coerce(x, y)
      |  
-     |  __div__(...)
+     |  ____ddiivv____(...)
      |      x.__div__(y) <==> x/y
      |  
-     |  __divmod__(...)
+     |  ____ddiivvmmoodd____(...)
      |      x.__divmod__(y) <==> divmod(x, y)
      |  
-     |  __float__(...)
+     |  ____ffllooaatt____(...)
      |      x.__float__() <==> float(x)
      |  
-     |  __floordiv__(...)
+     |  ____fflloooorrddiivv____(...)
      |      x.__floordiv__(y) <==> x//y
      |  
-     |  __format__(...)
+     |  ____ffoorrmmaatt____(...)
      |  
-     |  __getattribute__(...)
+     |  ____ggeettaattttrriibbuuttee____(...)
      |      x.__getattribute__('name') <==> x.name
      |  
-     |  __getnewargs__(...)
+     |  ____ggeettnneewwaarrggss____(...)
      |  
-     |  __hash__(...)
+     |  ____hhaasshh____(...)
      |      x.__hash__() <==> hash(x)
      |  
-     |  __hex__(...)
+     |  ____hheexx____(...)
      |      x.__hex__() <==> hex(x)
      |  
-     |  __index__(...)
+     |  ____iinnddeexx____(...)
      |      x[y:z] <==> x[y.__index__():z.__index__()]
      |  
-     |  __int__(...)
+     |  ____iinntt____(...)
      |      x.__int__() <==> int(x)
      |  
-     |  __invert__(...)
+     |  ____iinnvveerrtt____(...)
      |      x.__invert__() <==> ~x
      |  
-     |  __long__(...)
+     |  ____lloonngg____(...)
      |      x.__long__() <==> long(x)
      |  
-     |  __lshift__(...)
+     |  ____llsshhiifftt____(...)
      |      x.__lshift__(y) <==> x<<y
      |  
-     |  __mod__(...)
+     |  ____mmoodd____(...)
      |      x.__mod__(y) <==> x%y
      |  
-     |  __mul__(...)
+     |  ____mmuull____(...)
      |      x.__mul__(y) <==> x*y
      |  
-     |  __neg__(...)
+     |  ____nneegg____(...)
      |      x.__neg__() <==> -x
      |  
-     |  __nonzero__(...)
+     |  ____nnoonnzzeerroo____(...)
      |      x.__nonzero__() <==> x != 0
      |  
-     |  __oct__(...)
+     |  ____oocctt____(...)
      |      x.__oct__() <==> oct(x)
      |  
-     |  __or__(...)
+     |  ____oorr____(...)
      |      x.__or__(y) <==> x|y
      |  
-     |  __pos__(...)
+     |  ____ppooss____(...)
      |      x.__pos__() <==> +x
      |  
-     |  __pow__(...)
+     |  ____ppooww____(...)
      |      x.__pow__(y[, z]) <==> pow(x, y[, z])
      |  
-     |  __radd__(...)
+     |  ____rraadddd____(...)
      |      x.__radd__(y) <==> y+x
      |  
-     |  __rand__(...)
+     |  ____rraanndd____(...)
      |      x.__rand__(y) <==> y&x
      |  
-     |  __rdiv__(...)
+     |  ____rrddiivv____(...)
      |      x.__rdiv__(y) <==> y/x
      |  
-     |  __rdivmod__(...)
+     |  ____rrddiivvmmoodd____(...)
      |      x.__rdivmod__(y) <==> divmod(y, x)
      |  
-     |  __rfloordiv__(...)
+     |  ____rrfflloooorrddiivv____(...)
      |      x.__rfloordiv__(y) <==> y//x
      |  
-     |  __rlshift__(...)
+     |  ____rrllsshhiifftt____(...)
      |      x.__rlshift__(y) <==> y<<x
      |  
-     |  __rmod__(...)
+     |  ____rrmmoodd____(...)
      |      x.__rmod__(y) <==> y%x
      |  
-     |  __rmul__(...)
+     |  ____rrmmuull____(...)
      |      x.__rmul__(y) <==> y*x
      |  
-     |  __ror__(...)
+     |  ____rroorr____(...)
      |      x.__ror__(y) <==> y|x
      |  
-     |  __rpow__(...)
+     |  ____rrppooww____(...)
      |      y.__rpow__(x[, z]) <==> pow(x, y[, z])
      |  
-     |  __rrshift__(...)
+     |  ____rrrrsshhiifftt____(...)
      |      x.__rrshift__(y) <==> y>>x
      |  
-     |  __rshift__(...)
+     |  ____rrsshhiifftt____(...)
      |      x.__rshift__(y) <==> x>>y
      |  
-     |  __rsub__(...)
+     |  ____rrssuubb____(...)
      |      x.__rsub__(y) <==> y-x
      |  
-     |  __rtruediv__(...)
+     |  ____rrttrruueeddiivv____(...)
      |      x.__rtruediv__(y) <==> y/x
      |  
-     |  __rxor__(...)
+     |  ____rrxxoorr____(...)
      |      x.__rxor__(y) <==> y^x
      |  
-     |  __sub__(...)
+     |  ____ssuubb____(...)
      |      x.__sub__(y) <==> x-y
      |  
-     |  __truediv__(...)
+     |  ____ttrruueeddiivv____(...)
      |      x.__truediv__(y) <==> x/y
      |  
-     |  __trunc__(...)
+     |  ____ttrruunncc____(...)
      |      Truncating an Integral returns itself.
      |  
-     |  __xor__(...)
+     |  ____xxoorr____(...)
      |      x.__xor__(y) <==> x^y
      |  
-     |  bit_length(...)
+     |  bbiitt__lleennggtthh(...)
      |      int.bit_length() -> int
      |      
      |      Number of bits necessary to represent self in binary.
@@ -2465,31 +2740,31 @@ CLASSES
      |      >>> (37).bit_length()
      |      6
      |  
-     |  conjugate(...)
+     |  ccoonnjjuuggaattee(...)
      |      Returns self, the complex conjugate of any int.
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from __builtin__.int:
      |  
-     |  denominator
+     |  ddeennoommiinnaattoorr
      |      the denominator of a rational number in lowest terms
      |  
-     |  imag
+     |  iimmaagg
      |      the imaginary part of a complex number
      |  
-     |  numerator
+     |  nnuummeerraattoorr
      |      the numerator of a rational number in lowest terms
      |  
-     |  real
+     |  rreeaall
      |      the real part of a complex number
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from __builtin__.int:
      |  
-     |  __new__ = <built-in method __new__ of type object>
+     |  ____nneeww____ = <built-in method __new__ of type object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class RHF(HF, Wavefunction)
+    class RRHHFF(HF, Wavefunction)
      |  docstring
      |  
      |  Method resolution order:
@@ -2501,104 +2776,116 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Methods inherited from Wavefunction:
      |  
-     |  Ca(...)
+     |  CCaa(...)
      |      Ca( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Cb(...)
+     |  CCbb(...)
      |      Cb( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Da(...)
+     |  DDaa(...)
      |      Da( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Db(...)
+     |  DDbb(...)
      |      Db( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Fa(...)
+     |  FFaa(...)
      |      Fa( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Fb(...)
+     |  FFbb(...)
      |      Fb( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  add_postiteration_callback(...)
+     |  aadddd__ppoossttiitteerraattiioonn__ccaallllbbaacckk(...)
      |      add_postiteration_callback( (Wavefunction)arg1, (object)arg2) -> None :
      |          docstring
      |  
-     |  add_preiteration_callback(...)
+     |  aadddd__pprreeiitteerraattiioonn__ccaallllbbaacckk(...)
      |      add_preiteration_callback( (Wavefunction)arg1, (object)arg2) -> None :
      |          docstring
      |  
-     |  basisset(...)
+     |  aallpphhaa__oorrbbiittaall__ssppaaccee(...)
+     |      alpha_orbital_space( (Wavefunction)arg1, (str)arg2, (str)arg3, (str)arg4) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  bbaassiisssseett(...)
      |      basisset( (Wavefunction)arg1) -> BasisSet :
      |          docstring
      |  
-     |  energy(...)
+     |  bbeettaa__oorrbbiittaall__ssppaaccee(...)
+     |      beta_orbital_space( (Wavefunction)arg1, (str)arg2, (str)arg3, (str)arg4) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  eenneerrggyy(...)
      |      energy( (Wavefunction)arg1) -> float :
      |          docstring
      |  
-     |  epsilon_a(...)
+     |  eeppssiilloonn__aa(...)
      |      epsilon_a( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  epsilon_b(...)
+     |  eeppssiilloonn__bb(...)
      |      epsilon_b( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  frequencies(...)
+     |  ffrreeqquueenncciieess(...)
      |      frequencies( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  gradient(...)
+     |  ggrraaddiieenntt(...)
      |      gradient( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  nirrep(...)
+     |  mmoolleeccuullee(...)
+     |      molecule( (Wavefunction)arg1) -> Molecule :
+     |          docstring
+     |  
+     |  nniirrrreepp(...)
      |      nirrep( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  nmo(...)
+     |  nnmmoo(...)
      |      nmo( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  nso(...)
+     |  nnssoo(...)
      |      nso( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  sobasisset(...)
+     |  ssoobbaassiisssseett(...)
      |      sobasisset( (Wavefunction)arg1) -> SOBasisSet :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class SOBasisSet(Boost.Python.instance)
+    class SSOOBBaassiissSSeett(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2608,33 +2895,33 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  petite_list(...)
+     |  ppeettiittee__lliisstt(...)
      |      petite_list( (SOBasisSet)arg1) -> PetiteList :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class SuperFunctional(Boost.Python.instance)
+    class SSuuppeerrFFuunnccttiioonnaall(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2644,177 +2931,184 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __init__(...)
-     |      __init__( (object)arg1) -> None
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
-     |  
-     |  computeRKSFunctional(...)
-     |      computeRKSFunctional( (SuperFunctional)arg1, (object)arg2) -> None :
+     |  aadddd__cc__ffuunnccttiioonnaall(...)
+     |      add_c_functional( (SuperFunctional)arg1, (Functional)arg2) -> None :
      |          docstring
      |  
-     |  computeUKSFunctional(...)
-     |      computeUKSFunctional( (SuperFunctional)arg1, (object)arg2) -> None :
+     |  aadddd__xx__ffuunnccttiioonnaall(...)
+     |      add_x_functional( (SuperFunctional)arg1, (Functional)arg2) -> None :
      |          docstring
      |  
-     |  get_citation(...)
-     |      get_citation( (SuperFunctional)arg1) -> str :
+     |  aallllooccaattee(...)
+     |      allocate( (SuperFunctional)arg1) -> None :
      |          docstring
      |  
-     |  get_composition(...)
-     |      get_composition( (SuperFunctional)arg1) -> str :
+     |  aannssaattzz(...)
+     |      ansatz( (SuperFunctional)arg1) -> int :
      |          docstring
      |  
-     |  get_dash_d(...)
-     |      get_dash_d( (SuperFunctional)arg1) -> object :
+     |  cc__aallpphhaa(...)
+     |      c_alpha( (SuperFunctional)arg1) -> float :
      |          docstring
      |  
-     |  get_deriv(...)
-     |      get_deriv( (SuperFunctional)arg1) -> int :
+     |  cc__ffuunnccttiioonnaall(...)
+     |      c_functional( (SuperFunctional)arg1, (str)arg2) -> Functional :
      |          docstring
      |  
-     |  get_description(...)
-     |      get_description( (SuperFunctional)arg1) -> str :
+     |  cc__oommeeggaa(...)
+     |      c_omega( (SuperFunctional)arg1) -> float :
      |          docstring
      |  
-     |  get_exact_exchange(...)
-     |      get_exact_exchange( (SuperFunctional)arg1) -> float :
+     |  cciittaattiioonn(...)
+     |      citation( (SuperFunctional)arg1) -> str :
      |          docstring
      |  
-     |  get_functional(...)
-     |      get_functional( (SuperFunctional)arg1, (int)arg2) -> Functional :
+     |  ddeerriivv(...)
+     |      deriv( (SuperFunctional)arg1) -> int :
      |          docstring
      |  
-     |  get_name(...)
-     |      get_name( (SuperFunctional)arg1) -> str :
+     |  ddeessccrriippttiioonn(...)
+     |      description( (SuperFunctional)arg1) -> str :
      |          docstring
      |  
-     |  get_npoints(...)
-     |      get_npoints( (SuperFunctional)arg1) -> int :
+     |  ddiissppeerrssiioonn(...)
+     |      dispersion( (SuperFunctional)arg1) -> Dispersion :
      |          docstring
      |  
-     |  get_omega(...)
-     |      get_omega( (SuperFunctional)arg1) -> float :
+     |  iiss__cc__hhyybbrriidd(...)
+     |      is_c_hybrid( (SuperFunctional)arg1) -> bool :
      |          docstring
      |  
-     |  get_pt2(...)
-     |      get_pt2( (SuperFunctional)arg1) -> float :
+     |  iiss__cc__llrrcc(...)
+     |      is_c_lrc( (SuperFunctional)arg1) -> bool :
      |          docstring
      |  
-     |  get_size(...)
-     |      get_size( (SuperFunctional)arg1) -> int :
-     |          docstring
-     |  
-     |  get_weight(...)
-     |      get_weight( (SuperFunctional)arg1, (int)arg2) -> float :
-     |          docstring
-     |  
-     |  is_dash_d(...)
-     |      is_dash_d( (SuperFunctional)arg1) -> bool :
-     |          docstring
-     |  
-     |  is_double_hybrid(...)
-     |      is_double_hybrid( (SuperFunctional)arg1) -> bool :
-     |          docstring
-     |  
-     |  is_gga(...)
+     |  iiss__ggggaa(...)
      |      is_gga( (SuperFunctional)arg1) -> bool :
      |          docstring
      |  
-     |  is_hybrid(...)
-     |      is_hybrid( (SuperFunctional)arg1) -> bool :
-     |          docstring
-     |  
-     |  is_meta(...)
+     |  iiss__mmeettaa(...)
      |      is_meta( (SuperFunctional)arg1) -> bool :
      |          docstring
      |  
-     |  is_range_corrected(...)
-     |      is_range_corrected( (SuperFunctional)arg1) -> bool :
+     |  iiss__xx__hhyybbrriidd(...)
+     |      is_x_hybrid( (SuperFunctional)arg1) -> bool :
      |          docstring
      |  
-     |  set_citation(...)
+     |  iiss__xx__llrrcc(...)
+     |      is_x_lrc( (SuperFunctional)arg1) -> bool :
+     |          docstring
+     |  
+     |  mmaaxx__ppooiinnttss(...)
+     |      max_points( (SuperFunctional)arg1) -> int :
+     |          docstring
+     |  
+     |  nnaammee(...)
+     |      name( (SuperFunctional)arg1) -> str :
+     |          docstring
+     |  
+     |  pprriinntt__ddeettaaiill(...)
+     |      print_detail( (SuperFunctional)arg1, (int)arg2) -> None :
+     |          docstring
+     |  
+     |  pprriinntt__oouutt(...)
+     |      print_out( (SuperFunctional)arg1) -> None :
+     |          docstring
+     |  
+     |  sseett__cc__aallpphhaa(...)
+     |      set_c_alpha( (SuperFunctional)arg1, (float)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__cc__oommeeggaa(...)
+     |      set_c_omega( (SuperFunctional)arg1, (float)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__cciittaattiioonn(...)
      |      set_citation( (SuperFunctional)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_dash_d(...)
-     |      set_dash_d( (SuperFunctional)arg1, (object)arg2, (float)arg3) -> None :
-     |          docstring
-     |  
-     |  set_deriv(...)
+     |  sseett__ddeerriivv(...)
      |      set_deriv( (SuperFunctional)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  set_description(...)
+     |  sseett__ddeessccrriippttiioonn(...)
      |      set_description( (SuperFunctional)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_exact_exchange(...)
-     |      set_exact_exchange( (SuperFunctional)arg1, (float)arg2) -> None :
+     |  sseett__ddiissppeerrssiioonn(...)
+     |      set_dispersion( (SuperFunctional)arg1, (Dispersion)arg2) -> None :
      |          docstring
      |  
-     |  set_name(...)
+     |  sseett__mmaaxx__ppooiinnttss(...)
+     |      set_max_points( (SuperFunctional)arg1, (int)arg2) -> None :
+     |          docstring
+     |  
+     |  sseett__nnaammee(...)
      |      set_name( (SuperFunctional)arg1, (str)arg2) -> None :
      |          docstring
      |  
-     |  set_npoints(...)
-     |      set_npoints( (SuperFunctional)arg1, (int)arg2) -> None :
+     |  sseett__xx__aallpphhaa(...)
+     |      set_x_alpha( (SuperFunctional)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  set_omega(...)
-     |      set_omega( (SuperFunctional)arg1, (float)arg2) -> None :
+     |  sseett__xx__oommeeggaa(...)
+     |      set_x_omega( (SuperFunctional)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  set_parameter(...)
-     |      set_parameter( (SuperFunctional)arg1, (str)arg2, (str)arg3, (float)arg4) -> None :
+     |  tteesstt__ffuunnccttiioonnaall(...)
+     |      test_functional( (SuperFunctional)arg1, (Vector)arg2, (Vector)arg3, (Vector)arg4, (Vector)arg5, (Vector)arg6, (Vector)arg7, (Vector)arg8) -> None :
      |          docstring
      |  
-     |  set_pt2(...)
-     |      set_pt2( (SuperFunctional)arg1, (float)arg2) -> None :
+     |  vvaalluuee(...)
+     |      value( (SuperFunctional)arg1, (str)arg2) -> Vector :
      |          docstring
      |  
-     |  set_size(...)
-     |      set_size( (SuperFunctional)arg1) -> int :
+     |  xx__aallpphhaa(...)
+     |      x_alpha( (SuperFunctional)arg1) -> float :
+     |          docstring
+     |  
+     |  xx__ffuunnccttiioonnaall(...)
+     |      x_functional( (SuperFunctional)arg1, (str)arg2) -> Functional :
+     |          docstring
+     |  
+     |  xx__oommeeggaa(...)
+     |      x_omega( (SuperFunctional)arg1) -> float :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Static methods defined here:
      |  
-     |  available_names(...)
-     |      available_names() -> object :
+     |  bbllaannkk(...)
+     |      blank() -> SuperFunctional :
      |          docstring
      |  
-     |  available_superfunctionals(...)
-     |      available_superfunctionals() -> str :
-     |          docstring
-     |  
-     |  build_superfunctional(...)
-     |      build_superfunctional( (str)arg1, (int)arg2, (int)arg3) -> SuperFunctional :
-     |          docstring
-     |  
-     |  create_superfunctional(...)
-     |      create_superfunctional( (str)arg1, (int)arg2, (int)arg3) -> SuperFunctional :
+     |  bbuuiilldd(...)
+     |      build( (str)arg1, (int)arg2, (int)arg3) -> SuperFunctional :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinniitt____ = <built-in function __init__>
+     |      Raises an exception
+     |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class SymmetryOperation(Boost.Python.instance)
+    class SSyymmmmeettrryyOOppeerraattiioonn(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2824,92 +3118,92 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  E(...)
+     |  EE(...)
      |      E( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |      
      |      __init__( (object)arg1, (SymmetryOperation)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  c2_x(...)
+     |  cc22__xx(...)
      |      c2_x( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  c2_y(...)
+     |  cc22__yy(...)
      |      c2_y( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  i(...)
+     |  ii(...)
      |      i( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  operate(...)
+     |  ooppeerraattee(...)
      |      operate( (SymmetryOperation)arg1, (SymmetryOperation)arg2) -> SymmetryOperation :
      |          docstring
      |  
-     |  rotate_n(...)
+     |  rroottaattee__nn(...)
      |      rotate_n( (SymmetryOperation)arg1, (int)arg2) -> None :
      |          docstring
      |  
-     |  rotate_theta(...)
+     |  rroottaattee__tthheettaa(...)
      |      rotate_theta( (SymmetryOperation)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  sigma_xy(...)
+     |  ssiiggmmaa__xxyy(...)
      |      sigma_xy( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  sigma_xz(...)
+     |  ssiiggmmaa__xxzz(...)
      |      sigma_xz( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  sigma_yz(...)
+     |  ssiiggmmaa__yyzz(...)
      |      sigma_yz( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  trace(...)
+     |  ttrraaccee(...)
      |      trace( (SymmetryOperation)arg1) -> float :
      |          docstring
      |  
-     |  transform(...)
+     |  ttrraannssffoorrmm(...)
      |      transform( (SymmetryOperation)arg1, (SymmetryOperation)arg2) -> SymmetryOperation :
      |          docstring
      |  
-     |  transpose(...)
+     |  ttrraannssppoossee(...)
      |      transpose( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  unit(...)
+     |  uunniitt(...)
      |      unit( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
-     |  zero(...)
+     |  zzeerroo(...)
      |      zero( (SymmetryOperation)arg1) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 96
+     |  ____iinnssttaannccee__ssiizzee____ = 96
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Vector(Boost.Python.instance)
+    class VVeeccttoorr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2919,51 +3213,51 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __getitem__(...)
+     |  ____ggeettiitteemm____(...)
      |      __getitem__( (Vector)arg1, (int)arg2) -> float :
      |          docstring
      |      
      |      __getitem__( (Vector)arg1, (tuple)arg2) -> float :
      |          docstring
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |      
      |      __init__( (object)arg1, (int)arg2) -> None
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  __setitem__(...)
+     |  ____sseettiitteemm____(...)
      |      __setitem__( (Vector)arg1, (int)arg2, (float)arg3) -> None :
      |          docstring
      |      
      |      __setitem__( (Vector)arg1, (tuple)arg2, (float)arg3) -> None :
      |          docstring
      |  
-     |  dim(...)
+     |  ddiimm(...)
      |      dim( (Vector)arg1, (int)arg2) -> int :
      |          docstring
      |  
-     |  get(...)
+     |  ggeett(...)
      |      get( (Vector)arg1, (int)arg2) -> float :
      |          docstring
      |      
      |      get( (Vector)arg1, (int)arg2, (int)arg3) -> float :
      |          docstring
      |  
-     |  nirrep(...)
+     |  nniirrrreepp(...)
      |      nirrep( (Vector)arg1) -> int :
      |          docstring
      |  
-     |  print_out(...)
+     |  pprriinntt__oouutt(...)
      |      print_out( (Vector)arg1) -> None :
      |          docstring
      |  
-     |  scale(...)
+     |  ssccaallee(...)
      |      scale( (Vector)arg1, (float)arg2) -> None :
      |          docstring
      |  
-     |  set(...)
+     |  sseett(...)
      |      set( (Vector)arg1, (int)arg2, (float)arg3) -> None :
      |          docstring
      |      
@@ -2973,22 +3267,22 @@ CLASSES
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 32
+     |  ____iinnssttaannccee__ssiizzee____ = 32
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Vector3(Boost.Python.instance)
+    class VVeeccttoorr33(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -2998,20 +3292,20 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __add__(...)
+     |  ____aadddd____(...)
      |      __add__( (Vector3)arg1, (Vector3)arg2) -> object
      |  
-     |  __getitem__(...)
+     |  ____ggeettiitteemm____(...)
      |      __getitem__( (Vector3)arg1, (int)arg2) -> float :
      |          docstring
      |  
-     |  __iadd__(...)
+     |  ____iiaadddd____(...)
      |      __iadd__( (object)arg1, (Vector3)arg2) -> object
      |  
-     |  __imul__(...)
+     |  ____iimmuull____(...)
      |      __imul__( (object)arg1, (float)arg2) -> object
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |      
      |      __init__( (object)arg1, (float)arg2) -> None
@@ -3020,60 +3314,92 @@ CLASSES
      |      
      |      __init__( (object)arg1, (Vector3)arg2) -> None
      |  
-     |  __isub__(...)
+     |  ____iissuubb____(...)
      |      __isub__( (object)arg1, (Vector3)arg2) -> object
      |  
-     |  __neg__(...)
+     |  ____nneegg____(...)
      |      __neg__( (Vector3)arg1) -> object
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  __str__(...)
+     |  ____ssttrr____(...)
      |      __str__( (Vector3)arg1) -> str :
      |          docstring
      |  
-     |  __sub__(...)
+     |  ____ssuubb____(...)
      |      __sub__( (Vector3)arg1, (Vector3)arg2) -> object
      |  
-     |  cross(...)
+     |  ccrroossss(...)
      |      cross( (Vector3)arg1, (Vector3)arg2) -> Vector3 :
      |          docstring
      |  
-     |  distance(...)
+     |  ddiissttaannccee(...)
      |      distance( (Vector3)arg1, (Vector3)arg2) -> float :
      |          docstring
      |  
-     |  dot(...)
+     |  ddoott(...)
      |      dot( (Vector3)arg1, (Vector3)arg2) -> float :
      |          docstring
      |  
-     |  norm(...)
+     |  nnoorrmm(...)
      |      norm( (Vector3)arg1) -> float :
      |          docstring
      |  
-     |  normalize(...)
+     |  nnoorrmmaalliizzee(...)
      |      normalize( (Vector3)arg1) -> None :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 40
+     |  ____iinnssttaannccee__ssiizzee____ = 40
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class Wavefunction(Boost.Python.instance)
+    class VViieeww(Boost.Python.instance)
+     |  Method resolution order:
+     |      View
+     |      Boost.Python.instance
+     |      __builtin__.object
+     |  
+     |  Methods defined here:
+     |  
+     |  ____ccaallll____(...)
+     |      __call__( (View)arg1) -> Matrix :
+     |          docstring
+     |  
+     |  ____iinniitt____(...)
+     |      __init__( (object)arg1, (Matrix)arg2, (Dimension)arg3, (Dimension)arg4) -> None
+     |      
+     |      __init__( (object)arg1, (Matrix)arg2, (Dimension)arg3, (Dimension)arg4, (Dimension)arg5, (Dimension)arg6) -> None
+     |  
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data descriptors inherited from Boost.Python.instance:
+     |  
+     |  ____ddiicctt____
+     |  
+     |  ____wweeaakkrreeff____
+     |  
+     |  ----------------------------------------------------------------------
+     |  Data and other attributes inherited from Boost.Python.instance:
+     |  
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
+     |      T.__new__(S, ...) -> a new object with type S, a subtype of T
+    
+    class WWaavveeffuunnccttiioonn(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -3083,101 +3409,113 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  Ca(...)
+     |  CCaa(...)
      |      Ca( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Cb(...)
+     |  CCbb(...)
      |      Cb( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Da(...)
+     |  DDaa(...)
      |      Da( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Db(...)
+     |  DDbb(...)
      |      Db( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Fa(...)
+     |  FFaa(...)
      |      Fa( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  Fb(...)
+     |  FFbb(...)
      |      Fb( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  add_postiteration_callback(...)
+     |  aadddd__ppoossttiitteerraattiioonn__ccaallllbbaacckk(...)
      |      add_postiteration_callback( (Wavefunction)arg1, (object)arg2) -> None :
      |          docstring
      |  
-     |  add_preiteration_callback(...)
+     |  aadddd__pprreeiitteerraattiioonn__ccaallllbbaacckk(...)
      |      add_preiteration_callback( (Wavefunction)arg1, (object)arg2) -> None :
      |          docstring
      |  
-     |  basisset(...)
+     |  aallpphhaa__oorrbbiittaall__ssppaaccee(...)
+     |      alpha_orbital_space( (Wavefunction)arg1, (str)arg2, (str)arg3, (str)arg4) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  bbaassiisssseett(...)
      |      basisset( (Wavefunction)arg1) -> BasisSet :
      |          docstring
      |  
-     |  energy(...)
+     |  bbeettaa__oorrbbiittaall__ssppaaccee(...)
+     |      beta_orbital_space( (Wavefunction)arg1, (str)arg2, (str)arg3, (str)arg4) -> OrbitalSpace :
+     |          docstring
+     |  
+     |  eenneerrggyy(...)
      |      energy( (Wavefunction)arg1) -> float :
      |          docstring
      |  
-     |  epsilon_a(...)
+     |  eeppssiilloonn__aa(...)
      |      epsilon_a( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  epsilon_b(...)
+     |  eeppssiilloonn__bb(...)
      |      epsilon_b( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  frequencies(...)
+     |  ffrreeqquueenncciieess(...)
      |      frequencies( (Wavefunction)arg1) -> Vector :
      |          docstring
      |  
-     |  gradient(...)
+     |  ggrraaddiieenntt(...)
      |      gradient( (Wavefunction)arg1) -> Matrix :
      |          docstring
      |  
-     |  nirrep(...)
+     |  mmoolleeccuullee(...)
+     |      molecule( (Wavefunction)arg1) -> Molecule :
+     |          docstring
+     |  
+     |  nniirrrreepp(...)
      |      nirrep( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  nmo(...)
+     |  nnmmoo(...)
      |      nmo( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  nso(...)
+     |  nnssoo(...)
      |      nso( (Wavefunction)arg1) -> int :
      |          docstring
      |  
-     |  sobasisset(...)
+     |  ssoobbaassiisssseett(...)
      |      sobasisset( (Wavefunction)arg1) -> SOBasisSet :
      |          docstring
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __init__ = <built-in function __init__>
+     |  ____iinniitt____ = <built-in function __init__>
      |      Raises an exception
      |      This class cannot be instantiated from Python
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
     
-    class matrix_vector(Boost.Python.instance)
+    class mmaattrriixx__vveeccttoorr(Boost.Python.instance)
      |  docstring
      |  
      |  Method resolution order:
@@ -3187,510 +3525,506 @@ CLASSES
      |  
      |  Methods defined here:
      |  
-     |  __contains__(...)
+     |  ____ccoonnttaaiinnss____(...)
      |      __contains__( (matrix_vector)arg1, (object)arg2) -> bool
      |  
-     |  __delitem__(...)
+     |  ____ddeelliitteemm____(...)
      |      __delitem__( (matrix_vector)arg1, (object)arg2) -> None
      |  
-     |  __getitem__(...)
+     |  ____ggeettiitteemm____(...)
      |      __getitem__( (object)arg1, (object)arg2) -> object
      |  
-     |  __init__(...)
+     |  ____iinniitt____(...)
      |      __init__( (object)arg1) -> None
      |  
-     |  __iter__(...)
+     |  ____iitteerr____(...)
      |      __iter__( (object)arg1) -> object
      |  
-     |  __len__(...)
+     |  ____lleenn____(...)
      |      __len__( (matrix_vector)arg1) -> int
      |  
-     |  __reduce__ = <unnamed Boost.Python function>(...)
+     |  ____rreedduuccee____ = <unnamed Boost.Python function>(...)
      |  
-     |  __setitem__(...)
+     |  ____sseettiitteemm____(...)
      |      __setitem__( (matrix_vector)arg1, (object)arg2, (object)arg3) -> None
      |  
-     |  append(...)
+     |  aappppeenndd(...)
      |      append( (matrix_vector)arg1, (object)arg2) -> None
      |  
-     |  extend(...)
+     |  eexxtteenndd(...)
      |      extend( (matrix_vector)arg1, (object)arg2) -> None
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes defined here:
      |  
-     |  __instance_size__ = 40
+     |  ____iinnssttaannccee__ssiizzee____ = 40
      |  
      |  ----------------------------------------------------------------------
      |  Data descriptors inherited from Boost.Python.instance:
      |  
-     |  __dict__
+     |  ____ddiicctt____
      |  
-     |  __weakref__
+     |  ____wweeaakkrreeff____
      |  
      |  ----------------------------------------------------------------------
      |  Data and other attributes inherited from Boost.Python.instance:
      |  
-     |  __new__ = <built-in method __new__ of Boost.Python.class object>
+     |  ____nneeww____ = <built-in method __new__ of Boost.Python.class object>
      |      T.__new__(S, ...) -> a new object with type S, a subtype of T
 
-FUNCTIONS
-    DASUM(...)
+FFUUNNCCTTIIOONNSS
+    DDAASSUUMM(...)
         DASUM( (int)arg1, (int)arg2, (Vector)arg3, (int)arg4) -> float :
             docstring
     
-    DAXPY(...)
+    DDAAXXPPYY(...)
         DAXPY( (int)arg1, (int)arg2, (float)arg3, (Vector)arg4, (int)arg5, (Vector)arg6, (int)arg7) -> None :
             docstring
     
-    DCOPY(...)
+    DDCCOOPPYY(...)
         DCOPY( (int)arg1, (int)arg2, (Vector)arg3, (int)arg4, (Vector)arg5, (int)arg6) -> None :
             docstring
     
-    DDOT(...)
+    DDDDOOTT(...)
         DDOT( (int)arg1, (int)arg2, (Vector)arg3, (int)arg4, (Vector)arg5, (int)arg6) -> float :
             docstring
     
-    DGBMV(...)
+    DDGGBBMMVV(...)
         DGBMV( (int)arg1, (str)arg2, (int)arg3, (int)arg4, (int)arg5, (int)arg6, (float)arg7, (Matrix)arg8, (int)arg9, (Vector)arg10, (int)arg11, (float)arg12, (Vector)arg13, (int)arg14) -> None :
             docstring
     
-    DGEEV(...)
+    DDGGEEEEVV(...)
         DGEEV( (int)arg1, (str)arg2, (str)arg3, (int)arg4, (Matrix)arg5, (int)arg6, (Vector)arg7, (Vector)arg8, (Matrix)arg9, (int)arg10, (Matrix)arg11, (int)arg12, (Vector)arg13, (int)arg14) -> int :
             docstring
     
-    DGEMM(...)
+    DDGGEEMMMM(...)
         DGEMM( (int)arg1, (str)arg2, (str)arg3, (int)arg4, (int)arg5, (int)arg6, (float)arg7, (Matrix)arg8, (int)arg9, (Matrix)arg10, (int)arg11, (float)arg12, (Matrix)arg13, (int)arg14) -> None :
             docstring
     
-    DGEMV(...)
+    DDGGEEMMVV(...)
         DGEMV( (int)arg1, (str)arg2, (int)arg3, (int)arg4, (float)arg5, (Matrix)arg6, (int)arg7, (Vector)arg8, (int)arg9, (float)arg10, (Vector)arg11, (int)arg12) -> None :
             docstring
     
-    DGER(...)
+    DDGGEERR(...)
         DGER( (int)arg1, (int)arg2, (int)arg3, (float)arg4, (Vector)arg5, (int)arg6, (Vector)arg7, (int)arg8, (Matrix)arg9, (int)arg10) -> None :
             docstring
     
-    DGETRF(...)
+    DDGGEETTRRFF(...)
         DGETRF( (int)arg1, (int)arg2, (int)arg3, (Matrix)arg4, (int)arg5, (IntVector)arg6) -> int :
             docstring
     
-    DGETRI(...)
+    DDGGEETTRRII(...)
         DGETRI( (int)arg1, (int)arg2, (Matrix)arg3, (int)arg4, (IntVector)arg5, (Vector)arg6, (int)arg7) -> int :
             docstring
     
-    DGETRS(...)
+    DDGGEETTRRSS(...)
         DGETRS( (int)arg1, (str)arg2, (int)arg3, (int)arg4, (Matrix)arg5, (int)arg6, (IntVector)arg7, (Matrix)arg8, (int)arg9) -> int :
             docstring
     
-    DNRM2(...)
+    DDNNRRMM22(...)
         DNRM2( (int)arg1, (int)arg2, (Vector)arg3, (int)arg4) -> float :
             docstring
     
-    DPOTRF(...)
+    DDPPOOTTRRFF(...)
         DPOTRF( (int)arg1, (str)arg2, (int)arg3, (Matrix)arg4, (int)arg5) -> int :
             docstring
     
-    DPOTRI(...)
+    DDPPOOTTRRII(...)
         DPOTRI( (int)arg1, (str)arg2, (int)arg3, (Matrix)arg4, (int)arg5) -> int :
             docstring
     
-    DPOTRS(...)
+    DDPPOOTTRRSS(...)
         DPOTRS( (int)arg1, (str)arg2, (int)arg3, (int)arg4, (Matrix)arg5, (int)arg6, (Matrix)arg7, (int)arg8) -> int :
             docstring
     
-    DROT(...)
+    DDRROOTT(...)
         DROT( (int)arg1, (int)arg2, (Vector)arg3, (int)arg4, (Vector)arg5, (int)arg6, (float)arg7, (float)arg8) -> None :
             docstring
     
-    DSBMV(...)
+    DDSSBBMMVV(...)
         DSBMV( (int)arg1, (str)arg2, (int)arg3, (int)arg4, (float)arg5, (Matrix)arg6, (int)arg7, (Vector)arg8, (int)arg9, (float)arg10, (Vector)arg11, (int)arg12) -> None :
             docstring
     
-    DSCAL(...)
+    DDSSCCAALL(...)
         DSCAL( (int)arg1, (int)arg2, (float)arg3, (Vector)arg4, (int)arg5) -> None :
             docstring
     
-    DSWAP(...)
+    DDSSWWAAPP(...)
         DSWAP( (int)arg1, (int)arg2, (Vector)arg3, (int)arg4, (Vector)arg5, (int)arg6) -> None :
             docstring
     
-    DSYEV(...)
+    DDSSYYEEVV(...)
         DSYEV( (int)arg1, (str)arg2, (str)arg3, (int)arg4, (Matrix)arg5, (int)arg6, (Vector)arg7, (Vector)arg8, (int)arg9) -> int :
             docstring
     
-    DSYMM(...)
+    DDSSYYMMMM(...)
         DSYMM( (int)arg1, (str)arg2, (str)arg3, (int)arg4, (int)arg5, (float)arg6, (Matrix)arg7, (int)arg8, (Matrix)arg9, (int)arg10, (float)arg11, (Matrix)arg12, (int)arg13) -> None :
             docstring
     
-    DSYMV(...)
+    DDSSYYMMVV(...)
         DSYMV( (int)arg1, (str)arg2, (int)arg3, (float)arg4, (Matrix)arg5, (int)arg6, (Vector)arg7, (int)arg8, (float)arg9, (Vector)arg10, (int)arg11) -> None :
             docstring
     
-    DSYR(...)
+    DDSSYYRR(...)
         DSYR( (int)arg1, (str)arg2, (int)arg3, (float)arg4, (Vector)arg5, (int)arg6, (Matrix)arg7, (int)arg8) -> None :
             docstring
     
-    DSYR2(...)
+    DDSSYYRR22(...)
         DSYR2( (int)arg1, (str)arg2, (int)arg3, (float)arg4, (Vector)arg5, (int)arg6, (Vector)arg7, (int)arg8, (Matrix)arg9, (int)arg10) -> None :
             docstring
     
-    DSYR2K(...)
+    DDSSYYRR22KK(...)
         DSYR2K( (int)arg1, (str)arg2, (str)arg3, (int)arg4, (int)arg5, (float)arg6, (Matrix)arg7, (int)arg8, (Matrix)arg9, (int)arg10, (float)arg11, (Matrix)arg12, (int)arg13) -> None :
             docstring
     
-    DSYRK(...)
+    DDSSYYRRKK(...)
         DSYRK( (int)arg1, (str)arg2, (str)arg3, (int)arg4, (int)arg5, (float)arg6, (Matrix)arg7, (int)arg8, (float)arg9, (Matrix)arg10, (int)arg11) -> None :
             docstring
     
-    DSYSV(...)
+    DDSSYYSSVV(...)
         DSYSV( (int)arg1, (str)arg2, (int)arg3, (int)arg4, (Matrix)arg5, (int)arg6, (IntVector)arg7, (Matrix)arg8, (int)arg9, (Vector)arg10, (int)arg11) -> int :
             docstring
     
-    DTBMV(...)
+    DDTTBBMMVV(...)
         DTBMV( (int)arg1, (str)arg2, (str)arg3, (str)arg4, (int)arg5, (int)arg6, (Matrix)arg7, (int)arg8, (Vector)arg9, (int)arg10) -> None :
             docstring
     
-    DTBSV(...)
+    DDTTBBSSVV(...)
         DTBSV( (int)arg1, (str)arg2, (str)arg3, (str)arg4, (int)arg5, (int)arg6, (Matrix)arg7, (int)arg8, (Vector)arg9, (int)arg10) -> None :
             docstring
     
-    DTRMM(...)
+    DDTTRRMMMM(...)
         DTRMM( (int)arg1, (str)arg2, (str)arg3, (str)arg4, (str)arg5, (int)arg6, (int)arg7, (float)arg8, (Matrix)arg9, (int)arg10, (Matrix)arg11, (int)arg12) -> None :
             docstring
     
-    DTRMV(...)
+    DDTTRRMMVV(...)
         DTRMV( (int)arg1, (str)arg2, (str)arg3, (str)arg4, (int)arg5, (Matrix)arg6, (int)arg7, (Vector)arg8, (int)arg9) -> None :
             docstring
     
-    DTRSM(...)
+    DDTTRRSSMM(...)
         DTRSM( (int)arg1, (str)arg2, (str)arg3, (str)arg4, (str)arg5, (int)arg6, (int)arg7, (float)arg8, (Matrix)arg9, (int)arg10, (Matrix)arg11, (int)arg12) -> None :
             docstring
     
-    DTRSV(...)
+    DDTTRRSSVV(...)
         DTRSV( (int)arg1, (str)arg2, (str)arg3, (str)arg4, (int)arg5, (Matrix)arg6, (int)arg7, (Vector)arg8, (int)arg9) -> None :
             docstring
     
-    IDAMAX(...)
+    IIDDAAMMAAXX(...)
         IDAMAX( (int)arg1, (int)arg2, (Vector)arg3, (int)arg4) -> int :
             docstring
     
-    adc(...)
+    aaddcc(...)
         adc() -> float :
             docstring
     
-    add_user_basis_file(...)
+    aadddd__uusseerr__bbaassiiss__ffiillee(...)
         add_user_basis_file( (str)arg1) -> None :
             docstring
     
-    benchmark_blas1(...)
+    bbeenncchhmmaarrkk__bbllaass11(...)
         benchmark_blas1( (int)arg1, (float)arg2) -> None :
             docstring
     
-    benchmark_blas2(...)
+    bbeenncchhmmaarrkk__bbllaass22(...)
         benchmark_blas2( (int)arg1, (float)arg2) -> None :
             docstring
     
-    benchmark_blas3(...)
+    bbeenncchhmmaarrkk__bbllaass33(...)
         benchmark_blas3( (int)arg1, (float)arg2, (int)arg3) -> None :
             docstring
     
-    benchmark_disk(...)
+    bbeenncchhmmaarrkk__ddiisskk(...)
         benchmark_disk( (int)arg1, (float)arg2) -> None :
             docstring
     
-    benchmark_integrals(...)
+    bbeenncchhmmaarrkk__iinntteeggrraallss(...)
         benchmark_integrals( (int)arg1, (float)arg2) -> None :
             docstring
     
-    benchmark_math(...)
+    bbeenncchhmmaarrkk__mmaatthh(...)
         benchmark_math( (float)arg1) -> None :
             docstring
     
-    ccdensity(...)
+    ccccddeennssiittyy(...)
         ccdensity() -> float :
             docstring
     
-    ccenergy(...)
+    cccceenneerrggyy(...)
         ccenergy() -> float :
             docstring
     
-    cceom(...)
+    cccceeoomm(...)
         cceom() -> float :
             docstring
     
-    cchbar(...)
+    cccchhbbaarr(...)
         cchbar() -> float :
             docstring
     
-    cclambda(...)
+    ccccllaammbbddaa(...)
         cclambda() -> float :
             docstring
     
-    ccresponse(...)
+    ccccrreessppoonnssee(...)
         ccresponse() -> float :
             docstring
     
-    ccsort(...)
+    ccccssoorrtt(...)
         ccsort() -> float :
             docstring
     
-    cctriples(...)
+    ccccttrriipplleess(...)
         cctriples() -> float :
             docstring
     
-    clean(...)
+    cclleeaann(...)
         clean() -> None :
             Function to remove scratch files. Call between independent jobs.
     
-    close_outfile(...)
+    cclloossee__oouuttffiillee(...)
         close_outfile() -> None :
             docstring
     
-    dcft(...)
+    ddccfftt(...)
         dcft() -> float :
             docstring
     
-    deriv(...)
+    ddeerriivv(...)
         deriv() -> int :
             docstring
     
-    detci(...)
+    ddeettccii(...)
         detci() -> float :
             docstring
     
-    dfcc(...)
+    ddffcccc(...)
         dfcc() -> float :
             docstring
     
-    dfmp2(...)
+    ddffmmpp22(...)
         dfmp2() -> float :
             docstring
     
-    fd_1_0(...)
+    ffdd__11__00(...)
         fd_1_0( (list)arg1) -> PsiReturnType :
             docstring
     
-    fd_freq_0(...)
+    ffdd__ffrreeqq__00(...)
         fd_freq_0( (list)arg1, (int)arg2) -> PsiReturnType :
             docstring
     
-    fd_freq_1(...)
+    ffdd__ffrreeqq__11(...)
         fd_freq_1( (list)arg1, (int)arg2) -> PsiReturnType :
             docstring
     
-    fd_geoms_1_0(...)
+    ffdd__ggeeoommss__11__00(...)
         fd_geoms_1_0() -> matrix_vector :
             docstring
     
-    fd_geoms_freq_0(...)
+    ffdd__ggeeoommss__ffrreeqq__00(...)
         fd_geoms_freq_0( (int)arg1) -> matrix_vector :
             docstring
     
-    fd_geoms_freq_1(...)
+    ffdd__ggeeoommss__ffrreeqq__11(...)
         fd_geoms_freq_1( (int)arg1) -> matrix_vector :
             docstring
     
-    fd_geoms_hessian_0(...)
+    ffdd__ggeeoommss__hheessssiiaann__00(...)
         fd_geoms_hessian_0() -> matrix_vector :
             docstring
     
-    fd_hessian_0(...)
+    ffdd__hheessssiiaann__00(...)
         fd_hessian_0( (list)arg1) -> PsiReturnType :
             docstring
     
-    flush_outfile(...)
+    fflluusshh__oouuttffiillee(...)
         flush_outfile() -> None :
             docstring
     
-    get_active_molecule(...)
+    ggeett__aaccttiivvee__mmoolleeccuullee(...)
         get_active_molecule() -> Molecule :
             docstring
     
-    get_global_option(...)
+    ggeett__gglloobbaall__ooppttiioonn(...)
         get_global_option( (str)arg1) -> object :
             docstring
     
-    get_global_option_list(...)
+    ggeett__gglloobbaall__ooppttiioonn__lliisstt(...)
         get_global_option_list() -> list :
             docstring
     
-    get_gradient(...)
+    ggeett__ggrraaddiieenntt(...)
         get_gradient() -> Matrix :
             docstring
     
-    get_input_directory(...)
+    ggeett__iinnppuutt__ddiirreeccttoorryy(...)
         get_input_directory() -> str :
             docstring
     
-    get_local_option(...)
+    ggeett__llooccaall__ooppttiioonn(...)
         get_local_option( (str)arg1, (str)arg2) -> object :
             docstring
     
-    get_memory(...)
+    ggeett__mmeemmoorryy(...)
         get_memory() -> int :
             docstring
     
-    get_option(...)
+    ggeett__ooppttiioonn(...)
         get_option( (str)arg1) -> object :
             docstring
     
-    get_variable(...)
+    ggeett__vvaarriiaabbllee(...)
         get_variable( (str)arg1) -> float :
             docstring
     
-    has_global_option_changed(...)
+    hhaass__gglloobbaall__ooppttiioonn__cchhaannggeedd(...)
         has_global_option_changed( (str)arg1) -> bool :
             docstring
     
-    has_local_option_changed(...)
+    hhaass__llooccaall__ooppttiioonn__cchhaannggeedd(...)
         has_local_option_changed( (str)arg1, (str)arg2) -> bool :
             docstring
     
-    has_option_changed(...)
+    hhaass__ooppttiioonn__cchhaannggeedd(...)
         has_option_changed( (str)arg1) -> bool :
             docstring
     
-    libfock(...)
+    lliibbffoocckk(...)
         libfock() -> int :
             docstring
     
-    lmp2(...)
-        lmp2() -> float :
-            docstring
-    
-    mcscf(...)
+    mmccssccff(...)
         mcscf() -> float :
             docstring
     
-    me(...)
+    mmee(...)
         me() -> int :
             docstring
     
-    mints(...)
+    mmiinnttss(...)
         mints() -> int :
             docstring
     
-    mp2(...)
+    mmpp22(...)
         mp2() -> float :
             docstring
     
-    mrcc_generate_input(...)
+    mmrrcccc__ggeenneerraattee__iinnppuutt(...)
         mrcc_generate_input( (dict)arg1) -> PsiReturnType :
             docstring
     
-    mrcc_load_densities(...)
+    mmrrcccc__llooaadd__ddeennssiittiieess(...)
         mrcc_load_densities( (dict)arg1) -> PsiReturnType :
             docstring
     
-    nproc(...)
+    nnpprroocc(...)
         nproc() -> int :
             docstring
     
-    nthread(...)
+    nntthhrreeaadd(...)
         nthread() -> int :
             docstring
     
-    nuclear_dipole(...)
+    nnuucclleeaarr__ddiippoollee(...)
         nuclear_dipole( (Molecule)arg1) -> Vector :
             docstring
     
-    omp2(...)
+    oommpp22(...)
         omp2() -> int :
             docstring
     
-    opt_clean(...)
+    oopptt__cclleeaann(...)
         opt_clean() -> None :
             docstring
     
-    optking(...)
+    ooppttkkiinngg(...)
         optking() -> int :
             docstring
     
-    outfile_name(...)
+    oouuttffiillee__nnaammee(...)
         outfile_name() -> str :
             docstring
     
-    plugin(...)
+    pplluuggiinn(...)
         plugin( (str)arg1) -> int :
             docstring
     
-    plugin_close(...)
+    pplluuggiinn__cclloossee(...)
         plugin_close( (str)arg1) -> None :
             docstring
     
-    plugin_close_all(...)
+    pplluuggiinn__cclloossee__aallll(...)
         plugin_close_all() -> None :
             docstring
     
-    plugin_load(...)
+    pplluuggiinn__llooaadd(...)
         plugin_load( (str)arg1) -> int :
             docstring
     
-    prepare_options_for_module(...)
+    pprreeppaarree__ooppttiioonnss__ffoorr__mmoodduullee(...)
         prepare_options_for_module( (str)arg1) -> None :
             docstring
     
-    print_global_options(...)
+    pprriinntt__gglloobbaall__ooppttiioonnss(...)
         print_global_options() -> None :
             docstring
     
-    print_options(...)
+    pprriinntt__ooppttiioonnss(...)
         print_options() -> None :
             docstring
     
-    print_out(...)
+    pprriinntt__oouutt(...)
         print_out( (str)arg1) -> None :
             docstring
     
-    print_variables(...)
+    pprriinntt__vvaarriiaabblleess(...)
         print_variables() -> None :
             docstring
     
-    psi_top_srcdir(...)
+    ppssii__ttoopp__ssrrccddiirr(...)
         psi_top_srcdir() -> str :
             docstring
     
-    psimrcc(...)
+    ppssiimmrrcccc(...)
         psimrcc() -> float :
             docstring
     
-    reference_wavefunction(...)
+    rreeffeerreennccee__wwaavveeffuunnccttiioonn(...)
         reference_wavefunction() -> Wavefunction :
             docstring
     
-    reopen_outfile(...)
+    rreeooppeenn__oouuttffiillee(...)
         reopen_outfile() -> None :
             docstring
     
-    revoke_global_option_changed(...)
+    rreevvookkee__gglloobbaall__ooppttiioonn__cchhaannggeedd(...)
         revoke_global_option_changed( (str)arg1) -> None :
             docstring
     
-    revoke_local_option_changed(...)
+    rreevvookkee__llooccaall__ooppttiioonn__cchhaannggeedd(...)
         revoke_local_option_changed( (str)arg1, (str)arg2) -> None :
             docstring
     
-    revoke_option_changed(...)
+    rreevvookkee__ooppttiioonn__cchhaannggeedd(...)
         revoke_option_changed( (str)arg1) -> None :
             docstring
     
-    sapt(...)
+    ssaapptt(...)
         sapt() -> float :
             docstring
     
-    scf(...)
+    ssccff(...)
         scf( (object)arg1, (object)arg2) -> float :
             docstring
         
         scf() -> float :
             docstring
     
-    set_active_molecule(...)
+    sseett__aaccttiivvee__mmoolleeccuullee(...)
         set_active_molecule( (Molecule)arg1) -> None :
             docstring
     
-    set_global_option(...)
+    sseett__gglloobbaall__ooppttiioonn(...)
         set_global_option( (str)arg1, (str)arg2) -> bool :
             docstring
         
@@ -3702,15 +4036,15 @@ FUNCTIONS
         
         set_global_option( (str)arg1, (list)arg2 [, (object)arg3]) -> bool
     
-    set_global_option_python(...)
+    sseett__gglloobbaall__ooppttiioonn__ppyytthhoonn(...)
         set_global_option_python( (str)arg1, (object)arg2) -> bool :
             docstring
     
-    set_gradient(...)
+    sseett__ggrraaddiieenntt(...)
         set_gradient( (Matrix)arg1) -> None :
             docstring
     
-    set_local_option(...)
+    sseett__llooccaall__ooppttiioonn(...)
         set_local_option( (str)arg1, (str)arg2, (str)arg3) -> bool :
             docstring
         
@@ -3722,39 +4056,43 @@ FUNCTIONS
         
         set_local_option( (str)arg1, (str)arg2, (list)arg3 [, (object)arg4]) -> bool
     
-    set_local_option_python(...)
+    sseett__llooccaall__ooppttiioonn__ppyytthhoonn(...)
         set_local_option_python( (str)arg1, (object)arg2) -> None :
             docstring
     
-    set_memory(...)
+    sseett__mmeemmoorryy(...)
         set_memory( (int)arg1) -> None :
             docstring
     
-    set_nthread(...)
+    sseett__nntthhrreeaadd(...)
         set_nthread( (int)arg1) -> None :
             docstring
     
-    set_variable(...)
+    sseett__vvaarriiaabbllee(...)
         set_variable( (str)arg1, (float)arg2) -> None :
             docstring
     
-    transqt(...)
+    ssttaabbiilliittyy(...)
+        stability() -> int :
+            docstring
+    
+    ttrraannssqqtt(...)
         transqt() -> float :
             docstring
     
-    transqt2(...)
+    ttrraannssqqtt22(...)
         transqt2() -> float :
             docstring
     
-    version(...)
+    vveerrssiioonn(...)
         version() -> str :
             docstring
 
-DATA
-    Ascending = PsiMod.DiagonalizeOrder.Ascending
-    Balk = PsiMod.PsiReturnType.Balk
-    Descending = PsiMod.DiagonalizeOrder.Descending
-    EndLoop = PsiMod.PsiReturnType.EndLoop
-    Failure = PsiMod.PsiReturnType.Failure
-    Success = PsiMod.PsiReturnType.Success
+DDAATTAA
+    AAsscceennddiinngg = PsiMod.DiagonalizeOrder.Ascending
+    BBaallkk = PsiMod.PsiReturnType.Balk
+    DDeesscceennddiinngg = PsiMod.DiagonalizeOrder.Descending
+    EEnnddLLoooopp = PsiMod.PsiReturnType.EndLoop
+    FFaaiilluurree = PsiMod.PsiReturnType.Failure
+    SSuucccceessss = PsiMod.PsiReturnType.Success
 

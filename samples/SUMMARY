@@ -229,6 +229,12 @@ dft1:         DFT Functional Test
 dft2:         DFT Functional Test
 
 
+docs_dft:     This test is used to construct the documentation; it is not suitable for emulation by users.
+
+
+docs_psimod:  This test is used to construct the documentation; it is not suitable for emulation by users.
+
+
 fci-dipole:   6-31G H2O Test FCI Energy Point
 
 
