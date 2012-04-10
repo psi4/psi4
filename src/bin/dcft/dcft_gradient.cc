@@ -24,18 +24,21 @@ DCFTSolver::compute_gradient()
     // Copy the current density cumulant and tau as a guess for cumulant response and perturbed tau
     response_guess();
 
+    orbital_response_rms_ = 0.0;
+    cumulant_response_rms_ = lambda_convergence_;
     iter_ = 0;
-    fprintf(outfile, "\n\n\t*=============================================*\n"
-                     "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.    *\n"
-                     "\t*---------------------------------------------*\n");
+
+    fprintf(outfile, "\n\n\t*=================================================*\n"
+                     "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
+                     "\t*-------------------------------------------------*");
 
     // Start macro-iterations
     while(!responseDone && iter_++ < maxiter_){
-        fprintf(outfile, "\t                          *** Macro Iteration %d ***\n", iter_);
+        fprintf(outfile, "\n\t              *** Macro Iteration %d ***\n", iter_);
 
         // Solve the cumulant response equations iteratively
         if (iter_ > 1) {
-            fprintf(outfile, "\tCumulant Response Iterations\n");
+            fprintf(outfile, "\t            Cumulant Response Iterations\n");
             iterate_cumulant_response();
         }
 
@@ -47,7 +50,7 @@ DCFTSolver::compute_gradient()
         compute_lagrangian_VO();
 
         // Solve the orbital response equations iteratively
-        fprintf(outfile, "\tOrbital Response Iterations\n");
+        fprintf(outfile, "\t            Orbital Response Iterations\n");
         iterate_orbital_response();
 
         // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
@@ -56,13 +59,13 @@ DCFTSolver::compute_gradient()
         // Check convergence
         if (response_coupling_rms < lambda_threshold_) responseDone = true;
 
-        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n\n", response_coupling_rms);
+        fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms);
     }
 
-    if (responseDone) fprintf(outfile, "    DCFT response equations converged.\n\n");
-    else throw PSIEXCEPTION("DCFT response equations did not converge");
+    fprintf(outfile, "\t*=================================================*\n");
 
-    fprintf(outfile, "\t*=============================================*\n");
+    if (responseDone) fprintf(outfile, "\n\t   DCFT response equations converged.\n");
+    else throw PSIEXCEPTION("DCFT response equations did not converge");
 
     // Compute the OO block of MO Lagrangian
     compute_lagrangian_OO();
@@ -1591,14 +1594,9 @@ DCFTSolver::iterate_orbital_response()
     // Compute guess for the orbital response matrix elements
     if (iter_ == 1) orbital_response_guess();
 
-    // Parameters are hard-coded for now. Let the user control them in the future
-    double rms = 0.0;
     bool converged = false;
 
      // Start iterations
-    fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ia RMS");
-    fflush(outfile);
-
     int cycle = 0;
     do {
         cycle++;
@@ -1631,21 +1629,18 @@ DCFTSolver::iterate_orbital_response()
         za_old->subtract(za_new);
         zb_old->subtract(zb_new);
 
-        rms = za_old->rms() + zb_old->rms();
-        converged = (fabs(rms) < fabs(scf_threshold_));
+        orbital_response_rms_ = za_old->rms() + zb_old->rms();
+        converged = (fabs(orbital_response_rms_) < fabs(scf_threshold_));
 
         // Print iterative trace
-        fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
+        fprintf(outfile, "\t*%4d    %11.3E       %11.3E            *\n", cycle, orbital_response_rms_, cumulant_response_rms_);
 
         // Termination condition
         if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
-    fprintf(outfile, "\n");
-
-    if (converged) fprintf(outfile, "    DCFT orbital response equations converged.\n\n");
-    else throw PSIEXCEPTION("DCFT orbital response equations did not converge");
+    if (!converged) throw PSIEXCEPTION("DCFT orbital response equations did not converge");
 
 }
 
@@ -2383,12 +2378,7 @@ DCFTSolver::iterate_cumulant_response()
     dpd_buf4_close(&Zbb);
 
     // Iteratively solve for cumulant reponse
-    double rms = 0.0;
     bool converged = false;
-
-     // Start iterations
-    fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ijab RMS");
-    fflush(outfile);
 
     int cycle = 0;
     do {
@@ -2402,7 +2392,7 @@ DCFTSolver::iterate_cumulant_response()
         compute_cumulant_response_intermediates();
 
         // Compute cumulant response residual and its RMS
-        rms = compute_cumulant_response_residual();
+        cumulant_response_rms_ = compute_cumulant_response_residual();
 
         // Update the cumulant response
         update_cumulant_response();
@@ -2441,20 +2431,17 @@ DCFTSolver::iterate_cumulant_response()
         }
 
         // Check the convergence
-        converged = (fabs(rms) < fabs(lambda_threshold_));
+        converged = (fabs(cumulant_response_rms_) < fabs(lambda_threshold_));
 
         // Print iterative trace
-        fprintf(outfile, "  %4d %11.3E  %-3s \n", cycle, rms, diisString.c_str());
+        fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
         if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
-    fprintf(outfile, "\n");
-
-    if (converged) fprintf(outfile, "    DCFT cumulant response equations converged.\n\n");
-    else throw PSIEXCEPTION("DCFT cumulant response equations did not converge");
+    if (!converged) throw PSIEXCEPTION("DCFT cumulant response equations did not converge");
 
 }
 

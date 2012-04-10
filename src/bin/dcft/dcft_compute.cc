@@ -16,6 +16,7 @@ namespace psi{ namespace dcft{
 double
 DCFTSolver::compute_energy()
 {
+
     bool scfDone    = false;
     bool lambdaDone = false;
     bool densityConverged = false;
@@ -394,7 +395,13 @@ DCFTSolver::compute_energy()
     mulliken_charges();
     check_n_representability();
 
-    if(options_.get_str("DERTYPE") == "FIRST") compute_gradient();
+    if(options_.get_str("DERTYPE") == "FIRST") {
+        // Shut down the timers
+        tstop();
+        // Start the timers
+        tstart();
+        compute_gradient();
+    }
 
     if(!options_.get_bool("MO_RELAX") && options_.get_bool("IGNORE_TAU")){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -438,6 +445,7 @@ DCFTSolver::compute_energy()
 
     // Free up memory and close files
     finalize();
+
     return(new_total_energy_);
 }
 
