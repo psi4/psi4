@@ -216,6 +216,13 @@ public:
     virtual bool same_a_b_orbs() const { return true;  }
     virtual bool same_a_b_dens() const { return false; }
 
+    /// Takes an irrep-by-irrep array (e.g. DOCC) and maps it into the current point group
+    void map_irreps(std::vector<int*> &arrays);
+    /// A wrapper to the Vector version of this function
+    void map_irreps(int* &array);
+    /// A wrapper to the Vector version of this function
+    void map_irreps(Dimension &array);
+
     /// Returns the molecule object that pertains to this wavefunction.
     boost::shared_ptr<Molecule> molecule() const;
     boost::shared_ptr<PSIO> psio() const;

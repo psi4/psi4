@@ -222,6 +222,16 @@ class FRAG {
     return (principal_axes(geom, axes, evals));
   }
 
+  // These functions are needed for the forces() function
+  // to apply user-defined equilibrium extra forces.
+  bool intco_has_fixed_eq_val(int intco_index) const {
+    return intcos[intco_index]->has_fixed_eq_val();
+  }
+  double intco_fixed_eq_val(int intco_index) const {
+    return intcos[intco_index]->fixed_eq_val();
+  }
+  double intco_value(int intco_index) const;
+
 };
 
 }
