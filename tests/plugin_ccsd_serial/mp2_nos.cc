@@ -46,7 +46,8 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   tilesizes[ntiles-1] = lasttile;
   
   long int dim = o*o*v*v;
-  if (tilesize*v*v*v>o*o*v*v) dim = tilesize*v*v*v;
+  if (tilesize*v*v*v>o*o*v*v && !ccsd->isLowMemory) dim = tilesize*v*v*v;
+
   double*amps1 = (double*)malloc(dim*sizeof(double));
   double*amps2 = (double*)malloc(dim*sizeof(double));
 
@@ -161,43 +162,93 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 
   // transform (ov|vv) integrals:
   psio_address addrread,addrwrite;
-  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
   addrread  = PSIO_ZERO;
   addrwrite = PSIO_ZERO;
 
-  for (int n=0; n<ntiles; n++){
-      psio->read(PSIF_ABCI,"E2abci",(char*)&amps2[0],tilesizes[n]*v*v*v*sizeof(double),addrread,&addrread);
-      // transform iabc -> iabC
-      F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*v,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
-      // sort iabC -> aiCb
-      for (int i=0; i<tilesizes[n]; i++){
-          for (int a=0; a<v; a++){
-              for (int b=0; b<v; b++){
-                  for (int c=0; c<nvirt_no; c++){
-                      amps2[a*tilesizes[n]*nvirt_no*v+i*v*nvirt_no+c*v+b] = 
-                      amps1[i*v*v*nvirt_no+a*v*nvirt_no+b*nvirt_no+c];
-                  }
-              }
-          }
-      }
-      // transform aiCb -> aiCB
-      F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*nvirt_no,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
-      // transform aiCB -> AiCB
-      F_DGEMM('n','n',tilesizes[n]*nvirt_no*nvirt_no,nvirt_no,v,1.0,amps1,tilesizes[n]*nvirt_no*nvirt_no,Dab,v,0.0,amps2,tilesizes[n]*nvirt_no*nvirt_no);
-      // sort AiCB -> iABC
-      for (int i=0; i<tilesizes[n]; i++){
-          for (int a=0; a<nvirt_no; a++){
-              for (int b=0; b<nvirt_no; b++){
-                  for (int c=0; c<nvirt_no; c++){
-                      amps1[i*nvirt_no*nvirt_no*nvirt_no+a*nvirt_no*nvirt_no+b*nvirt_no+c] =
-                      amps2[a*tilesizes[n]*nvirt_no*nvirt_no+i*nvirt_no*nvirt_no+c*nvirt_no+b];
-                  }
-              }
-          }
-      }
-      psio->write(PSIF_ABCI,"E2abci",(char*)&amps1[0],tilesizes[n]*nvirt_no*nvirt_no*nvirt_no*sizeof(double),addrwrite,&addrwrite);
+  if (ccsd->isLowMemory){
+     psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
+     psio->open(PSIF_ABCI4,PSIO_OPEN_OLD);
+     addrread  = PSIO_ZERO;
+     addrwrite = PSIO_ZERO;
+     for (int a = 0; a < v; a++){
+         psio->read(PSIF_ABCI4,"E2abci4",(char*)&amps2[0],v*v*o*sizeof(double),addrread,&addrread);
+         // transform .bic -> .Bic
+         F_DGEMM('n','n',o*v,nvirt_no,v,1.0,amps2,o*v,Dab,v,0.0,amps1,o*v);
+         // transform .Bic -> .Bic
+         F_DGEMM('t','n',nvirt_no,o*nvirt_no,v,1.0,Dab,v,amps1,v,0.0,amps2,nvirt_no);
+         psio->write(PSIF_ABCI4,"E2abci4",(char*)&amps2[0],nvirt_no*nvirt_no*o*sizeof(double),addrwrite,&addrwrite);
+     }
+     // out-of-core transpose aBiC -> BiCa
+     addrread  = PSIO_ZERO;
+     addrwrite = PSIO_ZERO;
+     for (int a = 0; a < v; a++){
+         // read row a (o*nvirt_no*nvirt_no elements)
+         psio->read(PSIF_ABCI4,"E2abci4",(char*)&amps2[0],nvirt_no*nvirt_no*o*sizeof(double),addrread,&addrread);
+         // write col (1 element, o*nvirt_no*nvirt_no rows)
+         for (int BiC = 0; BiC < o*nvirt_no*nvirt_no; BiC++){
+             addrwrite = psio_get_address(PSIO_ZERO,(long int)(BiC * v + a)*sizeof(double));
+             psio->write(PSIF_ABCI,"E2abci",(char*)&amps2[BiC],sizeof(double),addrwrite,&addrwrite);
+         }
+     }
+     addrread  = PSIO_ZERO;
+     addrwrite = PSIO_ZERO;
+     for (int a=0; a<v; a++){
+         psio->read(PSIF_ABCI,"E2abci",(char*)&amps1[0],nvirt_no*v*o*sizeof(double),addrread,&addrread);
+         // transform .Bia -> .BiA
+         F_DGEMM('t','n',nvirt_no,o*nvirt_no,v,1.0,Dab,v,amps1,v,0.0,amps2,nvirt_no);
+         psio->write(PSIF_ABCI,"E2abci",(char*)&amps2[0],nvirt_no*nvirt_no*o*sizeof(double),addrwrite,&addrwrite);
+     }
+     // sort BiCA -> ABiC
+     // out-of-core transpose BiCA -> ABCi
+     addrread  = PSIO_ZERO;
+     addrwrite = PSIO_ZERO;
+     for (int BiC=0; BiC<o*nvirt_no*nvirt_no; BiC++){
+         // read row BiC (v elements)
+         psio->read(PSIF_ABCI,"E2abci",(char*)&amps2[0],nvirt_no*sizeof(double),addrread,&addrread);
+         // write col (1 element, v rows)
+         for (int a = 0; a < nvirt_no; a++){
+             addrwrite = psio_get_address(PSIO_ZERO,(long int)(a * o*nvirt_no*nvirt_no + BiC)*sizeof(double));
+             psio->write(PSIF_ABCI4,"E2abci4",(char*)&amps2[a],sizeof(double),addrwrite,&addrwrite);
+         }
+     }
+     psio->close(PSIF_ABCI,1);
+     psio->close(PSIF_ABCI4,1);
+  }else{
+     psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
+     for (int n=0; n<ntiles; n++){
+         psio->read(PSIF_ABCI,"E2abci",(char*)&amps2[0],tilesizes[n]*v*v*v*sizeof(double),addrread,&addrread);
+         // transform iabc -> iabC
+         F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*v,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+         // sort iabC -> aiCb
+         for (int i=0; i<tilesizes[n]; i++){
+             for (int a=0; a<v; a++){
+                 for (int b=0; b<v; b++){
+                     for (int c=0; c<nvirt_no; c++){
+                         amps2[a*tilesizes[n]*nvirt_no*v+i*v*nvirt_no+c*v+b] = 
+                         amps1[i*v*v*nvirt_no+a*v*nvirt_no+b*nvirt_no+c];
+                     }
+                 }
+             }
+         }
+         // transform aiCb -> aiCB
+         F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*nvirt_no,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+         // transform aiCB -> AiCB
+         F_DGEMM('n','n',tilesizes[n]*nvirt_no*nvirt_no,nvirt_no,v,1.0,amps1,tilesizes[n]*nvirt_no*nvirt_no,Dab,v,0.0,amps2,tilesizes[n]*nvirt_no*nvirt_no);
+         // sort AiCB -> iABC
+         for (int i=0; i<tilesizes[n]; i++){
+             for (int a=0; a<nvirt_no; a++){
+                 for (int b=0; b<nvirt_no; b++){
+                     for (int c=0; c<nvirt_no; c++){
+                         amps1[i*nvirt_no*nvirt_no*nvirt_no+a*nvirt_no*nvirt_no+b*nvirt_no+c] =
+                         amps2[a*tilesizes[n]*nvirt_no*nvirt_no+i*nvirt_no*nvirt_no+c*nvirt_no+b];
+                     }
+                 }
+             }
+         }
+         psio->write(PSIF_ABCI,"E2abci",(char*)&amps1[0],tilesizes[n]*nvirt_no*nvirt_no*nvirt_no*sizeof(double),addrwrite,&addrwrite);
+     }
+     psio->close(PSIF_ABCI,1);
   }
-  psio->close(PSIF_ABCI,1);
 
   // transform (oo|ov), (ov|vv), and (ov|ov)
 
