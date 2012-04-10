@@ -64,13 +64,16 @@ trigger:
 	touch $(SRCSOURCEDIR)/template_index.rst
 	touch $(SRCSOURCEDIR)/template_appendices.rst
 
+
 #####  auto-doc dependencies and generation  #####
+
+usertestcases:= $(filter-out $(wildcard @top_srcdir@/tests/docs_*/input.dat), $(wildcard @top_srcdir@/tests/*/input.dat))
 
 # psivariable dependencies (all C++ code) not implemented
 autodepend1 = \
 @top_srcdir@/include/physconst.h \
 @top_srcdir@/src/bin/psi4/read_options.cc \
-@top_srcdir@/tests/*/input.dat \
+$(usertestcases) \
 @srcdir@/document_options_tests_physconst_psivariables.pl
 
 # plugin C++ dependencies not implemented, using *.py as proxy
@@ -88,6 +91,14 @@ autodepend4 = \
 $(SRCSOURCEDIR)/template_index.rst \
 $(SRCSOURCEDIR)/template_appendices.rst \
 @srcdir@/separate_userprogman.py
+
+autodepend5 = \
+@top_srcdir@/src/bin/psi4/*.cc \
+@top_srcdir@/tests/docs_psimod/input.dat
+
+autodepend6 = \
+@top_srcdir@/src/bin/psi4/*.cc \
+@top_srcdir@/tests/docs_dft/input.dat
 
 autotarget1 = \
 $(SOURCEDIR)/autodoc_abbr_options_c.rst \
@@ -118,6 +129,17 @@ $(SOURCEDIR)/autodoc_index_htmlprog.rst  $(SOURCEDIR)/autodoc_appendices_htmlpro
 $(SOURCEDIR)/autodoc_index_latexuser.rst $(SOURCEDIR)/autodoc_appendices_latexuser.rst \
 $(SOURCEDIR)/autodoc_index_latexprog.rst $(SOURCEDIR)/autodoc_appendices_latexprog.rst
 
+autotarget5 = \
+$(SOURCEDIR)/autodoc_man_PsiMod.txt
+
+autotarget6 = \
+$(SOURCEDIR)/autodoc_dft_all.rst \
+$(SOURCEDIR)/autodoc_dft_gga.rst \
+$(SOURCEDIR)/autodoc_dft_meta.rst \
+$(SOURCEDIR)/autodoc_dft_lrc.rst \
+$(SOURCEDIR)/autodoc_dft_hybrid.rst \
+$(SOURCEDIR)/autodoc_dft_disp.rst
+
 $(autotarget1): %: $(autodepend1) | $(subdirs)
 	@srcdir@/document_options_tests_physconst_psivariables.pl @srcdir@
 
@@ -130,13 +152,21 @@ $(autotarget3): %: $(autodepend3)
 $(autotarget4): %: $(autodepend4)
 	@srcdir@/separate_userprogman.py @srcdir@
 
-autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4)
+$(autotarget5): %: $(autodepend5)
+	cd ../../tests/docs_psimod; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs_psimod/$(@F) $(SOURCEDIR)/$(@F)
+
+$(autotarget6): %: $(autodepend6)
+	cd ../../tests/docs_dft; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs_dft/$(@F) $(SOURCEDIR)/$(@F)
+
+autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) $(autotarget5) $(autotarget6)
 
 
 #####  static docs  #####
 
 MISCDOC = \
-psi4banner.png man_PsiMod.txt PsiMod.py
+psi4banner.png PsiMod.py
 
 STATICDOC = \
 abbr_accents.rst adc.rst basissets.rst basissets_byelement.rst \
@@ -146,7 +176,8 @@ energy.rst external.rst freq.rst glossary_psivariables.rst intercalls.rst \
 interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
 opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
-quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst
+quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
+dft_byfunctional.rst scf.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)

@@ -294,9 +294,19 @@ double RHF::compute_initial_E()
 
 double RHF::compute_E()
 {
+    double one_electron_E = 2.0 * D_->vector_dot(H_);
+    double two_electron_E = D_->vector_dot(Fa_) - 0.5 * one_electron_E;   
+ 
+    energies_["Nuclear"] = nuclearrep_;
+    energies_["One-Electron"] = one_electron_E;
+    energies_["Two-Electron"] = two_electron_E; 
+    energies_["XC"] = 0.0;
+    energies_["-D"] = 0.0;
+
     Matrix HplusF;
     HplusF.copy(H_);
     HplusF.add(Fa_);
+
     double Etotal = nuclearrep_ + D_->vector_dot(HplusF);
     return Etotal;
 }

@@ -389,14 +389,13 @@ void RV::print_header() const
 }
 void RV::compute_V()
 {
-    if ((D_AO_.size() != 1) || (V_AO_.size() != 1) || (C_AO_.size() != 1))
-        throw PSIEXCEPTION("V: RKS should have only one D/C/V Matrix"); 
+    if ((D_AO_.size() != 1) || (V_AO_.size() != 1))
+        throw PSIEXCEPTION("V: RKS should have only one D/V Matrix"); 
 
     // Setup the pointers
     SharedMatrix D_AO = D_AO_[0];
-    SharedMatrix C_AO = C_AO_[0];
     SharedMatrix V_AO = V_AO_[0];
-    properties_->set_pointers(D_AO,C_AO);
+    properties_->set_pointers(D_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -513,26 +512,19 @@ void RV::compute_V()
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
             double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
             
-            // \nabla x
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phix[P], 1, Tp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
+            double** phi[3];
+            phi[0] = phix;
+            phi[1] = phiy;
+            phi[2] = phiz;
 
-            // \nabla y
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiy[P], 1, Tp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
-
-            // \nabla z
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiz[P], 1, Tp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
+            for (int i = 0; i < 3; i++) {
+                double** phiw = phi[i];
+                for (int P = 0; P < npoints; P++) {
+                    ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
+                    C_DAXPY(nlocal,v_tau_a[P] * w[P], phiw[P], 1, Tp[P], 1); 
+                }        
+                C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
+            }            
             timer_off("Meta");
         }       
  
@@ -573,8 +565,8 @@ SharedMatrix RV::compute_gradient()
     compute_D();
     USO2AO();
 
-    if ((D_AO_.size() != 1) && (C_AO_.size() != 1))
-        throw PSIEXCEPTION("V: RKS should have only one D/C/V Matrix"); 
+    if ((D_AO_.size() != 1))
+        throw PSIEXCEPTION("V: RKS should have only one D Matrix"); 
 
     // Build the target gradient Matrix
     int natom = primary_->molecule()->natom();
@@ -587,8 +579,7 @@ SharedMatrix RV::compute_gradient()
 
     // Setup the pointers
     SharedMatrix D_AO = D_AO_[0];
-    SharedMatrix C_AO = C_AO_[0];
-    properties_->set_pointers(D_AO,C_AO);
+    properties_->set_pointers(D_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -742,9 +733,45 @@ SharedMatrix RV::compute_gradient()
         
         // => Meta Contribution <= //
         if (functional_->is_meta()) {
-            throw PSIEXCEPTION("RV: Meta Gradients not implemented");
-        }
+            double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
+            double** phi_xy = properties_->basis_value("PHI_XY")->pointer();
+            double** phi_xz = properties_->basis_value("PHI_XZ")->pointer();
+            double** phi_yy = properties_->basis_value("PHI_YY")->pointer();
+            double** phi_yz = properties_->basis_value("PHI_YZ")->pointer();
+            double** phi_zz = properties_->basis_value("PHI_ZZ")->pointer();
+            double* v_tau_a = vals["V_TAU_A"]->pointer();
 
+            double** phi_i[3];
+            phi_i[0] = phi_x;
+            phi_i[1] = phi_y;
+            phi_i[2] = phi_z;
+
+            double** phi_ij[3][3];
+            phi_ij[0][0] = phi_xx;
+            phi_ij[0][1] = phi_xy;
+            phi_ij[0][2] = phi_xz;
+            phi_ij[1][0] = phi_xy;
+            phi_ij[1][1] = phi_yy;
+            phi_ij[1][2] = phi_yz;
+            phi_ij[2][0] = phi_xz;
+            phi_ij[2][1] = phi_yz;
+            phi_ij[2][2] = phi_xz;
+
+            for (int i = 0; i < 3; i++) {
+                double*** phi_j = phi_ij[i];
+                C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_i[i][0],max_functions,Dp[0],max_functions,0.0,Up[0],max_functions);
+                for (int P = 0; P < npoints; P++) {
+                    ::memset((void*) Tp[P], '\0', sizeof(double) * nlocal);
+                    C_DAXPY(nlocal, -2.0 * w[P] * (v_tau_a[P]), Up[P], 1, Tp[P], 1);
+                }
+                for (int ml = 0; ml < nlocal; ml++) {
+                    int A = primary_->function_to_center(function_map[ml]);
+                    Gp[A][0] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[0][0][ml],max_functions);
+                    Gp[A][1] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[1][0][ml],max_functions);
+                    Gp[A][2] += C_DDOT(npoints,&Tp[0][ml],max_functions,&phi_j[2][0][ml],max_functions);
+                }          
+            }
+        }
     } 
    
     quad_values_["FUNCTIONAL"] = functionalq;
@@ -801,17 +828,15 @@ void UV::print_header() const
 }
 void UV::compute_V()
 {
-    if ((D_AO_.size() != 2) || (V_AO_.size() != 2) || (C_AO_.size() != 2))
-        throw PSIEXCEPTION("V: UKS should have two D/C/V Matrices"); 
+    if ((D_AO_.size() != 2) || (V_AO_.size() != 2))
+        throw PSIEXCEPTION("V: UKS should have two D/V Matrices"); 
 
     // Setup the pointers
     SharedMatrix Da_AO = D_AO_[0];
-    SharedMatrix Ca_AO = C_AO_[0];
     SharedMatrix Va_AO = V_AO_[0];
     SharedMatrix Db_AO = D_AO_[1];
-    SharedMatrix Cb_AO = C_AO_[1];
     SharedMatrix Vb_AO = V_AO_[1];
-    properties_->set_pointers(Da_AO,Ca_AO,Db_AO,Cb_AO);
+    properties_->set_pointers(Da_AO,Db_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -955,50 +980,33 @@ void UV::compute_V()
             double** phiz = properties_->basis_value("PHI_Z")->pointer();
             double *restrict v_tau_a = vals["V_TAU_A"]->pointer(); 
             double *restrict v_tau_b = vals["V_TAU_B"]->pointer(); 
+
+            double** phi[3];
+            phi[0] = phix;
+            phi[1] = phiy;
+            phi[2] = phiz;
+
+            double* v_tau[2];
+            v_tau[0] = v_tau_a;
+            v_tau[1] = v_tau_b;
+
+            double** V_val[2];
+            V_val[0] = Va2p; 
+            V_val[1] = Vb2p;
            
-            // Alpha 
-            // \nabla x
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phix[P], 1, Tap[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
+            for (int s = 0; s < 2; s++) {
+                double** V2p = V_val[s];
+                double*  v_taup = v_tau[s];
+                for (int i = 0; i < 3; i++) {
+                    double** phiw = phi[i];
+                    for (int P = 0; P < npoints; P++) {
+                        ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
+                        C_DAXPY(nlocal,v_taup[P] * w[P], phiw[P], 1, Tap[P], 1); 
+                    }        
+                    C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiw[0],max_functions,Tap[0],max_functions,1.0,V2p[0],max_functions);
+                }            
+            }
 
-            // \nabla y
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiy[P], 1, Tap[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
-
-            // \nabla z
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_a[P] * w[P], phiz[P], 1, Tap[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
-           
-            // Beta 
-            // \nabla x
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_b[P] * w[P], phix[P], 1, Tbp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
-
-            // \nabla y
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_b[P] * w[P], phiy[P], 1, Tbp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
-
-            // \nabla z
-            for (int P = 0; P < npoints; P++) {
-                ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
-                C_DAXPY(nlocal,v_tau_b[P] * w[P], phiz[P], 1, Tbp[P], 1); 
-            }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
             timer_off("Meta");
         }       
  
@@ -1042,8 +1050,8 @@ SharedMatrix UV::compute_gradient()
     compute_D();
     USO2AO();
 
-    if ((D_AO_.size() != 2) && (C_AO_.size() != 2))
-        throw PSIEXCEPTION("V: UKS should have two D/C/V Matrices"); 
+    if ((D_AO_.size() != 2))
+        throw PSIEXCEPTION("V: UKS should have two D Matrices"); 
 
     // Build the target gradient Matrix
     int natom = primary_->molecule()->natom();
@@ -1056,10 +1064,8 @@ SharedMatrix UV::compute_gradient()
 
     // Setup the pointers
     SharedMatrix Da_AO = D_AO_[0];
-    SharedMatrix Ca_AO = C_AO_[0];
     SharedMatrix Db_AO = D_AO_[1];
-    SharedMatrix Cb_AO = C_AO_[1];
-    properties_->set_pointers(Da_AO,Ca_AO, Db_AO, Cb_AO);
+    properties_->set_pointers(Da_AO, Db_AO);
 
     // What local XC ansatz are we in?
     int ansatz = functional_->ansatz();
@@ -1259,7 +1265,57 @@ SharedMatrix UV::compute_gradient()
         
         // => Meta Contribution <= //
         if (functional_->is_meta()) {
-            throw PSIEXCEPTION("RV: Meta Gradients not implemented");
+            double** phi_xx = properties_->basis_value("PHI_XX")->pointer();
+            double** phi_xy = properties_->basis_value("PHI_XY")->pointer();
+            double** phi_xz = properties_->basis_value("PHI_XZ")->pointer();
+            double** phi_yy = properties_->basis_value("PHI_YY")->pointer();
+            double** phi_yz = properties_->basis_value("PHI_YZ")->pointer();
+            double** phi_zz = properties_->basis_value("PHI_ZZ")->pointer();
+            double* v_tau_a = vals["V_TAU_A"]->pointer();
+            double* v_tau_b = vals["V_TAU_B"]->pointer();
+
+            double** phi_i[3];
+            phi_i[0] = phi_x;
+            phi_i[1] = phi_y;
+            phi_i[2] = phi_z;
+
+            double** phi_ij[3][3];
+            phi_ij[0][0] = phi_xx;
+            phi_ij[0][1] = phi_xy;
+            phi_ij[0][2] = phi_xz;
+            phi_ij[1][0] = phi_xy;
+            phi_ij[1][1] = phi_yy;
+            phi_ij[1][2] = phi_yz;
+            phi_ij[2][0] = phi_xz;
+            phi_ij[2][1] = phi_yz;
+            phi_ij[2][2] = phi_xz;
+
+            double** Ds[2];
+            Ds[0] = Dap;
+            Ds[1] = Dap;
+
+            double* v_tau_s[2];
+            v_tau_s[0] = v_tau_a;
+            v_tau_s[1] = v_tau_b;
+
+            for (int s = 0; s < 2; s++) {
+                double** Dp = Ds[s]; 
+                double* v_tau = v_tau_s[s];
+                for (int i = 0; i < 3; i++) {
+                    double*** phi_j = phi_ij[i];
+                    C_DGEMM('N','N',npoints,nlocal,nlocal,1.0,phi_i[i][0],max_functions,Dap[0],max_functions,0.0,Uap[0],max_functions);
+                    for (int P = 0; P < npoints; P++) {
+                        ::memset((void*) Tap[P], '\0', sizeof(double) * nlocal);
+                        C_DAXPY(nlocal, -2.0 * w[P] * (v_tau[P]), Uap[P], 1, Tap[P], 1);
+                    }
+                    for (int ml = 0; ml < nlocal; ml++) {
+                        int A = primary_->function_to_center(function_map[ml]);
+                        Gp[A][0] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[0][0][ml],max_functions);
+                        Gp[A][1] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[1][0][ml],max_functions);
+                        Gp[A][2] += C_DDOT(npoints,&Tap[0][ml],max_functions,&phi_j[2][0][ml],max_functions);
+                    }          
+                }
+            }
         }
 
     } 

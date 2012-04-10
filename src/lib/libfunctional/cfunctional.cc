@@ -389,7 +389,6 @@ void CFunctional::compute_os_functional(const std::map<std::string,SharedVector>
             }
         }
     }
-
 }
 void CFunctional::PW92_C(double rho, double z, double* PW92, double* PW92_rho, double* PW92_z)
 {
