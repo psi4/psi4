@@ -127,6 +127,32 @@ void MOLECULE::forces(void) {
   return ;
 }
 
+// Apply extra forces for internal coordinates with user-defined
+// equilibrium values.
+void MOLECULE::apply_constraint_forces(bool update_hessian_too) {
+  double * f_q = p_Opt_data->g_forces_pointer();
+  double **H = p_Opt_data->g_H_pointer();
+
+  int cnt = -1;
+  for (int f=0; f<fragments.size(); ++f) {
+    for (int i=0; i<fragments[f]->g_nintco(); ++i) {
+      ++cnt;
+      if (fragments[f]->intco_has_fixed_eq_val(i)) {
+        double eq_val = fragments[f]->intco_fixed_eq_val(i);
+        double val = fragments[f]->intco_value(i);
+        double force = (eq_val - val) * Opt_params.fixed_eq_val_force_constant;
+        fprintf(outfile,"\tAdding user-defined constraint for coordinate %d.\n", cnt+1);
+        fprintf(outfile,"\tValue is %8.4e; Eq. value is %8.4e; Force added is %8.4e.\n", val, eq_val, force);
+        f_q[cnt] += force;
+
+        if (update_hessian_too)
+          H[cnt][cnt] += 0.5 * Opt_params.fixed_eq_val_force_constant;
+      }
+    }
+  }
+  return;
+}
+
 // project redundancies (and constraints) out of forces and Hessian matrix
 // add constraints here later
 void MOLECULE::project_f_and_H(void) {
