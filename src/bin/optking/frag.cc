@@ -444,6 +444,11 @@ double * FRAG::intco_values(void) const {
   return q;
 }
 
+// return the value of a single internal
+double FRAG::intco_value(int intco_index) const {
+  return intcos.at(intco_index)->value(geom);
+}
+
 // returns values of internal coordinates - using given geometry
 double * FRAG::intco_values(GeomType new_geom) const {
   double * q = init_array(intcos.size());

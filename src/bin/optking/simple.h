@@ -27,6 +27,9 @@ class SIMPLE {
 
     bool s_frozen;     // is internal coordinate constrained frozen?
 
+    double s_fixed_eq_val; // for adding artificial forces
+    bool s_has_fixed_eq_val;
+
   public:
 
     SIMPLE (INTCO_TYPE s_type_in, int s_natom_in, bool freeze_in) {
@@ -34,6 +37,7 @@ class SIMPLE {
       s_natom = s_natom_in;
       s_atom = init_int_array(s_natom);
       s_frozen = freeze_in;
+      s_has_fixed_eq_val = false;
     };
 
     virtual ~SIMPLE() { // derived class destructors called first; then this one
@@ -92,6 +96,16 @@ class SIMPLE {
     // first checks types with g_type() and then, if true, compares
     // the internal coordinates
     virtual bool operator==(const SIMPLE & s2) const  = 0;
+
+    // functions to save user-specified constrained eq_val
+    void set_fixed_eq_val(double val) {
+      s_fixed_eq_val = val;
+      s_has_fixed_eq_val = true;
+    }
+    double fixed_eq_val(void) {
+      return s_fixed_eq_val;
+    }
+    bool has_fixed_eq_val(void) { return s_has_fixed_eq_val; }
 
 };
 
