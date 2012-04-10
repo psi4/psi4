@@ -9,7 +9,7 @@ using namespace psi;
 
 namespace psi{
 
-PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options){
+PsiReturnType lowmemory_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options){
 
   fprintf(outfile,"\n");
   fprintf(outfile, "        *******************************************************\n");
@@ -22,19 +22,6 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
 
   int o = ccsd->ndoccact;
   int v = ccsd->nvirt_no;
-
-  // CIM QLMO->LMO transformation matrix
-  SharedMatrix tempRii = ccsd->wfn_->CIMTransformationMatrix();
-  double**tempRii_pointer = tempRii->pointer();
-  double *Rii = (double*)malloc(o*o*sizeof(double));
-  for (int i=0; i<o; i++){
-      for (int j=0; j<o; j++){
-          Rii[i*o+j] = tempRii_pointer[i][j];
-      }
-  }
-  // CIM orbital factors:
-  SharedVector factor = ccsd->wfn_->CIMOrbitalFactors();
-  double*factor_pointer = factor->pointer();
 
   double *t1 = ccsd->t1;
   double *F  = ccsd->eps;
@@ -111,7 +98,6 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
       Z3[i]     = (double*)malloc(o*o*o*sizeof(double));
       Z4[i]     = (double*)malloc(o*o*o*sizeof(double));
   }
-
 
   double *tempt = (double*)malloc(o*o*v*v*sizeof(double));
 
@@ -285,11 +271,6 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
          
          int abcfac = ( 2-((a==b)+(b==c)+(a==c)) );
 
-         // transform one index of Z2 and Z3 to lmo basis:
-         F_DGEMM('n','t',o*o,o,o,1.0,Z2[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
-         F_DCOPY(o*o*o,Z4[thread],1,E2abci[thread],1);
-         F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
-
          // contribute to energy:
          double tripval = 0.0;
          for (int i=0; i<o; i++){
@@ -297,10 +278,10 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     dum         += Z4[thread][ijk] * E2abci[thread][ijk];
+                     dum         += Z3[thread][ijk] * Z2[thread][ijk];
                  }
              }
-             tripval += dum * factor_pointer[i];
+             tripval += dum;
          }
          etrip[thread] += 3.0*tripval*abcfac;
 
@@ -330,11 +311,6 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
              }
          }
 
-         // transform one index of of E2abci and Z3 to lmo basis:
-         F_DGEMM('n','t',o*o,o,o,1.0,Z3[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
-         F_DCOPY(o*o*o,Z4[thread],1,Z3[thread],1);
-         F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,Rii,o,0.0,Z4[thread],o*o);
-
          // contribute to energy:
          tripval = 0.0;
          for (int i=0; i<o; i++){
@@ -342,10 +318,10 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     dum         += Z4[thread][ijk] * Z3[thread][ijk];
+                     dum         += E2abci[thread][ijk] * Z3[thread][ijk];
                  }
              }
-             tripval += dum * factor_pointer[i];
+             tripval += dum;
          }
          etrip[thread] += tripval*abcfac;
 
@@ -375,10 +351,6 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
              }
          }
 
-         // transform one index of E2abci and Z4 to lmo basis:
-         F_DGEMM('n','t',o*o,o,o,1.0,E2abci[thread],o*o,Rii,o,0.0,Z3[thread],o*o);
-         F_DGEMM('n','t',o*o,o,o,1.0,Z4[thread],o*o,Rii,o,0.0,Z2[thread],o*o);
-
          // contribute to energy:
          tripval = 0.0;
          for (int i=0; i<o; i++){
@@ -386,10 +358,10 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
              for (int j=0; j<o; j++){
                  for (int k=0; k<o; k++){
                      long int ijk = i*o*o+j*o+k;
-                     dum         += Z2[thread][ijk] * Z3[thread][ijk];
+                     dum         += Z4[thread][ijk] * E2abci[thread][ijk];
                  }
              }
-             tripval += dum * factor_pointer[i];
+             tripval += dum;
          }
          etrip[thread] += tripval*abcfac;
 
@@ -449,7 +421,6 @@ PsiReturnType local_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&o
   ccsd->et = et;
 
   // free memory:
-  free(Rii);
   if (ccsd->t2_on_disk){
      free(ccsd->tb);
   }
