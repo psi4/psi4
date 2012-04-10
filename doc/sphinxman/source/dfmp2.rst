@@ -86,7 +86,7 @@ The theory, breakdown of results, and common keywords used in DF-MP2 are present
    pair: DF-MP2; theory
 
 Theory
-______
+------
 
 M\ |o_slash|\ ller-Plesset Theory (MPn) or Many-Body Perturbation Theory
 (MBPT) through second order has the spin-orbital formula:

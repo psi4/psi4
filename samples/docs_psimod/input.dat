@@ -1,0 +1,8 @@
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users.
+
+import pydoc
+
+with open("autodoc_man_PsiMod.txt", "w") as f:
+    f.write(pydoc.plain(pydoc.render_doc(PsiMod)))
+

@@ -16,9 +16,11 @@ A complete list of standard keywords is provided in Appendix
    :maxdepth: 2
 
    notes_c
+   scf
    dfmp2
    detci
    adc
    sapt
    optking
+   mrcc
 

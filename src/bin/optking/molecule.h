@@ -315,6 +315,7 @@ printf("adding %d auxiliary bonds\n", n);
   void H_guess(void) const;
 
   void forces(void);
+  void apply_constraint_forces(bool update_hessian_too = false);
   void project_f_and_H(void);
   void irc_step(void);
   void nr_step(void);

@@ -85,6 +85,11 @@ def run_plugin_libcim(name, **kwargs):
     # run scf
     energy('scf', **kwargs)
 
+    # If the scf type is DF, then the AO integrals were never generated
+    if (PsiMod.get_global_option('scf_type') == 'DF' or PsiMod.get_local_option('scf','scf_type') == 'DF'):
+       mints = PsiMod.MintsHelper()
+       mints.integrals()
+
     # initialize cim (determine clusters)
     PsiMod.set_global_option('cim_initialize', True)
     PsiMod.plugin('plugin_libcim.so')
