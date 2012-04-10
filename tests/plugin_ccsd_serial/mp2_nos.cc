@@ -198,7 +198,6 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
          F_DGEMM('t','n',nvirt_no,o*nvirt_no,v,1.0,Dab,v,amps1,v,0.0,amps2,nvirt_no);
          psio->write(PSIF_ABCI,"E2abci",(char*)&amps2[0],nvirt_no*nvirt_no*o*sizeof(double),addrwrite,&addrwrite);
      }
-     // sort BiCA -> ABiC
      // out-of-core transpose BiCA -> ABCi
      addrread  = PSIO_ZERO;
      addrwrite = PSIO_ZERO;
