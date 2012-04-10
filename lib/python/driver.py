@@ -1003,7 +1003,9 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print '    displacement %d' % (n + 1)
+            print ' %d' % (n + 1),
+            if (n + 1) == ndisp:
+                print '\n',
 
             # Load in displacement into the active molecule (xyz coordinates only)
             molecule.set_geometry(displacement)
@@ -1051,7 +1053,9 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print '    displacement %d' % (n + 1)
+            print ' %d' % (n + 1),
+            if (n + 1) == ndisp:
+                print '\n',
 
             # Load in displacement into the active molecule
             mol.set_geometry(displacement)
