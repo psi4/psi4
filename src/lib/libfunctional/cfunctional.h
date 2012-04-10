@@ -57,7 +57,7 @@ protected:
     double _b4f_;
 
     void PW92_C(double rho, double z, double* PW92, double* PW92_rho, double* PW92_z);
-    
+
     // B97
     double _B97_ss_gamma_;
     std::vector<double> _B97_ss_a_;
