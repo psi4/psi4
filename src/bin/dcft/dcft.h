@@ -142,6 +142,8 @@ protected:
     double orbital_response_rms_;
     /// The RMS value of the change in the cumulant response
     double cumulant_response_rms_;
+    /// The RMS value of the change in the coupling of orbital and cumulant response
+    double response_coupling_rms_;
     /// The convergence criterion for the lambda iterations
     double lambda_threshold_;
     /// The convergence criterion for the scf iterations

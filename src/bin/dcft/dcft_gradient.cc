@@ -26,43 +26,124 @@ DCFTSolver::compute_gradient()
 
     orbital_response_rms_ = 0.0;
     cumulant_response_rms_ = lambda_convergence_;
+    response_coupling_rms_ = 0.0;
     iter_ = 0;
 
-    fprintf(outfile, "\n\n\t*=================================================*\n"
-                     "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
-                     "\t*-------------------------------------------------*");
+    if(options_.get_str("RESPONSE_ALGORITHM") == "TWOSTEP"){
+        fprintf(outfile, "\t*=================================================*\n"
+                "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
+                "\t*-------------------------------------------------*");
 
-    // Start macro-iterations
-    while(!responseDone && iter_++ < maxiter_){
-        fprintf(outfile, "\n\t              *** Macro Iteration %d ***\n", iter_);
+        // Start macro-iterations
+        while(!responseDone && iter_++ < maxiter_){
+            fprintf(outfile, "\n\t              *** Macro Iteration %d ***\n", iter_);
 
-        // Solve the cumulant response equations iteratively
-        if (iter_ > 1) {
-            fprintf(outfile, "\t            Cumulant Response Iterations\n");
-            iterate_cumulant_response();
+            // Solve the cumulant response equations iteratively
+            if (iter_ > 1) {
+                fprintf(outfile, "\t            Cumulant Response Iterations\n");
+                iterate_cumulant_response();
+            }
+
+            // Compute the generalized densities for the MO Lagrangian
+            compute_density();
+            // Compute the OV block of MO Lagrangian
+            compute_lagrangian_OV();
+            // Compute the VO block of MO Lagrangian
+            compute_lagrangian_VO();
+
+            // Solve the orbital response equations iteratively
+            fprintf(outfile, "\t            Orbital Response Iterations\n");
+            iterate_orbital_response();
+
+            // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
+            response_coupling_rms_ = compute_response_coupling();
+
+            // Check convergence
+            if (response_coupling_rms_ < lambda_threshold_) responseDone = true;
+
+            fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
         }
 
-        // Compute the generalized densities for the MO Lagrangian
-        compute_density();
-        // Compute the OV block of MO Lagrangian
-        compute_lagrangian_OV();
-        // Compute the VO block of MO Lagrangian
-        compute_lagrangian_VO();
-
-        // Solve the orbital response equations iteratively
-        fprintf(outfile, "\t            Orbital Response Iterations\n");
-        iterate_orbital_response();
-
-        // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
-        double response_coupling_rms = compute_response_coupling();
-
-        // Check convergence
-        if (response_coupling_rms < lambda_threshold_) responseDone = true;
-
-        fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms);
+        fprintf(outfile, "\t*=================================================*\n");
     }
+    else {
+        fprintf(outfile, "\t*==================================================================*\n"
+                "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   RMS Coupling     DIIS *\n"
+                "\t*------------------------------------------------------------------*\n");
 
-    fprintf(outfile, "\t*=================================================*\n");
+        // Start iterations
+        while(!responseDone && iter_++ < maxiter_){
+            // Solve the cumulant response equations iteratively
+            if (iter_ > 1) {
+                // Update cumulant reponse from the change in C intermediate
+                cumulant_response_guess();
+                // Build perturbed tau and delta tau
+                build_perturbed_tau();
+                // Compute intermediates
+                compute_cumulant_response_intermediates();
+                // Compute cumulant response residual and its RMS
+                cumulant_response_rms_ = compute_cumulant_response_residual();
+                // Update the cumulant response
+                update_cumulant_response();
+            }
+
+            // Compute the generalized densities for the MO Lagrangian
+            compute_density();
+            // Compute the OV block of MO Lagrangian
+            compute_lagrangian_OV();
+            // Compute the VO block of MO Lagrangian
+            compute_lagrangian_VO();
+
+            // Solve the orbital response equations iteratively
+            // Compute guess for the orbital response matrix elements
+            if (iter_ == 1) orbital_response_guess();
+
+            SharedMatrix za_new, zb_new, za_old, zb_old;
+            dpdfile2 zia;
+
+            // Compute orbital response intermediates
+            compute_orbital_response_intermediates();
+
+            // Save old orbital response
+            dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+            za_old = SharedMatrix(new Matrix(&zia));
+            dpd_file2_close(&zia);
+            dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+            zb_old = SharedMatrix(new Matrix(&zia));
+            dpd_file2_close(&zia);
+
+            // Update the orbital response
+            update_orbital_response();
+
+            // Copy new orbital response to the memory
+            dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+            za_new = SharedMatrix(new Matrix(&zia));
+            dpd_file2_close(&zia);
+            dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+            zb_new = SharedMatrix(new Matrix(&zia));
+            dpd_file2_close(&zia);
+
+            // Check convergence
+            za_old->subtract(za_new);
+            zb_old->subtract(zb_new);
+
+            orbital_response_rms_ = za_old->rms() + zb_old->rms();
+
+            // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
+            response_coupling_rms_ = compute_response_coupling();
+
+            // Print iterative trace
+            fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %11.3E           *\n", iter_,
+                    orbital_response_rms_, cumulant_response_rms_, response_coupling_rms_);
+
+            // Check convergence
+            if (orbital_response_rms_ < scf_threshold_ && cumulant_response_rms_ < lambda_threshold_
+                    && response_coupling_rms_ < lambda_threshold_) responseDone = true;
+
+        }
+
+        fprintf(outfile, "\t*==================================================================*\n");
+    }
 
     if (responseDone) fprintf(outfile, "\n\t   DCFT response equations converged.\n");
     else throw PSIEXCEPTION("DCFT response equations did not converge");

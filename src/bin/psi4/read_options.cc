@@ -777,6 +777,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
       options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- The algorithm to use for solving the response equations -*/
+      options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
       options.add_bool("LOCK_OCC", true);
   }
