@@ -24,45 +24,171 @@ DCFTSolver::compute_gradient()
     // Copy the current density cumulant and tau as a guess for cumulant response and perturbed tau
     response_guess();
 
+    orbital_response_rms_ = 0.0;
+    cumulant_response_rms_ = lambda_convergence_;
+    response_coupling_rms_ = 0.0;
     iter_ = 0;
-    fprintf(outfile, "\n\n\t*=============================================*\n"
-                     "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.    *\n"
-                     "\t*---------------------------------------------*\n");
 
-    // Start macro-iterations
-    while(!responseDone && iter_++ < maxiter_){
-        fprintf(outfile, "\t                          *** Macro Iteration %d ***\n", iter_);
+    if(options_.get_str("RESPONSE_ALGORITHM") == "TWOSTEP"){
+        fprintf(outfile, "\t*=================================================*\n"
+                "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
+                "\t*-------------------------------------------------*");
 
-        // Solve the cumulant response equations iteratively
-        if (iter_ > 1) {
-            fprintf(outfile, "\tCumulant Response Iterations\n");
-            iterate_cumulant_response();
+        // Start macro-iterations
+        while(!responseDone && iter_++ < maxiter_){
+            fprintf(outfile, "\n\t              *** Macro Iteration %d ***\n", iter_);
+
+            // Solve the cumulant response equations iteratively
+            if (iter_ > 1) {
+                fprintf(outfile, "\t            Cumulant Response Iterations\n");
+                iterate_cumulant_response();
+            }
+
+            // Compute the generalized densities for the MO Lagrangian
+            compute_density();
+            // Compute the OV block of MO Lagrangian
+            compute_lagrangian_OV();
+            // Compute the VO block of MO Lagrangian
+            compute_lagrangian_VO();
+
+            // Solve the orbital response equations iteratively
+            fprintf(outfile, "\t            Orbital Response Iterations\n");
+            iterate_orbital_response();
+
+            // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
+            response_coupling_rms_ = compute_response_coupling();
+
+            // Check convergence
+            if (response_coupling_rms_ < lambda_threshold_) responseDone = true;
+
+            fprintf(outfile, "\t   RMS of Response Coupling Change: %11.3E \n", response_coupling_rms_);
         }
 
-        // Compute the generalized densities for the MO Lagrangian
-        compute_density();
-        // Compute the OV block of MO Lagrangian
-        compute_lagrangian_OV();
-        // Compute the VO block of MO Lagrangian
-        compute_lagrangian_VO();
+        fprintf(outfile, "\t*=================================================*\n");
+    }
+    else {
+        // Set up DIIS extrapolation
+        dpdbuf4 Zaa, Zab, Zbb, Raa, Rab, Rbb;
+        dpdfile2 zaa, zbb, raa, rbb;
+        dpd_buf4_init(&Zaa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+        dpd_buf4_init(&Zab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+        dpd_buf4_init(&Zbb, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                      ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+        dpd_file2_init(&zaa, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+        dpd_file2_init(&zbb, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+        DIISManager diisManager(maxdiis_, "DCFT DIIS orbital response vectors");
+        diisManager.set_error_vector_size(5, DIISEntry::DPDFile2, &zaa,
+                                             DIISEntry::DPDFile2, &zbb,
+                                             DIISEntry::DPDBuf4, &Zaa,
+                                             DIISEntry::DPDBuf4, &Zab,
+                                             DIISEntry::DPDBuf4, &Zbb);
+        diisManager.set_vector_size(5, DIISEntry::DPDFile2, &zaa,
+                                       DIISEntry::DPDFile2, &zbb,
+                                       DIISEntry::DPDBuf4, &Zaa,
+                                       DIISEntry::DPDBuf4, &Zab,
+                                       DIISEntry::DPDBuf4, &Zbb);
+        dpd_buf4_close(&Zaa);
+        dpd_buf4_close(&Zab);
+        dpd_buf4_close(&Zbb);
+        dpd_file2_close(&zaa);
+        dpd_file2_close(&zbb);
 
-        // Solve the orbital response equations iteratively
-        fprintf(outfile, "\tOrbital Response Iterations\n");
-        iterate_orbital_response();
+        fprintf(outfile, "\t*==================================================================*\n"
+                "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   RMS Coupling     DIIS *\n"
+                "\t*------------------------------------------------------------------*\n");
 
-        // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
-        double response_coupling_rms = compute_response_coupling();
+        // Start iterations
+        while(!responseDone && iter_++ < maxiter_){
+            std::string diisString;
 
-        // Check convergence
-        if (response_coupling_rms < lambda_threshold_) responseDone = true;
+            if (iter_ > 1) {
+                // Update cumulant reponse from the change in C intermediate
+                cumulant_response_guess();
+                // Build perturbed tau and delta tau
+                build_perturbed_tau();
+                // Compute intermediates
+                compute_cumulant_response_intermediates();
+                // Compute cumulant response residual and its RMS
+                cumulant_response_rms_ = compute_cumulant_response_residual();
+                // Update the cumulant response
+                update_cumulant_response();
 
-        fprintf(outfile, "\tResponse Coupling RMS = %11.3E \n\n", response_coupling_rms);
+                // Here's where DIIS kicks in
+                if((cumulant_response_rms_ < diis_start_thresh_) && (orbital_response_rms_ < diis_start_thresh_)){
+                    //Store the DIIS vectors
+                    dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                  ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
+                    dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+                    dpd_buf4_init(&Rbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                                  ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
+                    dpd_buf4_init(&Zaa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
+                    dpd_buf4_init(&Zab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
+                    dpd_buf4_init(&Zbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
+                    dpd_file2_init(&raa, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "r <O|V>");
+                    dpd_file2_init(&rbb, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "r <o|v>");
+                    dpd_file2_init(&zaa, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+                    dpd_file2_init(&zbb, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+
+                    if(diisManager.add_entry(10, &raa, &rbb, &Raa, &Rab, &Rbb, &zaa, &zbb, &Zaa, &Zab, &Zbb)){
+                        diisString += "S";
+                    }
+                    if(diisManager.subspace_size() > mindiisvecs_){
+                        diisString += "/E";
+                        diisManager.extrapolate(5, &zaa, &zbb, &Zaa, &Zab, &Zbb);
+                    }
+                    dpd_file2_close(&zaa);
+                    dpd_file2_close(&zbb);
+                    dpd_file2_close(&raa);
+                    dpd_file2_close(&rbb);
+                    dpd_buf4_close(&Raa);
+                    dpd_buf4_close(&Rab);
+                    dpd_buf4_close(&Rbb);
+                    dpd_buf4_close(&Zaa);
+                    dpd_buf4_close(&Zab);
+                    dpd_buf4_close(&Zbb);
+                }
+            }
+
+            // Compute the generalized densities for the MO Lagrangian
+            compute_density();
+            // Compute the OV block of MO Lagrangian
+            compute_lagrangian_OV();
+            // Compute the VO block of MO Lagrangian
+            compute_lagrangian_VO();
+
+            // Compute guess for the orbital response matrix elements
+            if (iter_ == 1) orbital_response_guess();
+
+            // Compute orbital response intermediates
+            compute_orbital_response_intermediates();
+
+            // Update the orbital response
+            orbital_response_rms_ = update_orbital_response();
+
+            // Compute terms that couple orbital and cumulant responses (C intermediate) and return RMS of their change
+            response_coupling_rms_ = compute_response_coupling();
+
+            // Print iterative trace
+            fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %11.3E      %-4s *\n", iter_,
+                    orbital_response_rms_, cumulant_response_rms_, response_coupling_rms_, diisString.c_str());
+
+            // Check convergence
+            if (orbital_response_rms_ < scf_threshold_ && cumulant_response_rms_ < lambda_threshold_
+                    && response_coupling_rms_ < lambda_threshold_) responseDone = true;
+
+        }
+
+        fprintf(outfile, "\t*==================================================================*\n");
     }
 
-    if (responseDone) fprintf(outfile, "    DCFT response equations converged.\n\n");
+    if (responseDone) fprintf(outfile, "\n\t   DCFT response equations converged.\n");
     else throw PSIEXCEPTION("DCFT response equations did not converge");
-
-    fprintf(outfile, "\t*=============================================*\n");
 
     // Compute the OO block of MO Lagrangian
     compute_lagrangian_OO();
@@ -1586,66 +1712,70 @@ void
 DCFTSolver::iterate_orbital_response()
 {
 
-    dpdfile2 zia;
-
     // Compute guess for the orbital response matrix elements
     if (iter_ == 1) orbital_response_guess();
 
-    // Parameters are hard-coded for now. Let the user control them in the future
-    double rms = 0.0;
     bool converged = false;
 
-     // Start iterations
-    fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ia RMS");
-    fflush(outfile);
+    // Initialize DIIS
+    dpdfile2 zaa, zbb, raa, rbb;
+    dpd_file2_init(&zaa, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+    dpd_file2_init(&zbb, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+    DIISManager ZiaDiisManager(maxdiis_, "DCFT DIIS Orbital Z",DIISManager::LargestError,DIISManager::InCore);
+    ZiaDiisManager.set_error_vector_size(2, DIISEntry::DPDFile2, &zaa,
+                                            DIISEntry::DPDFile2, &zbb);
+    ZiaDiisManager.set_vector_size(2, DIISEntry::DPDFile2, &zaa,
+                                      DIISEntry::DPDFile2, &zbb);
+    dpd_file2_close(&zaa);
+    dpd_file2_close(&zbb);
 
+     // Start iterations
     int cycle = 0;
     do {
         cycle++;
-
-        SharedMatrix za_new, zb_new, za_old, zb_old;
+        std::string diisString;
 
         // Compute intermediates
         compute_orbital_response_intermediates();
 
-        // Save old orbital response
-        dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-        za_old = SharedMatrix(new Matrix(&zia));
-        dpd_file2_close(&zia);
-        dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-        zb_old = SharedMatrix(new Matrix(&zia));
-        dpd_file2_close(&zia);
-
         // Update the orbital response
-        update_orbital_response();
+        orbital_response_rms_ = update_orbital_response();
 
-        // Copy new orbital response to the memory
-        dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-        za_new = SharedMatrix(new Matrix(&zia));
-        dpd_file2_close(&zia);
-        dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-        zb_new = SharedMatrix(new Matrix(&zia));
-        dpd_file2_close(&zia);
+        // Here's where DIIS kicks in
+        if(orbital_response_rms_ < diis_start_thresh_){
+            //Store the DIIS vectors
+            dpd_file2_init(&raa, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "r <O|V>");
+            dpd_file2_init(&rbb, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "r <o|v>");
+            dpd_file2_init(&zaa, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+            dpd_file2_init(&zbb, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+
+            if(ZiaDiisManager.add_entry(4, &raa, &rbb, &zaa, &zbb)){
+                diisString += "S";
+            }
+            // Extrapolate orbital response
+            if(ZiaDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0){
+                diisString += "/E";
+                ZiaDiisManager.extrapolate(2, &zaa, &zbb);
+            }
+            dpd_file2_close(&zaa);
+            dpd_file2_close(&zbb);
+            dpd_file2_close(&raa);
+            dpd_file2_close(&rbb);
+        }
 
         // Check convergence
-        za_old->subtract(za_new);
-        zb_old->subtract(zb_new);
-
-        rms = za_old->rms() + zb_old->rms();
-        converged = (fabs(rms) < fabs(scf_threshold_));
+        converged = (fabs(orbital_response_rms_) < fabs(scf_threshold_));
 
         // Print iterative trace
-        fprintf(outfile, "  %4d %11.3E\n", cycle, rms);
+        fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle,
+                orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
         if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
-    fprintf(outfile, "\n");
-
-    if (converged) fprintf(outfile, "    DCFT orbital response equations converged.\n\n");
-    else throw PSIEXCEPTION("DCFT orbital response equations did not converge");
+    if (!converged) throw PSIEXCEPTION("DCFT orbital response equations did not converge");
 
 }
 
@@ -1836,11 +1966,14 @@ DCFTSolver::compute_orbital_response_intermediates()
 
 }
 
-void
+// Returns RMS of the orbital response vector
+double
 DCFTSolver::update_orbital_response()
 {
 
-    dpdfile2 X_ia, X_ai, z_ia, zI_ai, zI_ia;
+    dpdfile2 X_ia, X_ai, z_ia, zI_ai, zI_ia, r_ia;
+    SharedMatrix a_ria (new Matrix("MO basis Orbital Response Residual (Alpha)", nirrep_, naoccpi_, navirpi_));
+    SharedMatrix b_ria (new Matrix("MO basis Orbital Response Residual (Beta)", nirrep_, nboccpi_, nbvirpi_));
 
     // Alpha spin
     dpd_file2_init(&zI_ia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "zI <O|V>");
@@ -1848,12 +1981,14 @@ DCFTSolver::update_orbital_response()
     dpd_file2_init(&X_ia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "X <O|V>");
     dpd_file2_init(&X_ai, PSIF_DCFT_DPD, 0, ID('V'), ID('O'), "X <V|O>");
     dpd_file2_init(&z_ia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
+    dpd_file2_init(&r_ia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "r <O|V>");
 
     dpd_file2_mat_init(&zI_ai);
     dpd_file2_mat_init(&zI_ia);
     dpd_file2_mat_init(&X_ia);
     dpd_file2_mat_init(&X_ai);
     dpd_file2_mat_init(&z_ia);
+    dpd_file2_mat_init(&r_ia);
 
     dpd_file2_mat_rd(&zI_ai);
     dpd_file2_mat_rd(&zI_ia);
@@ -1866,18 +2001,23 @@ DCFTSolver::update_orbital_response()
             for(int a = 0 ; a < navirpi_[h]; ++a){
                 double value = 0.0;
                 for(int j = 0 ; j < naoccpi_[h]; ++j){
-                    value += (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) * (aocc_tau_->get(h,i,j) + akappa_->get(h,i,j));
+                    value -= (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) * (aocc_tau_->get(h,i,j) + akappa_->get(h,i,j));
                 }
                 for(int b = 0 ; b < navirpi_[h]; ++b){
-                    value -= (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (avir_tau_->get(h,a,b));
+                    value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (avir_tau_->get(h,a,b));
                 }
-                z_ia.matrix[h][i][a] = (2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]) - value) /
-                        (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
+                value -= z_ia.matrix[h][i][a] * (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
+                value += 2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]);
+                a_ria->set(h, i, a, value);
+                r_ia.matrix[h][i][a] = value;
+                z_ia.matrix[h][i][a] += value / (moFa_->get(h, a + naoccpi_[h], a + naoccpi_[h]) - moFa_->get(h, i, i));
             }
         }
     }
     dpd_file2_mat_wrt(&z_ia);
+    dpd_file2_mat_wrt(&r_ia);
     dpd_file2_close(&z_ia);
+    dpd_file2_close(&r_ia);
     dpd_file2_close(&X_ai);
     dpd_file2_close(&X_ia);
     dpd_file2_close(&zI_ai);
@@ -1889,12 +2029,14 @@ DCFTSolver::update_orbital_response()
     dpd_file2_init(&X_ia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "X <o|v>");
     dpd_file2_init(&X_ai, PSIF_DCFT_DPD, 0, ID('v'), ID('o'), "X <v|o>");
     dpd_file2_init(&z_ia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
+    dpd_file2_init(&r_ia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "r <o|v>");
 
     dpd_file2_mat_init(&zI_ai);
     dpd_file2_mat_init(&zI_ia);
     dpd_file2_mat_init(&X_ia);
     dpd_file2_mat_init(&X_ai);
     dpd_file2_mat_init(&z_ia);
+    dpd_file2_mat_init(&r_ia);
 
     dpd_file2_mat_rd(&zI_ai);
     dpd_file2_mat_rd(&zI_ia);
@@ -1907,22 +2049,30 @@ DCFTSolver::update_orbital_response()
             for(int a = 0 ; a < nbvirpi_[h]; ++a){
                 double value = 0.0;
                 for(int j = 0 ; j < nboccpi_[h]; ++j){
-                    value += (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) * (bocc_tau_->get(h,i,j) + bkappa_->get(h,i,j));
+                    value -= (zI_ai.matrix[h][a][j] + zI_ia.matrix[h][j][a]) * (bocc_tau_->get(h,i,j) + bkappa_->get(h,i,j));
                 }
                 for(int b = 0 ; b < nbvirpi_[h]; ++b){
-                    value -= (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (bvir_tau_->get(h,a,b));
+                    value += (zI_ai.matrix[h][b][i] + zI_ia.matrix[h][i][b]) * (bvir_tau_->get(h,a,b));
                 }
-                z_ia.matrix[h][i][a] = (2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]) - value) /
-                        (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
+                value -= z_ia.matrix[h][i][a] * (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
+                value += 2.0 * (X_ia.matrix[h][i][a] - X_ai.matrix[h][a][i]);
+                b_ria->set(h, i, a, value);
+                r_ia.matrix[h][i][a] = value;
+                z_ia.matrix[h][i][a] += value / (moFb_->get(h, a + nboccpi_[h], a + nboccpi_[h]) - moFb_->get(h, i, i));
             }
         }
     }
     dpd_file2_mat_wrt(&z_ia);
+    dpd_file2_mat_wrt(&r_ia);
     dpd_file2_close(&z_ia);
+    dpd_file2_close(&r_ia);
     dpd_file2_close(&X_ai);
     dpd_file2_close(&X_ia);
     dpd_file2_close(&zI_ai);
     dpd_file2_close(&zI_ia);
+
+    // Compute RMS
+    return (a_ria->rms() + b_ria->rms());
 
 }
 
@@ -2364,7 +2514,7 @@ DCFTSolver::iterate_cumulant_response()
     cumulant_response_guess();
 
     // Set up DIIS extrapolation
-    dpdbuf4 Zaa, Zab, Zbb;
+    dpdbuf4 Zaa, Zab, Zbb, Raa, Rab, Rbb;
     dpd_buf4_init(&Zaa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
     dpd_buf4_init(&Zab, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -2383,12 +2533,7 @@ DCFTSolver::iterate_cumulant_response()
     dpd_buf4_close(&Zbb);
 
     // Iteratively solve for cumulant reponse
-    double rms = 0.0;
     bool converged = false;
-
-     // Start iterations
-    fprintf(outfile, "\n  %4s %11s\n", "Iter", "Z_ijab RMS");
-    fflush(outfile);
 
     int cycle = 0;
     do {
@@ -2402,15 +2547,14 @@ DCFTSolver::iterate_cumulant_response()
         compute_cumulant_response_intermediates();
 
         // Compute cumulant response residual and its RMS
-        rms = compute_cumulant_response_residual();
+        cumulant_response_rms_ = compute_cumulant_response_residual();
 
         // Update the cumulant response
         update_cumulant_response();
 
         // Here's where DIIS kicks in
-        if(lambda_convergence_ < diis_start_thresh_){
+        if(cumulant_response_rms_ < diis_start_thresh_){
             //Store the DIIS vectors
-            dpdbuf4 Raa, Rab, Rbb;
             dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                           ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
             dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -2441,20 +2585,17 @@ DCFTSolver::iterate_cumulant_response()
         }
 
         // Check the convergence
-        converged = (fabs(rms) < fabs(lambda_threshold_));
+        converged = (fabs(cumulant_response_rms_) < fabs(lambda_threshold_));
 
         // Print iterative trace
-        fprintf(outfile, "  %4d %11.3E  %-3s \n", cycle, rms, diisString.c_str());
+        fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
         if (converged || cycle >= maxiter_) break;
 
     } while (true);
 
-    fprintf(outfile, "\n");
-
-    if (converged) fprintf(outfile, "    DCFT cumulant response equations converged.\n\n");
-    else throw PSIEXCEPTION("DCFT cumulant response equations did not converge");
+    if (!converged) throw PSIEXCEPTION("DCFT cumulant response equations did not converge");
 
 }
 

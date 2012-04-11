@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta1 Driver
 
-               Git: Rev 1f447c53373bb8a898c14e5c563e2d5209f66279
+               Git: Rev 1cf931c477e54ec32038dc3cd0c6841725398c4d
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -22,10 +22,13 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-from pydoc import render_doc
+#! This test is used to construct the documentation;
+#! it is not suitable for emulation by users.
+
+import pydoc
 
 with open("autodoc_man_PsiMod.txt", "w") as f:
-    f.write(render_doc(PsiMod))
+    f.write(pydoc.plain(pydoc.render_doc(PsiMod)))
 
 --------------------------------------------------------------------------
 

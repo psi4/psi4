@@ -403,7 +403,7 @@ READ
 These are all set by the |scf__guess| keyword. Also, an automatic Python
 procedure has been developed for converging the SCF in a small basis, and then
 casting up to the true basis, This can be done by placing a ``cast_up =
-'SMALL_BASIS'`` modifier in the ``energy`` procedure call. We recommend the
+'SMALL_BASIS'`` modifier in the :py:func:`~driver.energy` procedure call. We recommend the
 3-21G basis for the small basis due to its efficient mix of flexibility and
 compactness. An example of performing an RHF solution of water by SAD guessing
 in a 3-21G basis and then casting up to cc-pVTZ is shown below::

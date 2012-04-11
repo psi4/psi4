@@ -777,6 +777,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
       options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- The algorithm to use for solving the response equations -*/
+      options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
       options.add_bool("LOCK_OCC", true);
   }
@@ -1577,18 +1579,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEVEL",2);
-    /*- Gauge for optical rotation -*/
-    options.add_str("GAUGE","LENGTH");
+    /*- Specifies the choice of representation of the electric dipole operator.
+    Acceptable values are ``LENGTH`` for the usual length-gauge representation,
+    ``VELOCITY`` for the modified velocity-gauge representation in which the
+    static-limit optical rotation tensor is subtracted from the frequency-
+    dependent tensor, or ``BOTH``. Note that, for optical rotation calculations,
+    only the choices of ``VELOCITY`` or ``BOTH`` will yield origin-independent results. -*/
+    options.add_str("GAUGE","LENGTH", "LENGTH VELOCITY BOTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);
     /*- Convergence criterion for wavefunction (change) in perturbed CC equations. -*/
     options.add_double("R_CONVERGENCE",1e-7);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
-    /*- The response property desired.  Acceptable values are POLARIZABILITY
-    (default) for dipole-polarizabilities, ROTATION for specific rotations,
-    ROA for Raman Optical Activity, and ALL for all of the above.
-    -*/
+    /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
+    (default) for dipole-polarizabilities, ``ROTATION`` for specific rotations,
+    ``ROA`` for Raman Optical Activity, and ``ALL`` for all of the above. -*/
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
     /*- -*/
     options.add_str("ABCD","NEW");
@@ -1620,7 +1626,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     radiation field in CCLR calculations.  If only one element is
     given, the units will be assumed to be atomic units.  If more
     than one element is given, then the units must be specified as the final
-    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
+    element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
     options.add("OMEGA",new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
@@ -2283,6 +2289,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Keep internal coordinate definition file. -*/
       options.add_bool("KEEP_INTCOS", false);
+      /*- In constrained optimizations, for internal coordinates with user-specified
+      equilibrium values, this is the force constant (in au) used to apply an additional
+      force to each coordinate.  If the user is only concerned to satify the desired constraint,
+      then the user need only ensure that this value is sufficiently large.  Alternatively,
+      the user may specify this value to apply a force of a particular magnitude, in which case the
+      given equilibrium value may or may not be reached by the optimization. -*/
+      options.add_double("INTCO_FIXED_EQ_FORCE_CONSTANT", 2.0);
   }
   if(name == "FINDIF"|| options.read_globals()) {
     /*- MODULEDESCRIPTION Performs finite difference computations of energy derivative, with respect to nuclear displacements

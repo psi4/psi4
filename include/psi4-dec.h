@@ -25,6 +25,7 @@ extern bool verbose;
 
 class Molecule;
 class Wavefunction;
+class PointGroup;
 class ExternalPotential;
 
 class Process
@@ -39,9 +40,14 @@ public:
         boost::shared_ptr<Molecule> molecule_;
         SharedMatrix gradient_;
         boost::shared_ptr<Wavefunction> reference_wavefunction_;
+        boost::shared_ptr<PointGroup> parent_symmetry_;
     public:
         void init(char **envp);
 
+        /// The symmetry of the molecule, before any displacements have been made
+        boost::shared_ptr<PointGroup> parent_symmetry() { return parent_symmetry_; }
+        /// Set the "parent" symmetry
+        void set_parent_symmetry(boost::shared_ptr<PointGroup> pg) { parent_symmetry_ = pg; }
         const std::string& operator()(const std::string& key) const;
         std::string operator()(const std::string& key);
         const std::string& set(const std::string& key, const std::string& value);

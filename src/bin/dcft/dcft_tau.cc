@@ -94,6 +94,25 @@ DCFTSolver::build_tau()
     dpd_contract442(&L1, &L2, &T_vv, 3, 3, 1.0, 1.0);
     dpd_buf4_close(&L1);
     dpd_buf4_close(&L2);
+    dpd_file2_close(&T_OO);
+    dpd_file2_close(&T_oo);
+    dpd_file2_close(&T_VV);
+    dpd_file2_close(&T_vv);
+}
+
+void
+DCFTSolver::transform_tau()
+{
+    dpdfile2 T_OO, T_oo, T_VV, T_vv;
+
+    dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
+                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
+    dpd_file2_init(&T_oo, PSIF_DCFT_DPD, 0,
+                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau <o|o>");
+    dpd_file2_init(&T_VV, PSIF_DCFT_DPD, 0,
+                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau <V|V>");
+    dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0,
+                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
 
     dpd_file2_mat_init(&T_OO);
     dpd_file2_mat_init(&T_oo);
@@ -159,7 +178,6 @@ DCFTSolver::build_tau()
     dpd_file2_close(&T_oo);
     dpd_file2_close(&T_VV);
     dpd_file2_close(&T_vv);
-
 }
 
 void

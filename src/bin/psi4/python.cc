@@ -790,6 +790,17 @@ void py_psi_set_active_molecule(boost::shared_ptr<Molecule> molecule)
     Process::environment.set_molecule(molecule);
 }
 
+void py_psi_set_parent_symmetry(std::string pg)
+{
+    boost::shared_ptr<PointGroup> group = boost::shared_ptr<PointGroup>();
+    if(pg != ""){
+        group = boost::shared_ptr<PointGroup>(new PointGroup(pg));
+    }
+
+    Process::environment.set_parent_symmetry(group);
+}
+
+
 boost::shared_ptr<Molecule> py_psi_get_active_molecule()
 {
     return Process::environment.molecule();
@@ -932,6 +943,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // OEProp/GridProp
     export_oeprop();
 
+
     // Options
     def("prepare_options_for_module", py_psi_prepare_options_for_module, "docstring");
     def("set_active_molecule", py_psi_set_active_molecule, "docstring");
@@ -946,6 +958,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("nproc", &py_psi_get_nproc, "docstring");
     def("me", &py_psi_get_me, "docstring");
 
+    def("set_parent_symmetry", py_psi_set_parent_symmetry, "docstring");
     def("print_options", py_psi_print_options, "docstring");
     def("print_global_options", py_psi_print_global_options, "docstring");
     def("print_out", py_psi_print_out, "docstring");
@@ -1153,8 +1166,6 @@ void Python::run(FILE *input)
             object objectDict = objectMain.attr("__dict__");
             s = strdup("import PsiMod");
             PyRun_SimpleString(s);
-            //s = strdup("help(PsiMod)");
-            //PyRun_SimpleString(s);
 
             // Process the input file
             PyObject *input;

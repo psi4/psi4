@@ -69,7 +69,8 @@ void CoupledCluster::WriteBanner(){
   
 ================================================================*/
 void CoupledCluster::Initialize(Options &options){
- 
+
+  options_ = options; 
   if (wfn_.get() !=NULL){
      escf    = Process::environment.globals["SCF TOTAL ENERGY"];
      nirreps = wfn_->nirrep();
@@ -421,16 +422,17 @@ void CoupledCluster::DefineTilingCPU(){
   ntiles = 1L;
 
   // tiling for vabcd diagram
+  long int fulltile = v*(v+1L)/2L;
+  if (!options_.get_bool("VABCD_PACKED")) fulltile = v*v;
   ntiles=1L;
-  tilesize=v*(v+1L)/2L/1L;
-  if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
-  while(v*(v+1L)/2L*tilesize>ndoubles){
+  tilesize=fulltile/1L;
+  if (ntiles*tilesize<fulltile) tilesize++;
+  while(fulltile*tilesize>ndoubles){
      ntiles++;
-     tilesize = v*(v+1L)/2L/ntiles;
-     if (ntiles*tilesize<v*(v+1L)/2L) tilesize++;
+     tilesize = fulltile/ntiles;
+     if (ntiles*tilesize<fulltile) tilesize++;
   }
-  lasttile = v*(v+1L)/2L - (ntiles-1L)*tilesize;
-
+  lasttile = fulltile - (ntiles-1L)*tilesize;
 
   fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
   fflush(outfile);
@@ -484,9 +486,11 @@ void CoupledCluster::AllocateMemory(Options&options){
   DefineTilingCPU();
 
   dim = 0;
-  if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
-  if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
-  if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
+  int fulltile = v*(v+1)/2;
+  if (!options_.get_bool("VABCD_PACKED")) fulltile = v*v;
+  if (tilesize*fulltile > dim) dim = tilesize*fulltile;
+  if (ovtilesize*v*v > dim)    dim = ovtilesize*v*v;
+  if (ov2tilesize*v > dim)     dim = ov2tilesize*v;
 
   // if integrals buffer isn't at least o^2v^2, try tiling again assuming t2 is on disk.
   if (dim<o*o*v*v){
@@ -497,9 +501,9 @@ void CoupledCluster::AllocateMemory(Options&options){
      t2_on_disk = true;
      DefineTilingCPU();
      dim = 0;
-     if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
-     if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
-     if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
+     if (tilesize*fulltile > dim) dim = tilesize*fulltile;
+     if (ovtilesize*v*v > dim)    dim = ovtilesize*v*v;
+     if (ov2tilesize*v > dim)     dim = ov2tilesize*v;
 
      if (dim<o*o*v*v){
         throw PsiException("out of memory: general buffer cannot accomodate T2",__FILE__,__LINE__);
@@ -1330,6 +1334,49 @@ void CoupledCluster::I2piajk(CCTaskParams params){
   psio.reset();
 }
 /**
+ *  Use Vabcd ... this one doesn't use SJS packing:
+ */
+void CoupledCluster::Vabcd(CCTaskParams params){
+  long int id,i,j,a,b,o,v;
+  o = ndoccact;
+  v = nvirt;
+  boost::shared_ptr<PSIO> psio(new PSIO());
+  psio_address addr;
+  if (t2_on_disk){
+     psio->open(PSIF_T2,PSIO_OPEN_OLD);
+     psio->read_entry(PSIF_T2,"t2",(char*)&tempt[0],o*o*v*v*sizeof(double));
+     psio->close(PSIF_T2,1);
+  }else{
+     F_DCOPY(o*o*v*v,tb,1,tempt,1);
+  }
+  for (a=0,id=0; a<v; a++){
+      for (b=0; b<v; b++){
+          for (i=0; i<o; i++){
+              for (j=0; j<o; j++){
+                  tempt[id++] += t1[a*o+i]*t1[b*o+j];
+              }
+          }
+      }
+  }
+  psio->open(PSIF_R2,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
+  addr = PSIO_ZERO;
+  for (j=0; j<ntiles-1; j++){
+      psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],tilesize*v*v*sizeof(double),addr,&addr);
+      helper_->GPUTiledDGEMM('n','n',o*o,tilesize,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*tilesize*o*o,o*o);
+  }
+  j=ntiles-1;
+  psio->read(PSIF_ABCD1,"E2abcd1",(char*)&integrals[0],lasttile*v*v*sizeof(double),addr,&addr);
+  helper_->GPUTiledDGEMM('n','n',o*o,lasttile,v*v,1.0,tempt,o*o,integrals,v*v,1.0,tempv+j*tilesize*o*o,o*o);
+  psio->close(PSIF_ABCD1,1);
+
+  //psio->write_entry(PSIF_R2,"residual",(char*)&tempv[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_R2,1);
+  psio.reset();
+
+}
+/**
  *  Use Vabcd1
  */
 void CoupledCluster::Vabcd1(CCTaskParams params){
@@ -1793,11 +1840,16 @@ void CoupledCluster::DefineTasks(){
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I1ab;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_t1_vmeai;
   CCTasklist[ncctasks++].func  = &psi::CoupledCluster::CPU_I1pij_I1ia_lessmem;
-  CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd1;
 
-  // this is the last diagram that contributes to doubles residual,
-  // so we can keep it in memory rather than writing and rereading
-  CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd2;
+  if (options_.get_bool("VABCD_PACKED")){
+     CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd1;
+     // this is the last diagram that contributes to doubles residual,
+     // so we can keep it in memory rather than writing and rereading
+     CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd2;
+  }else{
+     CCTasklist[ncctasks++].func  = &psi::CoupledCluster::Vabcd;
+  }
+
 }
 
 /*

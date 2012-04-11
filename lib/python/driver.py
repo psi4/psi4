@@ -9,6 +9,7 @@ import input
 from proc import *
 from text import *
 from procutil import *
+from functional import *
 # never import wrappers or aliases into this file
 
 
@@ -64,10 +65,6 @@ procedures = {
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
             'psimrcc_scf'   : run_psimrcc_scf,
-            'b3lyp'         : run_dft,  # temporary
-            #'b3lyp-d1'      : run_dft,  # temporary
-            'b3lyp-d2'      : run_dft,  # temporary
-            'b3lyp-d'       : run_dft,  # temporary
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -92,6 +89,10 @@ procedures = {
             'eom_ccsd' : run_cc_property
             # Upon adding a method to this list, add it to the docstring in property() below
         }}
+
+# Integrate DFT with driver routines
+for ssuper in superfunctional_list():
+    procedures['energy'][ssuper.name().lower()] = run_dft
 
 
 def energy(name, **kwargs):
@@ -209,15 +210,7 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    .. _`table:energy_dft`:
-
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          |
-    +=========================+=======================================================================================+
-    | b3lyp                   | Becke 3-parameter exchange with Lee-Yang-Parr correlation functional (B3LYP)          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | b3lyp-d                 | B3LYP with Grimme's -D2 dispersion correction                                         |
-    +-------------------------+---------------------------------------------------------------------------------------+
+    .. include:: autodoc_dft_energy.rst
 
     .. _`table:energy_mrcc`:
 
@@ -250,39 +243,39 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | mrccsdtqp(h)_l          |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1a              |                                                                                       |
+    | mrccsdt-1a              | CC through doubles with iterative triples (cheapest terms)                            |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1a             |                                                                                       |
+    | mrccsdtq-1a             | CC through triples with iterative quadruples (cheapest terms)                         |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1a            |                                                                                       |
+    | mrccsdtqp-1a            | CC through quadruples with iterative quintuples (cheapest terms)                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1a           |                                                                                       |
+    | mrccsdtqph-1a           | CC through quintuples with iterative sextuples (cheapest terms)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1b              |                                                                                       |
+    | mrccsdt-1b              | CC through doubles with iterative triples (cheaper terms)                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1b             |                                                                                       |
+    | mrccsdtq-1b             | CC through triples with iterative quadruples (cheaper terms)                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1b            |                                                                                       |
+    | mrccsdtqp-1b            | CC through quadruples with iterative quintuples (cheaper terms)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1b           |                                                                                       |
+    | mrccsdtqph-1b           | CC through quintuples with iterative sextuples (cheaper terms)                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc2                   |                                                                                       |
+    | mrcc2                   | approximate CC through doubles                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc3                   |                                                                                       |
+    | mrcc3                   | approximate CC through triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc4                   |                                                                                       |
+    | mrcc4                   | approximate CC through quadruples                                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc5                   |                                                                                       |
+    | mrcc5                   | approximate CC through quintuples                                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc6                   |                                                                                       |
+    | mrcc6                   | approximate CC through sextuples                                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-3               |                                                                                       |
+    | mrccsdt-3               | CC through doubles with iterative triples (all but the most expensive terms)          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-3              |                                                                                       |
+    | mrccsdtq-3              | CC through triples with iterative quadruples (all but the most expensive terms)       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-3             |                                                                                       |
+    | mrccsdtqp-3             | CC through quadruples with iterative quintuples (all but the most expensive terms)    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-3            |                                                                                       |
+    | mrccsdtqph-3            | CC through quintuples with iterative sextuples (all but the most expensive terms)     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     :type name: string
@@ -1003,7 +996,9 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print '    displacement %d' % (n + 1)
+            print ' %d' % (n + 1),
+            if (n + 1) == ndisp:
+                print '\n',
 
             # Load in displacement into the active molecule (xyz coordinates only)
             molecule.set_geometry(displacement)
@@ -1034,8 +1029,11 @@ def frequency(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
-        PsiMod.get_active_molecule().fix_orientation(True)
-        PsiMod.get_active_molecule().reinterpret_coordentry(False)
+        mol = PsiMod.get_active_molecule()
+        mol.fix_orientation(True)
+        mol.reinterpret_coordentry(False)
+        # Make a note of the undisplaced molecule's symmetry
+        PsiMod.set_parent_symmetry(mol.schoenflies_symbol())
 
         ndisp = len(displacements)
 
@@ -1048,11 +1046,13 @@ def frequency(name, **kwargs):
             banner('Loading displacement %d of %d' % (n + 1, ndisp))
 
             # Print information to the screen
-            print '    displacement %d' % (n + 1)
+            print ' %d' % (n + 1),
+            if (n + 1) == ndisp:
+                print '\n',
 
             # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacement)
-
+            mol.set_geometry(displacement)
+   
             # Perform the energy calculation
             E = func(lowername, **kwargs)
 
