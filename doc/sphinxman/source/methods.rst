@@ -23,3 +23,5 @@ A complete list of standard keywords is provided in Appendix
    sapt
    optking
    psimrcc
+   mrcc
+
