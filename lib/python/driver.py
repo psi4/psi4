@@ -981,6 +981,8 @@ def frequency(name, **kwargs):
 
         molecule.reinterpret_coordentry(False)
         molecule.fix_orientation(True)
+        # Make a note of the undisplaced molecule's symmetry
+        PsiMod.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
         print ' %d displacements needed.' % ndisp
@@ -1016,6 +1018,9 @@ def frequency(name, **kwargs):
         PsiMod.fd_freq_1(gradients, irrep)
 
         print ' Computation complete.'
+        
+        # Clear the "parent" symmetry now
+        PsiMod.set_parent_symmetry("")
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
@@ -1029,11 +1034,10 @@ def frequency(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0(irrep)
-        mol = PsiMod.get_active_molecule()
-        mol.fix_orientation(True)
-        mol.reinterpret_coordentry(False)
+        molecule.fix_orientation(True)
+        molecule.reinterpret_coordentry(False)
         # Make a note of the undisplaced molecule's symmetry
-        PsiMod.set_parent_symmetry(mol.schoenflies_symbol())
+        PsiMod.set_parent_symmetry(molecule.schoenflies_symbol())
 
         ndisp = len(displacements)
 
@@ -1051,7 +1055,7 @@ def frequency(name, **kwargs):
                 print '\n',
 
             # Load in displacement into the active molecule
-            mol.set_geometry(displacement)
+            molecule.set_geometry(displacement)
    
             # Perform the energy calculation
             E = func(lowername, **kwargs)
@@ -1066,6 +1070,9 @@ def frequency(name, **kwargs):
         PsiMod.fd_freq_0(energies, irrep)
 
         print ' Computation complete.'
+        
+        # Clear the "parent" symmetry now
+        PsiMod.set_parent_symmetry("")
 
         # TODO: These need to be restored to the user specified setting
         PsiMod.get_active_molecule().fix_orientation(False)
