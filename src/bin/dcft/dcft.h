@@ -45,6 +45,8 @@ protected:
     void compute_scf_energy();
     void mp2_guess();
     void build_tau();
+    void transform_tau();
+    void build_gtau();
     void print_opdm();
     void write_orbitals_to_checkpoint();
     void check_n_representability();
