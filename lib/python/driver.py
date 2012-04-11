@@ -91,8 +91,8 @@ procedures = {
         }}
 
 # Integrate DFT with driver routines
-for super in superfunctional_list():
-    procedures['energy'][super.name().lower()] = run_dft
+for ssuper in superfunctional_list():
+    procedures['energy'][ssuper.name().lower()] = run_dft
 
 
 def energy(name, **kwargs):
@@ -210,15 +210,7 @@ def energy(name, **kwargs):
     | eom-cc3                 | EOM-CC3                                                                               |
     +-------------------------+---------------------------------------------------------------------------------------+
 
-    .. _`table:energy_dft`:
-
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | name                    | calls method                                                                          |
-    +=========================+=======================================================================================+
-    | b3lyp                   | Becke 3-parameter exchange with Lee-Yang-Parr correlation functional (B3LYP)          |
-    +-------------------------+---------------------------------------------------------------------------------------+
-    | b3lyp-d                 | B3LYP with Grimme's -D2 dispersion correction                                         |
-    +-------------------------+---------------------------------------------------------------------------------------+
+    .. include:: autodoc_dft_energy.rst
 
     .. _`table:energy_mrcc`:
 
@@ -251,39 +243,39 @@ def energy(name, **kwargs):
     +-------------------------+---------------------------------------------------------------------------------------+
     | mrccsdtqp(h)_l          |                                                                                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1a              |                                                                                       |
+    | mrccsdt-1a              | CC through doubles with iterative triples (cheapest terms)                            |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1a             |                                                                                       |
+    | mrccsdtq-1a             | CC through triples with iterative quadruples (cheapest terms)                         |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1a            |                                                                                       |
+    | mrccsdtqp-1a            | CC through quadruples with iterative quintuples (cheapest terms)                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1a           |                                                                                       |
+    | mrccsdtqph-1a           | CC through quintuples with iterative sextuples (cheapest terms)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-1b              |                                                                                       |
+    | mrccsdt-1b              | CC through doubles with iterative triples (cheaper terms)                             |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-1b             |                                                                                       |
+    | mrccsdtq-1b             | CC through triples with iterative quadruples (cheaper terms)                          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-1b            |                                                                                       |
+    | mrccsdtqp-1b            | CC through quadruples with iterative quintuples (cheaper terms)                       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-1b           |                                                                                       |
+    | mrccsdtqph-1b           | CC through quintuples with iterative sextuples (cheaper terms)                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc2                   |                                                                                       |
+    | mrcc2                   | approximate CC through doubles                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc3                   |                                                                                       |
+    | mrcc3                   | approximate CC through triples                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc4                   |                                                                                       |
+    | mrcc4                   | approximate CC through quadruples                                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc5                   |                                                                                       |
+    | mrcc5                   | approximate CC through quintuples                                                     |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrcc6                   |                                                                                       |
+    | mrcc6                   | approximate CC through sextuples                                                      |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdt-3               |                                                                                       |
+    | mrccsdt-3               | CC through doubles with iterative triples (all but the most expensive terms)          |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtq-3              |                                                                                       |
+    | mrccsdtq-3              | CC through triples with iterative quadruples (all but the most expensive terms)       |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqp-3             |                                                                                       |
+    | mrccsdtqp-3             | CC through quadruples with iterative quintuples (all but the most expensive terms)    |
     +-------------------------+---------------------------------------------------------------------------------------+
-    | mrccsdtqph-3            |                                                                                       |
+    | mrccsdtqph-3            | CC through quintuples with iterative sextuples (all but the most expensive terms)     |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     :type name: string
