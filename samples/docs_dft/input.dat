@@ -72,7 +72,7 @@ def tf(rungbool, rungparam=0.0):
 def header(filep, label, caption):
     """Function to write reST table header."""
 
-    filep.write('\n.. _`table:dft_%s`:\n' % (label))
+    #filep.write('\n.. _`table:dft_%s`:\n' % (label))
     filep.write('\n.. table:: %s\n\n' % (caption))
     filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
         (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-',
@@ -120,6 +120,12 @@ header(fhybrid, 'hybrid', 'Hybrid functionals available in |PSIfour|')
 fdisp= open('autodoc_dft_disp.rst', 'w')
 header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
+fenergy = open('autodoc_dft_energy.rst', 'w')
+fenergy.write('\n.. _`table:energy_dft`:\n\n')
+fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
+fenergy.write('| %-27s | %-100s |\n' % ('name', 'calls method'))
+fenergy.write('+=%27s=+=%100s=+\n' % (27 * '=', 100 * '='))
+
 for fctl in sorted(funcdict.iterkeys()):
 
     body(fall, funcdict, fctl)
@@ -139,6 +145,16 @@ for fctl in sorted(funcdict.iterkeys()):
     if funcdict[fctl]['dispersion']:
         body(fdisp, funcdict, fctl)
 
+    if funcdict[fctl]['dispersion']:
+        fenergy.write('| %-27s | %-100s |\n' % 
+            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+    else:
+        fenergy.write('| %-27s | %-100s |\n' % 
+            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+
+    fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
+
+
 fall.write('\n')
 fall.close()
 fgga.write('\n')
@@ -151,4 +167,7 @@ fhybrid.write('\n')
 fhybrid.close()
 fdisp.write('\n')
 fdisp.close()
+
+fenergy.write('\n')
+fenergy.close()
 

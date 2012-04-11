@@ -105,3 +105,23 @@ Bibliography
    M. Saitow and Y. Mochizuki,
    *Chem. Phys. Lett.* **X**, XX (2012).
 
+.. [Evangelista:2009:4728]
+   F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, III, D. Mukherjee, and W. D. Allen,
+   *Phys. Chem. Chem. Phys.* **11**, 4728 (2009).
+
+.. [Evangelista:2006:xxxx]
+   F. A. Evangelista, W. D. Allen, and H. F. Schaefer, III, 
+   *J. Chem. Phys.* **125**, xxxx (2006).
+
+.. [Evangelista:2008:124104]
+   F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss, 
+   *J. Chem. Phys.* **128**, 124104 (2008).    
+
+.. [Jeziorski:1981:1668]
+   B. Jeziorski and H. J. Monkhorst,
+   *Phys. Rev. A* **24**, 1668 (1981).
+
+.. [Raghavachari:1989]
+
+.. [Purvis:1982]
+

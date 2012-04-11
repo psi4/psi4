@@ -18,10 +18,11 @@ A complete list of standard keywords is provided in Appendix
    notes_c
    scf
    dfmp2
-   detci
    adc
    sapt
-   optking
+   cc
    psimrcc
    mrcc
+   detci
+   optking
 
