@@ -87,6 +87,7 @@ def frac_traverse(mol, **kwargs):
     # => Traverse <= #
     occs = []
     energies = []
+    potentials = []
     convs = []
 
     # => Run the neutral for its orbitals, if requested <= #
@@ -130,6 +131,15 @@ def frac_traverse(mol, **kwargs):
             E = PsiMod.get_variable('SCF ITERATION ENERGY')
             C = 0
 
+        if (LUMO > 0):
+            ref = PsiMod.reference_wavefunction()
+            eps = ref.epsilon_a()
+            potentials.append(eps[int(LUMO)-1])
+        else:
+            ref = PsiMod.reference_wavefunction()
+            eps = ref.epsilon_b()
+            potentials.append(eps[-int(LUMO)-1])
+
         occs.append(occ)
         energies.append(E)
         convs.append(C)
@@ -172,6 +182,15 @@ def frac_traverse(mol, **kwargs):
             E = PsiMod.get_variable('SCF ITERATION ENERGY')
             C = 0
 
+        if (LUMO > 0):
+            ref = PsiMod.reference_wavefunction()
+            eps = ref.epsilon_a()
+            potentials.append(eps[int(HOMO)-1])
+        else:
+            ref = PsiMod.reference_wavefunction()
+            eps = ref.epsilon_b()
+            potentials.append(eps[-int(HOMO)-1])
+
         occs.append(occ - 1.0)
         energies.append(E)
         convs.append(C)
@@ -187,9 +206,9 @@ def frac_traverse(mol, **kwargs):
     # => Print the results out <= #
     E = {}
     PsiMod.print_out('\n    ==> Fractional Occupation Traverse Results <==\n\n')
-    PsiMod.print_out('\t%-11s %-24s %11s\n' %('Delta', 'Energy', 'Converged'))
+    PsiMod.print_out('\t%-11s %-24s %-24s %11s\n' %('N', 'Energy', 'HOMO Energy', 'Converged'))
     for k in range(len(occs)):
-        PsiMod.print_out('\t%11.3E %24.16E %11d\n' % (occs[k], energies[k], convs[k]))
+        PsiMod.print_out('\t%11.3E %24.16E %24.16E %11d\n' % (occs[k], energies[k], potentials[k], convs[k]))
         E[occs[k]] = energies[k]
 
     PsiMod.print_out('\n\t"You trying to be a hero Watkins?"\n')
@@ -198,9 +217,9 @@ def frac_traverse(mol, **kwargs):
 
     # Drop the files out
     fh = open(traverse_filename, 'w')
-    fh.write('\t%-11s %-24s %11s\n' %('N', 'Energy', 'Converged'))
+    fh.write('\t%-11s %-24s %-24s %11s\n' %('N', 'Energy', 'HOMO Energy', 'Converged'))
     for k in range(len(occs)):
-        fh.write('\t%11.3E %24.16E %11d\n' % (occs[k], energies[k], convs[k]))
+        fh.write('\t%11.3E %24.16E %24.16E %11d\n' % (occs[k], energies[k], potentials[k], convs[k]))
     fh.close()
 
     return E    
@@ -260,6 +279,7 @@ def frac_nuke(mol, **kwargs):
 
     Ns = []
     energies = []
+    potentials = []
     convs = []
     stats = []
 
@@ -310,6 +330,15 @@ def frac_nuke(mol, **kwargs):
                 E = PsiMod.get_variable('SCF ITERATION ENERGY')
                 C = 0
 
+            if (HOMO > 0):
+                ref = PsiMod.reference_wavefunction()
+                eps = ref.epsilon_a()
+                potentials.append(eps[HOMO-1])
+            else:
+                ref = PsiMod.reference_wavefunction()
+                eps = ref.epsilon_b()
+                potentials.append(eps[-HOMO-1])
+
             Ns.append(Nintegral + occ - 1.0)
             energies.append(E)
             convs.append(C)
@@ -353,9 +382,9 @@ def frac_nuke(mol, **kwargs):
     # => Print the results out <= #
     E = {}
     PsiMod.print_out('\n    ==> Fractional Occupation Nuke Results <==\n\n')
-    PsiMod.print_out('\t%-11s %-24s %11s\n' %('N', 'Energy', 'Converged'))
+    PsiMod.print_out('\t%-11s %-24s %-24s %11s\n' %('N', 'Energy', 'HOMO Energy', 'Converged'))
     for k in range(len(Ns)):
-        PsiMod.print_out('\t%11.3E %24.16E %11d\n' % (Ns[k], energies[k], convs[k]))
+        PsiMod.print_out('\t%11.3E %24.16E %24.16E %11d\n' % (Ns[k], energies[k], potentials[k], convs[k]))
         E[Ns[k]] = energies[k]
 
     PsiMod.print_out('\n')
@@ -368,9 +397,9 @@ def frac_nuke(mol, **kwargs):
 
     # Drop the files out
     fh = open(traverse_filename, 'w')
-    fh.write('\t%-11s %-24s %11s\n' %('N', 'Energy', 'Converged'))
+    fh.write('\t%-11s %-24s %-24s %11s\n' %('N', 'Energy', 'HOMO Energy', 'Converged'))
     for k in range(len(Ns)):
-        fh.write('\t%11.3E %24.16E %11d\n' % (Ns[k], energies[k], convs[k]))
+        fh.write('\t%11.3E %24.16E %24.16E %11d\n' % (Ns[k], energies[k], potentials[k], convs[k]))
     fh.close()
 
     fh = open(stats_filename, 'w')
