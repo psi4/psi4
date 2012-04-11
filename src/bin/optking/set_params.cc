@@ -292,6 +292,9 @@ void set_params(void)
   if (Opt_params.generate_intcos_only && !options["KEEP_INTCOS"].has_changed())
     Opt_params.keep_intcos = true;
 
+  // for intcos with user-specified equilibrium values - this is the force constant
+  Opt_params.fixed_eq_val_force_constant = options.get_double("INTCO_FIXED_EQ_FORCE_CONSTANT");
+
 // consecutive number of backsteps allowed before giving up
   Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
 

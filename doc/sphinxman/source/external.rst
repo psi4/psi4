@@ -249,13 +249,25 @@ Environment Variables
 
 These environment variables will influence |PSIfours| behavior.
 
+.. envvar:: MKL_NUM_THREADS
+
+   Number of threads to use by operations with Intel threaded BLAS libraries.
+
+.. envvar:: OMP_NESTED
+
+   Do access nested DGEMM in OpenMP sections in DFMP2 for multi-socket
+   platforms. This is very low-level access to OpenMP functions for
+   experienced programmers. Users should leave this variable unset or set
+   to ``False``.
+
 .. envvar:: OMP_NUM_THREADS
 
    Number of threads to use by modules with OpenMP threading.
 
-.. envvar:: MKL_NUM_THREADS
+.. envvar:: PATH
 
-   Number of threads to use by operations with Intel threaded BLAS libraries.
+   Path for executables. To run K\ |a_acute|\ llay's MRCC program 
+   (see :ref:`MRCC <sec:mrcc>`), the ``dmrcc`` executable must be in :envvar:`PATH`
 
 .. envvar:: PSI_SCRATCH
 
@@ -265,11 +277,4 @@ These environment variables will influence |PSIfours| behavior.
 
    Path in which the Python interpreter looks for modules to import. For 
    |PSIfour|, these are generally plugins (see :ref:`sec:plugins`).
-
-.. envvar:: OMP_NESTED
-
-   Do access nested DGEMM in OpenMP sections in DFMP2 for multi-socket
-   platforms. This is very low-level access to OpenMP functions for
-   experienced programmers. Users should leave this variable unset or set
-   to ``False``.
 

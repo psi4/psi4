@@ -58,10 +58,14 @@ def get_gitversion():
         f = open(file)
     except IOError:
         return ''
-    vers = f.readline().split()[2]
-    f.close() 
-    #print 'GIT_VERSION', vers[1:7]
-    return vers[1:7]
+
+    try:
+        vers = f.readline().split()[2]
+        f.close()
+        #print 'GIT_VERSION', vers[1:7]
+        return vers[1:7]
+    except IndexError:
+        return ''
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

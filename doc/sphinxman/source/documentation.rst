@@ -83,14 +83,20 @@ this covers:
 * C++ Keywords: :source:`src/bin/psi4/read_options.cc` 
 * Sample Inputs: input.dat files in :source:`samples`
 * PSI Variables: ``Process::environment.globals`` lines and comments in the C++ code
-* Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories.
+* Plugins: ``doc.rst`` text, \*.py modules, and C++ keywords in ``psi4/tests/plugin_*`` plugin directories
+
+Some documentation is even extracted from Psi4 objects at runtime.
+
+* PsiMod: docstrings for the PsiMod built-in module constructed in :source:`src/bin/psi4`
+* DFT: functional availibility and characteristics as encoded in :source:`lib/python/functional.py`
 
 Run ``make help`` to see choices for cleaning various stages of the build.
 Running ``make realclean`` clears out the built documentation. Building
-all the documentation takes 5-10 minutes. There is now some decent
+all the documentation takes ~10 minutes. There is now good
 dependency structure built into the :source:`doc/sphinxman/Makefile.in` ,
-so very long builds should be infrequent. Note that not all dependencies
-are encoded (psi variables, for instance, depend on every .cc file in the
+so very long builds should be infrequent (unless you're touching :source:`src/bin/psi4/read_options.cc`.
+Note that not all dependencies
+are encoded (PSI variables, for instance, depend on every .cc file in the
 source tree), so for a definitive doc build, run ``make realclean`` and
 start from scratch.
 

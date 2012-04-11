@@ -67,60 +67,56 @@ trigger:
 
 #####  auto-doc dependencies and generation  #####
 
-usertestcases:= $(filter-out $(wildcard @top_srcdir@/tests/docs_*/input.dat), $(wildcard @top_srcdir@/tests/*/input.dat))
-
-# psivariable dependencies (all C++ code) not implemented
+# Autodoc options c-side
 autodepend1 = \
-@top_srcdir@/include/physconst.h \
 @top_srcdir@/src/bin/psi4/read_options.cc \
-$(usertestcases) \
-@srcdir@/document_options_tests_physconst_psivariables.pl
-
-# plugin C++ dependencies not implemented, using *.py as proxy
-autodepend2 = \
-@top_srcdir@/lib/databases/*.py \
-@top_srcdir@/lib/python/*.py \
-@top_srcdir@/tests/plugin_*/*.py \
-@srcdir@/document_python_modules.py
-
-autodepend3 = \
-@top_srcdir@/lib/basis/*.gbs \
-@srcdir@/document_bases.pl
-
-autodepend4 = \
-$(SRCSOURCEDIR)/template_index.rst \
-$(SRCSOURCEDIR)/template_appendices.rst \
-@srcdir@/separate_userprogman.py
-
-autodepend5 = \
-@top_srcdir@/src/bin/psi4/*.cc \
-@top_srcdir@/tests/docs_psimod/input.dat
-
-autodepend6 = \
-@top_srcdir@/src/bin/psi4/*.cc \
-@top_srcdir@/tests/docs_dft/input.dat
+@srcdir@/document_options_c.pl
 
 autotarget1 = \
 $(SOURCEDIR)/autodoc_abbr_options_c.rst \
 $(SOURCEDIR)/autodoc_glossary_options_c.rst \
 $(SOURCEDIR)/autodoc_options_c_bymodule.rst \
-$(SOURCEDIR)/autodoc_psivariables_bymodule.rst \
-$(SOURCEDIR)/autodoc_testsuite.rst \
 $(SOURCEDIR)/autodir_options_c/module__scf.rst \
-$(SOURCEDIR)/autodir_options_c/scf__scf_type.rst \
-$(SOURCEDIR)/autodir_psivariables/module__scf.rst
+$(SOURCEDIR)/autodir_options_c/scf__scf_type.rst
+
+$(autotarget1): %: $(autodepend1) | $(subdirs)
+	@srcdir@/document_options_c.pl @srcdir@
+
+
+# Autodoc plugins
+autodepend2 = \
+@top_srcdir@/tests/plugin_*/*.py \
+@top_srcdir@/tests/plugin_*/doc.rst \
+@srcdir@/document_plugins.py
 
 autotarget2 = \
 $(SOURCEDIR)/autodoc_abbr_options_plugins.rst \
-$(SOURCEDIR)/autodoc_available_databases.rst \
 $(SOURCEDIR)/autodoc_available_plugins.rst \
-$(SOURCEDIR)/autodoc_driver.rst \
 $(SOURCEDIR)/autodir_plugins/glossary__plugin_aointegrals.rst \
 $(SOURCEDIR)/autodir_plugins/module__plugin_aointegrals.rst \
 $(SOURCEDIR)/autodir_plugins/plugin_aointegrals__print.rst
 
+$(autotarget2): %: $(autodepend2) | $(subdirs)
+	@srcdir@/document_plugins.py @srcdir@
+
+
+# Autodoc basis sets
+autodepend3 = \
+@top_srcdir@/lib/basis/*.gbs \
+@srcdir@/document_bases.pl
+
 autotarget3 = \
 $(SOURCEDIR)/autodoc_psi4bases.rst
+
+$(autotarget3): %: $(autodepend3)
+	@srcdir@/document_bases.pl @srcdir@
+
+
+# Pre-process TOC to separate user/programmer manuals
+autodepend4 = \
+$(SRCSOURCEDIR)/template_index.rst \
+$(SRCSOURCEDIR)/template_appendices.rst \
+@srcdir@/separate_userprogman.py
 
 autotarget4 = \
 $(SOURCEDIR)/autodoc_index_html.rst      $(SOURCEDIR)/autodoc_appendices_html.rst \
@@ -129,10 +125,30 @@ $(SOURCEDIR)/autodoc_index_htmlprog.rst  $(SOURCEDIR)/autodoc_appendices_htmlpro
 $(SOURCEDIR)/autodoc_index_latexuser.rst $(SOURCEDIR)/autodoc_appendices_latexuser.rst \
 $(SOURCEDIR)/autodoc_index_latexprog.rst $(SOURCEDIR)/autodoc_appendices_latexprog.rst
 
+$(autotarget4): %: $(autodepend4)
+	@srcdir@/separate_userprogman.py @srcdir@
+
+
+# Autodoc PsiMod module
+autodepend5 = \
+@top_srcdir@/src/bin/psi4/*.cc \
+@top_srcdir@/tests/docs_psimod/input.dat
+
 autotarget5 = \
 $(SOURCEDIR)/autodoc_man_PsiMod.txt
 
+$(autotarget5): %: $(autodepend5)
+	cd ../../tests/docs_psimod; $(MAKE) clean; $(MAKE)
+	cp ../../tests/docs_psimod/$(@F) $(SOURCEDIR)/$(@F)
+
+
+# Autodoc functionals
+autodepend6 = \
+@top_srcdir@/lib/python/functional.py \
+@top_srcdir@/tests/docs_dft/input.dat
+
 autotarget6 = \
+$(SOURCEDIR)/autodoc_dft_energy.rst \
 $(SOURCEDIR)/autodoc_dft_all.rst \
 $(SOURCEDIR)/autodoc_dft_gga.rst \
 $(SOURCEDIR)/autodoc_dft_meta.rst \
@@ -140,27 +156,75 @@ $(SOURCEDIR)/autodoc_dft_lrc.rst \
 $(SOURCEDIR)/autodoc_dft_hybrid.rst \
 $(SOURCEDIR)/autodoc_dft_disp.rst
 
-$(autotarget1): %: $(autodepend1) | $(subdirs)
-	@srcdir@/document_options_tests_physconst_psivariables.pl @srcdir@
-
-$(autotarget2): %: $(autodepend2) | $(subdirs)
-	@srcdir@/document_python_modules.py @srcdir@
-
-$(autotarget3): %: $(autodepend3)
-	@srcdir@/document_bases.pl @srcdir@
-
-$(autotarget4): %: $(autodepend4)
-	@srcdir@/separate_userprogman.py @srcdir@
-
-$(autotarget5): %: $(autodepend5)
-	cd ../../tests/docs_psimod; $(MAKE) clean; $(MAKE)
-	cp ../../tests/docs_psimod/$(@F) $(SOURCEDIR)/$(@F)
-
 $(autotarget6): %: $(autodepend6)
 	cd ../../tests/docs_dft; $(MAKE) clean; $(MAKE)
 	cp ../../tests/docs_dft/$(@F) $(SOURCEDIR)/$(@F)
 
-autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) $(autotarget5) $(autotarget6)
+
+# Autodoc driver
+autodepend7 = \
+@top_srcdir@/lib/python/*.py \
+@srcdir@/document_driver.py
+
+autotarget7 = \
+$(SOURCEDIR)/autodoc_driver.rst
+
+$(autotarget7): %: $(autodepend7)
+	@srcdir@/document_driver.py @srcdir@
+
+
+# Autodoc databases
+autodepend8 = \
+@top_srcdir@/lib/databases/*.py \
+@srcdir@/document_databases.py
+
+autotarget8 = \
+$(SOURCEDIR)/autodoc_available_databases.rst
+
+$(autotarget8): %: $(autodepend8)
+	@srcdir@/document_databases.py @srcdir@
+
+
+# Autodoc test cases
+autodepend9 = \
+$(filter-out $(wildcard @top_srcdir@/tests/docs_*/input.dat), $(wildcard @top_srcdir@/tests/*/input.dat)) \
+@srcdir@/document_tests.pl
+
+autotarget9 = \
+$(SOURCEDIR)/autodoc_testsuite.rst
+
+$(autotarget9): %: $(autodepend9)
+	@srcdir@/document_tests.pl @srcdir@
+
+
+# Autodoc PSI variables
+autodepend10 = \
+@top_srcdir@/src/*/*/*.cc \
+@srcdir@/document_psivariables.pl
+
+autotarget10 = \
+$(SOURCEDIR)/autodoc_psivariables_bymodule.rst \
+$(SOURCEDIR)/autodir_psivariables/module__scf.rst
+
+$(autotarget10): %: $(autodepend10) | $(subdirs)
+	@srcdir@/document_psivariables.pl @srcdir@
+
+
+# Autodoc physical constants
+autodepend11 = \
+@top_srcdir@/include/physconst.h \
+@srcdir@/document_physconst.pl
+
+autotarget11 = \
+@top_srcdir@/lib/python/physconst.py
+
+$(autotarget11): %: $(autodepend11)
+	@srcdir@/document_physconst.pl @srcdir@
+
+
+autodoc: $(autotarget1) $(autotarget2) $(autotarget3) $(autotarget4) \
+         $(autotarget5) $(autotarget6) $(autotarget7) $(autotarget8) \
+         $(autotarget9) $(autotarget10) $(autotarget11)
 
 
 #####  static docs  #####
@@ -170,14 +234,14 @@ psi4banner.png PsiMod.py
 
 STATICDOC = \
 abbr_accents.rst adc.rst basissets.rst basissets_byelement.rst \
-bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst \
+bestPractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst \
 cp.rst customizing.rst db.rst detci.rst dfmp2.rst documentation.rst \
 energy.rst external.rst freq.rst glossary_psivariables.rst intercalls.rst \
 interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
 opt.rst optking.rst plugins.rst programming.rst prop.rst psimod.rst \
 psithonfunc.rst psithoninput.rst quickaddalias.rst quickaddbasis.rst \
 quickadddatabase.rst sapt.rst sowreap.rst testsuite.rst tutorial.rst \
-dft_byfunctional.rst scf.rst
+dft_byfunctional.rst scf.rst mrcc.rst psimrcc.rst cc.rst
 
 $(addprefix $(SOURCEDIR)/,$(MISCDOC)): %: @srcdir@/%
 	cp $(SRCSOURCEDIR)/$(@F) $(SOURCEDIR)/$(@F)

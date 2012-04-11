@@ -27,6 +27,9 @@ bool stoi(string s, int *a);
 // convert string to boolean
 bool stob(string s, bool *a);
 
+// convert string to float
+bool stof(string s, double *val);
+
 // check string for trailing "*".  If present, remove it and return true
 bool has_asterisk(string & s);
 
@@ -324,19 +327,28 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
 bool FRAG::read_intco(vector<string> & s, int offset) {
   int a, b, c, d;
   std::string error;
+  double eq_val; // for imposing a constraint
+  bool has_eq_val=false;
 
   bool frozen=false;
   frozen = has_asterisk(s[0]); // removes asterisk
 
   if ((s[0] == "R") || (s[0] == "H")) {
-    if (s.size() != 3)
+    if ( s.size() != 3 && s.size() != 4)
       throw(INTCO_EXCEPT("Format of stretch entry is \"R atom_1 atom_2\""));
+    if ( s.size() == 4 ) {
+      if (stof(s[3], &eq_val))
+        has_eq_val = true;
+      else
+        throw(INTCO_EXCEPT("Format of stretch entry is \"R atom_1 atom_2 (eq_val)\""));
+    }
     if ( !stoi(s[1], &a) || !stoi(s[2], &b) )
       throw(INTCO_EXCEPT("Format of stretch entry is \"R atom_1 atom_2\""));
     --a; --b;
 
     STRE *one_stre = new STRE(a-offset, b-offset, frozen);
     if (s[0] == "H") one_stre->make_hbond();
+    if (has_eq_val) one_stre->set_fixed_eq_val(eq_val);
 
     if ( !present(one_stre) )
       intcos.push_back(one_stre);
@@ -346,14 +358,21 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     return true;
   }
   else if ((s[0] == "B") || (s[0] == "L")) {
-    if (s.size() != 4)
+    if (s.size() != 4 && s.size() != 5)
       throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3\""));
+    if ( s.size() == 5 ) {
+      if (stof(s[4], &eq_val))
+        has_eq_val = true;
+      else
+        throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3 (eq_val)\""));
+    }
     if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) )
       throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3\""));
     --a; --b; --c;
 
     BEND *one_bend = new BEND(a-offset, b-offset, c-offset, frozen);
     if (s[0] == "L") one_bend->make_linear_bend();
+    if (has_eq_val) one_bend->set_fixed_eq_val(eq_val);
 
     if ( !present(one_bend) )
       intcos.push_back(one_bend);
@@ -363,13 +382,20 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     return true;
   }
   else if (s[0] == "D") {
-    if (s.size() != 5)
+    if (s.size() != 5 && s.size() != 6)
       throw(INTCO_EXCEPT("Format of dihedral entry is \"D atom_1 atom_2 atom_3 atom_4\""));
+    if ( s.size() == 6 ) {
+      if (stof(s[5], &eq_val))
+        has_eq_val = true;
+      else
+        throw(INTCO_EXCEPT("Format of dihedral entry is \"D atom_1 atom_2 atom_3 atom_4 (eq_val)\""));
+    }
     if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) || !stoi(s[4], &d) )
       throw(INTCO_EXCEPT("Format of dihedral entry is \"D atom_1 atom_2 atom_3 atom_4\""));
     --a; --b; --c; --d;
-  
+
     TORS *one_tors = new TORS(a-offset, b-offset, c-offset, d-offset, frozen);
+    if (has_eq_val) one_tors->set_fixed_eq_val(eq_val);
     
     if ( !present(one_tors) )
       intcos.push_back(one_tors);
@@ -387,6 +413,16 @@ bool stoi(string s, int *a) {
   int i = atoi(s.c_str());
   if (i!=0) {
     *a = i;
+    return true;
+  }
+  return false;
+}
+
+// convert string to float
+bool stof(string s, double *val) {
+  double i = atof(s.c_str());
+  if (i!=0) {
+    *val = i;
     return true;
   }
   return false;
