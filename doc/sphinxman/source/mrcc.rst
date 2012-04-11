@@ -4,9 +4,6 @@
 .. _`sec:mrcc`:
 .. index:: MRCC
 
-.. index::
-   pair: MRCC; theory
-
 Interface to MRCC by M. K\ |a_acute|\ llay
 ==========================================
 
@@ -22,7 +19,7 @@ Installation
 
 Follow the instructions provided with the source to build the MRCC programs.
 To be used by |PSIfour|, ensure that the program binary (``dmrcc``) can be
-found in your ``PATH``. If |PSIfour| is unable to execute the binary, an
+found in your :envvar:`PATH`. If |PSIfour| is unable to execute the binary, an
 error will be reported.
 
 Running MRCC
@@ -41,17 +38,17 @@ MRCC simply provide the following::
     }
     energy('mrccsdt')
 
-``mrccsdt`` in the call to ``energy()`` instructs |PSIfour| to first
+``'mrccsdt'`` in the call to :py:func:`~driver.energy` instructs |PSIfour| to first
 perform an RHF calculation and then call MRCC to compute the CCSDT energy.
-For a CCSDT(Q) energy, simply use ``mrccsdt(q)`` in the call to
-``energy``. MRCC can be used to perform geometry optimization and
+For a CCSDT(Q) energy, simply use ``'mrccsdt(q)'`` in the call to
+:py:func:`~driver.energy`. MRCC can be used to perform geometry optimization and
 frequency calculations for electronic ground states only.
 
 At this time, |PSIfour| is only able to automatically generate the proper
 input file for MRCC for the methods listed in table below.
 To utilize any method described in the table, you must prefix
 the method name with ``MR``. For other methods, you will be required to
-use the MRCC keywords described elsewhere in this manual.
+use the MRCC keywords described in Appendix :ref:`apdx:mrcc`.
 
 .. _`table:mrccauto`:
 
