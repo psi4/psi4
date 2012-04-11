@@ -45,6 +45,8 @@ protected:
     void compute_scf_energy();
     void mp2_guess();
     void build_tau();
+    void transform_tau();
+    void build_gtau();
     void print_opdm();
     void write_orbitals_to_checkpoint();
     void check_n_representability();
@@ -84,7 +86,7 @@ protected:
     void iterate_orbital_response();
     void orbital_response_guess();
     void compute_orbital_response_intermediates();
-    void update_orbital_response();
+    double update_orbital_response();
     double compute_response_coupling();
     void iterate_cumulant_response();
     void cumulant_response_guess();
@@ -138,6 +140,12 @@ protected:
     double scf_convergence_;
     /// The RMS value of the change in lambda after the lambda iterations
     double lambda_convergence_;
+    /// The RMS value of the change in the orbital response
+    double orbital_response_rms_;
+    /// The RMS value of the change in the cumulant response
+    double cumulant_response_rms_;
+    /// The RMS value of the change in the coupling of orbital and cumulant response
+    double response_coupling_rms_;
     /// The convergence criterion for the lambda iterations
     double lambda_threshold_;
     /// The convergence criterion for the scf iterations
