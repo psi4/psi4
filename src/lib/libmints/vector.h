@@ -146,7 +146,7 @@ public:
     }
 
     /// Subtracts other vector from this
-    void add(const Vector& other) {
+    void subtract(const Vector& other) {
         for (int h=0; h<nirrep_; ++h) {
             for (int m=0; m<dimpi_[h]; ++m) {
                 vector_[h][m] -= other.vector_[h][m];
