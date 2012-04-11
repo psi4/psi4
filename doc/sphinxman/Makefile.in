@@ -234,7 +234,7 @@ psi4banner.png PsiMod.py
 
 STATICDOC = \
 abbr_accents.rst adc.rst basissets.rst basissets_byelement.rst \
-bestpractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst \
+bestPractices_py.rst bibliography.rst cbs.rst cbs_eqn.rst contributing.rst \
 cp.rst customizing.rst db.rst detci.rst dfmp2.rst documentation.rst \
 energy.rst external.rst freq.rst glossary_psivariables.rst intercalls.rst \
 interfacing.rst introduction.rst methods.rst notes_c.rst notes_py.rst \
