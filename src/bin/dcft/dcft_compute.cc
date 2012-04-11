@@ -77,13 +77,15 @@ DCFTSolver::compute_energy()
                 std::string diisString;
                 // Build new Tau from current Lambda
                 build_tau();
-                // Compute GTau contribution for the Fock operator
-                build_gtau();
                 if (options_.get_str("AO_BASIS") == "DISK") {
                     // Transform new Tau to the SO basis
                     transform_tau();
                     // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
                     build_tensors();
+                }
+                else {
+                    // Compute GTau contribution for the Fock operator
+                    build_gtau();
                 }
                 // Update Fock operator for the F intermediate
                 update_fock();
