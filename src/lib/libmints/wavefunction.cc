@@ -177,6 +177,43 @@ void Wavefunction::common_init()
     isCIM_ = false;
 }
 
+void Wavefunction::map_irreps(std::vector<int*> &arrays)
+{
+    boost::shared_ptr<PointGroup> full = Process::environment.parent_symmetry();
+    // If the parent symmetry hasn't been set, no displacements have been made
+    if(!full) return;
+    boost::shared_ptr<PointGroup> sub = molecule_->point_group();
+    // Build the correlation table between full, and subgroup
+    CorrelationTable corrtab(full, sub);
+    int nirreps = corrtab.n();
+    std::vector<int*>::iterator iter = arrays.begin();
+    for(; iter != arrays.end(); ++iter){
+        int *array = *iter;
+        int temp[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+        for(int h = 0; h < nirreps; ++h){
+            int target = corrtab.gamma(h, 0);
+            temp[target] += array[h];
+        }
+        for(int h = 0; h < nirreps; ++h)
+            array[h] = temp[h];
+    }
+}
+
+void Wavefunction::map_irreps(int* &array)
+{
+    std::vector<int*> vec;
+    vec.push_back(array);
+    map_irreps(vec);
+}
+
+void Wavefunction::map_irreps(Dimension &array)
+{
+    int *int_array = array;
+    std::vector<int*> vec;
+    vec.push_back(int_array);
+    map_irreps(vec);
+}
+
 double Wavefunction::compute_energy()
 {
     return 0.0;

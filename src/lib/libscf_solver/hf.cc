@@ -111,12 +111,28 @@ void HF::common_init()
     input_docc_ = false;
     if (options_["DOCC"].has_changed()) {
         input_docc_ = true;
-        if(options_["DOCC"].size() != nirreps)
-            throw PSIEXCEPTION("The DOCC array has the wrong dimensions");
-        for (int i=0; i<nirreps; ++i) {
-            doccpi_[i] = options_["DOCC"][i].to_integer();
-            ndocc += 2*doccpi_[i];
+        // Map the symmetry of the input DOCC, to account for displacements
+        boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+        if(old_pg){
+            // This is one of a series of displacements;  check the dimension against the parent point group
+            int full_nirreps = old_pg->char_table().nirrep();
+            if(options_["DOCC"].size() != full_nirreps)
+                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            int *temp_docc = new int[full_nirreps];
+            for(int h = 0; h < full_nirreps; ++h)
+                temp_docc[h] = options_["DOCC"][h].to_integer();
+            map_irreps(temp_docc);
+            doccpi_ = temp_docc;
+            delete[] temp_docc;
+        }else{
+            // This is a normal calculation; check the dimension against the current point group then read
+            if(options_["DOCC"].size() != nirreps)
+                throw PSIEXCEPTION("Input DOCC array has the wrong dimensions");
+            for(int h = 0; h < nirreps; ++h)
+                doccpi_[h] = options_["DOCC"][h].to_integer();
         }
+        for (int i=0; i<nirreps; ++i)
+            ndocc += 2*doccpi_[i];
     } else {
         for (int i=0; i<nirreps; ++i)
             doccpi_[i] = 0;
@@ -125,12 +141,28 @@ void HF::common_init()
     input_socc_ = false;
     if (options_["SOCC"].has_changed()) {
         input_socc_ = true;
-        if(options_["SOCC"].size() != nirreps)
-            throw PSIEXCEPTION("The SOCC array has the wrong dimensions");
-        for (int i=0; i<nirreps; ++i) {
-            soccpi_[i] = options_["SOCC"][i].to_integer();
-            nsocc += soccpi_[i];
+        // Map the symmetry of the input SOCC, to account for displacements
+        boost::shared_ptr<PointGroup> old_pg = Process::environment.parent_symmetry();
+        if(old_pg){
+            // This is one of a series of displacements;  check the dimension against the parent point group
+            int full_nirreps = old_pg->char_table().nirrep();
+            if(options_["SOCC"].size() != full_nirreps)
+                throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
+            int *temp_socc = new int[full_nirreps];
+            for(int h = 0; h < full_nirreps; ++h)
+                temp_socc[h] = options_["SOCC"][h].to_integer();
+            map_irreps(temp_socc);
+            soccpi_ = temp_socc;
+            delete[] temp_socc;
+        }else{
+            // This is a normal calculation; check the dimension against the current point group then read
+            if(options_["SOCC"].size() != nirreps)
+                throw PSIEXCEPTION("Input SOCC array has the wrong dimensions");
+            for(int h = 0; h < nirreps; ++h)
+                soccpi_[h] = options_["SOCC"][h].to_integer();
         }
+        for (int i=0; i<nirreps; ++i)
+            nsocc += soccpi_[i];
     } else {
         for (int i=0; i<nirreps; ++i)
             soccpi_[i] = 0;
@@ -142,6 +174,7 @@ void HF::common_init()
             nbetapi_[h]  = doccpi_[h];
         }
     }
+
 
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
