@@ -75,14 +75,18 @@ DCFTSolver::compute_energy()
             // Start density cumulant (lambda) iterations
             while((!lambdaDone || !energyConverged) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                 std::string diisString;
+                // Build new Tau from current Lambda
+                build_tau();
+                // Compute GTau contribution for the Fock operator
+                build_gtau();
                 if (options_.get_str("AO_BASIS") == "DISK") {
-                    // Builds new Tau and transforms it to SO basis
-                    build_tau();
+                    // Transform new Tau to the SO basis
+                    transform_tau();
                     // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
                     build_tensors();
-                    // Update Fock operator for the F intermediate
-                    update_fock();
                 }
+                // Update Fock operator for the F intermediate
+                update_fock();
                 // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
                 build_intermediates();
                 // Compute the residuals for density cumulant equations
@@ -144,6 +148,7 @@ DCFTSolver::compute_energy()
             }
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            transform_tau();
             // Update the orbitals
             int nSCFCycles = 0;
             // Reset the booleans that control the convergence
@@ -254,6 +259,7 @@ DCFTSolver::compute_energy()
             old_total_energy_ = new_total_energy_;
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            transform_tau();
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
             Fb_->copy(so_h_);
