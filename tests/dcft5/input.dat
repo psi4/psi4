@@ -1,36 +1,48 @@
-#! DCFT calculation for the Ne+ ion (doublet ground state). This performs both
-#! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
-#! Four-virtual integrals are handled in the MO Basis.
+#! DCFT-06 calculation for the O2 molecule (triplet ground state). This performs 
+#! geometry optimization using two-step and simultaneous solution of the 
+#! response equations for the analytic gradient.
 
 memory 250 mb
 
-refuhf      = -127.09539051427785 #TEST
-refmp2      = -127.17613462119119 #TEST
-refdcftscf  = -127.00494667865641 #TEST
-refdcft     = -127.18032524447956 #TEST
+refnuc      =  27.94278469395802136 #TEST
+refuhf      = -149.627297605116098  #TEST
+refmp2      = -150.051962640287854  #TEST
+refdcftscf  = -149.159982654086292  #TEST
+refdcft     = -150.063396138329580  #TEST
 
-molecule ne {
-    1 2
-    Ne
+molecule O2 {
+0 3
+O
+O 1 R
+R = 1.200
 }
 
 set globals {
-    r_convergence 11
-    reference   uhf
-    ao_basis    none
-    algorithm   twostep
-    basis       3-21G
+    r_convergence            12
+    reference                uhf
+    algorithm                twostep
+    response_algorithm       twostep
+    basis                    cc-pcvdz
+    max_disp_g_convergence   1e-6
+    rms_force_g_convergence  1e-6
+    max_energy_g_convergence 1e-6
 }
 
-energy('dcft')
+optimize('dcft')
 
-compare_values(refuhf, get_variable("SCF TOTAL ENERGY"), 8, "UHF Energy");                        #TEST
-compare_values(refmp2, get_variable("MP2 ENERGY"), 8, "MP2 Energy");                              #TEST
-compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (two-step)");                #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (two-step)");     #TEST
+compare_values(refnuc, O2.nuclear_repulsion_energy(), 5, "Nuclear Repulsion Energy")                       #TEST
+compare_values(refuhf, get_variable("SCF TOTAL ENERGY"), 6, "UHF Energy");                                 #TEST
+compare_values(refmp2, get_variable("MP2 ENERGY"), 6, "MP2 Energy");                                       #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 6, "DCFT SCF Energy (two-step response)");     #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 6, "DCFT Energy (two-step response)");                #TEST
 
-set algorithm simultaneous
-energy('dcft')
+set response_algorithm simultaneous
+O2.R = 1.200
 
-compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy (simultaneous)");                #TEST
-compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy (simultaneous)");     #TEST
+optimize('dcft')
+
+compare_values(refnuc, O2.nuclear_repulsion_energy(), 5, "Nuclear Repulsion Energy")                       #TEST
+compare_values(refuhf, get_variable("SCF TOTAL ENERGY"), 6, "UHF Energy");                                 #TEST
+compare_values(refmp2, get_variable("MP2 ENERGY"), 6, "MP2 Energy");                                       #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 6, "DCFT SCF Energy (simultaneous response)"); #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 6, "DCFT Energy (simultaneous response)");            #TEST
