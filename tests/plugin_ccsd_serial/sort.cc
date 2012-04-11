@@ -550,7 +550,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt,
      SortBlock(totalnabcd2,v*(v+1)/2*v*(v+1)/2,integralbuffer,tmp,PSIF_ABCD2,"E2abcd2",maxelem);
      fprintf(outfile,"done.\n");fflush(outfile);
   }else{
-     fprintf(outfile,"        ABCD block    ...");fflush(outfile);
+     fprintf(outfile,"        ABCD block.......");fflush(outfile);
      SortBlock(totalnabcd1,v*v*v*v,integralbuffer,tmp,PSIF_ABCD1,"E2abcd1",maxelem);
      fprintf(outfile,"done.\n");fflush(outfile);
   }
