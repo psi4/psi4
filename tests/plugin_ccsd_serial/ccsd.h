@@ -67,6 +67,11 @@ class CoupledCluster{
     ~CoupledCluster();
 
     /**
+      * Options
+      */
+    Options options_;
+
+    /**
       * Number of threads
       */
     int nthreads;
@@ -186,6 +191,7 @@ class CoupledCluster{
     void I2piajk(CCTaskParams params);
     void Vabcd1(CCTaskParams params);
     void Vabcd2(CCTaskParams params);
+    void Vabcd(CCTaskParams params);
     void I2iabj(CCTaskParams params);
     void I2iajb(CCTaskParams params);
 
