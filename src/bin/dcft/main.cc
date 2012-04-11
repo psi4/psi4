@@ -16,6 +16,7 @@ namespace psi{ namespace dcft{
 PsiReturnType
 dcft(Options &options)
 {
+
     // Start the timers
     tstart();
 

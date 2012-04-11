@@ -132,6 +132,10 @@ struct OPT_PARAMS {
   double IRC_step_size;
   bool keep_intcos; // don't delete intco.dat
 
+  // for intcos with user-specified equilibrium values - this is the force constant
+  double fixed_eq_val_force_constant;
+
+
 };
 
 }
