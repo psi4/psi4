@@ -520,7 +520,9 @@ def run_dft(name, **kwargs):
     elif (user_ref == 'UHF'):
         PsiMod.set_global_option('REFERENCE', 'UKS')
     elif (user_ref == 'ROHF'):
-        raise ValidationError('RO reference for DFT is not available.')
+        raise ValidationError('ROHF reference for DFT is not available.')
+    elif (user_ref == 'CUHF'):
+        raise ValidationError('CUHF reference for DFT is not available.')
 
     returnvalue = scf_helper(name, **kwargs)
 
