@@ -14,10 +14,10 @@ DCFTSolver::compute_gradient()
     bool responseDone = false;
 
     // Print out the header
-    fprintf(outfile,"\n\n\t\t*******************************************\n");
-    fprintf(outfile,    "\t\t*       DCFT Analytic Gradients Code      *\n");
-    fprintf(outfile,    "\t\t*   by A.Yu. Sokolov and A.C. Simmonett   *\n");
-    fprintf(outfile,    "\t\t*******************************************\n\n");
+    fprintf(outfile,"\n\n\t\t **********************************************\n");
+    fprintf(outfile,    "\t\t *       DCFT-06 Analytic Gradients Code      *\n");
+    fprintf(outfile,    "\t\t *     by A.Yu. Sokolov and A.C. Simmonett    *\n");
+    fprintf(outfile,    "\t\t **********************************************\n\n");
 
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init();
@@ -29,6 +29,7 @@ DCFTSolver::compute_gradient()
     response_coupling_rms_ = 0.0;
     iter_ = 0;
 
+    // Start two-step algorithm for solution of the response equations
     if(options_.get_str("RESPONSE_ALGORITHM") == "TWOSTEP"){
         fprintf(outfile, "\t*=================================================*\n"
                 "\t* Cycle  RMS Orb. Resp.   RMS Cumul. Resp.   DIIS *\n"
@@ -196,30 +197,6 @@ DCFTSolver::compute_gradient()
     compute_lagrangian_VV();
     // Compute the energy-weighted density matrix
     compute_ewdm();
-
-//    dpdfile2 zia;
-//    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('O'), ID('V'), "z <O|V>");
-//    dpd_file2_print(&zia, outfile);
-//    dpd_file2_close(&zia);
-//    dpd_file2_init(&zia, PSIF_DCFT_DPD, 0, ID('o'), ID('v'), "z <o|v>");
-//    dpd_file2_print(&zia, outfile);
-//    dpd_file2_close(&zia);
-
-//    dpdbuf4 Z;
-//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-//                  ID("[O,O]"), ID("[V,V]"), 0, "Z <OO|VV>");
-//    dpd_buf4_print(&Z, outfile, 1);
-//    dpd_buf4_close(&Z);
-
-//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-//                  ID("[o,o]"), ID("[v,v]"), 0, "Z <oo|vv>");
-//    dpd_buf4_print(&Z, outfile, 1);
-//    dpd_buf4_close(&Z);
-
-//    dpd_buf4_init(&Z, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-//                  ID("[O,o]"), ID("[V,v]"), 0, "Z <Oo|Vv>");
-//    dpd_buf4_print(&Z, outfile, 1);
-//    dpd_buf4_close(&Z);
 
 }
 
@@ -927,12 +904,6 @@ DCFTSolver::compute_density()
               ID("[O,o]"), ID("[V,v]"), 0, "Gamma <Oo|Vv>");
     dpd_buf4_sort(&Gab, PSIF_DCFT_DENSITY, rspq, ID("[V,v]"), ID("[O,o]"), "Gamma <Vv|Oo>");
     dpd_buf4_close(&Gab);
-
-//    // Resort the Г_VvOo to Г_vVoO. Used for the MO Lagrangian
-//    dpd_buf4_init(&Gab, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[O,o]"),
-//              ID("[V,v]"), ID("[O,o]"), 0, "Gamma <Vv|Oo>");
-//    dpd_buf4_sort(&Gab, PSIF_DCFT_DENSITY, qpsr, ID("[v,V]"), ID("[o,O]"), "Gamma <vV|oO>");
-//    dpd_buf4_close(&Gab);
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[v,v]"),
               ID("[o,o]"), ID("[v,v]"), 0, "Gamma <oo|vv>");
@@ -1771,7 +1742,7 @@ DCFTSolver::iterate_orbital_response()
                 orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
-        if (converged || cycle >= maxiter_) break;
+        if (converged || cycle >= options_.get_int("SCF_MAXITER")) break;
 
     } while (true);
 
@@ -2591,7 +2562,7 @@ DCFTSolver::iterate_cumulant_response()
         fprintf(outfile, "\t*%4d    %11.3E       %11.3E       %-4s *\n", cycle, orbital_response_rms_, cumulant_response_rms_, diisString.c_str());
 
         // Termination condition
-        if (converged || cycle >= maxiter_) break;
+        if (converged || cycle >= options_.get_int("LAMBDA_MAXITER")) break;
 
     } while (true);
 
@@ -5112,7 +5083,6 @@ DCFTSolver::compute_ewdm()
     iwl_buf_close(&AA, 1);
     iwl_buf_close(&AB, 1);
     iwl_buf_close(&BB, 1);
-
 
 }
 

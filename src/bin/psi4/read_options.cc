@@ -732,54 +732,67 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory 
-      computations. -*/
+      computations -*/
 
-      /*- How to cache quantities within the DPD library -*/
-      options.add_int("CACHELEVEL", 2);
-      /*- The shift applied to the denominator -*/
-      options.add_double("TIKHONOW_OMEGA", 0.0);
-      /*- Maximum number of lambda iterations per macro-iteration -*/
-      options.add_int("LAMBDA_MAXITER", 50);
-      /*- Maximum number of SCF iterations per cycle -*/
-      options.add_int("SCF_MAXITER", 50);
-      /*- Maximum number of iterations -*/
-      options.add_int("MAXITER", 40);
-      /*- Do compute the full two particle density matrix at the end of the 
-      computation, for properties? -*/
-      options.add_bool("TPDM", 0);
-      /*- Convergence criterion for the SCF density (RMS error). -*/
-      options.add_double("SCF_D_CONVERGENCE", 1e-8);
-      /*- Convergence criterion for residuals (RMS error) in density cumulant 
-      equations. -*/
+      /*- The algorithm to use for the density cumulant and orbital updates in the energy computation.
+      Two-step algorithm (default) is generally more efficient and shows better convergence than simultaneous -*/
+      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties.
+      Two-step algorithm is generally more efficient than simultaneous and is used by default-*/
+      options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- Convergence criterion for the RMS of the residual vector in the density cumulant updates as well as
+      the solution of the density cumulant and orbital response equations. In the orbital updates controls
+      the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
-      /*- Do relax the orbitals? -*/
-      options.add_bool("MO_RELAX", true);
-      /*- The amount (percentage) of damping to apply to the initial SCF 
-      procedures 0 will result in a full update, 100 will completely stall the 
-      update. A value around 20 (which corresponds to 20\% of the previous 
-      iteration's density being mixed into the current iteration)
-      can help in cases where oscillatory convergence is observed. -*/
-      options.add_double("DAMPING_PERCENTAGE",0.0);
-      /*- Don't include the tau terms? -*/
-      options.add_bool("IGNORE_TAU", false);
-      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to 
-      $\tau$ ? -*/
-      options.add_bool("TAU_SQUARED", false);
-      /*- Minimum absolute value below which integrals are neglected. -*/
-      options.add_double("INTS_TOLERANCE", 1e-14);
-      /*- Value of RMS lambda and SCF errors below which DIIS starts -*/
+      /*- Maximum number of density cumulant update micro-iterations per
+      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
+      maximum number of density cumulant response micro-iterations per
+      macro-iteration for the solution of the response equations
+      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
+      options.add_int("LAMBDA_MAXITER", 50);
+      /*- Maximum number of orbital update micro-iterations per
+      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
+      maximum number of orbital response micro-iterations per
+      macro-iteration for the solution of the response equations
+      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
+      options.add_int("SCF_MAXITER", 50);
+      /*- Maximum number of macro-iterations for both energy and the solution of the response equations -*/
+      options.add_int("MAXITER", 40);
+      /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
+      Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
       options.add_double("DIIS_START_CONVERGENCE", 1e-3);
       /*- Maximum number of error vectors stored for DIIS extrapolation -*/
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation -*/
       options.add_int("DIIS_MIN_VECS", 3);
-      /*- The algorithm to use for the $\left<VV||VV\right>$ terms. -*/
-      options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-      /*- The algorithm to use for lambda and orbital updates -*/
-      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
-      /*- The algorithm to use for solving the response equations -*/
-      options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
-      /*- Do force the occupation to be that of the SCF starting point? -*/
+      /*- Controls whether to avoid the AO->MO transformation of the two-electron integrals for the four-virtual case
+      (<VV||VV>) by computing the corresponding terms in the AO basis. AO_BASIS = DISK algorithm reduces the memory
+      requirements. It is, however, less efficient due to the extra I/O, so the default algorithm is preferred. -*/
+      options.add_str("AO_BASIS", "NONE", "NONE DISK");
+      /*- The amount (percentage) of damping to apply to the orbital update procedure:
+      0 will result in a full update, 100 will completely stall the
+      update. A value around 20 (which corresponds to 20\% of the previous 
+      iteration's density being mixed into the current iteration)
+      can help in cases where oscillatory convergence is observed. -*/
+      options.add_double("DAMPING_PERCENTAGE",0.0);
+      /*- The shift applied to the denominator in the density cumulant update iterations -*/
+      options.add_double("TIKHONOW_OMEGA", 0.0);
+      /*- Controls whether to compute the DCFT energy with the Tau^2 correction to Tau -*/
+      options.add_bool("TAU_SQUARED", false);
+      /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation -*/
+      options.add_bool("TPDM", false);
+      /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
+      For practical applications only the default must be used -*/
+      options.add_bool("MO_RELAX", true);
+      /*- Controls whether to ignore terms containing non-idempotent contribution to OPDM or not (for debug puproses only).
+      For practical applications only the default must be used -*/
+      options.add_bool("IGNORE_TAU", false);
+      /*- Controls how to cache quantities within the DPD library -*/
+      options.add_int("CACHELEVEL", 2);
+      /*- Minimum absolute value below which integrals are neglected -*/
+      options.add_double("INTS_TOLERANCE", 1e-14);
+      /*- Controls whether to force the occupation to be that of the SCF guess.
+      For practical applications only the default must be used -*/
       options.add_bool("LOCK_OCC", true);
   }
   if (name == "MINTS"|| options.read_globals()) {
