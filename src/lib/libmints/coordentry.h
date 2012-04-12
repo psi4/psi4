@@ -21,7 +21,25 @@ class Vector3;
  */
 class CoordValue
 {
+protected:
+    /// Fixed coordinate?
+    bool fixed_;
+    /// Whether the current value is up to date or not
+    bool computed_;
 public:
+
+    CoordValue() : fixed_(false), computed_(false)
+    { }
+
+    CoordValue(bool fixed) : fixed_(fixed), computed_(false)
+    { }
+
+    CoordValue(bool fixed, bool computed) : fixed_(fixed), computed_(computed)
+    { }
+
+    void set_fixed(bool fixed) { fixed_ = fixed; }
+    bool fixed() const { return fixed_; }
+
     /**
      * The specialization of CoordValue used to represent this number.
      * NumberType: A simple number
@@ -34,8 +52,6 @@ public:
     virtual void set(double val) =0;
     /// The type of variable representation
     virtual CoordValueType type() =0;
-    /// Whether the current value is up to date or not
-    bool computed_;
     /// Flag the current value as outdated
     void invalidate() { computed_ = false; }
     /// Clones the current object, using a user-provided variable array, for deep copying
@@ -49,12 +65,12 @@ class NumberValue : public CoordValue
 {
     double value_;
 public:
-    NumberValue(double value) :value_(value) {}
+    NumberValue(double value, bool fixed = false) : CoordValue(fixed, true), value_(value) {}
     double compute() { return value_; }
-    void set(double val) { value_ = val; }
+    void set(double val) { if (!fixed_) value_ = val; }
     CoordValueType type() { return NumberType; }
     boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
-        return boost::shared_ptr<CoordValue>(new NumberValue(value_));
+        return boost::shared_ptr<CoordValue>(new NumberValue(value_, fixed_));
     }
 };
 
@@ -68,15 +84,15 @@ class VariableValue : public CoordValue
     std::map<std::string, double>& geometryVariables_;
     bool negate_;
 public:
-    VariableValue(const std::string name, std::map<std::string, double>& geometryVariables, bool negate=false)
-        : name_(name), geometryVariables_(geometryVariables), negate_(negate) {}
+    VariableValue(const std::string name, std::map<std::string, double>& geometryVariables, bool negate=false, bool fixed = false)
+        : CoordValue(fixed, true), name_(name), geometryVariables_(geometryVariables), negate_(negate) {}
     double compute();
     bool negated() const { return negate_; }
     const std::string & name() const { return name_; }
-    void set(double val) { geometryVariables_[name_] = negate_ ? -val : val; }
+    void set(double val) { if (!fixed_) { geometryVariables_[name_] = negate_ ? -val : val; } }
     CoordValueType type() { return VariableType; }
     boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
-        return boost::shared_ptr<CoordValue>(new VariableValue(name_, map, negate_));
+        return boost::shared_ptr<CoordValue>(new VariableValue(name_, map, negate_, fixed_));
     }
 };
 
