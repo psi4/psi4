@@ -1,4 +1,4 @@
-#! DCFT calculation for the He dimer, with the K06 functional. This performs a
+#! DCFT-06 calculation for the He dimer. This performs a
 #! simultaneous update of the orbitals and cumulant, using DIIS extrapolation.
 #! Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.
 
