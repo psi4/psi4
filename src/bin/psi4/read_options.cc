@@ -922,39 +922,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a 
         custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
     options.add_str("DFT_FUNCTIONAL", "");
-    /*- An ExternalPotential (built by Python or NULL/None) -*/
+    /*- A custom DFT functional object (built by Python or NULL/None) -*/
     options.add("DFT_CUSTOM_FUNCTIONAL", new PythonDataType());
     /*- The DFT Range-separation parameter -*/
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
     options.add_double("DFT_ALPHA", 0.0);
-    /*- The DFT grid specification, such as SG1. -*/
-    options.add_str("DFT_GRID_NAME","","SG1");
-    /*- Maximum order of spherical grids. -*/
-    options.add_int("DFT_ORDER_SPHERICAL", 29);
+    /*- Number of spherical points (A Lebedev number). -*/
+    options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
-    options.add_int("DFT_NUM_RADIAL", 99);
+    options.add_int("DFT_RADIAL_POINTS", 99);
     /*- Spherical Scheme. -*/
     options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme. -*/
     options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
     /*- Nuclear Scheme. -*/
     options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
-    /*- Pruning Scheme. -*/
-    options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
     /*- Factor for effective BS radius in radial grid. -*/
     options.add_double("DFT_BS_RADIUS_ALPHA",1.0);
-    /*- Spread alpha for logarithmic pruning. -*/
-    options.add_double("DFT_PRUNING_ALPHA",1.0);
     /*- DFT basis cutoff. -*/
     options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
-    /*- The maximum number of grid points per evaluation block. -*/
+    /*- The DFT grid specification, such as SG1.!expert -*/
+    options.add_str("DFT_GRID_NAME","","SG1");
+    /*- Pruning Scheme. !expert -*/
+    options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
+    /*- Spread alpha for logarithmic pruning. !expert -*/
+    options.add_double("DFT_PRUNING_ALPHA",1.0);
+    /*- The maximum number of grid points per evaluation block. !expert -*/
     options.add_int("DFT_BLOCK_MAX_POINTS",5000);
-    /*- The minimum number of grid points per evaluation block. -*/
+    /*- The minimum number of grid points per evaluation block. !expert -*/
     options.add_int("DFT_BLOCK_MIN_POINTS",1000);
-    /*- The maximum radius to terminate subdivision of an octree block [au]. -*/ 
+    /*- The maximum radius to terminate subdivision of an octree block [au]. !expert -*/ 
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
-    /*- The blocking scheme for DFT. -*/
+    /*- The blocking scheme for DFT. !expert -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
     /*- Testing of XC gradient !expert -*/
     options.add_bool("XC_GRADIENT", false);
@@ -1970,10 +1970,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str_i("PS_GRID_FILE","");
     /*- File path to read grids from -*/
     options.add_str_i("PS_GRID_PATH","");
-    /*- Maximum order of spherical grids -*/
-    options.add_int("PS_ORDER_SPHERICAL", 7);
-    /*- Number of radial points -*/
-    options.add_int("PS_NUM_RADIAL", 5);
+    /*- Number of spherical points (A Lebedev number). -*/
+    options.add_int("PS_SPHERICAL_POINTS", 302);
+    /*- Number of radial points. -*/
+    options.add_int("PS_RADIAL_POINTS", 99);
     /*- Spherical Scheme -*/
     options.add_str("PS_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme -*/
