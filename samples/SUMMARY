@@ -226,6 +226,9 @@ dfscf-bz2:    Benzene Dimer DF-HF/cc-pVDZ
 dft1:         DFT Functional Test
 
 
+dft1-alt:     DFT Functional Test
+
+
 dft2:         DFT Functional Test
 
 
