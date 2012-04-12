@@ -11,41 +11,9 @@ refESCF   = [ -303.20625701081264, -75.32040649154762,  #TEST
 refDipY   = [ 17.7759552887,  2.2770512884, 21.6845920985,  2.2770512884 ]  #TEST
 refQuadYY = [ 25.4523671288, -5.5116358496, 57.3954213176, -5.5116358496 ]  #TEST
  
-molecule dimer {
-0 1
-C
-C  1  CC
-C  2  CC  1  A1
-C  3  CC  2  A1   1  0
-H  1  CH  2  A1   3  A2
-H  4  CH  3  A1   2  A2
-C  1  CC  5  A1   2  A2
-C  4  CC  6  A1   3  -A2
-H  2  CH  3  A1   1  A2
-H  3  CH  2  A1   4  -A2
-H  7  CH  8  A1   1  -A2
-H  8  CH  7  A1   4  A2
---
-1 1
-X  1  CC  3  30   2  A2
-O  13 R   1  90   2  90
-H  14 OH  13 TDA  1  0
-H  14 OH  15 TDA  13 A1
-H  14 OH  15 TDA  13 -A1
-
-CC    = 1.421
-CH    = 1.088
-A1    = 120.0
-A2    = 180.0
-OH    = 1.05
-units angstrom
-}
-
 Rvals = [ 4.0, 5.0 ]
 
-set globals {
-    BASIS sto-3g
-    DF_BASIS_SCF cc-pVDZ-JKFIT
+set {
     DIIS True
     DIIS_MIN_VECS 5
     DIIS_MAX_VECS 9
@@ -54,15 +22,43 @@ set globals {
     D_CONVERGENCE 11
     GUESS SAD
     SCF_TYPE DF
-    DF_BASIS_SCF cc-pVDZ-JKFIT
     REFERENCE RHF
 }
-
 
 count = 0                                                                                            #TEST
 
 for R in Rvals:
-    dimer.R = R
+    molecule dimer {
+    0 1
+               C          0.710500000000    Bz    -1.230622098778
+               C          1.421000000000    Bz     0.000000000000
+               C          0.710500000000    Bz     1.230622098778
+               C         -0.710500000000    Bz     1.230622098778
+               H          1.254500000000    Bz    -2.172857738095
+               H         -1.254500000000    Bz     2.172857738095
+               C         -0.710500000000    Bz    -1.230622098778
+               C         -1.421000000000    Bz     0.000000000000
+               H          2.509000000000    Bz     0.000000000000
+               H          1.254500000000    Bz     2.172857738095
+               H         -1.254500000000    Bz    -2.172857738095
+               H         -2.509000000000    Bz     0.000000000000
+    --
+    1 1
+               O          0.000000000000    Oy     0.000000000000
+               H          0.494974746831    Hy    -0.857321409974
+               H          0.494974746831    Hy     0.857321409974
+               H         -0.989949493661    Hy     0.000000000000
+    units angstrom
+    }
+    #dimer.Bz = -4.794637665924 + R
+    #dimer.Oy = -0.794637665924 + R
+    #dimer.Hy = -0.444637665924 + R
+    dimer.Bz = 0.0
+    dimer.Oy = R
+    dimer.Hy = R + 0.35
+
+    set BASIS sto-3g
+    set DF_BASIS_SCF cc-pVDZ-JKFIT
 
     activate(dimer)
 
