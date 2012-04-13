@@ -13,6 +13,15 @@ Configuration Interaction
 .. codeauthor:: C. David Sherrill, Matthew L. Leininger
 .. sectionauthor:: C. David Sherrill
 
+:Modules:
+    detci
+
+:Keywords:
+    :ref:`apdx:detci`
+
+:PSI Variables:
+    :ref:`apdx:detci_psivar`
+
 Configuration interaction (CI) is one of the most general ways to
 improve upon Hartree--Fock theory by adding a description of the
 correlated motions of electrons.  Simply put, a CI wavefunction

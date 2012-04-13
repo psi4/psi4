@@ -96,7 +96,7 @@ for ssuper in superfunctional_list():
 
 
 def energy(name, **kwargs):
-    """Function to compute the single-point electronic energy.
+    r"""Function to compute the single-point electronic energy.
 
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
@@ -330,7 +330,7 @@ def energy(name, **kwargs):
 
 
 def gradient(name, **kwargs):
-    """Function complementary to optimize(). Carries out one gradient pass,
+    r"""Function complementary to optimize(). Carries out one gradient pass,
     deciding analytic or finite difference.
 
     """
@@ -576,7 +576,7 @@ def gradient(name, **kwargs):
 
 
 def property(name, **kwargs):
-    """Function to compute various properties.
+    r"""Function to compute various properties.
 
     :aliases: prop()
 
@@ -640,7 +640,7 @@ prop = property
 
 
 def optimize(name, **kwargs):
-    """Function to perform a geometry optimization.
+    r"""Function to perform a geometry optimization.
 
     :aliases: opt()
 
@@ -807,7 +807,7 @@ opt = optimize
 
 
 def parse_arbitrary_order(name):
-    """Function to parse name string into a method family like CI or MRCC and specific
+    r"""Function to parse name string into a method family like CI or MRCC and specific
     level information like 4 for CISDTQ or MRCCSDTQ.
 
     """
@@ -877,7 +877,7 @@ def parse_arbitrary_order(name):
 
 
 def frequency(name, **kwargs):
-    """Function to compute harmonic vibrational frequencies.
+    r"""Function to compute harmonic vibrational frequencies.
 
     :aliases: frequencies(), freq()
 
@@ -1089,14 +1089,14 @@ freq = frequency
 
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
-    """Function to compute force constants. Presently identical to frequency()."""
+    r"""Function to compute force constants. Presently identical to frequency()."""
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
 
 
 def parse_cotton_irreps(irrep):
-    """Function to return validated Cotton ordering index from string or integer
+    r"""Function to return validated Cotton ordering index from string or integer
     irreducible representation *irrep*.
 
     """

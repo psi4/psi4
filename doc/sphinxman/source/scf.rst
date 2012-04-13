@@ -4,10 +4,10 @@
 .. _`sec:`:
 .. index::
    single: SCF 
-   pair: SCF; Theory
+   pair: SCF; theory
 
 Self-Consistent Field Theory
-==========================================================================
+============================
 
 .. codeauthor:: Justin M. Turney, Robert M. Parrish, and Andrew C. Simmonett 
 .. sectionauthor:: Robert M. Parrish
@@ -563,12 +563,12 @@ treatment of the troublesome kinetic energy term via the implicit one-body
 Kohn-Sham orbitals.  KS-DFT borrows much of the machinery of Hartree-Fock, as is
 evident by looking at the energy expression,
 
-.. math:: E_{\mathrm{KS}}  
-    = \sum_{i} \langle i | \hat h | i \rangle 
-    + \frac 1 2 \sum_{i,j} [ii|jj] + E_{\mathrm{xc}} [\rho_\alpha, \rho_\beta]
+.. math:: 
 
-.. math:: = 
-    D_{\mu\nu}^{\mathrm{T}}\left(T_{\mu\nu} +
+    E_{\mathrm{KS}}  
+    &= \sum_{i} \langle i | \hat h | i \rangle 
+    + \frac 1 2 \sum_{i,j} [ii|jj] + E_{\mathrm{xc}} [\rho_\alpha, \rho_\beta] \\
+    &= D_{\mu\nu}^{\mathrm{T}}\left(T_{\mu\nu} +
     V_{\mu\nu}\right) + \frac{1}{2} D_{\mu\nu}^{\mathrm{T}}
     D_{\lambda\sigma}^{\mathrm{T}} (\mu\nu|\lambda\sigma) + E_{\mathrm{xc}} [\rho_\alpha, \rho_\beta]
 
@@ -708,7 +708,7 @@ the noninteracting quasiparticles, not the true electrons. Therefore, adding
 extremely poor results. The fraction of exact-exchange, denoted :math:`\alpha`,
 is often determined by adiabatic or heuristic arguments, and is typically around
 25%. The addition of exact exchange borrows another piece from an existing
-Hartree-Fock code, with the caviat that Hartree-Fock exchange is often much more
+Hartree-Fock code, with the caveat that Hartree-Fock exchange is often much more
 costly to obtain than the Coulomb matrix. The global hybrid ansatz has become
 exceedingly popular, with functionals such as the ubiquitous B3LYP often
 producing absurdly accurate results. 
