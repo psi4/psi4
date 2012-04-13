@@ -1,26 +1,33 @@
-#! DCFT calculation for the Ne+ ion (doublet ground state). This performs both
-#! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
-#! Four-virtual integrals are handled in the MO Basis.
+#! DCFT-06 calculation for the O2 molecule (triplet ground state). This performs 
+#! geometry optimization using two-step and simultaneous solution of the 
+#! response equations for the analytic gradient.
 
 memory 250 mb
 
 
-molecule ne {
-    1 2
-    Ne
+molecule O2 {
+0 3
+O
+O 1 R
+R = 1.200
 }
 
 set globals {
-    r_convergence 11
-    reference   uhf
-    ao_basis    none
-    algorithm   twostep
-    basis       3-21G
+    r_convergence            12
+    reference                uhf
+    algorithm                twostep
+    response_algorithm       twostep
+    basis                    cc-pcvdz
+    max_disp_g_convergence   1e-6
+    rms_force_g_convergence  1e-6
+    max_energy_g_convergence 1e-6
 }
 
-energy('dcft')
+optimize('dcft')
 
 
-set algorithm simultaneous
-energy('dcft')
+set response_algorithm simultaneous
+O2.R = 1.200
+
+optimize('dcft')
 
