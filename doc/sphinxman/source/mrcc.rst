@@ -1,8 +1,8 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:mrcc`:
 .. index:: MRCC
+.. _`sec:mrcc`:
 
 Interface to MRCC by M. K\ |a_acute|\ llay
 ==========================================
