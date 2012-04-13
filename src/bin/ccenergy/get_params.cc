@@ -91,7 +91,10 @@ void get_params(Options &options)
  if(params.ref == 2) /* No LOW cacheing yet for UHF references */
     params.cachetype = 0;
 
-  params.nthreads = options.get_int("NUM_THREADS");
+  params.nthreads = Process::environment.get_n_threads();
+  if (options["CC_NUM_THREADS"].has_changed()){
+     params.nthreads = options.get_int("CC_NUM_THREADS");
+  }
   params.diis = options.get_bool("DIIS");
   params.t2_coupled = options.get_bool("T2_COUPLED");
   params.prop = options.get_str("PROPERTY");
