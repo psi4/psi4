@@ -11,7 +11,7 @@ from text import *
 from procutil import *
 
 def run_plugin_ccsd_serial(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls so that
+    r"""Function encoding sequence of PSI module and plugin calls so that
     plugin_ccsd_serial can be called via :py:func:`driver.energy`.
 
     >>> energy('_ccsd(t)')
