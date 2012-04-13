@@ -2093,7 +2093,7 @@ superfunctionals = {
         'wb97x'     : build_wb97x_superfunctional,
         'm05'       : build_m05_superfunctional,
         'm05-2x'    : build_m05_2x_superfunctional,
-        'm06-2x'    : build_m06_2x_superfunctional,
+        #'m06-2x'    : build_m06_2x_superfunctional,
     }
 
 
