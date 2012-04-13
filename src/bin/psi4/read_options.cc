@@ -732,52 +732,67 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   if(name == "DCFT"|| options.read_globals()) {
       /*-MODULEDESCRIPTION Performs Density Cumulant Functional Theory 
-      computations. -*/
+      computations -*/
 
-      /*- How to cache quantities within the DPD library -*/
-      options.add_int("CACHELEVEL", 2);
-      /*- The shift applied to the denominator -*/
-      options.add_double("TIKHONOW_OMEGA", 0.0);
-      /*- Maximum number of lambda iterations per macro-iteration -*/
-      options.add_int("LAMBDA_MAXITER", 50);
-      /*- Maximum number of SCF iterations per cycle -*/
-      options.add_int("SCF_MAXITER", 50);
-      /*- Maximum number of iterations -*/
-      options.add_int("MAXITER", 40);
-      /*- Do compute the full two particle density matrix at the end of the 
-      computation, for properties? -*/
-      options.add_bool("TPDM", 0);
-      /*- Convergence criterion for the SCF density (RMS error). -*/
-      options.add_double("SCF_D_CONVERGENCE", 1e-8);
-      /*- Convergence criterion for residuals (RMS error) in density cumulant 
-      equations. -*/
+      /*- The algorithm to use for the density cumulant and orbital updates in the energy computation.
+      Two-step algorithm (default) is generally more efficient and shows better convergence than simultaneous -*/
+      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- The algorithm to use for the solution of the response equations for the analytic gradients and properties.
+      Two-step algorithm is generally more efficient than simultaneous and is used by default-*/
+      options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
+      /*- Convergence criterion for the RMS of the residual vector in the density cumulant updates as well as
+      the solution of the density cumulant and orbital response equations. In the orbital updates controls
+      the RMS of the SCF error vector -*/
       options.add_double("R_CONVERGENCE", 1e-10);
-      /*- Do relax the orbitals? -*/
-      options.add_bool("MO_RELAX", true);
-      /*- The amount (percentage) of damping to apply to the initial SCF 
-      procedures 0 will result in a full update, 100 will completely stall the 
-      update. A value around 20 (which corresponds to 20\% of the previous 
-      iteration's density being mixed into the current iteration)
-      can help in cases where oscillatory convergence is observed. -*/
-      options.add_double("DAMPING_PERCENTAGE",0.0);
-      /*- Don't include the tau terms? -*/
-      options.add_bool("IGNORE_TAU", false);
-      /*- Do compute the DCFT energy with the $\tau^{2}$ correction to 
-      $\tau$ ? -*/
-      options.add_bool("TAU_SQUARED", false);
-      /*- Minimum absolute value below which integrals are neglected. -*/
-      options.add_double("INTS_TOLERANCE", 1e-14);
-      /*- Value of RMS lambda and SCF errors below which DIIS starts -*/
+      /*- Maximum number of density cumulant update micro-iterations per
+      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
+      maximum number of density cumulant response micro-iterations per
+      macro-iteration for the solution of the response equations
+      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
+      options.add_int("LAMBDA_MAXITER", 50);
+      /*- Maximum number of orbital update micro-iterations per
+      macro-iteration (for ALOGRITHM = TWOSTEP). Same keyword controls the
+      maximum number of orbital response micro-iterations per
+      macro-iteration for the solution of the response equations
+      (for RESPONSE_ALOGRITHM = TWOSTEP) -*/
+      options.add_int("SCF_MAXITER", 50);
+      /*- Maximum number of macro-iterations for both energy and the solution of the response equations -*/
+      options.add_int("MAXITER", 40);
+      /*- Value of RMS of the density cumulant residual and SCF error vector below which DIIS extrapolation starts.
+      Same keyword controls the DIIS extrapolation for the solution of the response equations. -*/
       options.add_double("DIIS_START_CONVERGENCE", 1e-3);
       /*- Maximum number of error vectors stored for DIIS extrapolation -*/
       options.add_int("DIIS_MAX_VECS", 6);
       /*- Minimum number of error vectors stored for DIIS extrapolation -*/
       options.add_int("DIIS_MIN_VECS", 3);
-      /*- The algorithm to use for the $\left<VV||VV\right>$ terms. -*/
-      options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-      /*- The algorithm to use for lambda and orbital updates -*/
-      options.add_str("ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
-      /*- Do force the occupation to be that of the SCF starting point? -*/
+      /*- Controls whether to avoid the AO->MO transformation of the two-electron integrals for the four-virtual case
+      (<VV||VV>) by computing the corresponding terms in the AO basis. AO_BASIS = DISK algorithm reduces the memory
+      requirements. It is, however, less efficient due to the extra I/O, so the default algorithm is preferred. -*/
+      options.add_str("AO_BASIS", "NONE", "NONE DISK");
+      /*- The amount (percentage) of damping to apply to the orbital update procedure:
+      0 will result in a full update, 100 will completely stall the
+      update. A value around 20 (which corresponds to 20\% of the previous 
+      iteration's density being mixed into the current iteration)
+      can help in cases where oscillatory convergence is observed. -*/
+      options.add_double("DAMPING_PERCENTAGE",0.0);
+      /*- The shift applied to the denominator in the density cumulant update iterations -*/
+      options.add_double("TIKHONOW_OMEGA", 0.0);
+      /*- Controls whether to compute the DCFT energy with the Tau^2 correction to Tau -*/
+      options.add_bool("TAU_SQUARED", false);
+      /*- Controls whether to compute unrelaxed two-particle density matrix at the end of the energy computation -*/
+      options.add_bool("TPDM", false);
+      /*- Controls whether to relax the orbitals during the energy computation or not (for debug puproses only).
+      For practical applications only the default must be used -*/
+      options.add_bool("MO_RELAX", true);
+      /*- Controls whether to ignore terms containing non-idempotent contribution to OPDM or not (for debug puproses only).
+      For practical applications only the default must be used -*/
+      options.add_bool("IGNORE_TAU", false);
+      /*- Controls how to cache quantities within the DPD library -*/
+      options.add_int("CACHELEVEL", 2);
+      /*- Minimum absolute value below which integrals are neglected -*/
+      options.add_double("INTS_TOLERANCE", 1e-14);
+      /*- Controls whether to force the occupation to be that of the SCF guess.
+      For practical applications only the default must be used -*/
       options.add_bool("LOCK_OCC", true);
   }
   if (name == "MINTS"|| options.read_globals()) {
@@ -920,39 +935,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The DFT combined functional name, e.g. B3LYP, or GEN to use a python reference to a 
         custom functional specified by DFT_CUSTOM_FUNCTIONAL. -*/
     options.add_str("DFT_FUNCTIONAL", "");
-    /*- An ExternalPotential (built by Python or NULL/None) -*/
+    /*- A custom DFT functional object (built by Python or NULL/None) -*/
     options.add("DFT_CUSTOM_FUNCTIONAL", new PythonDataType());
     /*- The DFT Range-separation parameter -*/
     options.add_double("DFT_OMEGA", 0.0);
     /*- The DFT Exact-exchange parameter -*/
     options.add_double("DFT_ALPHA", 0.0);
-    /*- The DFT grid specification, such as SG1. -*/
-    options.add_str("DFT_GRID_NAME","","SG1");
-    /*- Maximum order of spherical grids. -*/
-    options.add_int("DFT_ORDER_SPHERICAL", 29);
+    /*- Number of spherical points (A Lebedev number). -*/
+    options.add_int("DFT_SPHERICAL_POINTS", 302);
     /*- Number of radial points. -*/
-    options.add_int("DFT_NUM_RADIAL", 99);
+    options.add_int("DFT_RADIAL_POINTS", 99);
     /*- Spherical Scheme. -*/
     options.add_str("DFT_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme. -*/
     options.add_str("DFT_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
     /*- Nuclear Scheme. -*/
     options.add_str("DFT_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
-    /*- Pruning Scheme. -*/
-    options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
     /*- Factor for effective BS radius in radial grid. -*/
     options.add_double("DFT_BS_RADIUS_ALPHA",1.0);
-    /*- Spread alpha for logarithmic pruning. -*/
-    options.add_double("DFT_PRUNING_ALPHA",1.0);
     /*- DFT basis cutoff. -*/
     options.add_double("DFT_BASIS_TOLERANCE", 1.0E-12);
-    /*- The maximum number of grid points per evaluation block. -*/
+    /*- The DFT grid specification, such as SG1.!expert -*/
+    options.add_str("DFT_GRID_NAME","","SG1");
+    /*- Pruning Scheme. !expert -*/
+    options.add_str("DFT_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
+    /*- Spread alpha for logarithmic pruning. !expert -*/
+    options.add_double("DFT_PRUNING_ALPHA",1.0);
+    /*- The maximum number of grid points per evaluation block. !expert -*/
     options.add_int("DFT_BLOCK_MAX_POINTS",5000);
-    /*- The minimum number of grid points per evaluation block. -*/
+    /*- The minimum number of grid points per evaluation block. !expert -*/
     options.add_int("DFT_BLOCK_MIN_POINTS",1000);
-    /*- The maximum radius to terminate subdivision of an octree block [au]. -*/ 
+    /*- The maximum radius to terminate subdivision of an octree block [au]. !expert -*/ 
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
-    /*- The blocking scheme for DFT. -*/
+    /*- The blocking scheme for DFT. !expert -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
     /*- Testing of XC gradient !expert -*/
     options.add_bool("XC_GRADIENT", false);
@@ -1577,18 +1592,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- Cacheing level for libdpd -*/
     options.add_int("CACHELEVEL",2);
-    /*- Gauge for optical rotation -*/
-    options.add_str("GAUGE","LENGTH");
+    /*- Specifies the choice of representation of the electric dipole operator.
+    Acceptable values are ``LENGTH`` for the usual length-gauge representation,
+    ``VELOCITY`` for the modified velocity-gauge representation in which the
+    static-limit optical rotation tensor is subtracted from the frequency-
+    dependent tensor, or ``BOTH``. Note that, for optical rotation calculations,
+    only the choices of ``VELOCITY`` or ``BOTH`` will yield origin-independent results. -*/
+    options.add_str("GAUGE","LENGTH", "LENGTH VELOCITY BOTH");
     /*- Maximum number of iterations to converge perturbed amplitude equations -*/
     options.add_int("MAXITER",50);
     /*- Convergence criterion for wavefunction (change) in perturbed CC equations. -*/
     options.add_double("R_CONVERGENCE",1e-7);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS",1);
-    /*- The response property desired.  Acceptable values are POLARIZABILITY
-    (default) for dipole-polarizabilities, ROTATION for specific rotations,
-    ROA for Raman Optical Activity, and ALL for all of the above.
-    -*/
+    /*- The response property desired.  Acceptable values are ``POLARIZABILITY``
+    (default) for dipole-polarizabilities, ``ROTATION`` for specific rotations,
+    ``ROA`` for Raman Optical Activity, and ``ALL`` for all of the above. -*/
     options.add_str("PROPERTY","POLARIZABILITY","POLARIZABILITY ROTATION ROA ALL");
     /*- -*/
     options.add_str("ABCD","NEW");
@@ -1620,7 +1639,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     radiation field in CCLR calculations.  If only one element is
     given, the units will be assumed to be atomic units.  If more
     than one element is given, then the units must be specified as the final
-    element of the array.  Acceptable units are HZ, NM, EV, and AU. -*/
+    element of the array.  Acceptable units are ``HZ``, ``NM``, ``EV``, and ``AU``. -*/
     options.add("OMEGA",new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
@@ -1964,10 +1983,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str_i("PS_GRID_FILE","");
     /*- File path to read grids from -*/
     options.add_str_i("PS_GRID_PATH","");
-    /*- Maximum order of spherical grids -*/
-    options.add_int("PS_ORDER_SPHERICAL", 7);
-    /*- Number of radial points -*/
-    options.add_int("PS_NUM_RADIAL", 5);
+    /*- Number of spherical points (A Lebedev number). -*/
+    options.add_int("PS_SPHERICAL_POINTS", 302);
+    /*- Number of radial points. -*/
+    options.add_int("PS_RADIAL_POINTS", 99);
     /*- Spherical Scheme -*/
     options.add_str("PS_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme -*/

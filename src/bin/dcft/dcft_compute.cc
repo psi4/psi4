@@ -16,6 +16,7 @@ namespace psi{ namespace dcft{
 double
 DCFTSolver::compute_energy()
 {
+
     bool scfDone    = false;
     bool lambdaDone = false;
     bool densityConverged = false;
@@ -74,14 +75,20 @@ DCFTSolver::compute_energy()
             // Start density cumulant (lambda) iterations
             while((!lambdaDone || !energyConverged) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                 std::string diisString;
+                // Build new Tau from current Lambda
+                build_tau();
                 if (options_.get_str("AO_BASIS") == "DISK") {
-                    // Builds new Tau and transforms it to SO basis
-                    build_tau();
+                    // Transform new Tau to the SO basis
+                    transform_tau();
                     // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
                     build_tensors();
-                    // Update Fock operator for the F intermediate
-                    update_fock();
                 }
+                else {
+                    // Compute GTau contribution for the Fock operator
+                    build_gtau();
+                }
+                // Update Fock operator for the F intermediate
+                update_fock();
                 // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
                 build_intermediates();
                 // Compute the residuals for density cumulant equations
@@ -143,6 +150,7 @@ DCFTSolver::compute_energy()
             }
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            transform_tau();
             // Update the orbitals
             int nSCFCycles = 0;
             // Reset the booleans that control the convergence
@@ -253,6 +261,7 @@ DCFTSolver::compute_energy()
             old_total_energy_ = new_total_energy_;
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            transform_tau();
             // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
             Fb_->copy(so_h_);
@@ -371,10 +380,7 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\t*DCFT Total Energy                               = %20.15f\n", new_total_energy_);
     if(options_.get_bool("TAU_SQUARED")) {
         fprintf(outfile, "\t*Tau Squared Correction to DCFT Energy           = %20.15f\n", energy_tau_squared_);
-    }
-    fprintf(outfile, "\t*DCFT Total Energy with Tau Squared Correction   = %20.15f\n", new_total_energy_ + energy_tau_squared_);
-
-    if(options_.get_bool("TAU_SQUARED")){
+        fprintf(outfile, "\t*DCFT Total Energy with Tau Squared Correction   = %20.15f\n", new_total_energy_ + energy_tau_squared_);
         new_total_energy_ += energy_tau_squared_;
     }
 
@@ -394,7 +400,14 @@ DCFTSolver::compute_energy()
     mulliken_charges();
     check_n_representability();
 
-    if(options_.get_str("DERTYPE") == "FIRST") compute_gradient();
+    if(options_.get_str("DERTYPE") == "FIRST") {
+        // Shut down the timers
+        tstop();
+        // Start the timers
+        tstart();
+        // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
+        compute_gradient();
+    }
 
     if(!options_.get_bool("MO_RELAX") && options_.get_bool("IGNORE_TAU")){
         psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -438,6 +451,7 @@ DCFTSolver::compute_energy()
 
     // Free up memory and close files
     finalize();
+
     return(new_total_energy_);
 }
 

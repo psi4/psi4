@@ -43,6 +43,8 @@ read_options(std::string name, Options &options)
      options.add_double("CC_SCALE_OS", 1.27);
      /*- Same-spin scaling factor for SCS-CCSD -*/
      options.add_double("CC_SCALE_SS",1.13);
+     /*- User packed storage for the (ac|bd) diagram? -*/
+     options.add_bool("VABCD_PACKED",true);
   }
   return true;
 }

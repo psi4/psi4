@@ -2,7 +2,7 @@
           PSI4: An Open-Source Ab Initio Electronic Structure Package
                               PSI 4.0.0-beta1 Driver
 
-               Git: Rev 1f447c53373bb8a898c14e5c563e2d5209f66279
+               Git: Rev 1cf931c477e54ec32038dc3cd0c6841725398c4d
 
     J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
     F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
@@ -96,7 +96,7 @@ def tf(rungbool, rungparam=0.0):
 def header(filep, label, caption):
     """Function to write reST table header."""
 
-    filep.write('\n.. _`table:dft_%s`:\n' % (label))
+    #filep.write('\n.. _`table:dft_%s`:\n' % (label))
     filep.write('\n.. table:: %s\n\n' % (caption))
     filep.write('   +-%20s-+-%80s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%10s-+-%20s-+-%60s-+\n' % 
         (20 * '-', 80 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-', 10 * '-',
@@ -144,6 +144,12 @@ header(fhybrid, 'hybrid', 'Hybrid functionals available in |PSIfour|')
 fdisp= open('autodoc_dft_disp.rst', 'w')
 header(fdisp, 'disp', 'Dispersion-Corrected functionals available in |PSIfour|')
 
+fenergy = open('autodoc_dft_energy.rst', 'w')
+fenergy.write('\n.. _`table:energy_dft`:\n\n')
+fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
+fenergy.write('| %-27s | %-100s |\n' % ('name', 'calls method'))
+fenergy.write('+=%27s=+=%100s=+\n' % (27 * '=', 100 * '='))
+
 for fctl in sorted(funcdict.iterkeys()):
 
     body(fall, funcdict, fctl)
@@ -163,6 +169,16 @@ for fctl in sorted(funcdict.iterkeys()):
     if funcdict[fctl]['dispersion']:
         body(fdisp, funcdict, fctl)
 
+    if funcdict[fctl]['dispersion']:
+        fenergy.write('| %-27s | %-100s |\n' % 
+            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description'] + ' w/ ' + funcdict[fctl]['dispersion_description']))
+    else:
+        fenergy.write('| %-27s | %-100s |\n' % 
+            (funcdict[fctl]['name'].lower(), funcdict[fctl]['description']))
+
+    fenergy.write('+-%27s-+-%100s-+\n' % (27 * '-', 100 * '-'))
+
+
 fall.write('\n')
 fall.close()
 fgga.write('\n')
@@ -175,6 +191,9 @@ fhybrid.write('\n')
 fhybrid.close()
 fdisp.write('\n')
 fdisp.close()
+
+fenergy.write('\n')
+fenergy.close()
 
 --------------------------------------------------------------------------
    => SVWN Composite Functional <= 
@@ -647,7 +666,7 @@ fdisp.close()
          pi_m12 =   5.6418958354775628E-01
          two_13 =   1.2599210498948732E+00
 
-   => BLYP-D2 Composite Functional <= 
+   => BLYP-D Composite Functional <= 
 
     BLYP GGA Exchange-Correlation Functional
 
@@ -854,7 +873,7 @@ fdisp.close()
         PW91_a5 =   1.6455307846020562E+00
         PW91_a6 =   1.0831086252292235E-06
 
-   => B3LYP5-D2 Composite Functional <= 
+   => B3LYP5-D Composite Functional <= 
 
     B3LYP5 Hybrid-GGA Exchange-Correlation Functional
 
@@ -1444,6 +1463,8 @@ fdisp.close()
         Meta_a7 =   9.8202900000000000E+00
         Meta_a8 =  -4.8235099999999997E+00
         Meta_a9 =  -4.8175739999999998E+01
+         PBE_kp =   8.0400042382547532E-01
+         PBE_mu =   2.1951024058061153E-01
 
    => M05_C Functional <=
 
@@ -1458,16 +1479,16 @@ fdisp.close()
     > Parameters <
 
       B97_os_a0 =   1.0000000000000000E+00
-      B97_os_a1 =   3.7734399999999999E+00
-      B97_os_a2 =  -2.6044630000000002E+01
-      B97_os_a3 =   3.0699130000000000E+01
-      B97_os_a4 =  -9.2269500000000004E+00
-    B97_os_gamma =   3.0999999999999999E-03
+      B97_os_a1 =   3.7856900000000002E+00
+      B97_os_a2 =  -1.4152609999999999E+01
+      B97_os_a3 =  -7.4658899999999999E+00
+      B97_os_a4 =   1.7944910000000000E+01
+    B97_os_gamma =   6.1999999999999998E-03
       B97_ss_a0 =   1.0000000000000000E+00
-      B97_ss_a1 =   3.7856900000000002E+00
-      B97_ss_a2 =  -1.4152609999999999E+01
-      B97_ss_a3 =  -7.4658899999999999E+00
-      B97_ss_a4 =   1.7944910000000000E+01
+      B97_ss_a1 =   3.7734399999999999E+00
+      B97_ss_a2 =  -2.6044630000000002E+01
+      B97_ss_a3 =   3.0699130000000000E+01
+      B97_ss_a4 =  -9.2269500000000004E+00
     B97_ss_gamma =   5.9999999999999998E-02
 
    => B88_X Composite Functional <= 
@@ -3291,7 +3312,7 @@ fdisp.close()
       B97_ss_a4 =   6.2479800000000001E+00
     B97_ss_gamma =   2.0000000000000001E-01
 
-   => B3LYP-D2 Composite Functional <= 
+   => B3LYP-D Composite Functional <= 
 
     B3LYP Hybrid-GGA Exchange-Correlation Functional
 
@@ -3889,7 +3910,7 @@ fdisp.close()
          pi_m12 =   5.6418958354775628E-01
          two_13 =   1.2599210498948732E+00
 
-   => PBE-D2 Composite Functional <= 
+   => PBE-D Composite Functional <= 
 
     PBE GGA Exchange-Correlation Functional
 
