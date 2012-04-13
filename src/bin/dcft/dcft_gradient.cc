@@ -14,10 +14,10 @@ DCFTSolver::compute_gradient()
     bool responseDone = false;
 
     // Print out the header
-    fprintf(outfile,"\n\n\t\t **********************************************\n");
-    fprintf(outfile,    "\t\t *       DCFT-06 Analytic Gradients Code      *\n");
-    fprintf(outfile,    "\t\t *     by A.Yu. Sokolov and A.C. Simmonett    *\n");
-    fprintf(outfile,    "\t\t **********************************************\n\n");
+    fprintf(outfile,"\n\n\t  **********************************************\n");
+    fprintf(outfile,    "\t  *       DCFT-06 Analytic Gradients Code      *\n");
+    fprintf(outfile,    "\t  *     by A.Yu. Sokolov and A.C. Simmonett    *\n");
+    fprintf(outfile,    "\t  **********************************************\n\n");
 
     // Transform the one and two-electron integrals to the MO basis and write them into the DPD file
     gradient_init();
@@ -68,6 +68,7 @@ DCFTSolver::compute_gradient()
         fprintf(outfile, "\t*=================================================*\n");
     }
     else {
+        // Start the simultaneous algorithm for the solution of the response equations
         // Set up DIIS extrapolation
         dpdbuf4 Zaa, Zab, Zbb, Raa, Rab, Rbb;
         dpdfile2 zaa, zbb, raa, rbb;
