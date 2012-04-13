@@ -10,6 +10,7 @@
 #include <libpsio/psio.h>
 #include <libchkpt/chkpt.h>
 #include <liboptions/liboptions.h>
+#include "psi4-dec.h"
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -50,7 +51,10 @@ namespace psi { namespace cctriples {
         throw PsiException("Invalid value of input keyword WFN",__FILE__,__LINE__);
       }
 
-  params.nthreads = options.get_int("NUM_THREADS");
+  params.nthreads = Process::environment.get_n_threads();
+  if (options["CC_NUM_THREADS"].has_changed()){
+     params.nthreads = options.get_int("CC_NUM_THREADS");
+  }
 
   params.semicanonical = 0;
   junk = options.get_str("REFERENCE");
