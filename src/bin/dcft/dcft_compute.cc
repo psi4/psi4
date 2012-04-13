@@ -380,10 +380,7 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\t*DCFT Total Energy                               = %20.15f\n", new_total_energy_);
     if(options_.get_bool("TAU_SQUARED")) {
         fprintf(outfile, "\t*Tau Squared Correction to DCFT Energy           = %20.15f\n", energy_tau_squared_);
-    }
-    fprintf(outfile, "\t*DCFT Total Energy with Tau Squared Correction   = %20.15f\n", new_total_energy_ + energy_tau_squared_);
-
-    if(options_.get_bool("TAU_SQUARED")){
+        fprintf(outfile, "\t*DCFT Total Energy with Tau Squared Correction   = %20.15f\n", new_total_energy_ + energy_tau_squared_);
         new_total_energy_ += energy_tau_squared_;
     }
 
@@ -408,6 +405,7 @@ DCFTSolver::compute_energy()
         tstop();
         // Start the timers
         tstart();
+        // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
         compute_gradient();
     }
 
