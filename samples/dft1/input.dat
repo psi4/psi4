@@ -16,8 +16,8 @@ basis sto-3g
 
 guess core
 scf_type direct
-dft_order_spherical 29 
-dft_num_radial 100
+dft_spherical_points 302
+dft_radial_points 99
 reference rks
 }
 
