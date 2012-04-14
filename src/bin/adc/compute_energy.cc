@@ -42,7 +42,7 @@ ADC::compute_energy()
     bool first;
     int iter = 0;
     double denom;
-    std::string state_top = "ADC state ";
+    std::string state_top = "ADC ROOT ";
     char **irrep_      = Process::environment.molecule()->irrep_labels();
     
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
@@ -209,9 +209,17 @@ ADC::compute_energy()
 */                                                
                         fflush(outfile);
                         
-                        oss << state_top << root << irrep_[irrep];
-                        std::string state = oss.str();
-                        Process::environment.globals[state] = omega[root];
+                        /*- Process::environment.globals["ADC ROOT n s EXCITATION ENERGY"] -*/
+                        oss << state_top << root + 1 << " " << irrep_[irrep] << " EXCITATION ENERGY";
+                        Process::environment.globals[oss.str()] = omega[root];
+                        /*- Process::environment.globals["ADC ROOT n s CORRELATION ENERGY"] -*/
+                        oss.str(std::string());
+                        oss << state_top << root + 1 << " " << irrep_[irrep] << " CORRELATION ENERGY";
+                        Process::environment.globals[oss.str()] = omega[root] + corr_energy;
+                        /*- Process::environment.globals["ADC ROOT n s TOTAL ENERGY"] -*/
+                        oss.str(std::string());
+                        oss << state_top << root + 1 << " " << irrep_[irrep] << " TOTAL ENERGY";
+                        Process::environment.globals[oss.str()] = omega[root] + energy_ + corr_energy;
                 
                         dpd_file2_close(&V);
                         
@@ -237,8 +245,11 @@ ADC::compute_energy()
     fprintf(outfile, "\t------------------------------------------------------------------------------\n\n");
 */    
     energy_ += corr_energy;
+    Process::environment.globals["MP2 CORRELATION ENERGY"] = corr_energy;
+    Process::environment.globals["MP2 TOTAL ENERGY"] = energy_;
+    Process::environment.globals["CURRENT CORRELATION ENERGY"] = corr_energy;
     Process::environment.globals["CURRENT ENERGY"] = energy_;
-    fprintf(outfile, "->\tCorreponsing GS total energy (a.u.) = %20.14f\n", energy_);
+    fprintf(outfile, "->\tCorresponding GS total energy (a.u.) = %20.14f\n", energy_);
 
     release_mem();
     
