@@ -185,6 +185,11 @@ def run_mp2(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf','scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
+
     PsiMod.transqt2()
     PsiMod.ccsort()
     returnvalue = PsiMod.mp2()
@@ -239,6 +244,11 @@ def run_ccenergy(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
+        # If the scf type is DF, then the AO integrals were never generated 
+        if PsiMod.get_local_option('scf','scf_type') == 'DF': 
+            mints = PsiMod.MintsHelper() 
+            mints.integrals() 
+
     PsiMod.transqt2()
     PsiMod.ccsort()
     returnvalue = PsiMod.ccenergy()
@@ -287,6 +297,11 @@ def run_bccd(name, **kwargs):
     # converge
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
+
+        # If the scf type is DF, then the AO integrals were never generated 
+        if PsiMod.get_local_option('scf','scf_type') == 'DF': 
+            mints = PsiMod.MintsHelper() 
+            mints.integrals() 
 
     PsiMod.set_global_option('DELETE_TEI', 'false')
 
@@ -583,6 +598,11 @@ def run_detci(name, **kwargs):
     # Bypass routine scf if user did something special to get it to converge
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
+
+        # If the scf type is DF, then the AO integrals were never generated 
+        if PsiMod.get_local_option('scf','scf_type') == 'DF': 
+            mints = PsiMod.MintsHelper() 
+            mints.integrals() 
 
     PsiMod.transqt2()
     returnvalue = PsiMod.detci()
