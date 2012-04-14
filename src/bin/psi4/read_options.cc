@@ -1453,8 +1453,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
     options.add_int("MEMORY", 1000);
-    /*- The Reference -*/
-    options.add_str("REFERENCE", "");
     /*- The convergence criterion for pole searching step. -*/
     options.add_double("NEWTON_CONVERGENCE", 1e-7);
     /*- Maximum iteration number in pole searching -*/
@@ -1524,7 +1522,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NEW_TRIPLES", true);
     /*- Number of excited states per irreducible representation for EOM-CC
     and CC-LR calculations. Irreps denote the final state symmetry, not the
-    symmetry of the transtion. -*/
+    symmetry of the transition. -*/
     options.add("ROOTS_PER_IRREP", new ArrayType());
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 80);
