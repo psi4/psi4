@@ -42,8 +42,59 @@ def run_scf(name, **kwargs):
     a self-consistent-field theory (HF & DFT) calculation.
 
     """
+    lowername = name.lower()
 
-    return scf_helper(name, **kwargs)
+    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+    user_scftype = PsiMod.get_local_option('SCF', 'SCF_TYPE')
+    b_user_scftype = PsiMod.has_option_changed('SCF_TYPE')
+
+    if lowername == 'df-scf':
+        PsiMod.set_global_option('SCF_TYPE', 'DF')
+    elif lowername == 'hf':
+        if PsiMod.get_local_option('SCF', 'REFERENCE') == 'RKS':
+            PsiMod.set_global_option('REFERENCE', 'RHF')
+        elif PsiMod.get_local_option('SCF', 'REFERENCE') == 'UKS':
+            PsiMod.set_global_option('REFERENCE', 'UHF')
+        else:
+            pass
+    elif lowername == 'rhf':
+        PsiMod.set_global_option('REFERENCE', 'RHF')
+    elif lowername == 'uhf':
+        PsiMod.set_global_option('REFERENCE', 'UHF')
+    elif lowername == 'rohf':
+        PsiMod.set_global_option('REFERENCE', 'ROHF')
+    elif lowername == 'rscf':
+        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            PsiMod.set_global_option('REFERENCE', 'RKS')
+        else:
+            PsiMod.set_global_option('REFERENCE', 'RHF')
+    elif lowername == 'uscf':
+        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            PsiMod.set_global_option('REFERENCE', 'UKS')
+        else:
+            PsiMod.set_global_option('REFERENCE', 'UHF')
+    elif lowername == 'roscf':
+        if (len(PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')) > 0) or PsiMod.get_local_option('SCF', 'DFT_CUSTOM_FUNCTIONAL') is not None:
+            raise ValidationError('ROHF reference for DFT is not available.')
+        else:
+            PsiMod.set_global_option('REFERENCE', 'ROHF')
+
+    returnvalue = scf_helper(name, **kwargs)
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
+    if not b_user_fctl:
+        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    PsiMod.set_global_option('REFERENCE', user_ref)
+    if not b_user_ref:
+        PsiMod.revoke_global_option_changed('REFERENCE')
+    PsiMod.set_global_option('SCF_TYPE', user_scftype)
+    if not b_user_scftype:
+        PsiMod.revoke_global_option_changed('SCF_TYPE')
+
+    return returnvalue
 
 
 def run_scf_gradient(name, **kwargs):
@@ -186,7 +237,7 @@ def run_mp2(name, **kwargs):
         run_scf('scf', **kwargs)
 
         # If the scf type is DF, then the AO integrals were never generated
-        if PsiMod.get_local_option('scf','scf_type') == 'DF':
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
             mints = PsiMod.MintsHelper()
             mints.integrals()
 
@@ -244,10 +295,10 @@ def run_ccenergy(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
-        # If the scf type is DF, then the AO integrals were never generated 
-        if PsiMod.get_local_option('scf','scf_type') == 'DF': 
-            mints = PsiMod.MintsHelper() 
-            mints.integrals() 
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
 
     PsiMod.transqt2()
     PsiMod.ccsort()
@@ -298,10 +349,10 @@ def run_bccd(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
-        # If the scf type is DF, then the AO integrals were never generated 
-        if PsiMod.get_local_option('scf','scf_type') == 'DF': 
-            mints = PsiMod.MintsHelper() 
-            mints.integrals() 
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
 
     PsiMod.set_global_option('DELETE_TEI', 'false')
 
@@ -525,8 +576,11 @@ def run_dft(name, **kwargs):
     """
     lowername = name.lower()
 
-    user_fctl = PsiMod.get_global_option('DFT_FUNCTIONAL')
-    user_ref = PsiMod.get_global_option('REFERENCE')
+    user_fctl = PsiMod.get_local_option('SCF', 'DFT_FUNCTIONAL')
+    b_user_fctl = PsiMod.has_option_changed('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_local_option('SCF', 'REFERENCE')
+    b_user_ref = PsiMod.has_option_changed('REFERENCE')
+
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', lowername)
 
@@ -542,9 +596,11 @@ def run_dft(name, **kwargs):
     returnvalue = scf_helper(name, **kwargs)
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
-    PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    if not b_user_fctl:
+        PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
     PsiMod.set_global_option('REFERENCE', user_ref)
-    PsiMod.revoke_global_option_changed('REFERENCE')
+    if not b_user_ref:
+        PsiMod.revoke_global_option_changed('REFERENCE')
 
     return returnvalue
 
@@ -599,10 +655,10 @@ def run_detci(name, **kwargs):
     if not (('bypass_scf' in kwargs) and input.yes.match(str(kwargs['bypass_scf']))):
         run_scf('scf', **kwargs)
 
-        # If the scf type is DF, then the AO integrals were never generated 
-        if PsiMod.get_local_option('scf','scf_type') == 'DF': 
-            mints = PsiMod.MintsHelper() 
-            mints.integrals() 
+        # If the scf type is DF, then the AO integrals were never generated
+        if PsiMod.get_local_option('scf', 'scf_type') == 'DF':
+            mints = PsiMod.MintsHelper()
+            mints.integrals()
 
     PsiMod.transqt2()
     returnvalue = PsiMod.detci()
