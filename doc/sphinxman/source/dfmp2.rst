@@ -12,6 +12,8 @@ Density-Fitted Second-Order M\ |o_slash|\ ller-Plesset Perturbation Theory
 .. codeauthor:: Robert M. Parrish
 .. sectionauthor:: Robert M. Parrish
 
+*Module:* :ref:`Keywords <apdx:dfmp2>`, :ref:`PSI Variables <apdx:dfmp2_psivar>`, :source:`DFMP2 <src/bin/dfmp2>`
+
 Introduction
 ------------
 

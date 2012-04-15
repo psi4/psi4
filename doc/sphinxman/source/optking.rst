@@ -11,7 +11,9 @@ Geometry Optimization
 =====================
 
 .. codeauthor:: Rollin A. King
-.. sectionauthor:: Rollin A. King, Lori A. Burns
+.. sectionauthor:: Rollin A. King and Lori A. Burns
+
+*Module:* :ref:`Keywords <apdx:optking>`, :ref:`PSI Variables <apdx:optking_psivar>`, :source:`OPTKING <src/bin/optking>`
 
 |PSIfour| carries out molecular optimizations using a module called
 optking.  The optking program takes as input nuclear gradients and,

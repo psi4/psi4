@@ -10,17 +10,10 @@
 Configuration Interaction
 =========================
 
-.. codeauthor:: C. David Sherrill, Matthew L. Leininger
+.. codeauthor:: C. David Sherrill and Matthew L. Leininger
 .. sectionauthor:: C. David Sherrill
 
-:Modules:
-    detci
-
-:Keywords:
-    :ref:`apdx:detci`
-
-:PSI Variables:
-    :ref:`apdx:detci_psivar`
+*Module:* :ref:`Keywords <apdx:detci>`, :ref:`PSI Variables <apdx:detci_psivar>`, :source:`DETCI <src/bin/detci>`
 
 Configuration interaction (CI) is one of the most general ways to
 improve upon Hartree--Fock theory by adding a description of the
