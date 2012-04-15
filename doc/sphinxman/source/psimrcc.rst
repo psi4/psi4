@@ -4,11 +4,15 @@
      single: multireference
      single: Mk-MRCC
 
+.. _`sec:psimrcc`:
+
 PSIMRCC Implementation of Mk-MRCC Theory
 ========================================
 
-.. codeauthor:: Francesco A. Evangelista, Andrew C. Simmonett 
+.. codeauthor:: Francesco A. Evangelista and Andrew C. Simmonett 
 .. sectionauthor:: Alexander E. Vaughn
+
+*Module:* :ref:`Keywords <apdx:psimrcc>`, :ref:`PSI Variables <apdx:psimrcc_psivar>`, :source:`PSIMRCC <src/bin/psimrcc>`
 
 State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in |PSIfour| implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC). This method is implemented and shown to be a powerful tool in [Evangelista:2006:xxxx]_ and [Evangelista:2008:124104]_. Mk-MRCC is based on the Jeziorski-Monkhorst ansatz [Jeziorski:1981:1668]_ for the wavefunction, :math:`\Psi`
 

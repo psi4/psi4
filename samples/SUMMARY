@@ -286,6 +286,9 @@ mcscf2:       TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-ma
 mcscf3:       RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.
 
 
+min_input:    This checks that all energy methods can run with a minimal input and set symmetry.
+
+
 mints1:       Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.
 
 
