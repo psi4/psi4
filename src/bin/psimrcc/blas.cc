@@ -59,7 +59,7 @@ void CCBLAS::allocate_work()
       if(work[n]!=NULL)
         release1(work[n]);
 
-  for(int n=0;n<options_.get_int("NUM_THREADS");n++)
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
     work.push_back(NULL);
   // Compute the temporary work space size
   CCIndex* oo_pair = get_index("[oo]");
@@ -76,7 +76,7 @@ void CCBLAS::allocate_work()
     work_size += dimension[2] * dimension[1];
   }
   // Allocate the temporary work space
-  for(int n=0;n<options_.get_int("NUM_THREADS");n++){
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++){
     allocate1(double,work[n],work_size);
     zero_arr(work[n],work_size);
   }
@@ -91,7 +91,7 @@ void CCBLAS::allocate_buffer()
       if(buffer[n]!=NULL)
         release1(buffer[n]);
 
-  for(int n=0;n<options_.get_int("NUM_THREADS");n++)
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++)
     buffer.push_back(NULL);
   // Compute the temporary buffer space size, 101% of the actual strip size
   buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
@@ -100,7 +100,7 @@ void CCBLAS::allocate_buffer()
   // The value used here , 0.05 is also used in
 
   // Allocate the temporary buffer space
-  for(int n=0;n<options_.get_int("NUM_THREADS");n++){
+  for(int n=0;n<options_.get_int("CC_NUM_THREADS");n++){
     allocate1(double,buffer[n],buffer_size);
     zero_arr(buffer[n],buffer_size);
   }

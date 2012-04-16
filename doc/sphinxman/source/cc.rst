@@ -1,17 +1,33 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:cc`:
-.. index:: CC, coupled cluster
-
 .. index::
+   single: CC, coupled cluster
    pair: CC; theory
+
+.. _`sec:cc`:
 
 Coupled Cluster Methods
 =======================
 
 .. codeauthor:: T. Daniel Crawford
 .. sectionauthor:: T. Daniel Crawford
+
+*Module:* :ref:`Keywords <apdx:ccenergy>`, :ref:`PSI Variables <apdx:ccenergy_psivar>`, :source:`CCENERGY <src/bin/ccenergy>`
+
+*Module:* :ref:`Keywords <apdx:cceom>`, :ref:`PSI Variables <apdx:cceom_psivar>`, :source:`CCEOM <src/bin/cceom>`
+
+*Module:* :ref:`Keywords <apdx:ccresponse>`, :ref:`PSI Variables <apdx:ccresponse_psivar>`, :source:`CCRESPONSE <src/bin/ccresponse>`
+
+*Module:* :ref:`Keywords <apdx:cctriples>`, :ref:`PSI Variables <apdx:cctriples_psivar>`, :source:`CCTRIPLES <src/bin/cctriples>`
+
+*Module:* :ref:`Keywords <apdx:ccdensity>`, :source:`CCDENSITY <src/bin/ccdensity>`
+
+*Module:* :ref:`Keywords <apdx:cchbar>`, :source:`CCHBAR <src/bin/cchbar>`
+
+*Module:* :ref:`Keywords <apdx:cclambda>`, :source:`CCLAMBDA <src/bin/cclambda>`
+
+*Module:* :ref:`Keywords <apdx:ccsort>`, :source:`CCSORT <src/bin/ccsort>`
 
 The coupled cluster approach is one of the most accurate and reliable quantum
 chemical techniques for including the effects of electron correlation.
