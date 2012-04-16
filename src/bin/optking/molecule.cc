@@ -21,6 +21,10 @@
 #include "EFP.h"
 #endif
 
+#if defined(OPTKING_PACKAGE_PSI)
+#include <libmints/molecule.h>
+#endif
+
 namespace opt {
 
 using namespace std;
@@ -640,6 +644,41 @@ double ** MOLECULE::compute_constraints(void) {
   }
   fflush(outfile);
   return C;
+}
+
+// Test a linear combination of internal coordinate displacements to see if it
+// breaks the molecular point group.
+bool MOLECULE::intco_combo_is_symmetric(double *intco_combo, int dim) {
+  int natom = g_natom();
+  double norm = array_norm(intco_combo, dim);
+
+  double **B = compute_B();
+  double **orig_geom = g_geom_2D();
+
+  double **displaced_geom = matrix_return_copy(orig_geom, natom, 3);
+  for (int xyz=0; xyz<3; ++xyz)
+    for (int atom=0; atom<natom; ++atom)
+      for (int intco=0; intco<dim; ++intco)
+        displaced_geom[atom][xyz] += 0.1/norm * intco_combo[intco] * B[intco][3*atom+xyz];
+
+  //fprintf(outfile,"Displaced geometry\n");
+  //print_matrix(outfile, displaced_geom, natom, 3);
+
+  bool symm_rfo_step = false;
+#if defined(OPTKING_PACKAGE_PSI)
+  psi::Process::environment.molecule()->set_geometry(displaced_geom);
+  symm_rfo_step = psi::Process::environment.molecule()->valid_atom_map();
+  psi::Process::environment.molecule()->set_geometry(orig_geom);
+#elif defined(OPTKING_PACKAGE_QCHEM)
+  // TODO QCHEM
+  symm_rfo_step = true;
+#endif
+  free_matrix(displaced_geom);
+
+  if (symm_rfo_step)
+    return true;
+  else
+    return false;
 }
 
 // Fetches the string definition of an internal coordinate from global index

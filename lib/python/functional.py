@@ -1949,7 +1949,7 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
 
 # Meta Exchange type is insane mess of w power series expansion 
     X.set_parameter('Meta_a0' , 1.0)
-    X.set_parameter('Meta_a1' ,-0.056833)
+    X.set_parameter('Meta_a1' ,-0.56833)
     X.set_parameter('Meta_a2' ,-1.30057)
     X.set_parameter('Meta_a3' , 5.50070)
     X.set_parameter('Meta_a4' , 9.06402)
