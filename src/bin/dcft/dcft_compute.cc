@@ -146,6 +146,7 @@ DCFTSolver::compute_energy()
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                         nLambdaIterations, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
                         new_total_energy_, diisString.c_str());
+                if (fabs(lambda_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
                 fflush(outfile);
             }
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
@@ -217,6 +218,7 @@ DCFTSolver::compute_energy()
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                     nSCFCycles, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
                     new_total_energy_, diisString.c_str());
+                if (fabs(scf_convergence_) > 100.0) throw PSIEXCEPTION("DCFT orbital updates diverged");
                 fflush(outfile);
             }
             // Write orbitals to the checkpoint file

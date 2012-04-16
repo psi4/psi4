@@ -17,6 +17,7 @@ A complete list of standard keywords is provided in Appendix
 
    notes_c
    scf
+   dft
    dfmp2
    adc
    sapt

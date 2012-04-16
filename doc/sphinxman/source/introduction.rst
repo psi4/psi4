@@ -165,6 +165,18 @@ installation instructions at the |PSIfour| website above or to the file
 :source:`INSTALL` distributed with the package. Additional compilation
 hints may be found at `Psi Compiling <http://sirius.chem.vt.edu/trac/wiki/CompilingPsi>`_.
 
+To avoid dependency problems, a script is provided at
+:source:`lib/scripts/psi4depend-v2.sh` that will download, configure, and
+install all dependencies that the Psi4 developers currently recommend.
+This script simply needs one to edit the top lines to tell it where to
+install all the files to and for the user to put this into their path. The
+script will print out the lines that you need to add to your
+:envvar:`path` and :envvar:`LD_LIBRARY_PATH`. This script will build the
+following: autoconf-2.68, automake-1.11, gcc-4.1.2, mpich2-1.2.1,
+Python-2.6.6, Boost-1.48.0 (as well as some dependencies). After running
+the script, proceed with building |PSIfour| as described in
+:source:`INSTALL`.
+
 .. index:: architectures
 .. index:: compilers
 

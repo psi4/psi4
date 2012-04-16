@@ -156,8 +156,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     less core memory. -*/
     options.add_int("ICORE", 1);
 
-    /*- Number of threads -*/
-    options.add_int("NUM_THREADS", 1);
+    /*- Number of threads for DETCI. -*/
+    options.add_int("CI_NUM_THREADS", 1);
 
     /*- Do print the sigma overlap matrix?  Not generally useful.  !expert -*/
     options.add_bool("SIGMA_OVERLAP", false);
@@ -1328,7 +1328,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
     /*- Number of threads -*/
-    options.add_int("NUM_THREADS",1);
+    options.add_int("CC_NUM_THREADS",1);
     /*- Convert ROHF MOs to semicanonical MOs -*/
     options.add_bool("SEMICANONICAL", true);
   }
@@ -1453,8 +1453,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEVEL", 2);
     /*- The amount of memory available (in Mb) -*/
     options.add_int("MEMORY", 1000);
-    /*- The Reference -*/
-    options.add_str("REFERENCE", "");
     /*- The convergence criterion for pole searching step. -*/
     options.add_double("NEWTON_CONVERGENCE", 1e-7);
     /*- Maximum iteration number in pole searching -*/
@@ -1499,7 +1497,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("CACHETYPE", "LRU", "LOW LRU");
     /*- Number of threads -*/
-    options.add_int("NUM_THREADS", 1);
+    options.add_int("CC_NUM_THREADS", 1);
     /*- -*/
     options.add_str("ABCD", "NEW", "NEW OLD");
     /*- Do ? -*/
@@ -1524,7 +1522,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NEW_TRIPLES", true);
     /*- Number of excited states per irreducible representation for EOM-CC
     and CC-LR calculations. Irreps denote the final state symmetry, not the
-    symmetry of the transtion. -*/
+    symmetry of the transition. -*/
     options.add("ROOTS_PER_IRREP", new ArrayType());
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER", 80);
@@ -1764,7 +1762,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     scheme in which the oldest item in the cache will be the first one deleted. -*/
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
     /*- Number of threads -*/
-    options.add_int("NUM_THREADS",1);
+    options.add_int("CC_NUM_THREADS",1);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
     /*- Do ? -*/
@@ -2096,7 +2094,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
     options.add_int("DIIS_MAX_VECS",7);
     /*- Number of threads -*/
-    options.add_int("NUM_THREADS",1);
+    options.add_int("CC_NUM_THREADS",1);
     /*- Which root of the effective hamiltonian is the target state? -*/
     options.add_int("FOLLOW_ROOT",1);
     /*- Convergence criterion for energy. -*/

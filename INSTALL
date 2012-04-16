@@ -33,12 +33,11 @@ I. Compilation Prerequisites:
       ** autoconf (version 2.52 or higher)
       ** aclocal
       ** fileutils (esp. install)
-   * For documentation:
+   * For documentation: (available off http://www.psicode.org)
       ** latex
-      ** latex2html 
-           (for generating web-based documentation only; either v0.99_1 or 
-            1.62, but you must apply the patch supplied in psi4/misc)
-    * To make a distributed-parallel version with MADNESS, you may also need:
+      ** sphinx (version 1.1 or higher)
+      ** dvipng (for latex math in html)
+   * To make a distributed-parallel version with MADNESS, you may also need:
       ** libtool (called by autoreconf)
 
    To check to see if you have the Python developer libraries installed look
@@ -419,6 +418,8 @@ Step 5: Building Documentation
 If your system has the appropriate utilities, you may build the
 package documentation from the top-level $objdir by running "make doc".
 The resulting files will appear in the $prefix/doc area.
+This is not yet fully operational, but the documentation is available
+off http://www.psicode.org .
 
 Step 6: Cleaning
 
