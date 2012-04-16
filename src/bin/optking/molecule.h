@@ -370,6 +370,9 @@ printf("adding %d auxiliary bonds\n", n);
   // freeze interfragment modes that break symmetry
   void freeze_interfragment_asymm(void);
 
+  // determine whether a linear combination of intcos breaks symmetry
+  bool intco_combo_is_symmetric(double *intco_combo, int dim);
+
 };
 
 }
