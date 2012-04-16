@@ -1392,7 +1392,7 @@ def complete_basis_set(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
-       - Methods beyond basic scf, mp2, ccsd, ccsd(t) not yet hooked in through PSI variables, df-mp2 in particular.
+       - Not all methods hooked in through PSI variables, configuration interaction and arbitrary order MP in particular.
 
        - No scheme defaults for given basis zeta number, so scheme must be specified explicitly.
 
@@ -1415,9 +1415,25 @@ def complete_basis_set(name, **kwargs):
         (and check for stage_basis and stage_scheme keywords) and compute
         that stage in defining the CBS energy.
 
-    The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
+        The cbs() function requires, at a minimum, ``name='scf'`` and ``scf_basis``
         keywords to be specified for reference-step only jobs and ``name`` and
         ``corl_basis`` keywords for correlated jobs.
+
+        The following energy methods have been set up for cbs().
+
+        .. hlist::
+           :columns: 5
+
+           * scf
+           * df-scf
+           * mp2
+           * df-mp2
+           * cc2
+           * ccsd
+           * bccd
+           * cc3
+           * ccsd(t)
+           * fci
 
     :type name: string
     :param name: ``'scf'`` || ``'ccsd'`` || etc.
@@ -1566,15 +1582,35 @@ def complete_basis_set(name, **kwargs):
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
     VARH = {}
     VARH['scf'] = {         'scftot': 'SCF TOTAL ENERGY'}
+    VARH['df-scf'] = {      'scftot': 'SCF TOTAL ENERGY'}
     VARH['mp2'] = {         'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY'}
+    VARH['df-mp2'] = {      'scftot': 'SCF TOTAL ENERGY',
+                        'df-mp2corl': 'DF-MP2 CORRELATION ENERGY'}
+    VARH['cc2'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                           'cc2corl': 'CC2 CORRELATION ENERGY'}
     VARH['ccsd'] = {        'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['bccd'] = {        'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                          'bccdcorl': 'CCSD CORRELATION ENERGY'}
+    VARH['cc3'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'mp2corl': 'MP2 CORRELATION ENERGY',
+                           'cc3corl': 'CC3 CORRELATION ENERGY'}
     VARH['ccsd(t)'] = {     'scftot': 'SCF TOTAL ENERGY',
                            'mp2corl': 'MP2 CORRELATION ENERGY',
                           'ccsdcorl': 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl': 'CCSD(T) CORRELATION ENERGY'}
+    #VARH['cisd'] = {        'scftot': 'SCF TOTAL ENERGY',
+    #                      'cisdcorl': 'CISD CORRELATION ENERGY'}
+    #VARH['cisdt'] = {       'scftot': 'SCF TOTAL ENERGY',
+    #                     'cisdtcorl': 'CISDT CORRELATION ENERGY'}
+    #VARH['cisdtq'] = {      'scftot': 'SCF TOTAL ENERGY',
+    #                    'cisdtqcorl': 'CISDTQ CORRELATION ENERGY'}
+    VARH['fci'] = {         'scftot': 'SCF TOTAL ENERGY',
+                           'fcicorl': 'FCI CORRELATION ENERGY'}
 
     finalenergy = 0.0
     do_scf = 1
@@ -1603,7 +1639,7 @@ def complete_basis_set(name, **kwargs):
 
     # Establish method for correlation energy
     if 'name' in kwargs:
-        if (lowername == 'scf'):
+        if (lowername == 'scf') or (lowername == 'df-scf'):
             pass
         else:
             do_corl = 1

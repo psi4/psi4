@@ -453,7 +453,8 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        return PsiMod.reference_wavefunction().energy()
+        PsiMod.reference_wavefunction().energy()
+        return PsiMod.get_variable('CURRENT ENERGY')
     else:
         # If not, perform finite difference of energies
 
@@ -614,9 +615,12 @@ def property(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
+       - This function at present handles property functions only for CC methods.
+         Consult the keywords sections for other modules for further property capabilities.
+
        - Check that energy is actually being returned.
 
-       - Check if ther're some PSI variables that ought to be set.
+       - Check if some PSI variables ought to be set.
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
@@ -638,10 +642,20 @@ def property(name, **kwargs):
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
+    :type properties: array of strings
+    :param properties: |dl| ``[]`` |dr| || ``['rotation', 'polarizability', 'oscillator_strength', 'roa']`` || etc.
+
+        Indicates which properties should be computed.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
     :examples:
 
-    >>> # [1] Multipole moment and response Property calculations
-    >>> property('ccsd')
+    >>> # [1] Optical rotation calculation
+    >>> property('cc2', properties=['rotation'])
 
     """
     lowername = name.lower()
@@ -686,10 +700,6 @@ def optimize(name, **kwargs):
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
         by finite differences.
-
-    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
-
-       - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
 
     .. _`table:grad_gen`:
 
@@ -912,6 +922,9 @@ def frequency(name, **kwargs):
     :aliases: frequencies(), freq()
 
     :returns: (*float*) Total electronic energy in Hartrees.
+
+    .. note:: Analytic hessians are not available. Frequencies will proceed through
+        finite differences according to availability of gradients or energies.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 

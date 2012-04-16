@@ -11,6 +11,9 @@
 Database
 ========
 
+.. codeauthor:: Lori A. Burns
+.. sectionauthor:: Lori A. Burns
+
 .. autofunction:: wrappers.database(name, db_name [, func, mode, cp, rlxd, symm, zpe, benchmark, tabulate, subset])
 
 .. index:: 
