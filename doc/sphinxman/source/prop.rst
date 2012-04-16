@@ -10,5 +10,5 @@
 Property
 ========
 
-.. autofunction:: driver.property
+.. autofunction:: driver.property(name [, properties, molecule])
 
