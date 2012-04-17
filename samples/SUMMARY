@@ -379,6 +379,9 @@ psimrcc-ccsd_t-3:  Mk-MRCCSD(T) single point. $^1A@@1$ CH2 state described using
 psimrcc-ccsd_t-4:  Mk-MRCCSD(T) single point. $^1A@@1$ O$@@3$ state described using the Ms = 0 component of the singlet.  Uses TCSCF orbitals.
 
 
+psimrcc-pt2:  Mk-MRPT2 single point. $^1A@@1$ F2 state described using the Ms = 0 component of the singlet.  Uses TCSCF singlet orbitals.
+
+
 psimrcc-sp1:  Mk-MRCCSD single point. $^3 \Sigma ^-$ O2 state described using the Ms = 0 component of the triplet.  Uses ROHF triplet orbitals.
 
 
