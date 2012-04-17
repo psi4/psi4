@@ -21,7 +21,7 @@ mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
 df_subdirs = sapt1 sapt3 sapt5
 
-psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4
+psimrcc_subdirs = psimrcc-sp1 psimrcc-ccsd_t-1 psimrcc-ccsd_t-2 psimrcc-ccsd_t-3 psimrcc-ccsd_t-4 psimrcc-pt2
 
 mints_subdirs = mints1 mints2 mints3 mints4
 

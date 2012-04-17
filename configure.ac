@@ -1134,6 +1134,7 @@ AC_CONFIG_FILES([
           tests/psimrcc-ccsd_t-2/Makefile
           tests/psimrcc-ccsd_t-3/Makefile
           tests/psimrcc-ccsd_t-4/Makefile
+          tests/psimrcc-pt2/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile
