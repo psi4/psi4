@@ -597,7 +597,7 @@ def run_dft(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    run_scf(name,**kwargs) 
+    returnvalue = run_scf(name,**kwargs) 
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
     if not b_user_fctl:
