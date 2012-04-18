@@ -165,6 +165,18 @@ installation instructions at the |PSIfour| website above or to the file
 :source:`INSTALL` distributed with the package. Additional compilation
 hints may be found at `Psi Compiling <http://sirius.chem.vt.edu/trac/wiki/CompilingPsi>`_.
 
+To avoid dependency problems, a script is provided at
+:source:`lib/scripts/psi4depend-v2.sh` that will download, configure, and
+install all dependencies that the Psi4 developers currently recommend.
+This script simply needs one to edit the top lines to tell it where to
+install all the files to and for the user to put this into their path. The
+script will print out the lines that you need to add to your
+:envvar:`path` and :envvar:`LD_LIBRARY_PATH`. This script will build the
+following: autoconf-2.68, automake-1.11, gcc-4.1.2, mpich2-1.2.1,
+Python-2.6.6, Boost-1.48.0 (as well as some dependencies). After running
+the script, proceed with building |PSIfour| as described in
+:source:`INSTALL`.
+
 .. index:: architectures
 .. index:: compilers
 
@@ -196,47 +208,87 @@ For more details, see Tables :ref:`Energy <table:energy_gen>`,
 
 .. _`table:methods`:
 
+.. comment table:: Summary of theoretical methods available in |PSIfour|
+
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | Method                  | Energy    | Gradient  |
+.. comment    +=========================+===========+===========+
+.. comment    | RHF/ROHF/UHF SCF        | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/ROHF/UHF DF-SCF     | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | CIS/RPA/TDHF            | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | UHF DCFT                | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF SAPT                | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF MP2                 | Y         | Y         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | UHF/ROHF MP2            | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF DF-MP2              | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF ADC(2)              | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/ROHF CI(n)          | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/ROHF RAS-CI         | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/ROHF MP(n)          | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/ROHF ZAPT(n)        | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/UHF/ROHF CC2        | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/UHF/ROHF CCSD       | Y         | Y         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/UHF/ROHF CCSD(T)    | Y         | Y [#f1]_  |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/UHF/ROHF EOM-CCSD   | Y         | Y         |
+.. comment    +-------------------------+-----------+-----------+
+.. comment    | RHF/UHF/ROHF CC3        | Y         | N         |
+.. comment    +-------------------------+-----------+-----------+
+
 .. table:: Summary of theoretical methods available in |PSIfour|
 
-    +-------------------------+-----------+-----------+
-    | Method                  | Energy    | Gradient  |
-    +=========================+===========+===========+
-    | RHF/ROHF/UHF SCF        | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF/ROHF/UHF DF-SCF     | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | CIS/RPA/TDHF            | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | UHF DCFT                | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF SAPT                | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF MP2                 | Y         | Y         |
-    +-------------------------+-----------+-----------+
-    | UHF/ROHF MP2            | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF DF-MP2              | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF ADC(2)              | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF/ROHF CI(n)          | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF/ROHF RAS-CI         | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF/ROHF MP(n)          | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF/ROHF ZAPT(n)        | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF/UHF/ROHF CC2        | Y         | N         |
-    +-------------------------+-----------+-----------+
-    | RHF/UHF/ROHF CCSD       | Y         | Y         |
-    +-------------------------+-----------+-----------+
-    | RHF/UHF/ROHF CCSD(T)    | Y         | Y [#f1]_  |
-    +-------------------------+-----------+-----------+
-    | RHF/UHF/ROHF EOM-CCSD   | Y         | Y         |
-    +-------------------------+-----------+-----------+
-    | RHF/UHF/ROHF CC3        | Y         | N         |
-    +-------------------------+-----------+-----------+
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | Method                  | Energy    | Gradient  | Reference       | Parallelism                 | Verified By   |
+    +=========================+===========+===========+=================+=============================+===============+
+    | SCF                     | Y         | ---       | RHF/ROHF/UHF    | threaded                    | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | DF-SCF                  | Y         | ---       | RHF/ROHF/UHF    | threaded                    | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | CIS/RPA/TDHF            | Y         | ---       |                 |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | DCFT                    | Y         | ---       | UHF             |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | SAPT                    | Y         | ---       | RHF             | threaded                    | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | MP2                     | Y         | Y [#f2]_  | RHF/ROHF/UHF    |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | DF-MP2                  | Y         | ---       | RHF             | threaded                    | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | ADC(2)                  | Y         | ---       | RHF/ROHF        |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | CI(n)                   | Y         | ---       | RHF/ROHF        | threaded (pthreads)         |               |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | RAS-CI                  | Y         | ---       | RHF/ROHF        |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | MP(n)                   | Y         | ---       | RHF/ROHF        |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | ZAPT(n)                 | Y         | ---       | RHF/ROHF        |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | CC2                     | Y         | ---       | RHF/UHF/ROHF    |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | CCSD                    | Y         | Y         | RHF/UHF/ROHF    | threaded [#f3]_             |               |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | CCSD(T)                 | Y         | Y [#f1]_  | RHF/UHF/ROHF    | threaded (pthreads) [#f2]_  |               |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | CC3                     | Y         | ---       | RHF/UHF/ROHF    |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
+    | EOM-CCSD                | Y         | Y         | RHF/UHF/ROHF    |                             | UNVERIFIED    |
+    +-------------------------+-----------+-----------+-----------------+-----------------------------+---------------+
 
 ..    | %HF DBOC                | Y         | N         |
     +-------------------------+-----------+-----------+
@@ -278,5 +330,7 @@ this user's manual may be sent to
 .. rubric:: Footnotes
 
 .. [#f1] UHF-CCSD(T) gradients only, as of |version|
+.. [#f2] RHF reference only
+.. [#f3] threading through BLAS routines only
 
 

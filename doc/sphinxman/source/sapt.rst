@@ -1,17 +1,19 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:sapt`:
-.. index:: SAPT
-
 .. index::
+   single: SAPT
    pair: SAPT; theory
+
+.. _`sec:sapt`:
 
 Symmetry-Adapted Perturbation Theory
 ====================================
 
 .. codeauthor:: Edward G. Hohenstein
 .. sectionauthor:: Edward G. Hohenstein
+
+*Module:* :ref:`Keywords <apdx:sapt>`, :ref:`PSI Variables <apdx:sapt_psivar>`, :source:`LIBSAPT_SOLVER <src/lib/libsapt_solver>`
 
 Symmetry-adapted perturbation theory (SAPT) provides a means of directly
 computing the noncovalent interaction between two molecules, that is, the

@@ -20,7 +20,7 @@ using namespace std;
 
 // constructor for given weight linear combination reference points
 INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
-    double **weightA_in, double **weightB_in, int ndA_in, int ndB_in) {
+    double **weightA_in, double **weightB_in, int ndA_in, int ndB_in, bool principal_axes) {
 
   A = A_in;
   B = B_in;
@@ -30,37 +30,11 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   weightB = weightB_in;
   ndA = ndA_in;
   ndB = ndB_in;
-  principal_axes = false;
-  // inter_fragment->frozen is off default
 
   double **inter_geom = init_matrix(6,3); // some rows may be unused
 
   // Create pseudo-fragment with atomic numbers at 6 positions.
-  // The atomic numbers may only affect Hessian guess routines.
-  double *Z = init_array(6);
-  for (int i=0; i<6; ++i) Z[i] = 6; // assume C for now
-  inter_frag = new FRAG(6, Z, inter_geom);
-
-  update_reference_points();
-
-  add_coordinates_of_reference_pts();
-}
-
-// constructor for COM and principal axes reference points
-INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
-    int ndA_in, int ndB_in) {
-  A = A_in;
-  B = B_in;
-  A_index = A_index_in;
-  B_index = B_index_in;
-  weightA = weightB = NULL;
-  ndA = ndA_in;
-  ndB = ndB_in;
-  principal_axes = true; 
-  //frozen = false; inter_frag is not frozen by default
-
-  double **inter_geom = init_matrix(6,3); // some rows may be unused
-
+  // The atomic numbers may affect Hessian guess routines at most.
   double *Z = init_array(6);
   for (int i=0; i<6; ++i) Z[i] = 6; // assume C for now
   inter_frag = new FRAG(6, Z, inter_geom);
@@ -229,25 +203,21 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
         inter_frag->geom[5][xyz] += weightB[2][b] * new_geom_B[b][xyz];
       }
     }
-  } 
+  }
   else { // using principal axes
-    int i, xyz;
-    double **axes;
-    double *moi;
-    double *fragment_com;
 
     // first reference point on each fragment is the COM of each
-    fragment_com = A->com();
-    for (xyz=0; xyz<3; ++xyz)
+    double *fragment_com = A->com();
+    for (int xyz=0; xyz<3; ++xyz)
       inter_frag->geom[2][xyz] = fragment_com[xyz];
 
-    i = A->principal_axes(new_geom_A, axes, moi);
+    double **axes, *moi;
+    int i = A->principal_axes(new_geom_A, axes, moi);
 
-    if (i != ndA)
-      throw(INTCO_EXCEPT("Number of principal axes for fragment has changed.",true));
+    fprintf(outfile,"Number of principal axes returned is %d\n", i);
 
     for (i=0; i<ndA-1; ++i) // i can only be 0 or 1
-      for (xyz=0; xyz<3; ++xyz)
+      for (int xyz=0; xyz<3; ++xyz)
         inter_frag->geom[1-i][xyz] = fragment_com[xyz] + axes[i][xyz];
 
     free_array(moi);
@@ -255,21 +225,31 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
     free_array(fragment_com);
 
     fragment_com = B->com();
-    for (xyz=0; xyz<3; ++xyz)
+    for (int xyz=0; xyz<3; ++xyz)
       inter_frag->geom[3][xyz] = fragment_com[xyz];
 
     i = B->principal_axes(new_geom_B, axes, moi);
 
-    if (i != ndB)
-      throw(INTCO_EXCEPT("Number of principal axes for fragment has changed.", true));
+    fprintf(outfile,"Number of principal axes returned is %d\n", i);
 
     for (i=0; i<ndB-1; ++i) // i can only be 0 or 1
-      for (xyz=0; xyz<3; ++xyz)
+      for (int xyz=0; xyz<3; ++xyz)
         inter_frag->geom[4+i][xyz] = fragment_com[xyz] + axes[i][xyz];
 
     free_array(moi);
     free_matrix(axes);
     free_array(fragment_com);
+
+    if (Opt_params.print_lvl >= 3) {
+      fprintf(outfile,"\tndA: %d ; ndB: %d\n", ndA, ndB);
+      fprintf(outfile,"\tReference points are at the following locations.\n");
+      for (int i=2; i>2-ndA; --i)
+        fprintf(outfile,"%15.10lf %15.10lf %15.10lf\n",
+          inter_frag->geom[i][0], inter_frag->geom[i][1], inter_frag->geom[i][2]);
+      for (int i=0; i<ndB; ++i)
+        fprintf(outfile,"%15.10lf %15.10lf %15.10lf\n",
+          inter_frag->geom[3+i][0], inter_frag->geom[3+i][1], inter_frag->geom[3+i][2]);
+    }
   }
 }
 
@@ -338,6 +318,8 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
   int natomB = B->natom;
 
   double **B = init_matrix(g_nintco(), 3*(natomA+natomB));
+
+  if (!principal_axes) {
 
   int cnt=0, xyz;
   double **B_ref; // derivative of interfragment D wrt reference point position
@@ -426,6 +408,43 @@ double ** INTERFRAG::compute_B(GeomType new_geom_A, GeomType new_geom_B) {
     }
     free_matrix(B_ref);
     ++cnt;
+  }
+
+  }
+  else { // principal axis
+  //natomA natomB //double **B = init_matrix(g_nintco(), 3*(natomA+natomB));
+
+/*
+
+    double **A_u = init_matrix(3,3);
+    double *A_lambda = init_array(3);
+    int nA_lambda = Afrag->principal_axes(A, A_u, A_lambda);
+    double A_mass = Afrag->masses();
+
+    double **B_u = init_matrix(3,3);
+    double *B_lambda = init_array(3);
+    int nB_lambda = Bfrag->principal_axes(B, B_u, B_lambda);
+
+    // First reference points are the centers of mass.  These are fixed weights.
+    if (D_on[0]) {
+      B_ref = inter_frag->intcos.at(cnt)->DqDx(inter_frag->geom); // RAB, returns (2,3)
+      for (xyz=0; xyz<3; ++xyz) {
+        for (int a=0; a<natomA; ++a)
+          B[cnt][3*a + xyz] += A_mass[a]/A_mass_total * B_ref[0][xyz];
+        for (int b=0; b<natomB; ++b)
+          B[cnt][3*natomA + 3*b + xyz] += B_mass[b]/B_mass_total * B_ref[1][xyz];
+      }
+      free_matrix(B_ref);
+      ++cnt;
+    }
+
+TODO
+
+    free_matrix(A_u);
+    free_matrix(B_u);
+    free_array(A_lambda);
+    free_array(B_lambda);
+*/
   }
 
   return B;

@@ -11,7 +11,7 @@ from text import *
 from procutil import *
 
 def run_plugin_cepa(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls so that
+    r"""Function encoding sequence of PSI module and plugin calls so that
     plugin_cepa can be called via :py:func:`driver.energy`.
 
     >>> energy('cepa(1)')

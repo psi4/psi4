@@ -186,7 +186,7 @@ in the ``molecule`` block. If two integers are encountered on any line of the
 ``molecule`` block, they are interpreted as the molecular charge and multiplicity
 (:math:`2 \times M_s + 1`), respectively.  The symmetry can be specified by a line reading
 :samp:`symmetry {symbol}`, where :samp:`{symbol}` is
-the Sch\ |o_dots|\ nflies symbol of the (Abelian) point group to use for the
+the Schönflies symbol of the (Abelian) point group to use for the
 computation; see Sec. :ref:`sec:symmetry` for more details. This need not be
 specified, as the molecular symmetry is automatically detected by |PSIfour|.
 Certain computations require that the molecule is not reoriented; this can be
@@ -300,7 +300,7 @@ convention as "Cotton Ordering" hereafter.
 .. table:: Ordering of irreducible representations (irreps) used in |PSIfour|
 
     +----------------+-------------+----------------+----------------+----------------+-------------+----------------+----------------+----------------+
-    | Point Group    | Irrep Order                                                                                                                     |
+    | Point Group    |      1      |       2        |       3        |      4         |     5       |        6       |       7        |       8        |  
     +================+=============+================+================+================+=============+================+================+================+
     | :math:`C_1`    | :math:`A`   |                |                |                |             |                |                |                |  
     +----------------+-------------+----------------+----------------+----------------+-------------+----------------+----------------+----------------+
@@ -329,7 +329,7 @@ Although |PSIfour| will detect the symmetry automatically, and use the largest
 possible Abelian subgroup, the user might want to run in a lower point group.
 To do this the ``symmetry`` keyword can be used when inputting the molecule
 (see Sec. :ref:`sec:moleculeSpecification`).  In most cases the standard
-Sch\"onflies symbol (one of ``c1``, ``c2``, ``ci``, ``cs``, ``d2``,
+Schönflies symbol (one of ``c1``, ``c2``, ``ci``, ``cs``, ``d2``,
 ``c2h``, ``c2v``, ``d2h`` will suffice.
 For certain computations, the user might want to specify which particular
 subgroup is to be used by appending a unique axis specifier.  For example when
@@ -341,6 +341,47 @@ labels are valid.  For :math:`C_s` symmetry the labels ``csx``, ``csy``, and
 ``csz`` request the :math:`yz`, :math:`xz`, and :math:`xy` planes be used as the mirror plane,
 respectively.  If no unique axis is specified, |PSIfour| will choose an appropriate
 subgroup.
+
+Certain types of finite difference computations, such as numerical vibrational
+frequencies, might lower the symmetry of the molecule.  When this happens
+symmetry-dependent arrays, such as |globals__socc|, are automatically remapped
+to the lower symmetry.  For example, if we were to investigate the :math:`^2B_1`
+state of water cation, we can specify
+
+    SOCC = [0, 0, 1, 0]
+
+in the input file.  If any ensuing computations lower the symmetry, the above
+array will be appropriately remapped.  For example, reducing the symmetry to
+:math:`C_s` (with the molecular plane defining the mirror plane), the above
+array will be automatically interpreted as:
+
+    SOCC = [0, 1]
+
+Some caution is required, however.  The :math:`^2A_1` state can be obtained with
+the
+
+    SOCC = [1, 0, 0, 0]
+
+specification, which would become
+
+    SOCC = [1, 0]
+
+under the above-mentioned reduction in symmetry.  The :math:`^2B_2` state,
+whose singly-occupied orbitals are
+
+    SOCC = [0, 0, 0, 1]
+
+would be mapped to 
+
+    SOCC = [1, 0]
+
+which is the same occupation as the :math:`^2A_1` state.  In this case, the
+:math:`^2A_1` state is lower in energy, and is not problematic.  The distorted
+geometries for the :math:`^2B_2` state are excited states that are subject to
+variational collapse.  One way to obtain reliable energies for these states is
+to use a multi-state method; in this case it's easier to run the entire
+computation in the lowest symmetry needed during the finite difference
+procedure.
 
 .. index:: molecule; multiple fragments
 .. _`sec:fragments`:
