@@ -999,6 +999,7 @@ AC_CONFIG_FILES([
           src/bin/sapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
+          src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/dfcc/Makefile
           src/bin/findif/Makefile
