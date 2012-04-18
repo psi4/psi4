@@ -142,7 +142,6 @@ void GPUHelper::CudaFinalizeGPU(Options&options){
      }
      free(cpuarray);
   }
-  cudaThreadExit();
 }
 
 /**

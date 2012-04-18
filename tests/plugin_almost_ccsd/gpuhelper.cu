@@ -9,17 +9,15 @@
 #include<libchkpt/chkpt.h>
 #include<libiwl/iwl.h>
 #include <libpsio/psio.hpp>
+
+#include"globals.h"
+#include"blas.h"
+#include"gpuhelper.h"
+#include"gpuonly.h"
 #ifdef _OPENMP
   #include<omp.h>
 #endif
 
-// cuda libraries
-#include<cuda.h>
-#include<cublas.h>
-#include<cuda_runtime.h>
-
-#include"blas.h"
-#include"gpuhelper.h"
 
 using namespace psi;
 using namespace boost;
