@@ -532,9 +532,6 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   ccsd->et = et;
 
   // free memory:
-  if (ccsd->t2_on_disk){
-     free(ccsd->tb);
-  }
   free(E2ijak);
   for (int i=0; i<nthreads; i++){  
       free(E2abci[i]);
