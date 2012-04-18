@@ -66,11 +66,9 @@ class INTERFRAG {
   // Constructor for fixed, linear-combination reference points.
   // Memory provided by calling function.
   INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
-    double **weightA_in, double **weightB_in, int ndA_in=3, int ndB_in=3);
+    double **weightA_in, double **weightB_in, int ndA_in=3, int ndB_in=3,
+    bool use_principal_axes=false);
 
-  // Constructor for COM, principal axes defined reference points.
-  INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in, 
-    int ndA_in=3, int ndB_in=3);
 
   ~INTERFRAG() { delete inter_frag; }
 
@@ -161,9 +159,6 @@ class INTERFRAG {
   double ** compute_constraints(void) const;
 
   void add_coordinates_of_reference_pts(void);
-
-  //void set_principal_axes(bool b) { principal_axes = b; }
-  //bool use_principal_axes(void) { return principal_axes; }
 
 }; // class INTERFRAG
 

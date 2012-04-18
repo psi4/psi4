@@ -48,6 +48,14 @@ class GPUHelper{
     void CudaInitGPU(Options&options);
 
     /**
+      * Finalize cuda.  To keep nvcc out of the picture for now, call CudaFinalize,
+      * which will call CudaFinalizeGPU only if the -DCUDA flag is present in the 
+      * makefile.
+      */
+    void CudaFinalize(Options&options);
+    void CudaFinalizeGPU(Options&options);
+
+    /**
       * wrapper for cuda error messages
       */
     inline void Check_CUDA_Error(FILE*fp,const char *message);

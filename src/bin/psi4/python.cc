@@ -441,8 +441,11 @@ double py_psi_ccresponse()
 double py_psi_cceom()
 {
     py_psi_prepare_options_for_module("CCEOM");
-    cceom::cceom(Process::environment.options);
-    return 0.0;
+    if (cceom::cceom(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 double py_psi_psimrcc()
@@ -454,9 +457,12 @@ double py_psi_psimrcc()
 
 double py_psi_adc()
 {
-  py_psi_prepare_options_for_module("ADC");
-  adc::adc(Process::environment.options);
-  return 0.0;
+    py_psi_prepare_options_for_module("ADC");
+    if (adc::adc(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 char const* py_psi_version()

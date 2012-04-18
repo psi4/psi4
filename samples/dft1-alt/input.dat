@@ -1,0 +1,87 @@
+#! DFT Functional Test
+
+memory 250 mb
+
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set globals {
+print 2
+basis sto-3g
+
+guess core
+scf_type direct
+dft_spherical_points 302
+dft_radial_points 99
+}
+
+V11 = energy('b88_x')
+
+V15 = energy('b97-d')
+
+V12 = energy('b3lyp')
+
+V13 = energy('wB97')  # default omega is 0.4
+
+set dft_omega 0.3
+V14 = energy('wB97X')
+
+set reference uhf
+V21 = energy('b88_x')
+
+V25 = energy('b97-d')
+
+V22 = energy('b3lyp')
+
+set dft_omega 0.4
+V23 = energy('wB97')
+
+set dft_omega 0.3
+V24 = energy('wB97X')
+
+molecule h2op {
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set basis sto-3g
+# Must be reset in each new molecule
+V31 = energy('B88_X')
+
+V35 = energy('B97-D')
+
+V32 = energy('B3LYP')
+
+set dft_omega 0.4
+V33 = energy('wB97')
+
+set dft_omega 0.3
+V34 = energy('wB97X')
+
+molecule h2om {
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set basis sto-3g
+V41 = energy('b88_x')
+
+V45 = energy('b97-d')
+print_variables()
+
+V42 = energy('b3lyp')
+
+set dft_omega 0.4
+V43 = energy('wB97')
+
+set dft_omega 0.3
+V44 = energy('wB97X')

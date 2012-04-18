@@ -1,27 +1,41 @@
-#! DCFT calculation for the Ne atom, with the K06 functional. This performs both
+#! DCFT calculation for the HF+ using DCFT-06 functional. This performs both
 #! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
-#! Four-virtual integrals are handled in the MO Basis.
-#! The reference DCFT energy is taken from the JCP 133 174122 (2010) paper
+#! Four-virtual integrals are first handled in the MO Basis for the first two energy computations.
+#! In the next two the ao_basis=disk algorithm is used, where the transformation of integrals for 
+#! four-virtual case is avoided. 
 
 memory 250 mb
 
 
-molecule ne {
-    Ne
+molecule HF {
+1 2
+H
+F 1 R
+
+R = 1.000
 }
 
 set globals {
-    r_convergence 11
-    d_convergence 10
+    r_convergence 12
+    d_convergence 12
     reference   uhf
     ao_basis    none
     algorithm   twostep
-    basis       cc-pvdz
+    basis       sto-3g
 }
 
 energy('dcft')
 
 
-#set algorithm simultaneous
-#energy('dcft')
+set algorithm simultaneous
+energy('dcft')
+
+
+set ao_basis disk
+set algorithm twostep
+energy('dcft')
+
+
+set algorithm simultaneous
+energy('dcft')
 

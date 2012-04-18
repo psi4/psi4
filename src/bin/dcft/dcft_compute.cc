@@ -146,6 +146,7 @@ DCFTSolver::compute_energy()
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                         nLambdaIterations, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
                         new_total_energy_, diisString.c_str());
+                if (fabs(lambda_convergence_) > 100.0) throw PSIEXCEPTION("DCFT density cumulant equations diverged");
                 fflush(outfile);
             }
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
@@ -217,6 +218,7 @@ DCFTSolver::compute_energy()
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                     nSCFCycles, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
                     new_total_energy_, diisString.c_str());
+                if (fabs(scf_convergence_) > 100.0) throw PSIEXCEPTION("DCFT orbital updates diverged");
                 fflush(outfile);
             }
             // Write orbitals to the checkpoint file
@@ -380,10 +382,7 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\t*DCFT Total Energy                               = %20.15f\n", new_total_energy_);
     if(options_.get_bool("TAU_SQUARED")) {
         fprintf(outfile, "\t*Tau Squared Correction to DCFT Energy           = %20.15f\n", energy_tau_squared_);
-    }
-    fprintf(outfile, "\t*DCFT Total Energy with Tau Squared Correction   = %20.15f\n", new_total_energy_ + energy_tau_squared_);
-
-    if(options_.get_bool("TAU_SQUARED")){
+        fprintf(outfile, "\t*DCFT Total Energy with Tau Squared Correction   = %20.15f\n", new_total_energy_ + energy_tau_squared_);
         new_total_energy_ += energy_tau_squared_;
     }
 
@@ -408,6 +407,7 @@ DCFTSolver::compute_energy()
         tstop();
         // Start the timers
         tstart();
+        // Solve the response equations, compute relaxed OPDM and TPDM and dump them to disk
         compute_gradient();
     }
 

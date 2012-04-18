@@ -105,13 +105,17 @@ Bibliography
    M. Saitow and Y. Mochizuki,
    *Chem. Phys. Lett.* **X**, XX (2012).
 
+.. [Evangelista:2010:4728]
+   F. A. Evangelista, E. Prochnow, J. Gauss, and H. F. Schaefer,
+   *J. Chem. Phys.* **132**, (2010).
+
 .. [Evangelista:2009:4728]
    F. A. Evangelista, A. C. Simmonett, H. F. Schaefer, III, D. Mukherjee, and W. D. Allen,
    *Phys. Chem. Chem. Phys.* **11**, 4728 (2009).
 
-.. [Evangelista:2006:xxxx]
+.. [Evangelista:2006:154113]
    F. A. Evangelista, W. D. Allen, and H. F. Schaefer, III, 
-   *J. Chem. Phys.* **125**, xxxx (2006).
+   *J. Chem. Phys.* **125**, 154113 (2006).
 
 .. [Evangelista:2008:124104]
    F. A. Evangelista, A. C. Simmonett, W. D. Allen, H. F. Schaefer, III, and J. Gauss, 
@@ -124,4 +128,16 @@ Bibliography
 .. [Raghavachari:1989]
 
 .. [Purvis:1982]
+
+.. [Roos:1980]
+
+.. [Chaban:1997:88]
+
+.. [Pulay:1980]
+
+.. [Malmqvist:1990:RASSCF]
+
+.. [Docken:1972:4928]
+
+.. [Ruedenberg:1979:1069]
 

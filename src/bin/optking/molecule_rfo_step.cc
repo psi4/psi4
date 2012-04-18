@@ -28,6 +28,7 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 void MOLECULE::rfo_step(void) {
   int i, j;
   int dim = g_nintco();
+  int natom = g_natom();
   double tval, tval2;
   double *fq = p_Opt_data->g_forces_pointer();
   double **H = p_Opt_data->g_H_pointer();
@@ -82,7 +83,25 @@ void MOLECULE::rfo_step(void) {
   // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
   if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
     rfo_root = Opt_params.rfo_root;
-    fprintf(outfile,"\tFollowing RFO solution %d.\n", rfo_root);
+    fprintf(outfile,"\tGoing to follow RFO solution %d.\n", rfo_root);
+
+    // Now test RFO eigenvector and make sure that it is totally symmetric.
+    bool symm_rfo_step = false;
+
+    while (!symm_rfo_step) {
+
+      symm_rfo_step = intco_combo_is_symmetric(rfo_mat[rfo_root], dim);
+
+      if (!symm_rfo_step) {
+        fprintf(outfile,"\tRejecting RFO root %d because it breaks the molecular point group.\n", rfo_root+1);
+        fprintf(outfile,"\tIf you are doing an energy minimization, there may exist a lower-energy, ");
+        fprintf(outfile,"structure with less symmetry.\n");
+        ++rfo_root;
+      }
+
+      if (rfo_root == dim+1) // quit in the unlikely event we've checked them all
+        break;
+    }
   }
   else { // do root following
     double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();

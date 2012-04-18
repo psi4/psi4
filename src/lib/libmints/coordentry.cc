@@ -62,7 +62,7 @@ CoordEntry::~CoordEntry()
 
 }
 
-const double& CoordEntry::Z() const 
+const double& CoordEntry::Z() const
 {
     if (ghosted_)
         return dzero;
@@ -347,6 +347,12 @@ const Vector3& ZMatrixEntry::compute()
 
         for(int xyz = 0; xyz < 3; ++xyz)
            coordinates_[xyz] = B[xyz] + r * (eX[xyz] * sinABC * cosABCD + eY[xyz] * sinABC * sinABCD - eCB[xyz] * cosABC );
+
+//        fprintf(outfile, "%5s r %20.14lf, a %20.14lf, d %20.14lf\n", label_.c_str(),
+//                r, a, d);
+//        fprintf(outfile, "      B %20.14lf    %20.14lf    %20.14lf\n", B[0], B[1], B[2]);
+//        fprintf(outfile, "      C %20.14lf    %20.14lf    %20.14lf\n", C[0], C[1], C[2]);
+//        fprintf(outfile, "      D %20.14lf    %20.14lf    %20.14lf\n", D[0], D[1], D[2]);
     }
 
     computed_ = true;

@@ -199,7 +199,7 @@ void MOLECULE::add_interfragment(void) {
   double tval, min;
   int ndA, ndB; // num of reference atoms on each fragment
   char error_msg[100];
-  double **weight_A, **weight_B;
+  double **weight_A=NULL, **weight_B=NULL;
   FRAG *Afrag, *Bfrag;
 
   if (fragments.size() == 1) return;
@@ -207,15 +207,13 @@ void MOLECULE::add_interfragment(void) {
   if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED)
     fprintf(outfile,"\tInterfragment coordinate reference points to be selected from closest atoms and neighbors.\n");
   else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES)
-    fprintf(outfile,"\tPrincipal axes not yet working\n");
-    //fprintf(outfile,"\tInterfragment coordinate reference points to be determined by principal axes.\n");
+    fprintf(outfile,"\tInterfragment coordinate reference points to be determined by principal axes.\n");
 
   for (int frag_i=0; frag_i<(fragments.size()-1); ++frag_i) {
 
     Afrag = fragments[frag_i];
     Bfrag = fragments[frag_i+1];
 
-    // A1 and B1 will be closest atoms between fragments
     A  = Afrag->g_geom_const_pointer();
     nA = Afrag->g_natom();
     cA = Afrag->g_connectivity_pointer();
@@ -226,6 +224,7 @@ void MOLECULE::add_interfragment(void) {
 
     if (Opt_params.interfragment_mode == OPT_PARAMS::FIXED) {
 
+      // A1 and B1 will be closest atoms between fragments
       min = 1e9;
       for (int iA=0; iA < nA; ++iA) {
         for (int iB=0; iB < nB; ++iB) {
@@ -353,36 +352,35 @@ void MOLECULE::add_interfragment(void) {
         print_matrix(outfile, weight_B, 3, nB);
       }
 
+      INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
+      interfragments.push_back(one_IF);
+
     } // fixed interfragment coordinates
-    /*else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES) {
+    else if (Opt_params.interfragment_mode == OPT_PARAMS::PRINCIPAL_AXES) {
 
-      double **A_u = init_matrix(3,3);
-      double *A_lambda = init_array(3);
-      nA_lambda = Afrag->principal_axes(A, A_u, A_lambda);
+      // ref point A[0] and B[0] will be the centers of mass
+      // ref points A[1/2] and B[1/2] will on on principal axes
+      // nothing to compute now
+      if (nA == 1)
+        ndA = 1;
+      else if (nA == 2) // TODO check linearity
+        ndA = 2;
+      else 
+        ndA = 3;
 
-      double **B_u = init_matrix(3,3);
-      double *B_lambda = init_array(3);
-      nB_lambda = Bfrag->principal_axes(B, B_u, B_lambda);
+      if (nB == 1)
+        ndB = 1;
+      else if (nB == 2)
+        ndB = 2;
+      else
+         ndA = 3;
 
-      if (Opt_params.print_lvl >= 3) {
-        fprintf(outfile, "\tPrincipal axes on A\n");
-        print_matrix(outfile, A_u, ndA, 3);
-        fprintf(outfile, "\tPrincipal axes on B\n");
-        print_matrix(outfile, B_u, ndB, 3);
-      }
-      
-      free_matrix(A_u);
-      free_matrix(B_u);
-      free_array(A_lambda);
-      free_array(B_lambda);
-    }*/
+      weight_A = weight_B = NULL;
 
-    INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, weight_A, weight_B, ndA, ndB);
+      INTERFRAG * one_IF = new INTERFRAG(Afrag, Bfrag, frag_i, frag_i+1, NULL, NULL, ndA, ndB, true);
+      interfragments.push_back(one_IF);
 
-    //if (use_principal_axes)
-    //  one_IF->set_principal_axes(true);
-
-    interfragments.push_back(one_IF);
+    }
   }
 
   fflush(outfile);
