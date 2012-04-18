@@ -33,6 +33,10 @@ def run_plugin_df_ccsd(name, **kwargs):
     if (lowername == 'df-ccsd(t)'):
         PsiMod.set_global_option('compute_triples', True)
 
+    # set scf-type to df unless the user wants something else
+    if PsiMod.has_option_changed('scf_type') == False:
+       PsiMod.set_global_option('scf_type', 'DF')
+
     energy('scf', **kwargs)
     PsiMod.plugin("plugin_df_ccsd.so")
 
