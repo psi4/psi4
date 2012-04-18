@@ -34,16 +34,15 @@ void RunCoupledCluster(Options &options){
   Process::environment.globals["CCSD TOTAL ENERGY"] = ccsd->eccsd + ccsd->escf;
   Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->escf;
 
+  // free some memory before triples 
+  free(ccsd->integrals);
+  free(ccsd->w1);
+  free(ccsd->I1);
+  free(ccsd->I1p);
+  free(ccsd->diisvec);
+  free(ccsd->tempt);
+  free(ccsd->tempv);
   if (options.get_bool("COMPUTE_TRIPLES")){
-     // free memory before triples 
-     free(ccsd->integrals);
-     free(ccsd->w1);
-     free(ccsd->I1);
-     free(ccsd->I1p);
-     free(ccsd->diisvec);
-     free(ccsd->tempt);
-     free(ccsd->tempv);
-
      if (options.get_bool("NAT_ORBS")){
         // mp2 natural orbitals:
         tstart();
@@ -72,6 +71,12 @@ void RunCoupledCluster(Options &options){
      Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
      Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
   }
+  // free remaining memory
+  free(ccsd->t1);
+  free(ccsd->tb);
+
+  // free gpu and mapped cpu memory
+  ccsd->helper_->CudaFinalize(options);
 
   ccsd.reset();
 }

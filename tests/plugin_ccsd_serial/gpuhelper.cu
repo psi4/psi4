@@ -115,6 +115,35 @@ void GPUHelper::CudaInitGPU(Options&options){
      }
   }
 }
+/*===================================================================
+
+  free gpu and mapped cpu memory
+
+===================================================================*/
+void GPUHelper::CudaFinalizeGPU(Options&options){
+  if (num_gpus>0){
+     #pragma omp parallel for schedule (static) num_threads(num_gpus)
+     for (long int i=0; i<num_gpus; i++){
+         long int thread = 0;
+         #ifdef _OPENMP
+           thread = omp_get_thread_num();
+         #endif
+         cudaSetDevice(thread);
+         Check_CUDA_Error(stdout,"cudaSetDevice (free)");
+         cudaFreeHost(tmp[thread]);
+         Check_CUDA_Error(outfile,"cpu tmp (free)");
+         cudaFree(gpuarray[thread]);
+         Check_CUDA_Error(outfile,"gpu memory (free)");
+     }
+     free(tmp);
+     free(gpuarray);
+     for (long int i=0; i<num_cpus; i++){
+         free(cpuarray[i]);
+     }
+     free(cpuarray);
+  }
+  cudaThreadExit();
+}
 
 /**
  * dgemm assuming no tiling is necessary
