@@ -781,6 +781,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("RESPONSE_ALGORITHM", "TWOSTEP", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
       options.add_bool("LOCK_OCC", true);
+      /*- Whether to read the orbitals from a previous computation, or to compute
+          an MP2 guess !expert -*/
+      options.add_str("DCFT_GUESS", "MP2", "CC BCC MP2");
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- MODULEDESCRIPTION Called at the beginning of SCF computations, 

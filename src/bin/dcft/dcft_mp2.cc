@@ -1,5 +1,6 @@
 #include "dcft.h"
 #include "defines.h"
+#include "ccfiles.h"
 #include <vector>
 #include <liboptions/liboptions.h>
 #include <libpsio/psio.hpp>
@@ -121,6 +122,29 @@ DCFTSolver::mp2_guess()
     fprintf(outfile, "\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
 
     Process::environment.globals["MP2 ENERGY"] = new_total_energy_;
+
+    std::string guess = options_.get_str("DCFT_GUESS");
+    if(guess == "CC" || guess == "BCC"){
+        fprintf(outfile, "\tReading existing coupled cluster amplitudes\n");
+        psio_->open(CC_TAMPS, PSIO_OPEN_OLD);
+        dpdbuf4 T2;
+        // Copy the AA amplitudes from CCEnergy
+        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[O,O]"), ID("[V,V]"),
+                      ID("[O>O]-"), ID("[V>V]-"), 0, "tIJAB");
+        dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <OO|VV>");
+        dpd_buf4_close(&T2);
+        // Copy the AB amplitudes from CCEnergy
+        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[O,o]"), ID("[V,v]"),
+                      ID("[O,o]"), ID("[V,v]"), 0, "tIjAb");
+        dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <Oo|Vv>");
+        dpd_buf4_close(&T2);
+        // Copy the BB amplitudes from CCEnergy
+        dpd_buf4_init(&T2, CC_TAMPS, 0, ID("[o,o]"), ID("[v,v]"),
+                      ID("[o>o]-"), ID("[v>v]-"), 0, "tijab");
+        dpd_buf4_copy(&T2, PSIF_DCFT_DPD, "Lambda <oo|vv>");
+        dpd_buf4_close(&T2);
+        psio_->close(CC_TAMPS, 1);
+    }
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
