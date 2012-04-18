@@ -286,6 +286,10 @@ std::string Molecule::symbol(int atom) const
     return atoms_[atom]->symbol();
 }
 
+std::string Molecule::fsymbol(int atom) const
+{
+    return full_atoms_[atom]->symbol();
+}
 std::string Molecule::label(int atom) const
 {
     return atoms_[atom]->label();
@@ -918,6 +922,10 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                    + splitLine[1] + " has not been defined yet.");
             boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+
+            if (mol->full_atoms_[rTo]->symbol() == "X")
+                rval->set_fixed(true);
+
             mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVals[atomSym], 0,
                                                                                       an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                       mol->full_atoms_[rTo], rval)));
@@ -936,6 +944,12 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 throw PSIEXCEPTION("Atom used multiple times on line " + *line);
             boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+
+            if (mol->full_atoms_[rTo]->symbol() == "X")
+                rval->set_fixed(true);
+            if (mol->full_atoms_[aTo]->symbol() == "X")
+                aval->set_fixed(true);
+
             mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVals[atomSym], zVals[atomSym],
                                                                                       an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                       mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
@@ -961,6 +975,14 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
             boost::shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
+
+            if (mol->full_atoms_[rTo]->symbol() == "X")
+                rval->set_fixed(true);
+            if (mol->full_atoms_[aTo]->symbol() == "X")
+                aval->set_fixed(true);
+            if (mol->full_atoms_[dTo]->symbol() == "X")
+                dval->set_fixed(true);
+
             mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVals[atomSym], zVals[atomSym],
                                                                                       an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                       mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
@@ -1027,11 +1049,17 @@ void Molecule::update_geometry()
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
+//    fprintf(outfile, "beginning update_geometry:\n"); print_full();
+
     if (reinterpret_coordentries_)
         reinterpret_coordentries();
 
-    if (move_to_com_)
+//    fprintf(outfile, "after reinterpret_coordentries:\n"); print_full();
+
+    if (move_to_com_) {
         move_to_com();
+//        fprintf(outfile, "after com:\n"); print_full();
+    }
 
     // If the no_reorient command was given, don't reorient
     if (fix_orientation_ == false) {
@@ -1042,6 +1070,7 @@ void Molecule::update_geometry()
         // the the user might have provided.
         SharedMatrix frame = symmetry_frame();
         rotate_full(*frame.get());
+//        fprintf(outfile, "after rotate:\n"); print_full();
     }
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
@@ -1052,6 +1081,7 @@ void Molecule::update_geometry()
     // totally symmetric anyway.
     //if (!fix_orientation_)
     symmetrize(); // Symmetrize the molecule to remove any noise.
+//    fprintf(outfile, "after symmetry:\n"); print_full();
 }
 
 void Molecule::activate_all_fragments()
@@ -1284,6 +1314,31 @@ void Molecule::print() const
             for(int i = 0; i < natom(); ++i){
                 Vector3 geom = atoms_[i]->compute();
                 fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                for(int j = 0; j < 3; j++)
+                    fprintf(outfile, "  %17.12f", geom[j]);
+                fprintf(outfile,"\n");
+            }
+            fprintf(outfile,"\n");
+            fflush(outfile);
+        }
+        else
+            fprintf(outfile, "  No atoms in this molecule.\n");
+    }
+}
+
+void Molecule::print_full() const
+{
+    if (Communicator::world->me() == 0) {
+        if (natom()) {
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol().c_str());
+            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+            fprintf(outfile,"       Center              X                  Y                   Z       \n");
+            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+
+            for(int i = 0; i < full_atoms_.size(); ++i){
+                Vector3 geom = full_atoms_[i]->compute();
+                fprintf(outfile, "    %8s%4s ",fsymbol(i).c_str(),fZ(i) ? "" : "(Gh)"); fflush(outfile);
                 for(int j = 0; j < 3; j++)
                     fprintf(outfile, "  %17.12f", geom[j]);
                 fprintf(outfile,"\n");
@@ -1853,8 +1908,31 @@ found_sigma:
         zaxis = sigma;
         xaxis = zaxis.perp_unit(zaxis);
     }
+
+#define NOISY_ZERO 1.0e-8
+    // Clean up our z axis
+    if (fabs(zaxis[0]) < NOISY_ZERO)
+        zaxis[0] = 0.0;
+    if (fabs(zaxis[1]) < NOISY_ZERO)
+        zaxis[1] = 0.0;
+    if (fabs(zaxis[2]) < NOISY_ZERO)
+        zaxis[2] = 0.0;
+
+    // Clean up our x axis
+    if (fabs(xaxis[0]) < NOISY_ZERO)
+        xaxis[0] = 0.0;
+    if (fabs(xaxis[1]) < NOISY_ZERO)
+        xaxis[1] = 0.0;
+    if (fabs(xaxis[2]) < NOISY_ZERO)
+        xaxis[2] = 0.0;
+#undef NOISY_ZERO
+
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
+
+//    fprintf(outfile, "xaxis %20.14lf %20.14lf %20.14lf\n", xaxis[0], xaxis[1], xaxis[2]);
+//    fprintf(outfile, "yaxis %20.14lf %20.14lf %20.14lf\n", yaxis[0], yaxis[1], yaxis[2]);
+//    fprintf(outfile, "zaxis %20.14lf %20.14lf %20.14lf\n", zaxis[0], zaxis[1], zaxis[2]);
 
     SharedMatrix frame(new Matrix(3, 3));
     for (i=0; i<3; ++i) {
@@ -2441,7 +2519,7 @@ void Molecule::set_orientation_fixed(bool _fix) {
     }
 }
 
-// RAK, 4-2012, return true if all atoms correctly map onto other atoms 
+// RAK, 4-2012, return true if all atoms correctly map onto other atoms
 bool Molecule::valid_atom_map(void) const {
     double np[3];
     SymmetryOperation so;

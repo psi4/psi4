@@ -4,13 +4,17 @@
      single: multireference
      single: Mk-MRCC
 
+.. _`sec:psimrcc`:
+
 PSIMRCC Implementation of Mk-MRCC Theory
 ========================================
 
-.. codeauthor:: Francesco A. Evangelista, Andrew C. Simmonett 
+.. codeauthor:: Francesco A. Evangelista and Andrew C. Simmonett 
 .. sectionauthor:: Alexander E. Vaughn
 
-State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in |PSIfour| implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC). This method is implemented and shown to be a powerful tool in [Evangelista:2006:xxxx]_ and [Evangelista:2008:124104]_. Mk-MRCC is based on the Jeziorski-Monkhorst ansatz [Jeziorski:1981:1668]_ for the wavefunction, :math:`\Psi`
+*Module:* :ref:`Keywords <apdx:psimrcc>`, :ref:`PSI Variables <apdx:psimrcc_psivar>`, :source:`PSIMRCC <src/bin/psimrcc>`
+
+State-specific Multireference coupled cluster theories provide highly accurate energies and properties of electronic states that require a multiconfigurational zeroth-order wavefunction.  The PSIMRCC module contained in |PSIfour| implements the state-specific multireference coupled-cluster approach of Mukherjee and co-workers (Mk-MRCC). This method is implemented and shown to be a powerful tool in [Evangelista:2006:154113]_ and [Evangelista:2008:124104]_. Mk-MRCC is based on the Jeziorski-Monkhorst ansatz [Jeziorski:1981:1668]_ for the wavefunction, :math:`\Psi`
 
 .. math:: \left| \Psi \right \rangle = \sum_\mu^d e^{\hat{T}^\mu} \left| \Phi_\mu \right\rangle c_\mu \, \text{,}
 
@@ -34,7 +38,7 @@ where
 
 .. math:: \textrm{H}^{eff}_{\mu \nu} = \left \langle \Phi_\mu \right | \hat{H}e^{\hat{T}^\nu} \left | \Phi_\nu \right \rangle \, \textrm{.}
 
-|PSIfour| currently has Mk-MRCC with singles and doubles [Mk-MRCCSD] and single and doubles with perturbative triples [Mk-MRCCSD(T)]. A companion perturbation method (Mk-MRPT2) has been developed based on the Mukherjee formalisim as shown in [Evangelista:2009:4728]_.
+|PSIfour| currently implements Mk-MRCC with singles and doubles [Mk-MRCCSD] and Mk-MRCCSD with perturbative triples [Mk-MRCCSD(T)] as formulated in [Evangelista:2010:074107]_. A companion perturbation method (Mk-MRPT2) has been developed based on the Mukherjee formalisim as shown in [Evangelista:2009:4728]_.
 
 A Simple Example
 ________________ 

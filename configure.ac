@@ -999,6 +999,7 @@ AC_CONFIG_FILES([
           src/bin/sapt/Makefile
           src/bin/mints/Makefile
           src/bin/deriv/Makefile
+          src/bin/scfgrad/Makefile
           src/bin/optking/Makefile
           src/bin/dfcc/Makefile
           src/bin/findif/Makefile
@@ -1025,6 +1026,7 @@ AC_CONFIG_FILES([
           tests/scf3/Makefile
           tests/scf4/Makefile
           tests/scf5/Makefile
+          tests/scf6/Makefile
           tests/dfscf-bz2/Makefile
           tests/scf-bz2/Makefile
           tests/opt1/Makefile
@@ -1134,6 +1136,7 @@ AC_CONFIG_FILES([
           tests/psimrcc-ccsd_t-2/Makefile
           tests/psimrcc-ccsd_t-3/Makefile
           tests/psimrcc-ccsd_t-4/Makefile
+          tests/psimrcc-pt2/Makefile
           tests/mints1/Makefile
           tests/mints2/Makefile
           tests/mints3/Makefile

@@ -65,6 +65,14 @@ procedures = {
             'tddft'         : run_libfock,
             'psimrcc'       : run_psimrcc,
             'psimrcc_scf'   : run_psimrcc_scf,
+            'hf'            : run_scf,
+            'rhf'           : run_scf,
+            'uhf'           : run_scf,
+            'rohf'          : run_scf,
+            'rscf'          : run_scf,
+            'uscf'          : run_scf,
+            'roscf'         : run_scf,
+            'df-scf'        : run_scf,
             # Upon adding a method to this list, add it to the docstring in energy() below
         },
         'gradient' : {
@@ -94,9 +102,12 @@ procedures = {
 for ssuper in superfunctional_list():
     procedures['energy'][ssuper.name().lower()] = run_dft
 
+for ssuper in superfunctional_list():
+    procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
+
 
 def energy(name, **kwargs):
-    """Function to compute the single-point electronic energy.
+    r"""Function to compute the single-point electronic energy.
 
     :returns: (*float*) Total electronic energy in Hartrees. SAPT returns interaction energy.
 
@@ -208,6 +219,28 @@ def energy(name, **kwargs):
     | eom-ccsd                | equation of motion (EOM) CCSD                                                         |
     +-------------------------+---------------------------------------------------------------------------------------+
     | eom-cc3                 | EOM-CC3                                                                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+
+    .. _`table:energy_scf`:
+
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | name                    | calls method (aliases to *name* = 'scf')                                              |
+    +=========================+=======================================================================================+
+    | hf                      | HF                                                                                    |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rhf                     | HF with restricted reference                                                          |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | uhf                     | HF with unrestricted reference                                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rohf                    | HF with restricted open-shell reference                                               |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | rscf                    | HF or DFT with restricted reference                                                   |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | uscf                    | HF or DFT with unrestricted reference                                                 |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | roscf                   | HF or DFT with restricted open-shell reference                                        |
+    +-------------------------+---------------------------------------------------------------------------------------+
+    | df-scf                  | HF or DFT with density fitting                                                        |
     +-------------------------+---------------------------------------------------------------------------------------+
 
     .. include:: autodoc_dft_energy.rst
@@ -330,7 +363,7 @@ def energy(name, **kwargs):
 
 
 def gradient(name, **kwargs):
-    """Function complementary to optimize(). Carries out one gradient pass,
+    r"""Function complementary to optimize(). Carries out one gradient pass,
     deciding analytic or finite difference.
 
     """
@@ -423,7 +456,8 @@ def gradient(name, **kwargs):
 
         if 'mode' in kwargs and kwargs['mode'].lower() == 'sow':
             raise ValidationError('Optimize execution mode \'sow\' not valid for analytic gradient calculation.')
-        return PsiMod.reference_wavefunction().energy()
+        PsiMod.reference_wavefunction().energy()
+        return PsiMod.get_variable('CURRENT ENERGY')
     else:
         # If not, perform finite difference of energies
 
@@ -576,7 +610,7 @@ def gradient(name, **kwargs):
 
 
 def property(name, **kwargs):
-    """Function to compute various properties.
+    r"""Function to compute various properties.
 
     :aliases: prop()
 
@@ -584,9 +618,12 @@ def property(name, **kwargs):
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
+       - This function at present handles property functions only for CC methods.
+         Consult the keywords sections for other modules for further property capabilities.
+
        - Check that energy is actually being returned.
 
-       - Check if ther're some PSI variables that ought to be set.
+       - Check if some PSI variables ought to be set.
 
     +-------------------------+---------------------------------------------------------------------------------------+
     | name                    | calls method                                                                          |
@@ -608,10 +645,20 @@ def property(name, **kwargs):
         First argument, usually unlabeled. Indicates the computational method
         to be applied to the system.
 
+    :type properties: array of strings
+    :param properties: |dl| ``[]`` |dr| || ``['rotation', 'polarizability', 'oscillator_strength', 'roa']`` || etc.
+
+        Indicates which properties should be computed.
+
+    :type molecule: :ref:`molecule <op_py_molecule>`
+    :param molecule: ``h2o`` || etc.
+
+        The target molecule, if not the last molecule defined.
+
     :examples:
 
-    >>> # [1] Multipole moment and response Property calculations
-    >>> property('ccsd')
+    >>> # [1] Optical rotation calculation
+    >>> property('cc2', properties=['rotation'])
 
     """
     lowername = name.lower()
@@ -640,7 +687,7 @@ prop = property
 
 
 def optimize(name, **kwargs):
-    """Function to perform a geometry optimization.
+    r"""Function to perform a geometry optimization.
 
     :aliases: opt()
 
@@ -656,10 +703,6 @@ def optimize(name, **kwargs):
     .. note:: Analytic gradients area available for all methods in the table
         below. Optimizations with other methods in the energy table proceed
         by finite differences.
-
-    .. caution:: Some features are not yet implemented. Buy a developer a coffee.
-
-       - Need to check that all methods do return electronic energy. I think gradient got changed at one point.
 
     .. _`table:grad_gen`:
 
@@ -807,7 +850,7 @@ opt = optimize
 
 
 def parse_arbitrary_order(name):
-    """Function to parse name string into a method family like CI or MRCC and specific
+    r"""Function to parse name string into a method family like CI or MRCC and specific
     level information like 4 for CISDTQ or MRCCSDTQ.
 
     """
@@ -877,11 +920,14 @@ def parse_arbitrary_order(name):
 
 
 def frequency(name, **kwargs):
-    """Function to compute harmonic vibrational frequencies.
+    r"""Function to compute harmonic vibrational frequencies.
 
     :aliases: frequencies(), freq()
 
     :returns: (*float*) Total electronic energy in Hartrees.
+
+    .. note:: Analytic hessians are not available. Frequencies will proceed through
+        finite differences according to availability of gradients or energies.
 
     .. caution:: Some features are not yet implemented. Buy a developer a coffee.
 
@@ -1089,14 +1135,14 @@ freq = frequency
 
 # hessian to be changed later to compute force constants
 def hessian(name, **kwargs):
-    """Function to compute force constants. Presently identical to frequency()."""
+    r"""Function to compute force constants. Presently identical to frequency()."""
     lowername = name.lower()
     kwargs = kwargs_lower(kwargs)
     frequencies(name, **kwargs)
 
 
 def parse_cotton_irreps(irrep):
-    """Function to return validated Cotton ordering index from string or integer
+    r"""Function to return validated Cotton ordering index from string or integer
     irreducible representation *irrep*.
 
     """

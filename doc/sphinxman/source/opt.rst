@@ -10,7 +10,7 @@
 Optimize
 ========
 
-.. autofunction:: driver.optimize
+.. autofunction:: driver.optimize(name [, func, mode, dertype, molecule])
 
 For further discussion of geometry optimization, see
 Sec. :ref:`sec:optking`.

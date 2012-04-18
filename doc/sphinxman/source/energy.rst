@@ -9,5 +9,5 @@
 Energy
 ======
 
-.. autofunction:: driver.energy
+.. autofunction:: driver.energy(name [, bypass_scf, molecule])
 

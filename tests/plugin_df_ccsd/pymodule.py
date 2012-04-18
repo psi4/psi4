@@ -11,7 +11,7 @@ from text import *
 from procutil import *
 
 def run_plugin_df_ccsd(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls so that
+    r"""Function encoding sequence of PSI module and plugin calls so that
     plugin_df_ccsd can be called via :py:func:`driver.energy`.
 
     >>> energy('df-ccsd(t)')
@@ -32,6 +32,10 @@ def run_plugin_df_ccsd(name, **kwargs):
         PsiMod.set_global_option('compute_triples', False)
     if (lowername == 'df-ccsd(t)'):
         PsiMod.set_global_option('compute_triples', True)
+
+    # set scf-type to df unless the user wants something else
+    if PsiMod.has_option_changed('scf_type') == False:
+       PsiMod.set_global_option('scf_type', 'DF')
 
     energy('scf', **kwargs)
     PsiMod.plugin("plugin_df_ccsd.so")

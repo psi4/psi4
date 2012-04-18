@@ -1914,6 +1914,91 @@ def build_m05_superfunctional(name, npoints, deriv):
     return sup
 
 
+def build_m05_2x_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('M05-2X')
+    # Tab in, trailing newlines 
+    sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n')
+    # Tab in, trailing newlines 
+    sup.set_citation('    Zhao et. al., J. Chem. Theory Comput., 2, 364, 2006\n')
+
+    # Add member functionals
+    X = build_functional('M_X')
+    X.set_name('M05_2X_X')
+    X.set_alpha(1.0)
+
+    # LSDA Exchange type is Slater, no parameters
+
+    # GGA Exchange type is PBE, special parameters because Truhlar is lazy
+    C1 = 3.36116E-3; # Should be reported/implemented to more digits
+    C2 = 4.49267E-3; # Should be reported/implemented to more digits
+    K0 = 3.0/2.0 * math.pow(3.0 / (math.pi * 4.0), 1.0/3.0);
+    k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
+    kp = C1 / (C2 * K0);
+    mu = 4.0 * k0 * k0 * kp * C2;
+    X.set_parameter('PBE_kp', kp); # Different effective kp   
+    X.set_parameter('PBE_mu', mu); # Different effective mu  
+
+# Meta Exchange type is insane mess of w power series expansion 
+    X.set_parameter('Meta_a0' , 1.0)
+    X.set_parameter('Meta_a1' ,-0.56833)
+    X.set_parameter('Meta_a2' ,-1.30057)
+    X.set_parameter('Meta_a3' , 5.50070)
+    X.set_parameter('Meta_a4' , 9.06402)
+    X.set_parameter('Meta_a5' ,-32.21075)
+    X.set_parameter('Meta_a6' ,-23.73298)
+    X.set_parameter('Meta_a7' , 70.22996)
+    X.set_parameter('Meta_a8' , 29.88614)
+    X.set_parameter('Meta_a9' ,-60.25778)
+    X.set_parameter('Meta_a10',-13.22205)
+    X.set_parameter('Meta_a11', 15.23694)
+
+    C = build_functional('M_C')
+    C.set_name('M05_2X_C')
+
+    # LSDA Correlation type is PW92, no parameters
+
+    # GGA Correlation type is B97
+    C.set_parameter('B97_os_gamma', 0.0031 * 2.0) # This makes me mad. Truhlar is too lazy to report the B97 gradient expansion formula, but then does not use the canonical definition.
+    C.set_parameter('B97_os_a0', 1.00000)
+    C.set_parameter('B97_os_a1', 1.09297)
+    C.set_parameter('B97_os_a2',-3.79171)
+    C.set_parameter('B97_os_a3', 2.82810)
+    C.set_parameter('B97_os_a4',-10.58909)
+
+    C.set_parameter('B97_ss_gamma', 0.06)
+    C.set_parameter('B97_ss_a0', 1.00000)
+    C.set_parameter('B97_ss_a1',-3.05430)
+    C.set_parameter('B97_ss_a2', 7.61854)
+    C.set_parameter('B97_ss_a3', 1.47665)
+    C.set_parameter('B97_ss_a4',-11.92365)
+
+    # Meta Correlation type is Becke metric, no parameters
+
+    # Add the functionals in
+    sup.add_x_functional(X)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.0)
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(0.56) # Hartree-Fock exact exchange
+    sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
 def build_primitive_superfunctional(name, npoints, deriv):
 
     # Call this first
@@ -2007,6 +2092,8 @@ superfunctionals = {
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,
         'm05'       : build_m05_superfunctional,
+        'm05-2x'    : build_m05_2x_superfunctional,
+        #'m06-2x'    : build_m06_2x_superfunctional,
     }
 
 

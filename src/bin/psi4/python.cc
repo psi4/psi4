@@ -51,6 +51,7 @@ namespace opt {
 namespace psi {
     namespace mints      { PsiReturnType mints(Options &);    }
     namespace deriv      { PsiReturnType deriv(Options &);    }
+    namespace scfgrad    { PsiReturnType scfgrad(Options &); }
     namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
     namespace libfock    { PsiReturnType libfock(Options &);  }
     namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
@@ -162,6 +163,12 @@ int py_psi_mints()
 {
     py_psi_prepare_options_for_module("MINTS");
     return mints::mints(Process::environment.options);
+}
+
+int py_psi_scfgrad()
+{
+    py_psi_prepare_options_for_module("SCF");
+    return scfgrad::scfgrad(Process::environment.options);
 }
 
 int py_psi_deriv()
@@ -434,8 +441,11 @@ double py_psi_ccresponse()
 double py_psi_cceom()
 {
     py_psi_prepare_options_for_module("CCEOM");
-    cceom::cceom(Process::environment.options);
-    return 0.0;
+    if (cceom::cceom(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 double py_psi_psimrcc()
@@ -447,9 +457,12 @@ double py_psi_psimrcc()
 
 double py_psi_adc()
 {
-  py_psi_prepare_options_for_module("ADC");
-  adc::adc(Process::environment.options);
-  return 0.0;
+    py_psi_prepare_options_for_module("ADC");
+    if (adc::adc(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
 }
 
 char const* py_psi_version()
@@ -1019,6 +1032,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     // modules
     def("mints", py_psi_mints, "docstring");
     def("deriv", py_psi_deriv, "docstring");
+    def("scfgrad", py_psi_scfgrad, "docstring");
 
     typedef double (*scf_module_none)();
     typedef double (*scf_module_two)(PyObject*, PyObject*);

@@ -1,14 +1,16 @@
 
 .. include:: autodoc_abbr_options_c.rst
 
-.. _`sec:mrcc`:
 .. index:: MRCC
+.. _`sec:mrcc`:
 
 Interface to MRCC by M. K\ |a_acute|\ llay
 ==========================================
 
-.. codeauthor:: Justin M. Turney, Andrew C. Simmonett
+.. codeauthor:: Justin M. Turney and Andrew C. Simmonett
 .. sectionauthor:: Justin M. Turney
+
+*Module:* :ref:`Keywords <apdx:mrcc>`, :ref:`PSI Variables <apdx:mrcc_psivar>`, :source:`MRCC <src/bin/mrcc>`
 
 |PSIfour| contains code to interface to the MRCC program of M. K\ |a_acute|\ llay
 and J. Gauss.  The license and source code of the MRCC program must be

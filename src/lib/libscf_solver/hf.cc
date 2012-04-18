@@ -1474,10 +1474,23 @@ void HF::print_energies()
     fprintf(outfile, "    Two-Electron Energy =         %24.16f\n", energies_["Two-Electron"]);
     fprintf(outfile, "    DFT Functional Energy =       %24.16f\n", energies_["XC"]); 
     fprintf(outfile, "    Empirical Dispersion Energy = %24.16f\n", energies_["-D"]);
-    fprintf(outfile, "    Total Energy =                %24.16f\n", energies_["Nuclear"] + energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
+    fprintf(outfile, "    Total Energy =                %24.16f\n", energies_["Nuclear"] + 
+        energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"]); 
     fprintf(outfile, "\n");
     
-    // TODO Save the variables table. 
+    Process::environment.globals["NUCLEAR REPULSION ENERGY"] =      energies_["Nuclear"];
+    Process::environment.globals["ONE-ELECTRON ENERGY"] =           energies_["One-Electron"];
+    Process::environment.globals["TWO-ELECTRON ENERGY"] =           energies_["Two-Electron"];
+    if (fabs(energies_["XC"]) > 1.0e-14) {
+        Process::environment.globals["DFT FUNCTIONAL ENERGY"] =         energies_["XC"];
+        Process::environment.globals["DFT FUNCTIONAL TOTAL ENERGY"] =   energies_["Nuclear"] + 
+            energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"];
+        Process::environment.globals["DFT TOTAL ENERGY"] =              energies_["Nuclear"] + 
+            energies_["One-Electron"] + energies_["Two-Electron"] + energies_["XC"] + energies_["-D"];
+    }
+    if (fabs(energies_["-D"]) > 1.0e-14) {
+        Process::environment.globals["DISPERSION CORRECTION ENERGY"] =  energies_["-D"];
+    }
 }
 
 void HF::print_occupation()

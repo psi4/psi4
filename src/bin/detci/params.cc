@@ -23,6 +23,7 @@
 #include <libmints/molecule.h>
 #include "structs.h"
 #include "globals.h"
+#include "psi4-dec.h"
 
 namespace psi { namespace detci {
 
@@ -568,8 +569,11 @@ void get_parameters(Options &options)
   if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT)
     Parameters.h0blocksize = Parameters.h0guess_size = 1;
 
-
-  Parameters.nthreads = options.get_int("NUM_THREADS");
+  
+  Parameters.nthreads = Process::environment.get_n_threads();
+  if (options["CI_NUM_THREADS"].has_changed()){
+     Parameters.nthreads = options.get_int("CI_NUM_THREADS");
+  }
   if (Parameters.nthreads < 1) Parameters.nthreads = 1;
 
   Parameters.export_ci_vector = options["VECS_WRITE"].to_integer();
