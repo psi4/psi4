@@ -222,6 +222,8 @@ public:
     double mass(int atom) const;
     /// Returns the cleaned up label of the atom (C2 => C, H4 = H)
     std::string symbol(int atom) const;
+    /// Returns the cleaned up label of the atom (C2 => C, H4 = H)
+    std::string fsymbol(int atom) const;
     /// Returns the original label of the atom as given in the input file (C2, H4).
     std::string label(int atom) const;
     /// Returns charge of atom
@@ -317,6 +319,9 @@ public:
 
     /// Print the molecule
     void print() const;
+
+    /// Print full atom list
+    void print_full() const;
 
     /// Print the molecule in the same format that the user provided
     void print_in_input_format() const;

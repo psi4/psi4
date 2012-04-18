@@ -13,7 +13,7 @@ from procutil import *
 #from mpi4py import MPI
 
 def run_plugin_libcim(name, **kwargs):
-    """Function encoding sequence of PSI module and plugin calls so that
+    r"""Function encoding sequence of PSI module and plugin calls so that
     plugin_libcim can be called via :py:func:`driver.energy`.
 
     >>> energy('cim-ccsd(t)')

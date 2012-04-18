@@ -47,7 +47,7 @@ for pyfile in glob.glob(DriverPath + '../../lib/python/*.py'):
         elif basename == 'wrappers':
             fdriver.write('   :exclude-members: nbody, cp, counterpoise_correct, counterpoise_correction,\n')
             fdriver.write('       db, database, cbs, complete_basis_set, highest_1, scf_xtpl_helgaker_3,\n')
-            fdriver.write('       scf_xtpl_helgaker_2, corl_xtpl_helgaker_2\n')
+            fdriver.write('       scf_xtpl_helgaker_2, corl_xtpl_helgaker_2, n_body\n')
         elif basename == 'physconst':
             fdriver.write('\n.. literalinclude:: %slib/python/%s\n' % (IncludePath, filename))
 

@@ -6,5 +6,5 @@
 Frequency
 =========
 
-.. autofunction:: driver.frequency
+.. autofunction:: driver.frequency(name [, func, dertype, irrep, molecule])
 
