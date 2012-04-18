@@ -53,7 +53,11 @@ def run_scf_gradient(name, **kwargs):
     """
 
     run_scf(name, **kwargs)
-    PsiMod.deriv()
+
+    if (PsiMod.get_global_option('SCF_TYPE') == 'DF'):
+        PsiMod.scfgrad()
+    else:
+        PsiMod.deriv()
 
 
 def run_libfock(name, **kwargs):
@@ -524,7 +528,7 @@ def run_dft(name, **kwargs):
     elif (user_ref == 'CUHF'):
         raise ValidationError('CUHF reference for DFT is not available.')
 
-    returnvalue = scf_helper(name, **kwargs)
+    run_scf(name,**kwargs) 
 
     PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
     PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
@@ -533,6 +537,36 @@ def run_dft(name, **kwargs):
 
     return returnvalue
 
+def run_dft_gradient(name, **kwargs):
+    """Function encoding sequence of PSI module calls for
+    a density-functional-theory gradient calculation.
+
+    """
+    lowername = name.lower()
+
+    user_fctl = PsiMod.get_global_option('DFT_FUNCTIONAL')
+    user_ref = PsiMod.get_global_option('REFERENCE')
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', lowername)
+
+    if (user_ref == 'RHF'):
+        PsiMod.set_global_option('REFERENCE', 'RKS')
+    elif (user_ref == 'UHF'):
+        PsiMod.set_global_option('REFERENCE', 'UKS')
+    elif (user_ref == 'ROHF'):
+        raise ValidationError('ROHF reference for DFT is not available.')
+    elif (user_ref == 'CUHF'):
+        raise ValidationError('CUHF reference for DFT is not available.')
+
+    if (PsiMod.get_global_option('SCF_TYPE') != 'DF'):
+        raise ValidationError('SCF_TYPE must be DF for DFT gradient (for now).')
+
+    run_scf_gradient(name,**kwargs) 
+
+    PsiMod.set_global_option('DFT_FUNCTIONAL', user_fctl)
+    PsiMod.revoke_global_option_changed('DFT_FUNCTIONAL')
+    PsiMod.set_global_option('REFERENCE', user_ref)
+    PsiMod.revoke_global_option_changed('REFERENCE')
 
 def run_detci(name, **kwargs):
     """Function encoding sequence of PSI module calls for

@@ -94,6 +94,9 @@ procedures = {
 for ssuper in superfunctional_list():
     procedures['energy'][ssuper.name().lower()] = run_dft
 
+for ssuper in superfunctional_list():
+    procedures['gradient'][ssuper.name().lower()] = run_dft_gradient
+
 
 def energy(name, **kwargs):
     """Function to compute the single-point electronic energy.
