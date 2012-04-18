@@ -372,6 +372,8 @@ SharedMatrix SCFGrad::compute_gradient()
     timer_on("Grad: JK");
 
     boost::shared_ptr<JKGrad> jk = JKGrad::build_JKGrad();
+    jk->set_memory((ULI) (options_.get_double("SCF_MEM_SAFETY_FACTOR") * memory_ / 8L));
+    
     jk->set_Ca(Ca);
     jk->set_Cb(Cb);
     jk->set_Da(Da);

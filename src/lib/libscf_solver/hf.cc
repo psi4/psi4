@@ -348,8 +348,8 @@ void HF::integrals()
         jk_ = JK::build_JK();
         // Tell the JK to print
         jk_->set_print(print_);
-        // Give the JK 70% of the memory
-        jk_->set_memory((ULI)(0.7*(Process::environment.get_memory() / 8L)));
+        // Give the JK 75% of the memory
+        jk_->set_memory((ULI)(options_.get_double("SCF_MEM_SAFETY_FACTOR")*(Process::environment.get_memory() / 8L)));
 
         // DFT sometimes needs custom stuff
         if ((options_.get_str("REFERENCE") == "UKS" || options_.get_str("REFERENCE") == "RKS")) {
