@@ -6,7 +6,7 @@ Test Suite and Sample Inputs
 
 |PSIfour| is distributed with an extensive test suite, which can be found in
 :source:`tests`. After building the source code, these can automatically be
-run by running ``make tests`` in the complilation directory. Sample input
+run by running ``make tests`` in the compilation directory. Sample input
 files can be found in the the :source:`samples` subdirectory of the top-level Psi
 directory. The samples and a brief description are provided below.
 

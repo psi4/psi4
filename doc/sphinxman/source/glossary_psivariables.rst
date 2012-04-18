@@ -12,8 +12,9 @@
 PSI Variables by Alpha
 ======================
 
-.. note:: Lowercase letters in PSI variable names represent variable portions
-   of the name. See text for fuller description.
+.. note:: Lowercase letters in PSI variable names represent portions of
+   the variable name that vary by root number, calculation order, etc.
+   See text for fuller description.
 
 .. psivar:: (T) CORRECTION ENERGY
 
