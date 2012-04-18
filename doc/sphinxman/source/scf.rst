@@ -146,7 +146,7 @@ the current value of the density,
 .. math:: F_{\mu\nu}^{\alpha} = H_{\mu\nu} 
     + \underbrace{\left(D_{\lambda\sigma}^{\alpha} + D_{\lambda\sigma}^{\beta}\right)
     (\mu\nu|\lambda\sigma)}_{J}
-    + \underbrace{D_{\mu\nu}^{\alpha} (\mu\lambda|\sigma\nu)}_{K^{\alpha}}
+    + \underbrace{D_{\lambda\sigma}^{\alpha} (\mu\lambda|\sigma\nu)}_{K^{\alpha}}
 
 Here the tensor :math:`(\mu\nu|\lambda\sigma)` is an AO Electron-Repulsion
 Integral (ERI) in chemists' notation,
