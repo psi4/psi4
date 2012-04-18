@@ -1665,9 +1665,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Level shift to aid convergence -*/
     options.add_double("LEVEL_SHIFT",0.0);
     /*- Convergence criterion for energy. -*/
-    options.add_double("E_CONVERGENCE", 1e-12);
+    options.add_double("E_CONVERGENCE", 1e-8);
     /*- Convergence criterion for density. -*/
-    options.add_double("D_CONVERGENCE", 1e-12);
+    options.add_double("D_CONVERGENCE", 1e-6);
     /*- Maximum number of iterations -*/
     options.add_int("MAXITER",100);
     /*- Maximum number of error vectors stored for DIIS extrapolation -*/
