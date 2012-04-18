@@ -188,7 +188,7 @@ double ** BEND::Dq2Dx2(GeomType geom) const {
       dqdx[a][i] = zeta(a,0,1)*uXw[i]/Lu + zeta(a,2,1)*wXv[i]/Lv;
 
   double cos_q = v3d_dot(u,v);
-  if (1.0-cos_q*cos_q <= 1.0e-12) return dqdx; // leave 2nd derivatives empty - sin 0 = 0 in denominator
+  if (1.0-cos_q*cos_q <= 1.0e-12) return dq2dx2; // leave 2nd derivatives empty - sin 0 = 0 in denominator
   double sin_q = sqrt(1.0 - cos_q*cos_q);
 
   double tval;
