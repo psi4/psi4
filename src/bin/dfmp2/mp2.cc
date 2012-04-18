@@ -38,11 +38,10 @@ void DFMP2::common_init()
         throw PSIEXCEPTION("DFMP2: Run SCF first");
     }
 
-    if (options_.get_str("REFERENCE") == "ROHF")
+    if (options_.get_str("REFERENCE") == "ROHF" || options_.get_str("REFERENCE") == "CUHF")
         reference_wavefunction_->semicanonicalize();
 
     copy(reference_wavefunction_);
-
 
     energies_["Singles Energy"] = 0.0;
     energies_["Opposite-Spin Energy"] = 0.0;
