@@ -23,6 +23,15 @@ void GPUHelper::CudaInit(Options&options){
     CudaInitGPU(options);
   #endif
 }
+/**
+  * finalize cuda (if we have it)
+  */
+void GPUHelper::CudaFinalize(Options&options){
+  #ifdef CUDA
+    CudaFinalizeGPU(options);
+  #endif
+}
+
 
 /**
   *  wrappers to gpu dgemm
