@@ -717,9 +717,8 @@ void DFJKGrad::build_UV_terms()
     // > Alpha < //
     if (true) {
         psio_address next_Aij = PSIO_ZERO;
-        psio_address next_Bij = PSIO_ZERO;
-
         for (int P = 0; P < naux; P += max_rows) {
+            psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
             psio_->read(unit_a_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*na*na, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
@@ -733,9 +732,8 @@ void DFJKGrad::build_UV_terms()
     // > Beta < //
     if (!restricted) {
         psio_address next_Aij = PSIO_ZERO;
-        psio_address next_Bij = PSIO_ZERO;
-
         for (int P = 0; P < naux; P += max_rows) {
+            psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
             psio_->read(unit_b_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*nb*nb, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
@@ -758,9 +756,8 @@ void DFJKGrad::build_UV_terms()
     // > Alpha < //
     if (true) {
         psio_address next_Aij = PSIO_ZERO;
-        psio_address next_Bij = PSIO_ZERO;
-
         for (int P = 0; P < naux; P += max_rows) {
+            psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
             psio_->read(unit_a_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*na*na, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
@@ -774,9 +771,8 @@ void DFJKGrad::build_UV_terms()
     // > Beta < //
     if (!restricted) {
         psio_address next_Aij = PSIO_ZERO;
-        psio_address next_Bij = PSIO_ZERO;
-
         for (int P = 0; P < naux; P += max_rows) {
+            psio_address next_Bij = PSIO_ZERO;
             int nP = (P + max_rows >= naux ? naux - P : max_rows);
             psio_->read(unit_b_,"(A|ij)",(char*) Aijp[0], sizeof(double)*nP*nb*nb, next_Aij, &next_Aij);
             for (int Q = 0; Q < naux; Q += max_rows) {
