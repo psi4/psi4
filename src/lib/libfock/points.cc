@@ -781,17 +781,16 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
                     V2 += T2;
                     V3 += T3;
                 }
-                double S0 = V1;
+                double S = V1;
                 double SX = V2 * xc;
                 double SY = V2 * yc;
                 double SZ = V2 * zc;
-                double SXX = V3 * xc * xc;
                 double SXY = V3 * xc * yc;
                 double SXZ = V3 * xc * zc;
-                double SYY = V3 * yc * yc;
                 double SYZ = V3 * yc * zc;
-                double SZZ = V3 * zc * zc;
-                double SA = V3;
+                double SXX = V3 * xc * xc + V2;
+                double SYY = V3 * yc * yc + V2;
+                double SZZ = V3 * zc * zc + V2;
 
                 for (int i=0, index = 0; i<=L; ++i) {
                     int l = L-i+2;
@@ -803,23 +802,27 @@ void BasisFunctions::compute_functions(boost::shared_ptr<BlockOPoints> block)
                         int mp = m - 2;
                         int np = n - 2;
 
-                        double xyz = xc_pow[l] * yc_pow[m] * zc_pow[n];
-                        cartp[P][index] = S0 * xyz;
-                        cartxp[P][index] = S0 * lp * xc_pow[l-1] * yc_pow[m] * zc_pow[n] + SX * xyz;
-                        cartyp[P][index] = S0 * mp * xc_pow[l] * yc_pow[m-1] * zc_pow[n] + SY * xyz;
-                        cartzp[P][index] = S0 * np * xc_pow[l] * yc_pow[m] * zc_pow[n-1] + SZ * xyz;
-                        cartxyp[P][index] = S0 * lp * mp * xc_pow[l-1] * yc_pow[m-1] * zc_pow[n] + SY * lp * xc_pow[l-1] * yc_pow[m] * zc_pow[n] +
-                                            SX * mp * xc_pow[l] * yc_pow[m-1] * zc_pow[n] + SXY * xyz;
-                        cartxzp[P][index] = S0 * lp * np * xc_pow[l-1] * yc_pow[m] * zc_pow[n-1] + SZ * lp * xc_pow[l-1] * yc_pow[m] * zc_pow[n] +
-                                            SX * np * xc_pow[l] * yc_pow[m] * zc_pow[n-1] + SXZ * xyz;
-                        cartyzp[P][index] = S0 * mp * np * xc_pow[l] * yc_pow[m-1] * zc_pow[n-1] + SZ * mp * xc_pow[l] * yc_pow[m-1] * zc_pow[n] +
-                                            SX * np * xc_pow[l] * yc_pow[m] * zc_pow[n-1] + SYZ * xyz;
-                        cartxxp[P][index] = S0 * lp * (lp - 1) * xc_pow[l-2] * yc_pow[m] * zc_pow[n] + SA * lp * xyz +
-                                            SA * (lp + 1) * xyz + SXX * xyz;
-                        cartyyp[P][index] = S0 * mp * (mp - 1) * xc_pow[l] * yc_pow[m-2] * zc_pow[n] + SA * mp * xyz +
-                                            SA * (mp + 1) * xyz + SYY * xyz;
-                        cartzzp[P][index] = S0 * np * (np - 1) * xc_pow[l] * yc_pow[m] * zc_pow[n-2] + SA * np * xyz +
-                                            SA * (np + 1) * xyz + SZZ * xyz;
+                        double A = xc_pow[l] * yc_pow[m] * zc_pow[n];
+                        double AX = lp * xc_pow[l-1] * yc_pow[m] * zc_pow[n];
+                        double AY = mp * xc_pow[l] * yc_pow[m-1] * zc_pow[n];
+                        double AZ = np * xc_pow[l] * yc_pow[m] * zc_pow[n-1];
+                        double AXY = lp * mp * xc_pow[l-1] * yc_pow[m-1] * zc_pow[n];
+                        double AXZ = lp * np * xc_pow[l-1] * yc_pow[m] * zc_pow[n-1];
+                        double AYZ = mp * np * xc_pow[l] * yc_pow[m-1] * zc_pow[n-1];
+                        double AXX = lp * (lp - 1) * xc_pow[l-2] * yc_pow[m] * zc_pow[n];
+                        double AYY = mp * (mp - 1) * xc_pow[l] * yc_pow[m-2] * zc_pow[n];
+                        double AZZ = np * (np - 1) * xc_pow[l] * yc_pow[m] * zc_pow[n-2];
+
+                        cartp[P][index] = S * A;
+                        cartxp[P][index] = S * AX + SX * A; 
+                        cartyp[P][index] = S * AY + SY * A; 
+                        cartzp[P][index] = S * AZ + SZ * A; 
+                        cartxxp[P][index] = SXX * A + SX * AX + SX * AX + S * AXX;
+                        cartyyp[P][index] = SYY * A + SY * AY + SY * AY + S * AYY;
+                        cartzzp[P][index] = SZZ * A + SZ * AZ + SZ * AZ + S * AZZ;
+                        cartxyp[P][index] = SXY * A + SX * AY + SY * AX + S * AXY;
+                        cartxzp[P][index] = SXZ * A + SX * AZ + SZ * AX + S * AXZ;
+                        cartyzp[P][index] = SYZ * A + SY * AZ + SZ * AY + S * AYZ;
                     }
                 }
             }

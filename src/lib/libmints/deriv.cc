@@ -180,7 +180,6 @@ public:
             four_index_D -= D_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
 
         four_index_D *= prefactor;
-//        fprintf(outfile, "Salc %d (%d %d | %d %d) = %16.10f\n", salc, pabs, qabs, rabs, sabs, value);
 
         result[thread]->add(salc, four_index_D * value);
         counter++;
@@ -220,11 +219,11 @@ public:
         throw PSIEXCEPTION("ScfAndDfCorrelationRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
 
-    ~ScfAndDfCorrelationRestrictedFunctor() {
-    }
+    ~ScfAndDfCorrelationRestrictedFunctor() 
+    { }
 
     void load_tpdm(size_t id) {}
-    void next_tpdm_element(){}
+    void next_tpdm_element() {}
 
     void finalize() {
         // Make sure the SCF code is done
@@ -344,21 +343,19 @@ public:
     {
         nthread = Communicator::world->nthread();
         result.push_back(results);
-        for (int i=1; i<nthread; ++i) {
+        for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
-        }
     }
-    ~ScfUnrestrictedFunctor() {
-    }
+    ~ScfUnrestrictedFunctor() 
+    { }
 
     void load_tpdm(size_t id) {}
-    void next_tpdm_element(){}
+    void next_tpdm_element() {}
 
     void finalize() {
         // Do summation over threads
-        for (int i=1; i<nthread; ++i) {
+        for (int i=1; i<nthread; ++i) 
             result[0]->add(result[i]);
-        }
         // Do MPI global summation
         result[0]->sum();
     }
@@ -394,7 +391,6 @@ public:
             four_index_D -= 2.0 * ((Da_->get(pirrep, pso, sso) * Da_->get(rirrep, rso, qso))
                                  + (Db_->get(pirrep, pso, sso) * Db_->get(rirrep, rso, qso)));
         }
-//        four_index_D *= prefactor;
         value *= prefactor;
 
         result[thread]->add(salc, four_index_D * value);
@@ -476,7 +472,7 @@ SharedMatrix Deriv::compute()
     double *X_ref_cont      = 0;
     double *D_ref_cont      = 0;
 
-    if(!wfn_)
+    if (!wfn_)
         throw("In Deriv: The wavefunction passed in is empty!");
 
     // Try and grab the OPDM and lagrangian from the wavefunction
@@ -489,7 +485,7 @@ SharedMatrix Deriv::compute()
     // Whether the SCF contribution is separate from the correlated terms
     bool reference_separate = (Da || Db || X) && ref_wfn;
 
-    if(!ref_wfn){
+    if (!ref_wfn) {
         // If wavefunction doesn't have a reference wavefunction
         // itself, we assume that we're dealing with SCF.
         if (!Da || !Db)
@@ -497,29 +493,29 @@ SharedMatrix Deriv::compute()
         if (!X)
             throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
 
-        if(wfn_->same_a_b_orbs()){
+        if (wfn_->same_a_b_dens()) {  // RHF
             // We need to account for spin integration
             X->scale(2.0);
             ScfRestrictedFunctor functor(TPDMcont_vector, Da);
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
-        }else{
+        }
+        else{ // ROHF and UHF
             ScfUnrestrictedFunctor functor(TPDMcont_vector, Da, Db);
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
         }
-        for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+        for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
             TPDMcont[cd] = TPDMcont_vector->get(cd);
-//            fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
-        }
         fflush(outfile);
-    } else {
+    } 
+    else {
         /* For correlated calculations, we have two different types.  The older CI/CC codes dump the
            Lagrangian to disk and density matrices to disk, and these both include the reference
            contributions.  The newer codes hold these quantities as member variables, but these contain only
            the correlated part.  The reference contributions must be harvested from the reference_wavefunction
            member.  If density fitting was used, we don't want to compute two electron contributions here*/
-        if(wfn_->density_fitted()){
+        if (wfn_->density_fitted()) {
             X_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
             D_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
             TPDM_ref_cont_vector = SharedVector(new Vector(1, &ncd));
@@ -539,18 +535,14 @@ SharedMatrix Deriv::compute()
                 double temp = Da_ref->vector_dot(h_deriv[cd]);
                 temp += Db_ref->vector_dot(h_deriv[cd]);
                 D_ref_cont[cd] = temp;
-//                fprintf(outfile, "    SALC #%d Reference One-electron contribution: %+lf\n", cd, temp);
             }
-            fprintf(outfile, "\n");
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = -X_ref->vector_dot(s_deriv[cd]);
                 X_ref_cont[cd] = temp;
-//                fprintf(outfile, "    SALC #%d Reference Lagrangian contribution:   %+lf\n", cd, temp);
             }
-            fprintf(outfile, "\n");
 
-            if(wfn_->same_a_b_orbs()){
+            if (wfn_->same_a_b_orbs()) {
                 // In the restricted case, the alpha D is really the total D.  Undefine the beta one, so
                 // that the one-electron contribution, computed below, is correct.
                 Db = factory_->create_shared_matrix("NULL");
@@ -559,10 +551,11 @@ SharedMatrix Deriv::compute()
                 so_eri.compute_integrals_deriv1(functor);
                 functor.finalize();
                 tpdm_contr_ = wfn_->tpdm_gradient_contribution();
-            }else{
-                throw PSIEXCEPTION("Unrestricted DF gradient not implemented yet.");
             }
-        }else{
+            else
+                throw PSIEXCEPTION("Unrestricted DF gradient not implemented yet.");
+        }
+        else {
             /* This is the part of the code reached from CI/CC.  In this case, the total (alpha+beta) density
                matrices are backtransformed to the SO basis and dumped to disk.  The one particle terms are
                just combined into the alpha density (with the beta OPDM set to zero, so that the one-particle
@@ -596,10 +589,8 @@ SharedMatrix Deriv::compute()
             functor.finalize();
             _default_psio_lib_->close(PSIF_AO_TPDM, 1);
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+            for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
-//                fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
-            }
             fflush(outfile);
         }
 
@@ -612,16 +603,12 @@ SharedMatrix Deriv::compute()
         temp += Da->vector_dot(h_deriv[cd]);
         temp += Db->vector_dot(h_deriv[cd]);
         Dcont[cd] = temp;
-//        fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
     }
-    fprintf(outfile, "\n");
 
     for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
         double temp = X->vector_dot(s_deriv[cd]);
         Xcont[cd] = -temp;
-//        fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
     }
-    fprintf(outfile, "\n");
 
     // Transform the SALCs back to cartesian space
     SharedMatrix st = cdsalcs_.matrix();
@@ -696,11 +683,11 @@ SharedMatrix Deriv::compute()
     symmetrize_gradient(opdm_contr_)->print_atom_vector();
     symmetrize_gradient(x_contr_)->print_atom_vector();
     symmetrize_gradient(tpdm_contr_)->print_atom_vector();
-    if(x_ref_contr_)
+    if (x_ref_contr_)
         symmetrize_gradient(x_ref_contr_)->print_atom_vector();
-    if(opdm_ref_contr_)
+    if (opdm_ref_contr_)
         symmetrize_gradient(opdm_ref_contr_)->print_atom_vector();
-    if(tpdm_ref_contr_)
+    if (tpdm_ref_contr_)
         symmetrize_gradient(tpdm_ref_contr_)->print_atom_vector();
 
     // Add everything up into a temp.
@@ -709,7 +696,7 @@ SharedMatrix Deriv::compute()
     corr->add(opdm_contr_);
     corr->add(x_contr_);
     corr->add(tpdm_contr_);
-    if(reference_separate){
+    if (reference_separate) {
         gradient_->add(x_ref_contr_);
         gradient_->add(opdm_ref_contr_);
         gradient_->add(tpdm_ref_contr_);
@@ -730,8 +717,7 @@ SharedMatrix Deriv::compute()
     return gradient_;
 }
 
-SharedMatrix
-Deriv::symmetrize_gradient(SharedMatrix grad)
+SharedMatrix Deriv::symmetrize_gradient(SharedMatrix grad)
 {
     // Make a temporary storage object
     SharedMatrix temp(grad->clone());

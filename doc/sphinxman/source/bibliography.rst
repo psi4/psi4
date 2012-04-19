@@ -129,3 +129,15 @@ Bibliography
 
 .. [Purvis:1982]
 
+.. [Roos:1980]
+
+.. [Chaban:1997:88]
+
+.. [Pulay:1980]
+
+.. [Malmqvist:1990:RASSCF]
+
+.. [Docken:1972:4928]
+
+.. [Ruedenberg:1979:1069]
+

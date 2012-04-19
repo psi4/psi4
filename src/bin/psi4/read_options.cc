@@ -822,6 +822,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SCF_TYPE", "PK", "DIRECT DF PK OUT_OF_CORE PS");
     /*- Keep JK object for later use? -*/
     options.add_bool("SAVE_JK", false);
+    /*- Memory safety factor for allocating JK -*/
+    options.add_double("SCF_MEM_SAFETY_FACTOR",0.75);
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
     /*- Minimum S matrix eigenvalue to be used before compensating for linear 
@@ -969,8 +971,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DFT_BLOCK_MAX_RADIUS",3.0);
     /*- The blocking scheme for DFT. !expert -*/
     options.add_str("DFT_BLOCK_SCHEME","OCTREE","NAIVE OCTREE");
-    /*- Testing of XC gradient !expert -*/
-    options.add_bool("XC_GRADIENT", false);
   }
   if (name == "CPHF"|| options.read_globals()) {
     /*- The amount of information printed

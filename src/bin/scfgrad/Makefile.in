@@ -1,0 +1,18 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_scfgrad.a
+
+CXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+

@@ -1720,7 +1720,7 @@ def build_wb97_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines
     sup.set_description('    Parameterized LRC B97 GGA XC Functional\n')
     # Tab in, trailing newlines
-    sup.set_citation('    J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008\n')
+    sup.set_citation('    J.-D. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008\n')
 
     # Add member functionals
     X = build_functional('wB97_X')
@@ -1781,7 +1781,7 @@ def build_wb97x_superfunctional(name, npoints, deriv):
     # Tab in, trailing newlines
     sup.set_description('    Parameterized Hybrid LRC B97 GGA XC Functional\n')
     # Tab in, trailing newlines
-    sup.set_citation('    J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008\n')
+    sup.set_citation('    J.-D. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008\n')
 
     # Add member functionals
     X = build_functional('wB97_X')
@@ -1820,6 +1820,69 @@ def build_wb97x_superfunctional(name, npoints, deriv):
     sup.set_c_omega(0.0)
     sup.set_x_alpha(0.157706)
     sup.set_c_alpha(0.0)
+
+    # => End User-Customization <= #
+
+    # Call this last
+    sup.allocate()
+    return sup
+
+def build_wb97xd_superfunctional(name, npoints, deriv):
+
+    # Call this first
+    sup = PsiMod.SuperFunctional.blank()
+    sup.set_max_points(npoints)
+    sup.set_deriv(deriv)
+
+    # => User-Customization <= #
+
+    # No spaces, keep it short and according to convention
+    sup.set_name('wB97X-D')
+    # Tab in, trailing newlines
+    sup.set_description('    Parameterized Hybrid LRC B97 GGA XC Functional with Dispersion\n')
+    # Tab in, trailing newlines
+    sup.set_citation('    J.-D. Chai and M. Head-Gordon, Phys. Chem. Chem. Phys., 10, 6615-6620, 2008\n')
+
+    # Add member functionals
+    X = build_functional('wB97_X')
+    X.set_name('wB97X_X')
+    X.set_alpha(1.0 / (1.0 - 0.157706))
+
+    X.set_parameter('B97_gamma', 0.004)
+    X.set_parameter('B97_a0', 7.77964E-1)    # Table 1: c_{x\sigma,0}
+    X.set_parameter('B97_a1', 6.61160E-1)    # Table 1: c_{x\sigma,1}
+    X.set_parameter('B97_a2', 5.74541E-1)     # Table 1: c_{x\sigma,2}
+    X.set_parameter('B97_a3', -5.25671E0)    # Table 1: c_{x\sigma,3}
+    X.set_parameter('B97_a4', 1.16386E1)     # Table 1: c_{x\sigma,4}
+
+    C = build_functional('B_C')
+    C.set_name('wB97X_C')
+
+    C.set_parameter('B97_os_gamma', 0.006)
+    C.set_parameter('B97_os_a0', 1.0)        # Table 1: c_{c\alpha\beta,0}
+    C.set_parameter('B97_os_a1', 1.79413E0)  # Table 1: c_{c\alpha\beta,1}
+    C.set_parameter('B97_os_a2', -1.20477E1) # Table 1: c_{c\alpha\beta,2}
+    C.set_parameter('B97_os_a3', 1.40847E1)  # Table 1: c_{c\alpha\beta,3}
+    C.set_parameter('B97_os_a4', -8.50809E0) # Table 1: c_{c\alpha\beta,4}
+
+    C.set_parameter('B97_ss_gamma', 0.2)
+    C.set_parameter('B97_ss_a0', 1.0)        # Table 1: c_{c\sigma\sigma,0}
+    C.set_parameter('B97_ss_a1', -6.90539E0) # Table 1: c_{c\sigma\sigma,1}
+    C.set_parameter('B97_ss_a2', 3.13343E1)  # Table 1: c_{c\sigma\sigma,2}
+    C.set_parameter('B97_ss_a3', -5.10533E1) # Table 1: c_{c\sigma\sigma,3}
+    C.set_parameter('B97_ss_a4', 2.64423E1)  # Table 1: c_{c\sigma\sigma,4}
+
+    sup.add_x_functional(X)
+    sup.add_c_functional(C)
+
+    # Set GKS up after adding functionals
+    sup.set_x_omega(0.2)        # Table 1: omega
+    sup.set_c_omega(0.0)
+    sup.set_x_alpha(2.22036E-1)   # Table 1: c_x
+    sup.set_c_alpha(0.0)
+
+    # => -D2 <= #
+    sup.set_dispersion(PsiMod.Dispersion.build('-CHG', 6.0, 0.0, 0.0, 0.0))
 
     # => End User-Customization <= #
 
@@ -1925,9 +1988,9 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
 
     # No spaces, keep it short and according to convention
     sup.set_name('M05-2X')
-    # Tab in, trailing newlines 
+    # Tab in, trailing newlines
     sup.set_description('    Heavily Parameterized Hybrid Meta-GGA XC Functional\n')
-    # Tab in, trailing newlines 
+    # Tab in, trailing newlines
     sup.set_citation('    Zhao et. al., J. Chem. Theory Comput., 2, 364, 2006\n')
 
     # Add member functionals
@@ -1944,10 +2007,10 @@ def build_m05_2x_superfunctional(name, npoints, deriv):
     k0 = math.pow(6.0 * math.pi * math.pi, 1.0/3.0);
     kp = C1 / (C2 * K0);
     mu = 4.0 * k0 * k0 * kp * C2;
-    X.set_parameter('PBE_kp', kp); # Different effective kp   
-    X.set_parameter('PBE_mu', mu); # Different effective mu  
+    X.set_parameter('PBE_kp', kp); # Different effective kp
+    X.set_parameter('PBE_mu', mu); # Different effective mu
 
-# Meta Exchange type is insane mess of w power series expansion 
+# Meta Exchange type is insane mess of w power series expansion
     X.set_parameter('Meta_a0' , 1.0)
     X.set_parameter('Meta_a1' ,-0.56833)
     X.set_parameter('Meta_a2' ,-1.30057)
@@ -2091,6 +2154,7 @@ superfunctionals = {
         'wblyp'     : build_wblyp_superfunctional,
         'wb97'      : build_wb97_superfunctional,
         'wb97x'     : build_wb97x_superfunctional,
+        'wb97x-d'   : build_wb97xd_superfunctional,
         'm05'       : build_m05_superfunctional,
         'm05-2x'    : build_m05_2x_superfunctional,
         #'m06-2x'    : build_m06_2x_superfunctional,
