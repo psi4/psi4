@@ -768,10 +768,10 @@ case $target_cpu in
     ;;
   x86_64)
     if test "$CC" = gcc -o "$CC" = cc ; then
-      COPT="-m64"
+      COPT="$COPT -m64"
     fi
     if test "$CXX" = g++ -o "$CXX" = c++ -o "$CXX" = gcc ; then
-      CXXOPT="-m64"
+      CXXOPT="$CXXOPT -m64"
     fi
     ;;
 esac
