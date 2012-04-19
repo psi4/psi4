@@ -167,7 +167,10 @@ void SAPT2p3::print_results()
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
   e_sapt2_ = e_sapt0_ + e_elst12_ + e_exch11_ + e_exch12_  + e_ind22_ 
     + e_exch_ind22_;
-  e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_disp22t_;
+  if (nat_orbs_)
+    e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_est_disp22t_;
+  else
+    e_sapt2p_ = e_sapt2_ + e_disp21_ + e_disp22sdq_ + e_disp22t_;
   e_sapt2pp3_ = e_sapt2p_ + e_elst13_ + e_disp30_;
   e_sapt2p3_ = e_sapt2pp3_ + e_exch_disp30_ + e_ind_disp30_ 
     + e_exch_ind_disp30_;

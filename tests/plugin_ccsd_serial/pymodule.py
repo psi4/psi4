@@ -29,7 +29,7 @@ def run_plugin_ccsd_serial(name, **kwargs):
     # throw an exception for open-shells
     if (PsiMod.get_global_option('reference') != 'RHF' ):
        PsiMod.print_out("\n")
-       PsiMod.print_out("Error: The _ccsd and _ccsd(t) modules require \"reference rhf\".")
+       PsiMod.print_out("Error: %s requires \"reference rhf\".\n" % lowername )
        PsiMod.print_out("\n")
        sys.exit(1)
 

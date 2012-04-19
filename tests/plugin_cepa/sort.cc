@@ -1169,16 +1169,12 @@ void SortBlock(ULI nelem,ULI blockdim,struct integral*buffer,double*tmp,ULI PSIF
                  tmp[buffer[j].ind-k*binsize] = buffer[j].val;
              }
          }
-         psio->write(PSIF_TEMP,"heyhey",(char*)&tmp[0],binsize*sizeof(double),addr2,&addr2);
+         psio->write(PSIF_TEMP,string,(char*)&tmp[0],binsize*sizeof(double),addr2,&addr2);
      }
-     addr1=addr2=PSIO_ZERO;
-     for (ULI k=0; k<nbins; k++){
-         psio->read(PSIF_TEMP,"heyhey",(char*)&tmp[0],binsize*sizeof(double),addr2,&addr2);
-         psio->write(PSIFILE,string,(char*)&tmp[0],binsize*sizeof(double),addr1,&addr1);
-     }
-
      psio->close(PSIFILE,1);
-     psio->close(PSIF_TEMP,0);
+     psio->close(PSIF_TEMP,1);
+
+     psio->rename_file(PSIF_TEMP,PSIFILE);
 
      delete addr;
   }
