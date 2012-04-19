@@ -228,41 +228,73 @@ SharedMatrix SCFGrad::compute_gradient()
         gradients_["Potential"] = SharedMatrix(gradients_["Nuclear"]->clone());
         gradients_["Potential"]->set_name("Potential Gradient");
         gradients_["Potential"]->zero();
-        double** Vp = gradients_["Potential"]->pointer();
+
+        // Thread count
+        int threads = 1;
+        #ifdef _OPENMP
+            threads = omp_get_max_threads();
+        #endif
 
         // Potential derivatives
-        boost::shared_ptr<OneBodyAOInt> Vint(integral_->ao_potential(1));
-        const double* buffer = Vint->buffer();   
-
+        std::vector<boost::shared_ptr<OneBodyAOInt> > Vint;
+        std::vector<SharedMatrix> Vtemps;
+        for (int t = 0; t < threads; t++) { 
+            Vint.push_back(boost::shared_ptr<OneBodyAOInt>(integral_->ao_potential(1)));
+            Vtemps.push_back(SharedMatrix(gradients_["Potential"]->clone()));
+        }
+       
+        // Lower Triangle
+        std::vector<std::pair<int,int> > PQ_pairs;
         for (int P = 0; P < basisset_->nshell(); P++) {
-            for (int Q = 0; Q < basisset_->nshell(); Q++) {
+            for (int Q = 0; Q <= P; Q++) {
+                PQ_pairs.push_back(std::pair<int,int>(P,Q));
+            }
+        }
 
-                Vint->compute_shell_deriv1(P,Q);
-                                
-                int nP = basisset_->shell(P).nfunction();
-                int oP = basisset_->shell(P).function_index();
-                int aP = basisset_->shell(P).ncenter();
+        #pragma omp parallel for schedule(dynamic) num_threads(threads)
+        for (long int PQ = 0L; PQ < PQ_pairs.size(); PQ++) {
+
+            int P = PQ_pairs[PQ].first;
+            int Q = PQ_pairs[PQ].second;
+
+            int thread = 0;
+            #ifdef _OPENMP
+                thread = omp_get_thread_num();
+            #endif
+
+            Vint[thread]->compute_shell_deriv1(P,Q);
+            const double* buffer = Vint[thread]->buffer();
+                            
+            int nP = basisset_->shell(P).nfunction();
+            int oP = basisset_->shell(P).function_index();
+            int aP = basisset_->shell(P).ncenter();
  
-                int nQ = basisset_->shell(Q).nfunction();
-                int oQ = basisset_->shell(Q).function_index();
-                int aQ = basisset_->shell(Q).ncenter();
+            int nQ = basisset_->shell(Q).nfunction();
+            int oQ = basisset_->shell(Q).function_index();
+            int aQ = basisset_->shell(Q).ncenter();
 
-                int offset = nP * nQ;
+            double perm = (P == Q ? 1.0 : 2.0);
+                
+            double** Vp = Vtemps[thread]->pointer();
             
-                for (int A = 0; A < natom; A++) {
-                    const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
-                    const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
-                    const double* ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
-                    for (int p = 0; p < nP; p++) {
-                        for (int q = 0; q < nQ; q++) {
-                            Vp[A][0] += Dp[p + oP][q + oQ] * (*ref0++);
-                            Vp[A][1] += Dp[p + oP][q + oQ] * (*ref1++);
-                            Vp[A][2] += Dp[p + oP][q + oQ] * (*ref2++);
-                        }
+            for (int A = 0; A < natom; A++) {
+                const double* ref0 = &buffer[3 * A * nP * nQ + 0 * nP * nQ];
+                const double* ref1 = &buffer[3 * A * nP * nQ + 1 * nP * nQ];
+                const double* ref2 = &buffer[3 * A * nP * nQ + 2 * nP * nQ];
+                for (int p = 0; p < nP; p++) {
+                    for (int q = 0; q < nQ; q++) {
+                        double Vval = perm * Dp[p + oP][q + oQ];
+                        Vp[A][0] += Vval * (*ref0++);
+                        Vp[A][1] += Vval * (*ref1++);
+                        Vp[A][2] += Vval * (*ref2++);
                     }
                 }
             }
         } 
+    
+        for (int t = 0; t < threads; t++) { 
+            gradients_["Potential"]->add(Vtemps[t]);
+        }
     }
     timer_off("Grad: V");
 
