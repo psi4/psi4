@@ -18,11 +18,10 @@
 #include <sstream>
 #include <vector>
 
-using namespace psi;
 using namespace boost;
 using namespace std;
 
-namespace psi { 
+namespace psi {
 
 Dispersion::Dispersion()
 {
@@ -38,10 +37,10 @@ void Dispersion::print(FILE* out, int level) const
 
     fprintf(out, "%s", description_.c_str());
     fprintf(out, "\n");
-    
+
     fprintf(out, "%s", citation_.c_str());
     fprintf(out, "\n");
-    
+
     fprintf(out, "    S6 = %14.6E\n", s6_);
     fprintf(out, "\n");
 }
@@ -135,7 +134,8 @@ boost::shared_ptr<Dispersion> Dispersion::build(const std::string & name, double
         return boost::shared_ptr<Dispersion> (new D2(s6));
     } else if (boost::to_upper_copy(name) == "-D3") {
         return boost::shared_ptr<Dispersion> (new D3(s6, s8, sr6, sr8));
-    }
+    } else if (boost::to_upper_copy(name) == "-CHG")
+        return boost::shared_ptr<Dispersion> (new CHG(s6));
 }
 D1::D1(double s6) : Dispersion()
 {
@@ -982,6 +982,7 @@ double D2::compute_energy(boost::shared_ptr<Molecule> mol)
               double t3964 = t3961*t3961;
               double t3965 = t3962*t3962;
               double t3966 = t3963+t3964+t3965;
+              // sqrt(t3966) can be replaced with r[i][j] and the 7 previous lines can be removed.
               energy += (C6[i][j]*1/(t3966*t3966*t3966))/(exp(-d_*(sqrt(t3966)/RvdW[i][j]-1.0))+1.0);
         }
     }
@@ -1707,4 +1708,90 @@ SharedMatrix D3::compute_hessian(boost::shared_ptr<Molecule> mol)
     throw PSIEXCEPTION("D3: Not implemented");
 }
 
+CHG::CHG(double a)
+    : Dispersion()
+{
+    name_ = "-CHG";  // Is there an officially accepted name?
+    description_ = "    Chai and Head-Gordon Dispersion Correction\n";
+    citation_ = "    Chai, J.-D.; Head-Gordon, M. (2010), J. Chem. Phys., 132: 6615-6620";
+
+    RvdW_ = RvdW_D2_;
+    C6_ = C6_D2_;
+    s6_ = a;
 }
+CHG::~CHG()
+{ }
+double CHG::compute_energy(boost::shared_ptr<Molecule> mol)
+{
+    double energy = 0.0;
+
+    // Build Z, x, y, and z
+    int natom = 0;
+
+    int *Z = init_int_array(mol->natom());
+    double *x = init_array(mol->natom());
+    double *y = init_array(mol->natom());
+    double *z = init_array(mol->natom());
+
+    for (int i = 0; i < mol->natom(); i++) {
+        if (mol->Z(i) == 0)
+        continue;
+        Z[natom] = mol->Z(i);
+        x[natom] = mol->x(i);
+        y[natom] = mol->y(i);
+        z[natom] = mol->z(i);
+        natom++;
+    }
+
+    // Build C6 (C6_ij = C6_i*C6_j/(C6_i+C6_j) in -D1 )
+    double **C6 = block_matrix(natom, natom);
+    for (int i = 1; i < natom; i++) {
+        for (int j = 0; j < i; j++) {
+            C6[i][j] = sqrt( C6_[Z[i]] * C6_[Z[j]] );
+            C6[j][i] = C6[i][j];
+        }
+    }
+
+    // Build RvdW (sum of vdW radii)
+    double **RvdW = block_matrix(natom, natom);
+    for (int i = 1; i < natom; i++) {
+        for (int j = 0; j < i; j++) {
+            RvdW[i][j] = RvdW_[Z[i]] + RvdW_[Z[j]];
+            RvdW[j][i] = RvdW[i][j];
+        }
+    }
+
+    // Build r
+    double **r = block_matrix(natom,natom);
+    for (int i = 1; i < natom; i++) {
+        for (int j = 0; j < i; j++) {
+            r[i][j] = sqrt((x[i]-x[j])*(x[i]-x[j]) + \
+                           (y[i]-y[j])*(y[i]-y[j]) + \
+                           (z[i]-z[j])*(z[i]-z[j]));
+            r[j][i] = r[i][j];
+        }
+    }
+
+    for (int i=1; i < natom; ++i) {
+        for (int j=0; j < i; ++j) {
+            double Rij = r[i][j];
+            double Rij6 = Rij * Rij * Rij * Rij * Rij * Rij;
+
+            energy += C6[i][j] / ( Rij6 * (1.0 + s6_ * pow(Rij / RvdW[i][j], -12.0)) );
+        }
+    }
+
+    energy *= -1.0;
+
+    return energy;
+}
+SharedMatrix CHG::compute_gradient(boost::shared_ptr<Molecule> mol)
+{
+    throw PSIEXCEPTION("CHG: gradient not implemented");
+}
+SharedMatrix CHG::compute_hessian(boost::shared_ptr<Molecule> mol)
+{
+    throw PSIEXCEPTION("CHG: hessian not implemented");
+}
+
+} // end namespace
