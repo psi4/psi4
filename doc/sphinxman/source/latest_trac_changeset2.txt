@@ -1,2 +1,2 @@
-<title>[4e6275] by Lori Burns:<br/>Test doc and script for psicode trac feed<br/></title>
+<title>03:46 04/19/2012 [3c8132] by Lori Burns:<br/>sapt = exch + elst + ind + disp for >=sapt2+ w/NO now, too<br/></title>
 
