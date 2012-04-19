@@ -1908,8 +1908,31 @@ found_sigma:
         zaxis = sigma;
         xaxis = zaxis.perp_unit(zaxis);
     }
+
+#define NOISY_ZERO 1.0e-8
+    // Clean up our z axis
+    if (fabs(zaxis[0]) < NOISY_ZERO)
+        zaxis[0] = 0.0;
+    if (fabs(zaxis[1]) < NOISY_ZERO)
+        zaxis[1] = 0.0;
+    if (fabs(zaxis[2]) < NOISY_ZERO)
+        zaxis[2] = 0.0;
+
+    // Clean up our x axis
+    if (fabs(xaxis[0]) < NOISY_ZERO)
+        xaxis[0] = 0.0;
+    if (fabs(xaxis[1]) < NOISY_ZERO)
+        xaxis[1] = 0.0;
+    if (fabs(xaxis[2]) < NOISY_ZERO)
+        xaxis[2] = 0.0;
+#undef NOISY_ZERO
+
     // the y is then -x cross z
     yaxis = -xaxis.cross(zaxis);
+
+//    fprintf(outfile, "xaxis %20.14lf %20.14lf %20.14lf\n", xaxis[0], xaxis[1], xaxis[2]);
+//    fprintf(outfile, "yaxis %20.14lf %20.14lf %20.14lf\n", yaxis[0], yaxis[1], yaxis[2]);
+//    fprintf(outfile, "zaxis %20.14lf %20.14lf %20.14lf\n", zaxis[0], zaxis[1], zaxis[2]);
 
     SharedMatrix frame(new Matrix(3, 3));
     for (i=0; i<3; ++i) {
